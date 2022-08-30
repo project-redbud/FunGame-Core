@@ -4,17 +4,9 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Company>Milimoe</Company>
     <BaseOutputPath>..\bin</BaseOutputPath>
     <Authors>Milimoe</Authors>
+    <Company>Milimoe</Company>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Folder Include="Implement\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\FunGame.Core.Api\FunGame.Core.Api.csproj" />
-  </ItemGroup>
 
 </Project>
