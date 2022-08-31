@@ -7,6 +7,10 @@
     <BaseOutputPath>..\bin</BaseOutputPath>
     <Company>Milimoe</Company>
     <Authors>Milimoe</Authors>
+    <AssemblyVersion>1.0</AssemblyVersion>
+    <FileVersion>1.0</FileVersion>
+    <PackageOutputPath>..\bin</PackageOutputPath>
+    <Title>FunGame</Title>
   </PropertyGroup>
 
 </Project>

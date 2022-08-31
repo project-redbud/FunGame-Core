@@ -11,6 +11,14 @@
     <PackageIcon>logo.ico</PackageIcon>
     <Company>Milimoe</Company>
     <BaseOutputPath>..\bin</BaseOutputPath>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <SignAssembly>False</SignAssembly>
+    <Authors>Milimoe</Authors>
+    <Product>FunGame</Product>
+    <Title>FunGame</Title>
+    <PackageOutputPath>..\bin</PackageOutputPath>
+    <AssemblyVersion>1.0</AssemblyVersion>
+    <FileVersion>1.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
