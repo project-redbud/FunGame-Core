@@ -63,6 +63,7 @@ namespace FunGame.Core.Api.Util
             string ClassName = Interface switch
             {
                 (int)CommonEnums.InterfaceType.ClientConnectInterface => ClientConnectInterface + Implement,
+                (int)CommonEnums.InterfaceType.ServerInterface => ServerInterface + Implement,
                 _ => "",
             };
             List<Type>? Classes = null;
