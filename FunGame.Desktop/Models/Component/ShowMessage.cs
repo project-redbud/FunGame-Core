@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using FunGame.Desktop.Models.Enum;
+using FunGame.Core.Api.Model.Enum;
 
 namespace FunGame.Desktop.Models.Component
 {

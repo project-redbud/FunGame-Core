@@ -11,7 +11,7 @@
     <PackageIcon>logo.ico</PackageIcon>
     <Company>Milimoe</Company>
     <BaseOutputPath>..\bin</BaseOutputPath>
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <GenerateDocumentationFile>False</GenerateDocumentationFile>
     <SignAssembly>False</SignAssembly>
     <Authors>Milimoe</Authors>
     <Product>FunGame</Product>
@@ -19,6 +19,14 @@
     <PackageOutputPath>..\bin</PackageOutputPath>
     <AssemblyVersion>1.0</AssemblyVersion>
     <FileVersion>1.0</FileVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -50,8 +58,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FunGame.Core.Api\FunGame.Core.Api.csproj" />
-    <ProjectReference Include="..\FunGame.Core\FunGame.Core.csproj" />
+    <ProjectReference Include="..\FunGame.Core.Api\FunGame.Core.Api.csproj">
+      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
+    <ProjectReference Include="..\FunGame.Core\FunGame.Core.csproj">
+      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>

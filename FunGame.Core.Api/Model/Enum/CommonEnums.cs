@@ -59,7 +59,8 @@ namespace FunGame.Core.Api.Model.Enum
 
         public enum InterfaceType
         {
-            ServerInterface = 1
+            ClientConnectInterface = 1,
+            ServerInterface = 2
         }
 
         #endregion
@@ -88,7 +89,8 @@ namespace FunGame.Core.Api.Model.Enum
 
         public enum InterfaceMethod
         {
-            GetServerIP = 1
+            RemoteServerIP = 1,
+            ServerNotice = 2
         }
 
         #endregion

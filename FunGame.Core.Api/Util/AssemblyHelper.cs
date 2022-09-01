@@ -19,12 +19,14 @@ namespace FunGame.Core.Api.Util
         /**
          * 定义类名
          */
+        public const string ClientConnectInterface = "ClientConnectInterface";
         public const string ServerInterface = "ServerInterface";
 
         /**
          * 定义方法名
          */
-        public const string GetRemoteServerIP = "RemoteServerIP";
+        public const string RemoteServerIP = "RemoteServerIP";
+        public const string ServerNotice = "ServerNotice";
 
         /**
          * 定义需要反射的DLL
@@ -35,7 +37,8 @@ namespace FunGame.Core.Api.Util
          * 无需二次修改的
          */
         public const string Implement = "Impl"; // 实现类的后缀
-        public static string PluginDocPath = System.Diagnostics.Process.GetCurrentProcess() + "/plugins/"; // 插件目录，反射插件DLL需要用LoadFile()方法
+        public static string EXEDocPath = System.Environment.CurrentDirectory.ToString() + "\\"; // 程序目录
+        public static string PluginDocPath = System.Environment.CurrentDirectory + "\\plugins\\"; // 插件目录
 
         ////////////////////////////////////////////////////////////////////
         /////////////// * 下 面 是 工 具 类 实 现 * ////////////////
@@ -59,7 +62,7 @@ namespace FunGame.Core.Api.Util
             // 通过类名获取获取命名空间+类名称
             string ClassName = Interface switch
             {
-                (int)CommonEnums.InterfaceType.ServerInterface => ServerInterface + Implement,
+                (int)CommonEnums.InterfaceType.ClientConnectInterface => ClientConnectInterface + Implement,
                 _ => "",
             };
             List<Type>? Classes = null;
@@ -84,8 +87,8 @@ namespace FunGame.Core.Api.Util
             // 通过AssemblyHelperType来获取方法名
             switch (Method)
             {
-                case (int)CommonEnums.InterfaceMethod.GetServerIP:
-                    return GetRemoteServerIP;
+                case (int)CommonEnums.InterfaceMethod.RemoteServerIP:
+                    return RemoteServerIP;
             }
             return "";
         }
@@ -98,7 +101,7 @@ namespace FunGame.Core.Api.Util
         /// <returns></returns>
         public object? GetFunGameCoreValue(int Interface, int Method)
         {
-            Assembly = Assembly.Load(@FUNGAME_CORE);
+            Assembly = Assembly.LoadFile(EXEDocPath + @FUNGAME_CORE + ".dll");
             Type = GetFunGameCoreImplement(Interface); // 通过类名获取获取命名空间+类名称
             string MethodName = GetMethodName(Method); // 获取方法名
             if (Assembly != null && Type != null) this.Method = Type.GetMethod(MethodName); // 从Type中查找方法名

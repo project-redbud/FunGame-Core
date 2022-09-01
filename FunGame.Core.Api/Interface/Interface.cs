@@ -13,7 +13,7 @@ namespace FunGame.Core.Api.Interface
 
         namespace FunGame.Core.Implement
         {
-            public class ServerInterfaceImpl : ServerInterface
+            public class ClientConnectInterfaceImpl : ClientConnectInterface
             {
                 public string RemoteServerIP()
                 {
@@ -26,8 +26,13 @@ namespace FunGame.Core.Api.Interface
         }
      */
 
-    public interface ServerInterface
+    public interface ClientConnectInterface
     {
         public string RemoteServerIP();
+    }
+
+    public interface ServerInterface
+    {
+        public string ServerNotice();
     }
 }

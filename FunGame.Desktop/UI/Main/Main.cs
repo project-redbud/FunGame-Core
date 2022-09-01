@@ -3,13 +3,12 @@ using System.Diagnostics;
 using System.Net.Sockets;
 using System.Net;
 using System.Windows.Forms;
-using static FunGame.Desktop.Models.Enum.CommonEnums;
 using System.Net.NetworkInformation;
 using System.Text;
 using FunGame.Core.Api.Model.Entity;
-using FunGame.Desktop.Models.Enum;
 using FunGame.Desktop.Models.Config;
 using FunGame.Desktop.Utils;
+using static FunGame.Core.Api.Model.Enum.CommonEnums;
 
 namespace FunGame.Desktop.UI
 {
@@ -173,7 +172,7 @@ namespace FunGame.Desktop.UI
         {
             try
             {
-                string? ipaddress = (string?)Config.DefaultAssemblyHelper.GetFunGameCoreValue((int)InterfaceType.ServerInterface, (int)InterfaceMethod.GetServerIP); // 获取服务器IP
+                string? ipaddress = (string?)Config.DefaultAssemblyHelper.GetFunGameCoreValue((int)InterfaceType.ClientConnectInterface, (int)InterfaceMethod.RemoteServerIP); // 获取服务器IP
                 if (ipaddress != null)
                 {
                     string[] s = ipaddress.Split(':');
@@ -685,6 +684,7 @@ namespace FunGame.Desktop.UI
         /// 设置服务器连接状态指示灯
         /// </summary>
         /// <param name="green"></param>
+        /// <param name="ping"></param>
         private void SetServerStatusLight(bool green, int ping = 0)
         {
             if (green)
