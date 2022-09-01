@@ -74,10 +74,7 @@ namespace FunGame.Core.Api.Util
                     w.Name.Contains(ClassName)
                 ).ToList();
                 if (Classes != null && Classes.Count > 0)
-                {
-                    Debug.WriteLine(Classes);
                     return Classes[0];
-                }
                 else return null;
             }
             else return null;
@@ -90,6 +87,8 @@ namespace FunGame.Core.Api.Util
             {
                 case (int)CommonEnums.InterfaceMethod.RemoteServerIP:
                     return RemoteServerIP;
+                case (int)CommonEnums.InterfaceMethod.ServerNotice:
+                    return ServerNotice;
             }
             return "";
         }
