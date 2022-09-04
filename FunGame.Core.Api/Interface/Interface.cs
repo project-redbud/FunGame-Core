@@ -33,6 +33,6 @@ namespace FunGame.Core.Api.Interface
 
     public interface ServerInterface
     {
-        public string ServerNotice();
+        public string DBConnection();
     }
 }

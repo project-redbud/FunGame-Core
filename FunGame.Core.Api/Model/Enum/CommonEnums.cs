@@ -90,7 +90,7 @@ namespace FunGame.Core.Api.Model.Enum
         public enum InterfaceMethod
         {
             RemoteServerIP = 1,
-            ServerNotice = 2
+            DBConnection = 2
         }
 
         #endregion

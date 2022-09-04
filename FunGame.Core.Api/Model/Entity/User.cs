@@ -20,8 +20,9 @@ namespace FunGame.Core.Api.Model.Entity
         public bool IsEnable { get; set; } = false;
         public int OnlineState { get; set; } = 0;
         public string Roomid { get; set; } = "";
-        public int Credits { get; set; } = 0;
-        public int Material { get; set; } = 0;
+        public decimal Credits { get; set; } = 0;
+        public decimal Materials { get; set; } = 0;
+        public decimal GameTime { get; set; } = 0;
         public UserStatistics? Statistics { get; set; } = null;
         public Stock? Stock { get; set; } = null;
 

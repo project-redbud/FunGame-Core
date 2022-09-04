@@ -231,7 +231,7 @@ namespace FunGame.Desktop.Utils
                             break;
                         case (int)SocketEnums.Type.HeartBeat:
                             buffer = new byte[2048];
-                            buffer = Config.DEFAULT_ENCODING.GetBytes(Convert.ToString(MakeMessage((int)SocketEnums.Type.HeartBeat, ">> 心跳检测")));
+                            buffer = Config.DEFAULT_ENCODING.GetBytes(Convert.ToString(MakeMessage((int)SocketEnums.Type.HeartBeat, "心跳检测")));
                             if (socket.Send(buffer) > 0)
                             {
                                 WaitHeartBeat = Task.Run(() =>

@@ -14,6 +14,7 @@ namespace FunGame.Core.Api.Model.Entity
         public decimal Price { get; set; }
         public char Key { get; set; }
         public bool Active { get; set; }
+        public bool Enable { get; set; }
         public Character? Character { get; set; } = null;
     }
 }
