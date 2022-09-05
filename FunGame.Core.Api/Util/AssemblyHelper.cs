@@ -29,6 +29,7 @@ namespace FunGame.Core.Api.Util
          */
         public const string RemoteServerIP = "RemoteServerIP";
         public const string DBConnection = "DBConnection";
+        public const string GetServerSettings = "GetServerSettings";
 
         /// <summary>
         /// 获取实现类类名（xxInterfaceImpl）
@@ -57,6 +58,7 @@ namespace FunGame.Core.Api.Util
             {
                 (int)CommonEnums.InterfaceMethod.RemoteServerIP => RemoteServerIP,
                 (int)CommonEnums.InterfaceMethod.DBConnection => DBConnection,
+                (int)CommonEnums.InterfaceMethod.GetServerSettings => GetServerSettings,
                 _ => "",
             };
         }
@@ -71,7 +73,7 @@ namespace FunGame.Core.Api.Util
          */
         public const string Implement = "Impl"; // 实现类的后缀
         public static string EXEDocPath = System.Environment.CurrentDirectory.ToString() + "\\"; // 程序目录
-        public static string PluginDocPath = System.Environment.CurrentDirectory + "\\plugins\\"; // 插件目录
+        public static string PluginDocPath = System.Environment.CurrentDirectory.ToString() + "\\plugins\\"; // 插件目录
 
         ////////////////////////////////////////////////////////////////////
         /////////////// * 下 面 是 工 具 类 实 现 * ////////////////

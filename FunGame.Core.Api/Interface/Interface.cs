@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -34,5 +35,6 @@ namespace FunGame.Core.Api.Interface
     public interface ServerInterface
     {
         public string DBConnection();
+        public Hashtable GetServerSettings();
     }
 }
