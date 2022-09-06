@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,7 +9,7 @@ namespace FunGame.Core.Api.Model.Enum
 {
     /// <summary>
     /// 这里存放框架实现相关的State Type Result Method
-    /// 添加FunGame.Core.Api接口和实现时，需要在这里同步添加：InterfaceType和InterfaceMethod
+    /// 添加FunGame.Core.Api接口和实现时，需要在这里同步添加：InterfaceType、InterfaceMethod
     /// </summary>
     public static class CommonEnums
     {
@@ -63,6 +64,23 @@ namespace FunGame.Core.Api.Model.Enum
             ServerInterface = 2
         }
 
+        public enum LightType
+        {
+            Green = 1,
+            Yellow = 2,
+            Red = 3
+        }
+
+        public enum SocketType
+        {
+            Unknown = 0,
+            GetNotice = 1,
+            Login = 2,
+            CheckLogin = 3,
+            Logout = 4,
+            HeartBeat = 5
+        }
+
         #endregion
 
         #region Result
@@ -96,5 +114,56 @@ namespace FunGame.Core.Api.Model.Enum
 
         #endregion
 
+        #region 工具方法
+
+        /// <summary>
+        /// 获取实现类类名
+        /// </summary>
+        /// <param name="Interface">接口代号</param>
+        /// <returns></returns>
+        public static string GetImplementClassName(int Interface)
+        {
+            foreach (string str in System.Enum.GetNames(typeof(InterfaceType)))
+            {
+                InterfaceType temp = (InterfaceType)System.Enum.Parse(typeof(InterfaceType), Interface.ToString(), true);
+                if (temp.ToString() == str)
+                    return temp + "Impl";
+            }
+            return "";
+        }
+
+        /// <summary>
+        /// 获取实现类的方法名
+        /// </summary>
+        /// <param name="Method">方法代号</param>
+        /// <returns></returns>
+        public static string GetImplementMethodName(int Method)
+        {
+            foreach (string str in System.Enum.GetNames(typeof(InterfaceMethod)))
+            {
+                InterfaceMethod temp = (InterfaceMethod)System.Enum.Parse(typeof(InterfaceMethod), Method.ToString(), true);
+                if (temp.ToString() == str)
+                    return temp.ToString();
+            }
+            return "";
+        }
+
+        /// <summary>
+        /// 获取Socket枚举名
+        /// </summary>
+        /// <param name="SocketType">Socket枚举</param>
+        /// <returns></returns>
+        public static string GetSocketTypeName(int SocketType)
+        {
+            foreach (string str in System.Enum.GetNames(typeof(SocketType)))
+            {
+                SocketType temp = (SocketType)System.Enum.Parse(typeof(SocketType), SocketType.ToString(), true);
+                if (temp.ToString() == str)
+                    return temp.ToString();
+            }
+            return "";
+        }
+
+        #endregion
     }
 }

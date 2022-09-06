@@ -8,6 +8,7 @@ using System.Text;
 using FunGame.Core.Api.Model.Entity;
 using FunGame.Desktop.Models.Config;
 using FunGame.Desktop.Utils;
+using FunGame.Core.Api.Model.Enum;
 using static FunGame.Core.Api.Model.Enum.CommonEnums;
 
 namespace FunGame.Desktop.UI
@@ -53,8 +54,7 @@ namespace FunGame.Desktop.UI
         {
             this.PresetText.SelectedIndex = 0; // 快捷消息初始选择
             SetRoomid("-1"); // 房间号初始化
-            WritelnGameInfo(); // 初始化消息队列
-            SetLoginUser(new object[] { new User("Mili") }); // Debug，初始化玩家名字
+            ShowFunGameInfo(); // 显示FunGame信息
             GetServerConnection(); // 开始连接服务器
         }
 
@@ -81,7 +81,7 @@ namespace FunGame.Desktop.UI
                             Usercfg.FunGame_isRetrying = false;
                             WebHelper_Action = (main) =>
                             {
-                                SetServerStatusLight(true);
+                                SetServerStatusLight((int)CommonEnums.LightType.Green);
                             };
                             if (InvokeRequired)
                                 BeginInvoke(WebHelper_Action, this);
@@ -94,7 +94,20 @@ namespace FunGame.Desktop.UI
                             Usercfg.FunGame_isRetrying = false;
                             WebHelper_Action = (main) =>
                             {
-                                SetServerStatusLight(true, GetServerPing(Config.SERVER_IPADRESS));
+                                SetServerStatusLight((int)CommonEnums.LightType.Green, GetServerPing(Config.SERVER_IPADRESS));
+                            };
+                            if (InvokeRequired)
+                                BeginInvoke(WebHelper_Action, this);
+                            else
+                                WebHelper_Action(this);
+                            Usercfg.FunGame_isConnected = true;
+                            NOW_CONNECTEDRETRY = 0;
+                            break;
+                        case Config.WebHelper_SetYellow:
+                            Usercfg.FunGame_isRetrying = false;
+                            WebHelper_Action = (main) =>
+                            {
+                                SetServerStatusLight((int)CommonEnums.LightType.Yellow);
                             };
                             if (InvokeRequired)
                                 BeginInvoke(WebHelper_Action, this);
@@ -106,7 +119,7 @@ namespace FunGame.Desktop.UI
                         case Config.WebHelper_SetRed:
                             WebHelper_Action = (main) =>
                             {
-                                SetServerStatusLight(false);
+                                SetServerStatusLight((int)CommonEnums.LightType.Red);
                             };
                             if (InvokeRequired)
                                 BeginInvoke(WebHelper_Action, this);
@@ -118,7 +131,7 @@ namespace FunGame.Desktop.UI
                             Usercfg.FunGame_isRetrying = false;
                             WebHelper_Action = (main) =>
                             {
-                                SetServerStatusLight(false);
+                                SetServerStatusLight((int)CommonEnums.LightType.Red);
                             };
                             if (InvokeRequired)
                                 BeginInvoke(WebHelper_Action, this);
@@ -147,7 +160,10 @@ namespace FunGame.Desktop.UI
                                 return LoginUser;
                             return null;
                         default:
-                            WritelnGameInfo(webHelper, msg);
+                            if (needTime)
+                                WritelnGameInfo(webHelper, GetNowShortTime() + msg);
+                            else
+                                WritelnGameInfo(webHelper, msg);
                             return null;
                     }
                 }
@@ -188,7 +204,7 @@ namespace FunGame.Desktop.UI
             }
             catch (Exception e)
             {
-                WritelnGameInfo(">> 查找可用的服务器失败，请重启FunGame！\n" + e.StackTrace);
+                WritelnGameInfo(">> 查找可用的服务器失败，请重启FunGame。\n" + e.StackTrace);
                 ShowMessage.ErrorMessage("查找可用的服务器失败！");
             }
         }
@@ -683,28 +699,44 @@ namespace FunGame.Desktop.UI
         /// <summary>
         /// 设置服务器连接状态指示灯
         /// </summary>
-        /// <param name="green"></param>
+        /// <param name="light"></param>
         /// <param name="ping"></param>
-        private void SetServerStatusLight(bool green, int ping = 0)
+        private void SetServerStatusLight(int light, int ping = 0)
         {
-            if (green)
+            switch(light)
             {
-                if (ping > 0)
-                {
-                    Connection.Text = "心跳延迟  " + ping + "ms";
-                    this.Light.Image = Properties.Resources.green;
-                }
-                else
-                {
+                case (int)CommonEnums.LightType.Green:
                     Connection.Text = "服务器连接成功";
                     this.Light.Image = Properties.Resources.green;
-                }
+                    break;
+                case (int)CommonEnums.LightType.Yellow:
+                    Connection.Text = "等待登录账号";
+                    this.Light.Image = Properties.Resources.yellow;
+                    break;
+                case (int)CommonEnums.LightType.Red:
+                default:
+                    Connection.Text = "服务器连接失败";
+                    this.Light.Image = Properties.Resources.red;
+                    break;
             }
-            else
+            if (ping > 0)
             {
-                Connection.Text = "服务器连接失败";
-                this.Light.Image = Properties.Resources.red;
+                Connection.Text = "心跳延迟  " + ping + "ms";
+                if (ping < 100)
+                    this.Light.Image = Properties.Resources.green;
+                else if (ping >= 100 && ping < 200)
+                    this.Light.Image = Properties.Resources.yellow;
+                else if (ping >= 200)
+                    this.Light.Image = Properties.Resources.red;
             }
+        }
+
+        /// <summary>
+        /// 显示FunGame信息
+        /// </summary>
+        private void ShowFunGameInfo()
+        {
+            WritelnGameInfo(FunGameEnums.GetVersion());
         }
 
         #endregion

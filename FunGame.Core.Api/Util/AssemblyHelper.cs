@@ -12,57 +12,10 @@ namespace FunGame.Core.Api.Util
 {
     /// <summary>
     /// 在FunGame.Core.Api中添加新接口和新实现时，需要：
-    /// 1、在这里定义类名和方法名
-    /// 2、在FunGame.Core.Api.Model.Enum.CommonEnums里同步添加InterfaceType和InterfaceMethod
-    /// 3、在GetClassName(int)、GetMethodName(int)中添加switch分支
+    /// 在FunGame.Core.Api.Model.Enum.CommonEnums里同步添加InterfaceType、InterfaceMethod
     /// </summary>
     public class AssemblyHelper
     {
-        /**
-         * 定义类名
-         */
-        public const string ClientConnectInterface = "ClientConnectInterface";
-        public const string ServerInterface = "ServerInterface";
-
-        /**
-         * 定义方法名
-         */
-        public const string RemoteServerIP = "RemoteServerIP";
-        public const string DBConnection = "DBConnection";
-        public const string GetServerSettings = "GetServerSettings";
-
-        /// <summary>
-        /// 获取实现类类名（xxInterfaceImpl）
-        /// </summary>
-        /// <param name="Interface">接口代号</param>
-        /// <returns></returns>
-        private string GetClassName(int Interface)
-        {
-            return Interface switch
-            {
-                (int)CommonEnums.InterfaceType.ClientConnectInterface => ClientConnectInterface + Implement,
-                (int)CommonEnums.InterfaceType.ServerInterface => ServerInterface + Implement,
-                _ => "",
-            };
-        }
-
-        /// <summary>
-        /// 获取方法名
-        /// </summary>
-        /// <param name="Method">方法代号</param>
-        /// <returns></returns>
-        private string GetMethodName(int Method)
-        {
-            // 通过AssemblyHelperType来获取方法名
-            return Method switch
-            {
-                (int)CommonEnums.InterfaceMethod.RemoteServerIP => RemoteServerIP,
-                (int)CommonEnums.InterfaceMethod.DBConnection => DBConnection,
-                (int)CommonEnums.InterfaceMethod.GetServerSettings => GetServerSettings,
-                _ => "",
-            };
-        }
-
         /**
          * 定义需要反射的DLL
          */
@@ -71,7 +24,6 @@ namespace FunGame.Core.Api.Util
         /**
          * 无需二次修改的
          */
-        public const string Implement = "Impl"; // 实现类的后缀
         public static string EXEDocPath = System.Environment.CurrentDirectory.ToString() + "\\"; // 程序目录
         public static string PluginDocPath = System.Environment.CurrentDirectory.ToString() + "\\plugins\\"; // 插件目录
 
@@ -95,7 +47,7 @@ namespace FunGame.Core.Api.Util
         private Type? GetFunGameCoreImplement(int Interface)
         {
             // 通过类名获取获取命名空间+类名称
-            string ClassName = GetClassName(Interface);
+            string ClassName = CommonEnums.GetImplementClassName(Interface);
             List<Type>? Classes = null;
             if (Assembly != null)
             {
@@ -120,7 +72,7 @@ namespace FunGame.Core.Api.Util
         {
             Assembly = Assembly.LoadFile(EXEDocPath + @FUNGAME_CORE + ".dll");
             Type = GetFunGameCoreImplement(Interface); // 通过类名获取获取命名空间+类名称
-            string MethodName = GetMethodName(Method); // 获取方法名
+            string MethodName = CommonEnums.GetImplementMethodName(Method); // 获取方法名
             if (Assembly != null && Type != null) this.Method = Type.GetMethod(MethodName); // 从Type中查找方法名
             else return null;
             Instance = Assembly.CreateInstance(Type.Namespace + "." + Type.Name);

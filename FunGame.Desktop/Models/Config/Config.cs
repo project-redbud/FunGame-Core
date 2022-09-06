@@ -27,6 +27,7 @@ namespace FunGame.Desktop.Models.Config
         public const string WebHelper_SetGreen = "-WebHelper .set green";
         public const string WebHelper_SetGreenAndPing = "-WebHelper .set greenandping";
         public const string WebHelper_SetRed = "-WebHelper .set red";
+        public const string WebHelper_SetYellow = "-WebHelper .set yellow";
         public const string WebHelper_Disconnected = "-WebHelper .disconnected";
         public const string WebHelper_GetUser = "-WebHelper .get user";
         public static int WebHelper_HeartBeatFaileds = 0;

@@ -145,7 +145,7 @@ namespace FunGame.Desktop.UI
             this.Light.Image = global::FunGame.Desktop.Properties.Resources.red;
             this.Light.Location = new System.Drawing.Point(777, 426);
             this.Light.Name = "Light";
-            this.Light.Size = new System.Drawing.Size(20, 20);
+            this.Light.Size = new System.Drawing.Size(18, 18);
             this.Light.TabIndex = 93;
             // 
             // SendTalkText
@@ -407,7 +407,7 @@ namespace FunGame.Desktop.UI
             this.NoticeText.ReadOnly = true;
             this.NoticeText.Size = new System.Drawing.Size(174, 86);
             this.NoticeText.TabIndex = 0;
-            this.NoticeText.Text = "这里展示公告";
+            this.NoticeText.Text = "";
             // 
             // InfoBox
             // 
@@ -452,7 +452,7 @@ namespace FunGame.Desktop.UI
             this.GameInfo.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
             this.GameInfo.Size = new System.Drawing.Size(452, 331);
             this.GameInfo.TabIndex = 1;
-            this.GameInfo.Text = "这里展示游戏信息，包括系统通知和游戏反馈";
+            this.GameInfo.Text = "";
             // 
             // QuitRoom
             // 
