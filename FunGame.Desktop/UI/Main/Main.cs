@@ -29,7 +29,6 @@ namespace FunGame.Desktop.UI
          * 定义全局对象
          */
         private Task? MatchFunGame = null; // 匹配线程
-        private User? LoginUser = null; // 登录的玩家对象
         private WebHelper? WebHelper = null; // WebHelper
 
         /**
@@ -52,7 +51,7 @@ namespace FunGame.Desktop.UI
         /// </summary>
         public void Init()
         {
-            this.PresetText.SelectedIndex = 0; // 快捷消息初始选择
+            SetButtonEnableIfLogon(false);
             SetRoomid("-1"); // 房间号初始化
             ShowFunGameInfo(); // 显示FunGame信息
             GetServerConnection(); // 开始连接服务器
@@ -69,7 +68,7 @@ namespace FunGame.Desktop.UI
         /// <param name="msg"></param>
         /// <param name="needTime"></param>
         /// <returns></returns>
-        public object? GetMessage(WebHelper webHelper, string? msg, bool needTime = false)
+        public object? GetMessage(WebHelper webHelper, string? msg, bool needTime = false, object[]? objs = null)
         {
             try
             {
@@ -82,6 +81,7 @@ namespace FunGame.Desktop.UI
                             WebHelper_Action = (main) =>
                             {
                                 SetServerStatusLight((int)CommonEnums.LightType.Green);
+                                SetButtonEnableIfLogon(true);
                             };
                             if (InvokeRequired)
                                 BeginInvoke(WebHelper_Action, this);
@@ -95,6 +95,7 @@ namespace FunGame.Desktop.UI
                             WebHelper_Action = (main) =>
                             {
                                 SetServerStatusLight((int)CommonEnums.LightType.Green, GetServerPing(Config.SERVER_IPADRESS));
+                                SetButtonEnableIfLogon(true);
                             };
                             if (InvokeRequired)
                                 BeginInvoke(WebHelper_Action, this);
@@ -108,6 +109,7 @@ namespace FunGame.Desktop.UI
                             WebHelper_Action = (main) =>
                             {
                                 SetServerStatusLight((int)CommonEnums.LightType.Yellow);
+                                SetButtonEnableIfLogon(false);
                             };
                             if (InvokeRequired)
                                 BeginInvoke(WebHelper_Action, this);
@@ -120,6 +122,7 @@ namespace FunGame.Desktop.UI
                             WebHelper_Action = (main) =>
                             {
                                 SetServerStatusLight((int)CommonEnums.LightType.Red);
+                                SetButtonEnableIfLogon(false);
                             };
                             if (InvokeRequired)
                                 BeginInvoke(WebHelper_Action, this);
@@ -132,6 +135,7 @@ namespace FunGame.Desktop.UI
                             WebHelper_Action = (main) =>
                             {
                                 SetServerStatusLight((int)CommonEnums.LightType.Red);
+                                SetButtonEnableIfLogon(false);
                             };
                             if (InvokeRequired)
                                 BeginInvoke(WebHelper_Action, this);
@@ -156,8 +160,17 @@ namespace FunGame.Desktop.UI
                             else
                                 throw new Exception("ERROR：无法连接至服务器，请检查你的网络连接。");
                         case Config.WebHelper_GetUser:
-                            if (LoginUser != null)
-                                return LoginUser;
+                            if (Usercfg.LoginUser != null)
+                                return Usercfg.LoginUser;
+                            return null;
+                        case Config.WebHelper_SetUser:
+                            if (objs != null && objs.Length > 1)
+                            {
+                                if (InvokeRequired)
+                                    BeginInvoke(SetLoginUser, objs);
+                                else
+                                    SetLoginUser(objs);
+                            }
                             return null;
                         default:
                             if (needTime)
@@ -307,12 +320,10 @@ namespace FunGame.Desktop.UI
         /// <param name="objs"></param>
         private void SetLoginUser(object[]? objs = null)
         {
-            if (objs != null && objs.Length > 0)
-            {
-                LoginUser = (User)objs[0];
-                Usercfg.LoginUserName = LoginUser.Userame;
-            }
-            LoginAccount();
+            if (InvokeRequired)
+                BeginInvoke(LoginAccount, objs);
+            else
+                LoginAccount(objs);
         }
 
         /// <summary>
@@ -398,6 +409,33 @@ namespace FunGame.Desktop.UI
             QuitRoom.Visible = true;
             CreateRoom.Visible = false;
             RoomSetting.Visible = true;
+        }
+
+        /// <summary>
+        /// 未登录和离线时，停用按钮
+        /// </summary>
+        private void SetButtonEnableIfLogon(bool isLogon)
+        {
+            if (isLogon)
+            {
+                PresetText.Items.Clear();
+                PresetText.Items.AddRange(Config.PresetOnineItems);
+            }
+            else
+            {
+                PresetText.Items.Clear();
+                PresetText.Items.AddRange(Config.PresetNoLoginItems);
+            }
+            this.PresetText.SelectedIndex = 0;
+            CheckMix.Enabled = isLogon;
+            CheckTeam.Enabled = isLogon;
+            CheckHasPass.Enabled = isLogon;
+            StartMatch.Enabled = isLogon;
+            CreateRoom.Enabled = isLogon;
+            RoomBox.Enabled = isLogon;
+            AccountSetting.Enabled = isLogon;
+            Stock.Enabled = isLogon;
+            Store.Enabled = isLogon;
         }
 
         /// <summary>
@@ -572,11 +610,18 @@ namespace FunGame.Desktop.UI
         /// <summary>
         /// 登录账号，显示登出按钮
         /// </summary>
-        private void LoginAccount()
+        private void LoginAccount(object[]? objs = null)
         {
+            if (objs != null && objs.Length > 0)
+            {
+                Usercfg.LoginUser = (User)objs[2];
+                Usercfg.LoginUserName = Usercfg.LoginUser.Userame;
+            }
             NowAccount.Text = "[ID] " + Usercfg.LoginUserName;
             Login.Visible = false;
             Logout.Visible = true;
+            SetServerStatusLight((int)LightType.Green);
+            ShowMessage.TipMessage("欢迎回来， " + Usercfg.LoginUserName + "！", "登录成功");
         }
 
         /// <summary>
@@ -617,7 +662,7 @@ namespace FunGame.Desktop.UI
             // 向消息队列发送消息
             if (!TalkText.Text.Trim().Equals("") && !TalkText.ForeColor.Equals(Color.DarkGray))
             {
-                WritelnGameInfo(GetNowShortTime() + " [ " + Usercfg.LoginUserName + " ] 说： " + TalkText.Text);
+                WritelnGameInfo(GetNowShortTime() + " [ " + (!Usercfg.LoginUserName.Equals("") ? Usercfg.LoginUserName : "尚未登录") + " ] 说： " + TalkText.Text);
                 SwitchTalkMessage(TalkText.Text);
                 TalkText.Text = "";
                 if (isLeave) TalkText_Leave(); // 回车不离开焦点
@@ -636,7 +681,7 @@ namespace FunGame.Desktop.UI
         /// <param name="msg"></param>
         private void SendTalkText_Click(string msg)
         {
-            WritelnGameInfo(GetNowShortTime() + " [ " + Usercfg.LoginUserName + " ] 说： " + msg);
+            WritelnGameInfo(GetNowShortTime() + " [ " + (!Usercfg.LoginUserName.Equals("") ? Usercfg.LoginUserName : "尚未登录") + " ] 说： " + msg);
         }
 
         /// <summary>
@@ -736,7 +781,7 @@ namespace FunGame.Desktop.UI
         /// </summary>
         private void ShowFunGameInfo()
         {
-            WritelnGameInfo(FunGameEnums.GetVersion());
+            WritelnGameInfo(FunGameEnums.GetInfo(Config.FunGameType));
         }
 
         #endregion
@@ -930,7 +975,10 @@ namespace FunGame.Desktop.UI
         /// <param name="e"></param>
         private void Login_Click(object sender, EventArgs e)
         {
-            LoginAccount();
+            if (WebHelper != null)
+                WebHelper.WebHelpMethod((int)CommonEnums.WebHelperMethod.Login);
+            else
+                ShowMessage.WarningMessage("请先连接服务器！");
         }
 
         /// <summary>

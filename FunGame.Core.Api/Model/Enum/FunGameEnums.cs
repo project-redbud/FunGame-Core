@@ -6,39 +6,41 @@ using System.Threading.Tasks;
 
 namespace FunGame.Core.Api.Model.Enum
 {
-    /// <summary>
-    /// 用于记录版本号和更新日志
-    /// </summary>
     public static class FunGameEnums
     {
-        public const string FunGame_Core = "FunGame Core";
-        public const string FunGame_Core_Api = "FunGame Core Api";
-        public const string FunGame_Console = "FunGame Console";
-        public const string FunGame_Desktop = "FunGame Desktop";
-        public const string FunGame_Server = "FunGame Server";
-        
-        public const int FirstVersion = 1;
-        public const int SecondVersion = 0;
-        public const int ThirdVersion = 0;
+        private const string FunGame_Core = "FunGame Core";
+        private const string FunGame_Core_Api = "FunGame Core Api";
+        private const string FunGame_Console = "FunGame Console";
+        private const string FunGame_Desktop = "FunGame Desktop";
+        private const string FunGame_Server = "FunGame Server Console";
 
-        public enum Patch
+        private const string FunGame_Version = "v1.0";
+        private const string FunGame_VersionPatch = "";
+
+        public enum FunGame
         {
-            Latest = 20221001,
-            Patch20220906 = 20220906
+            FunGame_Core,
+            FunGame_Core_Api,
+            FunGame_Console,
+            FunGame_Desktop,
+            FunGame_Server
         }
 
-        public enum History
+        public static string GetInfo(FunGame FunGameType)
         {
-            Latest = 20221001,
-            R20220906 = 20220906
-        }
-
-        public static string GetVersion()
-        {
-            return "=/=\\=/=\\=/=\\=/= > FunGame版本信息 < =\\=/=\\=/=\\=/=\\=" + "\n" +
-                FunGame_Core + " -> v" + FirstVersion + "." + SecondVersion + ((int)Patch.Latest == (int)History.Latest ? " Patch" + (int)Patch.Latest : "") + "\n" +
-                FunGame_Core_Api + " -> v" + FirstVersion + "." + SecondVersion + ((int)Patch.Latest == (int)History.Latest ? " Patch" + (int)Patch.Latest : "") + "\n" +
-                FunGame_Desktop + " -> v" + FirstVersion + "." + SecondVersion + ((int)Patch.Latest == (int)History.Latest ? " Patch" + (int)Patch.Latest : "");
+            string type = FunGameType switch
+            {
+                FunGame.FunGame_Core => FunGame_Core,
+                FunGame.FunGame_Core_Api => FunGame_Core_Api,
+                FunGame.FunGame_Console => FunGame_Console,
+                FunGame.FunGame_Desktop => FunGame_Desktop,
+                FunGame.FunGame_Server => FunGame_Server,
+                _ => ""
+            };
+            if (type.Equals(FunGame_Desktop))
+                return type + " [ 版本: " + FunGame_Version + FunGame_VersionPatch + " ]\n©2022 Mili.cyou. 保留所有权利\n";
+            else
+                return type + " [ 版本: " + FunGame_Version + FunGame_VersionPatch + " ]\n(C)2022 Mili.cyou. 保留所有权利\n";
         }
 
         /**

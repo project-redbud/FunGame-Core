@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
+using FunGame.Core.Api.Model.Enum;
 using FunGame.Core.Api.Util;
 
 namespace FunGame.Desktop.Models.Config
@@ -13,10 +14,7 @@ namespace FunGame.Desktop.Models.Config
         /**
          * Game Configs
          */
-        public static string VERSION = "";
-        public static string VERSION_TYPE = "";
-        public static string VERSION_PATCH = "";
-        public static string VERSION_DATE = "";
+        public static FunGameEnums.FunGame FunGameType = FunGameEnums.FunGame.FunGame_Desktop;
 
         public static INIHelper DefaultINIHelper = new();
         public static AssemblyHelper DefaultAssemblyHelper = new();
@@ -30,6 +28,7 @@ namespace FunGame.Desktop.Models.Config
         public const string WebHelper_SetYellow = "-WebHelper .set yellow";
         public const string WebHelper_Disconnected = "-WebHelper .disconnected";
         public const string WebHelper_GetUser = "-WebHelper .get user";
+        public const string WebHelper_SetUser = "-WebHelper .set user";
         public static int WebHelper_HeartBeatFaileds = 0;
 
         /**
@@ -58,7 +57,7 @@ namespace FunGame.Desktop.Models.Config
         public const string FunGame_Retry = "重新连接";
         public const string FunGame_AutoRetryOn = "开启自动重连";
         public const string FunGame_AutoRetryOff = "关闭自动重连";
-        public static readonly object[] PresetItems =
+        public static readonly object[] PresetOnineItems =
         {
             FunGame_PresetMessage,
             FunGame_SignIn,
@@ -72,6 +71,12 @@ namespace FunGame.Desktop.Models.Config
             FunGame_AutoRetryOn,
             FunGame_AutoRetryOff
         };
-        public const string FunGame_ConnectByDebug = "连接到Debug";
+        public static readonly object[] PresetNoLoginItems =
+        {
+            FunGame_PresetMessage,
+            FunGame_Retry,
+            FunGame_AutoRetryOn,
+            FunGame_AutoRetryOff
+        };
     }
 }

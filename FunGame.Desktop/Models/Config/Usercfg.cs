@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FunGame.Core.Api.Model.Entity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,8 @@ namespace FunGame.Desktop.Models.Config
         /**
          * 玩家设定内容
          */
+        public static User? LoginUser = null; // 已登录的用户
+        public static string LoginUserName = ""; // 已登录用户名
         public static bool Match_Mix = false; // 混战模式选项
         public static bool Match_Team = false; // 团队模式选项
         public static bool Match_HasPass = false; // 密码房间选项
@@ -19,6 +22,5 @@ namespace FunGame.Desktop.Models.Config
         public static bool FunGame_isRetrying = false; // 是否正在重连
         public static bool FunGame_isAutoRetry = true; // 是否自动重连
         public static string FunGame_roomid = "-1"; // 房间号
-        public static string LoginUserName = ""; // 已登录用户名
     }
 }

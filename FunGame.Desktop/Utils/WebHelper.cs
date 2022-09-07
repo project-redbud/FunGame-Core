@@ -34,7 +34,7 @@ namespace FunGame.Desktop.Utils
         /// 选择WebHelp分支方法
         /// </summary>
         /// <param name="i">分支方法ID</param>
-        public void WebHelpMethod(int i)
+        public bool WebHelpMethod(int i)
         {
             switch (i)
             {
@@ -47,7 +47,16 @@ namespace FunGame.Desktop.Utils
                 case (int)CommonEnums.WebHelperMethod.StartWebHelper:
                     StartWebHelper();
                     break;
+                case (int)CommonEnums.WebHelperMethod.Login:
+                    if (client != null)
+                    {
+                        Send((int)CommonEnums.SocketType.CheckLogin, new object[] { Main, client, new User("Mili") });
+                        return true;
+                    }
+                    else
+                        return false;
             }
+            return true;
         }
 
         /// <summary>
@@ -148,6 +157,7 @@ namespace FunGame.Desktop.Utils
                             case (int)CommonEnums.SocketType.Login:
                                 break;
                             case (int)CommonEnums.SocketType.CheckLogin:
+                                Main.GetMessage(this, Config.WebHelper_SetUser, true, objs);
                                 StartWebHelper(); // 开始创建TCP流
                                 return true;
                             case (int)CommonEnums.SocketType.Logout:
@@ -198,50 +208,38 @@ namespace FunGame.Desktop.Utils
                 if (socket != null)
                 {
                     string msg = "";
-                    byte[] buffer;
-                    int length;
+                    CommonEnums.SocketType type = (CommonEnums.SocketType)i;
                     // 发送消息给服务器端
-                    switch (i)
+                    switch (type)
                     {
-                        case (int)CommonEnums.SocketType.GetNotice:
-                            msg = "获取公告";
-                            buffer = new byte[2048];
-                            buffer = Config.DEFAULT_ENCODING.GetBytes(MakeMessage((int)CommonEnums.SocketType.GetNotice, msg));
-                            length = socket.Send(buffer);
-                            if (length > 0)
+                        case CommonEnums.SocketType.GetNotice:
+                            msg = MakeMessage(type, "获取公告");
+                            if (Send(msg, socket) > 0)
                             {
                                 return Read(objs);
                             }
+                            else
+                                throw new Exception("ERROR：消息未送达服务器，与服务器连接可能丢失。");
+                        case CommonEnums.SocketType.Login:
                             break;
-                        case (int)CommonEnums.SocketType.Login:
-                            break;
-                        case (int)CommonEnums.SocketType.CheckLogin:
+                        case CommonEnums.SocketType.CheckLogin:
                             User user;
                             if (objs != null && objs.Length > 2)
                             {
                                 user = (User)objs[2];
-                                msg = user.Userame;
+                                msg = MakeMessage(type, user.Userame);
                             }
                             else
                             {
                                 Usercfg.FunGame_isAutoRetry = false;
                                 throw new Exception("ERROR: 请登录账号。");
                             }
-                            buffer = new byte[2048];
-                            buffer = Config.DEFAULT_ENCODING.GetBytes(MakeMessage((int)CommonEnums.SocketType.CheckLogin, msg));
-                            length = socket.Send(buffer);
-                            if (length > 0)
-                            {
-                                return Read(objs);
-                            }
-                            else
-                                throw new Exception("ERROR：消息未送达服务器，与服务器连接可能丢失。");
-                        case (int)CommonEnums.SocketType.Logout:
                             break;
-                        case (int)CommonEnums.SocketType.HeartBeat:
-                            buffer = new byte[2048];
-                            buffer = Config.DEFAULT_ENCODING.GetBytes(Convert.ToString(MakeMessage((int)CommonEnums.SocketType.HeartBeat, "心跳检测")));
-                            if (socket.Send(buffer) > 0)
+                        case CommonEnums.SocketType.Logout:
+                            break;
+                        case CommonEnums.SocketType.HeartBeat:
+                            msg = MakeMessage(type, "心跳检测");
+                            if (Send(msg, socket) > 0)
                             {
                                 WaitHeartBeat = Task.Run(() =>
                                 {
@@ -251,8 +249,16 @@ namespace FunGame.Desktop.Utils
                                 return true;
                             }
                             AddHeartBeatFaileds(main);
-                            break;
+                            return false;
+                        default:
+                            return false;
                     }
+                    if (Send(msg, socket) > 0)
+                    {
+                        return Read(objs);
+                    }
+                    else
+                        throw new Exception("ERROR：消息未送达服务器，与服务器连接可能丢失。");
                 }
                 else
                 {
@@ -265,6 +271,13 @@ namespace FunGame.Desktop.Utils
                 CatchException(main, e, false);
             }
             return false;
+        }
+
+        private int Send(string msg, Socket socket)
+        {
+            byte[] buffer = Config.DEFAULT_ENCODING.GetBytes(msg);
+            int length = socket.Send(buffer);
+            return length;
         }
 
         private void CatchException(Main main, Exception e, bool isDisconnected)
@@ -307,9 +320,9 @@ namespace FunGame.Desktop.Utils
             return msg[index..];
         }
 
-        private string MakeMessage(int type, string msg)
+        private string MakeMessage(CommonEnums.SocketType type, string msg)
         {
-            return type + ";" + msg;
+            return (int)type + ";" + msg;
         }
 
         private void Close()

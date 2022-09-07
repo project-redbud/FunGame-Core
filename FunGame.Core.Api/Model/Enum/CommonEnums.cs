@@ -17,33 +17,33 @@ namespace FunGame.Core.Api.Model.Enum
 
         public enum StartMatch_State
         {
-            Matching = 1,
-            Success = 2,
-            Enable = 3,
-            Cancel = 4
+            Matching,
+            Success,
+            Enable,
+            Cancel
         }
 
         public enum CreateRoom_State
         {
-            Creating = 1,
-            Success = 2
+            Creating,
+            Success
         }
 
         public enum RoomState
         {
-            Created = 1,
-            Gaming = 2,
-            Close = 3,
-            Complete = 4
+            Created,
+            Gaming,
+            Close,
+            Complete
         }
 
         public enum OnlineState
         {
-            Offline = 1,
-            Online = 2,
-            Matching = 3,
-            InRoom = 4,
-            Gaming = 5
+            Offline,
+            Online,
+            Matching,
+            InRoom,
+            Gaming
         }
 
         #endregion
@@ -52,33 +52,33 @@ namespace FunGame.Core.Api.Model.Enum
 
         public enum RoomType
         {
-            Mix = 1,
-            Team = 2,
-            MixHasPass = 3,
-            TeamHasPass = 4
+            Mix,
+            Team,
+            MixHasPass,
+            TeamHasPass
         }
 
         public enum InterfaceType
         {
-            ClientConnectInterface = 1,
-            ServerInterface = 2
+            ClientConnectInterface,
+            ServerInterface
         }
 
         public enum LightType
         {
-            Green = 1,
-            Yellow = 2,
-            Red = 3
+            Green,
+            Yellow,
+            Red
         }
 
         public enum SocketType
         {
-            Unknown = 0,
-            GetNotice = 1,
-            Login = 2,
-            CheckLogin = 3,
-            Logout = 4,
-            HeartBeat = 5
+            Unknown,
+            GetNotice,
+            Login,
+            CheckLogin,
+            Logout,
+            HeartBeat
         }
 
         #endregion
@@ -87,11 +87,11 @@ namespace FunGame.Core.Api.Model.Enum
 
         public enum MessageResult
         {
-            OK = 1,
-            Cancel = 2,
-            Yes = 3,
-            No = 4,
-            Retry = 5
+            OK,
+            Cancel,
+            Yes,
+            No,
+            Retry
         }
 
         #endregion
@@ -100,16 +100,17 @@ namespace FunGame.Core.Api.Model.Enum
 
         public enum WebHelperMethod
         {
-            CreateSocket = 1,
-            CloseSocket = 2,
-            StartWebHelper = 3,
+            CreateSocket,
+            CloseSocket,
+            StartWebHelper,
+            Login
         }
 
         public enum InterfaceMethod
         {
-            RemoteServerIP = 1,
-            DBConnection = 2,
-            GetServerSettings = 3
+            RemoteServerIP,
+            DBConnection,
+            GetServerSettings
         }
 
         #endregion
