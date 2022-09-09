@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using FunGame.Core.Api.Model.Enum;
+using static FunGame.Core.Api.Model.Enum.CommonEnums;
 
 namespace FunGame.Desktop.Models.Component
 {
@@ -17,34 +18,26 @@ namespace FunGame.Desktop.Models.Component
         private static int MessageResult = -1;
         private static ShowMessage? s = null;
 
-        private ShowMessage()
+        private ShowMessage(string title)
         {
             InitializeComponent();
             Opacity = 0.85;
             Title.MouseDown += new MouseEventHandler(Title_MouseDown);
             Title.MouseMove += new MouseEventHandler(Title_MouseMove);
+            this.Text = title;
         }
 
         private void SetButtonResult(string text)
         {
-            switch (text)
+            MessageResult = text switch
             {
-                case "确定":
-                    MessageResult = (int)CommonEnums.MessageResult.OK;
-                    break;
-                case "取消":
-                    MessageResult = (int)CommonEnums.MessageResult.Cancel;
-                    break;
-                case "是":
-                    MessageResult = (int)CommonEnums.MessageResult.Yes;
-                    break;
-                case "否":
-                    MessageResult = (int)CommonEnums.MessageResult.No;
-                    break;
-                case "重试":
-                    MessageResult = (int)CommonEnums.MessageResult.Retry;
-                    break;
-            }
+                "确定" => (int)CommonEnums.MessageResult.OK,
+                "取消" => (int)CommonEnums.MessageResult.Cancel,
+                "是" => (int)CommonEnums.MessageResult.Yes,
+                "否" => (int)CommonEnums.MessageResult.No,
+                "重试" => (int)CommonEnums.MessageResult.Retry,
+                _ => -1
+            };
             Dispose();
         }
 
@@ -72,7 +65,7 @@ namespace FunGame.Desktop.Models.Component
 
         public static int Message(string msg, string title)
         {
-            s = new ShowMessage();
+            s = new ShowMessage(title != null && !title.Equals("") ? title : msg);
             s.Title.Text = title;
             s.MsgText.Text = msg;
             s.LeftButton.Visible = false;
@@ -85,7 +78,7 @@ namespace FunGame.Desktop.Models.Component
 
         public static int TipMessage(string msg, string? title = null)
         {
-            s = new ShowMessage();
+            s = new ShowMessage(title != null && !title.Equals("") ? title : msg);
             if (title != null) s.Title.Text = title;
             else s.Title.Text = "提示";
             s.MsgText.Text = msg;
@@ -99,7 +92,7 @@ namespace FunGame.Desktop.Models.Component
 
         public static int WarningMessage(string msg, string? title = null)
         {
-            s = new ShowMessage();
+            s = new ShowMessage(title != null && !title.Equals("") ? title : msg);
             if (title != null) s.Title.Text = title;
             else s.Title.Text = "警告";
             s.MsgText.Text = msg;
@@ -113,7 +106,7 @@ namespace FunGame.Desktop.Models.Component
 
         public static int ErrorMessage(string msg, string? title = null)
         {
-            s = new ShowMessage();
+            s = new ShowMessage(title != null && !title.Equals("") ? title : msg);
             if (title != null) s.Title.Text = title;
             else s.Title.Text = "错误";
             s.MsgText.Text = msg;
@@ -127,7 +120,7 @@ namespace FunGame.Desktop.Models.Component
 
         public static int YesNoMessage(string msg, string title)
         {
-            s = new ShowMessage();
+            s = new ShowMessage(title != null && !title.Equals("") ? title : msg);
             s.Title.Text = title;
             s.MsgText.Text = msg;
             s.LeftButton.Visible = true;
@@ -141,7 +134,7 @@ namespace FunGame.Desktop.Models.Component
 
         public static int OKCancelMessage(string msg, string title)
         {
-            s = new ShowMessage();
+            s = new ShowMessage(title != null && !title.Equals("") ? title : msg);
             s.Title.Text = title;
             s.MsgText.Text = msg;
             s.LeftButton.Visible = true;
@@ -155,7 +148,7 @@ namespace FunGame.Desktop.Models.Component
 
         public static int RetryCancelMessage(string msg, string title)
         {
-            s = new ShowMessage();
+            s = new ShowMessage(title != null && !title.Equals("") ? title : msg);
             s.Title.Text = title;
             s.MsgText.Text = msg;
             s.LeftButton.Visible = true;

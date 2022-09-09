@@ -345,12 +345,16 @@ namespace FunGame.Desktop.UI
         {
             if (webHelper != null && msg.Trim() != "")
             {
-                Invoke(new Action(() =>
+                Action tempAction = new Action(() =>
                 {
                     GameInfo.Text += msg + "\n";
                     GameInfo.SelectionStart = GameInfo.Text.Length - 1;
                     GameInfo.ScrollToCaret();
-                }));
+                });
+                if (this.InvokeRequired)
+                    Invoke(tempAction);
+                else
+                    tempAction();
             }
         }
 
@@ -621,7 +625,10 @@ namespace FunGame.Desktop.UI
             Login.Visible = false;
             Logout.Visible = true;
             SetServerStatusLight((int)LightType.Green);
-            ShowMessage.TipMessage("欢迎回来， " + Usercfg.LoginUserName + "！", "登录成功");
+            Task.Run(() =>
+            { // DEBUG
+                ShowMessage.TipMessage("欢迎回来， " + Usercfg.LoginUserName + "！", "登录成功");
+            });
         }
 
         /// <summary>

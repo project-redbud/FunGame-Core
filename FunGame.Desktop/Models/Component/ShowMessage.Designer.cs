@@ -143,6 +143,7 @@
             this.ClientSize = new System.Drawing.Size(235, 170);
             this.Controls.Add(this.TransparentRect);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "ShowMessage";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Show";

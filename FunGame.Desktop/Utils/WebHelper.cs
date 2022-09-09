@@ -157,7 +157,8 @@ namespace FunGame.Desktop.Utils
                             case (int)CommonEnums.SocketType.Login:
                                 break;
                             case (int)CommonEnums.SocketType.CheckLogin:
-                                Main.GetMessage(this, Config.WebHelper_SetUser, true, objs);
+                                Main.GetMessage(this, Config.WebHelper_SetUser, false, objs);
+                                Main.GetMessage(this, read, true);
                                 StartWebHelper(); // 开始创建TCP流
                                 return true;
                             case (int)CommonEnums.SocketType.Logout:
