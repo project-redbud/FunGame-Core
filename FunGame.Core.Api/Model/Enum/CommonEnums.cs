@@ -58,6 +58,14 @@ namespace FunGame.Core.Api.Model.Enum
             TeamHasPass
         }
 
+        public enum MessageButtonType
+        {
+            OK,
+            OKCancel,
+            YesNo,
+            RetryCancel
+        }
+
         public enum InterfaceType
         {
             ClientConnectInterface,

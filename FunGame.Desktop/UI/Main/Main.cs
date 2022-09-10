@@ -456,7 +456,7 @@ namespace FunGame.Desktop.UI
                     {
                         if (Usercfg.FunGame_roomid.Equals("-1"))
                         {
-                            if (ShowMessage.YesNoMessage("已找到房间 -> [ " + roomid + " ]\n是否加入？", "已找到房间") == (int)MessageResult.Yes)
+                            if (ShowMessage.YesNoMessage("已找到房间 -> [ " + roomid + " ]\n是否加入？", "已找到房间") == MessageResult.Yes)
                             {
                                 SetRoomid(roomid);
                                 InRoom();
@@ -484,7 +484,7 @@ namespace FunGame.Desktop.UI
                 {
                     if (Usercfg.FunGame_roomid.Equals("-1"))
                     {
-                        if (ShowMessage.YesNoMessage("已找到房间 -> [ " + roomid + " ]\n是否加入？", "已找到房间") == (int)MessageResult.Yes)
+                        if (ShowMessage.YesNoMessage("已找到房间 -> [ " + roomid + " ]\n是否加入？", "已找到房间") == MessageResult.Yes)
                         {
                             SetRoomid(roomid);
                             InRoom();
@@ -627,7 +627,7 @@ namespace FunGame.Desktop.UI
             SetServerStatusLight((int)LightType.Green);
             Task.Run(() =>
             { // DEBUG
-                ShowMessage.TipMessage("欢迎回来， " + Usercfg.LoginUserName + "！", "登录成功");
+                ShowMessage.TipMessage("欢迎回来， " + Usercfg.LoginUserName + "！", "登录成功", 5000);
             });
         }
 

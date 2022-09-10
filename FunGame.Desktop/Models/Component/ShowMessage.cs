@@ -15,33 +15,147 @@ namespace FunGame.Desktop.Models.Component
     public partial class ShowMessage : Form
     {
         private int Location_x, Location_y;
-        private static int MessageResult = -1;
-        private static ShowMessage? s = null;
+        private MessageResult MessageResult = MessageResult.Cancel;
+        private int AutoClose = 0;
 
-        private ShowMessage(string title)
+        private const string TITLE_TIP = "提示";
+        private const string TITLE_WARNING = "警告";
+        private const string TITLE_ERROR = "错误";
+        private const string BUTTON_OK = "确定";
+        private const string BUTTON_CANCEL = "取消";
+        private const string BUTTON_YES = "是";
+        private const string BUTTON_NO = "否";
+        private const string BUTTON_RETRY = "重试";
+
+        /// <summary>
+        /// 构造方法
+        /// </summary>
+        /// /// <param name="objs">参数数组，按下面的注释传参，不要乱传</param>
+        private ShowMessage(params object[] objs)
         {
             InitializeComponent();
-            Opacity = 0.85;
+            Opacity = 0.85; // 透明度
             Title.MouseDown += new MouseEventHandler(Title_MouseDown);
             Title.MouseMove += new MouseEventHandler(Title_MouseMove);
-            this.Text = title;
+            if (objs != null)
+            {
+                /**
+                 * objs:
+                 * 0 = title
+                 * 1 = msg
+                 * 2 = autoclose(msecond)
+                 * 3 = button type
+                 * 4 = mid text
+                 * 5 = left text
+                 * 6 = right text
+                 */
+                int length = objs.Length;
+                if (length > 0 && objs[0] != null)
+                {
+                    Title.Text = (string)objs[0];
+                }
+                if (length > 1 && objs[1] != null)
+                {
+                    MsgText.Text = (string)objs[1];
+                }
+                if (length > 2 && objs[2] != null)
+                {
+                    AutoClose = (int)objs[2];
+                }
+                if (length > 3 && objs[3] != null)
+                {
+                    MessageButtonType type = (MessageButtonType)objs[3];
+                    switch (type)
+                    {
+                        case MessageButtonType.OK:
+                            MidButton.Text = BUTTON_OK;
+                            LeftButton.Visible = false;
+                            RightButton.Visible = false;
+                            MidButton.Visible = true;
+                            break;
+                        case MessageButtonType.OKCancel:
+                            LeftButton.Text = BUTTON_OK;
+                            RightButton.Text = BUTTON_CANCEL;
+                            LeftButton.Visible = true;
+                            RightButton.Visible = true;
+                            MidButton.Visible = false;
+                            break;
+                        case MessageButtonType.YesNo:
+                            LeftButton.Text = BUTTON_YES;
+                            RightButton.Text = BUTTON_NO;
+                            LeftButton.Visible = true;
+                            RightButton.Visible = true;
+                            MidButton.Visible = false;
+                            break;
+                        case MessageButtonType.RetryCancel:
+                            LeftButton.Text = BUTTON_RETRY;
+                            RightButton.Text = BUTTON_CANCEL;
+                            LeftButton.Visible = true;
+                            RightButton.Visible = true;
+                            MidButton.Visible = false;
+                            break;
+                    }
+                    if (length > 4 && objs[4] != null) MidButton.Text = (string)objs[4];
+                    if (length > 5 && objs[5] != null) LeftButton.Text = (string)objs[5];
+                    if (length > 6 && objs[6] != null) RightButton.Text = (string)objs[6];
+                }
+            }
+            else
+            {
+                MessageResult = MessageResult.Cancel;
+                Dispose();
+            }
+            if (Title.Text == "Message") Text = MsgText.Text; // 窗体默认标题
+            if (AutoClose > 0)
+            {
+                Action action = new(() =>
+                {
+                    string msg = MsgText.Text;
+                    MsgText.Text = msg + "\n[ " + AutoClose/1000 + " 秒后自动关闭 ]";
+                    while (AutoClose > 0)
+                    {
+                        Thread.Sleep(1000);
+                        AutoClose -= 1000;
+                        MsgText.Text = msg + "\n[ " + AutoClose / 1000 + " 秒后自动关闭 ]";
+                        BringToFront();
+                    }
+                    MessageResult = MessageResult.OK;
+                    Dispose();
+                });
+                Task.Run(() =>
+                {
+                    if (InvokeRequired)
+                        BeginInvoke(action);
+                    else
+                        action();
+                });
+            }
+            ShowDialog();
         }
 
+        /// <summary>
+        /// 设置窗体按钮返回值
+        /// </summary>
+        /// <param name="text"></param>
         private void SetButtonResult(string text)
         {
             MessageResult = text switch
             {
-                "确定" => (int)CommonEnums.MessageResult.OK,
-                "取消" => (int)CommonEnums.MessageResult.Cancel,
-                "是" => (int)CommonEnums.MessageResult.Yes,
-                "否" => (int)CommonEnums.MessageResult.No,
-                "重试" => (int)CommonEnums.MessageResult.Retry,
-                _ => -1
+                BUTTON_OK => MessageResult.OK,
+                BUTTON_CANCEL => MessageResult.Cancel,
+                BUTTON_YES => MessageResult.Yes,
+                BUTTON_NO => MessageResult.No,
+                BUTTON_RETRY => MessageResult.Retry,
+                _ => MessageResult.Cancel
             };
             Dispose();
         }
 
-        // 设置窗口可拖动
+        /// <summary>
+        /// 设置窗口可拖动
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Title_MouseDown(object? sender, MouseEventArgs e)
         {
             //判断是否为鼠标左键
@@ -53,6 +167,11 @@ namespace FunGame.Desktop.Models.Component
             }
         }
 
+        /// <summary>
+        /// 设置窗口移动时的偏移距离
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Title_MouseMove(object? sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
@@ -63,101 +182,53 @@ namespace FunGame.Desktop.Models.Component
             }
         }
 
-        public static int Message(string msg, string title)
+        public static MessageResult Message(string msg, string title, int autoclose = 0)
         {
-            s = new ShowMessage(title != null && !title.Equals("") ? title : msg);
-            s.Title.Text = title;
-            s.MsgText.Text = msg;
-            s.LeftButton.Visible = false;
-            s.RightButton.Visible = false;
-            s.MidButton.Visible = true;
-            s.MidButton.Text = "确定";
-            s.ShowDialog();
-            return MessageResult;
+            object[] objs = { title, msg, autoclose, MessageButtonType.OK, BUTTON_OK};
+            MessageResult result = new ShowMessage(objs).MessageResult;
+            return result;
         }
 
-        public static int TipMessage(string msg, string? title = null)
+        public static MessageResult TipMessage(string msg, string? title = null, int autoclose = 0)
         {
-            s = new ShowMessage(title != null && !title.Equals("") ? title : msg);
-            if (title != null) s.Title.Text = title;
-            else s.Title.Text = "提示";
-            s.MsgText.Text = msg;
-            s.LeftButton.Visible = false;
-            s.RightButton.Visible = false;
-            s.MidButton.Visible = true;
-            s.MidButton.Text = "确定";
-            s.ShowDialog();
-            return MessageResult;
+            object[] objs = { (title != null) ? title : TITLE_TIP, msg, autoclose, MessageButtonType.OK, BUTTON_OK };
+            MessageResult result = new ShowMessage(objs).MessageResult;
+            return result;
         }
 
-        public static int WarningMessage(string msg, string? title = null)
+        public static MessageResult WarningMessage(string msg, string? title = null, int autoclose = 0)
         {
-            s = new ShowMessage(title != null && !title.Equals("") ? title : msg);
-            if (title != null) s.Title.Text = title;
-            else s.Title.Text = "警告";
-            s.MsgText.Text = msg;
-            s.LeftButton.Visible = false;
-            s.RightButton.Visible = false;
-            s.MidButton.Visible = true;
-            s.MidButton.Text = "确定";
-            s.ShowDialog();
-            return MessageResult;
+            object[] objs = { (title != null) ? title : TITLE_WARNING, msg, autoclose, MessageButtonType.OK, BUTTON_OK };
+            MessageResult result = new ShowMessage(objs).MessageResult;
+            return result;
         }
 
-        public static int ErrorMessage(string msg, string? title = null)
+        public static MessageResult ErrorMessage(string msg, string? title = null, int autoclose = 0)
         {
-            s = new ShowMessage(title != null && !title.Equals("") ? title : msg);
-            if (title != null) s.Title.Text = title;
-            else s.Title.Text = "错误";
-            s.MsgText.Text = msg;
-            s.LeftButton.Visible = false;
-            s.RightButton.Visible = false;
-            s.MidButton.Visible = true;
-            s.MidButton.Text = "确定";
-            s.ShowDialog();
-            return MessageResult;
+            object[] objs = { (title != null) ? title : TITLE_ERROR, msg, autoclose, MessageButtonType.OK, BUTTON_OK };
+            MessageResult result = new ShowMessage(objs).MessageResult;
+            return result;
         }
 
-        public static int YesNoMessage(string msg, string title)
+        public static MessageResult YesNoMessage(string msg, string title)
         {
-            s = new ShowMessage(title != null && !title.Equals("") ? title : msg);
-            s.Title.Text = title;
-            s.MsgText.Text = msg;
-            s.LeftButton.Visible = true;
-            s.RightButton.Visible = true;
-            s.MidButton.Visible = false;
-            s.LeftButton.Text = "是";
-            s.RightButton.Text = "否";
-            s.ShowDialog();
-            return MessageResult;
+            object[] objs = { title, msg, 0, MessageButtonType.YesNo, BUTTON_CANCEL, BUTTON_YES, BUTTON_NO };
+            MessageResult result = new ShowMessage(objs).MessageResult;
+            return result;
         }
 
-        public static int OKCancelMessage(string msg, string title)
+        public static MessageResult OKCancelMessage(string msg, string title)
         {
-            s = new ShowMessage(title != null && !title.Equals("") ? title : msg);
-            s.Title.Text = title;
-            s.MsgText.Text = msg;
-            s.LeftButton.Visible = true;
-            s.RightButton.Visible = true;
-            s.MidButton.Visible = false;
-            s.LeftButton.Text = "确定";
-            s.RightButton.Text = "取消";
-            s.ShowDialog();
-            return MessageResult;
+            object[] objs = { title, msg, 0, MessageButtonType.OKCancel, BUTTON_CANCEL, BUTTON_OK, BUTTON_CANCEL };
+            MessageResult result = new ShowMessage(objs).MessageResult;
+            return result;
         }
 
-        public static int RetryCancelMessage(string msg, string title)
+        public static MessageResult RetryCancelMessage(string msg, string title)
         {
-            s = new ShowMessage(title != null && !title.Equals("") ? title : msg);
-            s.Title.Text = title;
-            s.MsgText.Text = msg;
-            s.LeftButton.Visible = true;
-            s.RightButton.Visible = true;
-            s.MidButton.Visible = false;
-            s.LeftButton.Text = "重试";
-            s.RightButton.Text = "取消";
-            s.ShowDialog();
-            return MessageResult;
+            object[] objs = { title, msg, 0, MessageButtonType.RetryCancel, BUTTON_CANCEL, BUTTON_RETRY, BUTTON_CANCEL };
+            MessageResult result = new ShowMessage(objs).MessageResult;
+            return result;
         }
 
         private void LeftButton_Click(object sender, EventArgs e)
@@ -177,7 +248,7 @@ namespace FunGame.Desktop.Models.Component
 
         private void Exit_Click(object sender, EventArgs e)
         {
-            MessageResult = (int)CommonEnums.MessageResult.Cancel;
+            MessageResult = MessageResult.Cancel;
             Dispose();
         }
     }
