@@ -627,7 +627,7 @@ namespace FunGame.Desktop.UI
             SetServerStatusLight((int)LightType.Green);
             Task.Run(() =>
             { // DEBUG
-                ShowMessage.TipMessage("欢迎回来， " + Usercfg.LoginUserName + "！", "登录成功", 5000);
+                ShowMessage.TipMessage("欢迎回来， " + Usercfg.LoginUserName + "！", "登录成功", 5);
             });
         }
 

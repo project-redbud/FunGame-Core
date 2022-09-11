@@ -158,7 +158,7 @@ namespace FunGame.Desktop.UI
             this.SendTalkText.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Teal;
             this.SendTalkText.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
             this.SendTalkText.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.SendTalkText.Font = new System.Drawing.Font("阿丽达黑体", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.SendTalkText.Font = new System.Drawing.Font("LanaPixel", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.SendTalkText.Location = new System.Drawing.Point(608, 421);
             this.SendTalkText.Name = "SendTalkText";
             this.SendTalkText.Size = new System.Drawing.Size(51, 27);

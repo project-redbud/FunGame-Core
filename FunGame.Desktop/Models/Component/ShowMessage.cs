@@ -43,7 +43,7 @@ namespace FunGame.Desktop.Models.Component
                  * objs:
                  * 0 = title
                  * 1 = msg
-                 * 2 = autoclose(msecond)
+                 * 2 = autoclose(second)
                  * 3 = button type
                  * 4 = mid text
                  * 5 = left text
@@ -53,6 +53,7 @@ namespace FunGame.Desktop.Models.Component
                 if (length > 0 && objs[0] != null)
                 {
                     Title.Text = (string)objs[0];
+                    Text = Title.Text;
                 }
                 if (length > 1 && objs[1] != null)
                 {
@@ -105,19 +106,17 @@ namespace FunGame.Desktop.Models.Component
                 MessageResult = MessageResult.Cancel;
                 Dispose();
             }
-            if (Title.Text == "Message") Text = MsgText.Text; // 窗体默认标题
             if (AutoClose > 0)
             {
                 Action action = new(() =>
                 {
                     string msg = MsgText.Text;
-                    MsgText.Text = msg + "\n[ " + AutoClose/1000 + " 秒后自动关闭 ]";
+                    MsgText.Text = msg + "\n[ " + AutoClose + " 秒后自动关闭 ]";
                     while (AutoClose > 0)
                     {
                         Thread.Sleep(1000);
-                        AutoClose -= 1000;
-                        MsgText.Text = msg + "\n[ " + AutoClose / 1000 + " 秒后自动关闭 ]";
-                        BringToFront();
+                        AutoClose--;
+                        MsgText.Text = msg + "\n[ " + AutoClose + " 秒后自动关闭 ]";
                     }
                     MessageResult = MessageResult.OK;
                     Dispose();
