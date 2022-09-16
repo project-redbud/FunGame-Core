@@ -5,124 +5,128 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace FunGame.Core.Api.Model.Enum
 {
-    /// <summary>
-    /// 这里存放框架实现相关的State Type Result Method
-    /// 添加FunGame.Core.Api接口和实现时，需要在这里同步添加：InterfaceType、InterfaceMethod
-    /// </summary>
-    public static class CommonEnums
+    /**
+     * 这里存放框架实现相关的State Type Result Method
+     * 添加FunGame.Core.Api接口和实现时，需要在这里同步添加：InterfaceType、InterfaceMethod
+     */
+
+    #region State
+
+    public enum StartMatch_State
     {
-        #region State
+        Matching,
+        Success,
+        Enable,
+        Cancel
+    }
 
-        public enum StartMatch_State
-        {
-            Matching,
-            Success,
-            Enable,
-            Cancel
-        }
+    public enum CreateRoom_State
+    {
+        Creating,
+        Success
+    }
 
-        public enum CreateRoom_State
-        {
-            Creating,
-            Success
-        }
+    public enum RoomState
+    {
+        Created,
+        Gaming,
+        Close,
+        Complete
+    }
 
-        public enum RoomState
-        {
-            Created,
-            Gaming,
-            Close,
-            Complete
-        }
+    public enum OnlineState
+    {
+        Offline,
+        Online,
+        Matching,
+        InRoom,
+        Gaming
+    }
 
-        public enum OnlineState
-        {
-            Offline,
-            Online,
-            Matching,
-            InRoom,
-            Gaming
-        }
+    #endregion
 
-        #endregion
+    #region Type
 
-        #region Type
+    public enum RoomType
+    {
+        Mix,
+        Team,
+        MixHasPass,
+        TeamHasPass
+    }
 
-        public enum RoomType
-        {
-            Mix,
-            Team,
-            MixHasPass,
-            TeamHasPass
-        }
+    public enum MessageButtonType
+    {
+        OK,
+        OKCancel,
+        YesNo,
+        RetryCancel
+    }
 
-        public enum MessageButtonType
-        {
-            OK,
-            OKCancel,
-            YesNo,
-            RetryCancel
-        }
+    public enum InterfaceType
+    {
+        ClientConnectInterface,
+        ServerInterface
+    }
 
-        public enum InterfaceType
-        {
-            ClientConnectInterface,
-            ServerInterface
-        }
+    public enum LightType
+    {
+        Green,
+        Yellow,
+        Red
+    }
 
-        public enum LightType
-        {
-            Green,
-            Yellow,
-            Red
-        }
+    public enum SocketMessageType
+    {
+        Unknown,
+        GetNotice,
+        Login,
+        CheckLogin,
+        Logout,
+        HeartBeat
+    }
 
-        public enum SocketType
-        {
-            Unknown,
-            GetNotice,
-            Login,
-            CheckLogin,
-            Logout,
-            HeartBeat
-        }
+    #endregion
 
-        #endregion
+    #region Result
 
-        #region Result
+    public enum MessageResult
+    {
+        OK,
+        Cancel,
+        Yes,
+        No,
+        Retry
+    }
 
-        public enum MessageResult
-        {
-            OK,
-            Cancel,
-            Yes,
-            No,
-            Retry
-        }
+    #endregion
 
-        #endregion
+    #region Method
 
-        #region Method
+    public enum WebHelperMethod
+    {
+        CreateSocket,
+        CloseSocket,
+        StartWebHelper,
+        Login,
+        Logout
+    }
 
-        public enum WebHelperMethod
-        {
-            CreateSocket,
-            CloseSocket,
-            StartWebHelper,
-            Login
-        }
+    public enum InterfaceMethod
+    {
+        RemoteServerIP,
+        DBConnection,
+        GetServerSettings
+    }
 
-        public enum InterfaceMethod
-        {
-            RemoteServerIP,
-            DBConnection,
-            GetServerSettings
-        }
+    #endregion
 
-        #endregion
-
+    
+    public class EnumHelper
+    {
         #region 工具方法
 
         /// <summary>
@@ -164,9 +168,9 @@ namespace FunGame.Core.Api.Model.Enum
         /// <returns></returns>
         public static string GetSocketTypeName(int SocketType)
         {
-            foreach (string str in System.Enum.GetNames(typeof(SocketType)))
+            foreach (string str in System.Enum.GetNames(typeof(SocketMessageType)))
             {
-                SocketType temp = (SocketType)System.Enum.Parse(typeof(SocketType), SocketType.ToString(), true);
+                SocketMessageType temp = (SocketMessageType)System.Enum.Parse(typeof(SocketMessageType), SocketType.ToString(), true);
                 if (temp.ToString() == str)
                     return temp.ToString();
             }

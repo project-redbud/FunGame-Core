@@ -9,7 +9,6 @@ using FunGame.Core.Api.Model.Entity;
 using FunGame.Desktop.Models.Config;
 using FunGame.Desktop.Utils;
 using FunGame.Core.Api.Model.Enum;
-using static FunGame.Core.Api.Model.Enum.CommonEnums;
 
 namespace FunGame.Desktop.UI
 {
@@ -80,7 +79,7 @@ namespace FunGame.Desktop.UI
                             Usercfg.FunGame_isRetrying = false;
                             WebHelper_Action = (main) =>
                             {
-                                SetServerStatusLight((int)CommonEnums.LightType.Green);
+                                SetServerStatusLight((int)LightType.Green);
                                 SetButtonEnableIfLogon(true);
                             };
                             if (InvokeRequired)
@@ -94,7 +93,7 @@ namespace FunGame.Desktop.UI
                             Usercfg.FunGame_isRetrying = false;
                             WebHelper_Action = (main) =>
                             {
-                                SetServerStatusLight((int)CommonEnums.LightType.Green, GetServerPing(Config.SERVER_IPADRESS));
+                                SetServerStatusLight((int)LightType.Green, GetServerPing(Config.SERVER_IPADRESS));
                                 SetButtonEnableIfLogon(true);
                             };
                             if (InvokeRequired)
@@ -108,7 +107,7 @@ namespace FunGame.Desktop.UI
                             Usercfg.FunGame_isRetrying = false;
                             WebHelper_Action = (main) =>
                             {
-                                SetServerStatusLight((int)CommonEnums.LightType.Yellow);
+                                SetServerStatusLight((int)LightType.Yellow);
                                 SetButtonEnableIfLogon(false);
                             };
                             if (InvokeRequired)
@@ -121,7 +120,7 @@ namespace FunGame.Desktop.UI
                         case Config.WebHelper_SetRed:
                             WebHelper_Action = (main) =>
                             {
-                                SetServerStatusLight((int)CommonEnums.LightType.Red);
+                                SetServerStatusLight((int)LightType.Red);
                                 SetButtonEnableIfLogon(false);
                             };
                             if (InvokeRequired)
@@ -132,22 +131,22 @@ namespace FunGame.Desktop.UI
                             break;
                         case Config.WebHelper_Disconnected:
                             Usercfg.FunGame_isRetrying = false;
+                            Usercfg.FunGame_isConnected = false;
                             WebHelper_Action = (main) =>
                             {
-                                SetServerStatusLight((int)CommonEnums.LightType.Red);
+                                SetServerStatusLight((int)LightType.Red);
                                 SetButtonEnableIfLogon(false);
                             };
                             if (InvokeRequired)
                                 BeginInvoke(WebHelper_Action, this);
                             else
                                 WebHelper_Action(this);
-                            Usercfg.FunGame_isConnected = false;
                             if (Usercfg.FunGame_isAutoRetry && NOW_CONNECTEDRETRY <= MAX_CONNECTEDRETRY)
                             {
                                 Task.Run(() =>
                                 {
                                     Thread.Sleep(5000);
-                                    Connect();
+                                    if (Usercfg.FunGame_isAutoRetry) Connect(); // 再次判断是否开启自动重连
                                 });
                                 if (needTime)
                                     throw new Exception(GetNowShortTime() + "\nERROR：连接服务器失败，5秒后自动尝试重连。");
@@ -159,6 +158,29 @@ namespace FunGame.Desktop.UI
                                 throw new Exception(GetNowShortTime() + "\nERROR：无法连接至服务器，请检查你的网络连接。");
                             else
                                 throw new Exception("ERROR：无法连接至服务器，请检查你的网络连接。");
+                        case Config.WebHelper_LogOut:
+                            Usercfg.FunGame_isRetrying = false;
+                            Usercfg.FunGame_isConnected = false;
+                            WebHelper_Action = (main) =>
+                            {
+                                SetServerStatusLight((int)LightType.Red);
+                                SetButtonEnableIfLogon(false);
+                                LogoutAccount();
+                            };
+                            if (InvokeRequired)
+                                BeginInvoke(WebHelper_Action, this);
+                            else
+                                WebHelper_Action(this);
+                            if (Usercfg.FunGame_isAutoRetry)
+                            {
+                                NOW_CONNECTEDRETRY = -1;
+                                Task.Run(() =>
+                                {
+                                    Thread.Sleep(1000);
+                                    Connect();
+                                });
+                            }
+                            break;
                         case Config.WebHelper_GetUser:
                             if (Usercfg.LoginUser != null)
                                 return Usercfg.LoginUser;
@@ -636,6 +658,8 @@ namespace FunGame.Desktop.UI
         /// </summary>
         private void LogoutAccount()
         {
+            Usercfg.LoginUser = null;
+            Usercfg.LoginUserName = "";
             NowAccount.Text = "请登录账号";
             Logout.Visible = false;
             Login.Visible = true;
@@ -757,15 +781,15 @@ namespace FunGame.Desktop.UI
         {
             switch(light)
             {
-                case (int)CommonEnums.LightType.Green:
+                case (int)LightType.Green:
                     Connection.Text = "服务器连接成功";
                     this.Light.Image = Properties.Resources.green;
                     break;
-                case (int)CommonEnums.LightType.Yellow:
+                case (int)LightType.Yellow:
                     Connection.Text = "等待登录账号";
                     this.Light.Image = Properties.Resources.yellow;
                     break;
-                case (int)CommonEnums.LightType.Red:
+                case (int)LightType.Red:
                 default:
                     Connection.Text = "服务器连接失败";
                     this.Light.Image = Properties.Resources.red;
@@ -972,7 +996,11 @@ namespace FunGame.Desktop.UI
         /// <param name="e"></param>
         private void Logout_Click(object sender, EventArgs e)
         {
-            LogoutAccount();
+            if (ShowMessage.OKCancelMessage("你确定要退出登录吗？", "退出登录") == MessageResult.OK)
+            {
+                if (WebHelper == null || !WebHelper.WebHelpMethod((int)WebHelperMethod.Logout))
+                    ShowMessage.WarningMessage("请求无效：退出登录失败！");
+            }
         }
 
         /// <summary>
@@ -983,7 +1011,7 @@ namespace FunGame.Desktop.UI
         private void Login_Click(object sender, EventArgs e)
         {
             if (WebHelper != null)
-                WebHelper.WebHelpMethod((int)CommonEnums.WebHelperMethod.Login);
+                WebHelper.WebHelpMethod((int)WebHelperMethod.Login);
             else
                 ShowMessage.WarningMessage("请先连接服务器！");
         }

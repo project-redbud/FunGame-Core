@@ -47,7 +47,7 @@ namespace FunGame.Core.Api.Util
         private Type? GetFunGameCoreImplement(int Interface)
         {
             // 通过类名获取获取命名空间+类名称
-            string ClassName = CommonEnums.GetImplementClassName(Interface);
+            string ClassName = EnumHelper.GetImplementClassName(Interface);
             List<Type>? Classes = null;
             if (Assembly != null)
             {
@@ -72,7 +72,7 @@ namespace FunGame.Core.Api.Util
         {
             Assembly = Assembly.LoadFile(EXEDocPath + @FUNGAME_CORE + ".dll");
             Type = GetFunGameCoreImplement(Interface); // 通过类名获取获取命名空间+类名称
-            string MethodName = CommonEnums.GetImplementMethodName(Method); // 获取方法名
+            string MethodName = EnumHelper.GetImplementMethodName(Method); // 获取方法名
             if (Assembly != null && Type != null) this.Method = Type.GetMethod(MethodName); // 从Type中查找方法名
             else return null;
             Instance = Assembly.CreateInstance(Type.Namespace + "." + Type.Name);

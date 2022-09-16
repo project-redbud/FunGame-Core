@@ -38,23 +38,29 @@ namespace FunGame.Desktop.Utils
         {
             switch (i)
             {
-                case (int)CommonEnums.WebHelperMethod.CreateSocket:
+                case (int)WebHelperMethod.CreateSocket:
                     CreateSocket();
                     break;
-                case (int)CommonEnums.WebHelperMethod.CloseSocket:
+                case (int)WebHelperMethod.CloseSocket:
                     Close();
                     break;
-                case (int)CommonEnums.WebHelperMethod.StartWebHelper:
+                case (int)WebHelperMethod.StartWebHelper:
                     StartWebHelper();
                     break;
-                case (int)CommonEnums.WebHelperMethod.Login:
+                case (int)WebHelperMethod.Login:
                     if (client != null)
                     {
-                        Send((int)CommonEnums.SocketType.CheckLogin, new object[] { Main, client, new User("Mili") });
+                        Send((int)SocketMessageType.CheckLogin, new object[] { Main, client, new User("Mili") });
                         return true;
                     }
-                    else
-                        return false;
+                    return false;
+                case (int)WebHelperMethod.Logout:
+                    if (client != null && Usercfg.LoginUser != null)
+                    {
+                        Send((int)SocketMessageType.Logout, new object[] { Main, client, Usercfg.LoginUser });
+                        return true;
+                    }
+                    return false;
             }
             return true;
         }
@@ -88,7 +94,7 @@ namespace FunGame.Desktop.Utils
                         objs = new object[] { main, socket, obj };
                     else
                         objs = new object[] { main, socket };
-                    if (Send((int)CommonEnums.SocketType.GetNotice, objs)) // 接触服务器并获取公告
+                    if (Send((int)SocketMessageType.GetNotice, objs)) // 接触服务器并获取公告
                         main.GetMessage(this, " >> 连接服务器成功，请登录账号以体验FunGame。", true);
                 };
                 Task t = Task.Factory.StartNew(() =>
@@ -147,23 +153,27 @@ namespace FunGame.Desktop.Utils
                     {
                         string msg = Config.DEFAULT_ENCODING.GetString(buffer, 0, length);
                         int type = GetType(msg);
-                        string typestring = CommonEnums.GetSocketTypeName(type);
+                        string typestring = EnumHelper.GetSocketTypeName(type);
                         string read = GetMessage(msg);
                         switch (type)
                         {
-                            case (int)CommonEnums.SocketType.GetNotice:
+                            case (int)SocketMessageType.GetNotice:
                                 main.GetMessage(this, read, true);
                                 return true;
-                            case (int)CommonEnums.SocketType.Login:
+                            case (int)SocketMessageType.Login:
                                 break;
-                            case (int)CommonEnums.SocketType.CheckLogin:
+                            case (int)SocketMessageType.CheckLogin:
                                 Main.GetMessage(this, Config.WebHelper_SetUser, false, objs);
                                 Main.GetMessage(this, read, true);
                                 StartWebHelper(); // 开始创建TCP流
                                 return true;
-                            case (int)CommonEnums.SocketType.Logout:
-                                break;
-                            case (int)CommonEnums.SocketType.HeartBeat:
+                            case (int)SocketMessageType.Logout:
+                                Main.GetMessage(this, Config.WebHelper_SetUser, false, objs);
+                                Main.GetMessage(this, read, true);
+                                Main.GetMessage(this, Config.WebHelper_LogOut);
+                                Close();
+                                return true;
+                            case (int)SocketMessageType.HeartBeat:
                                 if (WaitHeartBeat != null && !WaitHeartBeat.IsCompleted) WaitHeartBeat.Wait(1);
                                 Config.WebHelper_HeartBeatFaileds = 0;
                                 main.GetMessage(this, Config.WebHelper_SetGreenAndPing);
@@ -209,11 +219,11 @@ namespace FunGame.Desktop.Utils
                 if (socket != null)
                 {
                     string msg = "";
-                    CommonEnums.SocketType type = (CommonEnums.SocketType)i;
+                    SocketMessageType type = (SocketMessageType)i;
                     // 发送消息给服务器端
                     switch (type)
                     {
-                        case CommonEnums.SocketType.GetNotice:
+                        case SocketMessageType.GetNotice:
                             msg = MakeMessage(type, "获取公告");
                             if (Send(msg, socket) > 0)
                             {
@@ -221,9 +231,9 @@ namespace FunGame.Desktop.Utils
                             }
                             else
                                 throw new Exception("ERROR：消息未送达服务器，与服务器连接可能丢失。");
-                        case CommonEnums.SocketType.Login:
+                        case SocketMessageType.Login:
                             break;
-                        case CommonEnums.SocketType.CheckLogin:
+                        case SocketMessageType.CheckLogin:
                             User user;
                             if (objs != null && objs.Length > 2)
                             {
@@ -236,9 +246,16 @@ namespace FunGame.Desktop.Utils
                                 throw new Exception("ERROR: 请登录账号。");
                             }
                             break;
-                        case CommonEnums.SocketType.Logout:
-                            break;
-                        case CommonEnums.SocketType.HeartBeat:
+                        case SocketMessageType.Logout:
+                            if (objs != null && objs.Length > 2)
+                            {
+                                user = (User)objs[2];
+                                msg = MakeMessage(type, user.Userame);
+                                if (Send(msg, socket) > 0)
+                                    return true;
+                            }
+                            return false;
+                        case SocketMessageType.HeartBeat:
                             msg = MakeMessage(type, "心跳检测");
                             if (Send(msg, socket) > 0)
                             {
@@ -321,7 +338,7 @@ namespace FunGame.Desktop.Utils
             return msg[index..];
         }
 
-        private string MakeMessage(CommonEnums.SocketType type, string msg)
+        private string MakeMessage(SocketMessageType type, string msg)
         {
             return (int)type + ";" + msg;
         }
@@ -357,7 +374,7 @@ namespace FunGame.Desktop.Utils
             Main.GetMessage(this, "Creating: SendHeartBeatStream...OK");
             while (IsConnected())
             {
-                Send((int)CommonEnums.SocketType.HeartBeat); // 发送心跳包
+                Send((int)SocketMessageType.HeartBeat); // 发送心跳包
                 Thread.Sleep(20000);
             }
         }
