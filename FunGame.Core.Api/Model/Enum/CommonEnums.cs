@@ -46,6 +46,13 @@ namespace FunGame.Core.Api.Model.Enum
         Gaming
     }
 
+    public enum ClientState
+    {
+        Online,
+        WaitConnect,
+        WaitLogin
+    }
+
     #endregion
 
     #region Type

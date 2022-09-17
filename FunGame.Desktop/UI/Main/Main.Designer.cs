@@ -136,13 +136,13 @@ namespace FunGame.Desktop.UI
             this.Connection.Name = "Connection";
             this.Connection.Size = new System.Drawing.Size(130, 23);
             this.Connection.TabIndex = 92;
-            this.Connection.Text = "服务器连接失败";
+            this.Connection.Text = "等待连接服务器";
             this.Connection.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // Light
             // 
             this.Light.BackColor = System.Drawing.Color.Transparent;
-            this.Light.Image = global::FunGame.Desktop.Properties.Resources.red;
+            this.Light.Image = global::FunGame.Desktop.Properties.Resources.yellow;
             this.Light.Location = new System.Drawing.Point(777, 426);
             this.Light.Name = "Light";
             this.Light.Size = new System.Drawing.Size(18, 18);

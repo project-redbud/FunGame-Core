@@ -124,12 +124,13 @@ namespace FunGame.Desktop.Models.Component
                 Task.Run(() =>
                 {
                     if (InvokeRequired)
-                        BeginInvoke(action);
+                        Invoke(action);
                     else
                         action();
                 });
+                Show();
             }
-            ShowDialog();
+            else ShowDialog();
         }
 
         /// <summary>

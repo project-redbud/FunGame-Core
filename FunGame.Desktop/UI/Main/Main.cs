@@ -50,10 +50,11 @@ namespace FunGame.Desktop.UI
         /// </summary>
         public void Init()
         {
-            SetButtonEnableIfLogon(false);
+            SetButtonEnableIfLogon(false, ClientState.WaitConnect);
             SetRoomid("-1"); // 房间号初始化
             ShowFunGameInfo(); // 显示FunGame信息
-            GetServerConnection(); // 开始连接服务器
+            GetFunGameConfig(); // 获取FunGame配置
+            if (Config.FunGame_isAutoConnect) GetServerConnection(); // 开始连接服务器
         }
 
         #endregion
@@ -76,77 +77,110 @@ namespace FunGame.Desktop.UI
                     switch (msg)
                     {
                         case Config.WebHelper_SetGreen:
-                            Usercfg.FunGame_isRetrying = false;
+                            Config.FunGame_isRetrying = false;
                             WebHelper_Action = (main) =>
                             {
                                 SetServerStatusLight((int)LightType.Green);
-                                SetButtonEnableIfLogon(true);
+                                SetButtonEnableIfLogon(true, ClientState.Online);
                             };
                             if (InvokeRequired)
                                 BeginInvoke(WebHelper_Action, this);
                             else
                                 WebHelper_Action(this);
-                            Usercfg.FunGame_isConnected = true;
+                            Config.FunGame_isConnected = true;
                             NOW_CONNECTEDRETRY = 0;
                             break;
                         case Config.WebHelper_SetGreenAndPing:
-                            Usercfg.FunGame_isRetrying = false;
+                            Config.FunGame_isRetrying = false;
                             WebHelper_Action = (main) =>
                             {
-                                SetServerStatusLight((int)LightType.Green, GetServerPing(Config.SERVER_IPADRESS));
-                                SetButtonEnableIfLogon(true);
+                                SetServerStatusLight((int)LightType.Green, ping: GetServerPing(Config.SERVER_IPADRESS));
+                                SetButtonEnableIfLogon(true, ClientState.Online);
                             };
                             if (InvokeRequired)
                                 BeginInvoke(WebHelper_Action, this);
                             else
                                 WebHelper_Action(this);
-                            Usercfg.FunGame_isConnected = true;
+                            Config.FunGame_isConnected = true;
                             NOW_CONNECTEDRETRY = 0;
                             break;
                         case Config.WebHelper_SetYellow:
-                            Usercfg.FunGame_isRetrying = false;
+                            Config.FunGame_isRetrying = false;
                             WebHelper_Action = (main) =>
                             {
                                 SetServerStatusLight((int)LightType.Yellow);
-                                SetButtonEnableIfLogon(false);
+                                SetButtonEnableIfLogon(false, ClientState.WaitConnect);
                             };
                             if (InvokeRequired)
                                 BeginInvoke(WebHelper_Action, this);
                             else
                                 WebHelper_Action(this);
-                            Usercfg.FunGame_isConnected = true;
+                            Config.FunGame_isConnected = true;
+                            NOW_CONNECTEDRETRY = 0;
+                            break;
+                        case Config.WebHelper_WaitConnectAndSetYellow:
+                            Config.FunGame_isRetrying = false;
+                            WebHelper_Action = (main) =>
+                            {
+                                SetServerStatusLight((int)LightType.Yellow);
+                                SetButtonEnableIfLogon(false, ClientState.WaitConnect);
+                            };
+                            if (InvokeRequired)
+                                BeginInvoke(WebHelper_Action, this);
+                            else
+                                WebHelper_Action(this);
+                            Config.FunGame_isConnected = true;
+                            NOW_CONNECTEDRETRY = 0;
+                            if (WebHelper != null && Config.FunGame_isAutoConnect)
+                            {
+                                // 自动连接服务器
+                                GetServerConnection();
+                            }
+                            break;
+                        case Config.WebHelper_WaitLoginAndSetYellow:
+                            Config.FunGame_isRetrying = false;
+                            WebHelper_Action = (main) =>
+                            {
+                                SetServerStatusLight((int)LightType.Yellow, true);
+                                SetButtonEnableIfLogon(false, ClientState.WaitLogin);
+                            };
+                            if (InvokeRequired)
+                                BeginInvoke(WebHelper_Action, this);
+                            else
+                                WebHelper_Action(this);
+                            Config.FunGame_isConnected = true;
                             NOW_CONNECTEDRETRY = 0;
                             break;
                         case Config.WebHelper_SetRed:
                             WebHelper_Action = (main) =>
                             {
                                 SetServerStatusLight((int)LightType.Red);
-                                SetButtonEnableIfLogon(false);
+                                SetButtonEnableIfLogon(false, ClientState.WaitConnect);
                             };
                             if (InvokeRequired)
                                 BeginInvoke(WebHelper_Action, this);
                             else
                                 WebHelper_Action(this);
-                            Usercfg.FunGame_isConnected = false;
+                            Config.FunGame_isConnected = false;
                             break;
                         case Config.WebHelper_Disconnected:
-                            Usercfg.FunGame_isRetrying = false;
-                            Usercfg.FunGame_isConnected = false;
+                            Config.FunGame_isRetrying = false;
+                            Config.FunGame_isConnected = false;
                             WebHelper_Action = (main) =>
                             {
                                 SetServerStatusLight((int)LightType.Red);
-                                SetButtonEnableIfLogon(false);
+                                SetButtonEnableIfLogon(false, ClientState.WaitConnect);
                             };
                             if (InvokeRequired)
                                 BeginInvoke(WebHelper_Action, this);
                             else
                                 WebHelper_Action(this);
-                            if (Usercfg.FunGame_isAutoRetry && NOW_CONNECTEDRETRY <= MAX_CONNECTEDRETRY)
+                            if (Config.FunGame_isAutoRetry && NOW_CONNECTEDRETRY <= MAX_CONNECTEDRETRY)
                             {
                                 Task.Run(() =>
                                 {
                                     Thread.Sleep(5000);
-                                    if (Usercfg.FunGame_isAutoRetry) Connect(); // 再次判断是否开启自动重连
+                                    if (Config.FunGame_isAutoRetry) Connect(); // 再次判断是否开启自动重连
                                 });
                                 if (needTime)
                                     throw new Exception(GetNowShortTime() + "\nERROR：连接服务器失败，5秒后自动尝试重连。");
@@ -159,19 +193,20 @@ namespace FunGame.Desktop.UI
                             else
                                 throw new Exception("ERROR：无法连接至服务器，请检查你的网络连接。");
                         case Config.WebHelper_LogOut:
-                            Usercfg.FunGame_isRetrying = false;
-                            Usercfg.FunGame_isConnected = false;
+                            Config.FunGame_isRetrying = false;
+                            Config.FunGame_isConnected = false;
+                            Config.FunGame_isAutoLogin = false;
                             WebHelper_Action = (main) =>
                             {
                                 SetServerStatusLight((int)LightType.Red);
-                                SetButtonEnableIfLogon(false);
+                                SetButtonEnableIfLogon(false, ClientState.WaitConnect);
                                 LogoutAccount();
                             };
                             if (InvokeRequired)
                                 BeginInvoke(WebHelper_Action, this);
                             else
                                 WebHelper_Action(this);
-                            if (Usercfg.FunGame_isAutoRetry)
+                            if (Config.FunGame_isAutoRetry)
                             {
                                 NOW_CONNECTEDRETRY = -1;
                                 Task.Run(() =>
@@ -193,6 +228,21 @@ namespace FunGame.Desktop.UI
                                 else
                                     SetLoginUser(objs);
                             }
+                            return null;
+                        case Config.WebHelper_SetNotice:
+                            Action action = () =>
+                            {
+                                NoticeText.Text = Config.FunGame_Notice;
+                                if (WebHelper != null && Config.FunGame_isAutoLogin)
+                                {
+                                    // 自动登录
+                                    WebHelper.WebHelpMethod((int)WebHelperMethod.Login);
+                                }
+                            };
+                            if (InvokeRequired)
+                                BeginInvoke(action);
+                            else
+                                action();
                             return null;
                         default:
                             if (needTime)
@@ -223,7 +273,7 @@ namespace FunGame.Desktop.UI
         {
             try
             {
-                string? ipaddress = (string?)Config.DefaultAssemblyHelper.GetFunGameCoreValue((int)InterfaceType.ClientConnectInterface, (int)InterfaceMethod.RemoteServerIP); // 获取服务器IP
+                string? ipaddress = (string?)Config.AssemblyHelper.GetFunGameCoreValue((int)InterfaceType.ClientConnectInterface, (int)InterfaceMethod.RemoteServerIP); // 获取服务器IP
                 if (ipaddress != null)
                 {
                     string[] s = ipaddress.Split(':');
@@ -261,7 +311,7 @@ namespace FunGame.Desktop.UI
                 }
                 Main_Action = (main) =>
                 {
-                    if (!Usercfg.FunGame_isConnected)
+                    if (!Config.FunGame_isConnected)
                     {
                         NOW_CONNECTEDRETRY++;
                         if (NOW_CONNECTEDRETRY == 0)
@@ -284,7 +334,7 @@ namespace FunGame.Desktop.UI
                                         WebHelper.WebHelpMethod((int)WebHelperMethod.CloseSocket);
                                         WebHelper = null;
                                     }
-                                    Usercfg.FunGame_isRetrying = true;
+                                    Config.FunGame_isRetrying = true;
                                     Application.DoEvents();
                                     WebHelper = new WebHelper(main);
                                     WebHelper.WebHelpMethod((int)WebHelperMethod.CreateSocket); // Invoke -> CreateSocket
@@ -320,17 +370,48 @@ namespace FunGame.Desktop.UI
         }
 
         /// <summary>
+        /// 获取FunGame配置文件设定
+        /// </summary>
+        private void GetFunGameConfig()
+        {
+            try
+            {
+                if (Config.INIHelper.ExistINIFile())
+                {
+                    string isAutoConncet = Config.INIHelper.ReadINI("Config", "AutoConnect");
+                    string isAutoLogin = Config.INIHelper.ReadINI("Config", "AutoLogin");
+                    if (isAutoConncet != null && !isAutoConncet.Equals("") && (isAutoConncet.Equals("false") || isAutoConncet.Equals("true")))
+                        Config.FunGame_isAutoConnect = Convert.ToBoolean(isAutoConncet);
+                    else throw new Exception("ERROR: 读取配置文件出错，参数格式不正确");
+                    if (isAutoLogin != null && !isAutoLogin.Equals("") && (isAutoLogin.Equals("false") || isAutoLogin.Equals("true")))
+                        Config.FunGame_isAutoLogin = Convert.ToBoolean(isAutoLogin);
+                    else throw new Exception("ERROR: 读取配置文件出错，参数格式不正确");
+                }
+                else
+                {
+                    Config.INIHelper.InitClientConfigs();
+                    WritelnGameInfo(">> 首次启动，已自动为你创建配置文件。");
+                    GetFunGameConfig();
+                }
+            }
+            catch (Exception e)
+            {
+                WritelnGameInfo(GetNowTime() + e.Message != null ? e.Message + "\n" + e.StackTrace : "" + e.StackTrace);
+            }
+        }
+
+        /// <summary>
         /// 设置房间号和显示信息
         /// </summary>
         /// <param name="roomid"></param>
         private void SetRoomid(string roomid)
         {
-            Usercfg.FunGame_roomid = roomid;
+            Config.FunGame_Roomid = roomid;
             if (!roomid.Equals("-1"))
             {
                 WritelnGameInfo(GetNowShortTime() + " 加入房间");
-                WritelnGameInfo("[ " + Usercfg.LoginUserName + " ] 已加入房间 -> [ " + Usercfg.FunGame_roomid + " ]");
-                Room.Text = "[ 当前房间 ]\n" + Convert.ToString(Usercfg.FunGame_roomid);
+                WritelnGameInfo("[ " + Usercfg.LoginUserName + " ] 已加入房间 -> [ " + Config.FunGame_Roomid + " ]");
+                Room.Text = "[ 当前房间 ]\n" + Convert.ToString(Config.FunGame_Roomid);
             }
             else
                 Room.Text = "暂未进入房间";
@@ -343,7 +424,7 @@ namespace FunGame.Desktop.UI
         private void SetLoginUser(object[]? objs = null)
         {
             if (InvokeRequired)
-                BeginInvoke(LoginAccount, objs);
+                Invoke(LoginAccount, objs);
             else
                 LoginAccount(objs);
         }
@@ -416,7 +497,7 @@ namespace FunGame.Desktop.UI
             // 显示：匹配、创建房间
             // 隐藏：退出房间、房间设定
             WritelnGameInfo(GetNowShortTime() + " 离开房间");
-            WritelnGameInfo("[ " + Usercfg.LoginUserName + " ] 已离开房间 -> [ " + Usercfg.FunGame_roomid + " ]");
+            WritelnGameInfo("[ " + Usercfg.LoginUserName + " ] 已离开房间 -> [ " + Config.FunGame_Roomid + " ]");
             SetRoomid("-1");
             QuitRoom.Visible = false;
             StartMatch.Visible = true;
@@ -440,17 +521,22 @@ namespace FunGame.Desktop.UI
         /// <summary>
         /// 未登录和离线时，停用按钮
         /// </summary>
-        private void SetButtonEnableIfLogon(bool isLogon)
+        private void SetButtonEnableIfLogon(bool isLogon, ClientState status)
         {
-            if (isLogon)
+            switch (status)
             {
-                PresetText.Items.Clear();
-                PresetText.Items.AddRange(Config.PresetOnineItems);
-            }
-            else
-            {
-                PresetText.Items.Clear();
-                PresetText.Items.AddRange(Config.PresetNoLoginItems);
+                case ClientState.Online:
+                    PresetText.Items.Clear();
+                    PresetText.Items.AddRange(Config.PresetOnineItems);
+                    break;
+                case ClientState.WaitConnect:
+                    PresetText.Items.Clear();
+                    PresetText.Items.AddRange(Config.PresetNoConnectItems);
+                    break;
+                case ClientState.WaitLogin:
+                    PresetText.Items.Clear();
+                    PresetText.Items.AddRange(Config.PresetNoLoginItems);
+                    break;
             }
             this.PresetText.SelectedIndex = 0;
             CheckMix.Enabled = isLogon;
@@ -476,7 +562,7 @@ namespace FunGame.Desktop.UI
                 {
                     if (CheckRoomIDExist(roomid))
                     {
-                        if (Usercfg.FunGame_roomid.Equals("-1"))
+                        if (Config.FunGame_Roomid.Equals("-1"))
                         {
                             if (ShowMessage.YesNoMessage("已找到房间 -> [ " + roomid + " ]\n是否加入？", "已找到房间") == MessageResult.Yes)
                             {
@@ -504,7 +590,7 @@ namespace FunGame.Desktop.UI
             {
                 if (CheckRoomIDExist(roomid))
                 {
-                    if (Usercfg.FunGame_roomid.Equals("-1"))
+                    if (Config.FunGame_Roomid.Equals("-1"))
                     {
                         if (ShowMessage.YesNoMessage("已找到房间 -> [ " + roomid + " ]\n是否加入？", "已找到房间") == MessageResult.Yes)
                         {
@@ -535,7 +621,7 @@ namespace FunGame.Desktop.UI
             {
                 case (int)StartMatch_State.Matching:
                     // 开始匹配
-                    Usercfg.FunGame_isMatching = true;
+                    Config.FunGame_isMatching = true;
                     int loop = 0;
                     string roomid = Convert.ToString(new Random().Next(1, 10000));
                     // 匹配中 匹配成功返回房间号
@@ -543,7 +629,7 @@ namespace FunGame.Desktop.UI
                     {
                         // 创建新线程，防止主界面阻塞
                         Thread.Sleep(3000);
-                        while (loop < 10000 && Usercfg.FunGame_isMatching)
+                        while (loop < 10000 && Config.FunGame_isMatching)
                         {
                             loop++;
                             if (loop == Convert.ToInt32(roomid))
@@ -567,7 +653,7 @@ namespace FunGame.Desktop.UI
                     });
                     break;
                 case (int)StartMatch_State.Success:
-                    Usercfg.FunGame_isMatching = false;
+                    Config.FunGame_isMatching = false;
                     // 匹配成功返回房间号
                     roomid = "-1";
                     if (objs != null) roomid = (string)objs[0];
@@ -613,7 +699,7 @@ namespace FunGame.Desktop.UI
                 case (int)StartMatch_State.Cancel:
                     WritelnGameInfo(GetNowShortTime() + " 终止匹配");
                     WritelnGameInfo("[ " + Usercfg.LoginUserName + " ] 已终止匹配。");
-                    Usercfg.FunGame_isMatching = false;
+                    Config.FunGame_isMatching = false;
                     StartMatch_Action = (i, objs) =>
                     {
                         StartMatch_Method(i, objs);
@@ -647,10 +733,7 @@ namespace FunGame.Desktop.UI
             Login.Visible = false;
             Logout.Visible = true;
             SetServerStatusLight((int)LightType.Green);
-            Task.Run(() =>
-            { // DEBUG
-                ShowMessage.TipMessage("欢迎回来， " + Usercfg.LoginUserName + "！", "登录成功", 5);
-            });
+            ShowMessage.TipMessage("欢迎回来， " + Usercfg.LoginUserName + "！", "登录成功", 5);
         }
 
         /// <summary>
@@ -734,7 +817,7 @@ namespace FunGame.Desktop.UI
         /// <param name="objs">可传多个参数</param>
         private void CreateRoom_Method(int i, object[]? objs = null)
         {
-            if (!Usercfg.FunGame_roomid.Equals("-1"))
+            if (!Config.FunGame_Roomid.Equals("-1"))
             {
                 ShowMessage.WarningMessage("已在房间中，无法创建房间。");
                 return;
@@ -777,7 +860,7 @@ namespace FunGame.Desktop.UI
         /// </summary>
         /// <param name="light"></param>
         /// <param name="ping"></param>
-        private void SetServerStatusLight(int light, int ping = 0)
+        private void SetServerStatusLight(int light, bool waitlogin = false, int ping = 0)
         {
             switch(light)
             {
@@ -786,7 +869,7 @@ namespace FunGame.Desktop.UI
                     this.Light.Image = Properties.Resources.green;
                     break;
                 case (int)LightType.Yellow:
-                    Connection.Text = "等待登录账号";
+                    Connection.Text = waitlogin ? "等待登录账号" : "等待连接服务器";
                     this.Light.Image = Properties.Resources.yellow;
                     break;
                 case (int)LightType.Red:
@@ -1010,7 +1093,7 @@ namespace FunGame.Desktop.UI
         /// <param name="e"></param>
         private void Login_Click(object sender, EventArgs e)
         {
-            if (WebHelper != null)
+            if (WebHelper != null && Config.FunGame_isConnected)
                 WebHelper.WebHelpMethod((int)WebHelperMethod.Login);
             else
                 ShowMessage.WarningMessage("请先连接服务器！");
@@ -1033,7 +1116,7 @@ namespace FunGame.Desktop.UI
         /// <param name="e"></param>
         private void RoomList_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-#pragma warning disable CS8600, CS8604
+            #pragma warning disable CS8600, CS8604
             if (RoomList.SelectedItem != null)
                 JoinRoom(true, RoomList.SelectedItem.ToString());
         }
@@ -1270,20 +1353,33 @@ namespace FunGame.Desktop.UI
                     break;
                 case Config.FunGame_AutoRetryOn:
                     WritelnGameInfo(">> 自动重连开启");
-                    Usercfg.FunGame_isAutoRetry = true;
+                    Config.FunGame_isAutoRetry = true;
                     break;
                 case Config.FunGame_AutoRetryOff:
                     WritelnGameInfo(">> 自动重连关闭");
-                    Usercfg.FunGame_isAutoRetry = false;
+                    Config.FunGame_isAutoRetry = false;
                     break;
                 case Config.FunGame_Retry:
-                    if (!Usercfg.FunGame_isRetrying)
+                    if (!Config.FunGame_isRetrying)
                     {
                         NOW_CONNECTEDRETRY = -1;
                         Connect();
                     }
                     else
                         WritelnGameInfo(">> 你不能在连接服务器的同时重试连接！");
+                    break;
+                case Config.FunGame_Connect:
+                    if (!Config.FunGame_isConnected)
+                    {
+                        NOW_CONNECTEDRETRY = -1;
+                        GetServerConnection();
+                    }
+                    break;
+                case Config.FunGame_Disconnect:
+                    if (Config.FunGame_isConnected)
+                    {
+                        WritelnGameInfo(">> 实验性功能。");
+                    }
                     break;
             }
         }

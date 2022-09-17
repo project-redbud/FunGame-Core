@@ -62,9 +62,9 @@ namespace FunGame.Core.Api.Util
         }
 
         /// <summary>
-        /// 初始化ini文件
+        /// 初始化服务器ini模板文件
         /// </summary>
-        public void Init()
+        public void InitServerConfigs()
         {
             /**
              * Server
@@ -89,6 +89,24 @@ namespace FunGame.Core.Api.Util
             WriteINI("MySQL", "DBName", "fungame");
             WriteINI("MySQL", "DBUser", "root");
             WriteINI("MySQL", "DBPassword", "pass");
+        }
+
+        /// <summary>
+        /// 初始化客户端ini模板文件
+        /// </summary>
+        public void InitClientConfigs()
+        {
+            /**
+             * Config
+             */
+            WriteINI("Config", "AutoConnect", "true");
+            WriteINI("Config", "AutoLogin", "false");
+            /**
+             * Account
+             */
+            WriteINI("Account", "UserName", "");
+            WriteINI("Account", "Password", "");
+            WriteINI("Account", "AutoKey", "");
         }
     }
 }

@@ -16,8 +16,20 @@ namespace FunGame.Desktop.Models.Config
          */
         public static FunGameEnums.FunGame FunGameType = FunGameEnums.FunGame.FunGame_Desktop;
 
-        public static INIHelper DefaultINIHelper = new();
-        public static AssemblyHelper DefaultAssemblyHelper = new();
+        public static INIHelper INIHelper = new();
+        public static AssemblyHelper AssemblyHelper = new();
+
+        /**
+         * FunGame Desktop Configs
+         */
+        public static bool FunGame_isAutoConnect = true; // 是否自动连接服务器
+        public static bool FunGame_isAutoLogin = false; // 是否自动登录
+        public static bool FunGame_isMatching = false; // 是否在匹配中
+        public static bool FunGame_isConnected = false; // 是否连接上服务器
+        public static bool FunGame_isRetrying = false; // 是否正在重连
+        public static bool FunGame_isAutoRetry = true; // 是否自动重连
+        public static string FunGame_Roomid = "-1"; // 房间号
+        public static string FunGame_Notice = ""; // 公告
 
         /**
          * WebHelper Configs
@@ -26,10 +38,13 @@ namespace FunGame.Desktop.Models.Config
         public const string WebHelper_SetGreenAndPing = "-WebHelper .set greenandping";
         public const string WebHelper_SetRed = "-WebHelper .set red";
         public const string WebHelper_SetYellow = "-WebHelper .set yellow";
+        public const string WebHelper_WaitConnectAndSetYellow = "-WebHelper .waitconnect .set yellow";
+        public const string WebHelper_WaitLoginAndSetYellow = "-WebHelper .waitlogin .set yellow";
         public const string WebHelper_Disconnected = "-WebHelper .disconnected";
         public const string WebHelper_LogOut = "-WebHelper .logout";
         public const string WebHelper_GetUser = "-WebHelper .get user";
         public const string WebHelper_SetUser = "-WebHelper .set user";
+        public const string WebHelper_SetNotice = "-WebHelper .set notice";
         public static int WebHelper_HeartBeatFaileds = 0;
 
         /**
@@ -55,6 +70,8 @@ namespace FunGame.Desktop.Models.Config
         public const string FunGame_CreateMix = "创建游戏 混战";
         public const string FunGame_CreateTeam = "创建游戏 团队";
         public const string FunGame_StartGame = "开始游戏";
+        public const string FunGame_Connect = "连接服务器";
+        public const string FunGame_Disconnect = "断开连接";
         public const string FunGame_Retry = "重新连接";
         public const string FunGame_AutoRetryOn = "开启自动重连";
         public const string FunGame_AutoRetryOff = "关闭自动重连";
@@ -68,13 +85,21 @@ namespace FunGame.Desktop.Models.Config
             FunGame_CreateMix,
             FunGame_CreateTeam,
             FunGame_StartGame,
-            FunGame_Retry,
+            FunGame_Disconnect,
             FunGame_AutoRetryOn,
             FunGame_AutoRetryOff
         };
         public static readonly object[] PresetNoLoginItems =
         {
             FunGame_PresetMessage,
+            FunGame_Disconnect,
+            FunGame_AutoRetryOn,
+            FunGame_AutoRetryOff
+        };
+        public static readonly object[] PresetNoConnectItems =
+        {
+            FunGame_PresetMessage,
+            FunGame_Connect,
             FunGame_Retry,
             FunGame_AutoRetryOn,
             FunGame_AutoRetryOff

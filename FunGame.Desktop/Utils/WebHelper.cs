@@ -81,7 +81,7 @@ namespace FunGame.Desktop.Utils
                         client.Connect(server);
                         if (IsConnected())
                         {
-                            Main.GetMessage(this, Config.WebHelper_SetYellow);
+                            Main.GetMessage(this, Config.WebHelper_WaitLoginAndSetYellow);
                             break;
                         }
                     }
@@ -95,7 +95,10 @@ namespace FunGame.Desktop.Utils
                     else
                         objs = new object[] { main, socket };
                     if (Send((int)SocketMessageType.GetNotice, objs)) // 接触服务器并获取公告
+                    {
                         main.GetMessage(this, " >> 连接服务器成功，请登录账号以体验FunGame。", true);
+                        main.GetMessage(this, Config.WebHelper_SetNotice);
+                    }
                 };
                 Task t = Task.Factory.StartNew(() =>
                 {
@@ -158,7 +161,9 @@ namespace FunGame.Desktop.Utils
                         switch (type)
                         {
                             case (int)SocketMessageType.GetNotice:
-                                main.GetMessage(this, read, true);
+                                string[] reads = read.Split(';');
+                                Config.FunGame_Notice = reads[1];
+                                main.GetMessage(this, " >> 已连接至服务器: " + reads[0] + "。\n\n********** 服务器公告 **********\n\n" + Config.FunGame_Notice + "\n\n", true);
                                 return true;
                             case (int)SocketMessageType.Login:
                                 break;
@@ -242,7 +247,7 @@ namespace FunGame.Desktop.Utils
                             }
                             else
                             {
-                                Usercfg.FunGame_isAutoRetry = false;
+                                Config.FunGame_isAutoRetry = false;
                                 throw new Exception("ERROR: 请登录账号。");
                             }
                             break;
