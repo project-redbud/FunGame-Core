@@ -37,6 +37,8 @@
             this.MidButton = new System.Windows.Forms.Button();
             this.Title = new System.Windows.Forms.Label();
             this.TransparentRect = new FunGame.Desktop.Models.Component.TransparentRect();
+            this.InputButton = new System.Windows.Forms.Button();
+            this.InputText = new System.Windows.Forms.TextBox();
             this.TransparentRect.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -57,7 +59,7 @@
             this.LeftButton.Location = new System.Drawing.Point(13, 127);
             this.LeftButton.Name = "LeftButton";
             this.LeftButton.Size = new System.Drawing.Size(98, 37);
-            this.LeftButton.TabIndex = 98;
+            this.LeftButton.TabIndex = 1;
             this.LeftButton.Text = "Left";
             this.LeftButton.UseVisualStyleBackColor = true;
             this.LeftButton.Click += new System.EventHandler(this.LeftButton_Click);
@@ -77,7 +79,7 @@
             this.Exit.Location = new System.Drawing.Point(187, 1);
             this.Exit.Name = "Exit";
             this.Exit.Size = new System.Drawing.Size(47, 47);
-            this.Exit.TabIndex = 15;
+            this.Exit.TabIndex = 3;
             this.Exit.TextAlign = System.Drawing.ContentAlignment.TopLeft;
             this.Exit.UseVisualStyleBackColor = false;
             this.Exit.Click += new System.EventHandler(this.Exit_Click);
@@ -88,7 +90,7 @@
             this.RightButton.Location = new System.Drawing.Point(125, 127);
             this.RightButton.Name = "RightButton";
             this.RightButton.Size = new System.Drawing.Size(98, 37);
-            this.RightButton.TabIndex = 101;
+            this.RightButton.TabIndex = 2;
             this.RightButton.Text = "Right";
             this.RightButton.UseVisualStyleBackColor = true;
             this.RightButton.Click += new System.EventHandler(this.RightButton_Click);
@@ -99,7 +101,7 @@
             this.MidButton.Location = new System.Drawing.Point(65, 127);
             this.MidButton.Name = "MidButton";
             this.MidButton.Size = new System.Drawing.Size(98, 37);
-            this.MidButton.TabIndex = 102;
+            this.MidButton.TabIndex = 1;
             this.MidButton.Text = "Middle";
             this.MidButton.UseVisualStyleBackColor = true;
             this.MidButton.Click += new System.EventHandler(this.MidButton_Click);
@@ -119,6 +121,8 @@
             // 
             this.TransparentRect.BackColor = System.Drawing.Color.WhiteSmoke;
             this.TransparentRect.BorderColor = System.Drawing.Color.WhiteSmoke;
+            this.TransparentRect.Controls.Add(this.InputButton);
+            this.TransparentRect.Controls.Add(this.InputText);
             this.TransparentRect.Controls.Add(this.Title);
             this.TransparentRect.Controls.Add(this.MidButton);
             this.TransparentRect.Controls.Add(this.RightButton);
@@ -133,7 +137,30 @@
             this.TransparentRect.Size = new System.Drawing.Size(235, 170);
             this.TransparentRect.TabIndex = 103;
             this.TransparentRect.TabStop = false;
-            this.TransparentRect.Text = "transparentRect1";
+            // 
+            // InputButton
+            // 
+            this.InputButton.Font = new System.Drawing.Font("LanaPixel", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.InputButton.Location = new System.Drawing.Point(168, 130);
+            this.InputButton.Name = "InputButton";
+            this.InputButton.Size = new System.Drawing.Size(66, 34);
+            this.InputButton.TabIndex = 2;
+            this.InputButton.Text = "OK";
+            this.InputButton.UseVisualStyleBackColor = true;
+            this.InputButton.Visible = false;
+            this.InputButton.Click += new System.EventHandler(this.InputButton_Click);
+            // 
+            // InputText
+            // 
+            this.InputText.Font = new System.Drawing.Font("LanaPixel", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.InputText.Location = new System.Drawing.Point(2, 130);
+            this.InputText.MaxLength = 21;
+            this.InputText.Name = "InputText";
+            this.InputText.Size = new System.Drawing.Size(163, 34);
+            this.InputText.TabIndex = 1;
+            this.InputText.Visible = false;
+            this.InputText.WordWrap = false;
+            this.InputText.KeyUp += new KeyEventHandler(this.InputText_KeyUp);
             // 
             // ShowMessage
             // 
@@ -148,6 +175,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Show";
             this.TransparentRect.ResumeLayout(false);
+            this.TransparentRect.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -161,5 +189,7 @@
         private Button MidButton;
         private Label Title;
         private TransparentRect TransparentRect;
+        private Button InputButton;
+        private TextBox InputText;
     }
 }

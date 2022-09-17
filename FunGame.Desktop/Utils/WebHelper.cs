@@ -61,6 +61,13 @@ namespace FunGame.Desktop.Utils
                         return true;
                     }
                     return false;
+                case (int)WebHelperMethod.Disconnect:
+                    if (client != null)
+                    {
+                        Send((int)SocketMessageType.Disconnect, new object[] { Main, client });
+                        return true;
+                    }
+                    return false;
             }
             return true;
         }
@@ -178,6 +185,11 @@ namespace FunGame.Desktop.Utils
                                 Main.GetMessage(this, Config.WebHelper_LogOut);
                                 Close();
                                 return true;
+                            case (int)SocketMessageType.Disconnect:
+                                Main.GetMessage(this, read, true);
+                                Main.GetMessage(this, Config.WebHelper_Disconnect);
+                                Close();
+                                return true;
                             case (int)SocketMessageType.HeartBeat:
                                 if (WaitHeartBeat != null && !WaitHeartBeat.IsCompleted) WaitHeartBeat.Wait(1);
                                 Config.WebHelper_HeartBeatFaileds = 0;
@@ -259,6 +271,11 @@ namespace FunGame.Desktop.Utils
                                 if (Send(msg, socket) > 0)
                                     return true;
                             }
+                            return false;
+                        case SocketMessageType.Disconnect:
+                            msg = MakeMessage(type, "断开连接");
+                            if (Send(msg, socket) > 0)
+                                return true;
                             return false;
                         case SocketMessageType.HeartBeat:
                             msg = MakeMessage(type, "心跳检测");
@@ -375,7 +392,7 @@ namespace FunGame.Desktop.Utils
 
         private void CreateSendHeartBeatStream()
         {
-            Thread.Sleep(1000);
+            Thread.Sleep(100);
             Main.GetMessage(this, "Creating: SendHeartBeatStream...OK");
             while (IsConnected())
             {
@@ -386,7 +403,7 @@ namespace FunGame.Desktop.Utils
 
         private void CreateStreamReader()
         {
-            Thread.Sleep(1000);
+            Thread.Sleep(100);
             Main.GetMessage(this, "Creating: StreamReader...OK");
             while (IsConnected())
             {

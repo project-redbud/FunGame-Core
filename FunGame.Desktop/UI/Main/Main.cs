@@ -9,6 +9,7 @@ using FunGame.Core.Api.Model.Entity;
 using FunGame.Desktop.Models.Config;
 using FunGame.Desktop.Utils;
 using FunGame.Core.Api.Model.Enum;
+using FunGame.Core.Api.Util;
 
 namespace FunGame.Desktop.UI
 {
@@ -192,13 +193,15 @@ namespace FunGame.Desktop.UI
                                 throw new Exception(GetNowShortTime() + "\nERROR：无法连接至服务器，请检查你的网络连接。");
                             else
                                 throw new Exception("ERROR：无法连接至服务器，请检查你的网络连接。");
-                        case Config.WebHelper_LogOut:
+                        case Config.WebHelper_Disconnect:
+                            Config.FunGame_isAutoRetry = false;
                             Config.FunGame_isRetrying = false;
-                            Config.FunGame_isConnected = false;
+                            Config.FunGame_isAutoConnect = false;
                             Config.FunGame_isAutoLogin = false;
+                            Config.FunGame_isConnected = false;
                             WebHelper_Action = (main) =>
                             {
-                                SetServerStatusLight((int)LightType.Red);
+                                SetServerStatusLight((int)LightType.Yellow);
                                 SetButtonEnableIfLogon(false, ClientState.WaitConnect);
                                 LogoutAccount();
                             };
@@ -206,7 +209,22 @@ namespace FunGame.Desktop.UI
                                 BeginInvoke(WebHelper_Action, this);
                             else
                                 WebHelper_Action(this);
-                            if (Config.FunGame_isAutoRetry)
+                            break;
+                        case Config.WebHelper_LogOut:
+                            Config.FunGame_isRetrying = false;
+                            Config.FunGame_isConnected = false;
+                            Config.FunGame_isAutoLogin = false;
+                            WebHelper_Action = (main) =>
+                            {
+                                SetServerStatusLight((int)LightType.Yellow);
+                                SetButtonEnableIfLogon(false, ClientState.WaitConnect);
+                                LogoutAccount();
+                            };
+                            if (InvokeRequired)
+                                BeginInvoke(WebHelper_Action, this);
+                            else
+                                WebHelper_Action(this);
+                            if (Config.FunGame_isAutoConnect)
                             {
                                 NOW_CONNECTEDRETRY = -1;
                                 Task.Run(() =>
@@ -299,6 +317,11 @@ namespace FunGame.Desktop.UI
         /// </summary>
         private void Connect()
         {
+            if (Config.SERVER_IPADRESS.Equals("") || Config.SERVER_PORT <= 0)
+            {
+                ShowMessage.ErrorMessage("查找可用的服务器失败！");
+                return;
+            }
             Task.Run(() =>
             {
                 while (true)
@@ -776,7 +799,7 @@ namespace FunGame.Desktop.UI
             // 向消息队列发送消息
             if (!TalkText.Text.Trim().Equals("") && !TalkText.ForeColor.Equals(Color.DarkGray))
             {
-                WritelnGameInfo(GetNowShortTime() + " [ " + (!Usercfg.LoginUserName.Equals("") ? Usercfg.LoginUserName : "尚未登录") + " ] 说： " + TalkText.Text);
+                WritelnGameInfo((!Usercfg.LoginUserName.Equals("") ? GetNowShortTime() + " [ " + Usercfg.LoginUserName + " ] 说： ": ":> ") + TalkText.Text);
                 SwitchTalkMessage(TalkText.Text);
                 TalkText.Text = "";
                 if (isLeave) TalkText_Leave(); // 回车不离开焦点
@@ -795,7 +818,7 @@ namespace FunGame.Desktop.UI
         /// <param name="msg"></param>
         private void SendTalkText_Click(string msg)
         {
-            WritelnGameInfo(GetNowShortTime() + " [ " + (!Usercfg.LoginUserName.Equals("") ? Usercfg.LoginUserName : "尚未登录") + " ] 说： " + msg);
+            WritelnGameInfo((!Usercfg.LoginUserName.Equals("") ? GetNowShortTime() + " [ " + Usercfg.LoginUserName + " ] 说： " : ":> ") + msg);
         }
 
         /// <summary>
@@ -962,11 +985,11 @@ namespace FunGame.Desktop.UI
             WritelnGameInfo(GetNowShortTime() + " 开始匹配");
             WritelnGameInfo("[ " + Usercfg.LoginUserName + " ] 开始匹配");
             WriteGameInfo(">> 匹配参数：");
-            if (!Usercfg.Match_Mix && !Usercfg.Match_Team && !Usercfg.Match_HasPass)
+            if (!Config.Match_Mix && !Config.Match_Team && !Config.Match_HasPass)
                 WritelnGameInfo("无");
             else
             {
-                WriteGameInfo((Usercfg.Match_Mix ? " 混战房间 " : "") + (Usercfg.Match_Team ? " 团队房间 " : "") + (Usercfg.Match_HasPass ? " 密码房间 " : ""));
+                WriteGameInfo((Config.Match_Mix ? " 混战房间 " : "") + (Config.Match_Team ? " 团队房间 " : "") + (Config.Match_HasPass ? " 密码房间 " : ""));
                 WritelnGameInfo();
             }
             // 显示停止匹配按钮
@@ -1002,24 +1025,24 @@ namespace FunGame.Desktop.UI
         private void CreateRoom_Click(object sender, EventArgs e)
         {
             string roomtype = "";
-            if (Usercfg.Match_Mix && Usercfg.Match_Team)
+            if (Config.Match_Mix && Config.Match_Team)
             {
                 ShowMessage.WarningMessage("创建房间不允许同时勾选混战和团队！");
                 return;
             }
-            else if (Usercfg.Match_Mix && !Usercfg.Match_Team && !Usercfg.Match_HasPass)
+            else if (Config.Match_Mix && !Config.Match_Team && !Config.Match_HasPass)
             {
                 roomtype = Config.GameMode_Mix;
             }
-            else if (!Usercfg.Match_Mix && Usercfg.Match_Team && !Usercfg.Match_HasPass)
+            else if (!Config.Match_Mix && Config.Match_Team && !Config.Match_HasPass)
             {
                 roomtype = Config.GameMode_Team;
             }
-            else if (Usercfg.Match_Mix && !Usercfg.Match_Team && Usercfg.Match_HasPass)
+            else if (Config.Match_Mix && !Config.Match_Team && Config.Match_HasPass)
             {
                 roomtype = Config.GameMode_MixHasPass;
             }
-            else if (!Usercfg.Match_Mix && Usercfg.Match_Team && Usercfg.Match_HasPass)
+            else if (!Config.Match_Mix && Config.Match_Team && Config.Match_HasPass)
             {
                 roomtype = Config.GameMode_TeamHasPass;
             }
@@ -1138,8 +1161,8 @@ namespace FunGame.Desktop.UI
         /// <param name="e"></param>
         private void CheckMix_CheckedChanged(object sender, EventArgs e)
         {
-            if (CheckMix.Checked) Usercfg.Match_Mix = true;
-            else Usercfg.Match_Mix = false;
+            if (CheckMix.Checked) Config.Match_Mix = true;
+            else Config.Match_Mix = false;
         }
 
         /// <summary>
@@ -1149,8 +1172,8 @@ namespace FunGame.Desktop.UI
         /// <param name="e"></param>
         private void CheckTeam_CheckedChanged(object sender, EventArgs e)
         {
-            if (CheckTeam.Checked) Usercfg.Match_Team = true;
-            else Usercfg.Match_Team = false;
+            if (CheckTeam.Checked) Config.Match_Team = true;
+            else Config.Match_Team = false;
         }
 
         /// <summary>
@@ -1160,8 +1183,8 @@ namespace FunGame.Desktop.UI
         /// <param name="e"></param>
         private void CheckHasPass_CheckedChanged(object sender, EventArgs e)
         {
-            if (CheckHasPass.Checked) Usercfg.Match_HasPass = true;
-            else Usercfg.Match_HasPass = false;
+            if (CheckHasPass.Checked) Config.Match_HasPass = true;
+            else Config.Match_HasPass = false;
         }
 
         /// <summary>
@@ -1376,10 +1399,53 @@ namespace FunGame.Desktop.UI
                     }
                     break;
                 case Config.FunGame_Disconnect:
-                    if (Config.FunGame_isConnected)
+                    if (Config.FunGame_isConnected && WebHelper != null)
                     {
-                        WritelnGameInfo(">> 实验性功能。");
+                        WebHelper.WebHelpMethod((int)WebHelperMethod.Disconnect);
                     }
+                    break;
+                case Config.FunGame_DisconnectWhenNotLogin:
+                    if (Config.FunGame_isConnected && WebHelper != null)
+                    {
+                        WebHelper.WebHelpMethod((int)WebHelperMethod.CloseSocket);
+                        GetMessage(WebHelper, Config.WebHelper_Disconnect);
+                        WritelnGameInfo(GetNowShortTime() + " >> 你已成功断开与服务器的连接。 ");
+                    }
+                    break;
+                case Config.FunGame_ConnectTo:
+                    string msg = ShowMessage.InputMessage("请输入服务器IP地址和端口号，如: 127.0.0.1:22222。", "连接指定服务器");
+                    if (msg.Equals("")) return;
+                    string[] addr = msg.Split(':');
+                    string ip;
+                    int port;
+                    if (addr.Length < 2)
+                    {
+                        ip = addr[0];
+                        port = 22222;
+                    }
+                    else if (addr.Length < 3)
+                    {
+                        ip = addr[0];
+                        port = Convert.ToInt32(addr[1]);
+                    }
+                    else
+                    {
+                        ShowMessage.ErrorMessage("格式错误！\n这不是一个服务器地址。");
+                        return;
+                    }
+                    ErrorType ErrorType = Utility.IsServerAddress(ip, port);
+                    if (ErrorType == ErrorType.None)
+                    {
+                        Config.SERVER_IPADRESS = ip;
+                        Config.SERVER_PORT = port;
+                        NOW_CONNECTEDRETRY = -1;
+                        Connect();
+                    }
+                    else if (ErrorType == ErrorType.IsNotIP) ShowMessage.ErrorMessage("这不是一个IP地址！");
+                    else if (ErrorType == ErrorType.IsNotPort) ShowMessage.ErrorMessage("这不是一个端口号！\n正确范围：1~65535");
+                    else ShowMessage.ErrorMessage("格式错误！\n这不是一个服务器地址。");
+                    break;
+                default:
                     break;
             }
         }

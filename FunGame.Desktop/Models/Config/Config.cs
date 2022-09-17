@@ -28,6 +28,9 @@ namespace FunGame.Desktop.Models.Config
         public static bool FunGame_isConnected = false; // 是否连接上服务器
         public static bool FunGame_isRetrying = false; // 是否正在重连
         public static bool FunGame_isAutoRetry = true; // 是否自动重连
+        public static bool Match_Mix = false; // 混战模式选项
+        public static bool Match_Team = false; // 团队模式选项
+        public static bool Match_HasPass = false; // 密码房间选项
         public static string FunGame_Roomid = "-1"; // 房间号
         public static string FunGame_Notice = ""; // 公告
 
@@ -40,6 +43,7 @@ namespace FunGame.Desktop.Models.Config
         public const string WebHelper_SetYellow = "-WebHelper .set yellow";
         public const string WebHelper_WaitConnectAndSetYellow = "-WebHelper .waitconnect .set yellow";
         public const string WebHelper_WaitLoginAndSetYellow = "-WebHelper .waitlogin .set yellow";
+        public const string WebHelper_Disconnect = "-WebHelper .disconnect";
         public const string WebHelper_Disconnected = "-WebHelper .disconnected";
         public const string WebHelper_LogOut = "-WebHelper .logout";
         public const string WebHelper_GetUser = "-WebHelper .get user";
@@ -50,8 +54,8 @@ namespace FunGame.Desktop.Models.Config
         /**
          * Socket Configs
          */
-        public static string SERVER_IPADRESS = ""; // 默认IP地址
-        public static int SERVER_PORT; // 默认端口
+        public static string SERVER_IPADRESS = ""; // 服务器IP地址
+        public static int SERVER_PORT = 0; // 服务器端口号
         public static Encoding DEFAULT_ENCODING = Encoding.UTF8;
 
         /**
@@ -71,7 +75,9 @@ namespace FunGame.Desktop.Models.Config
         public const string FunGame_CreateTeam = "创建游戏 团队";
         public const string FunGame_StartGame = "开始游戏";
         public const string FunGame_Connect = "连接服务器";
-        public const string FunGame_Disconnect = "断开连接";
+        public const string FunGame_ConnectTo = "连接指定服务器";
+        public const string FunGame_Disconnect = "登出并断开连接";
+        public const string FunGame_DisconnectWhenNotLogin = "断开连接";
         public const string FunGame_Retry = "重新连接";
         public const string FunGame_AutoRetryOn = "开启自动重连";
         public const string FunGame_AutoRetryOff = "关闭自动重连";
@@ -92,7 +98,7 @@ namespace FunGame.Desktop.Models.Config
         public static readonly object[] PresetNoLoginItems =
         {
             FunGame_PresetMessage,
-            FunGame_Disconnect,
+            FunGame_DisconnectWhenNotLogin,
             FunGame_AutoRetryOn,
             FunGame_AutoRetryOff
         };
@@ -100,6 +106,7 @@ namespace FunGame.Desktop.Models.Config
         {
             FunGame_PresetMessage,
             FunGame_Connect,
+            FunGame_ConnectTo,
             FunGame_Retry,
             FunGame_AutoRetryOn,
             FunGame_AutoRetryOff

@@ -70,7 +70,8 @@ namespace FunGame.Core.Api.Model.Enum
         OK,
         OKCancel,
         YesNo,
-        RetryCancel
+        RetryCancel,
+        Input
     }
 
     public enum InterfaceType
@@ -93,7 +94,16 @@ namespace FunGame.Core.Api.Model.Enum
         Login,
         CheckLogin,
         Logout,
+        Disconnect,
         HeartBeat
+    }
+
+    public enum ErrorType
+    {
+        None,
+        IsNotIP,
+        IsNotPort,
+        WrongFormat
     }
 
     #endregion
@@ -119,7 +129,8 @@ namespace FunGame.Core.Api.Model.Enum
         CloseSocket,
         StartWebHelper,
         Login,
-        Logout
+        Logout,
+        Disconnect
     }
 
     public enum InterfaceMethod

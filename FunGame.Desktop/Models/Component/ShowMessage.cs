@@ -16,6 +16,7 @@ namespace FunGame.Desktop.Models.Component
     {
         private int Location_x, Location_y;
         private MessageResult MessageResult = MessageResult.Cancel;
+        private string InputResult = "";
         private int AutoClose = 0;
 
         private const string TITLE_TIP = "提示";
@@ -70,6 +71,8 @@ namespace FunGame.Desktop.Models.Component
                     {
                         case MessageButtonType.OK:
                             MidButton.Text = BUTTON_OK;
+                            InputText.Visible = false;
+                            InputButton.Visible = false;
                             LeftButton.Visible = false;
                             RightButton.Visible = false;
                             MidButton.Visible = true;
@@ -77,6 +80,8 @@ namespace FunGame.Desktop.Models.Component
                         case MessageButtonType.OKCancel:
                             LeftButton.Text = BUTTON_OK;
                             RightButton.Text = BUTTON_CANCEL;
+                            InputText.Visible = false;
+                            InputButton.Visible = false;
                             LeftButton.Visible = true;
                             RightButton.Visible = true;
                             MidButton.Visible = false;
@@ -84,6 +89,8 @@ namespace FunGame.Desktop.Models.Component
                         case MessageButtonType.YesNo:
                             LeftButton.Text = BUTTON_YES;
                             RightButton.Text = BUTTON_NO;
+                            InputText.Visible = false;
+                            InputButton.Visible = false;
                             LeftButton.Visible = true;
                             RightButton.Visible = true;
                             MidButton.Visible = false;
@@ -91,9 +98,19 @@ namespace FunGame.Desktop.Models.Component
                         case MessageButtonType.RetryCancel:
                             LeftButton.Text = BUTTON_RETRY;
                             RightButton.Text = BUTTON_CANCEL;
+                            InputText.Visible = false;
+                            InputButton.Visible = false;
                             LeftButton.Visible = true;
                             RightButton.Visible = true;
                             MidButton.Visible = false;
+                            break;
+                        case MessageButtonType.Input:
+                            InputButton.Text = BUTTON_OK;
+                            LeftButton.Visible = false;
+                            RightButton.Visible = false;
+                            MidButton.Visible = false;
+                            InputText.Visible = true;
+                            InputButton.Visible = true;
                             break;
                     }
                     if (length > 4 && objs[4] != null) MidButton.Text = (string)objs[4];
@@ -231,6 +248,13 @@ namespace FunGame.Desktop.Models.Component
             return result;
         }
 
+        public static string InputMessage(string msg, string title)
+        {
+            object[] objs = { title, msg, 0, MessageButtonType.Input, BUTTON_CANCEL, BUTTON_RETRY, BUTTON_CANCEL };
+            string result = new ShowMessage(objs).InputResult;
+            return result;
+        }
+
         private void LeftButton_Click(object sender, EventArgs e)
         {
             SetButtonResult(LeftButton.Text);
@@ -244,6 +268,34 @@ namespace FunGame.Desktop.Models.Component
         private void MidButton_Click(object sender, EventArgs e)
         {
             SetButtonResult(MidButton.Text);
+        }
+
+        private void InputButton_Click()
+        {
+            if (InputText.Text != null && !InputText.Text.Equals(""))
+            {
+                InputResult = InputText.Text;
+                Dispose();
+            }
+            else
+            {
+                InputText.Enabled = false;
+                WarningMessage("不能输入空值！");
+                InputText.Enabled = true;
+            }
+        }
+
+        private void InputButton_Click(object sender, EventArgs e)
+        {
+            InputButton_Click();
+        }
+
+        private void InputText_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode.Equals(Keys.Enter))
+            {
+                InputButton_Click();
+            }
         }
 
         private void Exit_Click(object sender, EventArgs e)
