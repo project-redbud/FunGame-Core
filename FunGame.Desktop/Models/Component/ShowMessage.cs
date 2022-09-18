@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using FunGame.Core.Api.Model.Enum;
-using static FunGame.Core.Api.Model.Enum.EnumHelper;
 
 namespace FunGame.Desktop.Models.Component
 {

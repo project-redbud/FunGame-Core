@@ -10,6 +10,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Net.NetworkInformation;
 using FunGame.Core.Api.Model.Entity;
 using FunGame.Core.Api.Model.Enum;
+using FunGame.Core.Api.Util;
 using FunGame.Desktop.Models.Config;
 using FunGame.Desktop.UI;
 
