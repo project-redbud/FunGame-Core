@@ -34,7 +34,6 @@ namespace FunGame.Core.Api.Interface
 
     public interface ServerInterface
     {
-        public string DBConnection();
-        public Hashtable GetServerSettings();
+        
     }
 }

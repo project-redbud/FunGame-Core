@@ -15,17 +15,17 @@ using FunGame.Desktop.UI;
 
 namespace FunGame.Desktop.Utils
 {
-    public class WebHelper
+    public class SocketHelper
     {
         private Socket? client;
         private EndPoint? server;
         Main Main;
 
-        Action<Main, Socket>? WebHelper_Action = null;
+        Action<Main, Socket>? SocketHelper_Action = null;
 
         Task? WaitHeartBeat = null;
 
-        public WebHelper(Main main)
+        public SocketHelper(Main main)
         {
             Main = main;
         }
@@ -38,30 +38,30 @@ namespace FunGame.Desktop.Utils
         {
             switch (i)
             {
-                case (int)WebHelperMethod.CreateSocket:
+                case (int)SocketHelperMethod.CreateSocket:
                     CreateSocket();
                     break;
-                case (int)WebHelperMethod.CloseSocket:
+                case (int)SocketHelperMethod.CloseSocket:
                     Close();
                     break;
-                case (int)WebHelperMethod.StartWebHelper:
-                    StartWebHelper();
+                case (int)SocketHelperMethod.StartSocketHelper:
+                    StartSocketHelper();
                     break;
-                case (int)WebHelperMethod.Login:
+                case (int)SocketHelperMethod.Login:
                     if (client != null)
                     {
                         Send((int)SocketMessageType.CheckLogin, new object[] { Main, client, new User("Mili") });
                         return true;
                     }
                     return false;
-                case (int)WebHelperMethod.Logout:
+                case (int)SocketHelperMethod.Logout:
                     if (client != null && Usercfg.LoginUser != null)
                     {
                         Send((int)SocketMessageType.Logout, new object[] { Main, client, Usercfg.LoginUser });
                         return true;
                     }
                     return false;
-                case (int)WebHelperMethod.Disconnect:
+                case (int)SocketHelperMethod.Disconnect:
                     if (client != null)
                     {
                         Send((int)SocketMessageType.Disconnect, new object[] { Main, client });
@@ -88,14 +88,14 @@ namespace FunGame.Desktop.Utils
                         client.Connect(server);
                         if (IsConnected())
                         {
-                            Main.GetMessage(this, Config.WebHelper_WaitLoginAndSetYellow);
+                            Main.GetMessage(this, Config.SocketHelper_WaitLoginAndSetYellow);
                             break;
                         }
                     }
                 }
-                WebHelper_Action = (main, socket) =>
+                SocketHelper_Action = (main, socket) =>
                 {
-                    object? obj = main.GetMessage(this, Config.WebHelper_GetUser);
+                    object? obj = main.GetMessage(this, Config.SocketHelper_GetUser);
                     object[] objs;
                     if (obj != null)
                         objs = new object[] { main, socket, obj };
@@ -104,24 +104,24 @@ namespace FunGame.Desktop.Utils
                     if (Send((int)SocketMessageType.GetNotice, objs)) // 接触服务器并获取公告
                     {
                         main.GetMessage(this, " >> 连接服务器成功，请登录账号以体验FunGame。", true);
-                        main.GetMessage(this, Config.WebHelper_SetNotice);
+                        main.GetMessage(this, Config.SocketHelper_SetNotice);
                     }
                 };
                 Task t = Task.Factory.StartNew(() =>
                 {
                     if (Main.InvokeRequired)
                     {
-                        Main.Invoke(WebHelper_Action, Main, client);
+                        Main.Invoke(SocketHelper_Action, Main, client);
                     }
                     else
                     {
-                        WebHelper_Action(Main, client);
+                        SocketHelper_Action(Main, client);
                     }
                 });
             }
             catch (Exception e)
             {
-                Main.GetMessage(this, Config.WebHelper_Disconnected);
+                Main.GetMessage(this, Config.SocketHelper_Disconnected);
                 Main.GetMessage(this, e.StackTrace);
                 Close();
             }
@@ -175,25 +175,25 @@ namespace FunGame.Desktop.Utils
                             case (int)SocketMessageType.Login:
                                 break;
                             case (int)SocketMessageType.CheckLogin:
-                                Main.GetMessage(this, Config.WebHelper_SetUser, false, objs);
+                                Main.GetMessage(this, Config.SocketHelper_SetUser, false, objs);
                                 Main.GetMessage(this, read, true);
-                                StartWebHelper(); // 开始创建TCP流
+                                StartSocketHelper(); // 开始创建TCP流
                                 return true;
                             case (int)SocketMessageType.Logout:
-                                Main.GetMessage(this, Config.WebHelper_SetUser, false, objs);
+                                Main.GetMessage(this, Config.SocketHelper_SetUser, false, objs);
                                 Main.GetMessage(this, read, true);
-                                Main.GetMessage(this, Config.WebHelper_LogOut);
+                                Main.GetMessage(this, Config.SocketHelper_LogOut);
                                 Close();
                                 return true;
                             case (int)SocketMessageType.Disconnect:
                                 Main.GetMessage(this, read, true);
-                                Main.GetMessage(this, Config.WebHelper_Disconnect);
+                                Main.GetMessage(this, Config.SocketHelper_Disconnect);
                                 Close();
                                 return true;
                             case (int)SocketMessageType.HeartBeat:
                                 if (WaitHeartBeat != null && !WaitHeartBeat.IsCompleted) WaitHeartBeat.Wait(1);
-                                Config.WebHelper_HeartBeatFaileds = 0;
-                                main.GetMessage(this, Config.WebHelper_SetGreenAndPing);
+                                Config.SocketHelper_HeartBeatFaileds = 0;
+                                main.GetMessage(this, Config.SocketHelper_SetGreenAndPing);
                                 return true;
                         }
                         main.GetMessage(this, read);
@@ -204,13 +204,13 @@ namespace FunGame.Desktop.Utils
                 }
                 else
                 {
-                    main.GetMessage(this, Config.WebHelper_Disconnected);
+                    main.GetMessage(this, Config.SocketHelper_Disconnected);
                     throw new Exception("ERROR：服务器连接失败。");
                 }
             }
             catch (Exception e)
             {
-                main.GetMessage(this, Config.WebHelper_Disconnected);
+                main.GetMessage(this, Config.SocketHelper_Disconnected);
                 main.GetMessage(this, e.Message != null ? e.Message + "\n" + e.StackTrace : "" + e.StackTrace);
                 Close();
             }
@@ -302,7 +302,7 @@ namespace FunGame.Desktop.Utils
                 }
                 else
                 {
-                    main.GetMessage(this, Config.WebHelper_Disconnected);
+                    main.GetMessage(this, Config.SocketHelper_Disconnected);
                     throw new Exception("ERROR：服务器连接失败。");
                 }
             }
@@ -323,9 +323,9 @@ namespace FunGame.Desktop.Utils
         private void CatchException(Main main, Exception e, bool isDisconnected)
         {
             if (isDisconnected)
-                main.GetMessage(this, Config.WebHelper_Disconnected);
+                main.GetMessage(this, Config.SocketHelper_Disconnected);
             else
-                main.GetMessage(this, Config.WebHelper_SetRed);
+                main.GetMessage(this, Config.SocketHelper_SetRed);
             main.GetMessage(this, e.Message != null ? e.Message + "\n" + e.StackTrace : "" + e.StackTrace);
             Close();
         }
@@ -335,8 +335,8 @@ namespace FunGame.Desktop.Utils
             // 超过三次没回应心跳，服务器连接失败。
             try
             {
-                Config.WebHelper_HeartBeatFaileds++;
-                if (Config.WebHelper_HeartBeatFaileds >= 3)
+                Config.SocketHelper_HeartBeatFaileds++;
+                if (Config.SocketHelper_HeartBeatFaileds >= 3)
                     throw new Exception("ERROR：服务器连接失败。");
             }
             catch (Exception e)
@@ -378,7 +378,7 @@ namespace FunGame.Desktop.Utils
             }
         }
 
-        private void StartWebHelper()
+        private void StartSocketHelper()
         {
             Task HeartBeatStream = Task.Factory.StartNew(() =>
             {

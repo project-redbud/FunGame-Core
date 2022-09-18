@@ -15,9 +15,7 @@ namespace FunGame.Desktop.Models.Config
          * Game Configs
          */
         public static FunGameEnums.FunGame FunGameType = FunGameEnums.FunGame.FunGame_Desktop;
-
-        public static INIHelper INIHelper = new();
-        public static AssemblyHelper AssemblyHelper = new();
+        public static ReflectionHelper ReflectionHelper = new();
 
         /**
          * FunGame Desktop Configs
@@ -35,21 +33,21 @@ namespace FunGame.Desktop.Models.Config
         public static string FunGame_Notice = ""; // 公告
 
         /**
-         * WebHelper Configs
+         * SocketHelper Configs
          */
-        public const string WebHelper_SetGreen = "-WebHelper .set green";
-        public const string WebHelper_SetGreenAndPing = "-WebHelper .set greenandping";
-        public const string WebHelper_SetRed = "-WebHelper .set red";
-        public const string WebHelper_SetYellow = "-WebHelper .set yellow";
-        public const string WebHelper_WaitConnectAndSetYellow = "-WebHelper .waitconnect .set yellow";
-        public const string WebHelper_WaitLoginAndSetYellow = "-WebHelper .waitlogin .set yellow";
-        public const string WebHelper_Disconnect = "-WebHelper .disconnect";
-        public const string WebHelper_Disconnected = "-WebHelper .disconnected";
-        public const string WebHelper_LogOut = "-WebHelper .logout";
-        public const string WebHelper_GetUser = "-WebHelper .get user";
-        public const string WebHelper_SetUser = "-WebHelper .set user";
-        public const string WebHelper_SetNotice = "-WebHelper .set notice";
-        public static int WebHelper_HeartBeatFaileds = 0;
+        public const string SocketHelper_SetGreen = "-SocketHelper .set green";
+        public const string SocketHelper_SetGreenAndPing = "-SocketHelper .set greenandping";
+        public const string SocketHelper_SetRed = "-SocketHelper .set red";
+        public const string SocketHelper_SetYellow = "-SocketHelper .set yellow";
+        public const string SocketHelper_WaitConnectAndSetYellow = "-SocketHelper .waitconnect .set yellow";
+        public const string SocketHelper_WaitLoginAndSetYellow = "-SocketHelper .waitlogin .set yellow";
+        public const string SocketHelper_Disconnect = "-SocketHelper .disconnect";
+        public const string SocketHelper_Disconnected = "-SocketHelper .disconnected";
+        public const string SocketHelper_LogOut = "-SocketHelper .logout";
+        public const string SocketHelper_GetUser = "-SocketHelper .get user";
+        public const string SocketHelper_SetUser = "-SocketHelper .set user";
+        public const string SocketHelper_SetNotice = "-SocketHelper .set notice";
+        public static int SocketHelper_HeartBeatFaileds = 0;
 
         /**
          * Socket Configs

@@ -123,11 +123,11 @@ namespace FunGame.Core.Api.Model.Enum
 
     #region Method
 
-    public enum WebHelperMethod
+    public enum SocketHelperMethod
     {
         CreateSocket,
         CloseSocket,
-        StartWebHelper,
+        StartSocketHelper,
         Login,
         Logout,
         Disconnect
