@@ -4,13 +4,13 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Company>Milimoe</Company>
     <BaseOutputPath>..\bin</BaseOutputPath>
+    <Company>Milimoe</Company>
     <Authors>Milimoe</Authors>
-    <Title>FunGame</Title>
-    <PackageOutputPath>..\bin</PackageOutputPath>
     <AssemblyVersion>1.0</AssemblyVersion>
     <FileVersion>1.0</FileVersion>
+    <PackageOutputPath>..\bin</PackageOutputPath>
+    <Title>FunGame.Core</Title>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -20,12 +20,5 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>embedded</DebugType>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\FunGame.Core.Api\FunGame.Core.Api.csproj">
-      <Private>False</Private>
-      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
-    </ProjectReference>
-  </ItemGroup>
 
 </Project>

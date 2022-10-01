@@ -4,13 +4,13 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <BaseOutputPath>..\bin\</BaseOutputPath>
-    <Authors>Milimoe</Authors>
     <Company>Milimoe</Company>
-    <Title>FunGameSDK</Title>
+    <BaseOutputPath>..\bin</BaseOutputPath>
+    <Authors>Milimoe</Authors>
+    <Title>FunGame.Implement</Title>
+    <PackageOutputPath>..\bin</PackageOutputPath>
     <AssemblyVersion>1.0</AssemblyVersion>
     <FileVersion>1.0</FileVersion>
-    <PackageOutputPath>..\bin\plugin</PackageOutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -22,7 +22,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FunGame.Core\FunGame.Core.csproj" />
+    <ProjectReference Include="..\FunGame.Core\FunGame.Core.csproj">
+      <Private>False</Private>
+      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,4 @@
-namespace FunGame.Desktop.UI
+namespace Milimoe.FunGame.Desktop.UI
 {
     internal static class Start
     {

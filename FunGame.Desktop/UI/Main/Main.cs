@@ -1,17 +1,17 @@
-using FunGame.Desktop.Models.Component;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Net;
 using System.Windows.Forms;
 using System.Net.NetworkInformation;
 using System.Text;
-using FunGame.Core.Api.Model.Entity;
-using FunGame.Desktop.Models.Config;
-using FunGame.Desktop.Utils;
-using FunGame.Core.Api.Model.Enum;
-using FunGame.Core.Api.Util;
+using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Entity.General;
+using Milimoe.FunGame.Core.Entity.Enum;
+using Milimoe.FunGame.Desktop.Entity.Component;
+using Milimoe.FunGame.Desktop.Others;
+using Milimoe.FunGame.Desktop.Utils;
 
-namespace FunGame.Desktop.UI
+namespace Milimoe.FunGame.Desktop.UI
 {
     public partial class Main : Form
     {
@@ -291,7 +291,7 @@ namespace FunGame.Desktop.UI
         {
             try
             {
-                string? ipaddress = (string?)Config.ReflectionHelper.GetFunGameCoreValue((int)InterfaceType.ClientConnectInterface, (int)InterfaceMethod.RemoteServerIP); // 获取服务器IP
+                string? ipaddress = (string?)Config.ReflectionHelper.GetFunGameImplValue((int)InterfaceType.IClient, (int)InterfaceMethod.RemoteServerIP); // 获取服务器IP
                 if (ipaddress != null)
                 {
                     string[] s = ipaddress.Split(':');

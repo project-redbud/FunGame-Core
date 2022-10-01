@@ -8,16 +8,23 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunGame.Desktop", "FunGame.
 		{CC6C83C6-5818-4565-8873-67587FED1D0A} = {CC6C83C6-5818-4565-8873-67587FED1D0A}
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunGame.Core", "FunGame.Core\FunGame.Core.csproj", "{CC6C83C6-5818-4565-8873-67587FED1D0A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunGame.Implement", "FunGame.Implement\FunGame.Implement.csproj", "{CC6C83C6-5818-4565-8873-67587FED1D0A}"
 	ProjectSection(ProjectDependencies) = postProject
 		{842BB22E-4309-4ADD-93CD-A981CE10C30E} = {842BB22E-4309-4ADD-93CD-A981CE10C30E}
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunGame.Core.Api", "FunGame.Core.Api\FunGame.Core.Api.csproj", "{842BB22E-4309-4ADD-93CD-A981CE10C30E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunGame.Core", "FunGame.Core\FunGame.Core.csproj", "{842BB22E-4309-4ADD-93CD-A981CE10C30E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunGame.Plugin", "FunGame.Plugin\FunGame.Plugin.csproj", "{A1132284-47F3-4C2D-89DB-C34B2354D9BB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunGame.Plugin", "FunGame.Plugin\FunGame.Plugin.csproj", "{A1132284-47F3-4C2D-89DB-C34B2354D9BB}"
 	ProjectSection(ProjectDependencies) = postProject
 		{842BB22E-4309-4ADD-93CD-A981CE10C30E} = {842BB22E-4309-4ADD-93CD-A981CE10C30E}
+		{CC6C83C6-5818-4565-8873-67587FED1D0A} = {CC6C83C6-5818-4565-8873-67587FED1D0A}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunGame.Console", "FunGame.Console\FunGame.Console.csproj", "{1DB30EB0-5434-453B-949B-2164B6809291}"
+	ProjectSection(ProjectDependencies) = postProject
+		{842BB22E-4309-4ADD-93CD-A981CE10C30E} = {842BB22E-4309-4ADD-93CD-A981CE10C30E}
+		{CC6C83C6-5818-4565-8873-67587FED1D0A} = {CC6C83C6-5818-4565-8873-67587FED1D0A}
 	EndProjectSection
 EndProject
 Global
@@ -42,6 +49,10 @@ Global
 		{A1132284-47F3-4C2D-89DB-C34B2354D9BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A1132284-47F3-4C2D-89DB-C34B2354D9BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A1132284-47F3-4C2D-89DB-C34B2354D9BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DB30EB0-5434-453B-949B-2164B6809291}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DB30EB0-5434-453B-949B-2164B6809291}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DB30EB0-5434-453B-949B-2164B6809291}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DB30EB0-5434-453B-949B-2164B6809291}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

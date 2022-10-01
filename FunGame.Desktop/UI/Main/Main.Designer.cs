@@ -1,7 +1,7 @@
-using FunGame.Desktop.Models.Component;
-using FunGame.Desktop.Models.Config;
+using Milimoe.FunGame.Desktop.Entity.Component;
+using Milimoe.FunGame.Desktop.Others;
 
-namespace FunGame.Desktop.UI
+namespace Milimoe.FunGame.Desktop.UI
 {
     partial class Main
     {
@@ -33,7 +33,7 @@ namespace FunGame.Desktop.UI
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
-            this.Exit = new FunGame.Desktop.Models.Component.ExitButton(this.components);
+            this.Exit = new FunGame.Desktop.Entity.Component.ExitButton(this.components);
             this.Title = new System.Windows.Forms.Label();
             this.MinForm = new System.Windows.Forms.Button();
             this.Connection = new System.Windows.Forms.Label();
@@ -55,10 +55,10 @@ namespace FunGame.Desktop.UI
             this.QueryRoom = new System.Windows.Forms.Button();
             this.RoomList = new System.Windows.Forms.ListBox();
             this.Notice = new System.Windows.Forms.GroupBox();
-            this.NoticeText = new FunGame.Desktop.Models.Component.TextArea();
+            this.NoticeText = new FunGame.Desktop.Entity.Component.TextArea();
             this.InfoBox = new System.Windows.Forms.GroupBox();
-            this.TransparentRectControl = new FunGame.Desktop.Models.Component.TransparentRect();
-            this.GameInfo = new FunGame.Desktop.Models.Component.TextArea();
+            this.TransparentRectControl = new FunGame.Desktop.Entity.Component.TransparentRect();
+            this.GameInfo = new FunGame.Desktop.Entity.Component.TextArea();
             this.QuitRoom = new System.Windows.Forms.Button();
             this.CreateRoom = new System.Windows.Forms.Button();
             this.Logout = new System.Windows.Forms.Button();
@@ -77,7 +77,7 @@ namespace FunGame.Desktop.UI
             // 
             this.Exit.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.Exit.BackColor = System.Drawing.Color.White;
-            this.Exit.BackgroundImage = global::FunGame.Desktop.Properties.Resources.exit;
+            this.Exit.BackgroundImage = global::Milimoe.FunGame.Desktop.Properties.Resources.exit;
             this.Exit.FlatAppearance.BorderColor = System.Drawing.Color.White;
             this.Exit.FlatAppearance.BorderSize = 0;
             this.Exit.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
@@ -110,7 +110,7 @@ namespace FunGame.Desktop.UI
             // 
             this.MinForm.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.MinForm.BackColor = System.Drawing.Color.White;
-            this.MinForm.BackgroundImage = global::FunGame.Desktop.Properties.Resources.min;
+            this.MinForm.BackgroundImage = global::Milimoe.FunGame.Desktop.Properties.Resources.min;
             this.MinForm.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.MinForm.FlatAppearance.BorderColor = System.Drawing.Color.LightGray;
             this.MinForm.FlatAppearance.BorderSize = 0;
@@ -142,7 +142,7 @@ namespace FunGame.Desktop.UI
             // Light
             // 
             this.Light.BackColor = System.Drawing.Color.Transparent;
-            this.Light.Image = global::FunGame.Desktop.Properties.Resources.yellow;
+            this.Light.Image = global::Milimoe.FunGame.Desktop.Properties.Resources.yellow;
             this.Light.Location = new System.Drawing.Point(777, 426);
             this.Light.Name = "Light";
             this.Light.Size = new System.Drawing.Size(18, 18);
@@ -152,7 +152,7 @@ namespace FunGame.Desktop.UI
             // 
             this.SendTalkText.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.SendTalkText.BackColor = System.Drawing.Color.Transparent;
-            this.SendTalkText.BackgroundImage = global::FunGame.Desktop.Properties.Resources.send;
+            this.SendTalkText.BackgroundImage = global::Milimoe.FunGame.Desktop.Properties.Resources.send;
             this.SendTalkText.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.SendTalkText.FlatAppearance.BorderSize = 0;
             this.SendTalkText.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Teal;
@@ -433,7 +433,7 @@ namespace FunGame.Desktop.UI
             this.TransparentRectControl.Name = "TransparentRectControl";
             this.TransparentRectControl.Opacity = 125;
             this.TransparentRectControl.Radius = 20;
-            this.TransparentRectControl.ShapeBorderStyle = FunGame.Desktop.Models.Component.TransparentRect.ShapeBorderStyles.ShapeBSNone;
+            this.TransparentRectControl.ShapeBorderStyle = Milimoe.FunGame.Desktop.Entity.Component.TransparentRect.ShapeBorderStyles.ShapeBSNone;
             this.TransparentRectControl.Size = new System.Drawing.Size(464, 343);
             this.TransparentRectControl.TabIndex = 2;
             this.TransparentRectControl.TabStop = false;
@@ -559,7 +559,7 @@ namespace FunGame.Desktop.UI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackgroundImage = global::FunGame.Desktop.Properties.Resources.back;
+            this.BackgroundImage = global::Milimoe.FunGame.Desktop.Properties.Resources.back;
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.StopMatch);
             this.Controls.Add(this.Copyright);
@@ -637,8 +637,8 @@ namespace FunGame.Desktop.UI
         private Button Store;
         private LinkLabel Copyright;
         private Button StopMatch;
-        private Models.Component.TextArea GameInfo;
-        private Models.Component.TextArea NoticeText;
-        private Models.Component.TransparentRect TransparentRectControl;
+        private Entity.Component.TextArea GameInfo;
+        private Entity.Component.TextArea NoticeText;
+        private Entity.Component.TransparentRect TransparentRectControl;
     }
 }

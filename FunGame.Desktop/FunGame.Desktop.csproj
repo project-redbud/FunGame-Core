@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -15,7 +15,7 @@
     <SignAssembly>False</SignAssembly>
     <Authors>Milimoe</Authors>
     <Product>FunGame</Product>
-    <Title>FunGame</Title>
+    <Title>FunGame.Desktop</Title>
     <PackageOutputPath>..\bin</PackageOutputPath>
     <AssemblyVersion>1.0</AssemblyVersion>
     <FileVersion>1.0</FileVersion>
@@ -49,6 +49,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Models\" />
     <Folder Include="UI\Login\" />
     <Folder Include="UI\Register\" />
     <Folder Include="UI\RoomSetting\" />
@@ -58,10 +59,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FunGame.Core.Api\FunGame.Core.Api.csproj">
+    <ProjectReference Include="..\FunGame.Core\FunGame.Core.csproj">
       <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-    <ProjectReference Include="..\FunGame.Core\FunGame.Core.csproj">
+    <ProjectReference Include="..\FunGame.Implement\FunGame.Implement.csproj">
       <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
     </ProjectReference>
   </ItemGroup>

@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 using FunGame.Desktop.Models.Component;
 using System.ComponentModel.DataAnnotations;
 using System.Net.NetworkInformation;
-using FunGame.Core.Api.Model.Entity;
-using FunGame.Core.Api.Model.Enum;
-using FunGame.Core.Api.Util;
-using FunGame.Desktop.Models.Config;
-using FunGame.Desktop.UI;
+using Milimoe.FunGame.Core.Entity.General;
+using Milimoe.FunGame.Core.Entity.Enum;
+using Milimoe.FunGame.Desktop.Others;
+using Milimoe.FunGame.Desktop.UI;
+using Milimoe.FunGame.Core.Api.Utility;
 
-namespace FunGame.Desktop.Utils
+namespace Milimoe.FunGame.Desktop.Utils
 {
     public class SocketHelper
     {
