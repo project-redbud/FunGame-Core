@@ -12,6 +12,7 @@
     <ApplicationIcon>images\logo.ico</ApplicationIcon>
     <BaseOutputPath>..\bin\</BaseOutputPath>
     <AssemblyName>FunGame</AssemblyName>
+    <RootNamespace>Milimoe.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

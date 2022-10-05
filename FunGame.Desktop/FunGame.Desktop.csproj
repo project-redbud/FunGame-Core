@@ -19,6 +19,7 @@
     <PackageOutputPath>..\bin</PackageOutputPath>
     <AssemblyVersion>1.0</AssemblyVersion>
     <FileVersion>1.0</FileVersion>
+    <RootNamespace>Milimoe.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -49,13 +50,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
     <Folder Include="UI\Login\" />
     <Folder Include="UI\Register\" />
     <Folder Include="UI\RoomSetting\" />
-    <Folder Include="UI\UserSetting\" />
+    <Folder Include="UI\UserCenter\" />
     <Folder Include="UI\Stock\" />
-    <Folder Include="UI\Store\" />
+    <Folder Include="UI\Inventory\" />
   </ItemGroup>
 
   <ItemGroup>

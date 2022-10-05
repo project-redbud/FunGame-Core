@@ -171,6 +171,7 @@ namespace Milimoe.FunGame.Desktop.UI
                             {
                                 SetServerStatusLight((int)LightType.Red);
                                 SetButtonEnableIfLogon(false, ClientState.WaitConnect);
+                                LogoutAccount();
                             };
                             if (InvokeRequired)
                                 BeginInvoke(SocketHelper_Action, this);
