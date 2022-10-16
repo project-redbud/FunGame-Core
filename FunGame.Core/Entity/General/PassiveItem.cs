@@ -10,9 +10,15 @@ namespace Milimoe.FunGame.Core.Entity.General
     {
         public PassiveSkill? Skill { get; set; } = null;
 
-        public PassiveItem()
+        internal PassiveItem()
         {
             Active = false;
+        }
+
+        internal PassiveItem(string Name)
+        {
+            Active = false;
+            this.Name = Name;
         }
     }
 }

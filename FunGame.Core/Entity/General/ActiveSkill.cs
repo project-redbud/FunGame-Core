@@ -21,9 +21,15 @@ namespace Milimoe.FunGame.Core.Entity.General
         public decimal Reference9 { get; set; } = 0;
         public decimal Reference10 { get; set; } = 0;
 
-        public ActiveSkill()
+        internal ActiveSkill()
         {
             Active = true;
+        }
+
+        internal ActiveSkill(string Name)
+        {
+            Active = true;
+            this.Name = Name;
         }
     }
 }

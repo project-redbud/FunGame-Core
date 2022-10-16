@@ -26,10 +26,5 @@ namespace Milimoe.FunGame.Core.Entity.General
         public Hashtable? RatingStats { get; set; } = new Hashtable();
         public Hashtable? EloStats { get; set; } = new Hashtable();
         public Hashtable? RankStats { get; set; } = new Hashtable();
-
-        public GameStatistics()
-        {
-
-        }
     }
 }

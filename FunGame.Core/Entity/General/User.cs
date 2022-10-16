@@ -26,17 +26,17 @@ namespace Milimoe.FunGame.Core.Entity.General
         public UserStatistics? Statistics { get; set; } = null;
         public Stock? Stock { get; set; } = null;
 
-        public User()
+        internal User()
         {
 
         }
 
-        public User(string username)
+        internal User(string username)
         {
             Userame = username;
         }
 
-        public User(string username, string password)
+        internal User(string username, string password)
         {
             Userame = username;
             Password = password;

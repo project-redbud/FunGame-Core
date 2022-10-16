@@ -10,9 +10,15 @@ namespace Milimoe.FunGame.Core.Entity.General
     {
         public ActiveSkill? Skill { get; set; } = null;
 
-        public ActiveItem()
+        internal ActiveItem()
         {
             Active = true;
+        }
+
+        internal ActiveItem(string Name)
+        {
+            Active = true;
+            this.Name = Name;
         }
     }
 }

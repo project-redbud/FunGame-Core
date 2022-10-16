@@ -33,10 +33,5 @@ namespace Milimoe.FunGame.Core.Entity.General
         public decimal EvadeRate { get; set; } = 0.05M;
         public Hashtable? Skills { get; set; } = new Hashtable();
         public Hashtable? Items { get; set; } = new Hashtable();
-
-        public Character()
-        {
-
-        }
     }
 }

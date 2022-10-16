@@ -19,9 +19,15 @@ namespace Milimoe.FunGame.Core.Entity.General
         public decimal Reference9 { get; set; } = 0;
         public decimal Reference10 { get; set; } = 0;
 
-        public PassiveSkill()
+        internal PassiveSkill()
         {
             Active = false;
+        }
+
+        internal PassiveSkill(string Name)
+        {
+            Active = false;
+            this.Name = Name;
         }
     }
 }

@@ -25,10 +25,5 @@ namespace Milimoe.FunGame.Core.Entity.General
         public Hashtable? Wins { get; set; } = new Hashtable();
         public Hashtable? Loses { get; set; } = new Hashtable();
         public Hashtable? Winrates { get; set; } = new Hashtable();
-
-        public CharacterStatistics()
-        {
-
-        }
     }
 }

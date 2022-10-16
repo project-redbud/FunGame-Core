@@ -5,7 +5,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-
 namespace Milimoe.FunGame.Core.Entity.Enum
 {
     /**
@@ -106,6 +105,43 @@ namespace Milimoe.FunGame.Core.Entity.Enum
         WrongFormat
     }
 
+    public enum EventType
+    {
+        ConnectEvent,
+        DisconnectEvent,
+        LoginEvent,
+        LogoutEvent,
+        RegEvent,
+        IntoRoomEvent,
+        SendTalkEvent,
+        CreateRoomEvent,
+        QuitRoomEvent,
+        ChangeRoomSettingEvent,
+        StartMatchEvent,
+        StartGameEvent,
+        ChangeProfileEvent,
+        ChangeAccountSettingEvent,
+        OpenStockEvent,
+        SignInEvent,
+        OpenStoreEvent,
+        BuyItemEvent,
+        ShowRankingEvent,
+        UseItemEvent,
+        EndGameEvent
+    }
+
+    public enum SkillType
+    {
+        Active,
+        Passive
+    }
+
+    public enum ItemType
+    {
+        Active,
+        Passive
+    }
+
     #endregion
 
     #region Result
@@ -117,6 +153,12 @@ namespace Milimoe.FunGame.Core.Entity.Enum
         Yes,
         No,
         Retry
+    }
+
+    public enum EventResult
+    {
+        Success,
+        Fail
     }
 
     #endregion

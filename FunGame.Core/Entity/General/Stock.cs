@@ -14,10 +14,5 @@ namespace Milimoe.FunGame.Core.Entity.General
         public User? User { get; set; } = null;
         public Hashtable? Characters { get; set; } = new Hashtable();
         public Hashtable? Items { get; set; } = new Hashtable();
-
-        public Stock()
-        {
-
-        }
     }
 }
