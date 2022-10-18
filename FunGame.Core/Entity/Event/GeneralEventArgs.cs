@@ -10,6 +10,12 @@ namespace Milimoe.FunGame.Core.Entity.Event
     {
         public string EventMsg { get; set; } = "";
         public object[]? Parameters { get; set; } = null;
+
+        public GeneralEventArgs(string EventMsg, object[]? Parameters = null)
+        {
+            this.EventMsg = EventMsg;
+            this.Parameters = Parameters;
+        }
     }
 
     public class GeneralEvent<T>
