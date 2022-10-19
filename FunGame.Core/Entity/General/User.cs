@@ -24,7 +24,7 @@ namespace Milimoe.FunGame.Core.Entity.General
         public decimal Materials { get; set; } = 0;
         public decimal GameTime { get; set; } = 0;
         public UserStatistics? Statistics { get; set; } = null;
-        public Stock? Stock { get; set; } = null;
+        public Inventory? Stock { get; set; } = null;
 
         internal User()
         {

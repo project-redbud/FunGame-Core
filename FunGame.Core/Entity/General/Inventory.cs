@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Milimoe.FunGame.Core.Entity.General
 {
-    public class Stock
+    public class Inventory
     {
         public int Id { get; set; }
         public string Name { get; set; } = "";

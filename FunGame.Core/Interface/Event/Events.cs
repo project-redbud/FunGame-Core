@@ -127,12 +127,12 @@ namespace Milimoe.FunGame.Core.Interface
         public event FailedEvent FailedChangeAccountSettingEvent;
     }
 
-    public interface IOpenStockEvent : IEvent
+    public interface IOpenInventoryEvent : IEvent
     {
-        public event BeforeEvent BeforeOpenStockEvent;
-        public event AfterEvent AfterOpenStockEvent;
-        public event SucceedEvent SucceedOpenStockEvent;
-        public event FailedEvent FailedOpenStockEvent;
+        public event BeforeEvent BeforeOpenInventoryEvent;
+        public event AfterEvent AfterOpenInventoryEvent;
+        public event SucceedEvent SucceedOpenInventoryEvent;
+        public event FailedEvent FailedOpenInventoryEvent;
     }
 
     public interface ISignInEvent : IEvent

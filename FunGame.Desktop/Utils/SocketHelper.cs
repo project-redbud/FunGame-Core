@@ -13,6 +13,7 @@ using Milimoe.FunGame.Core.Entity.Enum;
 using Milimoe.FunGame.Desktop.Others;
 using Milimoe.FunGame.Desktop.UI;
 using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Api.Factory;
 
 namespace Milimoe.FunGame.Desktop.Utils
 {
@@ -51,7 +52,7 @@ namespace Milimoe.FunGame.Desktop.Utils
                 case (int)SocketHelperMethod.Login:
                     if (client != null)
                     {
-                        Send((int)SocketMessageType.CheckLogin, new object[] { Main, client, new User("Mili") });
+                        Send((int)SocketMessageType.CheckLogin, new object[] { Main, client, UserFactory.GetInstance("Mili") });
                         return true;
                     }
                     return false;

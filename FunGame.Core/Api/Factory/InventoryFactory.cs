@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Milimoe.FunGame.Core.Api.Factory
 {
-    public class StockFactory
+    public class InventoryFactory
     {
         
     }
