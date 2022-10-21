@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Milimoe.FunGame.Core.Service
+namespace Milimoe.FunGame.Core.Interface.Base
 {
-    internal class PluginManager
+    internal interface ISocket
     {
-
+        internal int Send();
+        internal int Read();
     }
 }

@@ -33,37 +33,37 @@ namespace Milimoe.FunGame.Desktop.Utils
         }
 
         /// <summary>
-        /// 选择WebHelp分支方法
+        /// 选择SocketHelper分支方法
         /// </summary>
         /// <param name="i">分支方法ID</param>
-        public bool WebHelpMethod(int i)
+        public bool GetSocketHelperMethod(int i)
         {
             switch (i)
             {
-                case (int)SocketHelperMethod.CreateSocket:
+                case (int)Core.Entity.Enum.SocketHelperMethod.CreateSocket:
                     CreateSocket();
                     break;
-                case (int)SocketHelperMethod.CloseSocket:
+                case (int)Core.Entity.Enum.SocketHelperMethod.CloseSocket:
                     Close();
                     break;
-                case (int)SocketHelperMethod.StartSocketHelper:
+                case (int)Core.Entity.Enum.SocketHelperMethod.StartSocketHelper:
                     StartSocketHelper();
                     break;
-                case (int)SocketHelperMethod.Login:
+                case (int)Core.Entity.Enum.SocketHelperMethod.Login:
                     if (client != null)
                     {
-                        Send((int)SocketMessageType.CheckLogin, new object[] { Main, client, UserFactory.GetInstance("Mili") });
+                        Send((int)SocketMessageType.CheckLogin, new object[] { Main, client, FactoryHelper.New<User>("Mili") });
                         return true;
                     }
                     return false;
-                case (int)SocketHelperMethod.Logout:
+                case (int)Core.Entity.Enum.SocketHelperMethod.Logout:
                     if (client != null && Usercfg.LoginUser != null)
                     {
                         Send((int)SocketMessageType.Logout, new object[] { Main, client, Usercfg.LoginUser });
                         return true;
                     }
                     return false;
-                case (int)SocketHelperMethod.Disconnect:
+                case (int)Core.Entity.Enum.SocketHelperMethod.Disconnect:
                     if (client != null)
                     {
                         Send((int)SocketMessageType.Disconnect, new object[] { Main, client });

@@ -4,9 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Milimoe.FunGame.Core.Service
+namespace Milimoe.FunGame.Core.Entity.General
 {
-    public class MySQLManager
+    public class Empty
     {
+        internal Empty()
+        {
+
+        }
     }
 }

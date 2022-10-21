@@ -14,7 +14,7 @@ namespace Milimoe.FunGame.Desktop.Others
         /**
          * Game Configs
          */
-        public static FunGameEnums.FunGame FunGameType = FunGameEnums.FunGame.FunGame_Desktop;
+        public static FunGameEnum.FunGame FunGameType = FunGameEnum.FunGame.FunGame_Desktop;
         public static ReflectionHelper ReflectionHelper = new();
 
         /**

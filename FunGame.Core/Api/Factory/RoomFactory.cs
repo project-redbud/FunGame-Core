@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace Milimoe.FunGame.Core.Api.Factory
 {
-    public class RoomFactory
+    internal class RoomFactory
     {
-        public static Milimoe.FunGame.Core.Entity.General.Room GetInstanceByRandomID(Milimoe.FunGame.Core.Entity.Enum.RoomType type, Milimoe.FunGame.Core.Entity.General.User? user)
+        internal static Milimoe.FunGame.Core.Entity.General.Room GetInstanceByRandomID(Milimoe.FunGame.Core.Entity.Enum.RoomType type, Milimoe.FunGame.Core.Entity.General.User? user)
         {
             Milimoe.FunGame.Core.Entity.General.Room room = new(user)
             {
@@ -21,7 +21,7 @@ namespace Milimoe.FunGame.Core.Api.Factory
             return room;
         }
 
-        public static Milimoe.FunGame.Core.Entity.General.Room GetInstanceByRoomID(Milimoe.FunGame.Core.Entity.Enum.RoomType type, string roomid, Milimoe.FunGame.Core.Entity.General.User? user)
+        internal static Milimoe.FunGame.Core.Entity.General.Room GetInstanceByRoomID(Milimoe.FunGame.Core.Entity.Enum.RoomType type, string roomid, Milimoe.FunGame.Core.Entity.General.User? user)
         {
             Milimoe.FunGame.Core.Entity.General.Room room = new(roomid, user)
             {

@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Milimoe.FunGame.Core.Service
 {
-    public class ResourceManager
+    internal class ResourceManager
     {
+
     }
 }

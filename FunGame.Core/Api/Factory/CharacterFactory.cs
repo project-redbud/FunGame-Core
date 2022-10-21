@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace Milimoe.FunGame.Core.Api.Factory
 {
-    public class CharacterFactory
+    internal class CharacterFactory
     {
-        
+
     }
 }

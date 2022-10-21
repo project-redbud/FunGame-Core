@@ -1,61 +1,11 @@
-using System;
+锘縰sing System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Milimoe.FunGame.Core.Entity.Enum
 {
-    /**
-     * 这里存放框架实现相关的State Type Result Method
-     * 添加Milimoe.FunGame.Core.Api接口和实现时，需要在这里同步添加：InterfaceType、InterfaceMethod
-     */
-
-    #region State
-
-    public enum StartMatch_State
-    {
-        Matching,
-        Success,
-        Enable,
-        Cancel
-    }
-
-    public enum CreateRoom_State
-    {
-        Creating,
-        Success
-    }
-
-    public enum RoomState
-    {
-        Created,
-        Gaming,
-        Close,
-        Complete
-    }
-
-    public enum OnlineState
-    {
-        Offline,
-        Online,
-        Matching,
-        InRoom,
-        Gaming
-    }
-
-    public enum ClientState
-    {
-        Online,
-        WaitConnect,
-        WaitLogin
-    }
-
-    #endregion
-
-    #region Type
-
     public enum RoomType
     {
         Mix,
@@ -142,46 +92,21 @@ namespace Milimoe.FunGame.Core.Entity.Enum
         Passive
     }
 
-    #endregion
-
-    #region Result
-
-    public enum MessageResult
+    public enum EntityType
     {
-        OK,
-        Cancel,
-        Yes,
-        No,
-        Retry
+        Empty,
+        User,
+        UserStatistics,
+        Room,
+        Inventory,
+        Item,
+        ActiveItem,
+        PassiveItem,
+        Skill,
+        ActiveSkill,
+        PassiveSkill,
+        GameStatistics,
+        Character,
+        CharacterStatistics
     }
-
-    public enum EventResult
-    {
-        Success,
-        Fail
-    }
-
-    #endregion
-
-    #region Method
-
-    public enum SocketHelperMethod
-    {
-        CreateSocket,
-        CloseSocket,
-        StartSocketHelper,
-        Login,
-        Logout,
-        Disconnect
-    }
-
-    public enum InterfaceMethod
-    {
-        RemoteServerIP,
-        DBConnection,
-        GetServerSettings
-    }
-
-    #endregion
-
 }

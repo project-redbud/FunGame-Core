@@ -255,7 +255,7 @@ namespace Milimoe.FunGame.Desktop.UI
                                 if (SocketHelper != null && Config.FunGame_isAutoLogin)
                                 {
                                     // 自动登录
-                                    SocketHelper.WebHelpMethod((int)SocketHelperMethod.Login);
+                                    SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.Login);
                                 }
                             };
                             if (InvokeRequired)
@@ -355,13 +355,13 @@ namespace Milimoe.FunGame.Desktop.UI
                                 {
                                     if (SocketHelper != null)
                                     {
-                                        SocketHelper.WebHelpMethod((int)SocketHelperMethod.CloseSocket);
+                                        SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.CloseSocket);
                                         SocketHelper = null;
                                     }
                                     Config.FunGame_isRetrying = true;
                                     Application.DoEvents();
                                     SocketHelper = new SocketHelper(main);
-                                    SocketHelper.WebHelpMethod((int)SocketHelperMethod.CreateSocket); // Invoke -> CreateSocket
+                                    SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.CreateSocket); // Invoke -> CreateSocket
                                 }
                             }
                             catch
@@ -643,7 +643,7 @@ namespace Milimoe.FunGame.Desktop.UI
         {
             switch (i)
             {
-                case (int)StartMatch_State.Matching:
+                case (int)StartMatchState.Matching:
                     // 开始匹配
                     Config.FunGame_isMatching = true;
                     int loop = 0;
@@ -665,18 +665,18 @@ namespace Milimoe.FunGame.Desktop.UI
                                 };
                                 if (InvokeRequired)
                                 {
-                                    Invoke(StartMatch_Action, (int)StartMatch_State.Success, new object[] { roomid });
+                                    Invoke(StartMatch_Action, (int)StartMatchState.Success, new object[] { roomid });
                                 }
                                 else
                                 {
-                                    StartMatch_Action((int)StartMatch_State.Success, new object[] { roomid });
+                                    StartMatch_Action((int)StartMatchState.Success, new object[] { roomid });
                                 }
                                 break;
                             }
                         }
                     });
                     break;
-                case (int)StartMatch_State.Success:
+                case (int)StartMatchState.Success:
                     Config.FunGame_isMatching = false;
                     // 匹配成功返回房间号
                     roomid = "-1";
@@ -701,15 +701,15 @@ namespace Milimoe.FunGame.Desktop.UI
                     };
                     if (InvokeRequired)
                     {
-                        Invoke(StartMatch_Action, (int)StartMatch_State.Enable, new object[] { true });
+                        Invoke(StartMatch_Action, (int)StartMatchState.Enable, new object[] { true });
                     }
                     else
                     {
-                        StartMatch_Action((int)StartMatch_State.Enable, new object[] { true });
+                        StartMatch_Action((int)StartMatchState.Enable, new object[] { true });
                     }
                     MatchFunGame = null;
                     break;
-                case (int)StartMatch_State.Enable:
+                case (int)StartMatchState.Enable:
                     // 设置匹配过程中的各种按钮是否可用
                     bool isPause = false;
                     if (objs != null) isPause = (bool)objs[0];
@@ -720,7 +720,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     RoomBox.Enabled = isPause;
                     Login.Enabled = isPause;
                     break;
-                case (int)StartMatch_State.Cancel:
+                case (int)StartMatchState.Cancel:
                     WritelnGameInfo(GetNowShortTime() + " 终止匹配");
                     WritelnGameInfo("[ " + Usercfg.LoginUserName + " ] 已终止匹配。");
                     Config.FunGame_isMatching = false;
@@ -730,11 +730,11 @@ namespace Milimoe.FunGame.Desktop.UI
                     };
                     if (InvokeRequired)
                     {
-                        Invoke(StartMatch_Action, (int)StartMatch_State.Enable, new object[] { true });
+                        Invoke(StartMatch_Action, (int)StartMatchState.Enable, new object[] { true });
                     }
                     else
                     {
-                        StartMatch_Action((int)StartMatch_State.Enable, new object[] { true });
+                        StartMatch_Action((int)StartMatchState.Enable, new object[] { true });
                     }
                     MatchFunGame = null;
                     StopMatch.Visible = false;
@@ -783,11 +783,11 @@ namespace Milimoe.FunGame.Desktop.UI
             };
             if (InvokeRequired)
             {
-                Invoke(StartMatch_Action, (int)StartMatch_State.Cancel, new object[] { true });
+                Invoke(StartMatch_Action, (int)StartMatchState.Cancel, new object[] { true });
             }
             else
             {
-                StartMatch_Action((int)StartMatch_State.Cancel, new object[] { true });
+                StartMatch_Action((int)StartMatchState.Cancel, new object[] { true });
             }
         }
 
@@ -854,21 +854,21 @@ namespace Milimoe.FunGame.Desktop.UI
             }
             switch (i)
             {
-                case (int)CreateRoom_State.Creating:
+                case (int)CreateRoomState.Creating:
                     CreateRoom_Action = (i, objs) =>
                     {
                         CreateRoom_Method(i, objs);
                     };
                     if (InvokeRequired)
                     {
-                        Invoke(CreateRoom_Action, (int)CreateRoom_State.Success, new object[] { roomtype });
+                        Invoke(CreateRoom_Action, (int)CreateRoomState.Success, new object[] { roomtype });
                     }
                     else
                     {
-                        CreateRoom_Action((int)CreateRoom_State.Success, new object[] { roomtype });
+                        CreateRoom_Action((int)CreateRoomState.Success, new object[] { roomtype });
                     }
                     break;
-                case (int)CreateRoom_State.Success:
+                case (int)CreateRoomState.Success:
                     roomid = Convert.ToString(new Random().Next(1, 10000));
                     SetRoomid(roomid);
                     InRoom();
@@ -919,7 +919,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// </summary>
         private void ShowFunGameInfo()
         {
-            WritelnGameInfo(FunGameEnums.GetInfo(Config.FunGameType));
+            WritelnGameInfo(FunGameEnum.GetInfo(Config.FunGameType));
         }
 
         #endregion
@@ -937,7 +937,7 @@ namespace Milimoe.FunGame.Desktop.UI
             {
                 if (SocketHelper != null)
                 {
-                    SocketHelper.WebHelpMethod((int)SocketHelperMethod.CloseSocket);
+                    SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.CloseSocket);
                     SocketHelper = null;
                 }
                 Environment.Exit(0);
@@ -997,7 +997,7 @@ namespace Milimoe.FunGame.Desktop.UI
             StartMatch.Visible = false;
             StopMatch.Visible = true;
             // 暂停其他按钮
-            StartMatch_Method((int)StartMatch_State.Enable, new object[] { false });
+            StartMatch_Method((int)StartMatchState.Enable, new object[] { false });
             // 创建委托，开始匹配
             StartMatch_Action = (i, objs) =>
             {
@@ -1009,11 +1009,11 @@ namespace Milimoe.FunGame.Desktop.UI
 
                 if (InvokeRequired)
                 {
-                    Invoke(StartMatch_Action, (int)StartMatch_State.Matching, null);
+                    Invoke(StartMatch_Action, (int)StartMatchState.Matching, null);
                 }
                 else
                 {
-                    StartMatch_Action((int)StartMatch_State.Matching, null);
+                    StartMatch_Action((int)StartMatchState.Matching, null);
                 }
             });
         }
@@ -1058,11 +1058,11 @@ namespace Milimoe.FunGame.Desktop.UI
             };
             if (InvokeRequired)
             {
-                Invoke(CreateRoom_Action, (int)CreateRoom_State.Creating, new object[] { roomtype });
+                Invoke(CreateRoom_Action, (int)CreateRoomState.Creating, new object[] { roomtype });
             }
             else
             {
-                CreateRoom_Action((int)CreateRoom_State.Creating, new object[] { roomtype });
+                CreateRoom_Action((int)CreateRoomState.Creating, new object[] { roomtype });
             }
         }
 
@@ -1105,7 +1105,7 @@ namespace Milimoe.FunGame.Desktop.UI
         {
             if (ShowMessage.OKCancelMessage("你确定要退出登录吗？", "退出登录") == MessageResult.OK)
             {
-                if (SocketHelper == null || !SocketHelper.WebHelpMethod((int)SocketHelperMethod.Logout))
+                if (SocketHelper == null || !SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.Logout))
                     ShowMessage.WarningMessage("请求无效：退出登录失败！");
             }
         }
@@ -1118,7 +1118,7 @@ namespace Milimoe.FunGame.Desktop.UI
         private void Login_Click(object sender, EventArgs e)
         {
             if (SocketHelper != null && Config.FunGame_isConnected)
-                SocketHelper.WebHelpMethod((int)SocketHelperMethod.Login);
+                SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.Login);
             else
                 ShowMessage.WarningMessage("请先连接服务器！");
         }
@@ -1352,11 +1352,11 @@ namespace Milimoe.FunGame.Desktop.UI
                     };
                     if (InvokeRequired)
                     {
-                        Invoke(CreateRoom_Action, (int)CreateRoom_State.Creating, new object[] { Config.GameMode_Mix });
+                        Invoke(CreateRoom_Action, (int)CreateRoomState.Creating, new object[] { Config.GameMode_Mix });
                     }
                     else
                     {
-                        CreateRoom_Action((int)CreateRoom_State.Creating, new object[] { Config.GameMode_Mix });
+                        CreateRoom_Action((int)CreateRoomState.Creating, new object[] { Config.GameMode_Mix });
                     }
                     break;
                 case Config.FunGame_CreateTeam:
@@ -1366,11 +1366,11 @@ namespace Milimoe.FunGame.Desktop.UI
                     };
                     if (InvokeRequired)
                     {
-                        Invoke(CreateRoom_Action, (int)CreateRoom_State.Creating, new object[] { Config.GameMode_Team });
+                        Invoke(CreateRoom_Action, (int)CreateRoomState.Creating, new object[] { Config.GameMode_Team });
                     }
                     else
                     {
-                        CreateRoom_Action((int)CreateRoom_State.Creating, new object[] { Config.GameMode_Team });
+                        CreateRoom_Action((int)CreateRoomState.Creating, new object[] { Config.GameMode_Team });
                     }
                     break;
                 case Config.FunGame_StartGame:
@@ -1402,13 +1402,13 @@ namespace Milimoe.FunGame.Desktop.UI
                 case Config.FunGame_Disconnect:
                     if (Config.FunGame_isConnected && SocketHelper != null)
                     {
-                        SocketHelper.WebHelpMethod((int)SocketHelperMethod.Disconnect);
+                        SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.Disconnect);
                     }
                     break;
                 case Config.FunGame_DisconnectWhenNotLogin:
                     if (Config.FunGame_isConnected && SocketHelper != null)
                     {
-                        SocketHelper.WebHelpMethod((int)SocketHelperMethod.CloseSocket);
+                        SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.CloseSocket);
                         GetMessage(SocketHelper, Config.SocketHelper_Disconnect);
                         WritelnGameInfo(GetNowShortTime() + " >> 你已成功断开与服务器的连接。 ");
                     }

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Milimoe.FunGame.Core.Api.Factory
 {
-    public class ItemFactory
+    internal class ItemFactory
     {
-        public static Milimoe.FunGame.Core.Entity.General.Item? GetInstance(Milimoe.FunGame.Core.Entity.Enum.ItemType type, string Name)
+        internal static Milimoe.FunGame.Core.Entity.General.Item? GetInstance(Milimoe.FunGame.Core.Entity.Enum.ItemType type, string Name)
         {
             Milimoe.FunGame.Core.Entity.General.Item? item = null;
             switch (type)
