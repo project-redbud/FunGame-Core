@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,43 @@ namespace Milimoe.FunGame.Core.Api.Utility
     /// </summary>
     public class Singleton
     {
+        private static readonly Hashtable SingletonTable = new();
 
+        public static bool Add(object single)
+        {
+            string type = single.GetType().ToString();
+            if (!SingletonTable.ContainsKey(type))
+            {
+                try
+                {
+                    SingletonTable.Add(type, single);
+                }
+                catch
+                {
+                    throw new Exception("添加单例到单例表时遇到错误");
+                }
+                return true;
+            }
+            return false;
+        }
+
+        public static T? Get<T>()
+        {
+            T? single = default;
+            string type = typeof(T).ToString();
+            if (SingletonTable.ContainsKey(type))
+            {
+                try
+                {
+                    single = (T?)SingletonTable[type];
+                }
+                catch
+                {
+                    throw new Exception("不能从单例表中获取到指定的单例");
+                }
+                if (single != null) return single;
+            }
+            return single;
+        }
     }
 }

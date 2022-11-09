@@ -82,7 +82,7 @@ namespace Milimoe.FunGame.Desktop.Utils
             try
             {
                 client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                server = new IPEndPoint(IPAddress.Parse(Config.SERVER_IPADRESS), Config.SERVER_PORT);
+                server = new IPEndPoint(IPAddress.Parse(Constant.SERVER_IPADRESS), Constant.SERVER_PORT);
                 while (true)
                 {
                     if (!IsConnected())
@@ -90,14 +90,14 @@ namespace Milimoe.FunGame.Desktop.Utils
                         client.Connect(server);
                         if (IsConnected())
                         {
-                            Main.GetMessage(this, Config.SocketHelper_WaitLoginAndSetYellow);
+                            Main.GetMessage(this, Constant.SocketHelper_WaitLoginAndSetYellow);
                             break;
                         }
                     }
                 }
                 SocketHelper_Action = (main, socket) =>
                 {
-                    object? obj = main.GetMessage(this, Config.SocketHelper_GetUser);
+                    object? obj = main.GetMessage(this, Constant.SocketHelper_GetUser);
                     object[] objs;
                     if (obj != null)
                         objs = new object[] { main, socket, obj };
@@ -106,7 +106,7 @@ namespace Milimoe.FunGame.Desktop.Utils
                     if (Send((int)SocketMessageType.GetNotice, objs)) // 接触服务器并获取公告
                     {
                         main.GetMessage(this, " >> 连接服务器成功，请登录账号以体验FunGame。", true);
-                        main.GetMessage(this, Config.SocketHelper_SetNotice);
+                        main.GetMessage(this, Constant.SocketHelper_SetNotice);
                     }
                 };
                 Task t = Task.Factory.StartNew(() =>
@@ -123,7 +123,7 @@ namespace Milimoe.FunGame.Desktop.Utils
             }
             catch (Exception e)
             {
-                Main.GetMessage(this, Config.SocketHelper_Disconnected);
+                Main.GetMessage(this, Constant.SocketHelper_Disconnected);
                 Main.GetMessage(this, e.StackTrace);
                 Close();
             }
@@ -163,7 +163,7 @@ namespace Milimoe.FunGame.Desktop.Utils
                     int length = socket.Receive(buffer);
                     if (length > 0)
                     {
-                        string msg = Config.DEFAULT_ENCODING.GetString(buffer, 0, length);
+                        string msg = Constant.DEFAULT_ENCODING.GetString(buffer, 0, length);
                         int type = GetType(msg);
                         string typestring = EnumHelper.GetSocketTypeName(type);
                         string read = GetMessage(msg);
@@ -177,25 +177,25 @@ namespace Milimoe.FunGame.Desktop.Utils
                             case (int)SocketMessageType.Login:
                                 break;
                             case (int)SocketMessageType.CheckLogin:
-                                Main.GetMessage(this, Config.SocketHelper_SetUser, false, objs);
+                                Main.GetMessage(this, Constant.SocketHelper_SetUser, false, objs);
                                 Main.GetMessage(this, read, true);
                                 StartSocketHelper(); // 开始创建TCP流
                                 return true;
                             case (int)SocketMessageType.Logout:
-                                Main.GetMessage(this, Config.SocketHelper_SetUser, false, objs);
+                                Main.GetMessage(this, Constant.SocketHelper_SetUser, false, objs);
                                 Main.GetMessage(this, read, true);
-                                Main.GetMessage(this, Config.SocketHelper_LogOut);
+                                Main.GetMessage(this, Constant.SocketHelper_LogOut);
                                 Close();
                                 return true;
                             case (int)SocketMessageType.Disconnect:
                                 Main.GetMessage(this, read, true);
-                                Main.GetMessage(this, Config.SocketHelper_Disconnect);
+                                Main.GetMessage(this, Constant.SocketHelper_Disconnect);
                                 Close();
                                 return true;
                             case (int)SocketMessageType.HeartBeat:
                                 if (WaitHeartBeat != null && !WaitHeartBeat.IsCompleted) WaitHeartBeat.Wait(1);
-                                Config.SocketHelper_HeartBeatFaileds = 0;
-                                main.GetMessage(this, Config.SocketHelper_SetGreenAndPing);
+                                Constant.SocketHelper_HeartBeatFaileds = 0;
+                                main.GetMessage(this, Constant.SocketHelper_SetGreenAndPing);
                                 return true;
                         }
                         main.GetMessage(this, read);
@@ -206,13 +206,13 @@ namespace Milimoe.FunGame.Desktop.Utils
                 }
                 else
                 {
-                    main.GetMessage(this, Config.SocketHelper_Disconnected);
+                    main.GetMessage(this, Constant.SocketHelper_Disconnected);
                     throw new Exception("ERROR：服务器连接失败。");
                 }
             }
             catch (Exception e)
             {
-                main.GetMessage(this, Config.SocketHelper_Disconnected);
+                main.GetMessage(this, Constant.SocketHelper_Disconnected);
                 main.GetMessage(this, e.Message != null ? e.Message + "\n" + e.StackTrace : "" + e.StackTrace);
                 Close();
             }
@@ -304,7 +304,7 @@ namespace Milimoe.FunGame.Desktop.Utils
                 }
                 else
                 {
-                    main.GetMessage(this, Config.SocketHelper_Disconnected);
+                    main.GetMessage(this, Constant.SocketHelper_Disconnected);
                     throw new Exception("ERROR：服务器连接失败。");
                 }
             }
@@ -317,7 +317,7 @@ namespace Milimoe.FunGame.Desktop.Utils
 
         private int Send(string msg, Socket socket)
         {
-            byte[] buffer = Config.DEFAULT_ENCODING.GetBytes(msg);
+            byte[] buffer = Constant.DEFAULT_ENCODING.GetBytes(msg);
             int length = socket.Send(buffer);
             return length;
         }
@@ -325,9 +325,9 @@ namespace Milimoe.FunGame.Desktop.Utils
         private void CatchException(Main main, Exception e, bool isDisconnected)
         {
             if (isDisconnected)
-                main.GetMessage(this, Config.SocketHelper_Disconnected);
+                main.GetMessage(this, Constant.SocketHelper_Disconnected);
             else
-                main.GetMessage(this, Config.SocketHelper_SetRed);
+                main.GetMessage(this, Constant.SocketHelper_SetRed);
             main.GetMessage(this, e.Message != null ? e.Message + "\n" + e.StackTrace : "" + e.StackTrace);
             Close();
         }
@@ -337,8 +337,8 @@ namespace Milimoe.FunGame.Desktop.Utils
             // 超过三次没回应心跳，服务器连接失败。
             try
             {
-                Config.SocketHelper_HeartBeatFaileds++;
-                if (Config.SocketHelper_HeartBeatFaileds >= 3)
+                Constant.SocketHelper_HeartBeatFaileds++;
+                if (Constant.SocketHelper_HeartBeatFaileds >= 3)
                     throw new Exception("ERROR：服务器连接失败。");
             }
             catch (Exception e)

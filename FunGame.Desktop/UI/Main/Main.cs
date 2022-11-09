@@ -7,6 +7,7 @@ using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity.General;
 using Milimoe.FunGame.Core.Entity.Enum;
+using Milimoe.FunGame.Core.Others;
 using Milimoe.FunGame.Desktop.Entity.Component;
 using Milimoe.FunGame.Desktop.Others;
 using Milimoe.FunGame.Desktop.Utils;
@@ -55,7 +56,7 @@ namespace Milimoe.FunGame.Desktop.UI
             SetRoomid("-1"); // 房间号初始化
             ShowFunGameInfo(); // 显示FunGame信息
             GetFunGameConfig(); // 获取FunGame配置
-            if (Config.FunGame_isAutoConnect) GetServerConnection(); // 开始连接服务器
+            if (Others.Config.FunGame_isAutoConnect) GetServerConnection(); // 开始连接服务器
         }
 
         #endregion
@@ -77,8 +78,8 @@ namespace Milimoe.FunGame.Desktop.UI
                 {
                     switch (msg)
                     {
-                        case Config.SocketHelper_SetGreen:
-                            Config.FunGame_isRetrying = false;
+                        case Others.Constant.SocketHelper_SetGreen:
+                            Others.Config.FunGame_isRetrying = false;
                             SocketHelper_Action = (main) =>
                             {
                                 SetServerStatusLight((int)LightType.Green);
@@ -88,25 +89,25 @@ namespace Milimoe.FunGame.Desktop.UI
                                 BeginInvoke(SocketHelper_Action, this);
                             else
                                 SocketHelper_Action(this);
-                            Config.FunGame_isConnected = true;
+                            Others.Config.FunGame_isConnected = true;
                             NOW_CONNECTEDRETRY = 0;
                             break;
-                        case Config.SocketHelper_SetGreenAndPing:
-                            Config.FunGame_isRetrying = false;
+                        case Others.Constant.SocketHelper_SetGreenAndPing:
+                            Others.Config.FunGame_isRetrying = false;
                             SocketHelper_Action = (main) =>
                             {
-                                SetServerStatusLight((int)LightType.Green, ping: GetServerPing(Config.SERVER_IPADRESS));
+                                SetServerStatusLight((int)LightType.Green, ping: GetServerPing(Others.Constant.SERVER_IPADRESS));
                                 SetButtonEnableIfLogon(true, ClientState.Online);
                             };
                             if (InvokeRequired)
                                 BeginInvoke(SocketHelper_Action, this);
                             else
                                 SocketHelper_Action(this);
-                            Config.FunGame_isConnected = true;
+                            Others.Config.FunGame_isConnected = true;
                             NOW_CONNECTEDRETRY = 0;
                             break;
-                        case Config.SocketHelper_SetYellow:
-                            Config.FunGame_isRetrying = false;
+                        case Others.Constant.SocketHelper_SetYellow:
+                            Others.Config.FunGame_isRetrying = false;
                             SocketHelper_Action = (main) =>
                             {
                                 SetServerStatusLight((int)LightType.Yellow);
@@ -116,11 +117,11 @@ namespace Milimoe.FunGame.Desktop.UI
                                 BeginInvoke(SocketHelper_Action, this);
                             else
                                 SocketHelper_Action(this);
-                            Config.FunGame_isConnected = true;
+                            Others.Config.FunGame_isConnected = true;
                             NOW_CONNECTEDRETRY = 0;
                             break;
-                        case Config.SocketHelper_WaitConnectAndSetYellow:
-                            Config.FunGame_isRetrying = false;
+                        case Others.Constant.SocketHelper_WaitConnectAndSetYellow:
+                            Others.Config.FunGame_isRetrying = false;
                             SocketHelper_Action = (main) =>
                             {
                                 SetServerStatusLight((int)LightType.Yellow);
@@ -130,16 +131,16 @@ namespace Milimoe.FunGame.Desktop.UI
                                 BeginInvoke(SocketHelper_Action, this);
                             else
                                 SocketHelper_Action(this);
-                            Config.FunGame_isConnected = true;
+                            Others.Config.FunGame_isConnected = true;
                             NOW_CONNECTEDRETRY = 0;
-                            if (SocketHelper != null && Config.FunGame_isAutoConnect)
+                            if (SocketHelper != null && Others.Config.FunGame_isAutoConnect)
                             {
                                 // 自动连接服务器
                                 GetServerConnection();
                             }
                             break;
-                        case Config.SocketHelper_WaitLoginAndSetYellow:
-                            Config.FunGame_isRetrying = false;
+                        case Others.Constant.SocketHelper_WaitLoginAndSetYellow:
+                            Others.Config.FunGame_isRetrying = false;
                             SocketHelper_Action = (main) =>
                             {
                                 SetServerStatusLight((int)LightType.Yellow, true);
@@ -149,10 +150,10 @@ namespace Milimoe.FunGame.Desktop.UI
                                 BeginInvoke(SocketHelper_Action, this);
                             else
                                 SocketHelper_Action(this);
-                            Config.FunGame_isConnected = true;
+                            Others.Config.FunGame_isConnected = true;
                             NOW_CONNECTEDRETRY = 0;
                             break;
-                        case Config.SocketHelper_SetRed:
+                        case Others.Constant.SocketHelper_SetRed:
                             SocketHelper_Action = (main) =>
                             {
                                 SetServerStatusLight((int)LightType.Red);
@@ -162,11 +163,11 @@ namespace Milimoe.FunGame.Desktop.UI
                                 BeginInvoke(SocketHelper_Action, this);
                             else
                                 SocketHelper_Action(this);
-                            Config.FunGame_isConnected = false;
+                            Others.Config.FunGame_isConnected = false;
                             break;
-                        case Config.SocketHelper_Disconnected:
-                            Config.FunGame_isRetrying = false;
-                            Config.FunGame_isConnected = false;
+                        case Others.Constant.SocketHelper_Disconnected:
+                            Others.Config.FunGame_isRetrying = false;
+                            Others.Config.FunGame_isConnected = false;
                             SocketHelper_Action = (main) =>
                             {
                                 SetServerStatusLight((int)LightType.Red);
@@ -177,12 +178,12 @@ namespace Milimoe.FunGame.Desktop.UI
                                 BeginInvoke(SocketHelper_Action, this);
                             else
                                 SocketHelper_Action(this);
-                            if (Config.FunGame_isAutoRetry && NOW_CONNECTEDRETRY <= MAX_CONNECTEDRETRY)
+                            if (Others.Config.FunGame_isAutoRetry && NOW_CONNECTEDRETRY <= MAX_CONNECTEDRETRY)
                             {
                                 Task.Run(() =>
                                 {
                                     Thread.Sleep(5000);
-                                    if (Config.FunGame_isAutoRetry) Connect(); // 再次判断是否开启自动重连
+                                    if (Others.Config.FunGame_isAutoRetry) Connect(); // 再次判断是否开启自动重连
                                 });
                                 if (needTime)
                                     throw new Exception(GetNowShortTime() + "\nERROR：连接服务器失败，5秒后自动尝试重连。");
@@ -194,12 +195,12 @@ namespace Milimoe.FunGame.Desktop.UI
                                 throw new Exception(GetNowShortTime() + "\nERROR：无法连接至服务器，请检查你的网络连接。");
                             else
                                 throw new Exception("ERROR：无法连接至服务器，请检查你的网络连接。");
-                        case Config.SocketHelper_Disconnect:
-                            Config.FunGame_isAutoRetry = false;
-                            Config.FunGame_isRetrying = false;
-                            Config.FunGame_isAutoConnect = false;
-                            Config.FunGame_isAutoLogin = false;
-                            Config.FunGame_isConnected = false;
+                        case Others.Constant.SocketHelper_Disconnect:
+                            Others.Config.FunGame_isAutoRetry = false;
+                            Others.Config.FunGame_isRetrying = false;
+                            Others.Config.FunGame_isAutoConnect = false;
+                            Others.Config.FunGame_isAutoLogin = false;
+                            Others.Config.FunGame_isConnected = false;
                             SocketHelper_Action = (main) =>
                             {
                                 SetServerStatusLight((int)LightType.Yellow);
@@ -211,10 +212,10 @@ namespace Milimoe.FunGame.Desktop.UI
                             else
                                 SocketHelper_Action(this);
                             break;
-                        case Config.SocketHelper_LogOut:
-                            Config.FunGame_isRetrying = false;
-                            Config.FunGame_isConnected = false;
-                            Config.FunGame_isAutoLogin = false;
+                        case Others.Constant.SocketHelper_LogOut:
+                            Others.Config.FunGame_isRetrying = false;
+                            Others.Config.FunGame_isConnected = false;
+                            Others.Config.FunGame_isAutoLogin = false;
                             SocketHelper_Action = (main) =>
                             {
                                 SetServerStatusLight((int)LightType.Yellow);
@@ -225,7 +226,7 @@ namespace Milimoe.FunGame.Desktop.UI
                                 BeginInvoke(SocketHelper_Action, this);
                             else
                                 SocketHelper_Action(this);
-                            if (Config.FunGame_isAutoConnect)
+                            if (Others.Config.FunGame_isAutoConnect)
                             {
                                 NOW_CONNECTEDRETRY = -1;
                                 Task.Run(() =>
@@ -235,11 +236,11 @@ namespace Milimoe.FunGame.Desktop.UI
                                 });
                             }
                             break;
-                        case Config.SocketHelper_GetUser:
+                        case Others.Constant.SocketHelper_GetUser:
                             if (Usercfg.LoginUser != null)
                                 return Usercfg.LoginUser;
                             return null;
-                        case Config.SocketHelper_SetUser:
+                        case Others.Constant.SocketHelper_SetUser:
                             if (objs != null && objs.Length > 1)
                             {
                                 if (InvokeRequired)
@@ -248,11 +249,11 @@ namespace Milimoe.FunGame.Desktop.UI
                                     SetLoginUser(objs);
                             }
                             return null;
-                        case Config.SocketHelper_SetNotice:
+                        case Others.Constant.SocketHelper_SetNotice:
                             Action action = () =>
                             {
-                                NoticeText.Text = Config.FunGame_Notice;
-                                if (SocketHelper != null && Config.FunGame_isAutoLogin)
+                                NoticeText.Text = Others.Config.FunGame_Notice;
+                                if (SocketHelper != null && Others.Config.FunGame_isAutoLogin)
                                 {
                                     // 自动登录
                                     SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.Login);
@@ -276,7 +277,7 @@ namespace Milimoe.FunGame.Desktop.UI
             catch (Exception e)
             {
                 WritelnGameInfo(SocketHelper, e.Message != null ? e.Message + "\n" + e.StackTrace : "" + e.StackTrace);
-                GetMessage(SocketHelper, Config.SocketHelper_SetRed);
+                GetMessage(SocketHelper, Others.Constant.SocketHelper_SetRed);
             }
             return null;
         }
@@ -292,14 +293,14 @@ namespace Milimoe.FunGame.Desktop.UI
         {
             try
             {
-                string? ipaddress = (string?)Config.ReflectionHelper.GetFunGameImplValue((int)InterfaceType.IClient, (int)InterfaceMethod.RemoteServerIP); // 获取服务器IP
+                string? ipaddress = (string?)Others.Constant.ReflectionHelper.GetFunGameImplValue((int)InterfaceType.IClient, (int)InterfaceMethod.RemoteServerIP); // 获取服务器IP
                 if (ipaddress != null)
                 {
                     string[] s = ipaddress.Split(':');
                     if (s != null && s.Length > 1)
                     {
-                        Config.SERVER_IPADRESS = s[0];
-                        Config.SERVER_PORT = Convert.ToInt32(s[1]);
+                        Others.Constant.SERVER_IPADRESS = s[0];
+                        Others.Constant.SERVER_PORT = Convert.ToInt32(s[1]);
                         Connect(); // 连接服务器
                     }
                     else throw new Exception();
@@ -318,7 +319,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// </summary>
         private void Connect()
         {
-            if (Config.SERVER_IPADRESS.Equals("") || Config.SERVER_PORT <= 0)
+            if (Others.Constant.SERVER_IPADRESS.Equals("") || Others.Constant.SERVER_PORT <= 0)
             {
                 ShowMessage.ErrorMessage("查找可用的服务器失败！");
                 return;
@@ -335,7 +336,7 @@ namespace Milimoe.FunGame.Desktop.UI
                 }
                 Main_Action = (main) =>
                 {
-                    if (!Config.FunGame_isConnected)
+                    if (!Others.Config.FunGame_isConnected)
                     {
                         NOW_CONNECTEDRETRY++;
                         if (NOW_CONNECTEDRETRY == 0)
@@ -358,7 +359,7 @@ namespace Milimoe.FunGame.Desktop.UI
                                         SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.CloseSocket);
                                         SocketHelper = null;
                                     }
-                                    Config.FunGame_isRetrying = true;
+                                    Others.Config.FunGame_isRetrying = true;
                                     Application.DoEvents();
                                     SocketHelper = new SocketHelper(main);
                                     SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.CreateSocket); // Invoke -> CreateSocket
@@ -405,15 +406,15 @@ namespace Milimoe.FunGame.Desktop.UI
                     string isAutoConncet = INIHelper.ReadINI("Config", "AutoConnect");
                     string isAutoLogin = INIHelper.ReadINI("Config", "AutoLogin");
                     if (isAutoConncet != null && !isAutoConncet.Equals("") && (isAutoConncet.Equals("false") || isAutoConncet.Equals("true")))
-                        Config.FunGame_isAutoConnect = Convert.ToBoolean(isAutoConncet);
+                        Others.Config.FunGame_isAutoConnect = Convert.ToBoolean(isAutoConncet);
                     else throw new Exception("ERROR: 读取配置文件出错，参数格式不正确");
                     if (isAutoLogin != null && !isAutoLogin.Equals("") && (isAutoLogin.Equals("false") || isAutoLogin.Equals("true")))
-                        Config.FunGame_isAutoLogin = Convert.ToBoolean(isAutoLogin);
+                        Others.Config.FunGame_isAutoLogin = Convert.ToBoolean(isAutoLogin);
                     else throw new Exception("ERROR: 读取配置文件出错，参数格式不正确");
                 }
                 else
                 {
-                    INIHelper.Init(Config.FunGameType);
+                    INIHelper.Init(Others.Constant.FunGameType);
                     WritelnGameInfo(">> 首次启动，已自动为你创建配置文件。");
                     GetFunGameConfig();
                 }
@@ -430,12 +431,12 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="roomid"></param>
         private void SetRoomid(string roomid)
         {
-            Config.FunGame_Roomid = roomid;
+            Others.Config.FunGame_Roomid = roomid;
             if (!roomid.Equals("-1"))
             {
                 WritelnGameInfo(GetNowShortTime() + " 加入房间");
-                WritelnGameInfo("[ " + Usercfg.LoginUserName + " ] 已加入房间 -> [ " + Config.FunGame_Roomid + " ]");
-                Room.Text = "[ 当前房间 ]\n" + Convert.ToString(Config.FunGame_Roomid);
+                WritelnGameInfo("[ " + Usercfg.LoginUserName + " ] 已加入房间 -> [ " + Others.Config.FunGame_Roomid + " ]");
+                Room.Text = "[ 当前房间 ]\n" + Convert.ToString(Others.Config.FunGame_Roomid);
             }
             else
                 Room.Text = "暂未进入房间";
@@ -521,7 +522,7 @@ namespace Milimoe.FunGame.Desktop.UI
             // 显示：匹配、创建房间
             // 隐藏：退出房间、房间设定
             WritelnGameInfo(GetNowShortTime() + " 离开房间");
-            WritelnGameInfo("[ " + Usercfg.LoginUserName + " ] 已离开房间 -> [ " + Config.FunGame_Roomid + " ]");
+            WritelnGameInfo("[ " + Usercfg.LoginUserName + " ] 已离开房间 -> [ " + Others.Config.FunGame_Roomid + " ]");
             SetRoomid("-1");
             QuitRoom.Visible = false;
             StartMatch.Visible = true;
@@ -551,15 +552,15 @@ namespace Milimoe.FunGame.Desktop.UI
             {
                 case ClientState.Online:
                     PresetText.Items.Clear();
-                    PresetText.Items.AddRange(Config.PresetOnineItems);
+                    PresetText.Items.AddRange(Others.Constant.PresetOnineItems);
                     break;
                 case ClientState.WaitConnect:
                     PresetText.Items.Clear();
-                    PresetText.Items.AddRange(Config.PresetNoConnectItems);
+                    PresetText.Items.AddRange(Others.Constant.PresetNoConnectItems);
                     break;
                 case ClientState.WaitLogin:
                     PresetText.Items.Clear();
-                    PresetText.Items.AddRange(Config.PresetNoLoginItems);
+                    PresetText.Items.AddRange(Others.Constant.PresetNoLoginItems);
                     break;
             }
             this.PresetText.SelectedIndex = 0;
@@ -586,7 +587,7 @@ namespace Milimoe.FunGame.Desktop.UI
                 {
                     if (CheckRoomIDExist(roomid))
                     {
-                        if (Config.FunGame_Roomid.Equals("-1"))
+                        if (Others.Config.FunGame_Roomid.Equals("-1"))
                         {
                             if (ShowMessage.YesNoMessage("已找到房间 -> [ " + roomid + " ]\n是否加入？", "已找到房间") == MessageResult.Yes)
                             {
@@ -614,7 +615,7 @@ namespace Milimoe.FunGame.Desktop.UI
             {
                 if (CheckRoomIDExist(roomid))
                 {
-                    if (Config.FunGame_Roomid.Equals("-1"))
+                    if (Others.Config.FunGame_Roomid.Equals("-1"))
                     {
                         if (ShowMessage.YesNoMessage("已找到房间 -> [ " + roomid + " ]\n是否加入？", "已找到房间") == MessageResult.Yes)
                         {
@@ -645,7 +646,7 @@ namespace Milimoe.FunGame.Desktop.UI
             {
                 case (int)StartMatchState.Matching:
                     // 开始匹配
-                    Config.FunGame_isMatching = true;
+                    Others.Config.FunGame_isMatching = true;
                     int loop = 0;
                     string roomid = Convert.ToString(new Random().Next(1, 10000));
                     // 匹配中 匹配成功返回房间号
@@ -653,7 +654,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     {
                         // 创建新线程，防止主界面阻塞
                         Thread.Sleep(3000);
-                        while (loop < 10000 && Config.FunGame_isMatching)
+                        while (loop < 10000 && Others.Config.FunGame_isMatching)
                         {
                             loop++;
                             if (loop == Convert.ToInt32(roomid))
@@ -677,7 +678,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     });
                     break;
                 case (int)StartMatchState.Success:
-                    Config.FunGame_isMatching = false;
+                    Others.Config.FunGame_isMatching = false;
                     // 匹配成功返回房间号
                     roomid = "-1";
                     if (objs != null) roomid = (string)objs[0];
@@ -723,7 +724,7 @@ namespace Milimoe.FunGame.Desktop.UI
                 case (int)StartMatchState.Cancel:
                     WritelnGameInfo(GetNowShortTime() + " 终止匹配");
                     WritelnGameInfo("[ " + Usercfg.LoginUserName + " ] 已终止匹配。");
-                    Config.FunGame_isMatching = false;
+                    Others.Config.FunGame_isMatching = false;
                     StartMatch_Action = (i, objs) =>
                     {
                         StartMatch_Method(i, objs);
@@ -841,7 +842,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="objs">可传多个参数</param>
         private void CreateRoom_Method(int i, object[]? objs = null)
         {
-            if (!Config.FunGame_Roomid.Equals("-1"))
+            if (!Others.Config.FunGame_Roomid.Equals("-1"))
             {
                 ShowMessage.WarningMessage("已在房间中，无法创建房间。");
                 return;
@@ -919,7 +920,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// </summary>
         private void ShowFunGameInfo()
         {
-            WritelnGameInfo(FunGameEnum.GetInfo(Config.FunGameType));
+            WritelnGameInfo(FunGameEnum.GetInfo(Others.Constant.FunGameType));
         }
 
         #endregion
@@ -986,11 +987,11 @@ namespace Milimoe.FunGame.Desktop.UI
             WritelnGameInfo(GetNowShortTime() + " 开始匹配");
             WritelnGameInfo("[ " + Usercfg.LoginUserName + " ] 开始匹配");
             WriteGameInfo(">> 匹配参数：");
-            if (!Config.Match_Mix && !Config.Match_Team && !Config.Match_HasPass)
+            if (!Others.Config.Match_Mix && !Others.Config.Match_Team && !Others.Config.Match_HasPass)
                 WritelnGameInfo("无");
             else
             {
-                WriteGameInfo((Config.Match_Mix ? " 混战房间 " : "") + (Config.Match_Team ? " 团队房间 " : "") + (Config.Match_HasPass ? " 密码房间 " : ""));
+                WriteGameInfo((Others.Config.Match_Mix ? " 混战房间 " : "") + (Others.Config.Match_Team ? " 团队房间 " : "") + (Others.Config.Match_HasPass ? " 密码房间 " : ""));
                 WritelnGameInfo();
             }
             // 显示停止匹配按钮
@@ -1026,26 +1027,26 @@ namespace Milimoe.FunGame.Desktop.UI
         private void CreateRoom_Click(object sender, EventArgs e)
         {
             string roomtype = "";
-            if (Config.Match_Mix && Config.Match_Team)
+            if (Others.Config.Match_Mix && Others.Config.Match_Team)
             {
                 ShowMessage.WarningMessage("创建房间不允许同时勾选混战和团队！");
                 return;
             }
-            else if (Config.Match_Mix && !Config.Match_Team && !Config.Match_HasPass)
+            else if (Others.Config.Match_Mix && !Others.Config.Match_Team && !Others.Config.Match_HasPass)
             {
-                roomtype = Config.GameMode_Mix;
+                roomtype = Others.Constant.GameMode_Mix;
             }
-            else if (!Config.Match_Mix && Config.Match_Team && !Config.Match_HasPass)
+            else if (!Others.Config.Match_Mix && Others.Config.Match_Team && !Others.Config.Match_HasPass)
             {
-                roomtype = Config.GameMode_Team;
+                roomtype = Others.Constant.GameMode_Team;
             }
-            else if (Config.Match_Mix && !Config.Match_Team && Config.Match_HasPass)
+            else if (Others.Config.Match_Mix && !Others.Config.Match_Team && Others.Config.Match_HasPass)
             {
-                roomtype = Config.GameMode_MixHasPass;
+                roomtype = Others.Constant.GameMode_MixHasPass;
             }
-            else if (!Config.Match_Mix && Config.Match_Team && Config.Match_HasPass)
+            else if (!Others.Config.Match_Mix && Others.Config.Match_Team && Others.Config.Match_HasPass)
             {
-                roomtype = Config.GameMode_TeamHasPass;
+                roomtype = Others.Constant.GameMode_TeamHasPass;
             }
             if (roomtype.Equals(""))
             {
@@ -1117,7 +1118,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="e"></param>
         private void Login_Click(object sender, EventArgs e)
         {
-            if (SocketHelper != null && Config.FunGame_isConnected)
+            if (SocketHelper != null && Others.Config.FunGame_isConnected)
                 SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.Login);
             else
                 ShowMessage.WarningMessage("请先连接服务器！");
@@ -1162,8 +1163,8 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="e"></param>
         private void CheckMix_CheckedChanged(object sender, EventArgs e)
         {
-            if (CheckMix.Checked) Config.Match_Mix = true;
-            else Config.Match_Mix = false;
+            if (CheckMix.Checked) Others.Config.Match_Mix = true;
+            else Others.Config.Match_Mix = false;
         }
 
         /// <summary>
@@ -1173,8 +1174,8 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="e"></param>
         private void CheckTeam_CheckedChanged(object sender, EventArgs e)
         {
-            if (CheckTeam.Checked) Config.Match_Team = true;
-            else Config.Match_Team = false;
+            if (CheckTeam.Checked) Others.Config.Match_Team = true;
+            else Others.Config.Match_Team = false;
         }
 
         /// <summary>
@@ -1184,8 +1185,8 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="e"></param>
         private void CheckHasPass_CheckedChanged(object sender, EventArgs e)
         {
-            if (CheckHasPass.Checked) Config.Match_HasPass = true;
-            else Config.Match_HasPass = false;
+            if (CheckHasPass.Checked) Others.Config.Match_HasPass = true;
+            else Others.Config.Match_HasPass = false;
         }
 
         /// <summary>
@@ -1337,54 +1338,54 @@ namespace Milimoe.FunGame.Desktop.UI
         {
             switch (s)
             {
-                case Config.FunGame_SignIn:
+                case Others.Constant.FunGame_SignIn:
                     break;
-                case Config.FunGame_ShowCredits:
+                case Others.Constant.FunGame_ShowCredits:
                     break;
-                case Config.FunGame_ShowStock:
+                case Others.Constant.FunGame_ShowStock:
                     break;
-                case Config.FunGame_ShowStore:
+                case Others.Constant.FunGame_ShowStore:
                     break;
-                case Config.FunGame_CreateMix:
+                case Others.Constant.FunGame_CreateMix:
                     CreateRoom_Action = (i, objs) =>
                     {
                         CreateRoom_Method(i, objs);
                     };
                     if (InvokeRequired)
                     {
-                        Invoke(CreateRoom_Action, (int)CreateRoomState.Creating, new object[] { Config.GameMode_Mix });
+                        Invoke(CreateRoom_Action, (int)CreateRoomState.Creating, new object[] { Others.Constant.GameMode_Mix });
                     }
                     else
                     {
-                        CreateRoom_Action((int)CreateRoomState.Creating, new object[] { Config.GameMode_Mix });
+                        CreateRoom_Action((int)CreateRoomState.Creating, new object[] { Others.Constant.GameMode_Mix });
                     }
                     break;
-                case Config.FunGame_CreateTeam:
+                case Others.Constant.FunGame_CreateTeam:
                     CreateRoom_Action = (i, objs) =>
                     {
                         CreateRoom_Method(i, objs);
                     };
                     if (InvokeRequired)
                     {
-                        Invoke(CreateRoom_Action, (int)CreateRoomState.Creating, new object[] { Config.GameMode_Team });
+                        Invoke(CreateRoom_Action, (int)CreateRoomState.Creating, new object[] { Others.Constant.GameMode_Team });
                     }
                     else
                     {
-                        CreateRoom_Action((int)CreateRoomState.Creating, new object[] { Config.GameMode_Team });
+                        CreateRoom_Action((int)CreateRoomState.Creating, new object[] { Others.Constant.GameMode_Team });
                     }
                     break;
-                case Config.FunGame_StartGame:
+                case Others.Constant.FunGame_StartGame:
                     break;
-                case Config.FunGame_AutoRetryOn:
+                case Others.Constant.FunGame_AutoRetryOn:
                     WritelnGameInfo(">> 自动重连开启");
-                    Config.FunGame_isAutoRetry = true;
+                    Others.Config.FunGame_isAutoRetry = true;
                     break;
-                case Config.FunGame_AutoRetryOff:
+                case Others.Constant.FunGame_AutoRetryOff:
                     WritelnGameInfo(">> 自动重连关闭");
-                    Config.FunGame_isAutoRetry = false;
+                    Others.Config.FunGame_isAutoRetry = false;
                     break;
-                case Config.FunGame_Retry:
-                    if (!Config.FunGame_isRetrying)
+                case Others.Constant.FunGame_Retry:
+                    if (!Others.Config.FunGame_isRetrying)
                     {
                         NOW_CONNECTEDRETRY = -1;
                         Connect();
@@ -1392,28 +1393,28 @@ namespace Milimoe.FunGame.Desktop.UI
                     else
                         WritelnGameInfo(">> 你不能在连接服务器的同时重试连接！");
                     break;
-                case Config.FunGame_Connect:
-                    if (!Config.FunGame_isConnected)
+                case Others.Constant.FunGame_Connect:
+                    if (!Others.Config.FunGame_isConnected)
                     {
                         NOW_CONNECTEDRETRY = -1;
                         GetServerConnection();
                     }
                     break;
-                case Config.FunGame_Disconnect:
-                    if (Config.FunGame_isConnected && SocketHelper != null)
+                case Others.Constant.FunGame_Disconnect:
+                    if (Others.Config.FunGame_isConnected && SocketHelper != null)
                     {
                         SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.Disconnect);
                     }
                     break;
-                case Config.FunGame_DisconnectWhenNotLogin:
-                    if (Config.FunGame_isConnected && SocketHelper != null)
+                case Others.Constant.FunGame_DisconnectWhenNotLogin:
+                    if (Others.Config.FunGame_isConnected && SocketHelper != null)
                     {
                         SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.CloseSocket);
-                        GetMessage(SocketHelper, Config.SocketHelper_Disconnect);
+                        GetMessage(SocketHelper, Others.Constant.SocketHelper_Disconnect);
                         WritelnGameInfo(GetNowShortTime() + " >> 你已成功断开与服务器的连接。 ");
                     }
                     break;
-                case Config.FunGame_ConnectTo:
+                case Others.Constant.FunGame_ConnectTo:
                     string msg = ShowMessage.InputMessage("请输入服务器IP地址和端口号，如: 127.0.0.1:22222。", "连接指定服务器");
                     if (msg.Equals("")) return;
                     string[] addr = msg.Split(':');
@@ -1435,15 +1436,15 @@ namespace Milimoe.FunGame.Desktop.UI
                         return;
                     }
                     ErrorType ErrorType = Utility.IsServerAddress(ip, port);
-                    if (ErrorType == ErrorType.None)
+                    if (ErrorType == Core.Entity.Enum.ErrorType.None)
                     {
-                        Config.SERVER_IPADRESS = ip;
-                        Config.SERVER_PORT = port;
+                        Others.Constant.SERVER_IPADRESS = ip;
+                        Others.Constant.SERVER_PORT = port;
                         NOW_CONNECTEDRETRY = -1;
                         Connect();
                     }
-                    else if (ErrorType == ErrorType.IsNotIP) ShowMessage.ErrorMessage("这不是一个IP地址！");
-                    else if (ErrorType == ErrorType.IsNotPort) ShowMessage.ErrorMessage("这不是一个端口号！\n正确范围：1~65535");
+                    else if (ErrorType == Core.Entity.Enum.ErrorType.IsNotIP) ShowMessage.ErrorMessage("这不是一个IP地址！");
+                    else if (ErrorType == Core.Entity.Enum.ErrorType.IsNotPort) ShowMessage.ErrorMessage("这不是一个端口号！\n正确范围：1~65535");
                     else ShowMessage.ErrorMessage("格式错误！\n这不是一个服务器地址。");
                     break;
                 default:

@@ -23,12 +23,6 @@ namespace Milimoe.FunGame.Core.Entity.Enum
         Input
     }
 
-    public enum InterfaceType
-    {
-        IClient,
-        IServer
-    }
-
     public enum LightType
     {
         Green,

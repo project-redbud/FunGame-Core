@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 namespace Milimoe.FunGame.Core.Api.Utility
 {
     /// <summary>
-    /// 在FunGame.Core.Interface中添加新接口和新实现时，需要：
-    /// 在FunGame.Core.Entity.Enum.CommonEnums里同步添加InterfaceType、InterfaceMethod
+    /// Interface的定义已经搬至：
+    /// Milimoe.FunGame.Core.Others中的 &InterfaceType 和 &InterfaceSet
     /// </summary>
     public class ReflectionHelper
     {

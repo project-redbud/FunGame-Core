@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Milimoe.FunGame.Core.Entity.Enum;
+using Milimoe.FunGame.Core.Others;
 
 namespace Milimoe.FunGame.Core.Api.Utility
 {
