@@ -103,4 +103,18 @@ namespace Milimoe.FunGame.Core.Entity.Enum
         Character,
         CharacterStatistics
     }
+
+    public enum TimeType
+    {
+        General,
+        DateOnly,
+        TimeOnly,
+        Year4,
+        Year2,
+        Month,
+        Day,
+        Hour,
+        Minute,
+        Second
+    }
 }

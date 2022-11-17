@@ -96,7 +96,7 @@ namespace Milimoe.FunGame.Desktop.UI
                             Others.Config.FunGame_isRetrying = false;
                             SocketHelper_Action = (main) =>
                             {
-                                SetServerStatusLight((int)LightType.Green, ping: GetServerPing(Others.Constant.SERVER_IPADRESS));
+                                SetServerStatusLight((int)LightType.Green, ping: NetworkUtility.GetServerPing(Others.Constant.SERVER_IPADRESS));
                                 SetButtonEnableIfLogon(true, ClientState.Online);
                             };
                             if (InvokeRequired)
@@ -186,13 +186,13 @@ namespace Milimoe.FunGame.Desktop.UI
                                     if (Others.Config.FunGame_isAutoRetry) Connect(); // 再次判断是否开启自动重连
                                 });
                                 if (needTime)
-                                    throw new Exception(GetNowShortTime() + "\nERROR：连接服务器失败，5秒后自动尝试重连。");
+                                    throw new Exception(DateTimeUtility.GetNowShortTime() + "\nERROR：连接服务器失败，5秒后自动尝试重连。");
                                 else
                                     throw new Exception("ERROR：连接服务器失败，5秒后自动尝试重连。");
                             }
                             else
                                 if (needTime)
-                                throw new Exception(GetNowShortTime() + "\nERROR：无法连接至服务器，请检查你的网络连接。");
+                                throw new Exception(DateTimeUtility.GetNowShortTime() + "\nERROR：无法连接至服务器，请检查你的网络连接。");
                             else
                                 throw new Exception("ERROR：无法连接至服务器，请检查你的网络连接。");
                         case Others.Constant.SocketHelper_Disconnect:
@@ -266,7 +266,7 @@ namespace Milimoe.FunGame.Desktop.UI
                             return null;
                         default:
                             if (needTime)
-                                WritelnGameInfo(SocketHelper, GetNowShortTime() + msg);
+                                WritelnGameInfo(SocketHelper, DateTimeUtility.GetNowShortTime() + msg);
                             else
                                 WritelnGameInfo(SocketHelper, msg);
                             return null;
@@ -340,9 +340,9 @@ namespace Milimoe.FunGame.Desktop.UI
                     {
                         NOW_CONNECTEDRETRY++;
                         if (NOW_CONNECTEDRETRY == 0)
-                            WritelnGameInfo(GetNowTime() + " >> 开始连接服务器...");
+                            WritelnGameInfo(DateTimeUtility.GetNowTime() + " >> 开始连接服务器...");
                         else
-                            WritelnGameInfo(GetNowTime() + " >> 第" + NOW_CONNECTEDRETRY + "次重试连接服务器...");
+                            WritelnGameInfo(DateTimeUtility.GetNowTime() + " >> 第" + NOW_CONNECTEDRETRY + "次重试连接服务器...");
                         if (NOW_CONNECTEDRETRY + 1 > MAX_CONNECTEDRETRY) // 判断重连次数是否达到上限
                         {
                             WritelnGameInfo("ERROR：无法连接至服务器，请检查网络并重启游戏再试。");
@@ -421,7 +421,7 @@ namespace Milimoe.FunGame.Desktop.UI
             }
             catch (Exception e)
             {
-                WritelnGameInfo(GetNowTime() + e.Message != null ? e.Message + "\n" + e.StackTrace : "" + e.StackTrace);
+                WritelnGameInfo(DateTimeUtility.GetNowTime() + e.Message != null ? e.Message + "\n" + e.StackTrace : "" + e.StackTrace);
             }
         }
 
@@ -434,7 +434,7 @@ namespace Milimoe.FunGame.Desktop.UI
             Others.Config.FunGame_Roomid = roomid;
             if (!roomid.Equals("-1"))
             {
-                WritelnGameInfo(GetNowShortTime() + " 加入房间");
+                WritelnGameInfo(DateTimeUtility.GetNowShortTime() + " 加入房间");
                 WritelnGameInfo("[ " + Usercfg.LoginUserName + " ] 已加入房间 -> [ " + Others.Config.FunGame_Roomid + " ]");
                 Room.Text = "[ 当前房间 ]\n" + Convert.ToString(Others.Config.FunGame_Roomid);
             }
@@ -521,7 +521,7 @@ namespace Milimoe.FunGame.Desktop.UI
         {
             // 显示：匹配、创建房间
             // 隐藏：退出房间、房间设定
-            WritelnGameInfo(GetNowShortTime() + " 离开房间");
+            WritelnGameInfo(DateTimeUtility.GetNowShortTime() + " 离开房间");
             WritelnGameInfo("[ " + Usercfg.LoginUserName + " ] 已离开房间 -> [ " + Others.Config.FunGame_Roomid + " ]");
             SetRoomid("-1");
             QuitRoom.Visible = false;
@@ -684,7 +684,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     if (objs != null) roomid = (string)objs[0];
                     if (!roomid.Equals(-1))
                     {
-                        WritelnGameInfo(GetNowShortTime() + " 匹配成功");
+                        WritelnGameInfo(DateTimeUtility.GetNowShortTime() + " 匹配成功");
                         WritelnGameInfo(">> 房间号： " + roomid);
                         SetRoomid(roomid);
                     }
@@ -722,7 +722,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     Login.Enabled = isPause;
                     break;
                 case (int)StartMatchState.Cancel:
-                    WritelnGameInfo(GetNowShortTime() + " 终止匹配");
+                    WritelnGameInfo(DateTimeUtility.GetNowShortTime() + " 终止匹配");
                     WritelnGameInfo("[ " + Usercfg.LoginUserName + " ] 已终止匹配。");
                     Others.Config.FunGame_isMatching = false;
                     StartMatch_Action = (i, objs) =>
@@ -801,7 +801,7 @@ namespace Milimoe.FunGame.Desktop.UI
             // 向消息队列发送消息
             if (!TalkText.Text.Trim().Equals("") && !TalkText.ForeColor.Equals(Color.DarkGray))
             {
-                WritelnGameInfo((!Usercfg.LoginUserName.Equals("") ? GetNowShortTime() + " [ " + Usercfg.LoginUserName + " ] 说： ": ":> ") + TalkText.Text);
+                WritelnGameInfo((!Usercfg.LoginUserName.Equals("") ? DateTimeUtility.GetNowShortTime() + " [ " + Usercfg.LoginUserName + " ] 说： ": ":> ") + TalkText.Text);
                 SwitchTalkMessage(TalkText.Text);
                 TalkText.Text = "";
                 if (isLeave) TalkText_Leave(); // 回车不离开焦点
@@ -820,7 +820,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="msg"></param>
         private void SendTalkText_Click(string msg)
         {
-            WritelnGameInfo((!Usercfg.LoginUserName.Equals("") ? GetNowShortTime() + " [ " + Usercfg.LoginUserName + " ] 说： " : ":> ") + msg);
+            WritelnGameInfo((!Usercfg.LoginUserName.Equals("") ? DateTimeUtility.GetNowShortTime() + " [ " + Usercfg.LoginUserName + " ] 说： " : ":> ") + msg);
         }
 
         /// <summary>
@@ -873,7 +873,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     roomid = Convert.ToString(new Random().Next(1, 10000));
                     SetRoomid(roomid);
                     InRoom();
-                    WritelnGameInfo(GetNowShortTime() + " 创建" + roomtype + "房间");
+                    WritelnGameInfo(DateTimeUtility.GetNowShortTime() + " 创建" + roomtype + "房间");
                     WritelnGameInfo(">> 创建" + roomtype + "房间成功！房间号： " + roomid);
                     ShowMessage.Message("创建" + roomtype + "房间成功！\n房间号是 -> [ " + roomid + " ]", "创建成功");
                     break;
@@ -984,7 +984,7 @@ namespace Milimoe.FunGame.Desktop.UI
         private void StartMatch_Click(object sender, EventArgs e)
         {
             // 开始匹配
-            WritelnGameInfo(GetNowShortTime() + " 开始匹配");
+            WritelnGameInfo(DateTimeUtility.GetNowShortTime() + " 开始匹配");
             WritelnGameInfo("[ " + Usercfg.LoginUserName + " ] 开始匹配");
             WriteGameInfo(">> 匹配参数：");
             if (!Others.Config.Match_Mix && !Others.Config.Match_Team && !Others.Config.Match_HasPass)
@@ -1411,7 +1411,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     {
                         SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.CloseSocket);
                         GetMessage(SocketHelper, Others.Constant.SocketHelper_Disconnect);
-                        WritelnGameInfo(GetNowShortTime() + " >> 你已成功断开与服务器的连接。 ");
+                        WritelnGameInfo(DateTimeUtility.GetNowShortTime() + " >> 你已成功断开与服务器的连接。 ");
                     }
                     break;
                 case Others.Constant.FunGame_ConnectTo:
@@ -1435,7 +1435,7 @@ namespace Milimoe.FunGame.Desktop.UI
                         ShowMessage.ErrorMessage("格式错误！\n这不是一个服务器地址。");
                         return;
                     }
-                    ErrorType ErrorType = Utility.IsServerAddress(ip, port);
+                    ErrorType ErrorType = NetworkUtility.IsServerAddress(ip, port);
                     if (ErrorType == Core.Entity.Enum.ErrorType.None)
                     {
                         Others.Constant.SERVER_IPADRESS = ip;
@@ -1450,49 +1450,6 @@ namespace Milimoe.FunGame.Desktop.UI
                 default:
                     break;
             }
-        }
-
-        /// <summary>
-        /// 获取系统日期
-        /// </summary>
-        /// <returns></returns>
-        private string GetNowTime()
-        {
-            DateTime now = DateTime.Now;
-            return now.AddMilliseconds(-now.Millisecond).ToString();
-        }
-
-        /// <summary>
-        /// 获取系统短日期
-        /// </summary>
-        /// <returns></returns>
-        private string GetNowShortTime()
-        {
-            DateTime now = DateTime.Now;
-            return now.AddMilliseconds(-now.Millisecond).ToString("T");
-        }
-
-        /// <summary>
-        /// 获取服务器的延迟
-        /// </summary>
-        /// <param name="addr">服务器IP地址</param>
-        /// <returns></returns>
-        private int GetServerPing(string addr)
-        {
-            Ping pingSender = new();
-            PingOptions options = new()
-            {
-                DontFragment = true
-            };
-            string data = "getserverping";
-            byte[] buffer = Encoding.ASCII.GetBytes(data);
-            int timeout = 120;
-            PingReply reply = pingSender.Send(addr, timeout, buffer, options);
-            if (reply.Status == IPStatus.Success)
-            {
-                return Convert.ToInt32(reply.RoundtripTime);
-            }
-            return -1;
         }
 
         #endregion

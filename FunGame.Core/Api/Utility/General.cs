@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -8,12 +9,15 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Milimoe.FunGame.Core.Entity.Enum;
 
+// 通用工具类，客户端和服务器端都可以直接调用的工具方法都可以写在这里
 namespace Milimoe.FunGame.Core.Api.Utility
 {
+    #region 网络服务
+
     /// <summary>
-    /// 通用工具类，客户端和服务器端都可以直接调用的工具方法都可以写在这里
+    /// 网络服务工具箱
     /// </summary>
-    public class Utility
+    public class NetworkUtility
     {
         /// <summary>
         /// 判断字符串是否是IP地址
@@ -77,5 +81,115 @@ namespace Milimoe.FunGame.Core.Api.Utility
             else if (IsIP(ip) && (port <= 0 || port >= 65536)) return ErrorType.IsNotPort;
             else return ErrorType.WrongFormat;
         }
+
+        /// <summary>
+        /// 获取服务器的延迟
+        /// </summary>
+        /// <param name="addr">服务器IP地址</param>
+        /// <returns></returns>
+        public static int GetServerPing(string addr)
+        {
+            Ping pingSender = new();
+            PingOptions options = new()
+            {
+                DontFragment = true
+            };
+            string data = "getserverping";
+            byte[] buffer = Encoding.ASCII.GetBytes(data);
+            int timeout = 120;
+            PingReply reply = pingSender.Send(addr, timeout, buffer, options);
+            if (reply.Status == IPStatus.Success)
+            {
+                return Convert.ToInt32(reply.RoundtripTime);
+            }
+            return -1;
+        }
     }
+
+    #endregion
+
+    #region 时间服务
+
+    /// <summary>
+    /// 时间服务工具箱
+    /// </summary>
+    public class DateTimeUtility
+    {
+        /// <summary>
+        /// 获取系统时间
+        /// </summary>
+        /// <param name="type">格式化类型</param>
+        /// <returns></returns>
+        public static DateTime GetDateTime(TimeType type)
+        {
+            DateTime now = DateTime.Now;
+            if (type == TimeType.DateOnly)
+                return now.Date;
+            else return now;
+        }
+
+        /// <summary>
+        /// 通过字符串转换为DateTime对象
+        /// </summary>
+        /// <param name="format">时间字符串</param>
+        /// <returns>转换失败返回当前时间</returns>
+        public static DateTime GetDateTime(string format)
+        {
+            DateTime dt = default;
+            if (DateTime.TryParse(format, out dt))
+            {
+                return dt;
+            }
+            else
+            {
+                return DateTime.Now;
+            }
+        }
+
+        /// <summary>
+        /// 获取系统时间并转为字符串
+        /// </summary>
+        /// <param name="type">格式化类型</param>
+        /// <returns></returns>
+        public static string GetDateTimeToString(TimeType type)
+        {
+            DateTime now = DateTime.Now;
+            return type switch
+            {
+                TimeType.General => now.ToString("yyyy-MM-dd HH:mm:ss"),
+                TimeType.DateOnly => now.Date.ToString(""),
+                TimeType.TimeOnly => now.ToString("T"),
+                TimeType.Year4 => now.Year.ToString(),
+                TimeType.Year2 => "'" + now.ToString("yy"),
+                TimeType.Month => now.Month.ToString(),
+                TimeType.Day => now.Day.ToString(),
+                TimeType.Hour => now.Hour.ToString(),
+                TimeType.Minute => now.Minute.ToString(),
+                TimeType.Second => now.Second.ToString(),
+                _ => now.ToString("yyyy-MM-dd HH:mm:ss")
+            };
+        }
+
+        /// <summary>
+        /// 获取系统短日期
+        /// </summary>
+        /// <returns></returns>
+        public static string GetNowShortTime()
+        {
+            DateTime now = DateTime.Now;
+            return now.AddMilliseconds(-now.Millisecond).ToString("T");
+        }
+
+        /// <summary>
+        /// 获取系统日期
+        /// </summary>
+        /// <returns></returns>
+        public static string GetNowTime()
+        {
+            DateTime now = DateTime.Now;
+            return now.AddMilliseconds(-now.Millisecond).ToString();
+        }
+    }
+
+    #endregion
 }
