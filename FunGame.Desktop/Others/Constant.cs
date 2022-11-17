@@ -14,8 +14,8 @@ namespace Milimoe.FunGame.Desktop.Others
         /**
          * Game Configs
          */
-        public static FunGameEnum.FunGame FunGameType = FunGameEnum.FunGame.FunGame_Desktop;
-        public static ReflectionHelper ReflectionHelper = new();
+        public static FunGameEnum.FunGame FunGameType { get; } = FunGameEnum.FunGame.FunGame_Desktop;
+        public static ReflectionHelper ReflectionHelper { get; } = new();
 
         /**
          * SocketHelper Configs
@@ -32,14 +32,14 @@ namespace Milimoe.FunGame.Desktop.Others
         public const string SocketHelper_GetUser = "-SocketHelper .get user";
         public const string SocketHelper_SetUser = "-SocketHelper .set user";
         public const string SocketHelper_SetNotice = "-SocketHelper .set notice";
-        public static int SocketHelper_HeartBeatFaileds = 0;
+        public static int SocketHelper_HeartBeatFaileds { get; set; } = 0;
 
         /**
          * Socket Configs
          */
-        public static string SERVER_IPADRESS = ""; // 服务器IP地址
-        public static int SERVER_PORT = 0; // 服务器端口号
-        public static Encoding DEFAULT_ENCODING = Encoding.UTF8;
+        public static string SERVER_IPADRESS { get; set; } = ""; // 服务器IP地址
+        public static int SERVER_PORT { get; set; } = 0; // 服务器端口号
+        public static Encoding DEFAULT_ENCODING { get; set; } = Encoding.UTF8;
 
         /**
          * FunGame Configs

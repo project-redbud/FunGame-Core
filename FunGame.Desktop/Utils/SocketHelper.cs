@@ -382,14 +382,8 @@ namespace Milimoe.FunGame.Desktop.Utils
 
         private void StartSocketHelper()
         {
-            Task HeartBeatStream = Task.Factory.StartNew(() =>
-            {
-                CreateSendHeartBeatStream();
-            });
-            Task StreamReader = Task.Factory.StartNew(() =>
-            {
-                CreateStreamReader();
-            });
+            Task HeartBeatStream = Task.Factory.StartNew(CreateSendHeartBeatStream);
+            Task StreamReader = Task.Factory.StartNew(CreateStreamReader);
         }
 
         private void CreateSendHeartBeatStream()

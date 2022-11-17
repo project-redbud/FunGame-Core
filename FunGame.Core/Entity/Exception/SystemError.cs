@@ -9,9 +9,16 @@ namespace Milimoe.FunGame.Core.Entity.Exception
 {
     public class SystemError : System.Exception
     {
-        public string Name { get; set; } = "";
+        public string Name { get; } = "";
 
         public new string StackTrace { get => base.StackTrace ?? ""; }
+
+        public SystemError() { }
+
+        public SystemError(string Name)
+        {
+            this.Name = Name;
+        }
 
         public string GetStackTrace()
         {
