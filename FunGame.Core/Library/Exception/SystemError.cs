@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Milimoe.FunGame.Core.Entity.Exception
+namespace Milimoe.FunGame.Core.Library.Exception
 {
     public class SystemError : System.Exception
     {

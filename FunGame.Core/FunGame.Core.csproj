@@ -22,4 +22,8 @@
     <DebugType>embedded</DebugType>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Library\Common\" />
+  </ItemGroup>
+
 </Project>

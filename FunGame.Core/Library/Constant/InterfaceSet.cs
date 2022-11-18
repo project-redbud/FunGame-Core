@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Milimoe.FunGame.Core.Others
+namespace Milimoe.FunGame.Core.Library.Constant
 {
     public enum InterfaceType
     {

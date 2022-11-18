@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 
 namespace Milimoe.FunGame.Core.Others
 {
-    public class Constant
+    internal class Others
     {
-        public static Entity.General.Empty EntityInstance = new Entity.General.Empty();
     }
 }

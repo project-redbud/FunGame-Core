@@ -7,10 +7,10 @@ using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity.General;
 using Milimoe.FunGame.Core.Entity.Enum;
-using Milimoe.FunGame.Core.Others;
 using Milimoe.FunGame.Desktop.Entity.Component;
 using Milimoe.FunGame.Desktop.Others;
 using Milimoe.FunGame.Desktop.Utils;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Desktop.UI
 {

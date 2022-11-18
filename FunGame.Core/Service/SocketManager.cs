@@ -12,6 +12,15 @@ namespace Milimoe.FunGame.Core.Service
 {
     internal class SocketManager
     {
+        internal static SocketManager? Instance { get; private set; }
+
+        internal Socket? Socket { get; } = null;
+
+        private SocketManager(Socket socket)
+        {
+            Socket = socket;
+        }
+
         internal static Socket? Connect(string IP, int Port = 22222)
         {
             Socket? socket = null;
@@ -29,6 +38,7 @@ namespace Milimoe.FunGame.Core.Service
                             socket.Connect(ServerEndPoint);
                             if (socket.Connected)
                             {
+                                Instance = new SocketManager(socket);
                                 return socket;
                             }
                         }

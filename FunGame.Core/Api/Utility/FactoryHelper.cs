@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Api.Utility
 {
@@ -41,7 +42,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns></returns>
         public static object New<T>(params object[]? objs)
         {
-            object instance = Core.Others.Constant.EntityInstance;
+            object instance = General.EntityInstance;
             if (!IsEntity<T>()) return instance;
             if (objs is null || objs.Length == 0) return instance;
             if (typeof(T) == typeof(Entity.General.User))
@@ -66,7 +67,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns></returns>
         public static object NewSingle<T>(params object[]? objs)
         {
-            object instance = Core.Others.Constant.EntityInstance;
+            object instance = General.EntityInstance;
             if (!IsEntity<T>()) return instance;
             if (objs is null || objs.Length == 0) return instance;
             if (typeof(T) == typeof(Entity.General.User))
