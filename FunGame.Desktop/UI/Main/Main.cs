@@ -5,8 +5,7 @@ using System.Windows.Forms;
 using System.Net.NetworkInformation;
 using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity.General;
-using Milimoe.FunGame.Core.Entity.Enum;
+using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Desktop.Entity.Component;
 using Milimoe.FunGame.Desktop.Others;
 using Milimoe.FunGame.Desktop.Utils;
@@ -1436,15 +1435,15 @@ namespace Milimoe.FunGame.Desktop.UI
                         return;
                     }
                     ErrorType ErrorType = NetworkUtility.IsServerAddress(ip, port);
-                    if (ErrorType == Core.Entity.Enum.ErrorType.None)
+                    if (ErrorType == Core.Library.Constant.ErrorType.None)
                     {
                         Others.Constant.SERVER_IPADRESS = ip;
                         Others.Constant.SERVER_PORT = port;
                         NOW_CONNECTEDRETRY = -1;
                         Connect();
                     }
-                    else if (ErrorType == Core.Entity.Enum.ErrorType.IsNotIP) ShowMessage.ErrorMessage("这不是一个IP地址！");
-                    else if (ErrorType == Core.Entity.Enum.ErrorType.IsNotPort) ShowMessage.ErrorMessage("这不是一个端口号！\n正确范围：1~65535");
+                    else if (ErrorType == Core.Library.Constant.ErrorType.IsNotIP) ShowMessage.ErrorMessage("这不是一个IP地址！");
+                    else if (ErrorType == Core.Library.Constant.ErrorType.IsNotPort) ShowMessage.ErrorMessage("这不是一个端口号！\n正确范围：1~65535");
                     else ShowMessage.ErrorMessage("格式错误！\n这不是一个服务器地址。");
                     break;
                 default:

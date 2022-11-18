@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Milimoe.FunGame.Core.Entity.Enum;
+using Milimoe.FunGame.Core.Library.Constant;
 
 // 通用工具类，客户端和服务器端都可以直接调用的工具方法都可以写在这里
 namespace Milimoe.FunGame.Core.Api.Utility

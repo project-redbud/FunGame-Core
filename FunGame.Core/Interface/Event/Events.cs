@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Entity.Event;
+﻿using Milimoe.FunGame.Core.Library.Common.Event;
+using Milimoe.FunGame.Core.Library.Constant;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +10,10 @@ namespace Milimoe.FunGame.Core.Interface
 {
     public interface IEvent
     {
-        public delegate Milimoe.FunGame.Core.Entity.Enum.EventResult BeforeEvent(object sender, GeneralEventArgs e);
-        public delegate Milimoe.FunGame.Core.Entity.Enum.EventResult AfterEvent(object sender, GeneralEventArgs e);
-        public delegate Milimoe.FunGame.Core.Entity.Enum.EventResult SucceedEvent(object sender, GeneralEventArgs e);
-        public delegate Milimoe.FunGame.Core.Entity.Enum.EventResult FailedEvent(object sender, GeneralEventArgs e);
+        public delegate EventResult BeforeEvent(object sender, GeneralEventArgs e);
+        public delegate EventResult AfterEvent(object sender, GeneralEventArgs e);
+        public delegate EventResult SucceedEvent(object sender, GeneralEventArgs e);
+        public delegate EventResult FailedEvent(object sender, GeneralEventArgs e);
     }
 
     public interface IConnectEvent : IEvent

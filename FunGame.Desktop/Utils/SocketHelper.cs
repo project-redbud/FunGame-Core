@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 using FunGame.Desktop.Models.Component;
 using System.ComponentModel.DataAnnotations;
 using System.Net.NetworkInformation;
-using Milimoe.FunGame.Core.Entity.General;
-using Milimoe.FunGame.Core.Entity.Enum;
+using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Desktop.Others;
 using Milimoe.FunGame.Desktop.UI;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Api.Factory;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Desktop.Utils
 {
@@ -40,30 +40,30 @@ namespace Milimoe.FunGame.Desktop.Utils
         {
             switch (i)
             {
-                case (int)Core.Entity.Enum.SocketHelperMethod.CreateSocket:
+                case (int)SocketHelperMethod.CreateSocket:
                     CreateSocket();
                     break;
-                case (int)Core.Entity.Enum.SocketHelperMethod.CloseSocket:
+                case (int)SocketHelperMethod.CloseSocket:
                     Close();
                     break;
-                case (int)Core.Entity.Enum.SocketHelperMethod.StartSocketHelper:
+                case (int)SocketHelperMethod.StartSocketHelper:
                     StartSocketHelper();
                     break;
-                case (int)Core.Entity.Enum.SocketHelperMethod.Login:
+                case (int)SocketHelperMethod.Login:
                     if (client != null)
                     {
                         Send((int)SocketMessageType.CheckLogin, new object[] { Main, client, FactoryHelper.New<User>("Mili") });
                         return true;
                     }
                     return false;
-                case (int)Core.Entity.Enum.SocketHelperMethod.Logout:
+                case (int)SocketHelperMethod.Logout:
                     if (client != null && Usercfg.LoginUser != null)
                     {
                         Send((int)SocketMessageType.Logout, new object[] { Main, client, Usercfg.LoginUser });
                         return true;
                     }
                     return false;
-                case (int)Core.Entity.Enum.SocketHelperMethod.Disconnect:
+                case (int)SocketHelperMethod.Disconnect:
                     if (client != null)
                     {
                         Send((int)SocketMessageType.Disconnect, new object[] { Main, client });

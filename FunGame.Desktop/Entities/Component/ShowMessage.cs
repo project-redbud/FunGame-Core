@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Milimoe.FunGame.Core.Entity.Enum;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Desktop.Entity.Component
 {

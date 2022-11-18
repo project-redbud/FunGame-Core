@@ -1,5 +1,5 @@
-﻿using Milimoe.FunGame.Core.Entity.Enum;
-using Milimoe.FunGame.Core.Interface.Base;
+﻿using Milimoe.FunGame.Core.Interface.Base;
+using Milimoe.FunGame.Core.Library.Constant;
 using System;
 using System.Collections.Generic;
 using System.Data;

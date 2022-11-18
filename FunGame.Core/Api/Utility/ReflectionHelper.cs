@@ -9,7 +9,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
 {
     /// <summary>
     /// Interface的定义已经搬至：
-    /// Milimoe.FunGame.Core.Others中的 &InterfaceType 和 &InterfaceSet
+    /// Milimoe.FunGame.Core.Library.Constant 中的 &InterfaceType 和 &InterfaceSet
     /// </summary>
     public class ReflectionHelper
     {

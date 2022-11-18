@@ -1,7 +1,7 @@
 ﻿namespace Milimoe.FunGame.Core.Interface
 {
     /**
-     * 接口需要在FunGame.Core项目中创建新的类实现
+     * 接口需要在FunGame.Implement项目中创建新的类实现
      * namespace必须是Milimoe.FunGame.Core.Implement，文件夹位置随意
      * 参考：
      * using Milimoe.FunGame.Core.Interface;

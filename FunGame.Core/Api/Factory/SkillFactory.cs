@@ -3,21 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Api.Factory
 {
     internal class SkillFactory
     {
-        internal static Milimoe.FunGame.Core.Entity.General.Skill? GetInstance(Milimoe.FunGame.Core.Entity.Enum.SkillType type, string Name)
+        internal static Skill? GetInstance(SkillType type, string Name)
         {
-            Milimoe.FunGame.Core.Entity.General.Skill? skill = null;
+            Skill? skill = null;
             switch (type)
             {
-                case Entity.Enum.SkillType.Active:
-                    skill = new Milimoe.FunGame.Core.Entity.General.ActiveSkill(Name);
+                case SkillType.Active:
+                    skill = new Milimoe.FunGame.Core.Entity.ActiveSkill(Name);
                     break;
-                case Entity.Enum.SkillType.Passive:
-                    skill = new Milimoe.FunGame.Core.Entity.General.PassiveSkill(Name);
+                case SkillType.Passive:
+                    skill = new Milimoe.FunGame.Core.Entity.PassiveSkill(Name);
                     break;
             }
             return skill;
