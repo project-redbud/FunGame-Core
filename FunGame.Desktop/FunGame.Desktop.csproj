@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <ApplicationIcon>Images\logo.ico</ApplicationIcon>
+    <ApplicationIcon>Image\logo.ico</ApplicationIcon>
     <Copyright></Copyright>
     <PackageIcon>logo.ico</PackageIcon>
     <Company>Milimoe</Company>
@@ -31,7 +31,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="Images\logo.ico" />
+    <Content Include="Image\logo.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -68,7 +68,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Images\logo.ico">
+    <None Update="Image\logo.ico">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

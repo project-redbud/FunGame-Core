@@ -8,7 +8,6 @@ using System.Collections;
 using System.Net.Sockets;
 using System.Net;
 using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Core.Api.Utility;
 
 namespace Milimoe.FunGame.Core.Service
 {
@@ -33,7 +32,7 @@ namespace Milimoe.FunGame.Core.Service
                             socket.Connect(ServerEndPoint);
                             if (socket.Connected)
                             {
-                                SocketManager.Socket = socket;
+                                Socket = socket;
                                 return socket;
                             }
                         }
@@ -51,7 +50,7 @@ namespace Milimoe.FunGame.Core.Service
         {
             if (Socket != null)
             {
-                if (Socket.Send(Core.Library.Constant.General.DEFAULT_ENCODING.GetBytes(MakeMessage(type, msg))) > 0)
+                if (Socket.Send(General.DEFAULT_ENCODING.GetBytes(MakeMessage(type, msg))) > 0)
                 {
                     return SocketResult.Success;
                 }
@@ -62,7 +61,7 @@ namespace Milimoe.FunGame.Core.Service
 
         internal static string[] Receive()
         {
-            string[] result = new string[2];
+            string[] result = new string[2] { GetTypeString(SocketMessageType.Unknown), "" };
             if (Socket != null)
             {
                 // 从服务器接收消息
@@ -70,7 +69,7 @@ namespace Milimoe.FunGame.Core.Service
                 int length = Socket.Receive(buffer);
                 if (length > 0)
                 {
-                    string msg = Core.Library.Constant.General.DEFAULT_ENCODING.GetString(buffer, 0, length);
+                    string msg = General.DEFAULT_ENCODING.GetString(buffer, 0, length);
                     result[0] = GetTypeString(GetType(msg));
                     result[1] = GetMessage(msg);
                     return result;
@@ -103,6 +102,7 @@ namespace Milimoe.FunGame.Core.Service
         {
             return type switch
             {
+                SocketMessageType.Connect => SocketSet.Connect,
                 SocketMessageType.GetNotice => SocketSet.GetNotice,
                 SocketMessageType.Login => SocketSet.Login,
                 SocketMessageType.CheckLogin => SocketSet.CheckLogin,

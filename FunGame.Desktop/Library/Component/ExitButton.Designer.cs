@@ -1,6 +1,6 @@
-namespace FunGame.Desktop.Models.Component
+﻿namespace Milimoe.FunGame.Desktop.Library.Component
 {
-    partial class TextArea : RichTextBox
+    partial class ExitButton
     {
         /// <summary>
         /// 必需的设计器变量。

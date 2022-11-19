@@ -9,30 +9,31 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Desktop.Others
 {
-    public static class Constant
+    public class MainControllerSet
+    {
+        public const string SetGreen = ".set green";
+        public const string SetGreenAndPing = ".set greenandping";
+        public const string SetRed = ".set red";
+        public const string SetYellow = ".set yellow";
+        public const string WaitConnectAndSetYellow = ".waitconnect .set yellow";
+        public const string WaitLoginAndSetYellow = ".waitlogin .set yellow";
+        public const string Disconnect = ".disconnect";
+        public const string Disconnected = ".disconnected";
+        public const string LogOut = ".logout";
+        public const string LogIn = ".login";
+        public const string SetUser = ".set user";
+        public const string Connected = ".connected";
+        public const string Connect = ".connect";
+        public const string GetServerConnection = ".getserverconnection";
+        public const string Close = ".close";
+    }
+
+    public class Constant
     {
         /**
          * Game Configs
          */
-        public static FunGameEnum.FunGame FunGameType { get; } = FunGameEnum.FunGame.FunGame_Desktop;
-        public static ReflectionHelper ReflectionHelper { get; } = new();
-
-        /**
-         * SocketHelper Configs
-         */
-        public const string SocketHelper_SetGreen = "-SocketHelper .set green";
-        public const string SocketHelper_SetGreenAndPing = "-SocketHelper .set greenandping";
-        public const string SocketHelper_SetRed = "-SocketHelper .set red";
-        public const string SocketHelper_SetYellow = "-SocketHelper .set yellow";
-        public const string SocketHelper_WaitConnectAndSetYellow = "-SocketHelper .waitconnect .set yellow";
-        public const string SocketHelper_WaitLoginAndSetYellow = "-SocketHelper .waitlogin .set yellow";
-        public const string SocketHelper_Disconnect = "-SocketHelper .disconnect";
-        public const string SocketHelper_Disconnected = "-SocketHelper .disconnected";
-        public const string SocketHelper_LogOut = "-SocketHelper .logout";
-        public const string SocketHelper_GetUser = "-SocketHelper .get user";
-        public const string SocketHelper_SetUser = "-SocketHelper .set user";
-        public const string SocketHelper_SetNotice = "-SocketHelper .set notice";
-        public static int SocketHelper_HeartBeatFaileds { get; set; } = 0;
+        public static int FunGameType { get; } = (int)FunGameEnum.FunGame.FunGame_Desktop;
 
         /**
          * Socket Configs

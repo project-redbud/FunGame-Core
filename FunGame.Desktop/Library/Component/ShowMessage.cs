@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Milimoe.FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Desktop.Entity.Component
+namespace Milimoe.FunGame.Desktop.Library.Component
 {
     public partial class ShowMessage : Form
     {

@@ -1,4 +1,4 @@
-namespace Milimoe.FunGame.Desktop.Entity.Component
+namespace Milimoe.FunGame.Desktop.Library.Component
 {
     partial class TransparentRect
     {

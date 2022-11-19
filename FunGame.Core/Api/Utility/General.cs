@@ -156,7 +156,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             DateTime now = DateTime.Now;
             return type switch
             {
-                TimeType.General => now.ToString("yyyy-MM-dd HH:mm:ss"),
                 TimeType.DateOnly => now.Date.ToString(""),
                 TimeType.TimeOnly => now.ToString("T"),
                 TimeType.Year4 => now.Year.ToString(),
@@ -166,7 +165,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 TimeType.Hour => now.Hour.ToString(),
                 TimeType.Minute => now.Minute.ToString(),
                 TimeType.Second => now.Second.ToString(),
-                _ => now.ToString("yyyy-MM-dd HH:mm:ss")
+                _ => now.ToString("yyyy/MM/dd HH:mm:ss")
             };
         }
 

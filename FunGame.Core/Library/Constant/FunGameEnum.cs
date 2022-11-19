@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Milimoe.FunGame.Core.Library.Constant
 {
-    public static class FunGameEnum
+    public class FunGameEnum
     {
         public enum FunGame
         {

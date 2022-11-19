@@ -21,6 +21,7 @@ namespace Milimoe.FunGame.Desktop.Others
         public static bool Match_Team { get; set; } = false; // 团队模式选项
         public static bool Match_HasPass { get; set; } = false; // 密码房间选项
         public static string FunGame_Roomid { get; set; } = "-1"; // 房间号
+        public static string FunGame_ServerName { get; set; } = ""; // 服务器名称
         public static string FunGame_Notice { get; set; } = ""; // 公告
     }
 }

@@ -8,8 +8,8 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Api.Utility
 {
-    public class FactoryHelper
-    {
+    public class Factory
+   {
         /// <summary>
         /// 获取一个可能为NULL的实例
         /// </summary>
@@ -23,7 +23,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             if (objs is null || objs.Length == 0) return instance;
             if (typeof(T) == typeof(Entity.User))
             {
-                instance = Factory.UserFactory.GetInstance("Mili");
+                instance = Api.Factory.UserFactory.GetInstance("Mili");
             }
             else if (typeof(T) == typeof(Skill))
             {
@@ -48,7 +48,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             if (objs is null || objs.Length == 0) return instance;
             if (typeof(T) == typeof(Entity.User))
             {
-                instance = Factory.UserFactory.GetInstance("Mili");
+                instance = Api.Factory.UserFactory.GetInstance("Mili");
             }
             else if (typeof(T) == typeof(Skill))
             {
@@ -73,7 +73,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             if (objs is null || objs.Length == 0) return instance;
             if (typeof(T) == typeof(Entity.User))
             {
-                instance = Factory.UserFactory.GetInstance("Mili");
+                instance = Api.Factory.UserFactory.GetInstance("Mili");
             }
             else if (typeof(T) == typeof(Skill))
             {

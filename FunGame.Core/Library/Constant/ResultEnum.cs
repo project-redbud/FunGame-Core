@@ -29,6 +29,14 @@ namespace Milimoe.FunGame.Core.Library.Constant
         NotReceived
     }
 
+    public enum ConnectResult
+    {
+        Success,
+        ConnectFailed,
+        CanNotConnect,
+        FindServerFailed
+    }
+
     public enum ProxyResult
     {
         Success,

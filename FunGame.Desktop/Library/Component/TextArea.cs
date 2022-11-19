@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Milimoe.FunGame.Desktop.Entity.Component
+namespace Milimoe.FunGame.Desktop.Library.Component
 {
     [ToolboxBitmap(typeof(TextBox))]
     partial class TextArea : RichTextBox

@@ -1,4 +1,4 @@
-using Milimoe.FunGame.Desktop.Entity.Component;
+using Milimoe.FunGame.Desktop.Library.Component;
 using Milimoe.FunGame.Desktop.Others;
 
 namespace Milimoe.FunGame.Desktop.UI
@@ -33,7 +33,7 @@ namespace Milimoe.FunGame.Desktop.UI
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
-            this.Exit = new FunGame.Desktop.Entity.Component.ExitButton(this.components);
+            this.Exit = new FunGame.Desktop.Library.Component.ExitButton(this.components);
             this.Title = new System.Windows.Forms.Label();
             this.MinForm = new System.Windows.Forms.Button();
             this.Connection = new System.Windows.Forms.Label();
@@ -55,10 +55,10 @@ namespace Milimoe.FunGame.Desktop.UI
             this.QueryRoom = new System.Windows.Forms.Button();
             this.RoomList = new System.Windows.Forms.ListBox();
             this.Notice = new System.Windows.Forms.GroupBox();
-            this.NoticeText = new FunGame.Desktop.Entity.Component.TextArea();
+            this.NoticeText = new FunGame.Desktop.Library.Component.TextArea();
             this.InfoBox = new System.Windows.Forms.GroupBox();
-            this.TransparentRectControl = new FunGame.Desktop.Entity.Component.TransparentRect();
-            this.GameInfo = new FunGame.Desktop.Entity.Component.TextArea();
+            this.TransparentRectControl = new FunGame.Desktop.Library.Component.TransparentRect();
+            this.GameInfo = new FunGame.Desktop.Library.Component.TextArea();
             this.QuitRoom = new System.Windows.Forms.Button();
             this.CreateRoom = new System.Windows.Forms.Button();
             this.Logout = new System.Windows.Forms.Button();
@@ -433,7 +433,7 @@ namespace Milimoe.FunGame.Desktop.UI
             this.TransparentRectControl.Name = "TransparentRectControl";
             this.TransparentRectControl.Opacity = 125;
             this.TransparentRectControl.Radius = 20;
-            this.TransparentRectControl.ShapeBorderStyle = Milimoe.FunGame.Desktop.Entity.Component.TransparentRect.ShapeBorderStyles.ShapeBSNone;
+            this.TransparentRectControl.ShapeBorderStyle = Milimoe.FunGame.Desktop.Library.Component.TransparentRect.ShapeBorderStyles.ShapeBSNone;
             this.TransparentRectControl.Size = new System.Drawing.Size(464, 343);
             this.TransparentRectControl.TabIndex = 2;
             this.TransparentRectControl.TabStop = false;
@@ -637,8 +637,8 @@ namespace Milimoe.FunGame.Desktop.UI
         private Button Store;
         private LinkLabel Copyright;
         private Button StopMatch;
-        private Entity.Component.TextArea GameInfo;
-        private Entity.Component.TextArea NoticeText;
-        private Entity.Component.TransparentRect TransparentRectControl;
+        private Library.Component.TextArea GameInfo;
+        private Library.Component.TextArea NoticeText;
+        private Library.Component.TransparentRect TransparentRectControl;
     }
 }

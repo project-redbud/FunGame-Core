@@ -5,11 +5,15 @@ using System.Windows.Forms;
 using System.Net.NetworkInformation;
 using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Desktop.Entity.Component;
+using Milimoe.FunGame.Desktop.Library.Component;
 using Milimoe.FunGame.Desktop.Others;
 using Milimoe.FunGame.Desktop.Utils;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Desktop.Controller;
+using Milimoe.FunGame.Core.Library.Exception;
+using System;
+using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Desktop.Model;
 
 namespace Milimoe.FunGame.Desktop.UI
 {
@@ -29,7 +33,8 @@ namespace Milimoe.FunGame.Desktop.UI
          * 定义全局对象
          */
         private Task? MatchFunGame = null; // 匹配线程
-        private SocketHelper? SocketHelper = null; // ScoketHelper
+        //private MainModel? MainModel = null;
+        private MainController? MainController = null;
 
         /**
          * 定义委托
@@ -37,8 +42,6 @@ namespace Milimoe.FunGame.Desktop.UI
          */
         Action<int, object[]?>? StartMatch_Action = null;
         Action<int, object[]?>? CreateRoom_Action = null;
-        Action<Main?>? SocketHelper_Action = null;
-        Action<Main?>? Main_Action = null;
 
         public Main()
         {
@@ -55,7 +58,25 @@ namespace Milimoe.FunGame.Desktop.UI
             SetRoomid("-1"); // 房间号初始化
             ShowFunGameInfo(); // 显示FunGame信息
             GetFunGameConfig(); // 获取FunGame配置
-            if (Others.Config.FunGame_isAutoConnect) GetServerConnection(); // 开始连接服务器
+            // 创建一个UI控制器
+            MainController = new MainController(this);
+            Task.Factory.StartNew(() =>
+            {
+                while (true)
+                {
+                    if (IsHandleCreated)
+                    {
+                        break;
+                    }
+                }
+                // 窗口句柄创建后，进行委托
+                void action()
+                {
+                    if (Config.FunGame_isAutoConnect)
+                        MainController.Do<bool>(MainControllerSet.Connected);
+                }
+                InvokeUpdateUI(action);
+            });
         }
 
         #endregion
@@ -63,222 +84,185 @@ namespace Milimoe.FunGame.Desktop.UI
         #region 公有方法
 
         /// <summary>
-        /// 提供公共方法给SocketHelper
+        /// 提供公共方法给Controller更新UI
         /// </summary>
-        /// <param name="SocketHelper"></param>
-        /// <param name="msg"></param>
-        /// <param name="needTime"></param>
-        /// <returns></returns>
-        public object? GetMessage(SocketHelper SocketHelper, string? msg, bool needTime = false, object[]? objs = null)
+        /// <param name="updatetype"></param>
+        /// <param name="time"></param>
+        /// <param name="timetype"></param>
+        /// <param name="objs"></param>
+        public void UpdateUI(string? updatetype, bool time = false, TimeType timetype = TimeType.TimeOnly, object[]? objs = null)
         {
-            try
+            void action()
             {
-                if (msg != null)
+                try
                 {
-                    switch (msg)
+                    if (updatetype != null)
                     {
-                        case Others.Constant.SocketHelper_SetGreen:
-                            Others.Config.FunGame_isRetrying = false;
-                            SocketHelper_Action = (main) =>
-                            {
+                        switch (updatetype)
+                        {
+                            case Others.MainControllerSet.SetGreen:
+                                Others.Config.FunGame_isRetrying = false;
                                 SetServerStatusLight((int)LightType.Green);
                                 SetButtonEnableIfLogon(true, ClientState.Online);
-                            };
-                            if (InvokeRequired)
-                                BeginInvoke(SocketHelper_Action, this);
-                            else
-                                SocketHelper_Action(this);
-                            Others.Config.FunGame_isConnected = true;
-                            NOW_CONNECTEDRETRY = 0;
-                            break;
-                        case Others.Constant.SocketHelper_SetGreenAndPing:
-                            Others.Config.FunGame_isRetrying = false;
-                            SocketHelper_Action = (main) =>
-                            {
+                                Others.Config.FunGame_isConnected = true;
+                                NOW_CONNECTEDRETRY = 0;
+                                break;
+
+                            case Others.MainControllerSet.SetGreenAndPing:
+                                Others.Config.FunGame_isRetrying = false;
                                 SetServerStatusLight((int)LightType.Green, ping: NetworkUtility.GetServerPing(Others.Constant.SERVER_IPADRESS));
                                 SetButtonEnableIfLogon(true, ClientState.Online);
-                            };
-                            if (InvokeRequired)
-                                BeginInvoke(SocketHelper_Action, this);
-                            else
-                                SocketHelper_Action(this);
-                            Others.Config.FunGame_isConnected = true;
-                            NOW_CONNECTEDRETRY = 0;
-                            break;
-                        case Others.Constant.SocketHelper_SetYellow:
-                            Others.Config.FunGame_isRetrying = false;
-                            SocketHelper_Action = (main) =>
-                            {
+                                Others.Config.FunGame_isConnected = true;
+                                NOW_CONNECTEDRETRY = 0;
+                                break;
+
+                            case Others.MainControllerSet.SetYellow:
+                                Others.Config.FunGame_isRetrying = false;
                                 SetServerStatusLight((int)LightType.Yellow);
                                 SetButtonEnableIfLogon(false, ClientState.WaitConnect);
-                            };
-                            if (InvokeRequired)
-                                BeginInvoke(SocketHelper_Action, this);
-                            else
-                                SocketHelper_Action(this);
-                            Others.Config.FunGame_isConnected = true;
-                            NOW_CONNECTEDRETRY = 0;
-                            break;
-                        case Others.Constant.SocketHelper_WaitConnectAndSetYellow:
-                            Others.Config.FunGame_isRetrying = false;
-                            SocketHelper_Action = (main) =>
-                            {
+                                Others.Config.FunGame_isConnected = true;
+                                NOW_CONNECTEDRETRY = 0;
+                                break;
+
+                            case Others.MainControllerSet.WaitConnectAndSetYellow:
+                                Others.Config.FunGame_isRetrying = false;
                                 SetServerStatusLight((int)LightType.Yellow);
                                 SetButtonEnableIfLogon(false, ClientState.WaitConnect);
-                            };
-                            if (InvokeRequired)
-                                BeginInvoke(SocketHelper_Action, this);
-                            else
-                                SocketHelper_Action(this);
-                            Others.Config.FunGame_isConnected = true;
-                            NOW_CONNECTEDRETRY = 0;
-                            if (SocketHelper != null && Others.Config.FunGame_isAutoConnect)
-                            {
-                                // 自动连接服务器
-                                GetServerConnection();
-                            }
-                            break;
-                        case Others.Constant.SocketHelper_WaitLoginAndSetYellow:
-                            Others.Config.FunGame_isRetrying = false;
-                            SocketHelper_Action = (main) =>
-                            {
+                                Others.Config.FunGame_isConnected = true;
+                                NOW_CONNECTEDRETRY = 0;
+                                if (MainController != null && Others.Config.FunGame_isAutoConnect)
+                                {
+                                    // 自动连接服务器
+                                    MainController.Do<bool>(MainControllerSet.Connected);
+                                }
+                                break;
+
+                            case Others.MainControllerSet.WaitLoginAndSetYellow:
+                                Others.Config.FunGame_isRetrying = false;
                                 SetServerStatusLight((int)LightType.Yellow, true);
                                 SetButtonEnableIfLogon(false, ClientState.WaitLogin);
-                            };
-                            if (InvokeRequired)
-                                BeginInvoke(SocketHelper_Action, this);
-                            else
-                                SocketHelper_Action(this);
-                            Others.Config.FunGame_isConnected = true;
-                            NOW_CONNECTEDRETRY = 0;
-                            break;
-                        case Others.Constant.SocketHelper_SetRed:
-                            SocketHelper_Action = (main) =>
-                            {
+                                Others.Config.FunGame_isConnected = true;
+                                NOW_CONNECTEDRETRY = 0;
+                                break;
+
+                            case Others.MainControllerSet.SetRed:
                                 SetServerStatusLight((int)LightType.Red);
                                 SetButtonEnableIfLogon(false, ClientState.WaitConnect);
-                            };
-                            if (InvokeRequired)
-                                BeginInvoke(SocketHelper_Action, this);
-                            else
-                                SocketHelper_Action(this);
-                            Others.Config.FunGame_isConnected = false;
-                            break;
-                        case Others.Constant.SocketHelper_Disconnected:
-                            Others.Config.FunGame_isRetrying = false;
-                            Others.Config.FunGame_isConnected = false;
-                            SocketHelper_Action = (main) =>
-                            {
+                                Others.Config.FunGame_isConnected = false;
+                                break;
+
+                            case Others.MainControllerSet.Disconnected:
+                                Others.Config.FunGame_isRetrying = false;
+                                Others.Config.FunGame_isConnected = false;
                                 SetServerStatusLight((int)LightType.Red);
                                 SetButtonEnableIfLogon(false, ClientState.WaitConnect);
                                 LogoutAccount();
-                            };
-                            if (InvokeRequired)
-                                BeginInvoke(SocketHelper_Action, this);
-                            else
-                                SocketHelper_Action(this);
-                            if (Others.Config.FunGame_isAutoRetry && NOW_CONNECTEDRETRY <= MAX_CONNECTEDRETRY)
-                            {
-                                Task.Run(() =>
+                                if (Others.Config.FunGame_isAutoRetry && NOW_CONNECTEDRETRY <= MAX_CONNECTEDRETRY)
                                 {
-                                    Thread.Sleep(5000);
-                                    if (Others.Config.FunGame_isAutoRetry) Connect(); // 再次判断是否开启自动重连
-                                });
-                                if (needTime)
-                                    throw new Exception(DateTimeUtility.GetNowShortTime() + "\nERROR：连接服务器失败，5秒后自动尝试重连。");
-                                else
-                                    throw new Exception("ERROR：连接服务器失败，5秒后自动尝试重连。");
-                            }
-                            else
-                                if (needTime)
-                                throw new Exception(DateTimeUtility.GetNowShortTime() + "\nERROR：无法连接至服务器，请检查你的网络连接。");
-                            else
-                                throw new Exception("ERROR：无法连接至服务器，请检查你的网络连接。");
-                        case Others.Constant.SocketHelper_Disconnect:
-                            Others.Config.FunGame_isAutoRetry = false;
-                            Others.Config.FunGame_isRetrying = false;
-                            Others.Config.FunGame_isAutoConnect = false;
-                            Others.Config.FunGame_isAutoLogin = false;
-                            Others.Config.FunGame_isConnected = false;
-                            SocketHelper_Action = (main) =>
-                            {
-                                SetServerStatusLight((int)LightType.Yellow);
-                                SetButtonEnableIfLogon(false, ClientState.WaitConnect);
-                                LogoutAccount();
-                            };
-                            if (InvokeRequired)
-                                BeginInvoke(SocketHelper_Action, this);
-                            else
-                                SocketHelper_Action(this);
-                            break;
-                        case Others.Constant.SocketHelper_LogOut:
-                            Others.Config.FunGame_isRetrying = false;
-                            Others.Config.FunGame_isConnected = false;
-                            Others.Config.FunGame_isAutoLogin = false;
-                            SocketHelper_Action = (main) =>
-                            {
-                                SetServerStatusLight((int)LightType.Yellow);
-                                SetButtonEnableIfLogon(false, ClientState.WaitConnect);
-                                LogoutAccount();
-                            };
-                            if (InvokeRequired)
-                                BeginInvoke(SocketHelper_Action, this);
-                            else
-                                SocketHelper_Action(this);
-                            if (Others.Config.FunGame_isAutoConnect)
-                            {
-                                NOW_CONNECTEDRETRY = -1;
-                                Task.Run(() =>
-                                {
-                                    Thread.Sleep(1000);
-                                    Connect();
-                                });
-                            }
-                            break;
-                        case Others.Constant.SocketHelper_GetUser:
-                            if (Usercfg.LoginUser != null)
-                                return Usercfg.LoginUser;
-                            return null;
-                        case Others.Constant.SocketHelper_SetUser:
-                            if (objs != null && objs.Length > 1)
-                            {
-                                if (InvokeRequired)
-                                    BeginInvoke(SetLoginUser, objs);
-                                else
-                                    SetLoginUser(objs);
-                            }
-                            return null;
-                        case Others.Constant.SocketHelper_SetNotice:
-                            Action action = () =>
-                            {
-                                NoticeText.Text = Others.Config.FunGame_Notice;
-                                if (SocketHelper != null && Others.Config.FunGame_isAutoLogin)
-                                {
-                                    // 自动登录
-                                    SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.Login);
+                                    Task.Run(() =>
+                                    {
+                                        Thread.Sleep(5000);
+                                        if (Others.Config.FunGame_isAutoRetry) MainController?.Do<bool>(MainControllerSet.Connect); // 再次判断是否开启自动重连
+                                    });
+                                    if (time)
+                                        throw new Exception(DateTimeUtility.GetNowShortTime() + "\nERROR：连接服务器失败，5秒后自动尝试重连。");
+                                    else
+                                        throw new Exception("ERROR：连接服务器失败，5秒后自动尝试重连。");
                                 }
-                            };
-                            if (InvokeRequired)
-                                BeginInvoke(action);
-                            else
-                                action();
-                            return null;
-                        default:
-                            if (needTime)
-                                WritelnGameInfo(SocketHelper, DateTimeUtility.GetNowShortTime() + msg);
-                            else
-                                WritelnGameInfo(SocketHelper, msg);
-                            return null;
+                                else
+                                    if (time)
+                                    throw new Exception(DateTimeUtility.GetNowShortTime() + "\nERROR：无法连接至服务器，请检查你的网络连接。");
+                                else
+                                    throw new Exception("ERROR：无法连接至服务器，请检查你的网络连接。");
+
+                            case Others.MainControllerSet.Disconnect:
+                                Others.Config.FunGame_isAutoRetry = false;
+                                Others.Config.FunGame_isRetrying = false;
+                                Others.Config.FunGame_isAutoConnect = false;
+                                Others.Config.FunGame_isAutoLogin = false;
+                                Others.Config.FunGame_isConnected = false;
+                                SetServerStatusLight((int)LightType.Yellow);
+                                SetButtonEnableIfLogon(false, ClientState.WaitConnect);
+                                LogoutAccount();
+                                break;
+
+                            case Others.MainControllerSet.LogOut:
+                                Others.Config.FunGame_isRetrying = false;
+                                Others.Config.FunGame_isConnected = false;
+                                Others.Config.FunGame_isAutoLogin = false;
+                                SetServerStatusLight((int)LightType.Yellow);
+                                SetButtonEnableIfLogon(false, ClientState.WaitConnect);
+                                LogoutAccount();
+                                if (Others.Config.FunGame_isAutoConnect)
+                                {
+                                    NOW_CONNECTEDRETRY = -1;
+                                    Task.Run(() =>
+                                    {
+                                        Thread.Sleep(1000);
+                                        MainController?.Do<bool>(MainControllerSet.Connect);
+                                    });
+                                }
+                                break;
+
+                            case Others.MainControllerSet.SetUser:
+                                if (objs != null && objs.Length > 1)
+                                {
+                                    SetLoginUser(objs);
+                                }
+                                break;
+
+                            case Others.MainControllerSet.Connected:
+                                Action action = () =>
+                                {
+                                    NoticeText.Text = Others.Config.FunGame_Notice;
+                                    if (MainController != null && Others.Config.FunGame_isAutoLogin)
+                                    {
+                                        // 自动登录
+                                        MainController.Do<bool>(MainControllerSet.LogIn);
+                                    }
+                                };
+                                if (InvokeRequired)
+                                    BeginInvoke(action);
+                                else
+                                    action();
+                                break;
+
+                            default:
+                                break;
+                        }
                     }
                 }
-                return null;
+                catch (Exception e)
+                {
+                    WritelnGameInfo(e.GetStackTrace());
+                    UpdateUI(Others.MainControllerSet.SetRed);
+                }
             }
-            catch (Exception e)
+            InvokeUpdateUI(action);
+        }
+
+        public void GetMessage(string? msg, bool time = true, TimeType timetype = TimeType.TimeOnly)
+        {
+            void action()
             {
-                WritelnGameInfo(SocketHelper, e.Message != null ? e.Message + "\n" + e.StackTrace : "" + e.StackTrace);
-                GetMessage(SocketHelper, Others.Constant.SocketHelper_SetRed);
-            }
-            return null;
+                try
+                {
+                    if (msg == null || msg == "") return;
+                    if (time)
+                    {
+                        WritelnGameInfo(DateTimeUtility.GetDateTimeToString(timetype) + " >> " + msg);
+                    }
+                    else
+                    {
+                        WritelnGameInfo(msg);
+                    }
+                }
+                catch (Exception e)
+                {
+                    WritelnGameInfo(e.GetStackTrace());
+                }
+            };
+            InvokeUpdateUI(action);
         }
 
         #endregion
@@ -286,111 +270,13 @@ namespace Milimoe.FunGame.Desktop.UI
         #region 实现
 
         /// <summary>
-        /// 反射获取服务器IP和Port
+        /// 委托更新UI
         /// </summary>
-        private void GetServerConnection()
+        /// <param name="action"></param>
+        private void InvokeUpdateUI(Action action)
         {
-            try
-            {
-                string? ipaddress = (string?)Others.Constant.ReflectionHelper.GetFunGameImplValue((int)InterfaceType.IClient, (int)InterfaceMethod.RemoteServerIP); // 获取服务器IP
-                if (ipaddress != null)
-                {
-                    string[] s = ipaddress.Split(':');
-                    if (s != null && s.Length > 1)
-                    {
-                        Others.Constant.SERVER_IPADRESS = s[0];
-                        Others.Constant.SERVER_PORT = Convert.ToInt32(s[1]);
-                        Connect(); // 连接服务器
-                    }
-                    else throw new Exception();
-                }
-                else throw new Exception();
-            }
-            catch (Exception e)
-            {
-                WritelnGameInfo(">> 查找可用的服务器失败，请重启FunGame。\n" + e.StackTrace);
-                ShowMessage.ErrorMessage("查找可用的服务器失败！");
-            }
-        }
-
-        /// <summary>
-        /// 在服务器IP获取成功后，尝试连接服务器
-        /// </summary>
-        private void Connect()
-        {
-            if (Others.Constant.SERVER_IPADRESS.Equals("") || Others.Constant.SERVER_PORT <= 0)
-            {
-                ShowMessage.ErrorMessage("查找可用的服务器失败！");
-                return;
-            }
-            Task.Run(() =>
-            {
-                while (true)
-                {
-                    if (IsHandleCreated)
-                    {
-                        // 检查是否创建了窗口句柄，再Invoke委托。
-                        break;
-                    }
-                }
-                Main_Action = (main) =>
-                {
-                    if (!Others.Config.FunGame_isConnected)
-                    {
-                        NOW_CONNECTEDRETRY++;
-                        if (NOW_CONNECTEDRETRY == 0)
-                            WritelnGameInfo(DateTimeUtility.GetNowTime() + " >> 开始连接服务器...");
-                        else
-                            WritelnGameInfo(DateTimeUtility.GetNowTime() + " >> 第" + NOW_CONNECTEDRETRY + "次重试连接服务器...");
-                        if (NOW_CONNECTEDRETRY + 1 > MAX_CONNECTEDRETRY) // 判断重连次数是否达到上限
-                        {
-                            WritelnGameInfo("ERROR：无法连接至服务器，请检查网络并重启游戏再试。");
-                            return;
-                        }
-                        SocketHelper_Action = (main) =>
-                        {
-                            try
-                            {
-                                if (main != null)
-                                {
-                                    if (SocketHelper != null)
-                                    {
-                                        SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.CloseSocket);
-                                        SocketHelper = null;
-                                    }
-                                    Others.Config.FunGame_isRetrying = true;
-                                    Application.DoEvents();
-                                    SocketHelper = new SocketHelper(main);
-                                    SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.CreateSocket); // Invoke -> CreateSocket
-                                }
-                            }
-                            catch
-                            {
-
-                            }
-                        };
-                        Task.Factory.StartNew(() =>
-                        {
-                            if (InvokeRequired)
-                            {
-                                BeginInvoke(SocketHelper_Action, main);
-                            }
-                            else
-                            {
-                                SocketHelper_Action(main);
-                            }
-                        });
-                    }
-                };
-                if (InvokeRequired)
-                {
-                    Invoke(Main_Action, this);
-                }
-                else
-                {
-                    Main_Action(this);
-                }
-            });
+            if (InvokeRequired) Invoke(action);
+            else action();
         }
 
         /// <summary>
@@ -413,14 +299,14 @@ namespace Milimoe.FunGame.Desktop.UI
                 }
                 else
                 {
-                    INIHelper.Init(Others.Constant.FunGameType);
+                    INIHelper.Init((FunGameEnum.FunGame)Others.Constant.FunGameType);
                     WritelnGameInfo(">> 首次启动，已自动为你创建配置文件。");
                     GetFunGameConfig();
                 }
             }
             catch (Exception e)
             {
-                WritelnGameInfo(DateTimeUtility.GetNowTime() + e.Message != null ? e.Message + "\n" + e.StackTrace : "" + e.StackTrace);
+                WritelnGameInfo(e.GetStackTrace());
             }
         }
 
@@ -461,28 +347,6 @@ namespace Milimoe.FunGame.Desktop.UI
             GameInfo.Text += "\n";
             GameInfo.SelectionStart = GameInfo.Text.Length - 1;
             GameInfo.ScrollToCaret();
-        }
-
-        /// <summary>
-        /// 由SocketHelper委托向消息队列输出一行文字
-        /// </summary>
-        /// <param name="SocketHelper"></param>
-        /// <param name="msg"></param>
-        private void WritelnGameInfo(SocketHelper SocketHelper, string msg)
-        {
-            if (SocketHelper != null && msg.Trim() != "")
-            {
-                Action tempAction = new Action(() =>
-                {
-                    GameInfo.Text += msg + "\n";
-                    GameInfo.SelectionStart = GameInfo.Text.Length - 1;
-                    GameInfo.ScrollToCaret();
-                });
-                if (this.InvokeRequired)
-                    Invoke(tempAction);
-                else
-                    tempAction();
-            }
         }
 
         /// <summary>
@@ -919,7 +783,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// </summary>
         private void ShowFunGameInfo()
         {
-            WritelnGameInfo(FunGameEnum.GetInfo(Others.Constant.FunGameType));
+            WritelnGameInfo(FunGameEnum.GetInfo((FunGameEnum.FunGame)Others.Constant.FunGameType));
         }
 
         #endregion
@@ -935,10 +799,10 @@ namespace Milimoe.FunGame.Desktop.UI
         {
             if (ShowMessage.OKCancelMessage("你确定关闭游戏？", "退出") == (int)MessageResult.OK)
             {
-                if (SocketHelper != null)
+                if (MainController != null)
                 {
-                    SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.CloseSocket);
-                    SocketHelper = null;
+                    MainController.Do<bool>(MainControllerSet.Close);
+                    MainController = null;
                 }
                 Environment.Exit(0);
             }
@@ -1105,7 +969,7 @@ namespace Milimoe.FunGame.Desktop.UI
         {
             if (ShowMessage.OKCancelMessage("你确定要退出登录吗？", "退出登录") == MessageResult.OK)
             {
-                if (SocketHelper == null || !SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.Logout))
+                if (MainController == null || !MainController.Do<bool>(MainControllerSet.LogOut))
                     ShowMessage.WarningMessage("请求无效：退出登录失败！");
             }
         }
@@ -1117,8 +981,8 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="e"></param>
         private void Login_Click(object sender, EventArgs e)
         {
-            if (SocketHelper != null && Others.Config.FunGame_isConnected)
-                SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.Login);
+            if (MainController != null && Others.Config.FunGame_isConnected)
+                MainController.Do<bool>(MainControllerSet.LogIn);
             else
                 ShowMessage.WarningMessage("请先连接服务器！");
         }
@@ -1387,7 +1251,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     if (!Others.Config.FunGame_isRetrying)
                     {
                         NOW_CONNECTEDRETRY = -1;
-                        Connect();
+                        MainController?.Do<bool>(MainControllerSet.Connect);
                     }
                     else
                         WritelnGameInfo(">> 你不能在连接服务器的同时重试连接！");
@@ -1396,20 +1260,20 @@ namespace Milimoe.FunGame.Desktop.UI
                     if (!Others.Config.FunGame_isConnected)
                     {
                         NOW_CONNECTEDRETRY = -1;
-                        GetServerConnection();
+                        MainController?.Do<bool>(MainControllerSet.GetServerConnection);
                     }
                     break;
                 case Others.Constant.FunGame_Disconnect:
-                    if (Others.Config.FunGame_isConnected && SocketHelper != null)
+                    if (Others.Config.FunGame_isConnected && MainController != null)
                     {
-                        SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.Disconnect);
+                        MainController?.Do<bool>(MainControllerSet.Disconnect);
                     }
                     break;
                 case Others.Constant.FunGame_DisconnectWhenNotLogin:
-                    if (Others.Config.FunGame_isConnected && SocketHelper != null)
+                    if (Others.Config.FunGame_isConnected && MainController != null)
                     {
-                        SocketHelper.GetSocketHelperMethod((int)SocketHelperMethod.CloseSocket);
-                        GetMessage(SocketHelper, Others.Constant.SocketHelper_Disconnect);
+                        MainController?.Do<bool>(MainControllerSet.Close);
+                        UpdateUI(MainControllerSet.Disconnect);
                         WritelnGameInfo(DateTimeUtility.GetNowShortTime() + " >> 你已成功断开与服务器的连接。 ");
                     }
                     break;
@@ -1440,7 +1304,7 @@ namespace Milimoe.FunGame.Desktop.UI
                         Others.Constant.SERVER_IPADRESS = ip;
                         Others.Constant.SERVER_PORT = port;
                         NOW_CONNECTEDRETRY = -1;
-                        Connect();
+                        MainController?.Do<bool>(MainControllerSet.Connect);
                     }
                     else if (ErrorType == Core.Library.Constant.ErrorType.IsNotIP) ShowMessage.ErrorMessage("这不是一个IP地址！");
                     else if (ErrorType == Core.Library.Constant.ErrorType.IsNotPort) ShowMessage.ErrorMessage("这不是一个端口号！\n正确范围：1~65535");

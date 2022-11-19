@@ -9,7 +9,7 @@
     <Authors>Milimoe</Authors>
     <Product>FunGame</Product>
     <Title>FunGame.Console</Title>
-    <ApplicationIcon>images\logo.ico</ApplicationIcon>
+    <ApplicationIcon>logo.ico</ApplicationIcon>
     <BaseOutputPath>..\bin\</BaseOutputPath>
     <AssemblyName>FunGame</AssemblyName>
     <RootNamespace>Milimoe.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="images\logo.ico" />
+    <Content Include="logo.ico" />
   </ItemGroup>
 
 </Project>

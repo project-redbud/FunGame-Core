@@ -7,16 +7,6 @@ using System.Threading.Tasks;
 
 namespace Milimoe.FunGame.Core.Library.Constant
 {
-    public enum SocketHelperMethod
-    {
-        CreateSocket,
-        CloseSocket,
-        StartSocketHelper,
-        Login,
-        Logout,
-        Disconnect
-    }
-
     public enum InterfaceMethod
     {
         RemoteServerIP,

@@ -1,4 +1,4 @@
-﻿namespace Milimoe.FunGame.Desktop.Entity.Component
+﻿namespace Milimoe.FunGame.Desktop.Library.Component
 {
     partial class ShowMessage
     {
@@ -32,11 +32,11 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ShowMessage));
             this.MsgText = new System.Windows.Forms.Label();
             this.LeftButton = new System.Windows.Forms.Button();
-            this.Exit = new FunGame.Desktop.Entity.Component.ExitButton(this.components);
+            this.Exit = new FunGame.Desktop.Library.Component.ExitButton(this.components);
             this.RightButton = new System.Windows.Forms.Button();
             this.MidButton = new System.Windows.Forms.Button();
             this.Title = new System.Windows.Forms.Label();
-            this.TransparentRect = new FunGame.Desktop.Entity.Component.TransparentRect();
+            this.TransparentRect = new FunGame.Desktop.Library.Component.TransparentRect();
             this.InputButton = new System.Windows.Forms.Button();
             this.InputText = new System.Windows.Forms.TextBox();
             this.TransparentRect.SuspendLayout();
@@ -133,7 +133,7 @@
             this.TransparentRect.Name = "TransparentRect";
             this.TransparentRect.Opacity = 125;
             this.TransparentRect.Radius = 20;
-            this.TransparentRect.ShapeBorderStyle = FunGame.Desktop.Entity.Component.TransparentRect.ShapeBorderStyles.ShapeBSNone;
+            this.TransparentRect.ShapeBorderStyle = FunGame.Desktop.Library.Component.TransparentRect.ShapeBorderStyles.ShapeBSNone;
             this.TransparentRect.Size = new System.Drawing.Size(235, 170);
             this.TransparentRect.TabIndex = 103;
             this.TransparentRect.TabStop = false;

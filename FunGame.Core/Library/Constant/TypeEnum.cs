@@ -39,12 +39,19 @@ namespace Milimoe.FunGame.Core.Library.Constant
     public enum SocketMessageType
     {
         Unknown,
+        Connect,
         GetNotice,
         Login,
         CheckLogin,
         Logout,
         Disconnect,
         HeartBeat
+    }
+
+    public enum SocketRuntimeType
+    {
+        Client,
+        Server
     }
 
     public enum ErrorType

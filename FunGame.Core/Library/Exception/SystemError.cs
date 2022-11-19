@@ -13,16 +13,22 @@ namespace Milimoe.FunGame.Core.Library.Exception
 
         public new string StackTrace { get => base.StackTrace ?? ""; }
 
-        public SystemError() { }
+        private System.Exception e { get; }
+
+        public SystemError()
+        {
+            e = new System.Exception();
+        }
 
         public SystemError(string Name)
         {
             this.Name = Name;
+            e = new System.Exception(Name);
         }
 
         public string GetStackTrace()
         {
-            return Name + "\r\n" + StackTrace;
+            return e.GetStackTrace();
         }
     }
 }

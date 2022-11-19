@@ -15,11 +15,12 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
     public class Socket
     {
         public System.Net.Sockets.Socket Instance { get; }
+        public int Runtime { get; } = (int)SocketRuntimeType.Client;
         public string ServerIP { get; } = "";
         public int ServerPort { get; } = 0;
         public string ServerName { get; } = "";
         public string ServerNotice { get; } = "";
-        public int HeartBeatFaileds { get; } = 0;
+        public int HeartBeatFaileds { get; private set; } = 0;
         public bool Connected
         {
             get
@@ -27,19 +28,26 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
                 return Instance != null && Instance.Connected;
             }
         }
-        
+        public bool Receiving { get; private set; } = false;
+        public bool SendingHeartBeat { get; private set; } = false;
+
+        private Task? SendingHeartBeatTask;
+        private Task? ReceivingTask;
+        private Task? WaitHeartBeatReply;
+
         private Socket(System.Net.Sockets.Socket Instance, string ServerIP, int ServerPort)
         {
             this.Instance = Instance;
             this.ServerIP= ServerIP;
             this.ServerPort = ServerPort;
+            this.StartSendingHeartBeat();
         }
 
         public static Socket Connect(string IP, int Port = 22222)
         {
             System.Net.Sockets.Socket? socket = SocketManager.Connect(IP, Port);
             if (socket != null) return new Socket(socket, IP, Port);
-            else throw new Milimoe.FunGame.Core.Library.Exception.SystemError("创建Socket失败。");
+            else throw new System.Exception("连接到服务器失败。");
         }
 
         public SocketResult Send(SocketMessageType type, string msg = "")
@@ -55,34 +63,86 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             return SocketResult.NotSent;
         }
 
-        private string[] Receive()
+        public string[] Receive()
         {
-            return SocketManager.Receive();
-        }
-
-        public void Run()
-        {
-            Task HeartBeatStream = Task.Factory.StartNew(StartSendHeartBeatStream);
-            Task StreamReader = Task.Factory.StartNew(StartReceive);
-        }
-
-        private void StartReceive()
-        {
-            Thread.Sleep(100);
-            while (Connected)
+            string[] result = SocketManager.Receive();
+            if (result[0] == SocketSet.HeartBeat)
             {
-                Receive();
+                if (WaitHeartBeatReply != null && !WaitHeartBeatReply.IsCompleted) WaitHeartBeatReply.Wait(1);
+                HeartBeatFaileds = 0;
             }
+            return result;
         }
 
-        private void StartSendHeartBeatStream()
+        public void CheckHeartBeatFaileds()
+        {
+            if (HeartBeatFaileds >= 3) Close();
+        }
+
+        public void Close()
+        {
+            StopSendingHeartBeat();
+            StopReceiving();
+            Instance?.Close();
+        }
+
+        public void ResetHeartBeatFaileds()
+        {
+            HeartBeatFaileds = 0;
+        }
+
+        public void StartReceiving(Task t)
+        {
+            Receiving = true;
+            ReceivingTask = t;
+        }
+
+        private void StartSendingHeartBeat()
+        {
+            SendingHeartBeat = true;
+            SendingHeartBeatTask = Task.Factory.StartNew(SendHeartBeat);
+        }
+
+        private void StopReceiving()
+        {
+            Receiving = false;
+            ReceivingTask?.Wait(1);
+            ReceivingTask = null;
+        }
+
+        private void StopSendingHeartBeat()
+        {
+            SendingHeartBeat = false;
+            SendingHeartBeatTask?.Wait(1);
+            SendingHeartBeatTask = null;
+        }
+
+        private void SendHeartBeat()
         {
             Thread.Sleep(100);
             while (Connected)
             {
-                Send(SocketMessageType.HeartBeat); // 发送心跳包
+                if (!SendingHeartBeat) SendingHeartBeat= true;
+                // 发送心跳包
+                if (Send(SocketMessageType.HeartBeat) == SocketResult.Success)
+                {
+                    WaitHeartBeatReply = Task.Run(() =>
+                    {
+                        Thread.Sleep(4000);
+                        AddHeartBeatFaileds();
+                    });
+                }
+                else AddHeartBeatFaileds();
                 Thread.Sleep(20000);
             }
+            SendingHeartBeat = false;
+        }
+
+        private void AddHeartBeatFaileds()
+        {
+            // 超过三次没回应心跳，服务器连接失败。
+            if (HeartBeatFaileds++ >= 3)
+                throw new System.Exception("ERROR：与服务器连接中断。");
         }
     }
 }
