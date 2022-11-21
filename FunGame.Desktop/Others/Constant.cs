@@ -40,7 +40,7 @@ namespace Milimoe.FunGame.Desktop.Others
          */
         public static string SERVER_IPADRESS { get; set; } = ""; // 服务器IP地址
         public static int SERVER_PORT { get; set; } = 0; // 服务器端口号
-        public static Encoding DEFAULT_ENCODING { get; set; } = Encoding.UTF8;
+        public static Encoding DEFAULT_ENCODING { get; } = Core.Library.Constant.General.DEFAULT_ENCODING;
 
         /**
          * FunGame Configs

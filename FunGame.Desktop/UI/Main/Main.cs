@@ -60,6 +60,7 @@ namespace Milimoe.FunGame.Desktop.UI
             GetFunGameConfig(); // 获取FunGame配置
             // 创建一个UI控制器
             MainController = new MainController(this);
+            // 窗口句柄创建后，进行委托
             Task.Factory.StartNew(() =>
             {
                 while (true)
@@ -69,11 +70,10 @@ namespace Milimoe.FunGame.Desktop.UI
                         break;
                     }
                 }
-                // 窗口句柄创建后，进行委托
                 void action()
                 {
                     if (Config.FunGame_isAutoConnect)
-                        MainController.Do<bool>(MainControllerSet.Connected);
+                        MainController.Do<object>(MainControllerSet.GetServerConnection);
                 }
                 InvokeUpdateUI(action);
             });
@@ -90,7 +90,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="time"></param>
         /// <param name="timetype"></param>
         /// <param name="objs"></param>
-        public void UpdateUI(string? updatetype, bool time = false, TimeType timetype = TimeType.TimeOnly, object[]? objs = null)
+        public void UpdateUI(string? updatetype, bool time = true, TimeType timetype = TimeType.TimeOnly, object[]? objs = null)
         {
             void action()
             {
@@ -162,18 +162,19 @@ namespace Milimoe.FunGame.Desktop.UI
                                     Task.Run(() =>
                                     {
                                         Thread.Sleep(5000);
-                                        if (Others.Config.FunGame_isAutoRetry) MainController?.Do<bool>(MainControllerSet.Connect); // 再次判断是否开启自动重连
+                                        if (Others.Config.FunGame_isAutoRetry) MainController?.Do<object>(MainControllerSet.Connect); // 再次判断是否开启自动重连
                                     });
                                     if (time)
-                                        throw new Exception(DateTimeUtility.GetNowShortTime() + "\nERROR：连接服务器失败，5秒后自动尝试重连。");
+                                        WritelnGameInfo(DateTimeUtility.GetDateTimeToString(timetype) + "\n连接服务器失败，5秒后自动尝试重连。");
                                     else
-                                        throw new Exception("ERROR：连接服务器失败，5秒后自动尝试重连。");
+                                        WritelnGameInfo("连接服务器失败，5秒后自动尝试重连。");
                                 }
                                 else
                                     if (time)
-                                    throw new Exception(DateTimeUtility.GetNowShortTime() + "\nERROR：无法连接至服务器，请检查你的网络连接。");
+                                    WritelnGameInfo(DateTimeUtility.GetDateTimeToString(timetype) + "\n无法连接至服务器，请检查你的网络连接。");
                                 else
-                                    throw new Exception("ERROR：无法连接至服务器，请检查你的网络连接。");
+                                    WritelnGameInfo("无法连接至服务器，请检查你的网络连接。");
+                                break;
 
                             case Others.MainControllerSet.Disconnect:
                                 Others.Config.FunGame_isAutoRetry = false;
@@ -199,7 +200,7 @@ namespace Milimoe.FunGame.Desktop.UI
                                     Task.Run(() =>
                                     {
                                         Thread.Sleep(1000);
-                                        MainController?.Do<bool>(MainControllerSet.Connect);
+                                        MainController?.Do<object>(MainControllerSet.Connect);
                                     });
                                 }
                                 break;
@@ -292,10 +293,10 @@ namespace Milimoe.FunGame.Desktop.UI
                     string isAutoLogin = INIHelper.ReadINI("Config", "AutoLogin");
                     if (isAutoConncet != null && !isAutoConncet.Equals("") && (isAutoConncet.Equals("false") || isAutoConncet.Equals("true")))
                         Others.Config.FunGame_isAutoConnect = Convert.ToBoolean(isAutoConncet);
-                    else throw new Exception("ERROR: 读取配置文件出错，参数格式不正确");
+                    else throw new Exception("读取配置文件出错，参数格式不正确");
                     if (isAutoLogin != null && !isAutoLogin.Equals("") && (isAutoLogin.Equals("false") || isAutoLogin.Equals("true")))
                         Others.Config.FunGame_isAutoLogin = Convert.ToBoolean(isAutoLogin);
-                    else throw new Exception("ERROR: 读取配置文件出错，参数格式不正确");
+                    else throw new Exception("读取配置文件出错，参数格式不正确");
                 }
                 else
                 {
@@ -1251,7 +1252,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     if (!Others.Config.FunGame_isRetrying)
                     {
                         NOW_CONNECTEDRETRY = -1;
-                        MainController?.Do<bool>(MainControllerSet.Connect);
+                        MainController?.Do<object>(MainControllerSet.Connect);
                     }
                     else
                         WritelnGameInfo(">> 你不能在连接服务器的同时重试连接！");
@@ -1304,7 +1305,7 @@ namespace Milimoe.FunGame.Desktop.UI
                         Others.Constant.SERVER_IPADRESS = ip;
                         Others.Constant.SERVER_PORT = port;
                         NOW_CONNECTEDRETRY = -1;
-                        MainController?.Do<bool>(MainControllerSet.Connect);
+                        MainController?.Do<object>(MainControllerSet.Connect);
                     }
                     else if (ErrorType == Core.Library.Constant.ErrorType.IsNotIP) ShowMessage.ErrorMessage("这不是一个IP地址！");
                     else if (ErrorType == Core.Library.Constant.ErrorType.IsNotPort) ShowMessage.ErrorMessage("这不是一个端口号！\n正确范围：1~65535");

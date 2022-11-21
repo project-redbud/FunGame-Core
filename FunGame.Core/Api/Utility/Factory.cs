@@ -16,11 +16,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <typeparam name="T">Entity类</typeparam>
         /// <param name="objs">构造函数的参数</param>
         /// <returns></returns>
-        public static object? GetInstance<T>(params object[]? objs)
+        public static T? GetInstance<T>(params object[]? objs)
         {
-            if (!IsEntity<T>()) return null;
+            if (!IsEntity<T>()) return default;
             object? instance = null;
-            if (objs is null || objs.Length == 0) return instance;
+            if (objs is null || objs.Length == 0) return (T?)instance;
             if (typeof(T) == typeof(Entity.User))
             {
                 instance = Api.Factory.UserFactory.GetInstance("Mili");
@@ -29,7 +29,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
 
             }
-            return instance;
+            return (T?)instance;
         }
 
         /// <summary>
@@ -41,11 +41,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <typeparam name="T">Entity类</typeparam>
         /// <param name="objs">构造函数的参数</param>
         /// <returns></returns>
-        public static object New<T>(params object[]? objs)
+        public static T New<T>(params object[]? objs)
         {
             object instance = General.EntityInstance;
-            if (!IsEntity<T>()) return instance;
-            if (objs is null || objs.Length == 0) return instance;
+            if (!IsEntity<T>()) return (T)instance;
+            if (objs is null || objs.Length == 0) return (T)instance;
             if (typeof(T) == typeof(Entity.User))
             {
                 instance = Api.Factory.UserFactory.GetInstance("Mili");
@@ -54,7 +54,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
 
             }
-            return instance;
+            return (T)instance;
         }
 
         /// <summary>

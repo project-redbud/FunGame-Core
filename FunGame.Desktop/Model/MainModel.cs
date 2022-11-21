@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
@@ -30,18 +31,41 @@ namespace Milimoe.FunGame.Desktop.Model
 
         public bool Login()
         {
+            try
+            {
+                if (Socket != null && Socket.Send(SocketMessageType.Login, "Mili", "OK") == SocketResult.Success)
+                    return true;
+            }
+            catch (Exception e)
+            {
+                Main?.GetMessage(e.GetStackTrace());
+            }
             return false;
         }
 
         public bool Logout()
         {
+            try
+            {
+                //Socket?.Send(SocketMessageType.Logout, "");
+            }
+            catch (Exception e)
+            {
+                Main?.GetMessage(e.GetStackTrace());
+            }
             return false;
         }
 
-
         public void Disconnect()
         {
-
+            try
+            {
+                Socket?.Send(SocketMessageType.Disconnect, "");
+            }
+            catch (Exception e)
+            {
+                Main?.GetMessage(e.GetStackTrace());
+            }
         }
 
         public bool GetServerConnection()
@@ -85,6 +109,11 @@ namespace Milimoe.FunGame.Desktop.Model
                 }
                 while (true)
                 {
+                    if (Others.Config.FunGame_isRetrying)
+                    {
+                        Main?.GetMessage("正在连接服务器，请耐心等待。");
+                        return ConnectResult.CanNotConnect;
+                    }
                     if (!Others.Config.FunGame_isConnected)
                     {
                         CurrentRetryTimes++;
@@ -104,16 +133,28 @@ namespace Milimoe.FunGame.Desktop.Model
                             // 发送连接请求
                             if (Socket.Send(SocketMessageType.Connect) == SocketResult.Success)
                             {
-                                // 接收连接回应
-                                if (Receiving() == SocketMessageType.Connect)
+                                Task t = Task.Factory.StartNew(() =>
                                 {
-                                    Main?.UpdateUI(MainControllerSet.Connected);
-                                    return ConnectResult.Success;
-                                }
+                                    if (Receiving() == SocketMessageType.Connect)
+                                    {
+                                        Main?.GetMessage("连接服务器成功，请登录账号以体验FunGame。");
+                                        Main?.UpdateUI(MainControllerSet.Connected);
+                                        StartReceiving();
+                                        return ConnectResult.Success;
+                                    }
+                                    return ConnectResult.ConnectFailed;
+                                });
+                                t.Wait(5000);
+                                Main?.GetMessage("ERROR: 连接超时，远程服务器没有回应。", false);
                             }
                             Socket?.Close();
-                            return ConnectResult.CanNotConnect;
+                            return ConnectResult.ConnectFailed;
                         }
+                    }
+                    else
+                    {
+                        Main?.GetMessage("已连接至服务器，请勿重复连接。");
+                        return ConnectResult.CanNotConnect;
                     }
                 }
             }
@@ -123,19 +164,6 @@ namespace Milimoe.FunGame.Desktop.Model
             }
 
             return ConnectResult.ConnectFailed;
-        }
-
-        public void StartReceiving()
-        {
-            ReceivingTask = Task.Factory.StartNew(() =>
-            {
-                Thread.Sleep(100);
-                while (Socket != null && Socket.Connected)
-                {
-                    Receiving();
-                }
-            });
-            Socket?.StartReceiving(ReceivingTask);
         }
 
         public bool Close()
@@ -161,13 +189,26 @@ namespace Milimoe.FunGame.Desktop.Model
             return true;
         }
 
-        private string[] GetServerMessage()
+        private void StartReceiving()
+        {
+            ReceivingTask = Task.Factory.StartNew(() =>
+            {
+                Thread.Sleep(100);
+                while (Socket != null && Socket.Connected)
+                {
+                    Receiving();
+                }
+            });
+            Socket?.StartReceiving(ReceivingTask);
+        }
+
+        private object[] GetServerMessage()
         {
             if (Socket != null && Socket.Connected)
             {
                 return Socket.Receive();
             }
-            return new string[2] { SocketSet.Unknown, "" };
+            return new object[2] { SocketSet.Unknown, Array.Empty<object>() };
         }
 
         private SocketMessageType Receiving()
@@ -176,17 +217,21 @@ namespace Milimoe.FunGame.Desktop.Model
             SocketMessageType result = SocketMessageType.Unknown;
             try
             {
-                string[] ServerMessage = GetServerMessage();
-                string type = ServerMessage[0];
-                string msg = ServerMessage[1];
+                object[] ServerMessage = GetServerMessage();
+                string type = (string)ServerMessage[0];
+                object[] objs = (object[])ServerMessage[1];
+                string msg = "";
                 switch (type)
                 {
                     case SocketSet.GetNotice:
                         result = SocketMessageType.GetNotice;
+                        if (objs.Length > 0) msg = (string)objs[0];
                         Config.FunGame_Notice = msg;
                         break;
+
                     case SocketSet.Connect:
                         result = SocketMessageType.Connect;
+                        if (objs.Length > 0) msg = (string)objs[0];
                         string[] strings = msg.Split(';');
                         string ServerName = strings[0];
                         string ServerNotice = strings[1];
@@ -196,14 +241,35 @@ namespace Milimoe.FunGame.Desktop.Model
                         // 设置等待登录的黄灯
                         Main?.UpdateUI(MainControllerSet.WaitLoginAndSetYellow);
                         break;
+
                     case SocketSet.Login:
+                        result = SocketMessageType.Login;
                         break;
+
                     case SocketSet.CheckLogin:
+                        result = SocketMessageType.CheckLogin;
+                        if (objs.Length > 0) msg = (string)objs[0];
+                        Main?.GetMessage(msg);
+                        Main?.UpdateUI(MainControllerSet.SetUser, true, TimeType.TimeOnly, new object[] { Factory.New<User>(msg) });
                         break;
+
                     case SocketSet.Logout:
                         break;
+
                     case SocketSet.Disconnect:
+                        result = SocketMessageType.Disconnect;
+                        if (objs.Length > 0) msg = (string)objs[0];
+                        Main?.GetMessage(msg);
+                        Main?.UpdateUI(MainControllerSet.Disconnected);
+                        Close();
                         break;
+
+                    case SocketSet.HeartBeat:
+                        result = SocketMessageType.HeartBeat;
+                        if (Usercfg.LoginUser != null)
+                            Main?.UpdateUI(MainControllerSet.SetGreenAndPing);
+                        break;
+
                     case SocketSet.Unknown:
                     default:
                         break;
@@ -211,7 +277,10 @@ namespace Milimoe.FunGame.Desktop.Model
             }
             catch (Exception e)
             {
+                // 报错中断服务器连接
                 Main?.GetMessage(e.GetStackTrace(), false);
+                Main?.UpdateUI(MainControllerSet.Disconnected);
+                Close();
             }
             return result;
         }

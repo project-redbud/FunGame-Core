@@ -12,7 +12,7 @@ namespace Milimoe.FunGame.Desktop.Others
         /**
          * 玩家设定内容
          */
-        public static User? LoginUser = null; // 已登录的用户
-        public static string LoginUserName = ""; // 已登录用户名
+        public static User? LoginUser { get; set; } = null; // 已登录的用户
+        public static string LoginUserName { get; set; } = ""; // 已登录用户名
     }
 }

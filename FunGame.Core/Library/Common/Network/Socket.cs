@@ -12,7 +12,7 @@ using Milimoe.FunGame.Core.Interface.Base;
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
 {
-    public class Socket
+    public class Socket : ISocket
     {
         public System.Net.Sockets.Socket Instance { get; }
         public int Runtime { get; } = (int)SocketRuntimeType.Client;
@@ -49,12 +49,12 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             if (socket != null) return new Socket(socket, IP, Port);
             else throw new System.Exception("连接到服务器失败。");
         }
-
-        public SocketResult Send(SocketMessageType type, string msg = "")
+        
+        public SocketResult Send(SocketMessageType type, params object[] objs)
         {
             if (Instance != null)
             {
-                if (SocketManager.Send(type, msg) == SocketResult.Success)
+                if (SocketManager.Send(type, objs) == SocketResult.Success)
                 {
                     return SocketResult.Success;
                 }
@@ -63,10 +63,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             return SocketResult.NotSent;
         }
 
-        public string[] Receive()
+        public object[] Receive()
         {
-            string[] result = SocketManager.Receive();
-            if (result[0] == SocketSet.HeartBeat)
+            object[] result = SocketManager.Receive();
+            if (result.Length != 2) throw new System.Exception("收到错误的返回信息。");
+            if ((string)result[0] == SocketSet.HeartBeat)
             {
                 if (WaitHeartBeatReply != null && !WaitHeartBeatReply.IsCompleted) WaitHeartBeatReply.Wait(1);
                 HeartBeatFaileds = 0;
