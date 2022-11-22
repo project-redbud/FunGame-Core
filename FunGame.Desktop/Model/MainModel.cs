@@ -208,7 +208,7 @@ namespace Milimoe.FunGame.Desktop.Model
             {
                 return Socket.Receive();
             }
-            return new object[2] { SocketSet.Unknown, Array.Empty<object>() };
+            return new object[2] { SocketMessageType.Unknown, Array.Empty<object>() };
         }
 
         private SocketMessageType Receiving()
@@ -218,59 +218,40 @@ namespace Milimoe.FunGame.Desktop.Model
             try
             {
                 object[] ServerMessage = GetServerMessage();
-                string type = (string)ServerMessage[0];
+                SocketMessageType type = (SocketMessageType)ServerMessage[0];
                 object[] objs = (object[])ServerMessage[1];
-                string msg = "";
+
+                result = type;
                 switch (type)
                 {
-                    case SocketSet.GetNotice:
-                        result = SocketMessageType.GetNotice;
-                        if (objs.Length > 0) msg = (string)objs[0];
-                        Config.FunGame_Notice = msg;
+                    case SocketMessageType.Connect:
+                        SocketHandle_Connect(objs);
                         break;
 
-                    case SocketSet.Connect:
-                        result = SocketMessageType.Connect;
-                        if (objs.Length > 0) msg = (string)objs[0];
-                        string[] strings = msg.Split(';');
-                        string ServerName = strings[0];
-                        string ServerNotice = strings[1];
-                        Config.FunGame_ServerName = ServerName;
-                        Config.FunGame_Notice = ServerNotice;
-                        Main?.GetMessage($"已连接服务器：{ServerName}。\n\n********** 服务器公告 **********\n\n{ServerNotice}\n\n");
-                        // 设置等待登录的黄灯
-                        Main?.UpdateUI(MainControllerSet.WaitLoginAndSetYellow);
+                    case SocketMessageType.GetNotice:
+                        SocketHandle_GetNotice(objs);
                         break;
 
-                    case SocketSet.Login:
-                        result = SocketMessageType.Login;
+                    case SocketMessageType.Login:
                         break;
 
-                    case SocketSet.CheckLogin:
-                        result = SocketMessageType.CheckLogin;
-                        if (objs.Length > 0) msg = (string)objs[0];
-                        Main?.GetMessage(msg);
-                        Main?.UpdateUI(MainControllerSet.SetUser, true, TimeType.TimeOnly, new object[] { Factory.New<User>(msg) });
+                    case SocketMessageType.CheckLogin:
+                        SocketHandle_CheckLogin(objs);
                         break;
 
-                    case SocketSet.Logout:
+                    case SocketMessageType.Logout:
                         break;
 
-                    case SocketSet.Disconnect:
-                        result = SocketMessageType.Disconnect;
-                        if (objs.Length > 0) msg = (string)objs[0];
-                        Main?.GetMessage(msg);
-                        Main?.UpdateUI(MainControllerSet.Disconnected);
-                        Close();
+                    case SocketMessageType.Disconnect:
+                        SocketHandle_Disconnect(objs);
                         break;
 
-                    case SocketSet.HeartBeat:
-                        result = SocketMessageType.HeartBeat;
-                        if (Usercfg.LoginUser != null)
+                    case SocketMessageType.HeartBeat:
+                        if (Socket.Connected && Usercfg.LoginUser != null)
                             Main?.UpdateUI(MainControllerSet.SetGreenAndPing);
                         break;
 
-                    case SocketSet.Unknown:
+                    case SocketMessageType.Unknown:
                     default:
                         break;
                 }
@@ -282,7 +263,46 @@ namespace Milimoe.FunGame.Desktop.Model
                 Main?.UpdateUI(MainControllerSet.Disconnected);
                 Close();
             }
+
             return result;
         }
+
+        private void SocketHandle_Connect(object[] objs)
+        {
+            string msg = "";
+            if (objs.Length > 0) msg = (string)objs[0];
+            string[] strings = msg.Split(';');
+            string ServerName = strings[0];
+            string ServerNotice = strings[1];
+            Config.FunGame_ServerName = ServerName;
+            Config.FunGame_Notice = ServerNotice;
+            Main?.GetMessage($"已连接服务器：{ServerName}。\n\n********** 服务器公告 **********\n\n{ServerNotice}\n\n");
+            // 设置等待登录的黄灯
+            Main?.UpdateUI(MainControllerSet.WaitLoginAndSetYellow);
+        }
+
+        private void SocketHandle_GetNotice(object[] objs)
+        {
+            if (objs.Length > 0) Config.FunGame_Notice = (string)objs[0];
+        }
+        
+        private void SocketHandle_CheckLogin(object[] objs)
+        {
+            string msg = "";
+            // 返回的objs是该Login的User对象的各个属性
+            if (objs.Length > 0) msg = (string)objs[0];
+            Main?.GetMessage(msg);
+            Main?.UpdateUI(MainControllerSet.SetUser, true, TimeType.TimeOnly, new object[] { Factory.New<User>(msg) });
+        }
+        
+        private void SocketHandle_Disconnect(object[] objs)
+        {
+            string msg = "";
+            if (objs.Length > 0) msg = (string)objs[0];
+            Main?.GetMessage(msg);
+            Main?.UpdateUI(MainControllerSet.Disconnected);
+            Close();
+        }
+
     }
 }

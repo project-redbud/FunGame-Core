@@ -67,7 +67,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         {
             object[] result = SocketManager.Receive();
             if (result.Length != 2) throw new System.Exception("收到错误的返回信息。");
-            if ((string)result[0] == SocketSet.HeartBeat)
+            if ((SocketMessageType)result[0] == SocketMessageType.HeartBeat)
             {
                 if (WaitHeartBeatReply != null && !WaitHeartBeatReply.IsCompleted) WaitHeartBeatReply.Wait(1);
                 HeartBeatFaileds = 0;
