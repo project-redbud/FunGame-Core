@@ -9,10 +9,35 @@ namespace Milimoe.FunGame.Core.Service
 {
     internal class ThreadManager
     {
-        internal static int MAX_THREAD { get; } = 20;
+        /// <summary>
+        /// 最大接受的线程数量
+        /// </summary>
+        private int MaxConnection { get; }
 
+        /// <summary>
+        /// 可参与高并发的字典，但添加效率较低
+        /// </summary>
         private ConcurrentDictionary<string, Task> Threads { get; } = new();
 
+        /// <summary>
+        /// Init ThreadManager
+        /// </summary>
+        /// <param name="MaxConnection">MaxConnection</param>
+        internal ThreadManager(int MaxConnection = 0)
+        {
+            if (MaxConnection <= 0)
+                this.MaxConnection = Library.Constant.General.MaxTask_General;
+            else
+            {
+                this.MaxConnection = MaxConnection;
+            }
+        }
+
+        /// <summary>
+        /// 获取Task对象
+        /// </summary>
+        /// <param name="name">Task的Key</param>
+        /// <returns>Task对象</returns>
         internal Task this[string name]
         {
             get
@@ -21,16 +46,53 @@ namespace Milimoe.FunGame.Core.Service
             }
         }
 
+        /// <summary>
+        /// 向线程管理器中添加Task
+        /// </summary>
+        /// <param name="name">Task的Key</param>
+        /// <param name="t">Task对象</param>
+        /// <returns>True：操作成功</returns>
         internal bool Add(string name, Task t)
         {
+            if (Threads.Count + 1 > MaxConnection) return false;
             return Threads.TryAdd(name, t);
         }
 
+        /// <summary>
+        /// 从线程管理器中移除Task
+        /// </summary>
+        /// <param name="name">Task的Key</param>
+        /// <returns>True：操作成功</returns>
         internal bool Remove(string name)
         {
             return Threads.TryRemove(name, out _);
         }
 
+        /// <summary>
+        /// 将Task移除，并取得这个Task
+        /// </summary>
+        /// <param name="name">Task的Key</param>
+        /// <param name="t">Task对象</param>
+        /// <returns>被移除的Task</returns>
+        internal bool Remove(string name, ref Task? t)
+        {
+            return Threads.TryRemove(name, out t);
+        }
+        
+        /// <summary>
+        /// 将Task移除，并取得这个Task
+        /// </summary>
+        /// <param name="name">Task的Key</param>
+        /// <returns>被移除的Task</returns>
+        internal Task? RemoveAndGet(string name)
+        {
+            Threads.TryRemove(name, out Task? result);
+            return result;
+        }
+
+        /// <summary>
+        /// 清空线程管理器
+        /// </summary>
         internal void Clear()
         {
             Threads.Clear();

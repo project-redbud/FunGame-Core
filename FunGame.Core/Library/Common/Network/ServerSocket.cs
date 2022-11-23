@@ -29,14 +29,21 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public bool Receiving { get; private set; } = false;
         public bool SendingHeartBeat { get; private set; } = false;
 
-        private ServerSocket(System.Net.Sockets.Socket Instance, int ServerPort)
+        private readonly ThreadManager PlayerThreads;
+
+        private ServerSocket(System.Net.Sockets.Socket Instance, int ServerPort, int MaxConnection = 0)
         {
             this.Instance = Instance;
             this.ServerPort = ServerPort;
+            if (MaxConnection <= 0)
+                PlayerThreads = new ThreadManager();
+            else
+                PlayerThreads = new ThreadManager(MaxConnection);
         }
 
-        public ServerSocket StartListening(int Port = 22222, int MaxConnection = 20)
+        public ServerSocket StartListening(int Port = 22222, int MaxConnection = 0)
         {
+            if (MaxConnection <= 0) MaxConnection = SocketSet.MaxConnection_General;
             System.Net.Sockets.Socket? socket = SocketManager.StartListening(Port, MaxConnection);
             if (socket != null) return new ServerSocket(socket, Port);
             else throw new System.Exception("无法创建监听，请重新启动服务器再试。");
@@ -52,6 +59,16 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
                 return new ClientSocket(Client, ServerPort, ClientIP, ClientIP);
             }
             throw new System.Exception("无法获取客户端信息。");
+        }
+
+        public bool AddClient(string ClientName, Task t)
+        {
+            return PlayerThreads.Add(ClientName, t);
+        }
+        
+        public bool RemoveClient(string ClientName)
+        {
+            return PlayerThreads.Remove(ClientName);
         }
 
         public SocketResult Send(SocketMessageType type, params object[] objs)

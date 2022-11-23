@@ -30,8 +30,9 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="Port">监听端口号</param>
         /// <param name="MaxConnection">最大连接数量</param>
         /// <returns>服务器端专用Socket</returns>
-        internal static Socket? StartListening(int Port = 22222, int MaxConnection = 20)
+        internal static Socket? StartListening(int Port = 22222, int MaxConnection = 0)
         {
+            if (MaxConnection <= 0) MaxConnection = SocketSet.MaxConnection_General;
             try
             {
                 ServerSocket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
