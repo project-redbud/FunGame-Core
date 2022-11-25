@@ -26,9 +26,9 @@ namespace Milimoe.FunGame.Core.Library.Exception
             e = new System.Exception(Name);
         }
 
-        public string GetStackTrace()
+        public string GetErrorInfo()
         {
-            return e.GetStackTrace();
+            return e.GetErrorInfo();
         }
     }
 }

@@ -38,7 +38,7 @@ namespace Milimoe.FunGame.Desktop.Model
             }
             catch (Exception e)
             {
-                Main?.GetMessage(e.GetStackTrace());
+                Main?.GetMessage(e.GetErrorInfo());
             }
             return false;
         }
@@ -51,7 +51,7 @@ namespace Milimoe.FunGame.Desktop.Model
             }
             catch (Exception e)
             {
-                Main?.GetMessage(e.GetStackTrace());
+                Main?.GetMessage(e.GetErrorInfo());
             }
             return false;
         }
@@ -64,7 +64,7 @@ namespace Milimoe.FunGame.Desktop.Model
             }
             catch (Exception e)
             {
-                Main?.GetMessage(e.GetStackTrace());
+                Main?.GetMessage(e.GetErrorInfo());
             }
         }
 
@@ -92,7 +92,7 @@ namespace Milimoe.FunGame.Desktop.Model
             }
             catch (Exception e)
             {
-                Main?.GetMessage(e.GetStackTrace(), false);
+                Main?.GetMessage(e.GetErrorInfo(), false);
             }
 
             return false;
@@ -160,7 +160,7 @@ namespace Milimoe.FunGame.Desktop.Model
             }
             catch (Exception e)
             {
-                Main?.GetMessage(e.GetStackTrace(), false);
+                Main?.GetMessage(e.GetErrorInfo(), false);
             }
 
             return ConnectResult.ConnectFailed;
@@ -183,7 +183,7 @@ namespace Milimoe.FunGame.Desktop.Model
             }
             catch (Exception e)
             {
-                Main.GetMessage(e.GetStackTrace(), false);
+                Main.GetMessage(e.GetErrorInfo(), false);
                 return false;
             }
             return true;
@@ -259,7 +259,7 @@ namespace Milimoe.FunGame.Desktop.Model
             catch (Exception e)
             {
                 // 报错中断服务器连接
-                Main?.GetMessage(e.GetStackTrace(), false);
+                Main?.GetMessage(e.GetErrorInfo(), false);
                 Main?.UpdateUI(MainControllerSet.Disconnected);
                 Close();
             }
@@ -292,7 +292,7 @@ namespace Milimoe.FunGame.Desktop.Model
             // 返回的objs是该Login的User对象的各个属性
             if (objs.Length > 0) msg = (string)objs[0];
             Main?.GetMessage(msg);
-            Main?.UpdateUI(MainControllerSet.SetUser, true, TimeType.TimeOnly, new object[] { Factory.New<User>(msg) });
+            Main?.UpdateUI(MainControllerSet.SetUser, new object[] { Factory.New<User>(msg) });
         }
         
         private void SocketHandle_Disconnect(object[] objs)

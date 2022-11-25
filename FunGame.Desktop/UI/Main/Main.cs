@@ -90,7 +90,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="time"></param>
         /// <param name="timetype"></param>
         /// <param name="objs"></param>
-        public void UpdateUI(string? updatetype, bool time = true, TimeType timetype = TimeType.TimeOnly, object[]? objs = null)
+        public void UpdateUI(string? updatetype, object[]? objs = null)
         {
             void action()
             {
@@ -164,16 +164,10 @@ namespace Milimoe.FunGame.Desktop.UI
                                         Thread.Sleep(5000);
                                         if (Others.Config.FunGame_isAutoRetry) MainController?.Do<object>(MainControllerSet.Connect); // 再次判断是否开启自动重连
                                     });
-                                    if (time)
-                                        WritelnGameInfo(DateTimeUtility.GetDateTimeToString(timetype) + "\n连接服务器失败，5秒后自动尝试重连。");
-                                    else
-                                        WritelnGameInfo("连接服务器失败，5秒后自动尝试重连。");
+                                    WritelnSystemInfo("连接服务器失败，5秒后自动尝试重连。");
                                 }
                                 else
-                                    if (time)
-                                    WritelnGameInfo(DateTimeUtility.GetDateTimeToString(timetype) + "\n无法连接至服务器，请检查你的网络连接。");
-                                else
-                                    WritelnGameInfo("无法连接至服务器，请检查你的网络连接。");
+                                    WritelnSystemInfo("无法连接至服务器，请检查你的网络连接。");
                                 break;
 
                             case Others.MainControllerSet.Disconnect:
@@ -235,7 +229,7 @@ namespace Milimoe.FunGame.Desktop.UI
                 }
                 catch (Exception e)
                 {
-                    WritelnGameInfo(e.GetStackTrace());
+                    WritelnGameInfo(e.GetErrorInfo());
                     UpdateUI(Others.MainControllerSet.SetRed);
                 }
             }
@@ -260,7 +254,7 @@ namespace Milimoe.FunGame.Desktop.UI
                 }
                 catch (Exception e)
                 {
-                    WritelnGameInfo(e.GetStackTrace());
+                    WritelnGameInfo(e.GetErrorInfo());
                 }
             };
             InvokeUpdateUI(action);
@@ -307,7 +301,7 @@ namespace Milimoe.FunGame.Desktop.UI
             }
             catch (Exception e)
             {
-                WritelnGameInfo(e.GetStackTrace());
+                WritelnGameInfo(e.GetErrorInfo());
             }
         }
 
@@ -376,6 +370,16 @@ namespace Milimoe.FunGame.Desktop.UI
                 GameInfo.SelectionStart = GameInfo.Text.Length - 1;
                 GameInfo.ScrollToCaret();
             }
+        }
+        
+        /// <summary>
+        /// 向消息队列输出一行系统信息
+        /// </summary>
+        /// <param name="msg"></param>
+        private void WritelnSystemInfo(string msg)
+        {
+            msg = DateTimeUtility.GetDateTimeToString(TimeType.TimeOnly) + " >> " + msg;
+            WritelnGameInfo(msg);
         }
 
         /// <summary>

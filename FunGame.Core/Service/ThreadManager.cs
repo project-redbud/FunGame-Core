@@ -12,7 +12,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 最大接受的线程数量
         /// </summary>
-        private int MaxConnection { get; }
+        private int MaxTask { get; }
 
         /// <summary>
         /// 可参与高并发的字典，但添加效率较低
@@ -22,14 +22,14 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// Init ThreadManager
         /// </summary>
-        /// <param name="MaxConnection">MaxConnection</param>
-        internal ThreadManager(int MaxConnection = 0)
+        /// <param name="MaxTask">MaxTask</param>
+        internal ThreadManager(int MaxTask = 0)
         {
-            if (MaxConnection <= 0)
-                this.MaxConnection = Library.Constant.General.MaxTask_General;
+            if (MaxTask <= 0)
+                this.MaxTask = Library.Constant.General.MaxTask_General;
             else
             {
-                this.MaxConnection = MaxConnection;
+                this.MaxTask = MaxTask;
             }
         }
 
@@ -54,7 +54,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <returns>True：操作成功</returns>
         internal bool Add(string name, Task t)
         {
-            if (Threads.Count + 1 > MaxConnection) return false;
+            if (Threads.Count + 1 > MaxTask) return false;
             return Threads.TryAdd(name, t);
         }
 

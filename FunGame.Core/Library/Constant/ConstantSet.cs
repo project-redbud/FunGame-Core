@@ -24,10 +24,10 @@ namespace Milimoe.FunGame.Core.Library.Constant
 
     public class SocketSet
     {
-        public static int MaxRetryTimes { get; } = 20;
-        public static int MaxConnection_1C2G { get; } = 10;
-        public static int MaxConnection_General { get; } = 20;
-        public static int MaxConnection_4C4G { get; } = 40;
+        public const int MaxRetryTimes = 20;
+        public const int MaxConnection_1C2G = 10;
+        public const int MaxConnection_General = 20;
+        public const int MaxConnection_4C4G = 40;
 
         public const string Unknown = "Unknown";
         public const string Connect = "Connect";
