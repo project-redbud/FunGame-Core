@@ -17,7 +17,6 @@ namespace Milimoe.FunGame.Desktop.Model
     public class MainModel
     {
         public Core.Library.Common.Network.Socket? Socket { get; private set; }
-        public Core.Library.Common.Event.ConnectEvent ConnectEvent { get; } = new ConnectEvent();
         public Main Main { get; }
 
         private int CurrentRetryTimes = -1;
@@ -87,6 +86,7 @@ namespace Milimoe.FunGame.Desktop.Model
                 else
                 {
                     ShowMessage.ErrorMessage("查找可用的服务器失败！");
+                    Config.FunGame_isRetrying = false;
                     throw new Exception("查找可用的服务器失败，请重启FunGame。");
                 }
             }
@@ -112,6 +112,7 @@ namespace Milimoe.FunGame.Desktop.Model
                     if (Others.Config.FunGame_isRetrying)
                     {
                         Main?.GetMessage("正在连接服务器，请耐心等待。");
+                        Config.FunGame_isRetrying= false;
                         return ConnectResult.CanNotConnect;
                     }
                     if (!Others.Config.FunGame_isConnected)
@@ -148,6 +149,7 @@ namespace Milimoe.FunGame.Desktop.Model
                                 Main?.GetMessage("ERROR: 连接超时，远程服务器没有回应。", false);
                             }
                             Socket?.Close();
+                            Config.FunGame_isRetrying = false;
                             return ConnectResult.ConnectFailed;
                         }
                     }
@@ -161,6 +163,7 @@ namespace Milimoe.FunGame.Desktop.Model
             catch (Exception e)
             {
                 Main?.GetMessage(e.GetErrorInfo(), false);
+                Config.FunGame_isRetrying = false;
             }
 
             return ConnectResult.ConnectFailed;
