@@ -115,11 +115,11 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="type">通信类型</param>
         /// <param name="objs">参数</param>
         /// <returns>通信结果</returns>
-        internal static SocketResult Send(Socket ClientSocket, SocketMessageType type, object[] objs)
+        internal static SocketResult Send(Socket ClientSocket, SocketMessageType type, string token, object[] objs)
         {
             if (ClientSocket != null && objs != null && objs.Length > 0)
             {
-                if (ClientSocket.Send(General.DEFAULT_ENCODING.GetBytes(Library.Common.Network.JsonObject.GetString(type, objs))) > 0)
+                if (ClientSocket.Send(General.DEFAULT_ENCODING.GetBytes(Library.Common.Network.JsonObject.GetString(type, token, objs))) > 0)
                 {
                     return SocketResult.Success;
                 }
@@ -134,7 +134,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="type">通信类型</param>
         /// <param name="objs">参数</param>
         /// <returns>通信结果</returns>
-        internal static SocketResult Send(SocketMessageType type, object[] objs)
+        internal static SocketResult Send(SocketMessageType type, string token, object[] objs)
         {
             if (objs is null || objs.Length <= 0)
             {
@@ -142,7 +142,7 @@ namespace Milimoe.FunGame.Core.Service
             }
             if (Socket != null)
             {
-                if (Socket.Send(General.DEFAULT_ENCODING.GetBytes(Library.Common.Network.JsonObject.GetString(type, objs))) > 0)
+                if (Socket.Send(General.DEFAULT_ENCODING.GetBytes(Library.Common.Network.JsonObject.GetString(type, token, objs))) > 0)
                 {
                     return SocketResult.Success;
                 }

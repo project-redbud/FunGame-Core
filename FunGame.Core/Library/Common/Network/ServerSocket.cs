@@ -14,11 +14,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
     {
         public System.Net.Sockets.Socket Instance { get; }
         public int Runtime { get; } = (int)SocketRuntimeType.Server;
+        public string Token { get; } = "";
         public string ServerIP { get; } = "";
         public int ServerPort { get; } = 0;
         public string ServerName { get; } = "";
         public string ServerNotice { get; } = "";
-        public int HeartBeatFaileds { get; private set; } = 0;
         public bool Connected
         {
             get
@@ -27,7 +27,6 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             }
         }
         public bool Receiving { get; private set; } = false;
-        public bool SendingHeartBeat { get; private set; } = false;
 
         private readonly ThreadManager PlayerThreads;
 

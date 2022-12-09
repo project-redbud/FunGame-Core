@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Net;
+using System.Security.Cryptography;
 using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Service;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -12,10 +13,11 @@ using Milimoe.FunGame.Core.Interface.Base;
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
 {
-    public class Socket : ISocket
+    public class Socket : ISocket, ISocketHeartBeat
     {
         public System.Net.Sockets.Socket Instance { get; }
         public int Runtime { get; } = (int)SocketRuntimeType.Client;
+        public string Token { get; set; } = "";
         public string ServerIP { get; } = "";
         public int ServerPort { get; } = 0;
         public string ServerName { get; } = "";
@@ -54,11 +56,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         {
             if (Instance != null)
             {
-                if (SocketManager.Send(type, objs) == SocketResult.Success)
+                if (SocketManager.Send(type, Token, objs) == SocketResult.Success)
                 {
                     return SocketResult.Success;
                 }
-                else return SocketResult.Fail;
+                return SocketResult.Fail;
             }
             return SocketResult.NotSent;
         }

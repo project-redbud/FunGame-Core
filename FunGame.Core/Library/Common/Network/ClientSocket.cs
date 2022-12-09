@@ -13,13 +13,13 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
     {
         public System.Net.Sockets.Socket Instance { get; }
         public int Runtime { get; } = (int)SocketRuntimeType.Server;
+        public string Token { get; } = "";
         public string ServerIP { get; } = "";
         public int ServerPort { get; } = 0;
         public string ServerName { get; } = "";
         public string ServerNotice { get; } = "";
         public string ClientIP { get; } = "";
         public string ClientName { get; private set; } = "";
-        public int HeartBeatFaileds { get; private set; } = 0;
         public bool Connected
         {
             get
@@ -28,7 +28,6 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             }
         }
         public bool Receiving { get; private set; } = false;
-        public bool SendingHeartBeat { get; private set; } = false;
 
         private Task? ReceivingTask;
 
@@ -57,7 +56,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         {
             if (Instance != null)
             {
-                if (SocketManager.Send(Instance, type, objs) == SocketResult.Success)
+                if (SocketManager.Send(Instance, type, Token, objs) == SocketResult.Success)
                 {
                     return SocketResult.Success;
                 }

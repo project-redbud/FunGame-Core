@@ -12,11 +12,11 @@ namespace Milimoe.FunGame.Core.Interface.Base
     {
         public System.Net.Sockets.Socket Instance { get; }
         public int Runtime { get; }
+        public string Token { get; }
         public string ServerIP { get; }
         public int ServerPort { get; }
         public string ServerName { get; }
         public string ServerNotice { get; }
-        public int HeartBeatFaileds { get; }
         public bool Connected
         {
             get
@@ -25,7 +25,6 @@ namespace Milimoe.FunGame.Core.Interface.Base
             }
         }
         public bool Receiving { get; }
-        public bool SendingHeartBeat { get; }
         public SocketResult Send(SocketMessageType type, params object[] objs);
         public object[] Receive();
         public void Close();
