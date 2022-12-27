@@ -147,5 +147,10 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             if (HeartBeatFaileds++ >= 3)
                 throw new System.Exception("ERROR：与服务器连接中断。");
         }
+
+        public static string GetTypeString(SocketMessageType type)
+        {
+            return SocketManager.GetTypeString(type);
+        }
     }
 }

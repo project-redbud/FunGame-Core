@@ -211,7 +211,7 @@ namespace Milimoe.FunGame.Core.Service
         /// </summary>
         /// <param name="type">通信类型</param>
         /// <returns>等效字符串</returns>
-        private static string GetTypeString(SocketMessageType type)
+        internal static string GetTypeString(SocketMessageType type)
         {
             return type switch
             {

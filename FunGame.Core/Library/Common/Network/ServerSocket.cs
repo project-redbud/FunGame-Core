@@ -89,5 +89,10 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         {
             throw new System.Exception("监听Socket不能用于接收信息。");
         }
+
+        public static string GetTypeString(SocketMessageType type)
+        {
+            return Socket.GetTypeString(type);
+        }
     }
 }
