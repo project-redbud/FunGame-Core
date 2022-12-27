@@ -280,7 +280,7 @@ namespace Milimoe.FunGame.Desktop.Model
             Config.FunGame_ServerName = ServerName;
             Config.FunGame_Notice = ServerNotice;
             if (objs.Length > 1) msg = (string)objs[1];
-            Socket!!.Token = msg;
+            Socket!.Token = msg;
             Main?.GetMessage($"已连接服务器：{ServerName}。\n\n********** 服务器公告 **********\n\n{ServerNotice}\n\n");
             // 设置等待登录的黄灯
             Main?.UpdateUI(MainControllerSet.WaitLoginAndSetYellow);

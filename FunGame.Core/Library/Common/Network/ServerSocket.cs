@@ -40,7 +40,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
                 PlayerThreads = new ThreadManager(MaxConnection);
         }
 
-        public ServerSocket StartListening(int Port = 22222, int MaxConnection = 0)
+        public static ServerSocket StartListening(int Port = 22222, int MaxConnection = 0)
         {
             if (MaxConnection <= 0) MaxConnection = SocketSet.MaxConnection_General;
             System.Net.Sockets.Socket? socket = SocketManager.StartListening(Port, MaxConnection);
