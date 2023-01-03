@@ -169,8 +169,7 @@ namespace Milimoe.FunGame.Core.Service
                     Library.Common.Network.JsonObject? json = Library.Common.Network.JsonObject.GetObject(msg);
                     if (json != null)
                     {
-                        result[0] = json.MessageType;
-                        result[1] = json.Parameters;
+                        result = new object[] { json.MessageType, json.Parameters };
                     }
                     return result;
                 }
@@ -197,8 +196,7 @@ namespace Milimoe.FunGame.Core.Service
                     Library.Common.Network.JsonObject? json = Library.Common.Network.JsonObject.GetObject(msg);
                     if (json != null)
                     {
-                        result[0] = json.MessageType;
-                        result[1] = json.Parameters;
+                        result = new object[] { json.MessageType, json.Parameters };
                     }
                     return result;
                 }

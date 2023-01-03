@@ -25,9 +25,10 @@ namespace Milimoe.FunGame.Desktop.UI
         /**
          * 定义全局变量
          */
-        private int LOCATION_X, LOCATION_Y; // 窗口当前坐标
-        private int MAX_CONNECTEDRETRY = 20; // 最大重试连接次数
-        private int NOW_CONNECTEDRETRY = -1; // 当前重试连接次数
+        public int MaxRetryTimes { get; } = SocketSet.MaxRetryTimes; // 最大重试连接次数
+        public int CurrentRetryTimes { get; set; } = -1; // 当前重试连接次数
+
+        private int loc_x, loc_y; // 窗口当前坐标
 
         /**
          * 定义全局对象
@@ -105,7 +106,7 @@ namespace Milimoe.FunGame.Desktop.UI
                                 SetServerStatusLight((int)LightType.Green);
                                 SetButtonEnableIfLogon(true, ClientState.Online);
                                 Others.Config.FunGame_isConnected = true;
-                                NOW_CONNECTEDRETRY = 0;
+                                CurrentRetryTimes = 0;
                                 break;
 
                             case Others.MainControllerSet.SetGreenAndPing:
@@ -113,7 +114,7 @@ namespace Milimoe.FunGame.Desktop.UI
                                 SetServerStatusLight((int)LightType.Green, ping: NetworkUtility.GetServerPing(Others.Constant.SERVER_IPADRESS));
                                 SetButtonEnableIfLogon(true, ClientState.Online);
                                 Others.Config.FunGame_isConnected = true;
-                                NOW_CONNECTEDRETRY = 0;
+                                CurrentRetryTimes = 0;
                                 break;
 
                             case Others.MainControllerSet.SetYellow:
@@ -121,7 +122,7 @@ namespace Milimoe.FunGame.Desktop.UI
                                 SetServerStatusLight((int)LightType.Yellow);
                                 SetButtonEnableIfLogon(false, ClientState.WaitConnect);
                                 Others.Config.FunGame_isConnected = true;
-                                NOW_CONNECTEDRETRY = 0;
+                                CurrentRetryTimes = 0;
                                 break;
 
                             case Others.MainControllerSet.WaitConnectAndSetYellow:
@@ -129,7 +130,7 @@ namespace Milimoe.FunGame.Desktop.UI
                                 SetServerStatusLight((int)LightType.Yellow);
                                 SetButtonEnableIfLogon(false, ClientState.WaitConnect);
                                 Others.Config.FunGame_isConnected = true;
-                                NOW_CONNECTEDRETRY = 0;
+                                CurrentRetryTimes = 0;
                                 if (MainController != null && Others.Config.FunGame_isAutoConnect)
                                 {
                                     // 自动连接服务器
@@ -142,7 +143,7 @@ namespace Milimoe.FunGame.Desktop.UI
                                 SetServerStatusLight((int)LightType.Yellow, true);
                                 SetButtonEnableIfLogon(false, ClientState.WaitLogin);
                                 Others.Config.FunGame_isConnected = true;
-                                NOW_CONNECTEDRETRY = 0;
+                                CurrentRetryTimes = 0;
                                 break;
 
                             case Others.MainControllerSet.SetRed:
@@ -157,7 +158,7 @@ namespace Milimoe.FunGame.Desktop.UI
                                 SetServerStatusLight((int)LightType.Red);
                                 SetButtonEnableIfLogon(false, ClientState.WaitConnect);
                                 LogoutAccount();
-                                if (Others.Config.FunGame_isAutoRetry && NOW_CONNECTEDRETRY <= MAX_CONNECTEDRETRY)
+                                if (Others.Config.FunGame_isAutoRetry && CurrentRetryTimes <= MaxRetryTimes)
                                 {
                                     Task.Run(() =>
                                     {
@@ -190,7 +191,7 @@ namespace Milimoe.FunGame.Desktop.UI
                                 LogoutAccount();
                                 if (Others.Config.FunGame_isAutoConnect)
                                 {
-                                    NOW_CONNECTEDRETRY = -1;
+                                    CurrentRetryTimes = -1;
                                     Task.Run(() =>
                                     {
                                         Thread.Sleep(1000);
@@ -824,8 +825,8 @@ namespace Milimoe.FunGame.Desktop.UI
             if (e.Button == MouseButtons.Left)
             {
                 //获取鼠标左键按下时的位置
-                LOCATION_X = e.Location.X;
-                LOCATION_Y = e.Location.Y;
+                loc_x = e.Location.X;
+                loc_y = e.Location.Y;
             }
         }
 
@@ -839,8 +840,8 @@ namespace Milimoe.FunGame.Desktop.UI
             if (e.Button == MouseButtons.Left)
             {
                 //计算鼠标移动距离
-                Left += e.Location.X - LOCATION_X;
-                Top += e.Location.Y - LOCATION_Y;
+                Left += e.Location.X - loc_x;
+                Top += e.Location.Y - loc_y;
             }
         }
 
@@ -1255,7 +1256,7 @@ namespace Milimoe.FunGame.Desktop.UI
                 case Others.Constant.FunGame_Retry:
                     if (!Others.Config.FunGame_isRetrying)
                     {
-                        NOW_CONNECTEDRETRY = -1;
+                        CurrentRetryTimes = -1;
                         MainController?.Do<object>(MainControllerSet.Connect);
                     }
                     else
@@ -1264,7 +1265,7 @@ namespace Milimoe.FunGame.Desktop.UI
                 case Others.Constant.FunGame_Connect:
                     if (!Others.Config.FunGame_isConnected)
                     {
-                        NOW_CONNECTEDRETRY = -1;
+                        CurrentRetryTimes = -1;
                         MainController?.Do<bool>(MainControllerSet.GetServerConnection);
                     }
                     break;
@@ -1277,9 +1278,7 @@ namespace Milimoe.FunGame.Desktop.UI
                 case Others.Constant.FunGame_DisconnectWhenNotLogin:
                     if (Others.Config.FunGame_isConnected && MainController != null)
                     {
-                        MainController?.Do<bool>(MainControllerSet.Close);
-                        UpdateUI(MainControllerSet.Disconnect);
-                        WritelnGameInfo(DateTimeUtility.GetNowShortTime() + " >> 你已成功断开与服务器的连接。 ");
+                        MainController?.Do<object>(MainControllerSet.Disconnect);
                     }
                     break;
                 case Others.Constant.FunGame_ConnectTo:
@@ -1308,7 +1307,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     {
                         Others.Constant.SERVER_IPADRESS = ip;
                         Others.Constant.SERVER_PORT = port;
-                        NOW_CONNECTEDRETRY = -1;
+                        CurrentRetryTimes = -1;
                         MainController?.Do<object>(MainControllerSet.Connect);
                     }
                     else if (ErrorType == Core.Library.Constant.ErrorType.IsNotIP) ShowMessage.ErrorMessage("这不是一个IP地址！");

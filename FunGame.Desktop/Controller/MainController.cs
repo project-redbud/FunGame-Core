@@ -16,7 +16,7 @@ namespace Milimoe.FunGame.Desktop.Controller
 {
     public class MainController
     {
-        private MainModel MainModel;
+        private MainModel MainModel { get; }
 
         public MainController(Main Main)
         {

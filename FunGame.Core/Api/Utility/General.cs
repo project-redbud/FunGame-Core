@@ -5,6 +5,7 @@ using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -103,6 +104,35 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 return Convert.ToInt32(reply.RoundtripTime);
             }
             return -1;
+        }
+
+        /// <summary>
+        /// 将JsonElement转换为泛型
+        /// </summary>
+        /// <typeparam name="T">泛型</typeparam>
+        /// <param name="obj">为JsonElement的对象</param>
+        /// <returns></returns>
+        public static T? ConvertJsonObject<T>(object obj)
+        {
+            return ((JsonElement)obj).ToObject<T>();
+        }
+    }
+
+    /// <summary>
+    /// Json工具类
+    /// </summary>
+    public static class JsonUtility
+    {
+        /// <summary>
+        /// 将JsonElement转换为泛型
+        /// </summary>
+        /// <typeparam name="T">泛型</typeparam>
+        /// <param name="element">JsonElement</param>
+        /// <returns></returns>
+        public static T? ToObject<T>(this JsonElement element)
+        {
+            var json = element.GetRawText();
+            return JsonSerializer.Deserialize<T>(json);
         }
     }
 
