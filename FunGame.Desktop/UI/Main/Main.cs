@@ -988,7 +988,7 @@ namespace Milimoe.FunGame.Desktop.UI
         private void Login_Click(object sender, EventArgs e)
         {
             if (MainController != null && Others.Config.FunGame_isConnected)
-                MainController.Do<bool>(MainControllerSet.LogIn);
+                new Login().ShowDialog();
             else
                 ShowMessage.WarningMessage("请先连接服务器！");
         }

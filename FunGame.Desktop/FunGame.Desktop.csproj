@@ -35,10 +35,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Library\Component\MinButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Update="UI\Login\Login.cs">
+      <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
 
@@ -50,8 +56,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="UI\Login\" />
-    <Folder Include="UI\Register\" />
     <Folder Include="UI\RoomSetting\" />
     <Folder Include="UI\UserCenter\" />
     <Folder Include="UI\Stock\" />
