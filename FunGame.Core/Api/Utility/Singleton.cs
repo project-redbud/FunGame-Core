@@ -15,6 +15,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
     {
         private static readonly Hashtable SingletonTable = new();
 
+        public static bool IsExist(string key)
+        {
+            return SingletonTable.ContainsKey(key);
+        }
+
         public static bool Add(object single)
         {
             string type = single.GetType().ToString();
@@ -26,11 +31,25 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 }
                 catch
                 {
-                    throw new Exception("添加单例到单例表时遇到错误");
+                    throw new Exception("添加单例到单例表时遇到错误。");
                 }
                 return true;
             }
             return false;
+        }
+
+        public static bool Remove(object single)
+        {
+            string type = single.GetType().ToString();
+            if (!SingletonTable.ContainsKey(type))
+            {
+                return false;
+            }
+            else
+            {
+                SingletonTable[type] = null;
+                return true;
+            }
         }
 
         public static T? Get<T>()
@@ -45,7 +64,25 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 }
                 catch
                 {
-                    throw new Exception("不能从单例表中获取到指定的单例");
+                    throw new Exception("不能从单例表中获取到指定的单例。");
+                }
+                if (single != null) return single;
+            }
+            return single;
+        }
+        
+        public static object? Get(string key)
+        {
+            object? single = default;
+            if (SingletonTable.ContainsKey(key))
+            {
+                try
+                {
+                    single = SingletonTable[key];
+                }
+                catch
+                {
+                    throw new Exception("不能从单例表中获取到指定的单例。");
                 }
                 if (single != null) return single;
             }

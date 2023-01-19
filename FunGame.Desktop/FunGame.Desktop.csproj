@@ -58,7 +58,7 @@
   <ItemGroup>
     <Folder Include="UI\RoomSetting\" />
     <Folder Include="UI\UserCenter\" />
-    <Folder Include="UI\Stock\" />
+    <Folder Include="UI\Store\" />
     <Folder Include="UI\Inventory\" />
   </ItemGroup>
 

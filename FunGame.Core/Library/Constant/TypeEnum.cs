@@ -6,6 +6,23 @@ using System.Threading.Tasks;
 
 namespace Milimoe.FunGame.Core.Library.Constant
 {
+    public enum FormType
+    {
+        Main,
+        Register,
+        Login,
+        Inventory,
+        RoomSetting,
+        Store,
+        UserCenter
+    }
+
+    public enum OpenFormType
+    {
+        General,
+        Dialog
+    }
+
     public enum InterfaceType
     {
         IClient,

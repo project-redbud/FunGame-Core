@@ -45,4 +45,15 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public static string EXEFolderPath { get; } = Environment.CurrentDirectory.ToString() + "\\"; // 程序目录
         public static string PluginFolderPath { get; } = Environment.CurrentDirectory.ToString() + "\\plugins\\"; // 插件目录
     }
+
+    public class FormSet
+    {
+        public const string Main = "Main";
+        public const string Register = "Register";
+        public const string Login = "Login";
+        public const string Inventory = "Inventory";
+        public const string Store = "Store";
+        public const string RoomSetting = "RoomSetting";
+        public const string UserCenter = "UserCenter";
+    }
 }
