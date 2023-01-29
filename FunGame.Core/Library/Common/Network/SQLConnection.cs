@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
 {
-    public class SQLConnection
+    public class SQLServerInfo
     {
+
     }
 }

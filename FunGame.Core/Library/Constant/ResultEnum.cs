@@ -37,10 +37,12 @@ namespace Milimoe.FunGame.Core.Library.Constant
         FindServerFailed
     }
 
-    public enum ProxyResult
+    public enum SQLResult
     {
         Success,
         Fail,
-        NotFound
+        NotFound,
+        SQLError,
+        IsExist
     }
 }

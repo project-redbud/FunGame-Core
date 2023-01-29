@@ -9,24 +9,18 @@ namespace Milimoe.FunGame.Core.Interface.Base
 {
     internal interface ISQLService
     {
-        internal ProxyResult Execute();
-        internal ProxyResult Execute(object[]? objs = null);
-        internal ProxyResult Execute(StringBuilder script);
-        internal int UpdateRow(object[]? objs = null);
-        internal int UpdateRow(StringBuilder script);
-        internal int DeleteRow(object[]? objs = null);
-        internal int DeleteRow(StringBuilder script);
-        internal int AddRow(object[]? objs = null);
-        internal int AddRow(StringBuilder script);
-        internal System.Data.DataSet GetData(EntityType type, object[]? objs = null);
-        internal System.Data.DataSet GetData(object[]? objs = null);
-        internal System.Data.DataSet GetData(StringBuilder script);
-        internal System.Data.DataTable GetDataTable(EntityType type, object[]? objs = null);
-        internal System.Data.DataTable GetDataTable(object[]? objs);
-        internal System.Data.DataTable GetDataTable(StringBuilder script);
-        internal System.Data.DataRow GetDataRow(EntityType type, object[]? objs = null);
-        internal System.Data.DataRow GetDataRow(System.Data.DataSet set, object[]? objs = null);
-        internal System.Data.DataRow GetDataRow(System.Data.DataTable table, object[]? objs = null);
-        internal System.Data.DataRow GetDataRow(StringBuilder script);
+        internal SQLResult Execute();
+        internal SQLResult Execute(StringBuilder sql);
+        internal SQLResult Execute(string sql);
+        internal int Update(StringBuilder sql, ref SQLResult result);
+        internal int Remove(StringBuilder sql, ref SQLResult result);
+        internal int Add(StringBuilder sql, ref SQLResult result);
+        internal int Update(string sql, ref SQLResult result);
+        internal int Remove(string sql, ref SQLResult result);
+        internal int Add(string sql, ref SQLResult result);
+        internal object Query(EntityType type, StringBuilder sql);
+        internal T Query<T>(StringBuilder sql);
+        internal object Query(EntityType type, string sql);
+        internal T Query<T>(string sql);
     }
 }
