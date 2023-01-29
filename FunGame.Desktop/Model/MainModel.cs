@@ -8,6 +8,7 @@ using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
+using Milimoe.FunGame.Desktop.Controller;
 using Milimoe.FunGame.Desktop.Library.Component;
 using Milimoe.FunGame.Desktop.Others;
 using Milimoe.FunGame.Desktop.UI;
@@ -98,70 +99,76 @@ namespace Milimoe.FunGame.Desktop.Model
 
         public ConnectResult Connect()
         {
+            if (Others.Constant.SERVER_IPADRESS == "" || Others.Constant.SERVER_PORT <= 0)
+            {
+                ShowMessage.ErrorMessage("查找可用的服务器失败！");
+                return ConnectResult.FindServerFailed;
+            }
             try
             {
-                if (Others.Constant.SERVER_IPADRESS == "" || Others.Constant.SERVER_PORT <= 0)
+                if (Others.Config.FunGame_isRetrying)
                 {
-                    ShowMessage.ErrorMessage("查找可用的服务器失败！");
-                    return ConnectResult.FindServerFailed;
+                    Main?.GetMessage("正在连接服务器，请耐心等待。");
+                    Config.FunGame_isRetrying = false;
+                    return ConnectResult.CanNotConnect;
                 }
-                while (true)
+                if (!Others.Config.FunGame_isConnected)
                 {
-                    if (Others.Config.FunGame_isRetrying)
+                    Main!.CurrentRetryTimes++;
+                    if (Main!.CurrentRetryTimes == 0) Main!.GetMessage("开始连接服务器...", true, TimeType.General);
+                    else Main!.GetMessage("第" + Main!.CurrentRetryTimes + "次重试连接服务器...");
+                    // 超过重连次数上限
+                    if (Main!.CurrentRetryTimes + 1 > Main!.MaxRetryTimes)
                     {
-                        Main?.GetMessage("正在连接服务器，请耐心等待。");
-                        Config.FunGame_isRetrying= false;
-                        return ConnectResult.CanNotConnect;
+                        throw new Exception("无法连接至服务器，请检查网络并重启游戏再试。");
                     }
-                    if (!Others.Config.FunGame_isConnected)
+                    // 与服务器建立连接
+                    Socket?.Close();
+                    Others.Config.FunGame_isRetrying = true;
+                    Socket = Core.Library.Common.Network.Socket.Connect(Others.Constant.SERVER_IPADRESS, Others.Constant.SERVER_PORT);
+                    if (Socket != null && Socket.Connected)
                     {
-                        Main!.CurrentRetryTimes++;
-                        if (Main!.CurrentRetryTimes == 0) Main!.GetMessage("开始连接服务器...", true, TimeType.General);
-                        else Main!.GetMessage("第" + Main!.CurrentRetryTimes + "次重试连接服务器...");
-                        // 超过重连次数上限
-                        if (Main!.CurrentRetryTimes + 1 > Main!.MaxRetryTimes)
+                        // 发送连接请求
+                        if (Socket.Send(SocketMessageType.Connect) == SocketResult.Success)
                         {
-                            throw new Exception("无法连接至服务器，请检查网络并重启游戏再试。");
-                        }
-                        // 与服务器建立连接
-                        Socket?.Close();
-                        Others.Config.FunGame_isRetrying = true;
-                        Socket = Core.Library.Common.Network.Socket.Connect(Others.Constant.SERVER_IPADRESS, Others.Constant.SERVER_PORT);
-                        if (Socket != null && Socket.Connected)
-                        {
-                            // 发送连接请求
-                            if (Socket.Send(SocketMessageType.Connect) == SocketResult.Success)
+                            Task t = Task.Factory.StartNew(() =>
                             {
-                                Task t = Task.Factory.StartNew(() =>
+                                if (Receiving() == SocketMessageType.Connect)
                                 {
-                                    if (Receiving() == SocketMessageType.Connect)
-                                    {
-                                        Main?.GetMessage("连接服务器成功，请登录账号以体验FunGame。");
-                                        Main?.UpdateUI(MainControllerSet.Connected);
-                                        StartReceiving();
-                                    }
-                                });
-                                return ConnectResult.Success;
-                            }
-                            Socket?.Close();
-                            Config.FunGame_isRetrying = false;
-                            return ConnectResult.ConnectFailed;
+                                    Main?.GetMessage("连接服务器成功，请登录账号以体验FunGame。");
+                                    Main?.UpdateUI(MainControllerSet.Connected);
+                                    StartReceiving();
+                                }
+                            });
+                            return ConnectResult.Success;
                         }
+                        Socket?.Close();
+                        Config.FunGame_isRetrying = false;
+                        throw new Exception("无法连接至服务器，请检查网络并重启游戏再试。");
                     }
-                    else
-                    {
-                        Main?.GetMessage("已连接至服务器，请勿重复连接。");
-                        return ConnectResult.CanNotConnect;
-                    }
+                }
+                else
+                {
+                    Main?.GetMessage("已连接至服务器，请勿重复连接。");
+                    return ConnectResult.CanNotConnect;
                 }
             }
             catch (Exception e)
             {
                 Main?.GetMessage(e.GetErrorInfo(), false);
                 Config.FunGame_isRetrying = false;
+                if (Config.FunGame_isAutoRetry && Main!.CurrentRetryTimes <= Main!.MaxRetryTimes)
+                {
+                    Task.Run(() =>
+                    {
+                        Thread.Sleep(5000);
+                        if (Others.Config.FunGame_isAutoRetry) Connect(); // 再次判断是否开启自动重连
+                    });
+                    Main?.GetMessage("连接服务器失败，5秒后自动尝试重连。");
+                }
+                else return ConnectResult.ConnectFailed;
             }
-
-            return ConnectResult.ConnectFailed;
+            return ConnectResult.CanNotConnect;
         }
 
         public bool Close()
@@ -285,7 +292,7 @@ namespace Milimoe.FunGame.Desktop.Model
         {
             if (objs.Length > 0) Config.FunGame_Notice = NetworkUtility.ConvertJsonObject<string>(objs[0])!;
         }
-        
+
         private void SocketHandle_CheckLogin(object[] objs)
         {
             string msg = "";
@@ -294,7 +301,7 @@ namespace Milimoe.FunGame.Desktop.Model
             Main?.GetMessage(msg);
             Main?.UpdateUI(MainControllerSet.SetUser, new object[] { Factory.New<User>(msg) });
         }
-        
+
         private void SocketHandle_Disconnect(object[] objs)
         {
             string msg = "";
