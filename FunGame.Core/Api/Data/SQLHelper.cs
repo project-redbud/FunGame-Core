@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Api.Data
 {
@@ -14,31 +15,41 @@ namespace Milimoe.FunGame.Core.Api.Data
     {
         public string Script { get; set; } = "";
 
-        public EntityType EntityType { get; private set; } =  EntityType.Empty;
+        public EntityType EntityType { get; }
 
-        public object Entity { get; private set; } = General.EntityInstance;
+        public object Entity { get; } = General.EntityInstance;
 
-        public SQLResult Result { get; private set; } = SQLResult.Success;
+        public SQLResult Result { get; }
 
-        public SQLServerInfo ServerInfo { get; private set; } = new SQLServerInfo();
+        public SQLServerInfo ServerInfo { get; }
 
-        public int UpdateRows { get; private set; } = 0;
-
-        public SQLHelper Instance { get; private set; } = new SQLHelper();
+        public int UpdateRows { get; }
 
         public static SQLHelper GetHelper(EntityType type)
         {
             return new SQLHelper(type);
         }
 
-        private SQLHelper(EntityType type)
+        private SQLHelper(EntityType type = EntityType.Empty, SQLServerInfo? info = null, SQLResult result = SQLResult.Success, int rows = 0)
         {
             this.EntityType = type;
+            if (info == null) this.ServerInfo = SQLServerInfo.Create();
+            else this.ServerInfo = info;
+            this.Result = result;
+            this.UpdateRows = rows;
         }
 
-        private SQLHelper()
+        public SQLResult Execute()
         {
-            
+            switch (EntityType)
+            {
+                case EntityType.NotEntity:
+                    SQLManager SQLManager = new(this);
+                    return SQLManager.Execute(Script);
+                default:
+                    break;
+            }
+            return Result;
         }
     }
 }

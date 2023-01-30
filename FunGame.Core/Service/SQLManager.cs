@@ -1,77 +1,85 @@
-﻿using Milimoe.FunGame.Core.Interface.Base;
-using Milimoe.FunGame.Core.Library.Constant;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Milimoe.FunGame.Core.Api.Data;
+using Milimoe.FunGame.Core.Interface.Base;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Service
 {
-    internal class SQLManager : ISQLService
+    internal class SQLManager : BaseSQLService
     {
-        int ISQLService.Add(StringBuilder sql, ref SQLResult result)
+        internal SQLHelper SQLHelper { get; }
+
+        internal SQLManager(SQLHelper SQLHelper)
+        {
+            this.SQLHelper = SQLHelper;
+        }
+
+        internal override int Add(StringBuilder sql, ref SQLResult result)
         {
             throw new NotImplementedException();
         }
 
-        int ISQLService.Add(string sql, ref SQLResult result)
+        internal override int Add(string sql, ref SQLResult result)
         {
             throw new NotImplementedException();
         }
 
-        SQLResult ISQLService.Execute()
+        internal override SQLResult Execute()
         {
             throw new NotImplementedException();
         }
 
-        SQLResult ISQLService.Execute(StringBuilder sql)
+        internal override SQLResult Execute(StringBuilder sql)
         {
             throw new NotImplementedException();
         }
 
-        SQLResult ISQLService.Execute(string sql)
+        internal override SQLResult Execute(string sql)
         {
             throw new NotImplementedException();
         }
 
-        object ISQLService.Query(EntityType type, StringBuilder sql)
+        internal override object Query(EntityType type, StringBuilder sql)
         {
             throw new NotImplementedException();
         }
 
-        T ISQLService.Query<T>(StringBuilder sql)
+        internal override T Query<T>(StringBuilder sql)
         {
             throw new NotImplementedException();
         }
 
-        object ISQLService.Query(EntityType type, string sql)
+        internal override object Query(EntityType type, string sql)
         {
             throw new NotImplementedException();
         }
 
-        T ISQLService.Query<T>(string sql)
+        internal override T Query<T>(string sql)
         {
             throw new NotImplementedException();
         }
 
-        int ISQLService.Remove(StringBuilder sql, ref SQLResult result)
+        internal override int Remove(StringBuilder sql, ref SQLResult result)
         {
             throw new NotImplementedException();
         }
 
-        int ISQLService.Remove(string sql, ref SQLResult result)
+        internal override int Remove(string sql, ref SQLResult result)
         {
             throw new NotImplementedException();
         }
 
-        int ISQLService.Update(StringBuilder sql, ref SQLResult result)
+        internal override int Update(StringBuilder sql, ref SQLResult result)
         {
             throw new NotImplementedException();
         }
 
-        int ISQLService.Update(string sql, ref SQLResult result)
+        internal override int Update(string sql, ref SQLResult result)
         {
             throw new NotImplementedException();
         }
