@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Entity
 {
@@ -14,5 +15,6 @@ namespace Milimoe.FunGame.Core.Entity
         public char Key { get; set; }
         public bool Active { get; set; }
         public bool Enable { get; set; }
+        public MagicType MagicType { get; set; }
     }
 }

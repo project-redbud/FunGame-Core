@@ -148,4 +148,52 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Minute,
         Second
     }
+
+    public enum MagicType
+    {
+
+    }
+    public enum RoleType
+    {
+
+    }
+    public enum CharacterRankType
+    {
+        X,
+        S,
+        APlus,
+        A,
+        B,
+        C,
+        D,
+        E
+    }
+    public enum ItemRankType
+    {
+        X,
+        SPlus,
+        S,
+        APlus,
+        A,
+        B,
+        C,
+        D
+    }
+    public enum ItemQualityType
+    {
+        White,
+        Green,
+        Blue,
+        Purple,
+        Orange,
+        Red
+    }
+    public enum ItemRarityType
+    {
+        OneStar,
+        TwoStar,
+        ThreeStar,
+        FourStar,
+        FiveStar
+    }
 }
