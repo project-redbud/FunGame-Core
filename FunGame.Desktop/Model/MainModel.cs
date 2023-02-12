@@ -17,10 +17,17 @@ namespace Milimoe.FunGame.Desktop.Model
 {
     public class MainModel
     {
-        public Core.Library.Common.Network.Socket? Socket { get; private set; }
+        public Core.Library.Common.Network.Socket? Socket
+        {
+            get
+            {
+                return _Socket;
+            }
+        }
         public Main Main { get; }
 
         private Task? ReceivingTask;
+        private Core.Library.Common.Network.Socket? _Socket;
 
         public MainModel(Main main)
         {
@@ -125,7 +132,7 @@ namespace Milimoe.FunGame.Desktop.Model
                     // 与服务器建立连接
                     Socket?.Close();
                     Others.Config.FunGame_isRetrying = true;
-                    Socket = Core.Library.Common.Network.Socket.Connect(Others.Constant.SERVER_IPADRESS, Others.Constant.SERVER_PORT);
+                    _Socket = Core.Library.Common.Network.Socket.Connect(Others.Constant.SERVER_IPADRESS, Others.Constant.SERVER_PORT);
                     if (Socket != null && Socket.Connected)
                     {
                         // 发送连接请求
@@ -178,7 +185,7 @@ namespace Milimoe.FunGame.Desktop.Model
                 if (Socket != null)
                 {
                     Socket.Close();
-                    Socket = null;
+                    _Socket = null;
                 }
                 if (ReceivingTask != null && !ReceivingTask.IsCompleted)
                 {

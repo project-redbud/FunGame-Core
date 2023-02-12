@@ -19,7 +19,13 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public string ServerName { get; } = "";
         public string ServerNotice { get; } = "";
         public string ClientIP { get; } = "";
-        public string ClientName { get; private set; } = "";
+        public string ClientName
+        {
+            get
+            {
+                return _ClientName;
+            }
+        }
         public bool Connected
         {
             get
@@ -27,16 +33,25 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
                 return Instance != null && Instance.Connected;
             }
         }
-        public bool Receiving { get; private set; } = false;
+        public bool Receiving
+        {
+            get
+            {
+                return _Receiving;
+            }
+        }
 
         private Task? ReceivingTask;
+
+        private bool _Receiving;
+        private string _ClientName;
 
         public ClientSocket(System.Net.Sockets.Socket Instance, int ServerPort, string ClientIP, string ClientName)
         {
             this.Instance= Instance;
             this.ServerPort = ServerPort;
             this.ClientIP = ClientIP;
-            this.ClientName = ClientName;
+            this._ClientName = ClientName;
         }
 
         public void Close()
@@ -67,13 +82,13 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
 
         public void StartReceiving(Task t)
         {
-            Receiving = true;
+            _Receiving = true;
             ReceivingTask = t;
         }
 
         public void StopReceiving()
         {
-            Receiving = false;
+            _Receiving = false;
             ReceivingTask?.Wait(1);
             ReceivingTask = null;
         }

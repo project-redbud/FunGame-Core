@@ -22,7 +22,13 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public int ServerPort { get; } = 0;
         public string ServerName { get; } = "";
         public string ServerNotice { get; } = "";
-        public int HeartBeatFaileds { get; private set; } = 0;
+        public int HeartBeatFaileds
+        {
+            get
+            {
+                return _HeartBeatFaileds;
+            }
+        }
         public bool Connected
         {
             get
@@ -30,12 +36,28 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
                 return Instance != null && Instance.Connected;
             }
         }
-        public bool Receiving { get; private set; } = false;
-        public bool SendingHeartBeat { get; private set; } = false;
+        public bool Receiving
+        {
+            get
+            {
+                return _Receiving;
+            }
+        }
+        public bool SendingHeartBeat
+        {
+            get
+            {
+                return _SendingHeartBeat;
+            }
+        }
 
         private Task? SendingHeartBeatTask;
         private Task? ReceivingTask;
         private Task? WaitHeartBeatReply;
+
+        private bool _Receiving = false;
+        private bool _SendingHeartBeat = false;
+        private int _HeartBeatFaileds = 0;
 
         private Socket(System.Net.Sockets.Socket Instance, string ServerIP, int ServerPort)
         {
@@ -72,7 +94,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             if ((SocketMessageType)result[0] == SocketMessageType.HeartBeat)
             {
                 if (WaitHeartBeatReply != null && !WaitHeartBeatReply.IsCompleted) WaitHeartBeatReply.Wait(1);
-                HeartBeatFaileds = 0;
+                _HeartBeatFaileds = 0;
             }
             return result;
         }
@@ -91,31 +113,31 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
 
         public void ResetHeartBeatFaileds()
         {
-            HeartBeatFaileds = 0;
+            _HeartBeatFaileds = 0;
         }
 
         public void StartReceiving(Task t)
         {
-            Receiving = true;
+            _Receiving = true;
             ReceivingTask = t;
         }
 
         private void StartSendingHeartBeat()
         {
-            SendingHeartBeat = true;
+            _SendingHeartBeat = true;
             SendingHeartBeatTask = Task.Factory.StartNew(SendHeartBeat);
         }
 
         private void StopReceiving()
         {
-            Receiving = false;
+            _Receiving = false;
             ReceivingTask?.Wait(1);
             ReceivingTask = null;
         }
 
         private void StopSendingHeartBeat()
         {
-            SendingHeartBeat = false;
+            _SendingHeartBeat = false;
             SendingHeartBeatTask?.Wait(1);
             SendingHeartBeatTask = null;
         }
@@ -125,7 +147,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             Thread.Sleep(100);
             while (Connected)
             {
-                if (!SendingHeartBeat) SendingHeartBeat= true;
+                if (!SendingHeartBeat) _SendingHeartBeat= true;
                 // 发送心跳包
                 if (Send(SocketMessageType.HeartBeat) == SocketResult.Success)
                 {
@@ -138,13 +160,13 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
                 else AddHeartBeatFaileds();
                 Thread.Sleep(20000);
             }
-            SendingHeartBeat = false;
+            _SendingHeartBeat = false;
         }
 
         private void AddHeartBeatFaileds()
         {
             // 超过三次没回应心跳，服务器连接失败。
-            if (HeartBeatFaileds++ >= 3)
+            if (_HeartBeatFaileds++ >= 3)
                 throw new System.Exception("ERROR：与服务器连接中断。");
         }
 

@@ -26,9 +26,16 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
                 return Instance != null && Instance.Connected;
             }
         }
-        public bool Receiving { get; private set; } = false;
+        public bool Receiving
+        {
+            get
+            {
+                return _Receiving;
+            }
+        }
 
         private readonly ThreadManager PlayerThreads;
+        private bool _Receiving = false;
 
         private ServerSocket(System.Net.Sockets.Socket Instance, int ServerPort, int MaxConnection = 0)
         {

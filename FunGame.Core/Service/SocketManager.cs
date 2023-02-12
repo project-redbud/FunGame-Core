@@ -17,12 +17,27 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 客户端专用Socket
         /// </summary>
-        internal static Socket? Socket { get; private set; } = null;
+        internal static Socket? Socket
+        {
+            get
+            {
+                return _Socket;
+            }
+        }
 
         /// <summary>
         /// 服务器端专用Socket
         /// </summary>
-        internal static Socket? ServerSocket { get; private set; } = null;
+        internal static Socket? ServerSocket
+        {
+            get
+            {
+                return _ServerSocket;
+            }
+        }
+
+        private static Socket? _Socket = null;
+        private static Socket? _ServerSocket = null;
 
         /// <summary>
         /// 创建服务器监听Socket
@@ -35,11 +50,11 @@ namespace Milimoe.FunGame.Core.Service
             if (MaxConnection <= 0) MaxConnection = SocketSet.MaxConnection_General;
             try
             {
-                ServerSocket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                _ServerSocket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 IPEndPoint ServerEndPoint = new(IPAddress.Any, Port);
-                ServerSocket.Bind(ServerEndPoint);
-                ServerSocket.Listen(MaxConnection);
-                return ServerSocket;
+                _ServerSocket.Bind(ServerEndPoint);
+                _ServerSocket.Listen(MaxConnection);
+                return _ServerSocket;
             }
             catch
             {
@@ -94,8 +109,8 @@ namespace Milimoe.FunGame.Core.Service
                             ClientSocket.Connect(ServerEndPoint);
                             if (ClientSocket.Connected)
                             {
-                                Socket = ClientSocket;
-                                return Socket;
+                                _Socket = ClientSocket;
+                                return _Socket;
                             }
                         }
                     }
@@ -103,7 +118,7 @@ namespace Milimoe.FunGame.Core.Service
             }
             catch
             {
-                Socket?.Close();
+                _Socket?.Close();
             }
             return null;
         }
