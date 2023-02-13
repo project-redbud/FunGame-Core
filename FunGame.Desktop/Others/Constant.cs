@@ -33,7 +33,7 @@ namespace Milimoe.FunGame.Desktop.Others
         /**
          * Game Configs
          */
-        public static int FunGameType { get; } = (int)FunGameEnum.FunGame.FunGame_Desktop;
+        public static int FunGameType { get; } = (int)FunGameInfo.FunGame.FunGame_Desktop;
 
         /**
          * Socket Configs

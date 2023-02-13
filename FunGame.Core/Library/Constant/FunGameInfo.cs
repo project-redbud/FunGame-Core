@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Milimoe.FunGame.Core.Library.Constant
 {
-    public class FunGameEnum
+    public class FunGameInfo
     {
         public enum FunGame
         {
@@ -37,7 +37,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 FunGame.FunGame_Server => FunGame_Server,
                 _ => ""
             };
-            return type + " [ 版本: " + FunGame_Version + FunGame_VersionPatch + " ]\n" + (type.Equals(FunGame_Desktop) ? "©" : "(C)") + "2022 Mili.cyou. 保留所有权利\n";
+            return type + " [ 版本: " + FunGame_Version + FunGame_VersionPatch + " ]\n" + (type.Equals(FunGame_Desktop) ? "©" : "(C)") + "2023 Mili.cyou. 保留所有权利\n";
         }
 
         /**

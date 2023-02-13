@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Milimoe.FunGame.Core.Interface.Entity;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,10 +17,18 @@ namespace Milimoe.FunGame.Core.Entity
             Active = false;
         }
 
-        internal PassiveItem(string Name)
+        internal PassiveItem(int id, string name)
         {
             Active = false;
-            this.Name = Name;
+            Id = id;
+            Name = name;
+        }
+
+        public override bool Equals(IBaseEntity? other)
+        {
+            if (other != null && other.Guid == this.Guid)
+                return true;
+            else return false;
         }
     }
 }

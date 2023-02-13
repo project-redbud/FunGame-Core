@@ -151,13 +151,26 @@ namespace Milimoe.FunGame.Core.Library.Constant
 
     public enum MagicType
     {
-
+        Starmark,
+        PurityNatural,
+        PurityContemporary,
+        Light,
+        Shadow,
+        Element,
+        Fleabane,
+        Particle
     }
+
     public enum RoleType
     {
-
+        Core,
+        Guardian,
+        Vanguard,
+        Logistics,
+        Assistant
     }
-    public enum CharacterRankType
+
+    public enum RoleRating
     {
         X,
         S,
@@ -168,6 +181,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         D,
         E
     }
+
     public enum ItemRankType
     {
         X,
@@ -179,6 +193,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         C,
         D
     }
+
     public enum ItemQualityType
     {
         White,
@@ -188,6 +203,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Orange,
         Red
     }
+
     public enum ItemRarityType
     {
         OneStar,

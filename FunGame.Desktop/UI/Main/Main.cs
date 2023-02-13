@@ -293,7 +293,7 @@ namespace Milimoe.FunGame.Desktop.UI
                 }
                 else
                 {
-                    INIHelper.Init((FunGameEnum.FunGame)Others.Constant.FunGameType);
+                    INIHelper.Init((FunGameInfo.FunGame)Others.Constant.FunGameType);
                     WritelnGameInfo(">> 首次启动，已自动为你创建配置文件。");
                     GetFunGameConfig();
                 }
@@ -787,7 +787,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// </summary>
         private void ShowFunGameInfo()
         {
-            WritelnGameInfo(FunGameEnum.GetInfo((FunGameEnum.FunGame)Others.Constant.FunGameType));
+            WritelnGameInfo(FunGameInfo.GetInfo((FunGameInfo.FunGame)Others.Constant.FunGameType));
         }
 
         #endregion

@@ -13,15 +13,20 @@ namespace Milimoe.FunGame.Core.Entity
         public int Id { get; set; }
         public string Name { get; set; } = "";
         public string FirstName { get; set; } = "";
+        public string NickName { get; set; } = "";
         public User? User { get; set; } = null;
-        public CharacterStatistics? Statistics { get; set; } = null;
+        public CharacterStatistics? Statistics { get; set; } = null; // 角色统计数据
         public MagicType MagicType { get; set; } // 魔法属性
         public RoleType FirstRoleType { get; set; } // 角色定位1
         public RoleType SecondRoleType { get; set; } // 角色定位2
         public RoleType ThirdRoleType { get; set; } // 角色定位3
+        public RoleRating RoleRating { get; set; } // 角色评级
+        public int Promotion { get; set; } // 晋升点数
         public int Level { get; set; } = 1;
         public decimal EXP { get; set; } // 经验值
+        public decimal BaseHP { get; set; } // 基础生命值
         public decimal HP { get; set; }
+        public decimal BaseMP { get; set; } // 基础魔法值
         public decimal MP { get; set; }
         public decimal EP { get; set; }
         public decimal BaseATK { get; set; } // 基础攻击力
@@ -30,10 +35,13 @@ namespace Milimoe.FunGame.Core.Entity
         public decimal PDR { get; set; } // Physical Damage Reduction 物理伤害减免
         public decimal MDF { get; set; } // Magical Defence 魔法抗性
         public decimal PhysicalPenetration { get; set; } // Physical Penetration 物理穿透
-        public decimal MagicPenetration { get; set; } // Magical Penetration 魔法穿透
+        public decimal MagicalPenetration { get; set; } // Magical Penetration 魔法穿透
         public decimal HR { get; set; } = 0; // Health Regeneration 生命回复力
         public decimal MR { get; set; } = 0; // Mana Regeneration 魔法回复力
         public decimal ER { get; set; } = 0; // Eenergy Regeneration 能量回复力
+        public decimal BaseSTR { get; set; } // 基础力量
+        public decimal BaseAGI { get; set; } // 基础敏捷
+        public decimal BaseINT { get; set; } // 基础智力
         public decimal STR { get; set; } // Strength 力量
         public decimal AGI { get; set; } // Agility 敏捷
         public decimal INT { get; set; } // Intelligence 智力

@@ -57,14 +57,14 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <summary>
         /// 初始化ini模板文件
         /// </summary>
-        public static void Init(FunGameEnum.FunGame FunGameType)
+        public static void Init(FunGameInfo.FunGame FunGameType)
         {
             switch (FunGameType)
             {
-                case FunGameEnum.FunGame.FunGame_Core:
-                case FunGameEnum.FunGame.FunGame_Core_Api:
-                case FunGameEnum.FunGame.FunGame_Console:
-                case FunGameEnum.FunGame.FunGame_Desktop:
+                case FunGameInfo.FunGame.FunGame_Core:
+                case FunGameInfo.FunGame.FunGame_Core_Api:
+                case FunGameInfo.FunGame.FunGame_Console:
+                case FunGameInfo.FunGame.FunGame_Desktop:
                     /**
                      * Config
                      */
@@ -77,7 +77,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     WriteINI("Account", "Password", "");
                     WriteINI("Account", "AutoKey", "");
                     break;
-                case FunGameEnum.FunGame.FunGame_Server:
+                case FunGameInfo.FunGame.FunGame_Server:
                     /**
                      * Server
                      */
