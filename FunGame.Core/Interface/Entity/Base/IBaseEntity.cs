@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Milimoe.FunGame.Core.Interface.Entity
 {
-    public interface IBaseEntity : IEquatable<IBaseEntity>, IEnumerable<IEnumerable>
+    public interface IBaseEntity : IEquatable<IBaseEntity>, IEnumerable<IBaseEntity>
     {
         public int Id { get; }
         public Guid Guid { get; }

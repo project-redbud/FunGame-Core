@@ -14,7 +14,7 @@ namespace Milimoe.FunGame.Core.Interface.Entity
         public string Name { get; set; } = "";
 
         public abstract bool Equals(IBaseEntity? other);
-        public abstract IEnumerator<IEnumerable> GetEnumerator();
+        public abstract IEnumerator<IBaseEntity> GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator()
         {
