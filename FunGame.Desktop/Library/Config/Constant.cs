@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Desktop.Others
+namespace Milimoe.FunGame.Desktop.Library
 {
     public class MainControllerSet
     {
@@ -28,6 +28,11 @@ namespace Milimoe.FunGame.Desktop.Others
         public const string Close = ".close";
     }
 
+    public class RunTime
+    {
+        public static Core.Library.Common.Network.Socket? Socket { get; set; } = null;
+    }
+
     public class Constant
     {
         /**
@@ -38,9 +43,9 @@ namespace Milimoe.FunGame.Desktop.Others
         /**
          * Socket Configs
          */
-        public static string SERVER_IPADRESS { get; set; } = ""; // 服务器IP地址
-        public static int SERVER_PORT { get; set; } = 0; // 服务器端口号
-        public static Encoding DEFAULT_ENCODING { get; } = Core.Library.Constant.General.DEFAULT_ENCODING;
+        public static string Server_Address { get; set; } = ""; // 服务器IP地址
+        public static int Server_Port { get; set; } = 0; // 服务器端口号
+        public static Encoding Default_Encoding { get; } = General.DefaultEncoding;
 
         /**
          * FunGame Configs

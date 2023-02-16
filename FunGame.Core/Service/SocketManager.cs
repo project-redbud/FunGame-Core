@@ -134,7 +134,7 @@ namespace Milimoe.FunGame.Core.Service
         {
             if (ClientSocket != null && objs != null && objs.Length > 0)
             {
-                if (ClientSocket.Send(General.DEFAULT_ENCODING.GetBytes(Library.Common.Network.JsonObject.GetString(type, token, objs))) > 0)
+                if (ClientSocket.Send(General.DefaultEncoding.GetBytes(Library.Common.Network.JsonObject.GetString(type, token, objs))) > 0)
                 {
                     return SocketResult.Success;
                 }
@@ -157,7 +157,7 @@ namespace Milimoe.FunGame.Core.Service
             }
             if (Socket != null)
             {
-                if (Socket.Send(General.DEFAULT_ENCODING.GetBytes(Library.Common.Network.JsonObject.GetString(type, token, objs))) > 0)
+                if (Socket.Send(General.DefaultEncoding.GetBytes(Library.Common.Network.JsonObject.GetString(type, token, objs))) > 0)
                 {
                     return SocketResult.Success;
                 }
@@ -180,7 +180,7 @@ namespace Milimoe.FunGame.Core.Service
                 int length = Socket.Receive(buffer);
                 if (length > 0)
                 {
-                    string msg = General.DEFAULT_ENCODING.GetString(buffer, 0, length);
+                    string msg = General.DefaultEncoding.GetString(buffer, 0, length);
                     Library.Common.Network.JsonObject? json = Library.Common.Network.JsonObject.GetObject(msg);
                     if (json != null)
                     {
@@ -207,7 +207,7 @@ namespace Milimoe.FunGame.Core.Service
                 int length = ClientSocket.Receive(buffer);
                 if (length > 0)
                 {
-                    string msg = General.DEFAULT_ENCODING.GetString(buffer, 0, length);
+                    string msg = General.DefaultEncoding.GetString(buffer, 0, length);
                     Library.Common.Network.JsonObject? json = Library.Common.Network.JsonObject.GetObject(msg);
                     if (json != null)
                     {

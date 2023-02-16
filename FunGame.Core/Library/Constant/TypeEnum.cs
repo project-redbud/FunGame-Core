@@ -131,8 +131,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         PassiveSkill,
         GameStatistics,
         Character,
-        CharacterStatistics,
-        NotEntity
+        CharacterStatistics
     }
 
     public enum TimeType

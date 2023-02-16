@@ -11,7 +11,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
     {
         // Static Variable
         public static Empty EntityInstance { get; } = new();
-        public static Encoding DEFAULT_ENCODING { get; } = Encoding.UTF8;
+        public static Encoding DefaultEncoding { get; } = Encoding.UTF8;
 
         // Const
         public const int MaxRetryTimes = 20;

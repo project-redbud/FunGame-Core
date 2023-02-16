@@ -7,23 +7,29 @@ using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
+using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Library.Component;
+using Milimoe.FunGame.Desktop.Library.Interface;
 using Milimoe.FunGame.Desktop.Model;
-using Milimoe.FunGame.Desktop.Others;
 using Milimoe.FunGame.Desktop.UI;
 
 namespace Milimoe.FunGame.Desktop.Controller
 {
-    public class MainController
+    public class MainController : IMain
     {
         private MainModel MainModel { get; }
+
+        public bool Connected => Do<bool>(MainControllerSet.Connected);
 
         public MainController(Main Main)
         {
             MainModel = new MainModel(Main);
         }
 
-        public T Do<T>(string DoType)
+        /**
+         * 从内部去调用Model的方法，并记录日志。
+         */
+        private T Do<T>(string DoType)
         {
             object result = new();
             switch(DoType)
@@ -35,8 +41,7 @@ namespace Milimoe.FunGame.Desktop.Controller
                     result = MainModel.Connect();
                     break;
                 case MainControllerSet.Connected:
-                    if (MainModel.Socket is null) result = false;
-                    else result = MainModel.Socket.Connected;
+                    result = MainModel.Connected;
                     break;
                 case MainControllerSet.Disconnect:
                     MainModel.Disconnect();
@@ -61,9 +66,6 @@ namespace Milimoe.FunGame.Desktop.Controller
                 case MainControllerSet.LogOut:
                     result = MainModel.Logout();
                     break;
-                case MainControllerSet.LogIn:
-                    result = MainModel.Login();
-                    break;
                 case MainControllerSet.Close:
                     result = MainModel.Close();
                     break;
@@ -71,6 +73,71 @@ namespace Milimoe.FunGame.Desktop.Controller
                     break;
             }
             return (T)result;
+        }
+
+        public bool GetServerConnection()
+        {
+            return Do<bool>(MainControllerSet.GetServerConnection);
+        }
+
+        public ConnectResult Connect()
+        {
+            return Do<ConnectResult>(MainControllerSet.Connect);
+        }
+
+        public void Disconnect()
+        {
+            Do<object>(MainControllerSet.Disconnect);
+        }
+
+        public void Disconnected()
+        {
+            Do<object>(MainControllerSet.Disconnected);
+        }
+
+        public void SetWaitConnectAndSetYellow()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetWaitLoginAndSetYellow()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetGreenAndPing()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetGreen()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetYellow()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetRed()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetUser()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool LogOut()
+        {
+            return Do<bool>(MainControllerSet.LogOut);
+        }
+
+        public bool Close()
+        {
+            return Do<bool>(MainControllerSet.Close);
         }
     }
 }

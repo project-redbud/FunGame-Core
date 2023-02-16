@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Milimoe.FunGame.Core.Entity;
 
-namespace Milimoe.FunGame.Desktop.Others
+namespace Milimoe.FunGame.Desktop.Library
 {
     public class Usercfg
     {

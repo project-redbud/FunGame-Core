@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Milimoe.FunGame.Desktop.Others
+namespace Milimoe.FunGame.Desktop.Library
 {
     public class Config
     {
@@ -23,5 +23,8 @@ namespace Milimoe.FunGame.Desktop.Others
         public static string FunGame_Roomid { get; set; } = "-1"; // 房间号
         public static string FunGame_ServerName { get; set; } = ""; // 服务器名称
         public static string FunGame_Notice { get; set; } = ""; // 公告
+
+        /*** GUID For Socket ***/
+        public static Guid Guid_Socket { get; set; } = Guid.Empty;
     }
 }

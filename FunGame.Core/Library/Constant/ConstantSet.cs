@@ -29,6 +29,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const int MaxConnection_General = 20;
         public const int MaxConnection_4C4G = 40;
 
+        public const string Socket = "Socket";
         public const string Unknown = "Unknown";
         public const string Connect = "Connect";
         public const string GetNotice = "GetNotice";

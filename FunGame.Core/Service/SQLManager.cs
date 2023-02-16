@@ -5,12 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Milimoe.FunGame.Core.Api.Data;
-using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Service
 {
-    internal class SQLManager : BaseSQLService
+    /// <summary>
+    /// 需要在Server中继承此类实现
+    /// </summary>
+    public class SQLManager
     {
         internal SQLHelper SQLHelper { get; }
 
@@ -19,69 +21,69 @@ namespace Milimoe.FunGame.Core.Service
             this.SQLHelper = SQLHelper;
         }
 
-        internal override int Add(StringBuilder sql, ref SQLResult result)
+        protected virtual int Add(StringBuilder sql, ref SQLResult result)
         {
-            throw new NotImplementedException();
+            return 0;
         }
 
-        internal override int Add(string sql, ref SQLResult result)
+        protected virtual int Add(string sql, ref SQLResult result)
         {
-            throw new NotImplementedException();
+            return 0;
         }
 
-        internal override SQLResult Execute()
+        protected virtual SQLResult Execute()
         {
-            throw new NotImplementedException();
+            return SQLResult.NotFound;
         }
 
-        internal override SQLResult Execute(StringBuilder sql)
+        protected virtual SQLResult Execute(StringBuilder sql)
         {
-            throw new NotImplementedException();
+            return SQLResult.NotFound;
         }
 
-        internal override SQLResult Execute(string sql)
+        protected virtual SQLResult Execute(string sql)
         {
-            throw new NotImplementedException();
+            return SQLResult.NotFound;
         }
 
-        internal override object Query(EntityType type, StringBuilder sql)
+        protected virtual object Query(EntityType type, StringBuilder sql)
         {
-            throw new NotImplementedException();
+            return General.EntityInstance;
         }
 
-        internal override T Query<T>(StringBuilder sql)
+        protected virtual T? Query<T>(StringBuilder sql)
         {
-            throw new NotImplementedException();
+            return default;
         }
 
-        internal override object Query(EntityType type, string sql)
+        protected virtual object Query(EntityType type, string sql)
         {
-            throw new NotImplementedException();
+            return General.EntityInstance;
         }
 
-        internal override T Query<T>(string sql)
+        protected virtual T? Query<T>(string sql)
         {
-            throw new NotImplementedException();
+            return default;
         }
 
-        internal override int Remove(StringBuilder sql, ref SQLResult result)
+        protected virtual int Remove(StringBuilder sql, ref SQLResult result)
         {
-            throw new NotImplementedException();
+            return 0;
         }
 
-        internal override int Remove(string sql, ref SQLResult result)
+        protected virtual int Remove(string sql, ref SQLResult result)
         {
-            throw new NotImplementedException();
+            return 0;
         }
 
-        internal override int Update(StringBuilder sql, ref SQLResult result)
+        protected virtual int Update(StringBuilder sql, ref SQLResult result)
         {
-            throw new NotImplementedException();
+            return 0;
         }
 
-        internal override int Update(string sql, ref SQLResult result)
+        protected virtual int Update(string sql, ref SQLResult result)
         {
-            throw new NotImplementedException();
+            return 0;
         }
     }
 }

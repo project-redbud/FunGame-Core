@@ -8,44 +8,24 @@ using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
-using Milimoe.FunGame.Desktop.Controller;
+using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Library.Component;
-using Milimoe.FunGame.Desktop.Others;
+using Milimoe.FunGame.Desktop.Library.Interface;
 using Milimoe.FunGame.Desktop.UI;
 
 namespace Milimoe.FunGame.Desktop.Model
 {
-    public class MainModel
+    public class MainModel : IMain
     {
-        public Core.Library.Common.Network.Socket? Socket
-        {
-            get
-            {
-                return _Socket;
-            }
-        }
-        public Main Main { get; }
+        public bool Connected => Socket != null && Socket.Connected;
 
+        private readonly Main Main;
         private Task? ReceivingTask;
-        private Core.Library.Common.Network.Socket? _Socket;
+        private Core.Library.Common.Network.Socket? Socket;
 
         public MainModel(Main main)
         {
             Main = main;
-        }
-
-        public bool Login()
-        {
-            try
-            {
-                if (Socket != null && Socket.Send(SocketMessageType.Login, "Mili", "OK") == SocketResult.Success)
-                    return true;
-            }
-            catch (Exception e)
-            {
-                Main?.GetMessage(e.GetErrorInfo());
-            }
-            return false;
         }
 
         public bool Logout()
@@ -73,6 +53,11 @@ namespace Milimoe.FunGame.Desktop.Model
             }
         }
 
+        public void Disconnected()
+        {
+            Disconnect();
+        }
+
         public bool GetServerConnection()
         {
             try
@@ -84,8 +69,8 @@ namespace Milimoe.FunGame.Desktop.Model
                     string[] s = ipaddress.Split(':');
                     if (s != null && s.Length > 1)
                     {
-                        Others.Constant.SERVER_IPADRESS = s[0];
-                        Others.Constant.SERVER_PORT = Convert.ToInt32(s[1]);
+                        Constant.Server_Address = s[0];
+                        Constant.Server_Port = Convert.ToInt32(s[1]);
                         if (Connect() == ConnectResult.Success) return true; // 连接服务器
                     }
                 }
@@ -106,20 +91,20 @@ namespace Milimoe.FunGame.Desktop.Model
 
         public ConnectResult Connect()
         {
-            if (Others.Constant.SERVER_IPADRESS == "" || Others.Constant.SERVER_PORT <= 0)
+            if (Constant.Server_Address == "" || Constant.Server_Port <= 0)
             {
                 ShowMessage.ErrorMessage("查找可用的服务器失败！");
                 return ConnectResult.FindServerFailed;
             }
             try
             {
-                if (Others.Config.FunGame_isRetrying)
+                if (Config.FunGame_isRetrying)
                 {
                     Main?.GetMessage("正在连接服务器，请耐心等待。");
                     Config.FunGame_isRetrying = false;
                     return ConnectResult.CanNotConnect;
                 }
-                if (!Others.Config.FunGame_isConnected)
+                if (!Config.FunGame_isConnected)
                 {
                     Main!.CurrentRetryTimes++;
                     if (Main!.CurrentRetryTimes == 0) Main!.GetMessage("开始连接服务器...", true, TimeType.General);
@@ -131,10 +116,12 @@ namespace Milimoe.FunGame.Desktop.Model
                     }
                     // 与服务器建立连接
                     Socket?.Close();
-                    Others.Config.FunGame_isRetrying = true;
-                    _Socket = Core.Library.Common.Network.Socket.Connect(Others.Constant.SERVER_IPADRESS, Others.Constant.SERVER_PORT);
+                    Config.FunGame_isRetrying = true;
+                    Socket = Core.Library.Common.Network.Socket.Connect(Constant.Server_Address, Constant.Server_Port);
                     if (Socket != null && Socket.Connected)
                     {
+                        // 设置可复用Socket
+                        RunTime.Socket = Socket;
                         // 发送连接请求
                         if (Socket.Send(SocketMessageType.Connect) == SocketResult.Success)
                         {
@@ -169,7 +156,7 @@ namespace Milimoe.FunGame.Desktop.Model
                     Task.Run(() =>
                     {
                         Thread.Sleep(5000);
-                        if (Others.Config.FunGame_isAutoRetry) Connect(); // 再次判断是否开启自动重连
+                        if (Config.FunGame_isAutoRetry) Connect(); // 再次判断是否开启自动重连
                     });
                     Main?.GetMessage("连接服务器失败，5秒后自动尝试重连。");
                 }
@@ -185,7 +172,7 @@ namespace Milimoe.FunGame.Desktop.Model
                 if (Socket != null)
                 {
                     Socket.Close();
-                    _Socket = null;
+                    Socket = null;
                 }
                 if (ReceivingTask != null && !ReceivingTask.IsCompleted)
                 {
@@ -199,6 +186,46 @@ namespace Milimoe.FunGame.Desktop.Model
                 return false;
             }
             return true;
+        }
+
+        public void SetWaitConnectAndSetYellow()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetWaitLoginAndSetYellow()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetGreenAndPing()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetGreen()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetYellow()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetRed()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetUser()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool LogOut()
+        {
+            throw new NotImplementedException();
         }
 
         private void StartReceiving()
@@ -317,6 +344,5 @@ namespace Milimoe.FunGame.Desktop.Model
             Main?.UpdateUI(MainControllerSet.Disconnect);
             Close();
         }
-
     }
 }

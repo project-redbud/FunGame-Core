@@ -15,11 +15,22 @@ namespace Milimoe.FunGame.Core.Api.Utility
     {
         private static readonly Hashtable SingletonTable = new();
 
-        public static bool IsExist(string key)
+        /// <summary>
+        /// 查询目标的类是否已经有实例
+        /// </summary>
+        /// <param name="single">单例对象</param>
+        /// <returns></returns>
+        public static bool IsExist(object single)
         {
-            return SingletonTable.ContainsKey(key);
+            return SingletonTable.ContainsKey(single.GetType().ToString());
         }
 
+        /// <summary>
+        /// 将目标和目标的类添加至单例表
+        /// </summary>
+        /// <param name="single">单例对象</param>
+        /// <returns></returns>
+        /// <exception cref="Exception">添加单例到单例表时遇到错误</exception>
         public static bool Add(object single)
         {
             string type = single.GetType().ToString();
@@ -38,6 +49,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
             return false;
         }
 
+        /// <summary>
+        /// 将目标和目标的类从单例表中移除
+        /// </summary>
+        /// <param name="single">单例对象</param>
+        /// <returns></returns>
         public static bool Remove(object single)
         {
             string type = single.GetType().ToString();
@@ -52,6 +68,12 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
         }
 
+        /// <summary>
+        /// 获取单例对象
+        /// </summary>
+        /// <typeparam name="T">目标类</typeparam>
+        /// <returns></returns>
+        /// <exception cref="Exception">不能从单例表中获取到指定的单例</exception>
         public static T? Get<T>()
         {
             T? single = default;
@@ -70,15 +92,21 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
             return single;
         }
-        
-        public static object? Get(string key)
+
+        /// <summary>
+        /// 获取单例对象
+        /// </summary>
+        /// <param name="type">目标类</param>
+        /// <returns></returns>
+        /// <exception cref="Exception">不能从单例表中获取到指定的单例</exception>
+        public static object? Get(Type type)
         {
             object? single = default;
-            if (SingletonTable.ContainsKey(key))
+            if (SingletonTable.ContainsKey(type))
             {
                 try
                 {
-                    single = SingletonTable[key];
+                    single = SingletonTable[type];
                 }
                 catch
                 {

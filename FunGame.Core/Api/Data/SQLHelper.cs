@@ -7,10 +7,13 @@ using System.Threading.Tasks;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Api.Data
 {
+    /// <summary>
+    /// 需要在Server中继承此类实现。
+    /// Milimoe.FunGame.Core.Service.SQLManager也是
+    /// </summary>
     public class SQLHelper : ISQLHelper
     {
         public string Script { get; set; } = "";
@@ -39,17 +42,9 @@ namespace Milimoe.FunGame.Core.Api.Data
             this.UpdateRows = rows;
         }
 
-        public SQLResult Execute()
+        public virtual SQLResult Execute()
         {
-            switch (EntityType)
-            {
-                case EntityType.NotEntity:
-                    SQLManager SQLManager = new(this);
-                    return SQLManager.Execute(Script);
-                default:
-                    break;
-            }
-            return Result;
+            return SQLResult.NotFound;
         }
     }
 }
