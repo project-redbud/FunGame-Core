@@ -96,5 +96,20 @@ namespace Milimoe.FunGame.Desktop.Library.Component
                 return prams;
             }
         }
+
+        public void AppendImage(string filename)
+        {
+            //创建Bitmap类对象
+            Bitmap bmp = new(filename);
+            //将Bitmap类对象写入剪贴板
+            Clipboard.SetImage(bmp);
+            this.Paste();
+        }
+
+        public void AppendImage(Bitmap image)
+        {
+            Clipboard.SetImage(image);
+            this.Paste();
+        }
     }
 }

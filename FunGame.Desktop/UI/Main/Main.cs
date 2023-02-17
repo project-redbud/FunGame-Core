@@ -337,7 +337,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// </summary>
         private void WritelnGameInfo()
         {
-            GameInfo.Text += "\n";
+            GameInfo.AppendText("\n");
             GameInfo.SelectionStart = GameInfo.Text.Length - 1;
             GameInfo.ScrollToCaret();
         }
@@ -350,7 +350,7 @@ namespace Milimoe.FunGame.Desktop.UI
         {
             if (msg.Trim() != "")
             {
-                GameInfo.Text += msg + "\n";
+                GameInfo.AppendText(msg + "\n");
                 GameInfo.SelectionStart = GameInfo.Text.Length - 1;
                 GameInfo.ScrollToCaret();
             }
@@ -364,7 +364,7 @@ namespace Milimoe.FunGame.Desktop.UI
         {
             if (msg.Trim() != "")
             {
-                GameInfo.Text += msg;
+                GameInfo.AppendText(msg);
                 GameInfo.SelectionStart = GameInfo.Text.Length - 1;
                 GameInfo.ScrollToCaret();
             }

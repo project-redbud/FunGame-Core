@@ -56,13 +56,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="UI\RoomSetting\" />
-    <Folder Include="UI\UserCenter\" />
-    <Folder Include="UI\Store\" />
-    <Folder Include="UI\Inventory\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\FunGame.Core\FunGame.Core.csproj">
       <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
     </ProjectReference>

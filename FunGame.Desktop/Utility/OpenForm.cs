@@ -18,12 +18,16 @@ namespace Milimoe.FunGame.Desktop.Utility
                     form = new Login();
                     break;
                 case FormType.Inventory:
+                    form = new InventoryUI();
                     break;
                 case FormType.RoomSetting:
+                    form = new RoomSetting();
                     break;
                 case FormType.Store:
+                    form = new StoreUI();
                     break;
                 case FormType.UserCenter:
+                    form = new UserCenter();
                     break;
                 case FormType.Main:
                     form = new Main();
