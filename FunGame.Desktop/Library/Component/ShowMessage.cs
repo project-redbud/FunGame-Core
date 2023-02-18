@@ -11,9 +11,8 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Desktop.Library.Component
 {
-    public partial class ShowMessage : Form
+    public partial class ShowMessage : GeneralForm
     {
-        private int Location_x, Location_y;
         private MessageResult MessageResult = MessageResult.Cancel;
         private string InputResult = "";
         private int AutoClose = 0;
@@ -35,8 +34,6 @@ namespace Milimoe.FunGame.Desktop.Library.Component
         {
             InitializeComponent();
             Opacity = 0.85; // 透明度
-            Title.MouseDown += new MouseEventHandler(Title_MouseDown);
-            Title.MouseMove += new MouseEventHandler(Title_MouseMove);
             if (objs != null)
             {
                 /**
@@ -165,37 +162,6 @@ namespace Milimoe.FunGame.Desktop.Library.Component
                 _ => MessageResult.Cancel
             };
             Dispose();
-        }
-
-        /// <summary>
-        /// 设置窗口可拖动
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Title_MouseDown(object? sender, MouseEventArgs e)
-        {
-            //判断是否为鼠标左键
-            if (e.Button == MouseButtons.Left)
-            {
-                //获取鼠标左键按下时的位置
-                this.Location_x = e.Location.X;
-                this.Location_y = e.Location.Y;
-            }
-        }
-
-        /// <summary>
-        /// 设置窗口移动时的偏移距离
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Title_MouseMove(object? sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left)
-            {
-                //计算鼠标移动距离
-                this.Left += e.Location.X - this.Location_x;
-                this.Top += e.Location.Y - this.Location_y;
-            }
         }
 
         public static MessageResult Message(string msg, string title, int autoclose = 0)

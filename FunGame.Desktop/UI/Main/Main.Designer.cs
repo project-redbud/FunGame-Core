@@ -34,7 +34,6 @@ namespace Milimoe.FunGame.Desktop.UI
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
             this.Exit = new FunGame.Desktop.Library.Component.ExitButton(this.components);
-            this.Title = new System.Windows.Forms.Label();
             this.MinForm = new Library.Component.MinButton();
             this.Connection = new System.Windows.Forms.Label();
             this.Light = new System.Windows.Forms.Label();
@@ -103,8 +102,6 @@ namespace Milimoe.FunGame.Desktop.UI
             this.Title.TabIndex = 96;
             this.Title.Text = "FunGame By Mili.cyou";
             this.Title.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.Title.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Title_MouseDown);
-            this.Title.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Title_MouseMove);
             // 
             // MinForm
             // 

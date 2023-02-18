@@ -35,7 +35,6 @@
             this.Exit = new FunGame.Desktop.Library.Component.ExitButton(this.components);
             this.RightButton = new System.Windows.Forms.Button();
             this.MidButton = new System.Windows.Forms.Button();
-            this.Title = new System.Windows.Forms.Label();
             this.TransparentRect = new FunGame.Desktop.Library.Component.TransparentRect();
             this.InputButton = new System.Windows.Forms.Button();
             this.InputText = new System.Windows.Forms.TextBox();
@@ -187,7 +186,6 @@
         private ExitButton Exit;
         private Button RightButton;
         private Button MidButton;
-        private Label Title;
         private TransparentRect TransparentRect;
         private Button InputButton;
         private TextBox InputText;

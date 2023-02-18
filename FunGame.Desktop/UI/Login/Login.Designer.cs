@@ -32,7 +32,6 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Login));
             this.ExitButton = new Milimoe.FunGame.Desktop.Library.Component.ExitButton(this.components);
             this.MinButton = new Milimoe.FunGame.Desktop.Library.Component.MinButton(this.components);
-            this.Title = new System.Windows.Forms.Label();
             this.Username = new System.Windows.Forms.Label();
             this.Password = new System.Windows.Forms.Label();
             this.UsernameText = new System.Windows.Forms.TextBox();
@@ -94,8 +93,6 @@
             this.Title.TabIndex = 8;
             this.Title.Text = "Welcome to FunGame!";
             this.Title.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.Title.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Title_MouseDown);
-            this.Title.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Title_MouseMove);
             // 
             // Username
             // 
