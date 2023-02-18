@@ -63,7 +63,7 @@
             this.ExitButton.TabIndex = 7;
             this.ExitButton.TextAlign = System.Drawing.ContentAlignment.TopLeft;
             this.ExitButton.UseVisualStyleBackColor = false;
-            this.ExitButton.Click += new System.EventHandler(this.ExitButton_Click);
+            this.ExitButton.RelativeForm = this;
             // 
             // MinButton
             // 
@@ -83,6 +83,7 @@
             this.MinButton.TabIndex = 6;
             this.MinButton.TextAlign = System.Drawing.ContentAlignment.TopLeft;
             this.MinButton.UseVisualStyleBackColor = false;
+            this.MinButton.RelativeForm = this;
             // 
             // Title
             // 
@@ -221,7 +222,6 @@
 
         private Library.Component.ExitButton ExitButton;
         private Library.Component.MinButton MinButton;
-        private Label Title;
         private Label Username;
         private Label Password;
         private TextBox UsernameText;

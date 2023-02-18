@@ -10,6 +10,8 @@ namespace Milimoe.FunGame.Desktop.Library.Component
 {
     public partial class ExitButton : Button
     {
+        public GeneralForm? RelativeForm { get; set; }
+
         public ExitButton()
         {
             InitializeComponent();
@@ -27,6 +29,8 @@ namespace Milimoe.FunGame.Desktop.Library.Component
             Size = new System.Drawing.Size(47, 47);
             TextAlign = System.Drawing.ContentAlignment.TopLeft;
             UseVisualStyleBackColor = false;
+
+            Click += ExitButton_Click;
         }
 
         public ExitButton(IContainer container)
@@ -47,6 +51,19 @@ namespace Milimoe.FunGame.Desktop.Library.Component
             Size = new System.Drawing.Size(47, 47);
             TextAlign = System.Drawing.ContentAlignment.TopLeft;
             UseVisualStyleBackColor = false;
+
+            Click += ExitButton_Click;
+        }
+
+        /// <summary>
+        /// 自带的关闭按钮，可以重写
+        /// 绑定RelativeForm才能生效
+        /// </summary>
+        /// <param name="sender">object?</param>
+        /// <param name="e">EventArgs</param>
+        protected virtual void ExitButton_Click(object? sender, EventArgs e)
+        {
+            RelativeForm?.Dispose();
         }
     }
 }

@@ -15,7 +15,7 @@ using Milimoe.FunGame.Core.Entity;
 
 namespace Milimoe.FunGame.Desktop.UI
 {
-    public partial class Main : Form
+    public partial class Main : GeneralForm
     {
 
         #region 变量定义
@@ -25,8 +25,6 @@ namespace Milimoe.FunGame.Desktop.UI
          */
         public int MaxRetryTimes { get; } = SocketSet.MaxRetryTimes; // 最大重试连接次数
         public int CurrentRetryTimes { get; set; } = -1; // 当前重试连接次数
-
-        private int loc_x, loc_y; // 窗口当前坐标
 
         /**
          * 定义全局对象
@@ -812,37 +810,6 @@ namespace Milimoe.FunGame.Desktop.UI
         }
 
         /// <summary>
-        /// 鼠标按下，开始移动主窗口
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Title_MouseDown(object sender, MouseEventArgs e)
-        {
-            //判断是否为鼠标左键
-            if (e.Button == MouseButtons.Left)
-            {
-                //获取鼠标左键按下时的位置
-                loc_x = e.Location.X;
-                loc_y = e.Location.Y;
-            }
-        }
-
-        /// <summary>
-        /// 鼠标移动，正在移动主窗口
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Title_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left)
-            {
-                //计算鼠标移动距离
-                Left += e.Location.X - loc_x;
-                Top += e.Location.Y - loc_y;
-            }
-        }
-
-        /// <summary>
         /// 开始匹配
         /// </summary>
         /// <param name="sender"></param>
@@ -1163,16 +1130,6 @@ namespace Milimoe.FunGame.Desktop.UI
                 SwitchTalkMessage(s);
                 PresetText.SelectedIndex = 0;
             }
-        }
-
-        /// <summary>
-        /// 最小化窗口
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void MinForm_Click(object sender, EventArgs e)
-        {
-            WindowState = FormWindowState.Minimized;
         }
 
         #endregion

@@ -10,6 +10,8 @@ namespace Milimoe.FunGame.Desktop.Library.Component
 {
     public partial class MinButton : Button
     {
+        public GeneralForm? RelativeForm { get; set; }
+
         public MinButton()
         {
             InitializeComponent();
@@ -27,6 +29,8 @@ namespace Milimoe.FunGame.Desktop.Library.Component
             Size = new System.Drawing.Size(47, 47);
             TextAlign = System.Drawing.ContentAlignment.TopLeft;
             UseVisualStyleBackColor = false;
+
+            Click += MinForm_Click;
         }
 
         public MinButton(IContainer container)
@@ -47,6 +51,22 @@ namespace Milimoe.FunGame.Desktop.Library.Component
             Size = new System.Drawing.Size(47, 47);
             TextAlign = System.Drawing.ContentAlignment.TopLeft;
             UseVisualStyleBackColor = false;
+
+            Click += MinForm_Click;
+        }
+
+        /// <summary>
+        /// 自带的最小化窗口
+        /// 绑定RelativeForm才能生效
+        /// </summary>
+        /// <param name="sender">object?</param>
+        /// <param name="e">EventArgs</param>
+        private void MinForm_Click(object? sender, EventArgs e)
+        {
+            if (RelativeForm != null)
+            {
+                RelativeForm.WindowState = FormWindowState.Minimized;
+            }
         }
     }
 }

@@ -28,13 +28,27 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.Title = new System.Windows.Forms.Label();
             this.SuspendLayout();
+            // 
+            // Title
+            // 
+            this.Title.Font = new System.Drawing.Font("LanaPixel", 26.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.Title.Location = new System.Drawing.Point(3, 3);
+            this.Title.Name = "Title";
+            this.Title.Size = new System.Drawing.Size(387, 47);
+            this.Title.TabIndex = 9;
+            this.Title.Text = "Please Override";
+            this.Title.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.Title.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Title_MouseDown);
+            this.Title.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Title_MouseMove);
             // 
             // GeneralForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(536, 284);
+            this.Controls.Add(this.Title);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "GeneralForm";
             this.Text = "GeneralForm";
@@ -43,5 +57,7 @@
         }
 
         #endregion
+
+        protected Label Title;
     }
 }

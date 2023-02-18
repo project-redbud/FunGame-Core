@@ -24,7 +24,7 @@ namespace Milimoe.FunGame.Desktop.Library.Component
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected void Title_MouseDown(object sender, MouseEventArgs e)
+        protected virtual void Title_MouseDown(object sender, MouseEventArgs e)
         {
             //判断是否为鼠标左键
             if (e.Button == MouseButtons.Left)
@@ -40,7 +40,7 @@ namespace Milimoe.FunGame.Desktop.Library.Component
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected void Title_MouseMove(object sender, MouseEventArgs e)
+        protected virtual void Title_MouseMove(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
             {

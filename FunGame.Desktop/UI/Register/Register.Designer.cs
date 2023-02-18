@@ -241,7 +241,6 @@
 
         private Library.Component.ExitButton ExitButton;
         private Library.Component.MinButton MinButton;
-        private Label Title;
         private Label Username;
         private Label Password;
         private Label CheckPassword;

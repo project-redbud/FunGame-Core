@@ -35,7 +35,7 @@ namespace Milimoe.FunGame.Desktop.UI
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
             this.Exit = new FunGame.Desktop.Library.Component.ExitButton(this.components);
             this.Title = new System.Windows.Forms.Label();
-            this.MinForm = new System.Windows.Forms.Button();
+            this.MinForm = new Library.Component.MinButton();
             this.Connection = new System.Windows.Forms.Label();
             this.Light = new System.Windows.Forms.Label();
             this.SendTalkText = new System.Windows.Forms.Button();
@@ -125,7 +125,7 @@ namespace Milimoe.FunGame.Desktop.UI
             this.MinForm.TabIndex = 14;
             this.MinForm.TextAlign = System.Drawing.ContentAlignment.TopLeft;
             this.MinForm.UseVisualStyleBackColor = false;
-            this.MinForm.Click += new System.EventHandler(this.MinForm_Click);
+            this.MinForm.RelativeForm = this;
             // 
             // Connection
             // 
@@ -607,8 +607,7 @@ namespace Milimoe.FunGame.Desktop.UI
         #endregion
 
         private ExitButton Exit;
-        private Label Title;
-        private Button MinForm;
+        private MinButton MinForm;
         private Label Connection;
         private Label Light;
         private Button StartMatch;
