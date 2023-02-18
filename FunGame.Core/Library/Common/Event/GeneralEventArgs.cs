@@ -11,7 +11,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Event
         public string EventMsg { get; set; } = "";
         public object[]? Parameters { get; set; } = null;
 
-        public GeneralEventArgs(string EventMsg, object[]? Parameters = null)
+        public GeneralEventArgs(string EventMsg = "", object[]? Parameters = null)
         {
             this.EventMsg = EventMsg;
             this.Parameters = Parameters;

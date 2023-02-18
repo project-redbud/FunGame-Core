@@ -12,6 +12,7 @@ using Milimoe.FunGame.Desktop.Library.Component;
 using Milimoe.FunGame.Desktop.Library.Interface;
 using Milimoe.FunGame.Desktop.Model;
 using Milimoe.FunGame.Desktop.UI;
+using Milimoe.FunGame.Core.Interface;
 
 namespace Milimoe.FunGame.Desktop.Controller
 {

@@ -20,6 +20,14 @@ namespace Milimoe.FunGame.Desktop.Library.Component
         }
 
         /// <summary>
+        /// 绑定事件，子类需要重写
+        /// </summary>
+        protected virtual void BindEvent()
+        {
+
+        }
+
+        /// <summary>
         /// 鼠标按下，开始移动主窗口
         /// </summary>
         /// <param name="sender"></param>
