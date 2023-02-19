@@ -1,291 +1,176 @@
 ﻿using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Milimoe.FunGame.Core.Interface
 {
-    public interface IEvent
+    /// <summary>
+    /// 插件需要实现什么事件就继承什么接口
+    /// </summary>
+    public interface IConnectEvent
     {
-        public delegate EventResult BeforeEvent(object sender, GeneralEventArgs e);
-        public delegate EventResult AfterEvent(object sender, GeneralEventArgs e);
-        public delegate EventResult SucceedEvent(object sender, GeneralEventArgs e);
-        public delegate EventResult FailedEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeConnectEvent(object sender, GeneralEventArgs e);
+        public EventResult AfterConnectEvent(object sender, GeneralEventArgs e);
+        public EventResult SucceedConnectEvent(object sender, GeneralEventArgs e);
+        public EventResult FailedConnectEvent(object sender, GeneralEventArgs e);
     }
 
-    public interface IConnectEvent : IEvent
+    public interface IDisconnectEvent
     {
-        public event BeforeEvent? BeforeConnectEvent;
-        public event AfterEvent? AfterConnectEvent;
-        public event SucceedEvent? SucceedConnectEvent;
-        public event FailedEvent? FailedConnectEvent;
-
-        public EventResult OnBeforeConnectEvent(object sender, GeneralEventArgs e);
-        public EventResult OnAfterConnectEvent(object sender, GeneralEventArgs e);
-        public EventResult OnSucceedConnectEvent(object sender, GeneralEventArgs e);
-        public EventResult OnFailedConnectEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeDisconnectEvent(object sender, GeneralEventArgs e);
+        public EventResult AfterDisconnectEvent(object sender, GeneralEventArgs e);
+        public EventResult SucceedDisconnectEvent(object sender, GeneralEventArgs e);
+        public EventResult FailedDisconnectEvent(object sender, GeneralEventArgs e);
     }
 
-    public interface IDisconnectEvent : IEvent
+    public interface ILoginEvent
     {
-        public event BeforeEvent? BeforeDisconnectEvent;
-        public event AfterEvent? AfterDisconnectEvent;
-        public event SucceedEvent? SucceedDisconnectEvent;
-        public event FailedEvent? FailedDisconnectEvent;
-
-        public EventResult OnBeforeDisconnectEvent(object sender, GeneralEventArgs e);
-        public EventResult OnAfterDisconnectEvent(object sender, GeneralEventArgs e);
-        public EventResult OnSucceedDisconnectEvent(object sender, GeneralEventArgs e);
-        public EventResult OnFailedDisconnectEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeLoginEvent(object sender, GeneralEventArgs e);
+        public EventResult AfterLoginEvent(object sender, GeneralEventArgs e);
+        public EventResult SucceedLoginEvent(object sender, GeneralEventArgs e);
+        public EventResult FailedLoginEvent(object sender, GeneralEventArgs e);
     }
 
-    public interface ILoginEvent : IEvent
+    public interface ILogoutEvent
     {
-        public event BeforeEvent? BeforeLoginEvent;
-        public event AfterEvent? AfterLoginEvent;
-        public event SucceedEvent? SucceedLoginEvent;
-        public event FailedEvent? FailedLoginEvent;
-
-        public EventResult OnBeforeLoginEvent(object sender, GeneralEventArgs e);
-        public EventResult OnAfterLoginEvent(object sender, GeneralEventArgs e);
-        public EventResult OnSucceedLoginEvent(object sender, GeneralEventArgs e);
-        public EventResult OnFailedLoginEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeLogoutEvent(object sender, GeneralEventArgs e);
+        public EventResult AfterLogoutEvent(object sender, GeneralEventArgs e);
+        public EventResult SucceedLogoutEvent(object sender, GeneralEventArgs e);
+        public EventResult FailedLogoutEvent(object sender, GeneralEventArgs e);
     }
 
-    public interface ILogoutEvent : IEvent
+    public interface IRegEvent
     {
-        public event BeforeEvent? BeforeLogoutEvent;
-        public event AfterEvent? AfterLogoutEvent;
-        public event SucceedEvent? SucceedLogoutEvent;
-        public event FailedEvent? FailedLogoutEvent;
-
-        public EventResult OnBeforeLogoutEvent(object sender, GeneralEventArgs e);
-        public EventResult OnAfterLogoutEvent(object sender, GeneralEventArgs e);
-        public EventResult OnSucceedLogoutEvent(object sender, GeneralEventArgs e);
-        public EventResult OnFailedLogoutEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeRegEvent(object sender, GeneralEventArgs e);
+        public EventResult AfterRegEvent(object sender, GeneralEventArgs e);
+        public EventResult SucceedRegEvent(object sender, GeneralEventArgs e);
+        public EventResult FailedRegEvent(object sender, GeneralEventArgs e);
     }
 
-    public interface IRegEvent : IEvent
+    public interface IIntoRoomEvent
     {
-        public event BeforeEvent? BeforeRegEvent;
-        public event AfterEvent? AfterRegEvent;
-        public event SucceedEvent? SucceedRegEvent;
-        public event FailedEvent? FailedRegEvent;
-
-        public EventResult OnBeforeRegEvent(object sender, GeneralEventArgs e);
-        public EventResult OnAfterRegEvent(object sender, GeneralEventArgs e);
-        public EventResult OnSucceedRegEvent(object sender, GeneralEventArgs e);
-        public EventResult OnFailedRegEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeIntoRoomEvent(object sender, GeneralEventArgs e);
+        public EventResult AfterIntoRoomEvent(object sender, GeneralEventArgs e);
+        public EventResult SucceedIntoRoomEvent(object sender, GeneralEventArgs e);
+        public EventResult FailedIntoRoomEvent(object sender, GeneralEventArgs e);
     }
 
-    public interface IIntoRoomEvent : IEvent
+    public interface ISendTalkEvent
     {
-        public event BeforeEvent? BeforeIntoRoomEvent;
-        public event AfterEvent? AfterIntoRoomEvent;
-        public event SucceedEvent? SucceedIntoRoomEvent;
-        public event FailedEvent? FailedIntoRoomEvent;
-
-        public EventResult OnBeforeIntoRoomEvent(object sender, GeneralEventArgs e);
-        public EventResult OnAfterIntoRoomEvent(object sender, GeneralEventArgs e);
-        public EventResult OnSucceedIntoRoomEvent(object sender, GeneralEventArgs e);
-        public EventResult OnFailedIntoRoomEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeSendTalkEvent(object sender, GeneralEventArgs e);
+        public EventResult AfterSendTalkEvent(object sender, GeneralEventArgs e);
+        public EventResult SucceedSendTalkEvent(object sender, GeneralEventArgs e);
+        public EventResult FailedSendTalkEvent(object sender, GeneralEventArgs e);
     }
 
-    public interface ISendTalkEvent : IEvent
+    public interface ICreateRoomEvent
     {
-        public event BeforeEvent? BeforeSendTalkEvent;
-        public event AfterEvent? AfterSendTalkEvent;
-        public event SucceedEvent? SucceedSendTalkEvent;
-        public event FailedEvent? FailedSendTalkEvent;
-
-        public EventResult OnBeforeSendTalkEvent(object sender, GeneralEventArgs e);
-        public EventResult OnAfterSendTalkEvent(object sender, GeneralEventArgs e);
-        public EventResult OnSucceedSendTalkEvent(object sender, GeneralEventArgs e);
-        public EventResult OnFailedSendTalkEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeCreateRoomEvent(object sender, GeneralEventArgs e);
+        public EventResult AfterCreateRoomEvent(object sender, GeneralEventArgs e);
+        public EventResult SucceedCreateRoomEvent(object sender, GeneralEventArgs e);
+        public EventResult FailedCreateRoomEvent(object sender, GeneralEventArgs e);
     }
 
-    public interface ICreateRoomEvent : IEvent
+    public interface IQuitRoomEvent
     {
-        public event BeforeEvent? BeforeCreateRoomEvent;
-        public event AfterEvent? AfterCreateRoomEvent;
-        public event SucceedEvent? SucceedCreateRoomEvent;
-        public event FailedEvent? FailedCreateRoomEvent;
-
-        public EventResult OnBeforeCreateRoomEvent(object sender, GeneralEventArgs e);
-        public EventResult OnAfterCreateRoomEvent(object sender, GeneralEventArgs e);
-        public EventResult OnSucceedCreateRoomEvent(object sender, GeneralEventArgs e);
-        public EventResult OnFailedCreateRoomEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeQuitRoomEvent(object sender, GeneralEventArgs e);
+        public EventResult AfterQuitRoomEvent(object sender, GeneralEventArgs e);
+        public EventResult SucceedQuitRoomEvent(object sender, GeneralEventArgs e);
+        public EventResult FailedQuitRoomEvent(object sender, GeneralEventArgs e);
     }
 
-    public interface IQuitRoomEvent : IEvent
+    public interface IChangeRoomSettingEvent
     {
-        public event BeforeEvent? BeforeQuitRoomEvent;
-        public event AfterEvent? AfterQuitRoomEvent;
-        public event SucceedEvent? SucceedQuitRoomEvent;
-        public event FailedEvent? FailedQuitRoomEvent;
-
-        public EventResult OnBeforeQuitRoomEvent(object sender, GeneralEventArgs e);
-        public EventResult OnAfterQuitRoomEvent(object sender, GeneralEventArgs e);
-        public EventResult OnSucceedQuitRoomEvent(object sender, GeneralEventArgs e);
-        public EventResult OnFailedQuitRoomEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeChangeRoomSettingEvent(object sender, GeneralEventArgs e);
+        public EventResult AfterChangeRoomSettingEvent(object sender, GeneralEventArgs e);
+        public EventResult SucceedChangeRoomSettingEvent(object sender, GeneralEventArgs e);
+        public EventResult FailedChangeRoomSettingEvent(object sender, GeneralEventArgs e);
     }
 
-    public interface IChangeRoomSettingEvent : IEvent
+    public interface IStartMatchEvent
     {
-        public event BeforeEvent? BeforeChangeRoomSettingEvent;
-        public event AfterEvent? AfterChangeRoomSettingEvent;
-        public event SucceedEvent? SucceedChangeRoomSettingEvent;
-        public event FailedEvent? FailedChangeRoomSettingEvent;
-
-        public EventResult OnBeforeChangeRoomSettingEvent(object sender, GeneralEventArgs e);
-        public EventResult OnAfterChangeRoomSettingEvent(object sender, GeneralEventArgs e);
-        public EventResult OnSucceedChangeRoomSettingEvent(object sender, GeneralEventArgs e);
-        public EventResult OnFailedChangeRoomSettingEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeStartMatchEvent(object sender, GeneralEventArgs e);
+        public EventResult AfterStartMatchEvent(object sender, GeneralEventArgs e);
+        public EventResult SucceedStartMatchEvent(object sender, GeneralEventArgs e);
+        public EventResult FailedStartMatchEvent(object sender, GeneralEventArgs e);
     }
 
-    public interface IStartMatchEvent : IEvent
+    public interface IStartGameEvent
     {
-        public event BeforeEvent? BeforeStartMatchEvent;
-        public event AfterEvent? AfterStartMatchEvent;
-        public event SucceedEvent? SucceedStartMatchEvent;
-        public event FailedEvent? FailedStartMatchEvent;
-
-        public EventResult OnBeforeStartMatchEvent(object sender, GeneralEventArgs e);
-        public EventResult OnAfterStartMatchEvent(object sender, GeneralEventArgs e);
-        public EventResult OnSucceedStartMatchEvent(object sender, GeneralEventArgs e);
-        public EventResult OnFailedStartMatchEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeStartGameEvent(object sender, GeneralEventArgs e);
+        public EventResult AfterStartGameEvent(object sender, GeneralEventArgs e);
+        public EventResult SucceedStartGameEvent(object sender, GeneralEventArgs e);
+        public EventResult FailedStartGameEvent(object sender, GeneralEventArgs e);
     }
 
-    public interface IStartGameEvent : IEvent
+    public interface IChangeProfileEvent
     {
-        public event BeforeEvent? BeforeStartGameEvent;
-        public event AfterEvent? AfterStartGameEvent;
-        public event SucceedEvent? SucceedStartGameEvent;
-        public event FailedEvent? FailedStartGameEvent;
-
-        public EventResult OnBeforeStartGameEvent(object sender, GeneralEventArgs e);
-        public EventResult OnAfterStartGameEvent(object sender, GeneralEventArgs e);
-        public EventResult OnSucceedStartGameEvent(object sender, GeneralEventArgs e);
-        public EventResult OnFailedStartGameEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeChangeProfileEvent(object sender, GeneralEventArgs e);
+        public EventResult AfterChangeProfileEvent(object sender, GeneralEventArgs e);
+        public EventResult SucceedChangeProfileEvent(object sender, GeneralEventArgs e);
+        public EventResult FailedChangeProfileEvent(object sender, GeneralEventArgs e);
     }
 
-    public interface IChangeProfileEvent : IEvent
+    public interface IChangeAccountSettingEvent
     {
-        public event BeforeEvent? BeforeChangeProfileEvent;
-        public event AfterEvent? AfterChangeProfileEvent;
-        public event SucceedEvent? SucceedChangeProfileEvent;
-        public event FailedEvent? FailedChangeProfileEvent;
-
-        public EventResult OnBeforeChangeProfileEvent(object sender, GeneralEventArgs e);
-        public EventResult OnAfterChangeProfileEvent(object sender, GeneralEventArgs e);
-        public EventResult OnSucceedChangeProfileEvent(object sender, GeneralEventArgs e);
-        public EventResult OnFailedChangeProfileEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeChangeAccountSettingEvent(object sender, GeneralEventArgs e);
+        public EventResult AfterChangeAccountSettingEvent(object sender, GeneralEventArgs e);
+        public EventResult SucceedChangeAccountSettingEvent(object sender, GeneralEventArgs e);
+        public EventResult FailedChangeAccountSettingEvent(object sender, GeneralEventArgs e);
     }
 
-    public interface IChangeAccountSettingEvent : IEvent
+    public interface IOpenInventoryEvent
     {
-        public event BeforeEvent? BeforeChangeAccountSettingEvent;
-        public event AfterEvent? AfterChangeAccountSettingEvent;
-        public event SucceedEvent? SucceedChangeAccountSettingEvent;
-        public event FailedEvent? FailedChangeAccountSettingEvent;
-
-        public EventResult OnBeforeChangeAccountSettingEvent(object sender, GeneralEventArgs e);
-        public EventResult OnAfterChangeAccountSettingEvent(object sender, GeneralEventArgs e);
-        public EventResult OnSucceedChangeAccountSettingEvent(object sender, GeneralEventArgs e);
-        public EventResult OnFailedChangeAccountSettingEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeOpenInventoryEvent(object sender, GeneralEventArgs e);
+        public EventResult AfterOpenInventoryEvent(object sender, GeneralEventArgs e);
+        public EventResult SucceedOpenInventoryEvent(object sender, GeneralEventArgs e);
+        public EventResult FailedOpenInventoryEvent(object sender, GeneralEventArgs e);
     }
 
-    public interface IOpenInventoryEvent : IEvent
+    public interface ISignInEvent
     {
-        public event BeforeEvent? BeforeOpenInventoryEvent;
-        public event AfterEvent? AfterOpenInventoryEvent;
-        public event SucceedEvent? SucceedOpenInventoryEvent;
-        public event FailedEvent? FailedOpenInventoryEvent;
-
-        public EventResult OnBeforeOpenInventoryEvent(object sender, GeneralEventArgs e);
-        public EventResult OnAfterOpenInventoryEvent(object sender, GeneralEventArgs e);
-        public EventResult OnSucceedOpenInventoryEvent(object sender, GeneralEventArgs e);
-        public EventResult OnFailedOpenInventoryEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeSignInEvent(object sender, GeneralEventArgs e);
+        public EventResult AfterSignInEvent(object sender, GeneralEventArgs e);
+        public EventResult SucceedSignInEvent(object sender, GeneralEventArgs e);
+        public EventResult FailedSignInEvent(object sender, GeneralEventArgs e);
     }
 
-    public interface ISignInEvent : IEvent
+    public interface IOpenStoreEvent
     {
-        public event BeforeEvent? BeforeSignInEvent;
-        public event AfterEvent? AfterSignInEvent;
-        public event SucceedEvent? SucceedSignInEvent;
-        public event FailedEvent? FailedSignInEvent;
-
-        public EventResult OnBeforeSignInEvent(object sender, GeneralEventArgs e);
-        public EventResult OnAfterSignInEvent(object sender, GeneralEventArgs e);
-        public EventResult OnSucceedSignInEvent(object sender, GeneralEventArgs e);
-        public EventResult OnFailedSignInEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeOpenStoreEvent(object sender, GeneralEventArgs e);
+        public EventResult AfterOpenStoreEvent(object sender, GeneralEventArgs e);
+        public EventResult SucceedOpenStoreEvent(object sender, GeneralEventArgs e);
+        public EventResult FailedOpenStoreEvent(object sender, GeneralEventArgs e);
     }
 
-    public interface IOpenStoreEvent : IEvent
+    public interface IBuyItemEvent
     {
-        public event BeforeEvent? BeforeOpenStoreEvent;
-        public event AfterEvent? AfterOpenStoreEvent;
-        public event SucceedEvent? SucceedOpenStoreEvent;
-        public event FailedEvent? FailedOpenStoreEvent;
-
-        public EventResult OnBeforeOpenStoreEvent(object sender, GeneralEventArgs e);
-        public EventResult OnAfterOpenStoreEvent(object sender, GeneralEventArgs e);
-        public EventResult OnSucceedOpenStoreEvent(object sender, GeneralEventArgs e);
-        public EventResult OnFailedOpenStoreEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeBuyItemEvent(object sender, GeneralEventArgs e);
+        public EventResult AfterBuyItemEvent(object sender, GeneralEventArgs e);
+        public EventResult SucceedBuyItemEvent(object sender, GeneralEventArgs e);
+        public EventResult FailedBuyItemEvent(object sender, GeneralEventArgs e);
     }
 
-    public interface IBuyItemEvent : IEvent
+    public interface IShowRankingEvent
     {
-        public event BeforeEvent? BeforeBuyItemEvent;
-        public event AfterEvent? AfterBuyItemEvent;
-        public event SucceedEvent? SucceedBuyItemEvent;
-        public event FailedEvent? FailedBuyItemEvent;
-
-        public EventResult OnBeforeBuyItemEvent(object sender, GeneralEventArgs e);
-        public EventResult OnAfterBuyItemEvent(object sender, GeneralEventArgs e);
-        public EventResult OnSucceedBuyItemEvent(object sender, GeneralEventArgs e);
-        public EventResult OnFailedBuyItemEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeShowRankingEvent(object sender, GeneralEventArgs e);
+        public EventResult AfterShowRankingEvent(object sender, GeneralEventArgs e);
+        public EventResult SucceedShowRankingEvent(object sender, GeneralEventArgs e);
+        public EventResult FailedShowRankingEvent(object sender, GeneralEventArgs e);
     }
 
-    public interface IShowRankingEvent : IEvent
+    public interface IUseItemEvent
     {
-        public event BeforeEvent? BeforeShowRankingEvent;
-        public event AfterEvent? AfterShowRankingEvent;
-        public event SucceedEvent? SucceedShowRankingEvent;
-        public event FailedEvent? FailedShowRankingEvent;
-
-        public EventResult OnBeforeShowRankingEvent(object sender, GeneralEventArgs e);
-        public EventResult OnAfterShowRankingEvent(object sender, GeneralEventArgs e);
-        public EventResult OnSucceedShowRankingEvent(object sender, GeneralEventArgs e);
-        public EventResult OnFailedShowRankingEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeUseItemEvent(object sender, GeneralEventArgs e);
+        public EventResult AfterUseItemEvent(object sender, GeneralEventArgs e);
+        public EventResult SucceedUseItemEvent(object sender, GeneralEventArgs e);
+        public EventResult FailedUseItemEvent(object sender, GeneralEventArgs e);
     }
 
-    public interface IUseItemEvent : IEvent
+    public interface IEndGameEvent
     {
-        public event BeforeEvent? BeforeUseItemEvent;
-        public event AfterEvent? AfterUseItemEvent;
-        public event SucceedEvent? SucceedUseItemEvent;
-        public event FailedEvent? FailedUseItemEvent;
-
-        public EventResult OnBeforeUseItemEvent(object sender, GeneralEventArgs e);
-        public EventResult OnAfterUseItemEvent(object sender, GeneralEventArgs e);
-        public EventResult OnSucceedUseItemEvent(object sender, GeneralEventArgs e);
-        public EventResult OnFailedUseItemEvent(object sender, GeneralEventArgs e);
-    }
-
-    public interface IEndGameEvent : IEvent
-    {
-        public event BeforeEvent? BeforeEndGameEvent;
-        public event AfterEvent? AfterEndGameEvent;
-        public event SucceedEvent? SucceedEndGameEvent;
-        public event FailedEvent? FailedEndGameEvent;
-
-        public EventResult OnBeforeEndGameEvent(object sender, GeneralEventArgs e);
-        public EventResult OnAfterEndGameEvent(object sender, GeneralEventArgs e);
-        public EventResult OnSucceedEndGameEvent(object sender, GeneralEventArgs e);
-        public EventResult OnFailedEndGameEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeEndGameEvent(object sender, GeneralEventArgs e);
+        public EventResult AfterEndGameEvent(object sender, GeneralEventArgs e);
+        public EventResult SucceedEndGameEvent(object sender, GeneralEventArgs e);
+        public EventResult FailedEndGameEvent(object sender, GeneralEventArgs e);
     }
 }

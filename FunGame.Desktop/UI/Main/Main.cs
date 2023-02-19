@@ -1,23 +1,18 @@
-using System;
 using System.Diagnostics;
-using System.Net.Sockets;
-using System.Net;
-using System.Windows.Forms;
-using System.Net.NetworkInformation;
-using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface;
+using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Library.Exception;
+using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Library.Component;
-using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Desktop.Controller;
-using Milimoe.FunGame.Core.Library.Exception;
-using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Desktop.Library.Base;
-using Milimoe.FunGame.Core.Library.Common.Event;
 
 namespace Milimoe.FunGame.Desktop.UI
 {
-    public partial class Main : BaseMain
+    public partial class Main : BaseMain, IConnectEvent
     {
 
         #region 变量定义
@@ -81,10 +76,10 @@ namespace Milimoe.FunGame.Desktop.UI
         protected override void BindEvent()
         {
             base.BindEvent();
-            base.AfterConnectEvent += AfterConnectEvent;
-            base.BeforeConnectEvent += BeforeConnectEvent;
-            base.FailedConnectEvent += FailedConnectEvent;
-            base.SucceedConnectEvent += SucceedConnectEvent;
+            AfterConnectEventHandler += AfterConnectEvent;
+            BeforeConnectEventHandler += BeforeConnectEvent;
+            FailedConnectEventHandler += FailedConnectEvent;
+            SucceedConnectEventHandler += SucceedConnectEvent;
         }
 
         #endregion
@@ -1139,7 +1134,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        private new EventResult BeforeConnectEvent(object sender, GeneralEventArgs e)
+        public EventResult BeforeConnectEvent(object sender, GeneralEventArgs e)
         {
             UpdateUI("触发【Before Connect】事件");
             return EventResult.Success;
@@ -1151,7 +1146,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        private new EventResult AfterConnectEvent(object sender, GeneralEventArgs e)
+        public EventResult AfterConnectEvent(object sender, GeneralEventArgs e)
         {
             UpdateUI("触发【After Connect】事件");
             return EventResult.Success;
@@ -1163,7 +1158,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        private new EventResult FailedConnectEvent(object sender, GeneralEventArgs e)
+        public EventResult FailedConnectEvent(object sender, GeneralEventArgs e)
         {
             UpdateUI("触发【Failed Connect】事件");
             return EventResult.Success;
@@ -1175,7 +1170,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        private new EventResult SucceedConnectEvent(object sender, GeneralEventArgs e)
+        public EventResult SucceedConnectEvent(object sender, GeneralEventArgs e)
         {
             UpdateUI("触发【Succeed Connect】事件");
             if (MainController != null && Config.FunGame_isAutoLogin)
