@@ -16,6 +16,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Event
             this.EventMsg = EventMsg;
             this.Parameters = Parameters;
         }
+
+        public GeneralEventArgs(params object[]? Parameters)
+        {
+            this.Parameters = Parameters;
+        }
     }
 
     public class GeneralEvent<T>

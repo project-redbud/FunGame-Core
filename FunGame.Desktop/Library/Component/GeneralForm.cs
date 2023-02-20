@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Desktop.UI;
 
 namespace Milimoe.FunGame.Desktop.Library.Component
 {
@@ -56,6 +49,47 @@ namespace Milimoe.FunGame.Desktop.Library.Component
                 Left += e.Location.X - loc_x;
                 Top += e.Location.Y - loc_y;
             }
+        }
+
+        /// <summary>
+        /// 自定义窗体销毁方法
+        /// </summary>
+        protected virtual void FormClosedEvent(object? sender, FormClosedEventArgs e)
+        {
+            if (GetType() == typeof(ShowMessage))
+            {
+                return;
+            }
+            Singleton.Remove(this);
+            if (GetType() == typeof(Main))
+            {
+                RunTime.Main = null;
+            }
+            else if (GetType() == typeof(Login))
+            {
+                RunTime.Login = null;
+            }
+            else if (GetType() == typeof(Register))
+            {
+                RunTime.Register = null;
+            }
+            else if (GetType() == typeof(InventoryUI))
+            {
+                RunTime.Inventory = null;
+            }
+            else if (GetType() == typeof(StoreUI))
+            {
+                RunTime.Store = null;
+            }
+            else if (GetType() == typeof(RoomSetting))
+            {
+                RunTime.RoomSetting = null;
+            }
+            else if (GetType() == typeof(UserCenter))
+            {
+                RunTime.UserCenter = null;
+            }
+            base.Dispose();
         }
     }
 }

@@ -63,7 +63,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
             else
             {
-                SingletonTable[type] = null;
+                SingletonTable.Remove(type);
                 return true;
             }
         }

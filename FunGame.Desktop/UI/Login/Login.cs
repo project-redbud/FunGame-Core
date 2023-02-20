@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Desktop.Library.Component;
+using Milimoe.FunGame.Desktop.Utility;
 
 namespace Milimoe.FunGame.Desktop.UI
 {
@@ -16,7 +17,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="e"></param>
         private void RegButton_Click(object sender, EventArgs e)
         {
-            new Register().ShowDialog();
+            OpenForm.SingleForm(Core.Library.Constant.FormType.Register, Core.Library.Constant.OpenFormType.Dialog);
         }
     }
 }

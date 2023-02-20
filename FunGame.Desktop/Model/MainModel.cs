@@ -91,7 +91,7 @@ namespace Milimoe.FunGame.Desktop.Model
 
         public ConnectResult Connect()
         {
-            Main.OnBeforeConnectEvent(Main, new GeneralEventArgs());
+            Main.OnBeforeConnectEvent(new GeneralEventArgs());
             if (Constant.Server_Address == "" || Constant.Server_Port <= 0)
             {
                 ShowMessage.ErrorMessage("查找可用的服务器失败！");
@@ -133,8 +133,8 @@ namespace Milimoe.FunGame.Desktop.Model
                                     Main.GetMessage("连接服务器成功，请登录账号以体验FunGame。");
                                     Main.UpdateUI(MainControllerSet.Connected);
                                     StartReceiving();
-                                    Main.OnSucceedConnectEvent(Main, new GeneralEventArgs());
-                                    Main.OnAfterConnectEvent(Main, new GeneralEventArgs());
+                                    Main.OnSucceedConnectEvent(new GeneralEventArgs());
+                                    Main.OnAfterConnectEvent(new GeneralEventArgs());
                                 }
                             });
                             return ConnectResult.Success;
@@ -163,13 +163,13 @@ namespace Milimoe.FunGame.Desktop.Model
                         if (Config.FunGame_isAutoRetry) Connect(); // 再次判断是否开启自动重连
                     });
                     Main.GetMessage("连接服务器失败，5秒后自动尝试重连。");
-                    Main.OnFailedConnectEvent(Main, new GeneralEventArgs());
-                    Main.OnAfterConnectEvent(Main, new GeneralEventArgs());
+                    Main.OnFailedConnectEvent(new GeneralEventArgs());
+                    Main.OnAfterConnectEvent(new GeneralEventArgs());
                 }
                 else
                 {
-                    Main.OnFailedConnectEvent(Main, new GeneralEventArgs());
-                    Main.OnAfterConnectEvent(Main, new GeneralEventArgs());
+                    Main.OnFailedConnectEvent(new GeneralEventArgs());
+                    Main.OnAfterConnectEvent(new GeneralEventArgs());
                     return ConnectResult.ConnectFailed;
                 }
             }
@@ -275,25 +275,25 @@ namespace Milimoe.FunGame.Desktop.Model
                 switch (type)
                 {
                     case SocketMessageType.Connect:
-                        SocketHandle_Connect(objs);
+                        SocketHandler_Connect(objs);
                         break;
 
                     case SocketMessageType.GetNotice:
-                        SocketHandle_GetNotice(objs);
+                        SocketHandler_GetNotice(objs);
                         break;
 
                     case SocketMessageType.Login:
                         break;
 
                     case SocketMessageType.CheckLogin:
-                        SocketHandle_CheckLogin(objs);
+                        SocketHandler_CheckLogin(objs);
                         break;
 
                     case SocketMessageType.Logout:
                         break;
 
                     case SocketMessageType.Disconnect:
-                        SocketHandle_Disconnect(objs);
+                        SocketHandler_Disconnect(objs);
                         break;
 
                     case SocketMessageType.HeartBeat:
@@ -317,7 +317,7 @@ namespace Milimoe.FunGame.Desktop.Model
             return result;
         }
 
-        private void SocketHandle_Connect(object[] objs)
+        private void SocketHandler_Connect(object[] objs)
         {
             string msg = "";
             if (objs.Length > 0) msg = NetworkUtility.ConvertJsonObject<string>(objs[0])!;
@@ -333,12 +333,12 @@ namespace Milimoe.FunGame.Desktop.Model
             Main.UpdateUI(MainControllerSet.WaitLoginAndSetYellow);
         }
 
-        private void SocketHandle_GetNotice(object[] objs)
+        private void SocketHandler_GetNotice(object[] objs)
         {
             if (objs.Length > 0) Config.FunGame_Notice = NetworkUtility.ConvertJsonObject<string>(objs[0])!;
         }
 
-        private void SocketHandle_CheckLogin(object[] objs)
+        private void SocketHandler_CheckLogin(object[] objs)
         {
             string msg = "";
             // 返回的objs是该Login的User对象的各个属性
@@ -347,7 +347,7 @@ namespace Milimoe.FunGame.Desktop.Model
             Main.UpdateUI(MainControllerSet.SetUser, new object[] { Factory.New<User>(msg) });
         }
 
-        private void SocketHandle_Disconnect(object[] objs)
+        private void SocketHandler_Disconnect(object[] objs)
         {
             string msg = "";
             if (objs.Length > 0) msg = NetworkUtility.ConvertJsonObject<string>(objs[0])!;

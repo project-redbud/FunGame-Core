@@ -45,8 +45,8 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "GeneralForm";
             this.Text = "GeneralForm";
+            this.FormClosed += FormClosedEvent;
             this.ResumeLayout(false);
-
         }
 
         #endregion

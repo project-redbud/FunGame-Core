@@ -9,6 +9,7 @@ using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Library.Component;
 using Milimoe.FunGame.Desktop.Controller;
 using Milimoe.FunGame.Desktop.Library.Base;
+using Milimoe.FunGame.Desktop.Utility;
 
 namespace Milimoe.FunGame.Desktop.UI
 {
@@ -48,6 +49,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// </summary>
         public void Init()
         {
+            RunTime.Main = this;
             SetButtonEnableIfLogon(false, ClientState.WaitConnect);
             SetRoomid("-1"); // 房间号初始化
             ShowFunGameInfo(); // 显示FunGame信息
@@ -76,10 +78,10 @@ namespace Milimoe.FunGame.Desktop.UI
         protected override void BindEvent()
         {
             base.BindEvent();
-            AfterConnectEventHandler += AfterConnectEvent;
-            BeforeConnectEventHandler += BeforeConnectEvent;
-            FailedConnectEventHandler += FailedConnectEvent;
-            SucceedConnectEventHandler += SucceedConnectEvent;
+            AfterConnectEvent += AfterConnect;
+            BeforeConnectEvent += BeforeConnect;
+            FailedConnectEvent += FailedConnect;
+            SucceedConnectEvent += SucceedConnect;
         }
 
         #endregion
@@ -213,7 +215,7 @@ namespace Milimoe.FunGame.Desktop.UI
 
                             default:
                                 // 直接调用UpdateUI(string)为输出该string到控制台。
-                                // 和GetMessage(string)的效果不一样，输出格式为：HH:mm:ss >> string。
+                                // 相当于调用GetMessage(string)
                                 WritelnSystemInfo(updatetype);
                                 break;
                         }
@@ -948,7 +950,7 @@ namespace Milimoe.FunGame.Desktop.UI
         private void Login_Click(object sender, EventArgs e)
         {
             if (MainController != null && Config.FunGame_isConnected)
-                new Login().ShowDialog();
+                OpenForm.SingleForm(FormType.Login, OpenFormType.Dialog);
             else
                 ShowMessage.WarningMessage("请先连接服务器！");
         }
@@ -1107,7 +1109,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="e"></param>
         private void Copyright_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            // Copyright 2022 mili.cyou
+            // Copyright 2023 mili.cyou
             Process.Start(new ProcessStartInfo("https://mili.cyou/fungame") { UseShellExecute = true });
         }
 
@@ -1134,9 +1136,8 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        public EventResult BeforeConnectEvent(object sender, GeneralEventArgs e)
+        public EventResult BeforeConnect(object sender, GeneralEventArgs e)
         {
-            UpdateUI("触发【Before Connect】事件");
             return EventResult.Success;
         }
 
@@ -1146,9 +1147,8 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        public EventResult AfterConnectEvent(object sender, GeneralEventArgs e)
+        public EventResult AfterConnect(object sender, GeneralEventArgs e)
         {
-            UpdateUI("触发【After Connect】事件");
             return EventResult.Success;
         }
 
@@ -1158,9 +1158,8 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        public EventResult FailedConnectEvent(object sender, GeneralEventArgs e)
+        public EventResult FailedConnect(object sender, GeneralEventArgs e)
         {
-            UpdateUI("触发【Failed Connect】事件");
             return EventResult.Success;
         }
 
@@ -1170,13 +1169,12 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        public EventResult SucceedConnectEvent(object sender, GeneralEventArgs e)
+        public EventResult SucceedConnect(object sender, GeneralEventArgs e)
         {
-            UpdateUI("触发【Succeed Connect】事件");
             if (MainController != null && Config.FunGame_isAutoLogin)
             {
                 // 自动登录 [TODO]
-
+                
             }
             return EventResult.Success;
         }
