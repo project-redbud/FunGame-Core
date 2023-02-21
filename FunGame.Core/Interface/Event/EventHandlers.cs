@@ -16,10 +16,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface IConnectEventHandler : IEventHandler
     {
-        public event BeforeEventHandler? BeforeConnectEvent;
-        public event AfterEventHandler? AfterConnectEvent;
-        public event SucceedEventHandler? SucceedConnectEvent;
-        public event FailedEventHandler? FailedConnectEvent;
+        public event BeforeEventHandler? BeforeConnect;
+        public event AfterEventHandler? AfterConnect;
+        public event SucceedEventHandler? SucceedConnect;
+        public event FailedEventHandler? FailedConnect;
 
         public EventResult OnBeforeConnectEvent(GeneralEventArgs e);
         public EventResult OnAfterConnectEvent(GeneralEventArgs e);
@@ -29,10 +29,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface IDisconnectEventHandler : IEventHandler
     {
-        public event BeforeEventHandler? BeforeDisconnectEvent;
-        public event AfterEventHandler? AfterDisconnectEvent;
-        public event SucceedEventHandler? SucceedDisconnectEvent;
-        public event FailedEventHandler? FailedDisconnectEvent;
+        public event BeforeEventHandler? BeforeDisconnect;
+        public event AfterEventHandler? AfterDisconnect;
+        public event SucceedEventHandler? SucceedDisconnect;
+        public event FailedEventHandler? FailedDisconnect;
 
         public EventResult OnBeforeDisconnectEvent(GeneralEventArgs e);
         public EventResult OnAfterDisconnectEvent(GeneralEventArgs e);
@@ -42,10 +42,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface ILoginEventHandler : IEventHandler
     {
-        public event BeforeEventHandler? BeforeLoginEvent;
-        public event AfterEventHandler? AfterLoginEvent;
-        public event SucceedEventHandler? SucceedLoginEvent;
-        public event FailedEventHandler? FailedLoginEvent;
+        public event BeforeEventHandler? BeforeLogin;
+        public event AfterEventHandler? AfterLogin;
+        public event SucceedEventHandler? SucceedLogin;
+        public event FailedEventHandler? FailedLogin;
 
         public EventResult OnBeforeLoginEvent(GeneralEventArgs e);
         public EventResult OnAfterLoginEvent(GeneralEventArgs e);
@@ -55,10 +55,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface ILogoutEventHandler : IEventHandler
     {
-        public event BeforeEventHandler? BeforeLogoutEvent;
-        public event AfterEventHandler? AfterLogoutEvent;
-        public event SucceedEventHandler? SucceedLogoutEvent;
-        public event FailedEventHandler? FailedLogoutEvent;
+        public event BeforeEventHandler? BeforeLogout;
+        public event AfterEventHandler? AfterLogout;
+        public event SucceedEventHandler? SucceedLogout;
+        public event FailedEventHandler? FailedLogout;
 
         public EventResult OnBeforeLogoutEvent(GeneralEventArgs e);
         public EventResult OnAfterLogoutEvent(GeneralEventArgs e);
@@ -68,10 +68,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface IRegEventHandler : IEventHandler
     {
-        public event BeforeEventHandler? BeforeRegEvent;
-        public event AfterEventHandler? AfterRegEvent;
-        public event SucceedEventHandler? SucceedRegEvent;
-        public event FailedEventHandler? FailedRegEvent;
+        public event BeforeEventHandler? BeforeReg;
+        public event AfterEventHandler? AfterReg;
+        public event SucceedEventHandler? SucceedReg;
+        public event FailedEventHandler? FailedReg;
 
         public EventResult OnBeforeRegEvent(GeneralEventArgs e);
         public EventResult OnAfterRegEvent(GeneralEventArgs e);
@@ -81,10 +81,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface IIntoRoomEventHandler : IEventHandler
     {
-        public event BeforeEventHandler? BeforeIntoRoomEvent;
-        public event AfterEventHandler? AfterIntoRoomEvent;
-        public event SucceedEventHandler? SucceedIntoRoomEvent;
-        public event FailedEventHandler? FailedIntoRoomEvent;
+        public event BeforeEventHandler? BeforeIntoRoom;
+        public event AfterEventHandler? AfterIntoRoom;
+        public event SucceedEventHandler? SucceedIntoRoom;
+        public event FailedEventHandler? FailedIntoRoom;
 
         public EventResult OnBeforeIntoRoomEvent(GeneralEventArgs e);
         public EventResult OnAfterIntoRoomEvent(GeneralEventArgs e);
@@ -94,10 +94,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface ISendTalkEventHandler : IEventHandler
     {
-        public event BeforeEventHandler? BeforeSendTalkEvent;
-        public event AfterEventHandler? AfterSendTalkEvent;
-        public event SucceedEventHandler? SucceedSendTalkEvent;
-        public event FailedEventHandler? FailedSendTalkEvent;
+        public event BeforeEventHandler? BeforeSendTalk;
+        public event AfterEventHandler? AfterSendTalk;
+        public event SucceedEventHandler? SucceedSendTalk;
+        public event FailedEventHandler? FailedSendTalk;
 
         public EventResult OnBeforeSendTalkEvent(GeneralEventArgs e);
         public EventResult OnAfterSendTalkEvent(GeneralEventArgs e);
@@ -107,10 +107,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface ICreateRoomEventHandler : IEventHandler
     {
-        public event BeforeEventHandler? BeforeCreateRoomEvent;
-        public event AfterEventHandler? AfterCreateRoomEvent;
-        public event SucceedEventHandler? SucceedCreateRoomEvent;
-        public event FailedEventHandler? FailedCreateRoomEvent;
+        public event BeforeEventHandler? BeforeCreateRoom;
+        public event AfterEventHandler? AfterCreateRoom;
+        public event SucceedEventHandler? SucceedCreateRoom;
+        public event FailedEventHandler? FailedCreateRoom;
 
         public EventResult OnBeforeCreateRoomEvent(GeneralEventArgs e);
         public EventResult OnAfterCreateRoomEvent(GeneralEventArgs e);
@@ -120,10 +120,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface IQuitRoomEventHandler : IEventHandler
     {
-        public event BeforeEventHandler? BeforeQuitRoomEvent;
-        public event AfterEventHandler? AfterQuitRoomEvent;
-        public event SucceedEventHandler? SucceedQuitRoomEvent;
-        public event FailedEventHandler? FailedQuitRoomEvent;
+        public event BeforeEventHandler? BeforeQuitRoom;
+        public event AfterEventHandler? AfterQuitRoom;
+        public event SucceedEventHandler? SucceedQuitRoom;
+        public event FailedEventHandler? FailedQuitRoom;
 
         public EventResult OnBeforeQuitRoomEvent(GeneralEventArgs e);
         public EventResult OnAfterQuitRoomEvent(GeneralEventArgs e);
@@ -133,10 +133,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface IChangeRoomSettingEventHandler : IEventHandler
     {
-        public event BeforeEventHandler? BeforeChangeRoomSettingEvent;
-        public event AfterEventHandler? AfterChangeRoomSettingEvent;
-        public event SucceedEventHandler? SucceedChangeRoomSettingEvent;
-        public event FailedEventHandler? FailedChangeRoomSettingEvent;
+        public event BeforeEventHandler? BeforeChangeRoomSetting;
+        public event AfterEventHandler? AfterChangeRoomSetting;
+        public event SucceedEventHandler? SucceedChangeRoomSetting;
+        public event FailedEventHandler? FailedChangeRoomSetting;
 
         public EventResult OnBeforeChangeRoomSettingEvent(GeneralEventArgs e);
         public EventResult OnAfterChangeRoomSettingEvent(GeneralEventArgs e);
@@ -146,10 +146,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface IStartMatchEventHandler : IEventHandler
     {
-        public event BeforeEventHandler? BeforeStartMatchEvent;
-        public event AfterEventHandler? AfterStartMatchEvent;
-        public event SucceedEventHandler? SucceedStartMatchEvent;
-        public event FailedEventHandler? FailedStartMatchEvent;
+        public event BeforeEventHandler? BeforeStartMatch;
+        public event AfterEventHandler? AfterStartMatch;
+        public event SucceedEventHandler? SucceedStartMatch;
+        public event FailedEventHandler? FailedStartMatch;
 
         public EventResult OnBeforeStartMatchEvent(GeneralEventArgs e);
         public EventResult OnAfterStartMatchEvent(GeneralEventArgs e);
@@ -159,10 +159,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface IStartGameEventHandler : IEventHandler
     {
-        public event BeforeEventHandler? BeforeStartGameEvent;
-        public event AfterEventHandler? AfterStartGameEvent;
-        public event SucceedEventHandler? SucceedStartGameEvent;
-        public event FailedEventHandler? FailedStartGameEvent;
+        public event BeforeEventHandler? BeforeStartGame;
+        public event AfterEventHandler? AfterStartGame;
+        public event SucceedEventHandler? SucceedStartGame;
+        public event FailedEventHandler? FailedStartGame;
 
         public EventResult OnBeforeStartGameEvent(GeneralEventArgs e);
         public EventResult OnAfterStartGameEvent(GeneralEventArgs e);
@@ -172,10 +172,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface IChangeProfileEventHandler : IEventHandler
     {
-        public event BeforeEventHandler? BeforeChangeProfileEvent;
-        public event AfterEventHandler? AfterChangeProfileEvent;
-        public event SucceedEventHandler? SucceedChangeProfileEvent;
-        public event FailedEventHandler? FailedChangeProfileEvent;
+        public event BeforeEventHandler? BeforeChangeProfile;
+        public event AfterEventHandler? AfterChangeProfile;
+        public event SucceedEventHandler? SucceedChangeProfile;
+        public event FailedEventHandler? FailedChangeProfile;
 
         public EventResult OnBeforeChangeProfileEvent(GeneralEventArgs e);
         public EventResult OnAfterChangeProfileEvent(GeneralEventArgs e);
@@ -185,10 +185,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface IChangeAccountSettingEventHandler : IEventHandler
     {
-        public event BeforeEventHandler? BeforeChangeAccountSettingEvent;
-        public event AfterEventHandler? AfterChangeAccountSettingEvent;
-        public event SucceedEventHandler? SucceedChangeAccountSettingEvent;
-        public event FailedEventHandler? FailedChangeAccountSettingEvent;
+        public event BeforeEventHandler? BeforeChangeAccountSetting;
+        public event AfterEventHandler? AfterChangeAccountSetting;
+        public event SucceedEventHandler? SucceedChangeAccountSetting;
+        public event FailedEventHandler? FailedChangeAccountSetting;
 
         public EventResult OnBeforeChangeAccountSettingEvent(GeneralEventArgs e);
         public EventResult OnAfterChangeAccountSettingEvent(GeneralEventArgs e);
@@ -198,10 +198,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface IOpenInventoryEventHandler : IEventHandler
     {
-        public event BeforeEventHandler? BeforeOpenInventoryEvent;
-        public event AfterEventHandler? AfterOpenInventoryEvent;
-        public event SucceedEventHandler? SucceedOpenInventoryEvent;
-        public event FailedEventHandler? FailedOpenInventoryEvent;
+        public event BeforeEventHandler? BeforeOpenInventory;
+        public event AfterEventHandler? AfterOpenInventory;
+        public event SucceedEventHandler? SucceedOpenInventory;
+        public event FailedEventHandler? FailedOpenInventory;
 
         public EventResult OnBeforeOpenInventoryEvent(GeneralEventArgs e);
         public EventResult OnAfterOpenInventoryEvent(GeneralEventArgs e);
@@ -211,10 +211,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface ISignInEventHandler : IEventHandler
     {
-        public event BeforeEventHandler? BeforeSignInEvent;
-        public event AfterEventHandler? AfterSignInEvent;
-        public event SucceedEventHandler? SucceedSignInEvent;
-        public event FailedEventHandler? FailedSignInEvent;
+        public event BeforeEventHandler? BeforeSignIn;
+        public event AfterEventHandler? AfterSignIn;
+        public event SucceedEventHandler? SucceedSignIn;
+        public event FailedEventHandler? FailedSignIn;
 
         public EventResult OnBeforeSignInEvent(GeneralEventArgs e);
         public EventResult OnAfterSignInEvent(GeneralEventArgs e);
@@ -224,10 +224,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface IOpenStoreEventHandler : IEventHandler
     {
-        public event BeforeEventHandler? BeforeOpenStoreEvent;
-        public event AfterEventHandler? AfterOpenStoreEvent;
-        public event SucceedEventHandler? SucceedOpenStoreEvent;
-        public event FailedEventHandler? FailedOpenStoreEvent;
+        public event BeforeEventHandler? BeforeOpenStore;
+        public event AfterEventHandler? AfterOpenStore;
+        public event SucceedEventHandler? SucceedOpenStore;
+        public event FailedEventHandler? FailedOpenStore;
 
         public EventResult OnBeforeOpenStoreEvent(GeneralEventArgs e);
         public EventResult OnAfterOpenStoreEvent(GeneralEventArgs e);
@@ -237,10 +237,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface IBuyItemEventHandler : IEventHandler
     {
-        public event BeforeEventHandler? BeforeBuyItemEvent;
-        public event AfterEventHandler? AfterBuyItemEvent;
-        public event SucceedEventHandler? SucceedBuyItemEvent;
-        public event FailedEventHandler? FailedBuyItemEvent;
+        public event BeforeEventHandler? BeforeBuyItem;
+        public event AfterEventHandler? AfterBuyItem;
+        public event SucceedEventHandler? SucceedBuyItem;
+        public event FailedEventHandler? FailedBuyItem;
 
         public EventResult OnBeforeBuyItemEvent(GeneralEventArgs e);
         public EventResult OnAfterBuyItemEvent(GeneralEventArgs e);
@@ -250,10 +250,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface IShowRankingEventHandler : IEventHandler
     {
-        public event BeforeEventHandler? BeforeShowRankingEvent;
-        public event AfterEventHandler? AfterShowRankingEvent;
-        public event SucceedEventHandler? SucceedShowRankingEvent;
-        public event FailedEventHandler? FailedShowRankingEvent;
+        public event BeforeEventHandler? BeforeShowRanking;
+        public event AfterEventHandler? AfterShowRanking;
+        public event SucceedEventHandler? SucceedShowRanking;
+        public event FailedEventHandler? FailedShowRanking;
 
         public EventResult OnBeforeShowRankingEvent(GeneralEventArgs e);
         public EventResult OnAfterShowRankingEvent(GeneralEventArgs e);
@@ -263,10 +263,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface IUseItemEventHandler : IEventHandler
     {
-        public event BeforeEventHandler? BeforeUseItemEvent;
-        public event AfterEventHandler? AfterUseItemEvent;
-        public event SucceedEventHandler? SucceedUseItemEvent;
-        public event FailedEventHandler? FailedUseItemEvent;
+        public event BeforeEventHandler? BeforeUseItem;
+        public event AfterEventHandler? AfterUseItem;
+        public event SucceedEventHandler? SucceedUseItem;
+        public event FailedEventHandler? FailedUseItem;
 
         public EventResult OnBeforeUseItemEvent(GeneralEventArgs e);
         public EventResult OnAfterUseItemEvent(GeneralEventArgs e);
@@ -276,10 +276,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface IEndGameEventHandler : IEventHandler
     {
-        public event BeforeEventHandler? BeforeEndGameEvent;
-        public event AfterEventHandler? AfterEndGameEvent;
-        public event SucceedEventHandler? SucceedEndGameEvent;
-        public event FailedEventHandler? FailedEndGameEvent;
+        public event BeforeEventHandler? BeforeEndGame;
+        public event AfterEventHandler? AfterEndGame;
+        public event SucceedEventHandler? SucceedEndGame;
+        public event FailedEventHandler? FailedEndGame;
 
         public EventResult OnBeforeEndGameEvent(GeneralEventArgs e);
         public EventResult OnAfterEndGameEvent(GeneralEventArgs e);

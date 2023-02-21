@@ -1,12 +1,4 @@
-﻿using Milimoe.FunGame.Core.Entity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-
-namespace Milimoe.FunGame.Core.Library.Common.Network
+﻿namespace Milimoe.FunGame.Core.Library.Common.Network
 {
     public class SQLServerInfo
     {

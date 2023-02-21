@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Milimoe.FunGame.Core.Api.Data;
+﻿using Milimoe.FunGame.Core.Api.Data;
 using Milimoe.FunGame.Core.Library.Constant;
+using System.Text;
 
 namespace Milimoe.FunGame.Core.Service
 {

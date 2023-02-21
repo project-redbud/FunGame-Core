@@ -11,6 +11,8 @@
             FunGame_Server
         }
 
+        public const string FunGame_CopyRight = @"©2023 Mili.cyou. 米粒的糖果屋";
+
         private const string FunGame_Core = "FunGame Core";
         private const string FunGame_Core_Api = "FunGame Core Api";
         private const string FunGame_Console = "FunGame Console";
@@ -31,7 +33,7 @@
                 FunGame.FunGame_Server => FunGame_Server,
                 _ => ""
             };
-            return type + " [ 版本: " + FunGame_Version + FunGame_VersionPatch + " ]\n" + (type.Equals(FunGame_Desktop) ? "©" : "(C)") + "2023 Mili.cyou. 保留所有权利\n";
+            return type + " [ 版本: " + FunGame_Version + FunGame_VersionPatch + " ]\n" + (type.Equals(FunGame_Desktop) ? @"©" : "(C)") + "2023 Mili.cyou. 保留所有权利\n";
         }
 
         /**

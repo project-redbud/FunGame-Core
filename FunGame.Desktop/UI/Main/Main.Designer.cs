@@ -1,4 +1,4 @@
-using Milimoe.FunGame.Desktop.Library;
+using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Desktop.Library.Component;
 
 namespace Milimoe.FunGame.Desktop.UI
@@ -535,7 +535,7 @@ namespace Milimoe.FunGame.Desktop.UI
             this.Copyright.Size = new System.Drawing.Size(186, 23);
             this.Copyright.TabIndex = 97;
             this.Copyright.TabStop = true;
-            this.Copyright.Text = "©2022 Mili.cyou. 米粒的糖果屋";
+            this.Copyright.Text = FunGameInfo.FunGame_CopyRight;
             this.Copyright.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.Copyright.UseCompatibleTextRendering = true;
             this.Copyright.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.Copyright_LinkClicked);

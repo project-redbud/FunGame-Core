@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Desktop.Library;
+﻿using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Library.Interface;
 using Milimoe.FunGame.Desktop.UI;
 

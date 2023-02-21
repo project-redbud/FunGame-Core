@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Net.Sockets;
-using System.Net;
-using System.Security.Cryptography;
-using Milimoe.FunGame.Core.Interface;
-using Milimoe.FunGame.Core.Service;
+﻿using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Core.Interface.Base;
+using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
 {
@@ -71,7 +62,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         {
             System.Net.Sockets.Socket? socket = SocketManager.Connect(IP, Port);
             if (socket != null) return new Socket(socket, IP, Port);
-            else throw new System.Exception("连接到服务器失败。");
+            else throw new ConnectFailedException();
         }
         
         public SocketResult Send(SocketMessageType type, params object[] objs)
@@ -90,7 +81,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public object[] Receive()
         {
             object[] result = SocketManager.Receive();
-            if (result.Length != 2) throw new System.Exception("收到错误的返回信息。");
+            if (result.Length != 2) throw new SocketWrongInfoException();
             if ((SocketMessageType)result[0] == SocketMessageType.HeartBeat)
             {
                 if (WaitHeartBeatReply != null && !WaitHeartBeatReply.IsCompleted) WaitHeartBeatReply.Wait(1);
@@ -167,7 +158,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         {
             // 超过三次没回应心跳，服务器连接失败。
             if (_HeartBeatFaileds++ >= 3)
-                throw new System.Exception("ERROR：与服务器连接中断。");
+                throw new LostConnectException();
         }
 
         public static string GetTypeString(SocketMessageType type)

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Milimoe.FunGame.Core.Interface.Entity;
+﻿using Milimoe.FunGame.Core.Interface.Entity;
 
 namespace Milimoe.FunGame.Core.Entity
 {

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Milimoe.FunGame.Core.Api.Utility;
+﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -78,7 +73,7 @@ namespace Milimoe.FunGame.Desktop.Model
                 {
                     ShowMessage.ErrorMessage("查找可用的服务器失败！");
                     Config.FunGame_isRetrying = false;
-                    throw new Exception("查找可用的服务器失败，请重启FunGame。");
+                    throw new FindServerFailedException();
                 }
             }
             catch (Exception e)
@@ -113,7 +108,7 @@ namespace Milimoe.FunGame.Desktop.Model
                     // 超过重连次数上限
                     if (Main.CurrentRetryTimes + 1 > Main.MaxRetryTimes)
                     {
-                        throw new Exception("无法连接至服务器，请检查网络并重启游戏再试。");
+                        throw new CanNotConnectException();
                     }
                     // 与服务器建立连接
                     Socket?.Close();
@@ -141,7 +136,7 @@ namespace Milimoe.FunGame.Desktop.Model
                         }
                         Socket?.Close();
                         Config.FunGame_isRetrying = false;
-                        throw new Exception("无法连接至服务器，请检查网络并重启游戏再试。");
+                        throw new CanNotConnectException();
                     }
                 }
                 else

@@ -1,132 +1,131 @@
 ﻿using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Desktop.Controller;
 using Milimoe.FunGame.Desktop.Library.Component;
 
 namespace Milimoe.FunGame.Desktop.Library.Base
 {
     public class BaseMain : GeneralForm, IConnectEventHandler, IDisconnectEventHandler, ILogoutEventHandler
     {
-        public event IEventHandler.BeforeEventHandler? BeforeConnectEvent;
-        public event IEventHandler.AfterEventHandler? AfterConnectEvent;
-        public event IEventHandler.SucceedEventHandler? SucceedConnectEvent;
-        public event IEventHandler.FailedEventHandler? FailedConnectEvent;
+        public event IEventHandler.BeforeEventHandler? BeforeConnect;
+        public event IEventHandler.AfterEventHandler? AfterConnect;
+        public event IEventHandler.SucceedEventHandler? SucceedConnect;
+        public event IEventHandler.FailedEventHandler? FailedConnect;
 
         public EventResult OnAfterConnectEvent(GeneralEventArgs e)
         {
-            if (AfterConnectEvent != null)
+            if (AfterConnect != null)
             {
-                return AfterConnectEvent(this, e);
+                return AfterConnect(this, e);
             }
             else return EventResult.NoEventImplement;
         }
 
         public EventResult OnBeforeConnectEvent(GeneralEventArgs e)
         {
-            if (BeforeConnectEvent != null)
+            if (BeforeConnect != null)
             {
-                return BeforeConnectEvent(this, e);
+                return BeforeConnect(this, e);
             }
             else return EventResult.NoEventImplement;
         }
 
         public EventResult OnSucceedConnectEvent(GeneralEventArgs e)
         {
-            if (SucceedConnectEvent != null)
+            if (SucceedConnect != null)
             {
-                return SucceedConnectEvent(this, e);
+                return SucceedConnect(this, e);
             }
             else return EventResult.NoEventImplement;
         }
 
         public EventResult OnFailedConnectEvent(GeneralEventArgs e)
         {
-            if (FailedConnectEvent != null)
+            if (FailedConnect != null)
             {
-                return FailedConnectEvent(this, e);
+                return FailedConnect(this, e);
             }
             else return EventResult.NoEventImplement;
         }
 
-        public event IEventHandler.BeforeEventHandler? BeforeDisconnectEvent;
-        public event IEventHandler.AfterEventHandler? AfterDisconnectEvent;
-        public event IEventHandler.SucceedEventHandler? SucceedDisconnectEvent;
-        public event IEventHandler.FailedEventHandler? FailedDisconnectEvent;
+        public event IEventHandler.BeforeEventHandler? BeforeDisconnect;
+        public event IEventHandler.AfterEventHandler? AfterDisconnect;
+        public event IEventHandler.SucceedEventHandler? SucceedDisconnect;
+        public event IEventHandler.FailedEventHandler? FailedDisconnect;
 
         public EventResult OnAfterDisconnectEvent(GeneralEventArgs e)
         {
-            if (AfterDisconnectEvent != null)
+            if (AfterDisconnect != null)
             {
-                return AfterDisconnectEvent(this, e);
+                return AfterDisconnect(this, e);
             }
             else return EventResult.NoEventImplement;
         }
 
         public EventResult OnBeforeDisconnectEvent(GeneralEventArgs e)
         {
-            if (BeforeDisconnectEvent != null)
+            if (BeforeDisconnect != null)
             {
-                return BeforeDisconnectEvent(this, e);
+                return BeforeDisconnect(this, e);
             }
             else return EventResult.NoEventImplement;
         }
 
         public EventResult OnFailedDisconnectEvent(GeneralEventArgs e)
         {
-            if (FailedDisconnectEvent != null)
+            if (FailedDisconnect != null)
             {
-                return FailedDisconnectEvent(this, e);
+                return FailedDisconnect(this, e);
             }
             else return EventResult.NoEventImplement;
         }
 
         public EventResult OnSucceedDisconnectEvent(GeneralEventArgs e)
         {
-            if (SucceedDisconnectEvent != null)
+            if (SucceedDisconnect != null)
             {
-                return SucceedDisconnectEvent(this, e);
+                return SucceedDisconnect(this, e);
             }
             else return EventResult.NoEventImplement;
         }
 
-        public event IEventHandler.BeforeEventHandler? BeforeLogoutEvent;
-        public event IEventHandler.AfterEventHandler? AfterLogoutEvent;
-        public event IEventHandler.SucceedEventHandler? SucceedLogoutEvent;
-        public event IEventHandler.FailedEventHandler? FailedLogoutEvent;
+        public event IEventHandler.BeforeEventHandler? BeforeLogout;
+        public event IEventHandler.AfterEventHandler? AfterLogout;
+        public event IEventHandler.SucceedEventHandler? SucceedLogout;
+        public event IEventHandler.FailedEventHandler? FailedLogout;
 
         public EventResult OnAfterLogoutEvent(GeneralEventArgs e)
         {
-            if (AfterLogoutEvent != null)
+            if (AfterLogout != null)
             {
-                return AfterLogoutEvent(this, e);
+                return AfterLogout(this, e);
             }
             else return EventResult.NoEventImplement;
         }
 
         public EventResult OnBeforeLogoutEvent(GeneralEventArgs e)
         {
-            if (BeforeLogoutEvent != null)
+            if (BeforeLogout != null)
             {
-                return BeforeLogoutEvent(this, e);
+                return BeforeLogout(this, e);
             }
             else return EventResult.NoEventImplement;
         }
 
         public EventResult OnFailedLogoutEvent(GeneralEventArgs e)
         {
-            if (FailedLogoutEvent != null)
+            if (FailedLogout != null)
             {
-                return FailedLogoutEvent(this, e);
+                return FailedLogout(this, e);
             }
             else return EventResult.NoEventImplement;
         }
 
         public EventResult OnSucceedLogoutEvent(GeneralEventArgs e)
         {
-            if (SucceedLogoutEvent != null)
+            if (SucceedLogout != null)
             {
-                return SucceedLogoutEvent(this, e);
+                return SucceedLogout(this, e);
             }
             else return EventResult.NoEventImplement;
         }

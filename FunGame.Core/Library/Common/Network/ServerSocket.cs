@@ -1,12 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Service;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
 {
@@ -52,7 +46,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             if (MaxConnection <= 0) MaxConnection = SocketSet.MaxConnection_General;
             System.Net.Sockets.Socket? socket = SocketManager.StartListening(Port, MaxConnection);
             if (socket != null) return new ServerSocket(socket, Port);
-            else throw new System.Exception("无法创建监听，请重新启动服务器再试。");
+            else throw new SocketCreateListenException();
         }
 
         public ClientSocket Accept()
@@ -64,7 +58,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
                 System.Net.Sockets.Socket Client = (System.Net.Sockets.Socket)result[1];
                 return new ClientSocket(Client, ServerPort, ClientIP, ClientIP);
             }
-            throw new System.Exception("无法获取客户端信息。");
+            throw new SocketGetClientException();
         }
 
         public bool AddClient(string ClientName, Task t)
@@ -79,12 +73,12 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
 
         public SocketResult Send(SocketMessageType type, params object[] objs)
         {
-            throw new System.Exception("监听Socket不能用于发送信息。");
+            throw new ListeningSocketCanNotSendException();
         }
 
         public object[] Receive()
         {
-            throw new System.Exception("监听Socket不能用于接收信息。");
+            throw new ListeningSocketCanNotSendException();
         }
 
         public void Close()
@@ -94,7 +88,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
 
         public void StartReceiving(Task t)
         {
-            throw new System.Exception("监听Socket不能用于接收信息。");
+            throw new ListeningSocketCanNotSendException();
         }
 
         public static string GetTypeString(SocketMessageType type)

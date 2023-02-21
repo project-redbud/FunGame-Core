@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.AccessControl;
+﻿using Milimoe.FunGame.Core.Library.Constant;
 using System.Text;
-using System.Threading.Tasks;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Desktop.Library
 {
@@ -42,6 +36,11 @@ namespace Milimoe.FunGame.Desktop.Library
         public static UI.InventoryUI? Inventory { get; set; } = null;
         public static UI.RoomSetting? RoomSetting { get; set; } = null;
         public static UI.UserCenter? UserCenter { get; set; } = null;
+
+        public static void WritelnSystemInfo(string msg)
+        {
+            Main?.GetMessage(msg);
+        }
     }
 
     public class Constant

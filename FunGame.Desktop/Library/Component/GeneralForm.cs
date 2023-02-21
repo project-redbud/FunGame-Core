@@ -89,7 +89,6 @@ namespace Milimoe.FunGame.Desktop.Library.Component
             {
                 RunTime.UserCenter = null;
             }
-            base.Dispose();
         }
     }
 }

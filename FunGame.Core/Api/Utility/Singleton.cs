@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections;
 
 namespace Milimoe.FunGame.Core.Api.Utility
 {
@@ -30,7 +25,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="single">单例对象</param>
         /// <returns></returns>
-        /// <exception cref="Exception">添加单例到单例表时遇到错误</exception>
+        /// <exception cref="SingletonAddException">添加单例到单例表时遇到错误</exception>
         public static bool Add(object single)
         {
             string type = single.GetType().ToString();
@@ -42,7 +37,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 }
                 catch
                 {
-                    throw new Exception("添加单例到单例表时遇到错误。");
+                    throw new SingletonAddException();
                 }
                 return true;
             }
@@ -73,7 +68,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <typeparam name="T">目标类</typeparam>
         /// <returns></returns>
-        /// <exception cref="Exception">不能从单例表中获取到指定的单例</exception>
+        /// <exception cref="SingletonGetException">不能从单例表中获取到指定的单例</exception>
         public static T? Get<T>()
         {
             T? single = default;
@@ -86,7 +81,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 }
                 catch
                 {
-                    throw new Exception("不能从单例表中获取到指定的单例。");
+                    throw new SingletonGetException();
                 }
                 if (single != null) return single;
             }
@@ -98,7 +93,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="type">目标类</param>
         /// <returns></returns>
-        /// <exception cref="Exception">不能从单例表中获取到指定的单例</exception>
+        /// <exception cref="SingletonGetException">不能从单例表中获取到指定的单例</exception>
         public static object? Get(Type type)
         {
             object? single = default;
@@ -110,7 +105,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 }
                 catch
                 {
-                    throw new Exception("不能从单例表中获取到指定的单例。");
+                    throw new SingletonGetException();
                 }
                 if (single != null) return single;
             }

@@ -1,15 +1,15 @@
-using System.Diagnostics;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface;
+using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
-using Milimoe.FunGame.Core.Library.Common.Event;
-using Milimoe.FunGame.Desktop.Library;
-using Milimoe.FunGame.Desktop.Library.Component;
 using Milimoe.FunGame.Desktop.Controller;
+using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Library.Base;
+using Milimoe.FunGame.Desktop.Library.Component;
 using Milimoe.FunGame.Desktop.Utility;
+using System.Diagnostics;
 
 namespace Milimoe.FunGame.Desktop.UI
 {
@@ -78,10 +78,10 @@ namespace Milimoe.FunGame.Desktop.UI
         protected override void BindEvent()
         {
             base.BindEvent();
-            AfterConnectEvent += AfterConnect;
-            BeforeConnectEvent += BeforeConnect;
-            FailedConnectEvent += FailedConnect;
-            SucceedConnectEvent += SucceedConnect;
+            AfterConnect += AfterConnectEvent;
+            BeforeConnect += BeforeConnectEvent;
+            FailedConnect += FailedConnectEvent;
+            SucceedConnect += SucceedConnectEvent;
         }
 
         #endregion
@@ -281,10 +281,10 @@ namespace Milimoe.FunGame.Desktop.UI
                     string isAutoLogin = INIHelper.ReadINI("Config", "AutoLogin");
                     if (isAutoConncet != null && !isAutoConncet.Equals("") && (isAutoConncet.Equals("false") || isAutoConncet.Equals("true")))
                         Config.FunGame_isAutoConnect = Convert.ToBoolean(isAutoConncet);
-                    else throw new Exception("读取配置文件出错，参数格式不正确");
+                    else throw new ReadConfigException();
                     if (isAutoLogin != null && !isAutoLogin.Equals("") && (isAutoLogin.Equals("false") || isAutoLogin.Equals("true")))
                         Config.FunGame_isAutoLogin = Convert.ToBoolean(isAutoLogin);
-                    else throw new Exception("读取配置文件出错，参数格式不正确");
+                    else throw new ReadConfigException();
                 }
                 else
                 {
@@ -293,7 +293,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     GetFunGameConfig();
                 }
             }
-            catch (Exception e)
+            catch (System.Exception e)
             {
                 WritelnGameInfo(e.GetErrorInfo());
             }
@@ -1136,7 +1136,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        public EventResult BeforeConnect(object sender, GeneralEventArgs e)
+        public EventResult BeforeConnectEvent(object sender, GeneralEventArgs e)
         {
             return EventResult.Success;
         }
@@ -1147,7 +1147,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        public EventResult AfterConnect(object sender, GeneralEventArgs e)
+        public EventResult AfterConnectEvent(object sender, GeneralEventArgs e)
         {
             return EventResult.Success;
         }
@@ -1158,7 +1158,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        public EventResult FailedConnect(object sender, GeneralEventArgs e)
+        public EventResult FailedConnectEvent(object sender, GeneralEventArgs e)
         {
             return EventResult.Success;
         }
@@ -1169,7 +1169,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        public EventResult SucceedConnect(object sender, GeneralEventArgs e)
+        public EventResult SucceedConnectEvent(object sender, GeneralEventArgs e)
         {
             if (MainController != null && Config.FunGame_isAutoLogin)
             {

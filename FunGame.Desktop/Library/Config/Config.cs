@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Milimoe.FunGame.Desktop.Library
+﻿namespace Milimoe.FunGame.Desktop.Library
 {
     public class Config
     {
