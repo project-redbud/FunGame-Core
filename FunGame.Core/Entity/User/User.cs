@@ -3,7 +3,7 @@ namespace Milimoe.FunGame.Core.Entity
     public class User
     {
         public int Id { get; set; }
-        public string Userame { get; set; } = "";
+        public string Username { get; set; } = "";
         public string Password { get; set; } = "";
         public DateTime RegTime { get; set; }
         public DateTime LastTime { get; set; }
@@ -27,12 +27,12 @@ namespace Milimoe.FunGame.Core.Entity
 
         internal User(string username)
         {
-            Userame = username;
+            Username = username;
         }
 
         internal User(string username, string password)
         {
-            Userame = username;
+            Username = username;
             Password = password;
         }
     }

@@ -175,7 +175,8 @@ namespace Milimoe.FunGame.Desktop.UI
             this.TalkText.TabIndex = 2;
             this.TalkText.Text = "向消息队列发送消息...";
             this.TalkText.WordWrap = false;
-            this.TalkText.Click += new System.EventHandler(this.TalkText_Click);
+            this.TalkText.Click += new System.EventHandler(this.TalkText_ClickAndFocused);
+            this.TalkText.GotFocus += new System.EventHandler(this.TalkText_ClickAndFocused);
             this.TalkText.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TalkText_KeyUp);
             this.TalkText.Leave += new System.EventHandler(this.TalkText_Leave);
             // 
@@ -292,7 +293,8 @@ namespace Milimoe.FunGame.Desktop.UI
             this.RoomText.TabIndex = 1;
             this.RoomText.Text = "键入房间代号...";
             this.RoomText.WordWrap = false;
-            this.RoomText.Click += new System.EventHandler(this.RoomText_Click);
+            this.RoomText.Click += new System.EventHandler(this.RoomText_ClickAndFocused);
+            this.RoomText.GotFocus += new System.EventHandler(this.RoomText_ClickAndFocused);
             this.RoomText.KeyUp += new System.Windows.Forms.KeyEventHandler(this.RoomText_KeyUp);
             this.RoomText.Leave += new System.EventHandler(this.RoomText_Leave);
             // 

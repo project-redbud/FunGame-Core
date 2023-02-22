@@ -2,6 +2,6 @@
 {
     public interface ILogin
     {
-        public bool LoginAccount();
+        public bool LoginAccount(string username, string password);
     }
 }

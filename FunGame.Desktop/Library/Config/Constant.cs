@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Milimoe.FunGame.Desktop.Library
 {
-    public class MainControllerSet
+    public class MainSet
     {
         public const string SetGreen = ".set green";
         public const string SetGreenAndPing = ".set greenandping";

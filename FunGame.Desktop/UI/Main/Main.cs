@@ -10,10 +10,11 @@ using Milimoe.FunGame.Desktop.Library.Base;
 using Milimoe.FunGame.Desktop.Library.Component;
 using Milimoe.FunGame.Desktop.Utility;
 using System.Diagnostics;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Milimoe.FunGame.Desktop.UI
 {
-    public partial class Main : BaseMain, IConnectEvent
+    public partial class Main : BaseMain
     {
 
         #region 变量定义
@@ -78,8 +79,6 @@ namespace Milimoe.FunGame.Desktop.UI
         protected override void BindEvent()
         {
             base.BindEvent();
-            AfterConnect += AfterConnectEvent;
-            BeforeConnect += BeforeConnectEvent;
             FailedConnect += FailedConnectEvent;
             SucceedConnect += SucceedConnectEvent;
         }
@@ -103,7 +102,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     {
                         switch (updatetype)
                         {
-                            case MainControllerSet.SetGreen:
+                            case MainSet.SetGreen:
                                 Config.FunGame_isRetrying = false;
                                 SetServerStatusLight((int)LightType.Green);
                                 SetButtonEnableIfLogon(true, ClientState.Online);
@@ -111,7 +110,7 @@ namespace Milimoe.FunGame.Desktop.UI
                                 CurrentRetryTimes = 0;
                                 break;
 
-                            case MainControllerSet.SetGreenAndPing:
+                            case MainSet.SetGreenAndPing:
                                 Config.FunGame_isRetrying = false;
                                 SetServerStatusLight((int)LightType.Green, ping: NetworkUtility.GetServerPing(Constant.Server_Address));
                                 SetButtonEnableIfLogon(true, ClientState.Online);
@@ -119,7 +118,7 @@ namespace Milimoe.FunGame.Desktop.UI
                                 CurrentRetryTimes = 0;
                                 break;
 
-                            case MainControllerSet.SetYellow:
+                            case MainSet.SetYellow:
                                 Config.FunGame_isRetrying = false;
                                 SetServerStatusLight((int)LightType.Yellow);
                                 SetButtonEnableIfLogon(false, ClientState.WaitConnect);
@@ -127,7 +126,7 @@ namespace Milimoe.FunGame.Desktop.UI
                                 CurrentRetryTimes = 0;
                                 break;
 
-                            case MainControllerSet.WaitConnectAndSetYellow:
+                            case MainSet.WaitConnectAndSetYellow:
                                 Config.FunGame_isRetrying = false;
                                 SetServerStatusLight((int)LightType.Yellow);
                                 SetButtonEnableIfLogon(false, ClientState.WaitConnect);
@@ -140,7 +139,7 @@ namespace Milimoe.FunGame.Desktop.UI
                                 }
                                 break;
 
-                            case MainControllerSet.WaitLoginAndSetYellow:
+                            case MainSet.WaitLoginAndSetYellow:
                                 Config.FunGame_isRetrying = false;
                                 SetServerStatusLight((int)LightType.Yellow, true);
                                 SetButtonEnableIfLogon(false, ClientState.WaitLogin);
@@ -148,32 +147,21 @@ namespace Milimoe.FunGame.Desktop.UI
                                 CurrentRetryTimes = 0;
                                 break;
 
-                            case MainControllerSet.SetRed:
+                            case MainSet.SetRed:
                                 SetServerStatusLight((int)LightType.Red);
                                 SetButtonEnableIfLogon(false, ClientState.WaitConnect);
                                 Config.FunGame_isConnected = false;
                                 break;
 
-                            case MainControllerSet.Disconnected:
+                            case MainSet.Disconnected:
                                 Config.FunGame_isRetrying = false;
                                 Config.FunGame_isConnected = false;
                                 SetServerStatusLight((int)LightType.Red);
                                 SetButtonEnableIfLogon(false, ClientState.WaitConnect);
                                 LogoutAccount();
-                                if (Config.FunGame_isAutoRetry && CurrentRetryTimes <= MaxRetryTimes)
-                                {
-                                    Task.Run(() =>
-                                    {
-                                        Thread.Sleep(5000);
-                                        if (Config.FunGame_isAutoRetry) MainController?.Connect(); // 再次判断是否开启自动重连
-                                    });
-                                    WritelnSystemInfo("连接服务器失败，5秒后自动尝试重连。");
-                                }
-                                else
-                                    WritelnSystemInfo("无法连接至服务器，请检查你的网络连接。");
                                 break;
 
-                            case MainControllerSet.Disconnect:
+                            case MainSet.Disconnect:
                                 Config.FunGame_isAutoRetry = false;
                                 Config.FunGame_isRetrying = false;
                                 Config.FunGame_isAutoConnect = false;
@@ -184,7 +172,11 @@ namespace Milimoe.FunGame.Desktop.UI
                                 LogoutAccount();
                                 break;
 
-                            case MainControllerSet.LogOut:
+                            case MainSet.LogIn:
+                                LoginAccount(objs);
+                                break;
+
+                            case MainSet.LogOut:
                                 Config.FunGame_isRetrying = false;
                                 Config.FunGame_isConnected = false;
                                 Config.FunGame_isAutoLogin = false;
@@ -202,20 +194,20 @@ namespace Milimoe.FunGame.Desktop.UI
                                 }
                                 break;
 
-                            case MainControllerSet.SetUser:
+                            case MainSet.SetUser:
                                 if (objs != null && objs.Length > 1)
                                 {
                                     SetLoginUser(objs);
                                 }
                                 break;
 
-                            case MainControllerSet.Connected:
+                            case MainSet.Connected:
                                 NoticeText.Text = Config.FunGame_Notice;
                                 break;
 
                             default:
-                                // 直接调用UpdateUI(string)为输出该string到控制台。
-                                // 相当于调用GetMessage(string)
+                                // 直接调用UpdateUI(string)相当于调用GetMessage(string)，输出该string到控制台。
+                                // 尽量避免使用除MainControllerSet之外的string调用此方法
                                 WritelnSystemInfo(updatetype);
                                 break;
                         }
@@ -224,20 +216,20 @@ namespace Milimoe.FunGame.Desktop.UI
                 catch (Exception e)
                 {
                     WritelnGameInfo(e.GetErrorInfo());
-                    UpdateUI(MainControllerSet.SetRed);
+                    UpdateUI(MainSet.SetRed);
                 }
             }
             InvokeUpdateUI(action);
         }
 
-        public void GetMessage(string? msg, bool time = true, TimeType timetype = TimeType.TimeOnly)
+        public void GetMessage(string? msg, TimeType timetype = TimeType.TimeOnly)
         {
             void action()
             {
                 try
                 {
                     if (msg == null || msg == "") return;
-                    if (time)
+                    if (timetype != TimeType.None)
                     {
                         WritelnGameInfo(DateTimeUtility.GetDateTimeToString(timetype) + " >> " + msg);
                     }
@@ -472,6 +464,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     RoomText.Enabled = false;
                     ShowMessage.TipMessage("请输入房间号。");
                     RoomText.Enabled = true;
+                    RoomText.Focus();
                 }
             else
             {
@@ -613,14 +606,14 @@ namespace Milimoe.FunGame.Desktop.UI
         {
             if (objs != null && objs.Length > 0)
             {
-                Usercfg.LoginUser = (User)objs[2];
-                Usercfg.LoginUserName = Usercfg.LoginUser.Userame;
+                Usercfg.LoginUser = (User)objs[0];
+                Usercfg.LoginUserName = Usercfg.LoginUser.Username;
             }
             NowAccount.Text = "[ID] " + Usercfg.LoginUserName;
             Login.Visible = false;
             Logout.Visible = true;
             SetServerStatusLight((int)LightType.Green);
-            ShowMessage.TipMessage("欢迎回来， " + Usercfg.LoginUserName + "！", "登录成功", 5);
+            ShowMessage.Message($"欢迎回来，{Usercfg.LoginUserName}！", "登录成功", 5);
         }
 
         /// <summary>
@@ -673,6 +666,7 @@ namespace Milimoe.FunGame.Desktop.UI
                 TalkText.Enabled = false;
                 ShowMessage.TipMessage("消息不能为空，请重新输入。");
                 TalkText.Enabled = true;
+                TalkText.Focus();
             }
         }
 
@@ -950,7 +944,7 @@ namespace Milimoe.FunGame.Desktop.UI
         private void Login_Click(object sender, EventArgs e)
         {
             if (MainController != null && Config.FunGame_isConnected)
-                OpenForm.SingleForm(FormType.Login, OpenFormType.Dialog);
+                OpenForm.SingleForm(FormType.Login, OpenFormType.Dialog, this);
             else
                 ShowMessage.WarningMessage("请先连接服务器！");
         }
@@ -1021,11 +1015,11 @@ namespace Milimoe.FunGame.Desktop.UI
         }
 
         /// <summary>
-        /// 点击房间号输入框事件
+        /// 房间号输入框点击/焦点事件
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void RoomText_Click(object sender, EventArgs e)
+        private void RoomText_ClickAndFocused(object sender, EventArgs e)
         {
             if (RoomText.Text.Equals("键入房间代号..."))
             {
@@ -1064,11 +1058,11 @@ namespace Milimoe.FunGame.Desktop.UI
         }
 
         /// <summary>
-        /// 点击聊天框事件
+        /// 聊天框点击/焦点事件
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void TalkText_Click(object sender, EventArgs e)
+        private void TalkText_ClickAndFocused(object sender, EventArgs e)
         {
             if (TalkText.Text.Equals("向消息队列发送消息..."))
             {
@@ -1131,28 +1125,6 @@ namespace Milimoe.FunGame.Desktop.UI
         }
 
         /// <summary>
-        /// 连接服务器前触发事件
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        /// <returns></returns>
-        public EventResult BeforeConnectEvent(object sender, GeneralEventArgs e)
-        {
-            return EventResult.Success;
-        }
-
-        /// <summary>
-        /// 连接服务器后触发事件
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        /// <returns></returns>
-        public EventResult AfterConnectEvent(object sender, GeneralEventArgs e)
-        {
-            return EventResult.Success;
-        }
-
-        /// <summary>
         /// 连接服务器失败后触发事件
         /// </summary>
         /// <param name="sender"></param>
@@ -1160,6 +1132,16 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <returns></returns>
         public EventResult FailedConnectEvent(object sender, GeneralEventArgs e)
         {
+            if (Config.FunGame_isAutoRetry && CurrentRetryTimes <= MaxRetryTimes)
+            {
+                Task.Run(() =>
+                {
+                    Thread.Sleep(5000);
+                    if (Config.FunGame_isAutoRetry) MainController?.Connect(); // 再次判断是否开启自动重连
+                });
+                GetMessage("连接服务器失败，5秒后自动尝试重连。");
+            }
+            else GetMessage("无法连接至服务器，请检查你的网络连接。");
             return EventResult.Success;
         }
 

@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Library.Constant;
+﻿using Milimoe.FunGame.Core.Library.Common.Event;
+using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Library.Interface;
 using Milimoe.FunGame.Desktop.Model;
@@ -8,12 +9,14 @@ namespace Milimoe.FunGame.Desktop.Controller
 {
     public class MainController : IMain
     {
-        private MainModel MainModel { get; }
+        public bool Connected => Do<bool>(MainSet.Connected);
 
-        public bool Connected => Do<bool>(MainControllerSet.Connected);
+        private MainModel MainModel { get; }
+        private Main Main { get; }
 
         public MainController(Main Main)
         {
+            this.Main = Main;
             MainModel = new MainModel(Main);
         }
 
@@ -25,41 +28,67 @@ namespace Milimoe.FunGame.Desktop.Controller
             object result = new();
             switch(DoType)
             {
-                case MainControllerSet.GetServerConnection:
+                case MainSet.GetServerConnection:
                     result = MainModel.GetServerConnection();
                     break;
-                case MainControllerSet.Connect:
+
+                case MainSet.Connect:
+                    Main.OnBeforeConnectEvent(new GeneralEventArgs());
                     result = MainModel.Connect();
+                    if ((ConnectResult)result == ConnectResult.Success)
+                    {
+                        Main.OnSucceedConnectEvent(new GeneralEventArgs());
+                    }
+                    else if ((ConnectResult)result == ConnectResult.ConnectFailed)
+                    {
+                        Main.OnFailedConnectEvent(new GeneralEventArgs());
+                    }
+                    Main.OnAfterConnectEvent(new GeneralEventArgs());
                     break;
-                case MainControllerSet.Connected:
+
+                case MainSet.Connected:
                     result = MainModel.Connected;
                     break;
-                case MainControllerSet.Disconnect:
+
+                case MainSet.Disconnect:
+                    Main.OnBeforeDisconnectEvent(new GeneralEventArgs());
+                    MainModel.Disconnect();
+                    Main.OnAfterDisconnectEvent(new GeneralEventArgs());
+                    break;
+
+                case MainSet.Disconnected:
                     MainModel.Disconnect();
                     break;
-                case MainControllerSet.Disconnected:
-                    MainModel.Disconnect();
+
+                case MainSet.WaitConnectAndSetYellow:
                     break;
-                case MainControllerSet.WaitConnectAndSetYellow:
+
+                case MainSet.WaitLoginAndSetYellow:
                     break;
-                case MainControllerSet.WaitLoginAndSetYellow:
+
+                case MainSet.SetGreenAndPing:
                     break;
-                case MainControllerSet.SetGreenAndPing:
+
+                case MainSet.SetGreen:
                     break;
-                case MainControllerSet.SetGreen:
+
+                case MainSet.SetYellow:
                     break;
-                case MainControllerSet.SetYellow:
+
+                case MainSet.SetRed:
                     break;
-                case MainControllerSet.SetRed:
+
+                case MainSet.SetUser:
                     break;
-                case MainControllerSet.SetUser:
-                    break;
-                case MainControllerSet.LogOut:
+
+                case MainSet.LogOut:
                     result = MainModel.Logout();
                     break;
-                case MainControllerSet.Close:
+
+                case MainSet.Close:
                     result = MainModel.Close();
                     break;
+
                 default:
                     break;
             }
@@ -68,22 +97,22 @@ namespace Milimoe.FunGame.Desktop.Controller
 
         public bool GetServerConnection()
         {
-            return Do<bool>(MainControllerSet.GetServerConnection);
+            return Do<bool>(MainSet.GetServerConnection);
         }
 
         public ConnectResult Connect()
         {
-            return Do<ConnectResult>(MainControllerSet.Connect);
+            return Do<ConnectResult>(MainSet.Connect);
         }
 
         public void Disconnect()
         {
-            Do<object>(MainControllerSet.Disconnect);
+            Do<object>(MainSet.Disconnect);
         }
 
         public void Disconnected()
         {
-            Do<object>(MainControllerSet.Disconnected);
+            Do<object>(MainSet.Disconnected);
         }
 
         public void SetWaitConnectAndSetYellow()
@@ -123,12 +152,12 @@ namespace Milimoe.FunGame.Desktop.Controller
 
         public bool LogOut()
         {
-            return Do<bool>(MainControllerSet.LogOut);
+            return Do<bool>(MainSet.LogOut);
         }
 
         public bool Close()
         {
-            return Do<bool>(MainControllerSet.Close);
+            return Do<bool>(MainSet.Close);
         }
     }
 }

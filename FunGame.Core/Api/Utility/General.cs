@@ -1,8 +1,9 @@
-﻿using Milimoe.FunGame.Core.Library.Constant;
-using System.Net.NetworkInformation;
+﻿using System.Net.NetworkInformation;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Milimoe.FunGame.Core.Library.Constant;
 
 // 通用工具类，客户端和服务器端都可以直接调用的工具方法都可以写在这里
 namespace Milimoe.FunGame.Core.Api.Utility
@@ -211,6 +212,33 @@ namespace Milimoe.FunGame.Core.Api.Utility
         {
             DateTime now = DateTime.Now;
             return now.AddMilliseconds(-now.Millisecond).ToString();
+        }
+    }
+
+    #endregion
+
+    #region 加密服务
+
+    /// <summary>
+    /// 使用HMACSHA512算法加密
+    /// </summary>
+    public class Encryption
+    {
+        /// <summary>
+        /// 使用HMACSHA512算法加密
+        /// </summary>
+        /// <param name="Message">需要加密的值</param>
+        /// <param name="Key">秘钥</param>
+        /// <returns></returns>
+        public static string HmacSha512(string Message, string Key)
+        {
+            byte[] MessageBytes = General.DefaultEncoding.GetBytes(Message);
+            Key = Convert.ToBase64String(General.DefaultEncoding.GetBytes(Key));
+            byte[] KeyBytes = General.DefaultEncoding.GetBytes(Key);
+            HMACSHA512 Hmacsha512 = new(KeyBytes);
+            byte[] Hash = Hmacsha512.ComputeHash(MessageBytes);
+            string Hamc = BitConverter.ToString(Hash).Replace("-", "");
+            return Hamc.ToLower();
         }
     }
 

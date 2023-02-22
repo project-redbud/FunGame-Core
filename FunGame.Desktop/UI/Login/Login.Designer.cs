@@ -44,6 +44,15 @@
             this.TransparentRect.SuspendLayout();
             this.SuspendLayout();
             // 
+            // Title
+            // 
+            this.Title.Font = new System.Drawing.Font("LanaPixel", 26.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.Title.Location = new System.Drawing.Point(7, 6);
+            this.Title.Size = new System.Drawing.Size(387, 47);
+            this.Title.TabIndex = 8;
+            this.Title.Text = "Welcome to FunGame!";
+            this.Title.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // ExitButton
             // 
             this.ExitButton.Anchor = System.Windows.Forms.AnchorStyles.None;
@@ -58,11 +67,11 @@
             this.ExitButton.ForeColor = System.Drawing.Color.Red;
             this.ExitButton.Location = new System.Drawing.Point(451, 4);
             this.ExitButton.Name = "ExitButton";
+            this.ExitButton.RelativeForm = this;
             this.ExitButton.Size = new System.Drawing.Size(47, 47);
             this.ExitButton.TabIndex = 7;
             this.ExitButton.TextAlign = System.Drawing.ContentAlignment.TopLeft;
             this.ExitButton.UseVisualStyleBackColor = false;
-            this.ExitButton.RelativeForm = this;
             // 
             // MinButton
             // 
@@ -78,21 +87,11 @@
             this.MinButton.ForeColor = System.Drawing.Color.Black;
             this.MinButton.Location = new System.Drawing.Point(398, 4);
             this.MinButton.Name = "MinButton";
+            this.MinButton.RelativeForm = this;
             this.MinButton.Size = new System.Drawing.Size(47, 47);
             this.MinButton.TabIndex = 6;
             this.MinButton.TextAlign = System.Drawing.ContentAlignment.TopLeft;
             this.MinButton.UseVisualStyleBackColor = false;
-            this.MinButton.RelativeForm = this;
-            // 
-            // Title
-            // 
-            this.Title.Font = new System.Drawing.Font("LanaPixel", 26.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.Title.Location = new System.Drawing.Point(7, 6);
-            this.Title.Name = "Title";
-            this.Title.Size = new System.Drawing.Size(387, 47);
-            this.Title.TabIndex = 8;
-            this.Title.Text = "Welcome to FunGame!";
-            this.Title.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // Username
             // 
@@ -151,6 +150,7 @@
             this.GoToLogin.TabIndex = 2;
             this.GoToLogin.Text = "账号登录";
             this.GoToLogin.UseVisualStyleBackColor = true;
+            this.GoToLogin.Click += new System.EventHandler(this.GoToLogin_Click);
             // 
             // ForgetPassword
             // 
@@ -161,6 +161,7 @@
             this.ForgetPassword.TabIndex = 5;
             this.ForgetPassword.Text = "找回密码";
             this.ForgetPassword.UseVisualStyleBackColor = true;
+            this.ForgetPassword.Click += new System.EventHandler(this.ForgetPassword_Click);
             // 
             // FastLogin
             // 
@@ -171,6 +172,7 @@
             this.FastLogin.TabIndex = 3;
             this.FastLogin.Text = "快捷登录";
             this.FastLogin.UseVisualStyleBackColor = true;
+            this.FastLogin.Click += new System.EventHandler(this.FastLogin_Click);
             // 
             // TransparentRect
             // 
@@ -195,6 +197,17 @@
             this.TransparentRect.Size = new System.Drawing.Size(503, 289);
             this.TransparentRect.TabIndex = 11;
             this.TransparentRect.TabStop = false;
+            this.TransparentRect.Controls.SetChildIndex(this.PasswordText, 0);
+            this.TransparentRect.Controls.SetChildIndex(this.RegButton, 0);
+            this.TransparentRect.Controls.SetChildIndex(this.Password, 0);
+            this.TransparentRect.Controls.SetChildIndex(this.GoToLogin, 0);
+            this.TransparentRect.Controls.SetChildIndex(this.Username, 0);
+            this.TransparentRect.Controls.SetChildIndex(this.ForgetPassword, 0);
+            this.TransparentRect.Controls.SetChildIndex(this.UsernameText, 0);
+            this.TransparentRect.Controls.SetChildIndex(this.FastLogin, 0);
+            this.TransparentRect.Controls.SetChildIndex(this.ExitButton, 0);
+            this.TransparentRect.Controls.SetChildIndex(this.MinButton, 0);
+            this.TransparentRect.Controls.SetChildIndex(this.Title, 0);
             // 
             // Login
             // 
@@ -203,7 +216,6 @@
             this.BackColor = System.Drawing.Color.WhiteSmoke;
             this.ClientSize = new System.Drawing.Size(503, 289);
             this.Controls.Add(this.TransparentRect);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Login";
             this.Opacity = 0.9D;

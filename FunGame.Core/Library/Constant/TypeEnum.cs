@@ -130,6 +130,7 @@
 
     public enum TimeType
     {
+        None,
         General,
         DateOnly,
         TimeOnly,
