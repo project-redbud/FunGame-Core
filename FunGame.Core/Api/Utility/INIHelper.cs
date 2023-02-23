@@ -4,15 +4,15 @@ using System.Text;
 
 namespace Milimoe.FunGame.Core.Api.Utility
 {
-    public class INIHelper
+    public partial class INIHelper
     {
         /*
          * 声明API函数
          */
-        [DllImport("kernel32", CharSet = CharSet.Unicode)]
-        private static extern long WritePrivateProfileString(string section, string key, string val, string filePath);
-        [DllImport("kernel32", CharSet = CharSet.Unicode)]
-        private static extern int GetPrivateProfileString(string section, string key, string def, StringBuilder retVal, int size, string filePath);
+        [LibraryImport("kernel32", StringMarshalling = StringMarshalling.Utf16)]
+        private static partial long WritePrivateProfileString(string section, string key, string val, string filePath);
+        [LibraryImport("kernel32", StringMarshalling = StringMarshalling.Utf16)]
+        private static partial int GetPrivateProfileString(string section, string key, string def, byte[] val, int size, string filePath);
 
         /// <summary>
         /// 写入ini文件
@@ -35,9 +35,10 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns>读取到的值</returns>
         public static string ReadINI(string Section, string Key, string FileName = @"FunGame.ini")
         {
-            StringBuilder str = new(256);
-            _ = GetPrivateProfileString(Section, Key, "", str, 256, Environment.CurrentDirectory.ToString() + @"\" + FileName);
-            return str.ToString();
+            byte[] val = new byte[1024];
+            _ = GetPrivateProfileString(Section, Key, "", val, 1024, Environment.CurrentDirectory.ToString() + @"\" + FileName);
+            string? read = val.ToString();
+            return read ?? "";
         }
 
         /// <summary>

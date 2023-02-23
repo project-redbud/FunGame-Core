@@ -11,12 +11,10 @@ namespace Milimoe.FunGame.Desktop.UI
     public partial class Login : BaseLogin
     {
         private LoginController LoginController;
-        private Main Main;
 
-        public Login(Main Main)
+        public Login()
         {
             InitializeComponent();
-            this.Main = Main;
             LoginController = new LoginController(this);
         }
 
@@ -33,11 +31,8 @@ namespace Milimoe.FunGame.Desktop.UI
                     return;
                 }
                 password = Core.Api.Utility.Encryption.HmacSha512(password, username);
-                if (LoginController.LoginAccount(username, password))
-                {
-                    Main.UpdateUI(MainSet.LogIn, new object[] { Core.Api.Utility.Factory.NewSingle<User>(username, password) });
-                }
-                else ShowMessage.Message("登录失败！！", "登录失败");
+                if (!LoginController.LoginAccount(username, password))
+                    ShowMessage.Message("登录失败！！", "登录失败");
             }
             catch (Exception e)
             {

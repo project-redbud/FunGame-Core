@@ -29,14 +29,9 @@ namespace Milimoe.FunGame.Desktop.Utility
                         RunTime.Register = (Register)form;
                         break;
                     case FormType.Login:
-                        Main? main = default;
-                        if (objs != null && objs.Length > 0) main = (Main)objs[0];
-                        if (main != null)
-                        {
-                            form = new Login(main);
-                            IsExist = RunTime.Login != null;
-                            RunTime.Login = (Login)form;
-                        }
+                        form = new Login();
+                        IsExist = RunTime.Login != null;
+                        RunTime.Login = (Login)form;
                         break;
                     case FormType.Inventory:
                         form = new InventoryUI();

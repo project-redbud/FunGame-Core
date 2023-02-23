@@ -17,6 +17,9 @@
         public static string FunGame_Roomid { get; set; } = "-1"; // 房间号
         public static string FunGame_ServerName { get; set; } = ""; // 服务器名称
         public static string FunGame_Notice { get; set; } = ""; // 公告
+        public static string FunGame_AutoLoginUser { get; set; } = ""; // 自动登录的账号
+        public static string FunGame_AutoLoginPassword { get; set; } = ""; // 自动登录的密码
+        public static string FunGame_AutoLoginKey { get; set; } = ""; // 自动登录的秘钥
 
         /*** GUID For Socket ***/
         public static Guid Guid_Socket { get; set; } = Guid.Empty;

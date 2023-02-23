@@ -3,6 +3,7 @@ using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
+using Milimoe.FunGame.Desktop.Controller;
 using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Library.Component;
 using Milimoe.FunGame.Desktop.Library.Interface;
@@ -263,6 +264,7 @@ namespace Milimoe.FunGame.Desktop.Model
                         break;
 
                     case SocketMessageType.Login:
+                        SocketHandler_Login(objs);
                         break;
 
                     case SocketMessageType.CheckLogin:
@@ -319,6 +321,14 @@ namespace Milimoe.FunGame.Desktop.Model
             if (objs.Length > 0) Config.FunGame_Notice = NetworkUtility.ConvertJsonObject<string>(objs[0])!;
         }
 
+        private void SocketHandler_Login(object[] objs)
+        {
+            Guid key = Guid.Empty;
+            // 返回一个Key，再发回去给服务器就行了
+            if (objs.Length > 0) key = NetworkUtility.ConvertJsonObject<Guid>(objs[0])!;
+            LoginController.CheckLogin(key);
+        }
+        
         private void SocketHandler_CheckLogin(object[] objs)
         {
             string msg = "";

@@ -4,20 +4,15 @@ using Milimoe.FunGame.Core.Library.Exception;
 using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Library.Interface;
 using Milimoe.FunGame.Desktop.UI;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Milimoe.FunGame.Desktop.Model
 {
-    public class LoginModel : ILogin
+    /// <summary>
+    /// 请不要越过Controller直接调用Model中的方法。
+    /// </summary>
+    public class LoginModel
     {
-        private readonly Login Login;
-        private Core.Library.Common.Network.Socket? Socket;
-
-        public LoginModel(Login login)
-        {
-            Login = login;
-            Socket = RunTime.Socket;
-        }
-
         public static bool LoginAccount(params object[]? objs)
         {
             try
@@ -27,9 +22,11 @@ namespace Milimoe.FunGame.Desktop.Model
                 {
                     string username = "";
                     string password = "";
+                    string autokey = "";
                     if (objs.Length > 0) username = (string)objs[0];
                     if (objs.Length > 1) password = (string)objs[1];
-                    if (Socket.Send(SocketMessageType.Login, username, password) == SocketResult.Success)
+                    if (objs.Length > 2) autokey = (string)objs[2];
+                    if (Socket.Send(SocketMessageType.Login, username, password, autokey) == SocketResult.Success)
                     {
                         return true;
                     }
@@ -42,13 +39,19 @@ namespace Milimoe.FunGame.Desktop.Model
             return false;
         }
 
-        public bool LoginAccount(string username, string password)
+        public static bool CheckLogin(params object[]? objs)
         {
             try
             {
-                if (LoginModel.LoginAccount(username, password))
+                Core.Library.Common.Network.Socket? Socket = RunTime.Socket;
+                if (Socket != null && objs != null)
                 {
-                    return true;
+                    Guid key = Guid.Empty;
+                    if (objs.Length > 0) key = (Guid)objs[0];
+                    if (Socket.Send(SocketMessageType.CheckLogin, key) == SocketResult.Success)
+                    {
+                        return true;
+                    }
                 }
             }
             catch (Exception e)

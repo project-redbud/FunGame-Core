@@ -269,13 +269,30 @@ namespace Milimoe.FunGame.Desktop.UI
             {
                 if (INIHelper.ExistINIFile())
                 {
-                    string isAutoConncet = INIHelper.ReadINI("Config", "AutoConnect");
+                    string isAutoConnect = INIHelper.ReadINI("Config", "AutoConnect");
                     string isAutoLogin = INIHelper.ReadINI("Config", "AutoLogin");
-                    if (isAutoConncet != null && !isAutoConncet.Equals("") && (isAutoConncet.Equals("false") || isAutoConncet.Equals("true")))
-                        Config.FunGame_isAutoConnect = Convert.ToBoolean(isAutoConncet);
+                    string strUserName = INIHelper.ReadINI("Config", "UserName");
+                    string strPassword = INIHelper.ReadINI("Config", "Password");
+                    string strAutoKey = INIHelper.ReadINI("Config", "AutoKey");
+
+                    if (isAutoConnect != null && isAutoConnect.Trim() != "" && (isAutoConnect.ToLower().Equals("false") || isAutoConnect.ToLower().Equals("true")))
+                        Config.FunGame_isAutoConnect = Convert.ToBoolean(isAutoConnect);
                     else throw new ReadConfigException();
-                    if (isAutoLogin != null && !isAutoLogin.Equals("") && (isAutoLogin.Equals("false") || isAutoLogin.Equals("true")))
+
+                    if (isAutoLogin != null && isAutoLogin.Trim() != "" && (isAutoLogin.ToLower().Equals("false") || isAutoLogin.ToLower().Equals("true")))
                         Config.FunGame_isAutoLogin = Convert.ToBoolean(isAutoLogin);
+                    else throw new ReadConfigException();
+
+                    if (strUserName != null && strUserName.Trim() != "")
+                        Config.FunGame_AutoLoginUser = strUserName.Trim();
+                    else throw new ReadConfigException();
+
+                    if (strPassword != null && strPassword.Trim() != "")
+                        Config.FunGame_AutoLoginPassword = strPassword.Trim();
+                    else throw new ReadConfigException();
+
+                    if (strAutoKey != null && strAutoKey.Trim() != "")
+                        Config.FunGame_AutoLoginKey = strAutoKey.Trim();
                     else throw new ReadConfigException();
                 }
                 else
@@ -613,7 +630,10 @@ namespace Milimoe.FunGame.Desktop.UI
             Login.Visible = false;
             Logout.Visible = true;
             SetServerStatusLight((int)LightType.Green);
-            ShowMessage.Message($"欢迎回来，{Usercfg.LoginUserName}！", "登录成功", 5);
+            RunTime.Login?.Dispose();
+            string welcome = $"欢迎回来， {Usercfg.LoginUserName}！";
+            ShowMessage.Message(welcome, "登录成功", 5);
+            WritelnSystemInfo(welcome);
         }
 
         /// <summary>
@@ -944,7 +964,7 @@ namespace Milimoe.FunGame.Desktop.UI
         private void Login_Click(object sender, EventArgs e)
         {
             if (MainController != null && Config.FunGame_isConnected)
-                OpenForm.SingleForm(FormType.Login, OpenFormType.Dialog, this);
+                OpenForm.SingleForm(FormType.Login, OpenFormType.Dialog);
             else
                 ShowMessage.WarningMessage("请先连接服务器！");
         }
@@ -1155,8 +1175,8 @@ namespace Milimoe.FunGame.Desktop.UI
         {
             if (MainController != null && Config.FunGame_isAutoLogin)
             {
-                // 自动登录 [TODO]
-                
+                // 自动登录
+                LoginController.LoginAccount(Config.FunGame_AutoLoginUser, Config.FunGame_AutoLoginPassword, Config.FunGame_AutoLoginKey);
             }
             return EventResult.Success;
         }
