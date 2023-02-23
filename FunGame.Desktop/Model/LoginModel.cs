@@ -1,10 +1,6 @@
-﻿using Milimoe.FunGame.Core.Library.Common.Event;
-using Milimoe.FunGame.Core.Library.Constant;
+﻿using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
 using Milimoe.FunGame.Desktop.Library;
-using Milimoe.FunGame.Desktop.Library.Interface;
-using Milimoe.FunGame.Desktop.UI;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Milimoe.FunGame.Desktop.Model
 {

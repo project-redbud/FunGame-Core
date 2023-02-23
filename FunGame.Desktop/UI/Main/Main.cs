@@ -195,7 +195,7 @@ namespace Milimoe.FunGame.Desktop.UI
                                 break;
 
                             case MainSet.SetUser:
-                                if (objs != null && objs.Length > 1)
+                                if (objs != null && objs.Length > 0)
                                 {
                                     SetLoginUser(objs);
                                 }
@@ -285,15 +285,12 @@ namespace Milimoe.FunGame.Desktop.UI
 
                     if (strUserName != null && strUserName.Trim() != "")
                         Config.FunGame_AutoLoginUser = strUserName.Trim();
-                    else throw new ReadConfigException();
 
                     if (strPassword != null && strPassword.Trim() != "")
                         Config.FunGame_AutoLoginPassword = strPassword.Trim();
-                    else throw new ReadConfigException();
 
                     if (strAutoKey != null && strAutoKey.Trim() != "")
                         Config.FunGame_AutoLoginKey = strAutoKey.Trim();
-                    else throw new ReadConfigException();
                 }
                 else
                 {

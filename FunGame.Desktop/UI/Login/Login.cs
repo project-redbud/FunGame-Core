@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Exception;
+﻿using Milimoe.FunGame.Core.Library.Exception;
 using Milimoe.FunGame.Desktop.Controller;
 using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Library.Base;
@@ -10,12 +9,9 @@ namespace Milimoe.FunGame.Desktop.UI
 {
     public partial class Login : BaseLogin
     {
-        private LoginController LoginController;
-
         public Login()
         {
             InitializeComponent();
-            LoginController = new LoginController(this);
         }
 
         private void Login_Handler()
