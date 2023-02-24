@@ -1,6 +1,6 @@
 ﻿namespace Milimoe.FunGame.Core.Library.Exception
 {
-    public static class ExceptionHelper
+    public static class ExceptionExtension
     {
         public static string GetErrorInfo(this System.Exception e)
         {

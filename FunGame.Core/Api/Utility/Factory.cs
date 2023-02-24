@@ -43,7 +43,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             if (objs is null || objs.Length == 0) return (T)instance;
             if (typeof(T) == typeof(Entity.User))
             {
-                instance = Api.Factory.UserFactory.GetInstance("Mili");
+                instance = GetUser(objs);
             }
             else if (typeof(T) == typeof(Skill))
             {
@@ -89,6 +89,31 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 || typeof(T) == typeof(Entity.UserStatistics))
                 return true;
             return false;
+        }
+
+        private static User GetUser(params object[] objs)
+        {
+            string username = "", password = "";
+            object objTemp;
+            if (objs.Length > 0)
+            {
+                objTemp = objs[0];
+                if (objTemp.GetType() != typeof(string))
+                {
+                    username = NetworkUtility.ConvertJsonObject<string>(objTemp) ?? "";
+                }
+                else username = (string)objs[0];
+            }
+            if (objs.Length > 1)
+            {
+                objTemp = objs[1];
+                if (objTemp.GetType() != typeof(string))
+                {
+                    password = NetworkUtility.ConvertJsonObject<string>(objTemp) ?? "";
+                }
+                else password = (string)objs[1];
+            }
+            return Api.Factory.UserFactory.GetInstance(username, password);
         }
     }
 }

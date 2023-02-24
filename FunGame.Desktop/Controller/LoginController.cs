@@ -1,5 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Desktop.Library;
+using Milimoe.FunGame.Desktop.Library.Component;
 using Milimoe.FunGame.Desktop.Model;
 
 namespace Milimoe.FunGame.Desktop.Controller
@@ -12,21 +13,18 @@ namespace Milimoe.FunGame.Desktop.Controller
             bool result = LoginModel.LoginAccount(objs);
             if (!result)
             {
+                ShowMessage.ErrorMessage("登录失败！！", "登录失败", 5);
                 RunTime.Login?.OnFailedLoginEvent(new GeneralEventArgs());
             }
-            RunTime.Login?.OnAfterLoginEvent(new GeneralEventArgs());
             return result;
         }
 
         public static bool CheckLogin(params object[]? objs)
         {
             bool result = LoginModel.CheckLogin(objs);
-            if (result)
+            if (!result)
             {
-                RunTime.Login?.OnSucceedLoginEvent(new GeneralEventArgs());
-            }
-            else
-            {
+                ShowMessage.ErrorMessage("登录失败！！", "登录失败", 5);
                 RunTime.Login?.OnFailedLoginEvent(new GeneralEventArgs());
             }
             return result;

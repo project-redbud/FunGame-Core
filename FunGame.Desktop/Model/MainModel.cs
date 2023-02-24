@@ -251,7 +251,6 @@ namespace Milimoe.FunGame.Desktop.Model
                 object[] ServerMessage = GetServerMessage();
                 SocketMessageType type = (SocketMessageType)ServerMessage[0];
                 object[] objs = (object[])ServerMessage[1];
-
                 result = type;
                 switch (type)
                 {
@@ -269,6 +268,7 @@ namespace Milimoe.FunGame.Desktop.Model
 
                     case SocketMessageType.CheckLogin:
                         SocketHandler_CheckLogin(objs);
+                        RunTime.Login?.OnAfterLoginEvent(new GeneralEventArgs());
                         break;
 
                     case SocketMessageType.Logout:
@@ -326,16 +326,27 @@ namespace Milimoe.FunGame.Desktop.Model
             Guid key = Guid.Empty;
             // 返回一个Key，再发回去给服务器就行了
             if (objs.Length > 0) key = NetworkUtility.ConvertJsonObject<Guid>(objs[0])!;
-            LoginController.CheckLogin(key);
+            if (key != Guid.Empty) LoginController.CheckLogin(key);
+            else
+            {
+                ShowMessage.ErrorMessage("登录失败！！", "登录失败", 5);
+                RunTime.Login?.OnFailedLoginEvent(new GeneralEventArgs());
+                RunTime.Login?.OnAfterLoginEvent(new GeneralEventArgs());
+            }
         }
         
         private void SocketHandler_CheckLogin(object[] objs)
         {
-            string msg = "";
             // 返回的objs是该Login的User对象的各个属性
-            if (objs.Length > 0) msg = NetworkUtility.ConvertJsonObject<string>(objs[0])!;
-            Main.GetMessage(msg);
-            Main.UpdateUI(MainSet.SetUser, new object[] { Factory.New<User>(msg) });
+            if (objs != null && objs.Length > 0)
+            {
+                // 创建User对象并返回到Main
+                Main.UpdateUI(MainSet.SetUser, new object[] { Factory.New<User>(objs) });
+                RunTime.Login?.OnSucceedLoginEvent(new GeneralEventArgs());
+                return;
+            }
+            ShowMessage.ErrorMessage("登录失败！！", "登录失败", 5);
+            RunTime.Login?.OnFailedLoginEvent(new GeneralEventArgs());
         }
 
         private void SocketHandler_Disconnect(object[] objs)

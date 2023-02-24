@@ -173,7 +173,6 @@ namespace Milimoe.FunGame.Desktop.UI
                                 break;
 
                             case MainSet.LogIn:
-                                LoginAccount(objs);
                                 break;
 
                             case MainSet.LogOut:
@@ -627,7 +626,8 @@ namespace Milimoe.FunGame.Desktop.UI
             Login.Visible = false;
             Logout.Visible = true;
             SetServerStatusLight((int)LightType.Green);
-            RunTime.Login?.Dispose();
+            RunTime.Login?.Close();
+            Thread.Sleep(100);
             string welcome = $"欢迎回来， {Usercfg.LoginUserName}！";
             ShowMessage.Message(welcome, "登录成功", 5);
             WritelnSystemInfo(welcome);
@@ -1170,7 +1170,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <returns></returns>
         public EventResult SucceedConnectEvent(object sender, GeneralEventArgs e)
         {
-            if (MainController != null && Config.FunGame_isAutoLogin)
+            if (MainController != null && Config.FunGame_isAutoLogin && Config.FunGame_AutoLoginUser != "" && Config.FunGame_AutoLoginPassword != "" && Config.FunGame_AutoLoginKey != "")
             {
                 // 自动登录
                 LoginController.LoginAccount(Config.FunGame_AutoLoginUser, Config.FunGame_AutoLoginPassword, Config.FunGame_AutoLoginKey);

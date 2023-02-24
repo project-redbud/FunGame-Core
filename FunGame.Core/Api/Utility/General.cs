@@ -91,7 +91,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 DontFragment = true
             };
             string data = "getserverping";
-            byte[] buffer = Encoding.ASCII.GetBytes(data);
+            byte[] buffer = General.DefaultEncoding.GetBytes(data);
             int timeout = 120;
             PingReply reply = pingSender.Send(addr, timeout, buffer, options);
             if (reply.Status == IPStatus.Success)
@@ -116,7 +116,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
     /// <summary>
     /// Json工具类
     /// </summary>
-    public static class JsonUtility
+    internal static class JsonUtility
     {
         /// <summary>
         /// 将JsonElement转换为泛型
@@ -124,10 +124,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <typeparam name="T">泛型</typeparam>
         /// <param name="element">JsonElement</param>
         /// <returns></returns>
-        public static T? ToObject<T>(this JsonElement element)
+        internal static T? ToObject<T>(this JsonElement element)
         {
-            var json = element.GetRawText();
-            return JsonSerializer.Deserialize<T>(json);
+            return JsonSerializer.Deserialize<T>(element.GetRawText());
         }
     }
 
@@ -222,7 +221,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
     /// <summary>
     /// 使用HMACSHA512算法加密
     /// </summary>
-    public class Encryption
+    internal class Encryption
     {
         /// <summary>
         /// 使用HMACSHA512算法加密
@@ -230,15 +229,29 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="Message">需要加密的值</param>
         /// <param name="Key">秘钥</param>
         /// <returns></returns>
-        public static string HmacSha512(string Message, string Key)
+        internal static string HmacSha512(string Message, string Key)
         {
             byte[] MessageBytes = General.DefaultEncoding.GetBytes(Message);
             Key = Convert.ToBase64String(General.DefaultEncoding.GetBytes(Key));
             byte[] KeyBytes = General.DefaultEncoding.GetBytes(Key);
             HMACSHA512 Hmacsha512 = new(KeyBytes);
             byte[] Hash = Hmacsha512.ComputeHash(MessageBytes);
-            string Hamc = BitConverter.ToString(Hash).Replace("-", "");
-            return Hamc.ToLower();
+            string Hmac = BitConverter.ToString(Hash).Replace("-", "");
+            return Hmac.ToLower();
+        }
+    }
+
+    public static class StringExtension
+    {
+        /// <summary>
+        /// 使用HMACSHA512算法加密
+        /// </summary>
+        /// <param name="msg">需要加密的值</param>
+        /// <param name="key">秘钥</param>
+        /// <returns></returns>
+        public static string Encrypt(this string msg, string key)
+        {
+            return Encryption.HmacSha512(msg, Encryption.HmacSha512(msg, key));
         }
     }
 

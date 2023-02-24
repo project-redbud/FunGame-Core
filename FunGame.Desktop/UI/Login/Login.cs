@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Library.Exception;
+﻿using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Library.Exception;
 using Milimoe.FunGame.Desktop.Controller;
 using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Library.Base;
@@ -26,7 +27,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     UsernameText.Focus();
                     return;
                 }
-                password = Core.Api.Utility.Encryption.HmacSha512(password, username);
+                password = password.Encrypt(username);
                 if (!LoginController.LoginAccount(username, password))
                     ShowMessage.Message("登录失败！！", "登录失败");
             }

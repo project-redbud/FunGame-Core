@@ -6,7 +6,8 @@ namespace Milimoe.FunGame.Desktop.Library.Component
     {
         private MessageResult MessageResult = MessageResult.Cancel;
         private string InputResult = "";
-        private int AutoClose = 0;
+        private readonly int AutoClose = 0;
+        private readonly Task? TaskAutoClose;
 
         private const string TITLE_TIP = "提示";
         private const string TITLE_WARNING = "警告";
@@ -112,29 +113,23 @@ namespace Milimoe.FunGame.Desktop.Library.Component
             }
             if (AutoClose > 0)
             {
-                Action action = new(() =>
+                TaskAutoClose = Task.Factory.StartNew(() =>
                 {
+                    Thread.Sleep(100);
                     string msg = MsgText.Text;
-                    MsgText.Text = msg + "\n[ " + AutoClose + " 秒后自动关闭 ]";
-                    while (AutoClose > 0)
+                    int s = AutoClose;
+                    BeginInvoke(() => ChangeSecond(msg, s));
+                    while (s > 0)
                     {
                         Thread.Sleep(1000);
-                        AutoClose--;
-                        MsgText.Text = msg + "\n[ " + AutoClose + " 秒后自动关闭 ]";
+                        s--;
+                    if (IsHandleCreated) BeginInvoke(() => ChangeSecond(msg, s));
                     }
                     MessageResult = MessageResult.OK;
-                    Dispose();
+                    Close();
                 });
-                Task.Run(() =>
-                {
-                    if (InvokeRequired)
-                        Invoke(action);
-                    else
-                        action();
-                });
-                Show();
             }
-            else ShowDialog();
+            ShowDialog();
         }
 
         /// <summary>
@@ -152,6 +147,7 @@ namespace Milimoe.FunGame.Desktop.Library.Component
                 BUTTON_RETRY => MessageResult.Retry,
                 _ => MessageResult.Cancel
             };
+            TaskAutoClose?.Wait(1);
             Dispose();
         }
 
@@ -209,6 +205,11 @@ namespace Milimoe.FunGame.Desktop.Library.Component
             object[] objs = { title, msg, 0, MessageButtonType.Input, BUTTON_CANCEL, BUTTON_RETRY, BUTTON_CANCEL };
             string result = new ShowMessage(objs).InputResult;
             return result;
+        }
+
+        private void ChangeSecond(string msg, int s)
+        {
+            MsgText.Text = msg + "\n[ " + s + " 秒后自动关闭 ]";
         }
 
         private void LeftButton_Click(object sender, EventArgs e)
