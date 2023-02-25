@@ -1,5 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Library.Server;
 using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
@@ -61,7 +62,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             throw new SocketGetClientException();
         }
 
-        public bool AddClient(string ClientName, Task t)
+        public bool AddClient(string ClientName, BaseModel t)
         {
             return PlayerThreads.Add(ClientName, t);
         }
