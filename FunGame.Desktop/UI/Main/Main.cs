@@ -1,6 +1,5 @@
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
@@ -10,7 +9,6 @@ using Milimoe.FunGame.Desktop.Library.Base;
 using Milimoe.FunGame.Desktop.Library.Component;
 using Milimoe.FunGame.Desktop.Utility;
 using System.Diagnostics;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Milimoe.FunGame.Desktop.UI
 {
@@ -42,7 +40,6 @@ namespace Milimoe.FunGame.Desktop.UI
         {
             InitializeComponent();
             Init();
-            BindEvent();
         }
 
         /// <summary>
@@ -76,6 +73,9 @@ namespace Milimoe.FunGame.Desktop.UI
             });
         }
 
+        /// <summary>
+        /// 绑定事件
+        /// </summary>
         protected override void BindEvent()
         {
             base.BindEvent();
@@ -92,7 +92,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// </summary>
         /// <param name="updatetype">string?</param>
         /// <param name="objs">object[]?</param>
-        public void UpdateUI(string? updatetype, object[]? objs = null)
+        public void UpdateUI(string? updatetype, params object[]? objs)
         {
             void action()
             {
@@ -159,6 +159,7 @@ namespace Milimoe.FunGame.Desktop.UI
                                 SetServerStatusLight((int)LightType.Red);
                                 SetButtonEnableIfLogon(false, ClientState.WaitConnect);
                                 LogoutAccount();
+                                CloseConnectedWindows();
                                 break;
 
                             case MainSet.Disconnect:
@@ -177,19 +178,17 @@ namespace Milimoe.FunGame.Desktop.UI
 
                             case MainSet.LogOut:
                                 Config.FunGame_isRetrying = false;
-                                Config.FunGame_isConnected = false;
                                 Config.FunGame_isAutoLogin = false;
-                                SetServerStatusLight((int)LightType.Yellow);
-                                SetButtonEnableIfLogon(false, ClientState.WaitConnect);
+                                SetServerStatusLight((int)LightType.Yellow, true);
+                                SetButtonEnableIfLogon(false, ClientState.WaitLogin);
                                 LogoutAccount();
-                                if (Config.FunGame_isAutoConnect)
+                                if (objs != null && objs.Length > 0)
                                 {
-                                    CurrentRetryTimes = -1;
-                                    Task.Run(() =>
+                                    if (objs[0].GetType() == typeof(string))
                                     {
-                                        Thread.Sleep(1000);
-                                        MainController?.Connect();
-                                    });
+                                        WritelnSystemInfo((string)objs[0]);
+                                        ShowMessage.Message((string)objs[0], "退出登录成功", 5);
+                                    }
                                 }
                                 break;
 
@@ -206,7 +205,7 @@ namespace Milimoe.FunGame.Desktop.UI
 
                             default:
                                 // 直接调用UpdateUI(string)相当于调用GetMessage(string)，输出该string到控制台。
-                                // 尽量避免使用除MainControllerSet之外的string调用此方法
+                                // 尽量避免使用除MainSet之外的string调用此方法
                                 WritelnSystemInfo(updatetype);
                                 break;
                         }
@@ -221,6 +220,11 @@ namespace Milimoe.FunGame.Desktop.UI
             InvokeUpdateUI(action);
         }
 
+        /// <summary>
+        /// 提供公共方法给Controller发送系统信息
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <param name="timetype"></param>
         public void GetMessage(string? msg, TimeType timetype = TimeType.TimeOnly)
         {
             void action()
@@ -270,9 +274,9 @@ namespace Milimoe.FunGame.Desktop.UI
                 {
                     string isAutoConnect = INIHelper.ReadINI("Config", "AutoConnect");
                     string isAutoLogin = INIHelper.ReadINI("Config", "AutoLogin");
-                    string strUserName = INIHelper.ReadINI("Config", "UserName");
-                    string strPassword = INIHelper.ReadINI("Config", "Password");
-                    string strAutoKey = INIHelper.ReadINI("Config", "AutoKey");
+                    string strUserName = INIHelper.ReadINI("Account", "UserName");
+                    string strPassword = INIHelper.ReadINI("Account", "Password");
+                    string strAutoKey = INIHelper.ReadINI("Account", "AutoKey");
 
                     if (isAutoConnect != null && isAutoConnect.Trim() != "" && (isAutoConnect.ToLower().Equals("false") || isAutoConnect.ToLower().Equals("true")))
                         Config.FunGame_isAutoConnect = Convert.ToBoolean(isAutoConnect);
@@ -325,7 +329,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// 设置登录信息
         /// </summary>
         /// <param name="objs"></param>
-        private void SetLoginUser(object[]? objs = null)
+        private void SetLoginUser(params object[]? objs)
         {
             if (InvokeRequired)
                 Invoke(LoginAccount, objs);
@@ -388,8 +392,6 @@ namespace Milimoe.FunGame.Desktop.UI
         {
             // 显示：匹配、创建房间
             // 隐藏：退出房间、房间设定
-            WritelnGameInfo(DateTimeUtility.GetNowShortTime() + " 离开房间");
-            WritelnGameInfo("[ " + Usercfg.LoginUserName + " ] 已离开房间 -> [ " + Config.FunGame_Roomid + " ]");
             SetRoomid("-1");
             QuitRoom.Visible = false;
             StartMatch.Visible = true;
@@ -412,7 +414,10 @@ namespace Milimoe.FunGame.Desktop.UI
 
         /// <summary>
         /// 未登录和离线时，停用按钮
+        /// 登录的时候要激活按钮
         /// </summary>
+        /// <param name="isLogon">是否登录</param>
+        /// <param name="status">客户端状态</param>
         private void SetButtonEnableIfLogon(bool isLogon, ClientState status)
         {
             switch (status)
@@ -615,17 +620,21 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <summary>
         /// 登录账号，显示登出按钮
         /// </summary>
-        private void LoginAccount(object[]? objs = null)
+        private void LoginAccount(params object[]? objs)
         {
             if (objs != null && objs.Length > 0)
             {
                 Usercfg.LoginUser = (User)objs[0];
+                if (Usercfg.LoginUser is null)
+                {
+                    throw new NoUserLogonException();
+                }
                 Usercfg.LoginUserName = Usercfg.LoginUser.Username;
             }
             NowAccount.Text = "[ID] " + Usercfg.LoginUserName;
             Login.Visible = false;
             Logout.Visible = true;
-            SetServerStatusLight((int)LightType.Green);
+            UpdateUI(MainSet.SetGreenAndPing);
             RunTime.Login?.Close();
             Thread.Sleep(100);
             string welcome = $"欢迎回来， {Usercfg.LoginUserName}！";
@@ -638,6 +647,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// </summary>
         private void LogoutAccount()
         {
+            InMain();
             Usercfg.LoginUser = null;
             Usercfg.LoginUserName = "";
             NowAccount.Text = "请登录账号";
@@ -796,6 +806,19 @@ namespace Milimoe.FunGame.Desktop.UI
             WritelnGameInfo(FunGameInfo.GetInfo((FunGameInfo.FunGame)Constant.FunGameType));
         }
 
+        /// <summary>
+        /// 关闭所有登录后才能访问的窗口
+        /// </summary>
+        private void CloseConnectedWindows()
+        {
+            RunTime.Login?.Close();
+            RunTime.Register?.Close();
+            RunTime.Store?.Close();
+            RunTime.Inventory?.Close();
+            RunTime.RoomSetting?.Close();
+            RunTime.UserCenter?.Close();
+        }
+
         #endregion
 
         #region 事件
@@ -916,6 +939,8 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="e"></param>
         private void QuitRoom_Click(object sender, EventArgs e)
         {
+            WritelnGameInfo(DateTimeUtility.GetNowShortTime() + " 离开房间");
+            WritelnGameInfo("[ " + Usercfg.LoginUserName + " ] 已离开房间 -> [ " + Config.FunGame_Roomid + " ]");
             InMain();
         }
 
@@ -1149,12 +1174,12 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <returns></returns>
         public EventResult FailedConnectEvent(object sender, GeneralEventArgs e)
         {
-            if (Config.FunGame_isAutoRetry && CurrentRetryTimes <= MaxRetryTimes)
+            if (Config.FunGame_isConnected && Config.FunGame_isAutoRetry && CurrentRetryTimes <= MaxRetryTimes)
             {
                 Task.Run(() =>
                 {
                     Thread.Sleep(5000);
-                    if (Config.FunGame_isAutoRetry) MainController?.Connect(); // 再次判断是否开启自动重连
+                    if (Config.FunGame_isConnected && Config.FunGame_isAutoRetry) MainController?.Connect(); // 再次判断是否开启自动重连
                 });
                 GetMessage("连接服务器失败，5秒后自动尝试重连。");
             }
@@ -1257,6 +1282,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     if (!Config.FunGame_isRetrying)
                     {
                         CurrentRetryTimes = -1;
+                        Config.FunGame_isAutoLogin = true;
                         MainController?.Connect();
                     }
                     else
@@ -1266,13 +1292,16 @@ namespace Milimoe.FunGame.Desktop.UI
                     if (!Config.FunGame_isConnected)
                     {
                         CurrentRetryTimes = -1;
+                        Config.FunGame_isAutoLogin = true;
                         MainController?.GetServerConnection();
                     }
                     break;
                 case Constant.FunGame_Disconnect:
                     if (Config.FunGame_isConnected && MainController != null)
                     {
-                        MainController?.Disconnect();
+                        // 先退出登录再断开连接
+                        bool? @bool = MainController?.LogOut();
+                        if (@bool ?? false) MainController?.Disconnect();
                     }
                     break;
                 case Constant.FunGame_DisconnectWhenNotLogin:
@@ -1308,6 +1337,7 @@ namespace Milimoe.FunGame.Desktop.UI
                         Constant.Server_Address = ip;
                         Constant.Server_Port = port;
                         CurrentRetryTimes = -1;
+                        Config.FunGame_isAutoLogin = true;
                         MainController?.Connect();
                     }
                     else if (ErrorType == Core.Library.Constant.ErrorType.IsNotIP) ShowMessage.ErrorMessage("这不是一个IP地址！");

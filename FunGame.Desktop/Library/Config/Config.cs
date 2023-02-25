@@ -23,5 +23,6 @@
 
         /*** GUID For Socket ***/
         public static Guid Guid_Socket { get; set; } = Guid.Empty;
+        public static Guid Guid_LoginKey { get; set; } = Guid.Empty;
     }
 }

@@ -90,5 +90,15 @@ namespace Milimoe.FunGame.Desktop.Library.Component
                 RunTime.UserCenter = null;
             }
         }
+
+        /// <summary>
+        /// 窗体加载事件，触发BindEvent()
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected virtual void LoadEvent(object? sender, EventArgs e)
+        {
+            BindEvent();
+        }
     }
 }

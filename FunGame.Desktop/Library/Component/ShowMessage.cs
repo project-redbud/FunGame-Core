@@ -115,7 +115,7 @@ namespace Milimoe.FunGame.Desktop.Library.Component
             {
                 TaskAutoClose = Task.Factory.StartNew(() =>
                 {
-                    Thread.Sleep(100);
+                    Thread.Sleep(1);
                     string msg = MsgText.Text;
                     int s = AutoClose;
                     BeginInvoke(() => ChangeSecond(msg, s));

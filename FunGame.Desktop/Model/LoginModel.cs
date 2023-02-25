@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Library.Constant;
+﻿using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
 using Milimoe.FunGame.Desktop.Library;
 
@@ -22,6 +23,7 @@ namespace Milimoe.FunGame.Desktop.Model
                     if (objs.Length > 0) username = (string)objs[0];
                     if (objs.Length > 1) password = (string)objs[1];
                     if (objs.Length > 2) autokey = (string)objs[2];
+                    password = password.Encrypt(username);
                     if (Socket.Send(SocketMessageType.Login, username, password, autokey) == SocketResult.Success)
                     {
                         return true;

@@ -33,17 +33,12 @@ namespace Milimoe.FunGame.Desktop.Controller
                     break;
 
                 case MainSet.Connect:
-                    Main.OnBeforeConnectEvent(new GeneralEventArgs());
                     result = MainModel.Connect();
-                    if ((ConnectResult)result == ConnectResult.Success)
-                    {
-                        Main.OnSucceedConnectEvent(new GeneralEventArgs());
-                    }
-                    else if ((ConnectResult)result == ConnectResult.ConnectFailed)
+                    if ((ConnectResult)result != ConnectResult.Success)
                     {
                         Main.OnFailedConnectEvent(new GeneralEventArgs());
+                        Main.OnAfterConnectEvent(new GeneralEventArgs());
                     }
-                    Main.OnAfterConnectEvent(new GeneralEventArgs());
                     break;
 
                 case MainSet.Connected:
@@ -53,11 +48,9 @@ namespace Milimoe.FunGame.Desktop.Controller
                 case MainSet.Disconnect:
                     Main.OnBeforeDisconnectEvent(new GeneralEventArgs());
                     MainModel.Disconnect();
-                    Main.OnAfterDisconnectEvent(new GeneralEventArgs());
                     break;
 
                 case MainSet.Disconnected:
-                    MainModel.Disconnect();
                     break;
 
                 case MainSet.WaitConnectAndSetYellow:
@@ -82,7 +75,8 @@ namespace Milimoe.FunGame.Desktop.Controller
                     break;
 
                 case MainSet.LogOut:
-                    result = MainModel.Logout();
+                    Main.OnBeforeLogoutEvent(new GeneralEventArgs());
+                    result = MainModel.LogOut();
                     break;
 
                 case MainSet.Close:

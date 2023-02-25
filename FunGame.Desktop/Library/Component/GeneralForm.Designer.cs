@@ -46,6 +46,7 @@
             this.Name = "GeneralForm";
             this.Text = "GeneralForm";
             this.FormClosed += FormClosedEvent;
+            this.Load += LoadEvent;
             this.ResumeLayout(false);
         }
 

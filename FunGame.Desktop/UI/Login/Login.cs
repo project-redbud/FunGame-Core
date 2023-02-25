@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
+﻿using Milimoe.FunGame.Core.Library.Common.Event;
+using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
 using Milimoe.FunGame.Desktop.Controller;
 using Milimoe.FunGame.Desktop.Library;
@@ -15,7 +16,13 @@ namespace Milimoe.FunGame.Desktop.UI
             InitializeComponent();
         }
 
-        private void Login_Handler()
+        protected override void BindEvent()
+        {
+            base.BindEvent();
+            FailedLogin += FailedLoginEvent;
+        }
+
+        private bool Login_Handler()
         {
             try
             {
@@ -25,16 +32,20 @@ namespace Milimoe.FunGame.Desktop.UI
                 {
                     ShowMessage.ErrorMessage("账号或密码不能为空！");
                     UsernameText.Focus();
-                    return;
+                    return false;
                 }
-                password = password.Encrypt(username);
                 if (!LoginController.LoginAccount(username, password))
+                {
                     ShowMessage.Message("登录失败！！", "登录失败");
+                    return false;
+                }
             }
             catch (Exception e)
             {
                 RunTime.WritelnSystemInfo(e.GetErrorInfo());
+                return false;
             }
+            return true;
         }
 
         /// <summary>
@@ -54,12 +65,19 @@ namespace Milimoe.FunGame.Desktop.UI
 
         private void GoToLogin_Click(object sender, EventArgs e)
         {
-            Login_Handler();
+            GoToLogin.Enabled = false;
+            if (!Login_Handler()) GoToLogin.Enabled = true;
         }
 
         private void ForgetPassword_Click(object sender, EventArgs e)
         {
             ShowMessage.TipMessage("暂不支持找回密码~");
+        }
+
+        public EventResult FailedLoginEvent(object sender, GeneralEventArgs e)
+        {
+            GoToLogin.Enabled = true;
+            return EventResult.Success;
         }
     }
 }

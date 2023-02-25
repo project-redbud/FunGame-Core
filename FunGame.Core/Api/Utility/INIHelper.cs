@@ -1,6 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Library.Constant;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Milimoe.FunGame.Core.Api.Utility
 {

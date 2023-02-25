@@ -18,21 +18,35 @@ namespace Milimoe.FunGame.Desktop.Model
         private readonly Main Main;
         private Task? ReceivingTask;
         private Core.Library.Common.Network.Socket? Socket;
+        private bool IsReceiving = false;
 
         public MainModel(Main main)
         {
             Main = main;
         }
 
-        public bool Logout()
+        #region 公开方法
+
+        public bool LogOut()
         {
             try
             {
-                //Socket?.Send(SocketMessageType.Logout, "");
+                // 需要当时登录给的Key发回去，确定是账号本人在操作才允许登出
+                if (Config.Guid_LoginKey != Guid.Empty)
+                {
+                    if (Socket?.Send(SocketMessageType.Logout, Config.Guid_LoginKey) == SocketResult.Success)
+                    {
+                        return true;
+                    }
+                }
+                else throw new CanNotLogOutException();
             }
             catch (Exception e)
             {
+                ShowMessage.ErrorMessage("无法登出您的账号，请联系服务器管理员。", "登出失败", 5);
                 Main.GetMessage(e.GetErrorInfo());
+                Main.OnFailedLogoutEvent(new GeneralEventArgs());
+                Main.OnAfterLogoutEvent(new GeneralEventArgs());
             }
             return false;
         }
@@ -41,15 +55,13 @@ namespace Milimoe.FunGame.Desktop.Model
         {
             try
             {
-                if (Socket?.Send(SocketMessageType.Disconnect, "") == SocketResult.Success)
-                {
-                    Main.OnSucceedDisconnectEvent(new GeneralEventArgs());
-                }
+                Socket?.Send(SocketMessageType.Disconnect, "");
             }
             catch (Exception e)
             {
                 Main.GetMessage(e.GetErrorInfo());
                 Main.OnFailedDisconnectEvent(new GeneralEventArgs());
+                Main.OnAfterDisconnectEvent(new GeneralEventArgs());
             }
         }
 
@@ -91,9 +103,12 @@ namespace Milimoe.FunGame.Desktop.Model
 
         public ConnectResult Connect()
         {
+            Main.OnBeforeConnectEvent(new GeneralEventArgs());
             if (Constant.Server_Address == "" || Constant.Server_Port <= 0)
             {
                 ShowMessage.ErrorMessage("查找可用的服务器失败！");
+                Main.OnFailedConnectEvent(new GeneralEventArgs());
+                Main.OnAfterConnectEvent(new GeneralEventArgs());
                 return ConnectResult.FindServerFailed;
             }
             try
@@ -102,6 +117,8 @@ namespace Milimoe.FunGame.Desktop.Model
                 {
                     Main.GetMessage("正在连接服务器，请耐心等待。");
                     Config.FunGame_isRetrying = false;
+                    Main.OnFailedConnectEvent(new GeneralEventArgs());
+                    Main.OnAfterConnectEvent(new GeneralEventArgs());
                     return ConnectResult.CanNotConnect;
                 }
                 if (!Config.FunGame_isConnected)
@@ -132,6 +149,15 @@ namespace Milimoe.FunGame.Desktop.Model
                                     Main.GetMessage("连接服务器成功，请登录账号以体验FunGame。");
                                     Main.UpdateUI(MainSet.Connected);
                                     StartReceiving();
+                                    while (true)
+                                    {
+                                        if (IsReceiving)
+                                        {
+                                            Main.OnSucceedConnectEvent(new GeneralEventArgs());
+                                            Main.OnAfterConnectEvent(new GeneralEventArgs());
+                                            break;
+                                        }
+                                    }
                                 }
                             });
                             return ConnectResult.Success;
@@ -152,6 +178,11 @@ namespace Milimoe.FunGame.Desktop.Model
                 Main.GetMessage(e.GetErrorInfo(), TimeType.None);
                 Main.UpdateUI(MainSet.SetRed);
                 Config.FunGame_isRetrying = false;
+                Task.Factory.StartNew(() =>
+                {
+                    Main.OnFailedConnectEvent(new GeneralEventArgs());
+                    Main.OnAfterConnectEvent(new GeneralEventArgs());
+                });
                 return ConnectResult.ConnectFailed;
             }
             return ConnectResult.CanNotConnect;
@@ -170,6 +201,7 @@ namespace Milimoe.FunGame.Desktop.Model
                 {
                     ReceivingTask.Wait(1);
                     ReceivingTask = null;
+                    IsReceiving = false;
                 }
             }
             catch (Exception e)
@@ -215,16 +247,16 @@ namespace Milimoe.FunGame.Desktop.Model
             throw new NotImplementedException();
         }
 
-        public bool LogOut()
-        {
-            throw new NotImplementedException();
-        }
+        #endregion
+
+        #region 私有方法
 
         private void StartReceiving()
         {
             ReceivingTask = Task.Factory.StartNew(() =>
             {
                 Thread.Sleep(100);
+                IsReceiving = true;
                 while (Socket != null && Socket.Connected)
                 {
                     Receiving();
@@ -272,6 +304,7 @@ namespace Milimoe.FunGame.Desktop.Model
                         break;
 
                     case SocketMessageType.Logout:
+                        SocketHandler_LogOut(objs);
                         break;
 
                     case SocketMessageType.Disconnect:
@@ -300,6 +333,10 @@ namespace Milimoe.FunGame.Desktop.Model
             return result;
         }
 
+        #endregion
+
+        #region SocketHandler
+
         private void SocketHandler_Connect(object[] objs)
         {
             string msg = "";
@@ -324,15 +361,52 @@ namespace Milimoe.FunGame.Desktop.Model
         private void SocketHandler_Login(object[] objs)
         {
             Guid key = Guid.Empty;
+            string? msg = "";
             // 返回一个Key，再发回去给服务器就行了
-            if (objs.Length > 0) key = NetworkUtility.ConvertJsonObject<Guid>(objs[0])!;
-            if (key != Guid.Empty) LoginController.CheckLogin(key);
-            else
+            if (objs.Length > 0) key = NetworkUtility.ConvertJsonObject<Guid>(objs[0]);
+            if (objs.Length > 1) msg = NetworkUtility.ConvertJsonObject<string>(objs[1]);
+            // 如果返回了msg，说明验证错误。
+            if (msg != null && msg.Trim() != "")
             {
-                ShowMessage.ErrorMessage("登录失败！！", "登录失败", 5);
+                ShowMessage.ErrorMessage(msg, "登录失败");
                 RunTime.Login?.OnFailedLoginEvent(new GeneralEventArgs());
                 RunTime.Login?.OnAfterLoginEvent(new GeneralEventArgs());
             }
+            else
+            {
+                if (key != Guid.Empty)
+                {
+                    Config.Guid_LoginKey = key;
+                    LoginController.CheckLogin(key);
+                }
+                else
+                {
+                    ShowMessage.ErrorMessage("登录失败！！", "登录失败", 5);
+                    RunTime.Login?.OnFailedLoginEvent(new GeneralEventArgs());
+                    RunTime.Login?.OnAfterLoginEvent(new GeneralEventArgs());
+                }
+            }
+        }
+        
+        private void SocketHandler_LogOut(object[] objs)
+        {
+            Guid key = Guid.Empty;
+            string? msg = "";
+            // 返回一个Key，如果这个Key是空的，登出失败
+            if (objs != null && objs.Length > 0) key = NetworkUtility.ConvertJsonObject<Guid>(objs[0]);
+            if (objs != null && objs.Length > 1) msg = NetworkUtility.ConvertJsonObject<string>(objs[1]);
+            if (key != Guid.Empty)
+            {
+                Config.Guid_LoginKey = Guid.Empty;
+                Main.UpdateUI(MainSet.LogOut, msg ?? "");
+                Main.OnSucceedLogoutEvent(new GeneralEventArgs());
+            }
+            else
+            {
+                ShowMessage.ErrorMessage("无法登出您的账号，请联系服务器管理员。", "登出失败", 5);
+                Main.OnFailedLogoutEvent(new GeneralEventArgs());
+            }
+            Main.OnAfterLogoutEvent(new GeneralEventArgs());
         }
         
         private void SocketHandler_CheckLogin(object[] objs)
@@ -356,6 +430,10 @@ namespace Milimoe.FunGame.Desktop.Model
             Main.GetMessage(msg);
             Main.UpdateUI(MainSet.Disconnect);
             Close();
+            Main.OnSucceedDisconnectEvent(new GeneralEventArgs());
+            Main.OnAfterDisconnectEvent(new GeneralEventArgs());
         }
+
+        #endregion
     }
 }
