@@ -329,7 +329,6 @@ namespace Milimoe.FunGame.Desktop.Model
                 Main.OnFailedConnectEvent(new GeneralEventArgs());
                 Close();
             }
-
             return result;
         }
 

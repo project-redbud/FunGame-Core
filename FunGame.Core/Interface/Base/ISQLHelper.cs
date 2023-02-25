@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Library.Constant;
+﻿using Milimoe.FunGame.Core.Library.Common.Network;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Interface.Base
 {
@@ -9,6 +10,6 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public object Entity { get; }
         public SQLResult Result { get; }
         int UpdateRows { get; }
-        public Library.Common.Network.SQLServerInfo ServerInfo { get; }
+        public SQLServerInfo ServerInfo { get; }
     }
 }

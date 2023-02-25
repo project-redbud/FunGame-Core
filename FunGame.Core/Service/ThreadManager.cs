@@ -34,13 +34,7 @@ namespace Milimoe.FunGame.Core.Service
         /// </summary>
         /// <param name="name">Thread的Key</param>
         /// <returns>Thread对象</returns>
-        internal BaseModel this[string name]
-        {
-            get
-            {
-                return Threads[name];
-            }
-        }
+        internal BaseModel this[string name] => Threads[name];
 
         /// <summary>
         /// 向线程管理器中添加Thread

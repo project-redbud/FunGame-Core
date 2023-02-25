@@ -1,84 +1,41 @@
-﻿using Milimoe.FunGame.Core.Api.Data;
-using Milimoe.FunGame.Core.Library.Constant;
+﻿using System.Data;
 using System.Text;
+using Milimoe.FunGame.Core.Api.Data;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Service
 {
     /// <summary>
     /// 需要在Server中继承此类实现
     /// </summary>
-    public class SQLManager
+    public abstract class SQLManager
     {
-        internal SQLHelper SQLHelper { get; }
+        public SQLHelper? SQLHelper { get; }
 
-        internal SQLManager(SQLHelper SQLHelper)
-        {
-            this.SQLHelper = SQLHelper;
-        }
+        public abstract int Add(StringBuilder sql, ref SQLResult result);
 
-        protected virtual int Add(StringBuilder sql, ref SQLResult result)
-        {
-            return 0;
-        }
+        public abstract int Add(string sql, ref SQLResult result);
 
-        protected virtual int Add(string sql, ref SQLResult result)
-        {
-            return 0;
-        }
+        public abstract SQLResult Execute();
 
-        protected virtual SQLResult Execute()
-        {
-            return SQLResult.NotFound;
-        }
+        public abstract SQLResult Execute(StringBuilder sql);
 
-        protected virtual SQLResult Execute(StringBuilder sql)
-        {
-            return SQLResult.NotFound;
-        }
+        public abstract SQLResult Execute(string sql);
 
-        protected virtual SQLResult Execute(string sql)
-        {
-            return SQLResult.NotFound;
-        }
+        public abstract DataSet ExecuteDataSet(StringBuilder sql);
 
-        protected virtual object Query(EntityType type, StringBuilder sql)
-        {
-            return General.EntityInstance;
-        }
+        public abstract DataSet ExecuteDataSet(string sql);
 
-        protected virtual T? Query<T>(StringBuilder sql)
-        {
-            return default;
-        }
+        public abstract object Query(EntityType type, StringBuilder sql);
 
-        protected virtual object Query(EntityType type, string sql)
-        {
-            return General.EntityInstance;
-        }
+        public abstract object Query(EntityType type, string sql);
 
-        protected virtual T? Query<T>(string sql)
-        {
-            return default;
-        }
+        public abstract int Remove(StringBuilder sql, ref SQLResult result);
 
-        protected virtual int Remove(StringBuilder sql, ref SQLResult result)
-        {
-            return 0;
-        }
+        public abstract int Remove(string sql, ref SQLResult result);
 
-        protected virtual int Remove(string sql, ref SQLResult result)
-        {
-            return 0;
-        }
-
-        protected virtual int Update(StringBuilder sql, ref SQLResult result)
-        {
-            return 0;
-        }
-
-        protected virtual int Update(string sql, ref SQLResult result)
-        {
-            return 0;
-        }
+        public abstract int Update(StringBuilder sql, ref SQLResult result);
+        
+        public abstract int Update(string sql, ref SQLResult result);
     }
 }

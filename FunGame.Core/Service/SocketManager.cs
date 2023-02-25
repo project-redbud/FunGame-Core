@@ -9,24 +9,12 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 客户端专用Socket
         /// </summary>
-        internal static Socket? Socket
-        {
-            get
-            {
-                return _Socket;
-            }
-        }
+        internal static Socket? Socket => _Socket;
 
         /// <summary>
         /// 服务器端专用Socket
         /// </summary>
-        internal static Socket? ServerSocket
-        {
-            get
-            {
-                return _ServerSocket;
-            }
-        }
+        internal static Socket? ServerSocket => _ServerSocket;
 
         private static Socket? _Socket = null;
         private static Socket? _ServerSocket = null;
