@@ -1,5 +1,5 @@
-﻿using Milimoe.FunGame.Core.Library.Constant;
-using System.Text;
+﻿using System.Text;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Desktop.Library
 {

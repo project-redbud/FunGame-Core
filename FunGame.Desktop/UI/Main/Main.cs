@@ -187,7 +187,7 @@ namespace Milimoe.FunGame.Desktop.UI
                                     if (objs[0].GetType() == typeof(string))
                                     {
                                         WritelnSystemInfo((string)objs[0]);
-                                        ShowMessage.Message((string)objs[0], "退出登录成功", 5);
+                                        ShowMessage.Message((string)objs[0], "退出登录", 5);
                                     }
                                 }
                                 break;

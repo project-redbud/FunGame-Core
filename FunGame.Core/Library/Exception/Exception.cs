@@ -104,4 +104,9 @@
     {
         public override string Message => "用户未登录 (#10021)";
     }
+
+    public class SQLQueryException : Exception
+    {
+        public override string Message => "执行SQL查询时遇到错误 (#10022)";
+    }
 }

@@ -1,8 +1,10 @@
+using Milimoe.FunGame.Core.Interface.Entity;
+
 namespace Milimoe.FunGame.Core.Entity
 {
-    public class User
+    public class User : BaseEntity
     {
-        public int Id { get; set; }
+        public new long Id { get; set; }
         public string Username { get; set; } = "";
         public string Password { get; set; } = "";
         public DateTime RegTime { get; set; }
@@ -34,6 +36,18 @@ namespace Milimoe.FunGame.Core.Entity
         {
             Username = username;
             Password = password;
+        }
+
+        public override bool Equals(IBaseEntity? other)
+        {
+            if (other == null) return false;
+            if (((User)other).Id == Id) return true;
+            return false;
+        }
+
+        public override IEnumerator<IBaseEntity> GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

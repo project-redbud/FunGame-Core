@@ -1,5 +1,5 @@
-﻿using Milimoe.FunGame.Core.Entity;
-using System.Text;
+﻿using System.Text;
+using Milimoe.FunGame.Core.Entity;
 
 namespace Milimoe.FunGame.Core.Library.Constant
 {
