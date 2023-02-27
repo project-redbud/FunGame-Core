@@ -81,6 +81,7 @@ namespace Milimoe.FunGame.Desktop.UI
             base.BindEvent();
             FailedConnect += FailedConnectEvent;
             SucceedConnect += SucceedConnectEvent;
+            SucceedLogin += SucceedLoginEvent;
         }
 
         #endregion
@@ -1174,6 +1175,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <returns></returns>
         public EventResult FailedConnectEvent(object sender, GeneralEventArgs e)
         {
+            // 自动重连
             if (Config.FunGame_isConnected && Config.FunGame_isAutoRetry && CurrentRetryTimes <= MaxRetryTimes)
             {
                 Task.Run(() =>
@@ -1201,6 +1203,19 @@ namespace Milimoe.FunGame.Desktop.UI
                 LoginController.LoginAccount(Config.FunGame_AutoLoginUser, Config.FunGame_AutoLoginPassword, Config.FunGame_AutoLoginKey);
             }
             return EventResult.Success;
+        }
+
+        /// <summary>
+        /// 登录成功后触发事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        private EventResult SucceedLoginEvent(object sender, GeneralEventArgs e)
+        {
+            // 接入-1号房间聊天室
+            if (MainController?.IntoRoom() ?? false) return EventResult.Success;
+            else return EventResult.Fail;
         }
 
         #endregion
@@ -1300,8 +1315,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     if (Config.FunGame_isConnected && MainController != null)
                     {
                         // 先退出登录再断开连接
-                        bool? @bool = MainController?.LogOut();
-                        if (@bool ?? false) MainController?.Disconnect();
+                        if (MainController?.LogOut() ?? false) MainController?.Disconnect();
                     }
                     break;
                 case Constant.FunGame_DisconnectWhenNotLogin:

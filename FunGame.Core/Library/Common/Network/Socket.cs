@@ -8,39 +8,15 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
     {
         public System.Net.Sockets.Socket Instance { get; }
         public int Runtime { get; } = (int)SocketRuntimeType.Client;
-        public string Token { get; set; } = "";
+        public Guid Token { get; set; } = Guid.Empty;
         public string ServerIP { get; } = "";
         public int ServerPort { get; } = 0;
         public string ServerName { get; } = "";
         public string ServerNotice { get; } = "";
-        public int HeartBeatFaileds
-        {
-            get
-            {
-                return _HeartBeatFaileds;
-            }
-        }
-        public bool Connected
-        {
-            get
-            {
-                return Instance != null && Instance.Connected;
-            }
-        }
-        public bool Receiving
-        {
-            get
-            {
-                return _Receiving;
-            }
-        }
-        public bool SendingHeartBeat
-        {
-            get
-            {
-                return _SendingHeartBeat;
-            }
-        }
+        public int HeartBeatFaileds => _HeartBeatFaileds;
+        public bool Connected => Instance != null && Instance.Connected;
+        public bool Receiving => _Receiving;
+        public bool SendingHeartBeat => _SendingHeartBeat;
 
         private Task? SendingHeartBeatTask;
         private Task? ReceivingTask;

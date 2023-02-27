@@ -19,6 +19,7 @@ namespace Milimoe.FunGame.Desktop.UI
         protected override void BindEvent()
         {
             base.BindEvent();
+            SucceedLogin += SucceedLoginEvent;
             FailedLogin += FailedLoginEvent;
         }
 
@@ -77,6 +78,25 @@ namespace Milimoe.FunGame.Desktop.UI
         public EventResult FailedLoginEvent(object sender, GeneralEventArgs e)
         {
             GoToLogin.Enabled = true;
+            RunTime.Main?.OnFailedLoginEvent(e);
+            return EventResult.Success;
+        }
+
+        private EventResult SucceedLoginEvent(object sender, GeneralEventArgs e)
+        {
+            RunTime.Main?.OnSucceedLoginEvent(e);
+            return EventResult.Success;
+        }
+
+        private EventResult BeforeLoginEvent(object sender, GeneralEventArgs e)
+        {
+            RunTime.Main?.OnBeforeLoginEvent(e);
+            return EventResult.Success;
+        }
+
+        private EventResult AfterLoginEvent(object sender, GeneralEventArgs e)
+        {
+            RunTime.Main?.OnAfterLoginEvent(e);
             return EventResult.Success;
         }
     }

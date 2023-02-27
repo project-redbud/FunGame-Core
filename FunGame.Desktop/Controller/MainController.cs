@@ -71,9 +71,6 @@ namespace Milimoe.FunGame.Desktop.Controller
                 case MainSet.SetRed:
                     break;
 
-                case MainSet.SetUser:
-                    break;
-
                 case MainSet.LogOut:
                     Main.OnBeforeLogoutEvent(new GeneralEventArgs());
                     result = MainModel.LogOut();
@@ -81,6 +78,10 @@ namespace Milimoe.FunGame.Desktop.Controller
 
                 case MainSet.Close:
                     result = MainModel.Close();
+                    break;
+
+                case MainSet.JoinRoom:
+                    result = MainModel.IntoRoom();
                     break;
 
                 default:
@@ -152,6 +153,11 @@ namespace Milimoe.FunGame.Desktop.Controller
         public bool Close()
         {
             return Do<bool>(MainSet.Close);
+        }
+
+        public bool IntoRoom()
+        {
+            return Do<bool>(MainSet.JoinRoom);
         }
     }
 }

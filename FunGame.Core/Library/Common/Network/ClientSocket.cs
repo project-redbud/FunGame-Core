@@ -8,33 +8,15 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
     {
         public System.Net.Sockets.Socket Instance { get; }
         public int Runtime { get; } = (int)SocketRuntimeType.Server;
-        public string Token { get; } = "";
+        public Guid Token { get; } = Guid.Empty;
         public string ServerIP { get; } = "";
         public int ServerPort { get; } = 0;
         public string ServerName { get; } = "";
         public string ServerNotice { get; } = "";
         public string ClientIP { get; } = "";
-        public string ClientName
-        {
-            get
-            {
-                return _ClientName;
-            }
-        }
-        public bool Connected
-        {
-            get
-            {
-                return Instance != null && Instance.Connected;
-            }
-        }
-        public bool Receiving
-        {
-            get
-            {
-                return _Receiving;
-            }
-        }
+        public string ClientName => _ClientName;
+        public bool Connected => Instance != null && Instance.Connected;
+        public bool Receiving => _Receiving;
 
         private Task? ReceivingTask;
 
@@ -58,7 +40,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public object[] Receive()
         {
             object[] result = SocketManager.Receive(Instance);
-            if (result.Length != 2) throw new SocketWrongInfoException();
+            if (result.Length != 3) throw new SocketWrongInfoException();
             return result;
         }
 

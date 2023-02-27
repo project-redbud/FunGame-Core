@@ -110,7 +110,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="type">通信类型</param>
         /// <param name="objs">参数</param>
         /// <returns>通信结果</returns>
-        internal static SocketResult Send(Socket ClientSocket, SocketMessageType type, string token, object[] objs)
+        internal static SocketResult Send(Socket ClientSocket, SocketMessageType type, Guid token, object[] objs)
         {
             if (ClientSocket != null && objs != null && objs.Length > 0)
             {
@@ -129,7 +129,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="type">通信类型</param>
         /// <param name="objs">参数</param>
         /// <returns>通信结果</returns>
-        internal static SocketResult Send(SocketMessageType type, string token, object[] objs)
+        internal static SocketResult Send(SocketMessageType type, Guid token, object[] objs)
         {
             if (objs is null || objs.Length <= 0)
             {
@@ -176,7 +176,7 @@ namespace Milimoe.FunGame.Core.Service
         /// 用于服务器接收客户端信息
         /// </summary>
         /// <param name="ClientSocket">客户端Socket</param>
-        /// <returns>通信类型[0]和参数[1]</returns>
+        /// <returns>通信类型[0]、Token[1]和参数[2]</returns>
         internal static object[] Receive(Socket ClientSocket)
         {
             object[] result = Array.Empty<object>();
@@ -191,7 +191,7 @@ namespace Milimoe.FunGame.Core.Service
                     Library.Common.Network.JsonObject? json = Library.Common.Network.JsonObject.GetObject(msg);
                     if (json != null)
                     {
-                        result = new object[] { json.MessageType, json.Parameters };
+                        result = new object[] { json.MessageType, json.Token, json.Parameters };
                     }
                     return result;
                 }
@@ -215,6 +215,8 @@ namespace Milimoe.FunGame.Core.Service
                 SocketMessageType.Logout => SocketSet.Logout,
                 SocketMessageType.Disconnect => SocketSet.Disconnect,
                 SocketMessageType.HeartBeat => SocketSet.HeartBeat,
+                SocketMessageType.IntoRoom => SocketSet.IntoRoom,
+                SocketMessageType.Chat => SocketSet.Chat,
                 _ => SocketSet.Unknown,
             };
         }

@@ -57,7 +57,9 @@
         CheckLogin = 1 << 4,
         Logout = 1 << 5,
         Disconnect = 1 << 6,
-        HeartBeat = 1 << 7
+        HeartBeat = 1 << 7,
+        IntoRoom = 1 << 8,
+        Chat = 1 << 9
     }
 
     public enum SocketRuntimeType

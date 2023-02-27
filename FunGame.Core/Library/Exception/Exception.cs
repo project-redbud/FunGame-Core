@@ -109,4 +109,9 @@
     {
         public override string Message => "执行SQL查询时遇到错误 (#10022)";
     }
+
+    public class CanNotIntoRoomException : Exception
+    {
+        public override string Message => "无法加入指定房间 (#10023)";
+    }
 }

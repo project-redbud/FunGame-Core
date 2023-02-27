@@ -5,7 +5,7 @@ using Milimoe.FunGame.Desktop.Library.Component;
 
 namespace Milimoe.FunGame.Desktop.Library.Base
 {
-    public class BaseMain : GeneralForm, IConnectEventHandler, IDisconnectEventHandler, ILogoutEventHandler, IIntoRoomEventHandler, ISendTalkEventHandler,
+    public class BaseMain : GeneralForm, IConnectEventHandler, IDisconnectEventHandler, ILoginEventHandler, ILogoutEventHandler, IIntoRoomEventHandler, ISendTalkEventHandler,
         ICreateRoomEventHandler, IQuitRoomEventHandler, IStartMatchEventHandler, IStartGameEventHandler, IOpenInventoryEventHandler, IOpenStoreEventHandler
     {
         public event IEventHandler.BeforeEventHandler? BeforeConnect;
@@ -86,6 +86,47 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             if (SucceedDisconnect != null)
             {
                 return SucceedDisconnect(this, e);
+            }
+            else return EventResult.NoEventImplement;
+        }
+
+        public event IEventHandler.BeforeEventHandler? BeforeLogin;
+        public event IEventHandler.AfterEventHandler? AfterLogin;
+        public event IEventHandler.SucceedEventHandler? SucceedLogin;
+        public event IEventHandler.FailedEventHandler? FailedLogin;
+
+        public EventResult OnBeforeLoginEvent(GeneralEventArgs e)
+        {
+            if (BeforeLogin != null)
+            {
+                return BeforeLogin(this, e);
+            }
+            else return EventResult.NoEventImplement;
+        }
+
+        public EventResult OnAfterLoginEvent(GeneralEventArgs e)
+        {
+            if (AfterLogin != null)
+            {
+                return AfterLogin(this, e);
+            }
+            else return EventResult.NoEventImplement;
+        }
+
+        public EventResult OnSucceedLoginEvent(GeneralEventArgs e)
+        {
+            if (SucceedLogin != null)
+            {
+                return SucceedLogin(this, e);
+            }
+            else return EventResult.NoEventImplement;
+        }
+
+        public EventResult OnFailedLoginEvent(GeneralEventArgs e)
+        {
+            if (FailedLogin != null)
+            {
+                return FailedLogin(this, e);
             }
             else return EventResult.NoEventImplement;
         }

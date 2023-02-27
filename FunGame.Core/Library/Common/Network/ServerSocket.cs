@@ -9,25 +9,13 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
     {
         public System.Net.Sockets.Socket Instance { get; }
         public int Runtime { get; } = (int)SocketRuntimeType.Server;
-        public string Token { get; } = "";
+        public Guid Token { get; } = Guid.Empty;
         public string ServerIP { get; } = "";
         public int ServerPort { get; } = 0;
         public string ServerName { get; } = "";
         public string ServerNotice { get; } = "";
-        public bool Connected
-        {
-            get
-            {
-                return Instance != null && Instance.Connected;
-            }
-        }
-        public bool Receiving
-        {
-            get
-            {
-                return _Receiving;
-            }
-        }
+        public bool Connected => Instance != null && Instance.Connected;
+        public bool Receiving => _Receiving;
 
         private readonly ThreadManager PlayerThreads;
         private bool _Receiving = false;

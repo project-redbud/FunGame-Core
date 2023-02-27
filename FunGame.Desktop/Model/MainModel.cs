@@ -242,9 +242,21 @@ namespace Milimoe.FunGame.Desktop.Model
             throw new NotImplementedException();
         }
 
-        public void SetUser()
+        public bool IntoRoom()
         {
-            throw new NotImplementedException();
+            try
+            {
+                if (Socket?.Send(SocketMessageType.IntoRoom, Config.FunGame_Roomid) == SocketResult.Success)
+                    return true;
+                else throw new CanNotIntoRoomException();
+            }
+            catch (Exception e)
+            {
+                Main.GetMessage(e.GetErrorInfo());
+                Main.OnFailedIntoRoomEvent(new GeneralEventArgs());
+                Main.OnAfterIntoRoomEvent(new GeneralEventArgs());
+                return false;
+            }
         }
 
         #endregion
@@ -316,6 +328,10 @@ namespace Milimoe.FunGame.Desktop.Model
                             Main.UpdateUI(MainSet.SetGreenAndPing);
                         break;
 
+                    case SocketMessageType.IntoRoom:
+                        SocketHandler_IntoRoom(objs);
+                        break;
+
                     case SocketMessageType.Unknown:
                     default:
                         break;
@@ -339,14 +355,16 @@ namespace Milimoe.FunGame.Desktop.Model
         private void SocketHandler_Connect(object[] objs)
         {
             string msg = "";
+            Guid token = Guid.Empty;
             if (objs.Length > 0) msg = NetworkUtility.ConvertJsonObject<string>(objs[0])!;
             string[] strings = msg.Split(';');
             string ServerName = strings[0];
             string ServerNotice = strings[1];
             Config.FunGame_ServerName = ServerName;
             Config.FunGame_Notice = ServerNotice;
-            if (objs.Length > 1) msg = NetworkUtility.ConvertJsonObject<string>(objs[1])!;
-            Socket!.Token = msg;
+            if (objs.Length > 1) token = NetworkUtility.ConvertJsonObject<Guid>(objs[1]);
+            Socket!.Token = token;
+            Config.Guid_Socket = token;
             Main.GetMessage($"已连接服务器：{ServerName}。\n\n********** 服务器公告 **********\n\n{ServerNotice}\n\n");
             // 设置等待登录的黄灯
             Main.UpdateUI(MainSet.WaitLoginAndSetYellow);
@@ -431,6 +449,22 @@ namespace Milimoe.FunGame.Desktop.Model
             Close();
             Main.OnSucceedDisconnectEvent(new GeneralEventArgs());
             Main.OnAfterDisconnectEvent(new GeneralEventArgs());
+        }
+
+        private void SocketHandler_IntoRoom(object[] objs)
+        {
+            string roomid = "";
+            if (objs.Length > 0) roomid = NetworkUtility.ConvertJsonObject<string>(objs[0])!;
+            if (roomid == "-1")
+            {
+                Main.GetMessage($"已连接到公共聊天服务器。");
+            }
+            else
+            {
+                Config.FunGame_Roomid = roomid;
+            }
+            Main.OnSucceedIntoRoomEvent(new GeneralEventArgs());
+            Main.OnAfterIntoRoomEvent(new GeneralEventArgs());
         }
 
         #endregion

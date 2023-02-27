@@ -16,8 +16,8 @@ namespace Milimoe.FunGame.Desktop.Library.Interface
         public void SetGreen();
         public void SetYellow();
         public void SetRed();
-        public void SetUser();
         public bool LogOut();
         public bool Close();
+        public bool IntoRoom();
     }
 }
