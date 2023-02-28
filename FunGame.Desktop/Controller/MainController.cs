@@ -23,7 +23,7 @@ namespace Milimoe.FunGame.Desktop.Controller
         /**
          * 从内部去调用Model的方法，并记录日志。
          */
-        private T Do<T>(string DoType)
+        private T Do<T>(string DoType, params object[] args)
         {
             object result = new();
             switch(DoType)
@@ -80,8 +80,15 @@ namespace Milimoe.FunGame.Desktop.Controller
                     result = MainModel.Close();
                     break;
 
-                case MainSet.JoinRoom:
+                case MainSet.IntoRoom:
+                    Main.OnBeforeIntoRoomEvent(new GeneralEventArgs());
                     result = MainModel.IntoRoom();
+                    break;
+                    
+                case MainSet.Chat:
+                    Main.OnBeforeSendTalkEvent(new GeneralEventArgs());
+                    if (args != null && args.Length > 0)
+                    result = MainModel.Chat((string)args[0]);
                     break;
 
                 default:
@@ -140,11 +147,6 @@ namespace Milimoe.FunGame.Desktop.Controller
             throw new NotImplementedException();
         }
 
-        public void SetUser()
-        {
-            throw new NotImplementedException();
-        }
-
         public bool LogOut()
         {
             return Do<bool>(MainSet.LogOut);
@@ -157,7 +159,12 @@ namespace Milimoe.FunGame.Desktop.Controller
 
         public bool IntoRoom()
         {
-            return Do<bool>(MainSet.JoinRoom);
+            return Do<bool>(MainSet.IntoRoom);
+        }
+
+        public bool Chat(string msg)
+        {
+            return Do<bool>(MainSet.Chat, msg);
         }
     }
 }

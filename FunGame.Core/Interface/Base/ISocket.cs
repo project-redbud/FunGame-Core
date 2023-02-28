@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Library.Constant;
+﻿using System.Collections;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Interface.Base
 {
@@ -11,13 +12,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public int ServerPort { get; }
         public string ServerName { get; }
         public string ServerNotice { get; }
-        public bool Connected
-        {
-            get
-            {
-                return Instance != null && Instance.Connected;
-            }
-        }
+        public bool Connected => Instance != null && Instance.Connected;
         public bool Receiving { get; }
         public SocketResult Send(SocketMessageType type, params object[] objs);
         public object[] Receive();

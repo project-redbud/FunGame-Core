@@ -16,8 +16,10 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public string ServerNotice { get; } = "";
         public bool Connected => Instance != null && Instance.Connected;
         public bool Receiving => _Receiving;
+        public List<BaseModel> GetUsersList => UserThreads.GetList();
+        public int UsersCount => UserThreads.Count;
 
-        private readonly ThreadManager PlayerThreads;
+        private readonly ThreadManager UserThreads;
         private bool _Receiving = false;
 
         private ServerSocket(System.Net.Sockets.Socket Instance, int ServerPort, int MaxConnection = 0)
@@ -25,9 +27,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             this.Instance = Instance;
             this.ServerPort = ServerPort;
             if (MaxConnection <= 0)
-                PlayerThreads = new ThreadManager();
+                UserThreads = new ThreadManager();
             else
-                PlayerThreads = new ThreadManager(MaxConnection);
+                UserThreads = new ThreadManager(MaxConnection);
         }
 
         public static ServerSocket StartListening(int Port = 22222, int MaxConnection = 0)
@@ -50,14 +52,24 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             throw new SocketGetClientException();
         }
 
-        public bool AddClient(string ClientName, BaseModel t)
+        public bool AddUser(string UserName, BaseModel t)
         {
-            return PlayerThreads.Add(ClientName, t);
+            return UserThreads.Add(UserName, t);
         }
         
-        public bool RemoveClient(string ClientName)
+        public bool RemoveUser(string UserName)
         {
-            return PlayerThreads.Remove(ClientName);
+            return UserThreads.Remove(UserName);
+        }
+        
+        public bool ContainsUser(string UserName)
+        {
+            return UserThreads.ContainsKey(UserName);
+        }
+        
+        public BaseModel GetUser(string UserName)
+        {
+            return UserThreads[UserName];
         }
 
         public SocketResult Send(SocketMessageType type, params object[] objs)

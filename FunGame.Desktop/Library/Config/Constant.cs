@@ -20,7 +20,8 @@ namespace Milimoe.FunGame.Desktop.Library
         public const string Connect = ".connect";
         public const string GetServerConnection = ".getserverconnection";
         public const string Close = ".close";
-        public const string JoinRoom = ".joinroom";
+        public const string IntoRoom = ".intoroom";
+        public const string Chat = ".chat";
     }
 
     /// <summary>

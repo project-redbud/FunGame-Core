@@ -114,4 +114,9 @@
     {
         public override string Message => "无法加入指定房间 (#10023)";
     }
+
+    public class CanNotSendTalkException : Exception
+    {
+        public override string Message => "无法发送公共信息 (#10024)";
+    }
 }

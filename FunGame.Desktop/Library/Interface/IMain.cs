@@ -19,5 +19,6 @@ namespace Milimoe.FunGame.Desktop.Library.Interface
         public bool LogOut();
         public bool Close();
         public bool IntoRoom();
+        public bool Chat(string msg);
     }
 }

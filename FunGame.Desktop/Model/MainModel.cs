@@ -258,6 +258,23 @@ namespace Milimoe.FunGame.Desktop.Model
                 return false;
             }
         }
+        
+        public bool Chat(string msg)
+        {
+            try
+            {
+                if (Socket?.Send(SocketMessageType.Chat, msg) == SocketResult.Success)
+                    return true;
+                else throw new CanNotSendTalkException();
+            }
+            catch (Exception e)
+            {
+                Main.GetMessage(e.GetErrorInfo());
+                Main.OnFailedSendTalkEvent(new GeneralEventArgs());
+                Main.OnAfterSendTalkEvent(new GeneralEventArgs());
+                return false;
+            }
+        }
 
         #endregion
 
@@ -330,6 +347,10 @@ namespace Milimoe.FunGame.Desktop.Model
 
                     case SocketMessageType.IntoRoom:
                         SocketHandler_IntoRoom(objs);
+                        break;
+                        
+                    case SocketMessageType.Chat:
+                        SocketHandler_Chat(objs);
                         break;
 
                     case SocketMessageType.Unknown:
@@ -455,9 +476,9 @@ namespace Milimoe.FunGame.Desktop.Model
         {
             string roomid = "";
             if (objs.Length > 0) roomid = NetworkUtility.ConvertJsonObject<string>(objs[0])!;
-            if (roomid == "-1")
+            if (roomid.Trim() != "" && roomid == "-1")
             {
-                Main.GetMessage($"已连接到公共聊天服务器。");
+                Main.GetMessage($"已连接至公共聊天室。");
             }
             else
             {
@@ -465,6 +486,24 @@ namespace Milimoe.FunGame.Desktop.Model
             }
             Main.OnSucceedIntoRoomEvent(new GeneralEventArgs());
             Main.OnAfterIntoRoomEvent(new GeneralEventArgs());
+        }
+        
+        private void SocketHandler_Chat(object[] objs)
+        {
+            if (objs != null && objs.Length > 1)
+            {
+                string user = NetworkUtility.ConvertJsonObject<string>(objs[0])!;
+                string msg = NetworkUtility.ConvertJsonObject<string>(objs[1])!;
+                if (user != Usercfg.LoginUserName)
+                {
+                    Main.GetMessage(msg, TimeType.None);
+                }
+                Main.OnSucceedSendTalkEvent(new GeneralEventArgs());
+                Main.OnAfterSendTalkEvent(new GeneralEventArgs());
+                return;
+            }
+            Main.OnFailedSendTalkEvent(new GeneralEventArgs());
+            Main.OnAfterSendTalkEvent(new GeneralEventArgs());
         }
 
         #endregion

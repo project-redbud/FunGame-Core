@@ -682,10 +682,23 @@ namespace Milimoe.FunGame.Desktop.UI
         private void SendTalkText_Click(bool isLeave)
         {
             // 向消息队列发送消息
-            if (!TalkText.Text.Trim().Equals("") && !TalkText.ForeColor.Equals(Color.DarkGray))
+            string text = TalkText.Text;
+            if (!text.Trim().Equals("") && !TalkText.ForeColor.Equals(Color.DarkGray))
             {
-                WritelnGameInfo((!Usercfg.LoginUserName.Equals("") ? DateTimeUtility.GetNowShortTime() + " [ " + Usercfg.LoginUserName + " ] 说： ": ":> ") + TalkText.Text);
-                SwitchTalkMessage(TalkText.Text);
+                string msg = "";
+                if (Usercfg.LoginUserName.Equals(""))
+                {
+                    msg = ":> " + text;
+                }
+                else
+                {
+                    msg = DateTimeUtility.GetNowShortTime() + " [ " + Usercfg.LoginUserName + " ] 说： " + text;
+                }
+                WritelnGameInfo(msg);
+                if (!SwitchTalkMessage(text))
+                {
+                    MainController?.Chat(msg);
+                }
                 TalkText.Text = "";
                 if (isLeave) TalkText_Leave(); // 回车不离开焦点
             }
@@ -1243,7 +1256,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// 判断快捷消息
         /// </summary>
         /// <param name="s"></param>
-        private void SwitchTalkMessage(string s)
+        private bool SwitchTalkMessage(string s)
         {
             switch (s)
             {
@@ -1326,7 +1339,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     break;
                 case Constant.FunGame_ConnectTo:
                     string msg = ShowMessage.InputMessage("请输入服务器IP地址和端口号，如: 127.0.0.1:22222。", "连接指定服务器");
-                    if (msg.Equals("")) return;
+                    if (msg.Equals("")) return true;
                     string[] addr = msg.Split(':');
                     string ip;
                     int port;
@@ -1343,7 +1356,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     else
                     {
                         ShowMessage.ErrorMessage("格式错误！\n这不是一个服务器地址。");
-                        return;
+                        return true;
                     }
                     ErrorType ErrorType = NetworkUtility.IsServerAddress(ip, port);
                     if (ErrorType == Core.Library.Constant.ErrorType.None)
@@ -1361,6 +1374,7 @@ namespace Milimoe.FunGame.Desktop.UI
                 default:
                     break;
             }
+            return false;
         }
 
         #endregion

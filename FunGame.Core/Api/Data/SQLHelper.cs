@@ -10,6 +10,7 @@ namespace Milimoe.FunGame.Core.Api.Data
     /// </summary>
     public abstract class SQLHelper : ISQLHelper
     {
+        public abstract FunGameInfo.FunGame FunGameType { get; }
         public abstract string Script { get; set; }
         public abstract CommandType CommandType { get; set; }
         public abstract SQLResult Result { get; }

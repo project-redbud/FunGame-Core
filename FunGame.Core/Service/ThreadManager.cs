@@ -6,6 +6,11 @@ namespace Milimoe.FunGame.Core.Service
     internal class ThreadManager
     {
         /// <summary>
+        /// 目前的线程数量
+        /// </summary>
+        internal int Count => Threads.Count;
+
+        /// <summary>
         /// 最大接受的线程数量
         /// </summary>
         private int MaxThread { get; }
@@ -80,6 +85,11 @@ namespace Milimoe.FunGame.Core.Service
             return result;
         }
 
+        internal bool ContainsKey(string name)
+        {
+            return Threads.ContainsKey(name);
+        }
+
         /// <summary>
         /// 清空线程管理器
         /// </summary>
@@ -88,5 +98,13 @@ namespace Milimoe.FunGame.Core.Service
             Threads.Clear();
         }
         
+
+        /// <summary>
+        /// 获取线程对象的列表
+        /// </summary>
+        internal List<BaseModel> GetList()
+        {
+            return Threads.Values.ToList();
+        }
     }
 }

@@ -47,19 +47,18 @@
         Red
     }
 
-    [Flags]
     public enum SocketMessageType
     {
-        Unknown = 0,
-        Connect = 1 << 0,
-        GetNotice = 1 << 1,
-        Login = 1 << 2,
-        CheckLogin = 1 << 4,
-        Logout = 1 << 5,
-        Disconnect = 1 << 6,
-        HeartBeat = 1 << 7,
-        IntoRoom = 1 << 8,
-        Chat = 1 << 9
+        Unknown,
+        Connect,
+        GetNotice,
+        Login,
+        CheckLogin,
+        Logout,
+        Disconnect,
+        HeartBeat,
+        IntoRoom,
+        Chat
     }
 
     public enum SocketRuntimeType
