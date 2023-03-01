@@ -3,7 +3,7 @@ using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Server;
 
-namespace Milimoe.FunGame.Core.Api.Data
+namespace Milimoe.FunGame.Core.Api.Transmittal
 {
     /// <summary>
     /// 需要在Server中继承此类实现
