@@ -157,6 +157,14 @@
         Particle
     }
 
+    public enum VerifyCodeType
+    {
+        NumberVerifyCode,
+        LetterVerifyCode,
+        MixVerifyCode,
+        ImageVerifyCode
+    }
+
     public enum RoleType
     {
         Core,

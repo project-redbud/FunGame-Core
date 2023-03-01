@@ -119,4 +119,9 @@
     {
         public override string Message => "无法发送公共信息 (#10024)";
     }
+
+    public class CanNotSendEmailException : Exception
+    {
+        public override string Message => "无法发送邮件 (#10025)";
+    }
 }

@@ -40,4 +40,11 @@
         SQLError,
         IsExist
     }
+
+    public enum MailSendResult
+    {
+        Success,
+        Fail,
+        NotSend
+    }
 }

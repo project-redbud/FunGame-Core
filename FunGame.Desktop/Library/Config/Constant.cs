@@ -22,6 +22,7 @@ namespace Milimoe.FunGame.Desktop.Library
         public const string Close = ".close";
         public const string IntoRoom = ".intoroom";
         public const string Chat = ".chat";
+        public const string QuitRoom = ".quitroom";
     }
 
     /// <summary>

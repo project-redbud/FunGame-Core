@@ -16,10 +16,10 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public string ServerNotice { get; } = "";
         public bool Connected => Instance != null && Instance.Connected;
         public bool Receiving => _Receiving;
-        public List<BaseModel> GetUsersList => UserThreads.GetList();
-        public int UsersCount => UserThreads.Count;
+        public List<BaseModel> GetUsersList => OnlineUsers.GetList();
+        public int UsersCount => OnlineUsers.Count;
 
-        private readonly ThreadManager UserThreads;
+        private readonly ThreadManager OnlineUsers;
         private bool _Receiving = false;
 
         private ServerSocket(System.Net.Sockets.Socket Instance, int ServerPort, int MaxConnection = 0)
@@ -27,9 +27,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             this.Instance = Instance;
             this.ServerPort = ServerPort;
             if (MaxConnection <= 0)
-                UserThreads = new ThreadManager();
+                OnlineUsers = new ThreadManager();
             else
-                UserThreads = new ThreadManager(MaxConnection);
+                OnlineUsers = new ThreadManager(MaxConnection);
         }
 
         public static ServerSocket StartListening(int Port = 22222, int MaxConnection = 0)
@@ -54,22 +54,22 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
 
         public bool AddUser(string UserName, BaseModel t)
         {
-            return UserThreads.Add(UserName, t);
+            return OnlineUsers.Add(UserName, t);
         }
         
         public bool RemoveUser(string UserName)
         {
-            return UserThreads.Remove(UserName);
+            return OnlineUsers.Remove(UserName);
         }
         
         public bool ContainsUser(string UserName)
         {
-            return UserThreads.ContainsKey(UserName);
+            return OnlineUsers.ContainsKey(UserName);
         }
         
         public BaseModel GetUser(string UserName)
         {
-            return UserThreads[UserName];
+            return OnlineUsers[UserName];
         }
 
         public SocketResult Send(SocketMessageType type, params object[] objs)

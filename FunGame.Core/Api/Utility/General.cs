@@ -255,4 +255,109 @@ namespace Milimoe.FunGame.Core.Api.Utility
     }
 
     #endregion
+
+    #region 验证服务
+
+    public class Verification
+    {
+        /// <summary>
+        /// 生成验证码
+        /// </summary>
+        /// <param name="type">类型</param>
+        /// <param name="length">长度</param>
+        /// <returns></returns>
+        public static string CreateVerifyCode(VerifyCodeType type, int length)
+        {
+            return type switch
+            {
+                VerifyCodeType.MixVerifyCode => MixVerifyCode(length),
+                VerifyCodeType.LetterVerifyCode => LetterVerifyCode(length),
+                _ => NumberVerifyCode(length),
+            };
+        }
+
+        /// <summary>
+        /// 数字验证码
+        /// </summary>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        private static string NumberVerifyCode(int length)
+        {
+            int[] RandMembers = new int[length];
+            int[] GetNumbers = new int[length];
+            string VerifyCode = "";
+            //生成起始序列值  
+            int seekSeek = unchecked((int)DateTime.Now.Ticks);
+            Random seekRand = new(seekSeek);
+            int beginSeek = seekRand.Next(0, int.MaxValue - length * 10000);
+            int[] seeks = new int[length];
+            for (int i = 0; i < length; i++)
+            {
+                beginSeek += 10000;
+                seeks[i] = beginSeek;
+            }
+            //生成随机数字  
+            for (int i = 0; i < length; i++)
+            {
+                Random rand = new(seeks[i]);
+                int pownum = 1 * (int)Math.Pow(10, length);
+                RandMembers[i] = rand.Next(pownum, int.MaxValue);
+            }
+            //抽取随机数字  
+            for (int i = 0; i < length; i++)
+            {
+                string numStr = RandMembers[i].ToString();
+                int numLength = numStr.Length;
+                Random rand = new();
+                int numPosition = rand.Next(0, numLength - 1);
+                GetNumbers[i] = int.Parse(numStr.Substring(numPosition, 1));
+            }
+            //生成验证码  
+            for (int i = 0; i < length; i++)
+            {
+                VerifyCode += GetNumbers[i].ToString();
+            }
+            return VerifyCode;
+        }
+
+        /// <summary>
+        /// 字母验证码
+        /// </summary>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        private static string LetterVerifyCode(int length)
+        {
+            char[] Verification = new char[length];
+            char[] Dictionary = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
+            Random random = new();
+            for (int i = 0; i < length; i++)
+            {
+                Verification[i] = Dictionary[random.Next(Dictionary.Length - 1)];
+            }
+            return new string(Verification);
+        }
+
+        /// <summary>
+        /// 混合验证码
+        /// </summary>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        private static string MixVerifyCode(int length)
+        {
+            char[] Verification = new char[length];
+            char[] Dictionary = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+            };
+            Random random = new();
+            for (int i = 0; i < length; i++)
+            {
+                Verification[i] = Dictionary[random.Next(Dictionary.Length - 1)];
+            }
+            return new string(Verification);
+        }
+    }
+
+    #endregion
 }

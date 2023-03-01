@@ -34,6 +34,7 @@
         public const string HeartBeat = "HeartBeat";
         public const string IntoRoom = "IntoRoom";
         public const string Chat = "Chat";
+        public const string QuitRoom = "QuitRoom";
     }
 
     public class ReflectionSet
