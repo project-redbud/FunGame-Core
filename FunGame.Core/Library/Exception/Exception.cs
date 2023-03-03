@@ -124,4 +124,9 @@
     {
         public override string Message => "无法发送邮件 (#10025)";
     }
+
+    public class SmtpHelperException : Exception
+    {
+        public override string Message => "无法创建Smtp服务 (#10026)";
+    }
 }

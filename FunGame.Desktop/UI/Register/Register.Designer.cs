@@ -46,6 +46,15 @@
             this.TransparentRect.SuspendLayout();
             this.SuspendLayout();
             // 
+            // Title
+            // 
+            this.Title.Font = new System.Drawing.Font("LanaPixel", 26.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.Title.Location = new System.Drawing.Point(4, 4);
+            this.Title.Size = new System.Drawing.Size(391, 47);
+            this.Title.TabIndex = 8;
+            this.Title.Text = "FunGame Register";
+            this.Title.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // ExitButton
             // 
             this.ExitButton.Anchor = System.Windows.Forms.AnchorStyles.None;
@@ -60,6 +69,7 @@
             this.ExitButton.ForeColor = System.Drawing.Color.Red;
             this.ExitButton.Location = new System.Drawing.Point(453, 4);
             this.ExitButton.Name = "ExitButton";
+            this.ExitButton.RelativeForm = null;
             this.ExitButton.Size = new System.Drawing.Size(47, 47);
             this.ExitButton.TabIndex = 7;
             this.ExitButton.TextAlign = System.Drawing.ContentAlignment.TopLeft;
@@ -80,20 +90,11 @@
             this.MinButton.ForeColor = System.Drawing.Color.Black;
             this.MinButton.Location = new System.Drawing.Point(401, 4);
             this.MinButton.Name = "MinButton";
+            this.MinButton.RelativeForm = null;
             this.MinButton.Size = new System.Drawing.Size(47, 47);
             this.MinButton.TabIndex = 6;
             this.MinButton.TextAlign = System.Drawing.ContentAlignment.TopLeft;
             this.MinButton.UseVisualStyleBackColor = false;
-            // 
-            // Title
-            // 
-            this.Title.Font = new System.Drawing.Font("LanaPixel", 26.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.Title.Location = new System.Drawing.Point(4, 4);
-            this.Title.Name = "Title";
-            this.Title.Size = new System.Drawing.Size(391, 47);
-            this.Title.TabIndex = 8;
-            this.Title.Text = "FunGame Register";
-            this.Title.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // Username
             // 
@@ -160,6 +161,7 @@
             this.RegButton.TabIndex = 4;
             this.RegButton.Text = "注册";
             this.RegButton.UseVisualStyleBackColor = true;
+            this.RegButton.Click += new System.EventHandler(this.RegButton_Click);
             // 
             // GoToLogin
             // 
@@ -170,6 +172,7 @@
             this.GoToLogin.TabIndex = 5;
             this.GoToLogin.Text = "登录";
             this.GoToLogin.UseVisualStyleBackColor = true;
+            this.GoToLogin.Click += new System.EventHandler(this.GoToLogin_Click);
             // 
             // EmailText
             // 
@@ -214,6 +217,19 @@
             this.TransparentRect.Size = new System.Drawing.Size(503, 319);
             this.TransparentRect.TabIndex = 13;
             this.TransparentRect.TabStop = false;
+            this.TransparentRect.Controls.SetChildIndex(this.UsernameText, 0);
+            this.TransparentRect.Controls.SetChildIndex(this.CheckPassword, 0);
+            this.TransparentRect.Controls.SetChildIndex(this.PasswordText, 0);
+            this.TransparentRect.Controls.SetChildIndex(this.Password, 0);
+            this.TransparentRect.Controls.SetChildIndex(this.CheckPasswordText, 0);
+            this.TransparentRect.Controls.SetChildIndex(this.Username, 0);
+            this.TransparentRect.Controls.SetChildIndex(this.RegButton, 0);
+            this.TransparentRect.Controls.SetChildIndex(this.GoToLogin, 0);
+            this.TransparentRect.Controls.SetChildIndex(this.Title, 0);
+            this.TransparentRect.Controls.SetChildIndex(this.Email, 0);
+            this.TransparentRect.Controls.SetChildIndex(this.ExitButton, 0);
+            this.TransparentRect.Controls.SetChildIndex(this.EmailText, 0);
+            this.TransparentRect.Controls.SetChildIndex(this.MinButton, 0);
             // 
             // Register
             // 
@@ -222,7 +238,6 @@
             this.BackColor = System.Drawing.Color.WhiteSmoke;
             this.ClientSize = new System.Drawing.Size(503, 319);
             this.Controls.Add(this.TransparentRect);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Register";
             this.Opacity = 0.9D;

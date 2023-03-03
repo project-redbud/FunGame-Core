@@ -23,7 +23,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             _SmtpClientInfo = new SmtpClientInfo(SenderMailAddress, SenderName, SenderPassword, Host, Port, OpenSSL);
         }
 
-        public MailObject CreateMail(string Subject, string Body, MailPriority Priority, bool HTML, string[] ToList, string[] CCList, string[] BCCList)
+        public MailObject CreateMail(string Subject, string Body, MailPriority Priority, bool HTML, string[] ToList, string[]? CCList = null, string[]? BCCList = null)
         {
             return new MailObject(this, Subject, Body, Priority, HTML, ToList, CCList, BCCList);
         }

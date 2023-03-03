@@ -12,10 +12,10 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public MailPriority Priority { get; } = MailPriority.Normal;
         public bool HTML { get; } = false;
         public string[] ToList { get; } = Array.Empty<string>();
-        public string[] CCList { get; } = Array.Empty<string>();
-        public string[] BCCList { get; } = Array.Empty<string>();
+        public string[]? CCList { get; } = Array.Empty<string>();
+        public string[]? BCCList { get; } = Array.Empty<string>();
 
-        public MailObject(MailSender Sender, string Subject, string Body, MailPriority Priority, bool HTML, string[] ToList, string[] CCList, string[] BCCList)
+        public MailObject(MailSender Sender, string Subject, string Body, MailPriority Priority, bool HTML, string[] ToList, string[]? CCList = null, string[]? BCCList = null)
         {
             this.Sender = Sender.SmtpClientInfo.SenderMailAddress;
             this.SenderName = Sender.SmtpClientInfo.SenderName;

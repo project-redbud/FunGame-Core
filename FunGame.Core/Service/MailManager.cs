@@ -37,22 +37,32 @@ namespace Milimoe.FunGame.Core.Service
                 MailMessage Msg = new()
                 {
                     Subject = Mail.Subject,
-                    SubjectEncoding = General.DefaultEncoding,
+                    SubjectEncoding = System.Text.Encoding.UTF8,
                     Body = Mail.Body,
-                    BodyEncoding = General.DefaultEncoding,
-                    From = new MailAddress(Mail.Sender, Mail.SenderName, General.DefaultEncoding),
+                    BodyEncoding = System.Text.Encoding.UTF8,
+                    From = new MailAddress(Mail.Sender, Mail.SenderName, System.Text.Encoding.UTF8),
                     IsBodyHtml = Mail.HTML,
                     Priority = Mail.Priority
                 };
                 foreach (string To in Mail.ToList)
                 {
-                    Msg.To.Add(To);
+                    if (To.Trim() != "") Msg.To.Add(To);
                 }
-                foreach (string CC in Mail.CCList)
+                if (Mail.CCList != null)
                 {
-                    Msg.CC.Add(CC);
+                    foreach (string CC in Mail.CCList)
+                    {
+                        if (CC.Trim() != "") Msg.CC.Add(CC);
+                    }
                 }
-                Smtp.Send(Msg);
+                if (Mail.BCCList != null)
+                {
+                    foreach (string BCC in Mail.BCCList)
+                    {
+                        if (BCC.Trim() != "") Msg.Bcc.Add(BCC);
+                    }
+                }
+                Smtp.SendMailAsync(Msg);
                 return MailSendResult.Success;
             }
             catch (Exception e)

@@ -58,7 +58,9 @@
         Disconnect,
         HeartBeat,
         IntoRoom,
-        Chat
+        Chat,
+        Reg,
+        CheckReg
     }
 
     public enum SocketRuntimeType

@@ -8,7 +8,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /*
          * 声明API函数
          */
-        [LibraryImport("kernel32", StringMarshalling = StringMarshalling.Utf16)]
+        [LibraryImport("kernel32", EntryPoint = "WritePrivateProfileStringW", StringMarshalling = StringMarshalling.Utf16)]
         private static partial long WritePrivateProfileString(string section, string key, string val, string filePath);
         [LibraryImport("Kernel32.dll", EntryPoint = "GetPrivateProfileStringW", StringMarshalling = StringMarshalling.Utf16)]
         private static partial int GetPrivateProfileString(string section, string key, string def, char[] val, int size, string filePath);
@@ -84,6 +84,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     WriteINI("Server", "Key", "");
                     WriteINI("Server", "Status", "1");
                     /**
+                     * ServerMail
+                     */
+                    WriteINI("ServerMail", "OfficialMail", "");
+                    WriteINI("ServerMail", "SupportMail", "");
+                    /**
                      * Socket
                      */
                     WriteINI("Socket", "Port", "22222");
@@ -97,6 +102,16 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     WriteINI("MySQL", "DBName", "fungame");
                     WriteINI("MySQL", "DBUser", "root");
                     WriteINI("MySQL", "DBPassword", "pass");
+                    /**
+                     * Mailer
+                     */
+                    WriteINI("Mailer", "UseMailSender", "false");
+                    WriteINI("Mailer", "MailAddress", "");
+                    WriteINI("Mailer", "Name", "");
+                    WriteINI("Mailer", "Password", "");
+                    WriteINI("Mailer", "Host", "");
+                    WriteINI("Mailer", "Port", "587");
+                    WriteINI("Mailer", "OpenSSL", "true");
                     break;
             }
         }

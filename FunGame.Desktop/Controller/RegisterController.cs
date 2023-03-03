@@ -1,21 +1,22 @@
-﻿using Milimoe.FunGame.Desktop.Library.Interface;
+﻿using Milimoe.FunGame.Core.Library.Common.Event;
+using Milimoe.FunGame.Desktop.Library.Component;
+using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Model;
-using Milimoe.FunGame.Desktop.UI;
 
 namespace Milimoe.FunGame.Desktop.Controller
 {
-    public class RegisterController : IReg
+    public class RegisterController
     {
-        RegisterModel RegisterModel { get; }
-
-        public RegisterController(Register Register)
+        public static bool Reg(params object[]? objs)
         {
-            RegisterModel = new RegisterModel(Register);
-        }
-
-        public bool Reg()
-        {
-            return RegisterModel.Reg();
+            RunTime.Register?.OnBeforeRegEvent(new GeneralEventArgs());
+            bool result = RegisterModel.Reg(objs);
+            if (!result)
+            {
+                ShowMessage.ErrorMessage("注册失败！！", "注册失败", 5);
+                RunTime.Register?.OnFailedRegEvent(new GeneralEventArgs());
+            }
+            return result;
         }
     }
 }

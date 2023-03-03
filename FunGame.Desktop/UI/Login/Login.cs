@@ -19,8 +19,10 @@ namespace Milimoe.FunGame.Desktop.UI
         protected override void BindEvent()
         {
             base.BindEvent();
-            SucceedLogin += SucceedLoginEvent;
+            BeforeLogin += BeforeLoginEvent;
+            AfterLogin += AfterLoginEvent;
             FailedLogin += FailedLoginEvent;
+            SucceedLogin += SucceedLoginEvent;
         }
 
         private bool Login_Handler()
@@ -56,7 +58,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <param name="e"></param>
         private void RegButton_Click(object sender, EventArgs e)
         {
-            OpenForm.SingleForm(Core.Library.Constant.FormType.Register, Core.Library.Constant.OpenFormType.Dialog);
+            OpenForm.SingleForm(FormType.Register, OpenFormType.Dialog);
         }
 
         private void FastLogin_Click(object sender, EventArgs e)

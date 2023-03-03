@@ -179,7 +179,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             DateTime now = DateTime.Now;
             return type switch
             {
-                TimeType.DateOnly => now.Date.ToString(""),
+                TimeType.DateOnly => now.Date.ToString("D"),
                 TimeType.TimeOnly => now.ToString("T"),
                 TimeType.Year4 => now.Year.ToString(),
                 TimeType.Year2 => "'" + now.ToString("yy"),

@@ -1,23 +1,33 @@
-﻿using Milimoe.FunGame.Desktop.Library;
-using Milimoe.FunGame.Desktop.Library.Interface;
-using Milimoe.FunGame.Desktop.UI;
+﻿using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Library.Exception;
+using Milimoe.FunGame.Desktop.Library;
 
 namespace Milimoe.FunGame.Desktop.Model
 {
-    public class RegisterModel : IReg
+    public class RegisterModel
     {
-        private readonly Register Register;
-        private Core.Library.Common.Network.Socket? Socket;
-
-        public RegisterModel(Register register)
+        public static bool Reg(params object[]? objs)
         {
-            Register = register;
-            Socket = RunTime.Socket;
-        }
-
-        public bool Reg()
-        {
-            return true;
+            try
+            {
+                Core.Library.Common.Network.Socket? Socket = RunTime.Socket;
+                if (Socket != null && objs != null)
+                {
+                    string username = "";
+                    string email = "";
+                    if (objs.Length > 0) username = (string)objs[0];
+                    if (objs.Length > 1) email = (string)objs[1];
+                    if (Socket.Send(SocketMessageType.Reg, username, email) == SocketResult.Success)
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                e.GetErrorInfo();
+            }
+            return false;
         }
     }
 }
