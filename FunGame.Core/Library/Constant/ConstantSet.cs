@@ -33,8 +33,10 @@
         public const string Disconnect = "Disconnect";
         public const string HeartBeat = "HeartBeat";
         public const string IntoRoom = "IntoRoom";
-        public const string Chat = "Chat";
         public const string QuitRoom = "QuitRoom";
+        public const string Chat = "Chat";
+        public const string Reg = "Reg";
+        public const string CheckReg = "CheckReg";
     }
 
     public class ReflectionSet

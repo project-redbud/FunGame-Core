@@ -8,6 +8,8 @@ using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Library.Component;
 using Milimoe.FunGame.Desktop.Library.Interface;
 using Milimoe.FunGame.Desktop.UI;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Milimoe.FunGame.Desktop.Model
 {
@@ -349,8 +351,18 @@ namespace Milimoe.FunGame.Desktop.Model
                         SocketHandler_IntoRoom(objs);
                         break;
                         
+                    case SocketMessageType.QuitRoom:
+                        break;
+                        
                     case SocketMessageType.Chat:
                         SocketHandler_Chat(objs);
+                        break;
+                        
+                    case SocketMessageType.Reg:
+                        break;
+                        
+                    case SocketMessageType.CheckReg:
+                        SocketHandler_CheckReg(objs);
                         break;
 
                     case SocketMessageType.Unknown:
@@ -504,6 +516,32 @@ namespace Milimoe.FunGame.Desktop.Model
             }
             Main.OnFailedSendTalkEvent(new GeneralEventArgs());
             Main.OnAfterSendTalkEvent(new GeneralEventArgs());
+        }
+        
+        private void SocketHandler_CheckReg(object[] objs)
+        {
+            if (objs != null && objs.Length > 1)
+            {
+                bool successful = NetworkUtility.ConvertJsonObject<bool>(objs[0])!;
+                string msg = NetworkUtility.ConvertJsonObject<string>(objs[1])!;
+                ShowMessage.Message(msg, "注册结果");
+                if (successful)
+                {
+                    Main.GetMessage(msg, TimeType.None);
+                    if (RunTime.Register != null)
+                    {
+                        RunTime.Register.CheckReg = true;
+                        RunTime.Register.OnSucceedRegEvent(RunTime.Register.EventArgs);
+                        RunTime.Register.OnAfterRegEvent(RunTime.Register.EventArgs);
+                    }
+                    return;
+                }
+            }
+            if (RunTime.Register != null)
+            {
+                RunTime.Register.OnFailedRegEvent(RunTime.Register.EventArgs);
+                RunTime.Register.OnAfterRegEvent(RunTime.Register.EventArgs);
+            }
         }
 
         #endregion

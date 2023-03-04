@@ -52,5 +52,10 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Common
         {
             return $"{Constant.Command_Select} {Constant.Command_All} {Constant.Command_From} {TableName} {Constant.Command_Where} {Column_Username} = '{Username}' and {Column_Email} = '{Email}' and {Column_RegVerifyCode} = '{RegVerifyCode}'";
         }
+
+        public static string Delete_RegVerifyCode(string Username, string Email)
+        {
+            return $"{Constant.Command_Delete} {Constant.Command_From} {TableName} {Constant.Command_Where} {Column_Username} = '{Username}' and {Column_Email} = '{Email}'";
+        }
     }
 }

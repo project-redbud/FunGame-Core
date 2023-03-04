@@ -58,6 +58,7 @@
         Disconnect,
         HeartBeat,
         IntoRoom,
+        QuitRoom,
         Chat,
         Reg,
         CheckReg

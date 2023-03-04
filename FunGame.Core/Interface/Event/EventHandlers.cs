@@ -73,10 +73,10 @@ namespace Milimoe.FunGame.Core.Interface
         public event SucceedEventHandler? SucceedReg;
         public event FailedEventHandler? FailedReg;
 
-        public EventResult OnBeforeRegEvent(GeneralEventArgs e);
-        public EventResult OnAfterRegEvent(GeneralEventArgs e);
-        public EventResult OnSucceedRegEvent(GeneralEventArgs e);
-        public EventResult OnFailedRegEvent(GeneralEventArgs e);
+        public EventResult OnBeforeRegEvent(RegisterEventArgs e);
+        public EventResult OnAfterRegEvent(RegisterEventArgs e);
+        public EventResult OnSucceedRegEvent(RegisterEventArgs e);
+        public EventResult OnFailedRegEvent(RegisterEventArgs e);
     }
 
     public interface IIntoRoomEventHandler : IEventHandler

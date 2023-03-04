@@ -206,6 +206,15 @@ namespace Milimoe.FunGame.Desktop.Library.Component
             string result = new ShowMessage(objs).InputResult;
             return result;
         }
+        
+        public static string InputMessageCancel(string msg, string title, out MessageResult cancel)
+        {
+            object[] objs = { title, msg, 0, MessageButtonType.Input, BUTTON_CANCEL, BUTTON_RETRY, BUTTON_CANCEL };
+            ShowMessage window = new ShowMessage(objs);
+            string result = window.InputResult;
+            cancel = window.MessageResult;
+            return result;
+        }
 
         private void ChangeSecond(string msg, int s)
         {
@@ -229,6 +238,7 @@ namespace Milimoe.FunGame.Desktop.Library.Component
 
         private void InputButton_Click()
         {
+            MessageResult = MessageResult.OK;
             if (InputText.Text != null && !InputText.Text.Equals(""))
             {
                 InputResult = InputText.Text;

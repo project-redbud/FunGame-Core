@@ -216,7 +216,10 @@ namespace Milimoe.FunGame.Core.Service
                 SocketMessageType.Disconnect => SocketSet.Disconnect,
                 SocketMessageType.HeartBeat => SocketSet.HeartBeat,
                 SocketMessageType.IntoRoom => SocketSet.IntoRoom,
+                SocketMessageType.QuitRoom => SocketSet.QuitRoom,
                 SocketMessageType.Chat => SocketSet.Chat,
+                SocketMessageType.Reg => SocketSet.Reg,
+                SocketMessageType.CheckReg => SocketSet.CheckReg,
                 _ => SocketSet.Unknown,
             };
         }

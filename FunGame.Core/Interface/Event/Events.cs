@@ -40,10 +40,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface IRegEvent
     {
-        public EventResult BeforeRegEvent(object sender, GeneralEventArgs e);
-        public EventResult AfterRegEvent(object sender, GeneralEventArgs e);
-        public EventResult SucceedRegEvent(object sender, GeneralEventArgs e);
-        public EventResult FailedRegEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeRegEvent(object sender, RegisterEventArgs e);
+        public EventResult AfterRegEvent(object sender, RegisterEventArgs e);
+        public EventResult SucceedRegEvent(object sender, RegisterEventArgs e);
+        public EventResult FailedRegEvent(object sender, RegisterEventArgs e);
     }
 
     public interface IIntoRoomEvent
