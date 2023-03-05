@@ -25,6 +25,16 @@
         {
             return $"{Select_Users} {Constant.Command_Where} {Column_Username} = '{Username}' and {Column_Password} = '{Password}'";
         }
+        
+        public static string Select_DuplicateEmail(string Email)
+        {
+            return $"{Select_Users} {Constant.Command_Where} {Column_Email} = '{Email}'";
+        }
+        
+        public static string Select_DuplicateUsername(string Username)
+        {
+            return $"{Select_Users} {Constant.Command_Where} {Column_Username} = '{Username}'";
+        }
 
         public static string Select_Users_Where(string Where)
         {
@@ -33,14 +43,12 @@
 
         public static string Update_CheckLogin(string Username, string IP)
         {
-            return @$"{Constant.Command_Update} {TableName} {Constant.Command_Set} {Column_LastTime} = '{DateTime.Now}', {Column_LastIP} = '{IP}'
-                {Constant.Command_Where} {Column_Username} = '{Username}'";
+            return $"{Constant.Command_Update} {TableName} {Constant.Command_Set} {Column_LastTime} = '{DateTime.Now}', {Column_LastIP} = '{IP}' {Constant.Command_Where} {Column_Username} = '{Username}'";
         }
 
         public static string Insert_Register(string Username, string Password, string Email)
         {
-            return @$"{Constant.Command_Insert} {Constant.Command_Into} {TableName} ({Column_Username}, {Column_Password}, {Column_Email}, {Column_RegTime})
-                {Constant.Command_Values} ('{Username}', '{Password}', '{Email}', '{DateTime.Now}')";
+            return $"{Constant.Command_Insert} {Constant.Command_Into} {TableName} ({Column_Username}, {Column_Password}, {Column_Email}, {Column_RegTime}) {Constant.Command_Values} ('{Username}', '{Password}', '{Email}', '{DateTime.Now}')";
         }
 
         public static string Select_CheckAutoKey(string Username, string AutoKey)

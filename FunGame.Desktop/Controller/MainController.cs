@@ -9,7 +9,7 @@ namespace Milimoe.FunGame.Desktop.Controller
 {
     public class MainController : IMain
     {
-        public bool Connected => Do<bool>(MainSet.Connected);
+        public bool Connected => Do<bool>(MainInvokeType.Connected);
 
         private MainModel MainModel { get; }
         private Main Main { get; }
@@ -23,16 +23,16 @@ namespace Milimoe.FunGame.Desktop.Controller
         /**
          * 从内部去调用Model的方法，并记录日志。
          */
-        private T Do<T>(string DoType, params object[] args)
+        private T Do<T>(MainInvokeType DoType, params object[] args)
         {
             object result = new();
             switch(DoType)
             {
-                case MainSet.GetServerConnection:
+                case MainInvokeType.GetServerConnection:
                     result = MainModel.GetServerConnection();
                     break;
 
-                case MainSet.Connect:
+                case MainInvokeType.Connect:
                     result = MainModel.Connect();
                     if ((ConnectResult)result != ConnectResult.Success)
                     {
@@ -41,51 +41,51 @@ namespace Milimoe.FunGame.Desktop.Controller
                     }
                     break;
 
-                case MainSet.Connected:
+                case MainInvokeType.Connected:
                     result = MainModel.Connected;
                     break;
 
-                case MainSet.Disconnect:
+                case MainInvokeType.Disconnect:
                     Main.OnBeforeDisconnectEvent(new GeneralEventArgs());
                     MainModel.Disconnect();
                     break;
 
-                case MainSet.Disconnected:
+                case MainInvokeType.Disconnected:
                     break;
 
-                case MainSet.WaitConnectAndSetYellow:
+                case MainInvokeType.WaitConnectAndSetYellow:
                     break;
 
-                case MainSet.WaitLoginAndSetYellow:
+                case MainInvokeType.WaitLoginAndSetYellow:
                     break;
 
-                case MainSet.SetGreenAndPing:
+                case MainInvokeType.SetGreenAndPing:
                     break;
 
-                case MainSet.SetGreen:
+                case MainInvokeType.SetGreen:
                     break;
 
-                case MainSet.SetYellow:
+                case MainInvokeType.SetYellow:
                     break;
 
-                case MainSet.SetRed:
+                case MainInvokeType.SetRed:
                     break;
 
-                case MainSet.LogOut:
+                case MainInvokeType.LogOut:
                     Main.OnBeforeLogoutEvent(new GeneralEventArgs());
                     result = MainModel.LogOut();
                     break;
 
-                case MainSet.Close:
+                case MainInvokeType.Close:
                     result = MainModel.Close();
                     break;
 
-                case MainSet.IntoRoom:
+                case MainInvokeType.IntoRoom:
                     Main.OnBeforeIntoRoomEvent(new GeneralEventArgs());
                     result = MainModel.IntoRoom();
                     break;
                     
-                case MainSet.Chat:
+                case MainInvokeType.Chat:
                     Main.OnBeforeSendTalkEvent(new GeneralEventArgs());
                     if (args != null && args.Length > 0)
                     result = MainModel.Chat((string)args[0]);
@@ -99,22 +99,22 @@ namespace Milimoe.FunGame.Desktop.Controller
 
         public bool GetServerConnection()
         {
-            return Do<bool>(MainSet.GetServerConnection);
+            return Do<bool>(MainInvokeType.GetServerConnection);
         }
 
         public ConnectResult Connect()
         {
-            return Do<ConnectResult>(MainSet.Connect);
+            return Do<ConnectResult>(MainInvokeType.Connect);
         }
 
         public void Disconnect()
         {
-            Do<object>(MainSet.Disconnect);
+            Do<object>(MainInvokeType.Disconnect);
         }
 
         public void Disconnected()
         {
-            Do<object>(MainSet.Disconnected);
+            Do<object>(MainInvokeType.Disconnected);
         }
 
         public void SetWaitConnectAndSetYellow()
@@ -149,22 +149,22 @@ namespace Milimoe.FunGame.Desktop.Controller
 
         public bool LogOut()
         {
-            return Do<bool>(MainSet.LogOut);
+            return Do<bool>(MainInvokeType.LogOut);
         }
 
         public bool Close()
         {
-            return Do<bool>(MainSet.Close);
+            return Do<bool>(MainInvokeType.Close);
         }
 
         public bool IntoRoom()
         {
-            return Do<bool>(MainSet.IntoRoom);
+            return Do<bool>(MainInvokeType.IntoRoom);
         }
 
         public bool Chat(string msg)
         {
-            return Do<bool>(MainSet.Chat, msg);
+            return Do<bool>(MainInvokeType.Chat, msg);
         }
     }
 }

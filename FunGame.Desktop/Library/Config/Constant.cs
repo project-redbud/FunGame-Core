@@ -3,49 +3,6 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Desktop.Library
 {
-    public class MainSet
-    {
-        public const string SetGreen = ".set green";
-        public const string SetGreenAndPing = ".set greenandping";
-        public const string SetRed = ".set red";
-        public const string SetYellow = ".set yellow";
-        public const string WaitConnectAndSetYellow = ".waitconnect .set yellow";
-        public const string WaitLoginAndSetYellow = ".waitlogin .set yellow";
-        public const string Disconnect = ".disconnect";
-        public const string Disconnected = ".disconnected";
-        public const string LogOut = ".logout";
-        public const string LogIn = ".login";
-        public const string SetUser = ".set user";
-        public const string Connected = ".connected";
-        public const string Connect = ".connect";
-        public const string GetServerConnection = ".getserverconnection";
-        public const string Close = ".close";
-        public const string IntoRoom = ".intoroom";
-        public const string Chat = ".chat";
-        public const string QuitRoom = ".quitroom";
-    }
-
-    /// <summary>
-    /// 运行时单例
-    /// 插件接口可以从这里拿Socket和窗体
-    /// </summary>
-    public class RunTime
-    {
-        public static Core.Library.Common.Network.Socket? Socket { get; set; } = null;
-        public static UI.Main? Main { get; set; } = null;
-        public static UI.Login? Login { get; set; } = null;
-        public static UI.Register? Register { get; set; } = null;
-        public static UI.StoreUI? Store { get; set; } = null;
-        public static UI.InventoryUI? Inventory { get; set; } = null;
-        public static UI.RoomSetting? RoomSetting { get; set; } = null;
-        public static UI.UserCenter? UserCenter { get; set; } = null;
-
-        public static void WritelnSystemInfo(string msg)
-        {
-            Main?.GetMessage(msg);
-        }
-    }
-
     public class Constant
     {
         /**

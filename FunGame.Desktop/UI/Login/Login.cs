@@ -86,7 +86,7 @@ namespace Milimoe.FunGame.Desktop.UI
 
         private EventResult SucceedLoginEvent(object sender, GeneralEventArgs e)
         {
-            Dispose();
+            Close();
             RunTime.Main?.OnSucceedLoginEvent(e);
             return EventResult.Success;
         }

@@ -160,21 +160,21 @@ namespace Milimoe.FunGame.Desktop.Library.Component
 
         public static MessageResult TipMessage(string msg, string? title = null, int autoclose = 0)
         {
-            object[] objs = { (title != null) ? title : TITLE_TIP, msg, autoclose, MessageButtonType.OK, BUTTON_OK };
+            object[] objs = { title ?? TITLE_TIP, msg, autoclose, MessageButtonType.OK, BUTTON_OK };
             MessageResult result = new ShowMessage(objs).MessageResult;
             return result;
         }
 
         public static MessageResult WarningMessage(string msg, string? title = null, int autoclose = 0)
         {
-            object[] objs = { (title != null) ? title : TITLE_WARNING, msg, autoclose, MessageButtonType.OK, BUTTON_OK };
+            object[] objs = { title ?? TITLE_WARNING, msg, autoclose, MessageButtonType.OK, BUTTON_OK };
             MessageResult result = new ShowMessage(objs).MessageResult;
             return result;
         }
 
         public static MessageResult ErrorMessage(string msg, string? title = null, int autoclose = 0)
         {
-            object[] objs = { (title != null) ? title : TITLE_ERROR, msg, autoclose, MessageButtonType.OK, BUTTON_OK };
+            object[] objs = { title ?? TITLE_ERROR, msg, autoclose, MessageButtonType.OK, BUTTON_OK };
             MessageResult result = new ShowMessage(objs).MessageResult;
             return result;
         }
@@ -202,14 +202,14 @@ namespace Milimoe.FunGame.Desktop.Library.Component
 
         public static string InputMessage(string msg, string title)
         {
-            object[] objs = { title, msg, 0, MessageButtonType.Input, BUTTON_CANCEL, BUTTON_RETRY, BUTTON_CANCEL };
+            object[] objs = { title, msg, 0, MessageButtonType.Input };
             string result = new ShowMessage(objs).InputResult;
             return result;
         }
         
         public static string InputMessageCancel(string msg, string title, out MessageResult cancel)
         {
-            object[] objs = { title, msg, 0, MessageButtonType.Input, BUTTON_CANCEL, BUTTON_RETRY, BUTTON_CANCEL };
+            object[] objs = { title, msg, 0, MessageButtonType.Input };
             ShowMessage window = new ShowMessage(objs);
             string result = window.InputResult;
             cancel = window.MessageResult;

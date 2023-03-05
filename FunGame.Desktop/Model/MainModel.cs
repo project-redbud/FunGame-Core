@@ -149,7 +149,7 @@ namespace Milimoe.FunGame.Desktop.Model
                                 if (Receiving() == SocketMessageType.Connect)
                                 {
                                     Main.GetMessage("连接服务器成功，请登录账号以体验FunGame。");
-                                    Main.UpdateUI(MainSet.Connected);
+                                    Main.UpdateUI(MainInvokeType.Connected);
                                     StartReceiving();
                                     while (true)
                                     {
@@ -178,7 +178,7 @@ namespace Milimoe.FunGame.Desktop.Model
             catch (Exception e)
             {
                 Main.GetMessage(e.GetErrorInfo(), TimeType.None);
-                Main.UpdateUI(MainSet.SetRed);
+                Main.UpdateUI(MainInvokeType.SetRed);
                 Config.FunGame_isRetrying = false;
                 Task.Factory.StartNew(() =>
                 {
@@ -344,7 +344,7 @@ namespace Milimoe.FunGame.Desktop.Model
 
                     case SocketMessageType.HeartBeat:
                         if (Socket.Connected && Usercfg.LoginUser != null)
-                            Main.UpdateUI(MainSet.SetGreenAndPing);
+                            Main.UpdateUI(MainInvokeType.SetGreenAndPing);
                         break;
 
                     case SocketMessageType.IntoRoom:
@@ -359,10 +359,8 @@ namespace Milimoe.FunGame.Desktop.Model
                         break;
                         
                     case SocketMessageType.Reg:
-                        break;
-                        
                     case SocketMessageType.CheckReg:
-                        SocketHandler_CheckReg(objs);
+                        RunTime.Register?.SocketHandler(type, objs);
                         break;
 
                     case SocketMessageType.Unknown:
@@ -374,7 +372,7 @@ namespace Milimoe.FunGame.Desktop.Model
             {
                 // 报错中断服务器连接
                 Main.GetMessage(e.GetErrorInfo(), TimeType.None);
-                Main.UpdateUI(MainSet.Disconnected);
+                Main.UpdateUI(MainInvokeType.Disconnected);
                 Main.OnFailedConnectEvent(new GeneralEventArgs());
                 Close();
             }
@@ -400,7 +398,7 @@ namespace Milimoe.FunGame.Desktop.Model
             Config.Guid_Socket = token;
             Main.GetMessage($"已连接服务器：{ServerName}。\n\n********** 服务器公告 **********\n\n{ServerNotice}\n\n");
             // 设置等待登录的黄灯
-            Main.UpdateUI(MainSet.WaitLoginAndSetYellow);
+            Main.UpdateUI(MainInvokeType.WaitLoginAndSetYellow);
         }
 
         private void SocketHandler_GetNotice(object[] objs)
@@ -448,7 +446,7 @@ namespace Milimoe.FunGame.Desktop.Model
             if (key != Guid.Empty)
             {
                 Config.Guid_LoginKey = Guid.Empty;
-                Main.UpdateUI(MainSet.LogOut, msg ?? "");
+                Main.UpdateUI(MainInvokeType.LogOut, msg ?? "");
                 Main.OnSucceedLogoutEvent(new GeneralEventArgs());
             }
             else
@@ -465,7 +463,7 @@ namespace Milimoe.FunGame.Desktop.Model
             if (objs != null && objs.Length > 0)
             {
                 // 创建User对象并返回到Main
-                Main.UpdateUI(MainSet.SetUser, new object[] { Factory.New<User>(objs) });
+                Main.UpdateUI(MainInvokeType.SetUser, new object[] { Factory.New<User>(objs) });
                 RunTime.Login?.OnSucceedLoginEvent(new GeneralEventArgs());
                 return;
             }
@@ -478,7 +476,7 @@ namespace Milimoe.FunGame.Desktop.Model
             string msg = "";
             if (objs.Length > 0) msg = NetworkUtility.ConvertJsonObject<string>(objs[0])!;
             Main.GetMessage(msg);
-            Main.UpdateUI(MainSet.Disconnect);
+            Main.UpdateUI(MainInvokeType.Disconnect);
             Close();
             Main.OnSucceedDisconnectEvent(new GeneralEventArgs());
             Main.OnAfterDisconnectEvent(new GeneralEventArgs());
@@ -518,32 +516,6 @@ namespace Milimoe.FunGame.Desktop.Model
             Main.OnAfterSendTalkEvent(new GeneralEventArgs());
         }
         
-        private void SocketHandler_CheckReg(object[] objs)
-        {
-            if (objs != null && objs.Length > 1)
-            {
-                bool successful = NetworkUtility.ConvertJsonObject<bool>(objs[0])!;
-                string msg = NetworkUtility.ConvertJsonObject<string>(objs[1])!;
-                ShowMessage.Message(msg, "注册结果");
-                if (successful)
-                {
-                    Main.GetMessage(msg, TimeType.None);
-                    if (RunTime.Register != null)
-                    {
-                        RunTime.Register.CheckReg = true;
-                        RunTime.Register.OnSucceedRegEvent(RunTime.Register.EventArgs);
-                        RunTime.Register.OnAfterRegEvent(RunTime.Register.EventArgs);
-                    }
-                    return;
-                }
-            }
-            if (RunTime.Register != null)
-            {
-                RunTime.Register.OnFailedRegEvent(RunTime.Register.EventArgs);
-                RunTime.Register.OnAfterRegEvent(RunTime.Register.EventArgs);
-            }
-        }
-
         #endregion
     }
 }

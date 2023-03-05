@@ -219,4 +219,35 @@
         FourStar,
         FiveStar
     }
+
+    public enum MainInvokeType
+    {
+        None,
+        SetGreen,
+        SetGreenAndPing,
+        SetRed,
+        SetYellow,
+        WaitConnectAndSetYellow,
+        WaitLoginAndSetYellow,
+        Disconnect,
+        Disconnected,
+        LogOut,
+        LogIn,
+        SetUser,
+        Connected,
+        Connect,
+        GetServerConnection,
+        Close,
+        IntoRoom,
+        Chat,
+        QuitRoom
+    }
+
+    public enum RegInvokeType
+    {
+        None,
+        DuplicateUserName,
+        DuplicateEmail,
+        InputVerifyCode
+    }
 }

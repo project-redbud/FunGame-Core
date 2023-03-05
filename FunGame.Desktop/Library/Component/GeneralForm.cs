@@ -56,6 +56,7 @@ namespace Milimoe.FunGame.Desktop.Library.Component
         /// </summary>
         protected virtual void FormClosedEvent(object? sender, FormClosedEventArgs e)
         {
+            Dispose();
             if (GetType() == typeof(ShowMessage))
             {
                 return;

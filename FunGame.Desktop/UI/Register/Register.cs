@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Library.Common.Event;
+﻿using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
 using Milimoe.FunGame.Desktop.Controller;
@@ -14,16 +15,18 @@ namespace Milimoe.FunGame.Desktop.UI
         public bool CheckReg { get; set; } = false;
         public RegisterEventArgs EventArgs { get; set; } = new RegisterEventArgs();
 
+        private readonly RegisterController RegController;
+
         public Register()
         {
             InitializeComponent();
+            RegController = new RegisterController(this);
         }
 
         protected override void BindEvent()
         {
             base.BindEvent();
             SucceedReg += SucceedRegEvent;
-            FailedReg += FailedRegEvent;
         }
 
         private bool Reg_Handler()
@@ -34,35 +37,58 @@ namespace Milimoe.FunGame.Desktop.UI
                 string password = PasswordText.Text.Trim();
                 string checkpassword = CheckPasswordText.Text.Trim();
                 string email = EmailText.Text.Trim();
+                if (username != "")
+                {
+                    int length = General.DefaultEncoding.GetBytes(username).Length;
+                    if (length >= 3 && length <= 12) // 字节范围 3~12
+                    {
+                        if (password != checkpassword)
+                        {
+                            ShowMessage.ErrorMessage("两个密码不相同，请重新输入！");
+                            CheckPasswordText.Focus();
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        ShowMessage.ErrorMessage("账号名长度不符合要求：2~6个字符数");
+                        UsernameText.Focus();
+                        return false;
+                    }
+                }
+                if (password != "")
+                {
+                    int length = password.Length;
+                    if (length >= 6 && length <= 15) // 字节范围 3~12
+                    {
+                        ShowMessage.ErrorMessage("密码长度不符合要求：6~15个字符数");
+                        PasswordText.Focus();
+                        return false;
+                    }
+                }
                 if (username == "" || password == "" || checkpassword == "")
                 {
-                    ShowMessage.ErrorMessage("账号或密码不能为空！");
+                    ShowMessage.ErrorMessage("请将账号和密码填写完整！");
                     UsernameText.Focus();
-                    return false;
-                }
-                if (password != checkpassword)
-                {
-                    ShowMessage.ErrorMessage("两个密码不相同，请重新输入！");
-                    CheckPasswordText.Focus();
                     return false;
                 }
                 if (email == "")
                 {
                     ShowMessage.ErrorMessage("邮箱不能为空！");
-                    UsernameText.Focus();
+                    EmailText.Focus();
+                    return false;
+                }
+                if (!NetworkUtility.IsEmail(email))
+                {
+                    ShowMessage.ErrorMessage("这不是一个邮箱地址！");
+                    EmailText.Focus();
                     return false;
                 }
                 EventArgs = new RegisterEventArgs(username, password, email);
-                if (!RegisterController.Reg(username, email))
+                if (!RegController.Reg(username, email))
                 {
-                    ShowMessage.Message("注册失败！！", "注册失败");
+                    ShowMessage.Message("注册失败！", "注册失败");
                     return false;
-                }
-                else
-                {
-                    CheckReg = false;
-                    // 成功发送注册请求后
-                    CheckReg_Handler(username, password, email);
                 }
             }
             catch (Exception e)
@@ -73,17 +99,43 @@ namespace Milimoe.FunGame.Desktop.UI
             return true;
         }
 
-        public void CheckReg_Handler(string username, string password, string email)
+        public void SocketHandler(SocketMessageType type, params object[]? objs)
         {
-            if (!CheckReg)
+            RegController.SocketHandler(type, objs);
+        }
+
+        public void UpdateUI(RegInvokeType type)
+        {
+            try
             {
-                string verifycode = ShowMessage.InputMessageCancel("请输入注册邮件中的6位数字验证码", "注册验证码", out MessageResult cancel);
-                if (cancel == MessageResult.Cancel)
+                void Action()
                 {
-                    CheckReg = true;
-                    RegButton.Enabled = true;
-                }
-                RegisterController.CheckReg(username, password, email, verifycode);
+                    switch (type)
+                    {
+                        case RegInvokeType.InputVerifyCode:
+                            string username = UsernameText.Text.Trim();
+                            string password = PasswordText.Text.Trim();
+                            string email = EmailText.Text.Trim();
+                            string verifycode = ShowMessage.InputMessageCancel("请输入注册邮件中的6位数字验证码", "注册验证码", out MessageResult cancel);
+                            if (cancel != MessageResult.Cancel) RegController.CheckReg(username, password, email, verifycode);
+                            else RegButton.Enabled = true;
+                            break;
+                        case RegInvokeType.DuplicateUserName:
+                            ShowMessage.WarningMessage("此账号名已被注册，请使用其他账号名。");
+                            RegButton.Enabled = true;
+                            break;
+                        case RegInvokeType.DuplicateEmail:
+                            ShowMessage.WarningMessage("此邮箱已被使用，请使用其他邮箱注册。");
+                            RegButton.Enabled = true;
+                            break;
+                    }
+                };
+                if (InvokeRequired) Invoke(Action);
+                else Action();
+            }
+            catch (Exception e)
+            {
+                RunTime.WritelnSystemInfo(e.GetErrorInfo());
             }
         }
 
@@ -101,17 +153,7 @@ namespace Milimoe.FunGame.Desktop.UI
         {
             string username = ((RegisterEventArgs)e).Username;
             string password = ((RegisterEventArgs)e).Password;
-            if (LoginController.LoginAccount(username, password))
-            Dispose();
-            return EventResult.Success;
-        }
-        
-        private EventResult FailedRegEvent(object sender, GeneralEventArgs e)
-        {
-            string username = ((RegisterEventArgs)e).Username;
-            string password = ((RegisterEventArgs)e).Password;
-            string email = ((RegisterEventArgs)e).Email;
-            CheckReg_Handler(username, password, email);
+            if (LoginController.LoginAccount(username, password)) Close();
             return EventResult.Success;
         }
 

@@ -93,129 +93,123 @@ namespace Milimoe.FunGame.Desktop.UI
         /// </summary>
         /// <param name="updatetype">string?</param>
         /// <param name="objs">object[]?</param>
-        public void UpdateUI(string? updatetype, params object[]? objs)
+        public void UpdateUI(MainInvokeType type, params object[]? objs)
         {
             void action()
             {
                 try
                 {
-                    if (updatetype != null)
+                    switch (type)
                     {
-                        switch (updatetype)
-                        {
-                            case MainSet.SetGreen:
-                                Config.FunGame_isRetrying = false;
-                                SetServerStatusLight((int)LightType.Green);
-                                SetButtonEnableIfLogon(true, ClientState.Online);
-                                Config.FunGame_isConnected = true;
-                                CurrentRetryTimes = 0;
-                                break;
+                        case MainInvokeType.SetGreen:
+                            Config.FunGame_isRetrying = false;
+                            SetServerStatusLight((int)LightType.Green);
+                            SetButtonEnableIfLogon(true, ClientState.Online);
+                            Config.FunGame_isConnected = true;
+                            CurrentRetryTimes = 0;
+                            break;
 
-                            case MainSet.SetGreenAndPing:
-                                Config.FunGame_isRetrying = false;
-                                SetServerStatusLight((int)LightType.Green, ping: NetworkUtility.GetServerPing(Constant.Server_Address));
-                                SetButtonEnableIfLogon(true, ClientState.Online);
-                                Config.FunGame_isConnected = true;
-                                CurrentRetryTimes = 0;
-                                break;
+                        case MainInvokeType.SetGreenAndPing:
+                            Config.FunGame_isRetrying = false;
+                            SetServerStatusLight((int)LightType.Green, ping: NetworkUtility.GetServerPing(Constant.Server_Address));
+                            SetButtonEnableIfLogon(true, ClientState.Online);
+                            Config.FunGame_isConnected = true;
+                            CurrentRetryTimes = 0;
+                            break;
 
-                            case MainSet.SetYellow:
-                                Config.FunGame_isRetrying = false;
-                                SetServerStatusLight((int)LightType.Yellow);
-                                SetButtonEnableIfLogon(false, ClientState.WaitConnect);
-                                Config.FunGame_isConnected = true;
-                                CurrentRetryTimes = 0;
-                                break;
+                        case MainInvokeType.SetYellow:
+                            Config.FunGame_isRetrying = false;
+                            SetServerStatusLight((int)LightType.Yellow);
+                            SetButtonEnableIfLogon(false, ClientState.WaitConnect);
+                            Config.FunGame_isConnected = true;
+                            CurrentRetryTimes = 0;
+                            break;
 
-                            case MainSet.WaitConnectAndSetYellow:
-                                Config.FunGame_isRetrying = false;
-                                SetServerStatusLight((int)LightType.Yellow);
-                                SetButtonEnableIfLogon(false, ClientState.WaitConnect);
-                                Config.FunGame_isConnected = true;
-                                CurrentRetryTimes = 0;
-                                if (MainController != null && Config.FunGame_isAutoConnect)
+                        case MainInvokeType.WaitConnectAndSetYellow:
+                            Config.FunGame_isRetrying = false;
+                            SetServerStatusLight((int)LightType.Yellow);
+                            SetButtonEnableIfLogon(false, ClientState.WaitConnect);
+                            Config.FunGame_isConnected = true;
+                            CurrentRetryTimes = 0;
+                            if (MainController != null && Config.FunGame_isAutoConnect)
+                            {
+                                // 自动连接服务器
+                                MainController.Connect();
+                            }
+                            break;
+
+                        case MainInvokeType.WaitLoginAndSetYellow:
+                            Config.FunGame_isRetrying = false;
+                            SetServerStatusLight((int)LightType.Yellow, true);
+                            SetButtonEnableIfLogon(false, ClientState.WaitLogin);
+                            Config.FunGame_isConnected = true;
+                            CurrentRetryTimes = 0;
+                            break;
+
+                        case MainInvokeType.SetRed:
+                            SetServerStatusLight((int)LightType.Red);
+                            SetButtonEnableIfLogon(false, ClientState.WaitConnect);
+                            Config.FunGame_isConnected = false;
+                            break;
+
+                        case MainInvokeType.Disconnected:
+                            Config.FunGame_isRetrying = false;
+                            Config.FunGame_isConnected = false;
+                            SetServerStatusLight((int)LightType.Red);
+                            SetButtonEnableIfLogon(false, ClientState.WaitConnect);
+                            LogoutAccount();
+                            CloseConnectedWindows();
+                            break;
+
+                        case MainInvokeType.Disconnect:
+                            Config.FunGame_isAutoRetry = false;
+                            Config.FunGame_isRetrying = false;
+                            Config.FunGame_isAutoConnect = false;
+                            Config.FunGame_isAutoLogin = false;
+                            Config.FunGame_isConnected = false;
+                            SetServerStatusLight((int)LightType.Yellow);
+                            SetButtonEnableIfLogon(false, ClientState.WaitConnect);
+                            LogoutAccount();
+                            break;
+
+                        case MainInvokeType.LogIn:
+                            break;
+
+                        case MainInvokeType.LogOut:
+                            Config.FunGame_isRetrying = false;
+                            Config.FunGame_isAutoLogin = false;
+                            SetServerStatusLight((int)LightType.Yellow, true);
+                            SetButtonEnableIfLogon(false, ClientState.WaitLogin);
+                            LogoutAccount();
+                            if (objs != null && objs.Length > 0)
+                            {
+                                if (objs[0].GetType() == typeof(string))
                                 {
-                                    // 自动连接服务器
-                                    MainController.Connect();
+                                    WritelnSystemInfo((string)objs[0]);
+                                    ShowMessage.Message((string)objs[0], "退出登录", 5);
                                 }
-                                break;
+                            }
+                            break;
 
-                            case MainSet.WaitLoginAndSetYellow:
-                                Config.FunGame_isRetrying = false;
-                                SetServerStatusLight((int)LightType.Yellow, true);
-                                SetButtonEnableIfLogon(false, ClientState.WaitLogin);
-                                Config.FunGame_isConnected = true;
-                                CurrentRetryTimes = 0;
-                                break;
+                        case MainInvokeType.SetUser:
+                            if (objs != null && objs.Length > 0)
+                            {
+                                SetLoginUser(objs);
+                            }
+                            break;
 
-                            case MainSet.SetRed:
-                                SetServerStatusLight((int)LightType.Red);
-                                SetButtonEnableIfLogon(false, ClientState.WaitConnect);
-                                Config.FunGame_isConnected = false;
-                                break;
+                        case MainInvokeType.Connected:
+                            NoticeText.Text = Config.FunGame_Notice;
+                            break;
 
-                            case MainSet.Disconnected:
-                                Config.FunGame_isRetrying = false;
-                                Config.FunGame_isConnected = false;
-                                SetServerStatusLight((int)LightType.Red);
-                                SetButtonEnableIfLogon(false, ClientState.WaitConnect);
-                                LogoutAccount();
-                                CloseConnectedWindows();
-                                break;
-
-                            case MainSet.Disconnect:
-                                Config.FunGame_isAutoRetry = false;
-                                Config.FunGame_isRetrying = false;
-                                Config.FunGame_isAutoConnect = false;
-                                Config.FunGame_isAutoLogin = false;
-                                Config.FunGame_isConnected = false;
-                                SetServerStatusLight((int)LightType.Yellow);
-                                SetButtonEnableIfLogon(false, ClientState.WaitConnect);
-                                LogoutAccount();
-                                break;
-
-                            case MainSet.LogIn:
-                                break;
-
-                            case MainSet.LogOut:
-                                Config.FunGame_isRetrying = false;
-                                Config.FunGame_isAutoLogin = false;
-                                SetServerStatusLight((int)LightType.Yellow, true);
-                                SetButtonEnableIfLogon(false, ClientState.WaitLogin);
-                                LogoutAccount();
-                                if (objs != null && objs.Length > 0)
-                                {
-                                    if (objs[0].GetType() == typeof(string))
-                                    {
-                                        WritelnSystemInfo((string)objs[0]);
-                                        ShowMessage.Message((string)objs[0], "退出登录", 5);
-                                    }
-                                }
-                                break;
-
-                            case MainSet.SetUser:
-                                if (objs != null && objs.Length > 0)
-                                {
-                                    SetLoginUser(objs);
-                                }
-                                break;
-
-                            case MainSet.Connected:
-                                NoticeText.Text = Config.FunGame_Notice;
-                                break;
-
-                            default:
-                                // 直接调用UpdateUI(string)相当于调用GetMessage(string)，输出该string到控制台。
-                                // 尽量避免使用除MainSet之外的string调用此方法
-                                WritelnSystemInfo(updatetype);
-                                break;
-                        }
+                        default:
+                            break;
                     }
                 }
                 catch (Exception e)
                 {
                     WritelnGameInfo(e.GetErrorInfo());
-                    UpdateUI(MainSet.SetRed);
+                    UpdateUI(MainInvokeType.SetRed);
                 }
             }
             InvokeUpdateUI(action);
@@ -635,7 +629,7 @@ namespace Milimoe.FunGame.Desktop.UI
             NowAccount.Text = "[ID] " + Usercfg.LoginUserName;
             Login.Visible = false;
             Logout.Visible = true;
-            UpdateUI(MainSet.SetGreenAndPing);
+            UpdateUI(MainInvokeType.SetGreenAndPing);
             RunTime.Login?.Close();
             Thread.Sleep(100);
             string welcome = $"欢迎回来， {Usercfg.LoginUserName}！";
