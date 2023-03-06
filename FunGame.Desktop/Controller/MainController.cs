@@ -46,7 +46,7 @@ namespace Milimoe.FunGame.Desktop.Controller
                     break;
 
                 case MainInvokeType.Disconnect:
-                    Main.OnBeforeDisconnectEvent(new GeneralEventArgs());
+                    if (Main.OnBeforeDisconnectEvent(new GeneralEventArgs()) == EventResult.Fail) return (T)result;
                     MainModel.Disconnect();
                     break;
 
@@ -72,7 +72,7 @@ namespace Milimoe.FunGame.Desktop.Controller
                     break;
 
                 case MainInvokeType.LogOut:
-                    Main.OnBeforeLogoutEvent(new GeneralEventArgs());
+                    if (Main.OnBeforeLogoutEvent(new GeneralEventArgs()) == EventResult.Fail) return (T)result;
                     result = MainModel.LogOut();
                     break;
 
@@ -81,12 +81,12 @@ namespace Milimoe.FunGame.Desktop.Controller
                     break;
 
                 case MainInvokeType.IntoRoom:
-                    Main.OnBeforeIntoRoomEvent(new GeneralEventArgs());
+                    if (Main.OnBeforeIntoRoomEvent(new GeneralEventArgs()) == EventResult.Fail) return (T)result;
                     result = MainModel.IntoRoom();
                     break;
                     
                 case MainInvokeType.Chat:
-                    Main.OnBeforeSendTalkEvent(new GeneralEventArgs());
+                    if (Main.OnBeforeSendTalkEvent(new GeneralEventArgs()) == EventResult.Fail) return (T)result;
                     if (args != null && args.Length > 0)
                     result = MainModel.Chat((string)args[0]);
                     break;

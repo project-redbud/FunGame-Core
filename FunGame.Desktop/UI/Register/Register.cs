@@ -6,11 +6,11 @@ using Milimoe.FunGame.Desktop.Controller;
 using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Library.Base;
 using Milimoe.FunGame.Desktop.Library.Component;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
+using Milimoe.FunGame.Desktop.Library.Interface;
 
 namespace Milimoe.FunGame.Desktop.UI
 {
-    public partial class Register : BaseReg
+    public partial class Register : BaseReg, ISocketCallBack
     {
         public bool CheckReg { get; set; } = false;
         public RegisterEventArgs EventArgs { get; set; } = new RegisterEventArgs();
@@ -59,7 +59,7 @@ namespace Milimoe.FunGame.Desktop.UI
                 if (password != "")
                 {
                     int length = password.Length;
-                    if (length >= 6 && length <= 15) // 字节范围 3~12
+                    if (length < 6 || length > 15) // 字节范围 3~12
                     {
                         ShowMessage.ErrorMessage("密码长度不符合要求：6~15个字符数");
                         PasswordText.Focus();

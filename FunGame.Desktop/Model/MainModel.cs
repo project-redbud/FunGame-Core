@@ -105,7 +105,7 @@ namespace Milimoe.FunGame.Desktop.Model
 
         public ConnectResult Connect()
         {
-            Main.OnBeforeConnectEvent(new GeneralEventArgs());
+            if (Main.OnBeforeConnectEvent(new GeneralEventArgs()) == EventResult.Fail) return ConnectResult.ConnectFailed;
             if (Constant.Server_Address == "" || Constant.Server_Port <= 0)
             {
                 ShowMessage.ErrorMessage("查找可用的服务器失败！");

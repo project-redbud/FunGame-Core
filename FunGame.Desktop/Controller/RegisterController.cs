@@ -3,10 +3,11 @@ using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Model;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Desktop.UI;
+using Milimoe.FunGame.Desktop.Library.Interface;
 
 namespace Milimoe.FunGame.Desktop.Controller
 {
-    public class RegisterController
+    public class RegisterController : ISocketCallBack
     {
         private readonly Register Register;
         private readonly RegisterModel RegModel;
@@ -24,7 +25,7 @@ namespace Milimoe.FunGame.Desktop.Controller
 
         public bool Reg(params object[]? objs)
         {
-            Register.OnBeforeRegEvent(Register.EventArgs);
+            if (Register.OnBeforeRegEvent(Register.EventArgs) == EventResult.Fail) return false;
             bool result = RegModel.Reg(objs);
             if (!result)
             {

@@ -3,11 +3,12 @@ using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
 using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Library.Component;
+using Milimoe.FunGame.Desktop.Library.Interface;
 using Milimoe.FunGame.Desktop.UI;
 
 namespace Milimoe.FunGame.Desktop.Model
 {
-    public class RegisterModel
+    public class RegisterModel : ISocketCallBack
     {
         private readonly Register Register;
 
@@ -78,7 +79,7 @@ namespace Milimoe.FunGame.Desktop.Model
             }
             catch (Exception e)
             {
-                e.GetErrorInfo();
+                RunTime.WritelnSystemInfo(e.GetErrorInfo());
             }
             return false;
         }
@@ -107,7 +108,7 @@ namespace Milimoe.FunGame.Desktop.Model
             }
             catch (Exception e)
             {
-                e.GetErrorInfo();
+                RunTime.WritelnSystemInfo(e.GetErrorInfo());
             }
             return false;
         }

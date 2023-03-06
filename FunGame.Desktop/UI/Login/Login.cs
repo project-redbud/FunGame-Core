@@ -93,7 +93,7 @@ namespace Milimoe.FunGame.Desktop.UI
 
         private EventResult BeforeLoginEvent(object sender, GeneralEventArgs e)
         {
-            RunTime.Main?.OnBeforeLoginEvent(e);
+            if (RunTime.Main?.OnBeforeLoginEvent(e) == EventResult.Fail) return EventResult.Fail;
             return EventResult.Success;
         }
 

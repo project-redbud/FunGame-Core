@@ -9,7 +9,7 @@ namespace Milimoe.FunGame.Desktop.Controller
     {
         public static bool LoginAccount(params object[]? objs)
         {
-            RunTime.Login?.OnBeforeLoginEvent(new GeneralEventArgs());
+            if (RunTime.Login?.OnBeforeLoginEvent(new GeneralEventArgs()) == Core.Library.Constant.EventResult.Fail) return false;
             bool result = LoginModel.LoginAccount(objs);
             if (!result)
             {
