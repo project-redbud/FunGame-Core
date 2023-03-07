@@ -6,6 +6,8 @@ namespace Milimoe.FunGame.Core.Service
 {
     internal class SocketManager
     {
+        #region 属性
+
         /// <summary>
         /// 客户端专用Socket
         /// </summary>
@@ -19,52 +21,9 @@ namespace Milimoe.FunGame.Core.Service
         private static Socket? _Socket = null;
         private static Socket? _ServerSocket = null;
 
-        /// <summary>
-        /// 异步监听事件
-        /// </summary>
-        /// <typeparam name="T">结果类</typeparam>
-        /// <param name="type">通信类型</param>
-        /// <param name="objs">参数</param>
-        /// <returns>结果</returns>
-        internal delegate Task<T> SocketHandler<T>(SocketMessageType type, params object[] objs);
-        
-        /// <summary>
-        /// 异步监听事件
-        /// </summary>
-        /// <param name="type">通信类型</param>
-        /// <param name="objs">参数</param>
-        /// <returns>线程</returns>
-        internal delegate Task SocketHandler(SocketMessageType type, params object[] objs);
+        #endregion
 
-        /// <summary>
-        /// 监听返回值为bool的事件
-        /// </summary>
-        internal event SocketHandler<bool>? SocketReceiveBoolAsync;
-        
-        /// <summary>
-        /// 监听返回值为String的事件
-        /// </summary>
-        internal event SocketHandler<string>? SocketReceiveStringAsync;
-        
-        /// <summary>
-        /// 监听返回值为object的事件
-        /// </summary>
-        internal event SocketHandler<object>? SocketReceiveObjectAsync;
-        
-        /// <summary>
-        /// 监听返回值为int的事件
-        /// </summary>
-        internal event SocketHandler<int>? SocketReceiveIntAsync;
-        
-        /// <summary>
-        /// 监听返回值为decimal的事件
-        /// </summary>
-        internal event SocketHandler<decimal>? SocketReceiveDecimalAsync;
-        
-        /// <summary>
-        /// 监听没有返回值的事件
-        /// </summary>
-        internal event SocketHandler? SocketReceiveAsync;
+        #region 实现
 
         /// <summary>
         /// 创建服务器监听Socket
@@ -149,7 +108,7 @@ namespace Milimoe.FunGame.Core.Service
             }
             return null;
         }
-        
+
         /// <summary>
         /// 用于服务器端向客户端Socket发送信息
         /// </summary>
@@ -271,13 +230,64 @@ namespace Milimoe.FunGame.Core.Service
             };
         }
 
+        #endregion
+
+        #region 事件
+
+        /// <summary>
+        /// 异步监听事件
+        /// </summary>
+        /// <typeparam name="T">结果类</typeparam>
+        /// <param name="type">通信类型</param>
+        /// <param name="objs">参数</param>
+        /// <returns>结果</returns>
+        internal delegate Task<T> SocketHandler<T>(SocketMessageType type, params object[] objs);
+
+        /// <summary>
+        /// 异步监听事件
+        /// </summary>
+        /// <param name="type">通信类型</param>
+        /// <param name="objs">参数</param>
+        /// <returns>线程</returns>
+        internal delegate Task SocketHandler(SocketMessageType type, params object[] objs);
+
+        /// <summary>
+        /// 监听返回值为bool的事件
+        /// </summary>
+        internal static event SocketHandler<bool>? SocketReceiveBoolAsync;
+
+        /// <summary>
+        /// 监听返回值为String的事件
+        /// </summary>
+        internal static event SocketHandler<string>? SocketReceiveStringAsync;
+
+        /// <summary>
+        /// 监听返回值为object的事件
+        /// </summary>
+        internal static event SocketHandler<object>? SocketReceiveObjectAsync;
+
+        /// <summary>
+        /// 监听返回值为int的事件
+        /// </summary>
+        internal static event SocketHandler<int>? SocketReceiveIntAsync;
+
+        /// <summary>
+        /// 监听返回值为decimal的事件
+        /// </summary>
+        internal static event SocketHandler<decimal>? SocketReceiveDecimalAsync;
+
+        /// <summary>
+        /// 监听没有返回值的事件
+        /// </summary>
+        internal static event SocketHandler? SocketReceiveAsync;
+
         /// <summary>
         /// 触发异步返回bool事件
         /// </summary>
         /// <param name="type">通信类型</param>
         /// <param name="objs">参数</param>
         /// <returns>bool结果</returns>
-        internal async Task<bool> OnSocketReceiveBoolAsync(SocketMessageType type, params object[] objs)
+        internal static async Task<bool> OnSocketReceiveBoolAsync(SocketMessageType type, params object[] objs)
         {
             if (SocketReceiveBoolAsync != null)
             {
@@ -292,7 +302,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="type">通信类型</param>
         /// <param name="objs">参数</param>
         /// <returns>string结果</returns>
-        internal async Task<string> OnSocketReceiveStringAsync(SocketMessageType type, params object[] objs)
+        internal static async Task<string> OnSocketReceiveStringAsync(SocketMessageType type, params object[] objs)
         {
             if (SocketReceiveStringAsync != null)
             {
@@ -307,7 +317,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="type">通信类型</param>
         /// <param name="objs">参数</param>
         /// <returns>object结果</returns>
-        internal async Task<object> OnSocketReceiveObjectAsync(SocketMessageType type, params object[] objs)
+        internal static async Task<object> OnSocketReceiveObjectAsync(SocketMessageType type, params object[] objs)
         {
             if (SocketReceiveObjectAsync != null)
             {
@@ -322,7 +332,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="type">通信类型</param>
         /// <param name="objs">参数</param>
         /// <returns>int结果</returns>
-        internal async Task<int> OnSocketReceiveIntAsync(SocketMessageType type, params object[] objs)
+        internal static async Task<int> OnSocketReceiveIntAsync(SocketMessageType type, params object[] objs)
         {
             if (SocketReceiveIntAsync != null)
             {
@@ -337,7 +347,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="type">通信类型</param>
         /// <param name="objs">参数</param>
         /// <returns>decimal结果</returns>
-        internal async Task<decimal> OnSocketReceiveDecimalAsync(SocketMessageType type, params object[] objs)
+        internal static async Task<decimal> OnSocketReceiveDecimalAsync(SocketMessageType type, params object[] objs)
         {
             if (SocketReceiveDecimalAsync != null)
             {
@@ -351,12 +361,14 @@ namespace Milimoe.FunGame.Core.Service
         /// </summary>
         /// <param name="type">通信类型</param>
         /// <param name="objs">参数</param>
-        internal async Task OnSocketReceiveAsync(SocketMessageType type, params object[] objs)
+        internal static async Task OnSocketReceiveAsync(SocketMessageType type, params object[] objs)
         {
             if (SocketReceiveAsync != null)
             {
                 await SocketReceiveAsync.Invoke(type, objs);
             }
         }
+
+        #endregion
     }
 }
