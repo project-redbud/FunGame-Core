@@ -130,8 +130,11 @@ namespace Milimoe.FunGame.Desktop.UI
                             break;
                     }
                 };
-                if (InvokeRequired) Invoke(Action);
-                else Action();
+                if (!IsDisposed)
+                {
+                    if (InvokeRequired) Invoke(Action);
+                    else Action();
+                }
             }
             catch (Exception e)
             {

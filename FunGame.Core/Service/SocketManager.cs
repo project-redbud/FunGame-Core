@@ -1,6 +1,6 @@
-﻿using Milimoe.FunGame.Core.Library.Constant;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Service
 {
@@ -18,6 +18,53 @@ namespace Milimoe.FunGame.Core.Service
 
         private static Socket? _Socket = null;
         private static Socket? _ServerSocket = null;
+
+        /// <summary>
+        /// 异步监听事件
+        /// </summary>
+        /// <typeparam name="T">结果类</typeparam>
+        /// <param name="type">通信类型</param>
+        /// <param name="objs">参数</param>
+        /// <returns>结果</returns>
+        internal delegate Task<T> SocketHandler<T>(SocketMessageType type, params object[] objs);
+        
+        /// <summary>
+        /// 异步监听事件
+        /// </summary>
+        /// <param name="type">通信类型</param>
+        /// <param name="objs">参数</param>
+        /// <returns>线程</returns>
+        internal delegate Task SocketHandler(SocketMessageType type, params object[] objs);
+
+        /// <summary>
+        /// 监听返回值为bool的事件
+        /// </summary>
+        internal event SocketHandler<bool>? SocketReceiveBoolAsync;
+        
+        /// <summary>
+        /// 监听返回值为String的事件
+        /// </summary>
+        internal event SocketHandler<string>? SocketReceiveStringAsync;
+        
+        /// <summary>
+        /// 监听返回值为object的事件
+        /// </summary>
+        internal event SocketHandler<object>? SocketReceiveObjectAsync;
+        
+        /// <summary>
+        /// 监听返回值为int的事件
+        /// </summary>
+        internal event SocketHandler<int>? SocketReceiveIntAsync;
+        
+        /// <summary>
+        /// 监听返回值为decimal的事件
+        /// </summary>
+        internal event SocketHandler<decimal>? SocketReceiveDecimalAsync;
+        
+        /// <summary>
+        /// 监听没有返回值的事件
+        /// </summary>
+        internal event SocketHandler? SocketReceiveAsync;
 
         /// <summary>
         /// 创建服务器监听Socket
@@ -110,7 +157,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="type">通信类型</param>
         /// <param name="objs">参数</param>
         /// <returns>通信结果</returns>
-        internal static SocketResult Send(Socket ClientSocket, SocketMessageType type, Guid token, object[] objs)
+        internal static SocketResult Send(Socket ClientSocket, SocketMessageType type, Guid token, params object[] objs)
         {
             if (ClientSocket != null && objs != null && objs.Length > 0)
             {
@@ -129,7 +176,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="type">通信类型</param>
         /// <param name="objs">参数</param>
         /// <returns>通信结果</returns>
-        internal static SocketResult Send(SocketMessageType type, Guid token, object[] objs)
+        internal static SocketResult Send(SocketMessageType type, Guid token, params object[] objs)
         {
             if (objs is null || objs.Length <= 0)
             {
@@ -222,6 +269,94 @@ namespace Milimoe.FunGame.Core.Service
                 SocketMessageType.CheckReg => SocketSet.CheckReg,
                 _ => SocketSet.Unknown,
             };
+        }
+
+        /// <summary>
+        /// 触发异步返回bool事件
+        /// </summary>
+        /// <param name="type">通信类型</param>
+        /// <param name="objs">参数</param>
+        /// <returns>bool结果</returns>
+        internal async Task<bool> OnSocketReceiveBoolAsync(SocketMessageType type, params object[] objs)
+        {
+            if (SocketReceiveBoolAsync != null)
+            {
+                return await SocketReceiveBoolAsync.Invoke(type, objs);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 触发异步返回string事件
+        /// </summary>
+        /// <param name="type">通信类型</param>
+        /// <param name="objs">参数</param>
+        /// <returns>string结果</returns>
+        internal async Task<string> OnSocketReceiveStringAsync(SocketMessageType type, params object[] objs)
+        {
+            if (SocketReceiveStringAsync != null)
+            {
+                return await SocketReceiveStringAsync.Invoke(type, objs);
+            }
+            return "";
+        }
+
+        /// <summary>
+        /// 触发异步返回object事件
+        /// </summary>
+        /// <param name="type">通信类型</param>
+        /// <param name="objs">参数</param>
+        /// <returns>object结果</returns>
+        internal async Task<object> OnSocketReceiveObjectAsync(SocketMessageType type, params object[] objs)
+        {
+            if (SocketReceiveObjectAsync != null)
+            {
+                return await SocketReceiveObjectAsync.Invoke(type, objs);
+            }
+            return General.EntityInstance;
+        }
+
+        /// <summary>
+        /// 触发异步返回int事件
+        /// </summary>
+        /// <param name="type">通信类型</param>
+        /// <param name="objs">参数</param>
+        /// <returns>int结果</returns>
+        internal async Task<int> OnSocketReceiveIntAsync(SocketMessageType type, params object[] objs)
+        {
+            if (SocketReceiveIntAsync != null)
+            {
+                return await SocketReceiveIntAsync.Invoke(type, objs);
+            }
+            return -1;
+        }
+
+        /// <summary>
+        /// 触发异步返回decimal事件
+        /// </summary>
+        /// <param name="type">通信类型</param>
+        /// <param name="objs">参数</param>
+        /// <returns>decimal结果</returns>
+        internal async Task<decimal> OnSocketReceiveDecimalAsync(SocketMessageType type, params object[] objs)
+        {
+            if (SocketReceiveDecimalAsync != null)
+            {
+                return await SocketReceiveDecimalAsync.Invoke(type, objs);
+            }
+            return -1;
+        }
+
+        /// <summary>
+        /// 触发异步无返回值事件
+        /// </summary>
+        /// <param name="type">通信类型</param>
+        /// <param name="objs">参数</param>
+        internal async Task OnSocketReceiveAsync(SocketMessageType type, params object[] objs)
+        {
+            if (SocketReceiveAsync != null)
+            {
+                await SocketReceiveAsync.Invoke(type, objs);
+            }
         }
     }
 }
