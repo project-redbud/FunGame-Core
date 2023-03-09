@@ -37,6 +37,9 @@
         public const string Chat = "Chat";
         public const string Reg = "Reg";
         public const string CheckReg = "CheckReg";
+        public const string CreateRoom = "CreateRoom";
+        public const string UpdateRoom = "UpdateRoom";
+        public const string ChangeRoomSetting = "ChangeRoomSetting";
     }
 
     public class ReflectionSet

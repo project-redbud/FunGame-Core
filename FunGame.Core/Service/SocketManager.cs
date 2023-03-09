@@ -156,9 +156,9 @@ namespace Milimoe.FunGame.Core.Service
         /// 用于客户端接收服务器信息
         /// </summary>
         /// <returns>通信类型[0]和参数[1]</returns>
-        internal static object[] Receive()
+        internal static Library.Common.Network.SocketObject Receive()
         {
-            object[] result = Array.Empty<object>();
+            Library.Common.Network.SocketObject result = default;
             if (Socket != null)
             {
                 // 从服务器接收消息
@@ -170,7 +170,7 @@ namespace Milimoe.FunGame.Core.Service
                     Library.Common.Network.JsonObject? json = Library.Common.Network.JsonObject.GetObject(msg);
                     if (json != null)
                     {
-                        result = new object[] { json.MessageType, json.Parameters };
+                        result = new Library.Common.Network.SocketObject(json.MessageType, json.Token, json.Parameters);
                     }
                     return result;
                 }
@@ -183,9 +183,9 @@ namespace Milimoe.FunGame.Core.Service
         /// </summary>
         /// <param name="ClientSocket">客户端Socket</param>
         /// <returns>通信类型[0]、Token[1]和参数[2]</returns>
-        internal static object[] Receive(Socket ClientSocket)
+        internal static Library.Common.Network.SocketObject Receive(Socket ClientSocket)
         {
-            object[] result = Array.Empty<object>();
+            Library.Common.Network.SocketObject result = default;
             if (ClientSocket != null)
             {
                 // 从客户端接收消息
@@ -197,7 +197,7 @@ namespace Milimoe.FunGame.Core.Service
                     Library.Common.Network.JsonObject? json = Library.Common.Network.JsonObject.GetObject(msg);
                     if (json != null)
                     {
-                        result = new object[] { json.MessageType, json.Token, json.Parameters };
+                        result = new Library.Common.Network.SocketObject(json.MessageType, json.Token, json.Parameters);
                     }
                     return result;
                 }
@@ -226,6 +226,9 @@ namespace Milimoe.FunGame.Core.Service
                 SocketMessageType.Chat => SocketSet.Chat,
                 SocketMessageType.Reg => SocketSet.Reg,
                 SocketMessageType.CheckReg => SocketSet.CheckReg,
+                SocketMessageType.CreateRoom => SocketSet.CreateRoom,
+                SocketMessageType.UpdateRoom => SocketSet.UpdateRoom,
+                SocketMessageType.ChangeRoomSetting => SocketSet.ChangeRoomSetting,
                 _ => SocketSet.Unknown,
             };
         }
@@ -241,7 +244,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="type">通信类型</param>
         /// <param name="objs">参数</param>
         /// <returns>结果</returns>
-        internal delegate Task<T> SocketHandler<T>(SocketMessageType type, params object[] objs);
+        internal delegate Task<T> SocketHandler<T>(Library.Common.Network.SocketObject SocketObject);
 
         /// <summary>
         /// 异步监听事件
@@ -249,32 +252,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="type">通信类型</param>
         /// <param name="objs">参数</param>
         /// <returns>线程</returns>
-        internal delegate Task SocketHandler(SocketMessageType type, params object[] objs);
-
-        /// <summary>
-        /// 监听返回值为bool的事件
-        /// </summary>
-        internal static event SocketHandler<bool>? SocketReceiveBoolAsync;
-
-        /// <summary>
-        /// 监听返回值为String的事件
-        /// </summary>
-        internal static event SocketHandler<string>? SocketReceiveStringAsync;
-
-        /// <summary>
-        /// 监听返回值为object的事件
-        /// </summary>
-        internal static event SocketHandler<object>? SocketReceiveObjectAsync;
-
-        /// <summary>
-        /// 监听返回值为int的事件
-        /// </summary>
-        internal static event SocketHandler<int>? SocketReceiveIntAsync;
-
-        /// <summary>
-        /// 监听返回值为decimal的事件
-        /// </summary>
-        internal static event SocketHandler<decimal>? SocketReceiveDecimalAsync;
+        internal delegate Task SocketHandler(Library.Common.Network.SocketObject SocketObject);
 
         /// <summary>
         /// 监听没有返回值的事件
@@ -282,90 +260,15 @@ namespace Milimoe.FunGame.Core.Service
         internal static event SocketHandler? SocketReceiveAsync;
 
         /// <summary>
-        /// 触发异步返回bool事件
-        /// </summary>
-        /// <param name="type">通信类型</param>
-        /// <param name="objs">参数</param>
-        /// <returns>bool结果</returns>
-        internal static async Task<bool> OnSocketReceiveBoolAsync(SocketMessageType type, params object[] objs)
-        {
-            if (SocketReceiveBoolAsync != null)
-            {
-                return await SocketReceiveBoolAsync.Invoke(type, objs);
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// 触发异步返回string事件
-        /// </summary>
-        /// <param name="type">通信类型</param>
-        /// <param name="objs">参数</param>
-        /// <returns>string结果</returns>
-        internal static async Task<string> OnSocketReceiveStringAsync(SocketMessageType type, params object[] objs)
-        {
-            if (SocketReceiveStringAsync != null)
-            {
-                return await SocketReceiveStringAsync.Invoke(type, objs);
-            }
-            return "";
-        }
-
-        /// <summary>
-        /// 触发异步返回object事件
-        /// </summary>
-        /// <param name="type">通信类型</param>
-        /// <param name="objs">参数</param>
-        /// <returns>object结果</returns>
-        internal static async Task<object> OnSocketReceiveObjectAsync(SocketMessageType type, params object[] objs)
-        {
-            if (SocketReceiveObjectAsync != null)
-            {
-                return await SocketReceiveObjectAsync.Invoke(type, objs);
-            }
-            return General.EntityInstance;
-        }
-
-        /// <summary>
-        /// 触发异步返回int事件
-        /// </summary>
-        /// <param name="type">通信类型</param>
-        /// <param name="objs">参数</param>
-        /// <returns>int结果</returns>
-        internal static async Task<int> OnSocketReceiveIntAsync(SocketMessageType type, params object[] objs)
-        {
-            if (SocketReceiveIntAsync != null)
-            {
-                return await SocketReceiveIntAsync.Invoke(type, objs);
-            }
-            return -1;
-        }
-
-        /// <summary>
-        /// 触发异步返回decimal事件
-        /// </summary>
-        /// <param name="type">通信类型</param>
-        /// <param name="objs">参数</param>
-        /// <returns>decimal结果</returns>
-        internal static async Task<decimal> OnSocketReceiveDecimalAsync(SocketMessageType type, params object[] objs)
-        {
-            if (SocketReceiveDecimalAsync != null)
-            {
-                return await SocketReceiveDecimalAsync.Invoke(type, objs);
-            }
-            return -1;
-        }
-
-        /// <summary>
         /// 触发异步无返回值事件
         /// </summary>
         /// <param name="type">通信类型</param>
         /// <param name="objs">参数</param>
-        internal static async Task OnSocketReceiveAsync(SocketMessageType type, params object[] objs)
+        internal static void OnSocketReceiveAsync(Library.Common.Network.SocketObject SocketObject)
         {
             if (SocketReceiveAsync != null)
             {
-                await SocketReceiveAsync.Invoke(type, objs);
+                SocketReceiveAsync.Invoke(SocketObject);
             }
         }
 

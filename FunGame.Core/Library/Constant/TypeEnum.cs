@@ -61,7 +61,10 @@
         QuitRoom,
         Chat,
         Reg,
-        CheckReg
+        CheckReg,
+        CreateRoom,
+        UpdateRoom,
+        ChangeRoomSetting
     }
 
     public enum SocketRuntimeType

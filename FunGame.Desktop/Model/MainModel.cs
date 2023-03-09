@@ -1,6 +1,7 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Event;
+using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
 using Milimoe.FunGame.Desktop.Controller;
@@ -296,13 +297,13 @@ namespace Milimoe.FunGame.Desktop.Model
             Socket?.StartReceiving(ReceivingTask);
         }
 
-        private object[] GetServerMessage()
+        private SocketObject GetServerMessage()
         {
             if (Socket != null && Socket.Connected)
             {
                 return Socket.Receive();
             }
-            return new object[2] { SocketMessageType.Unknown, Array.Empty<object>() };
+            return new SocketObject(SocketMessageType.Unknown, Guid.Empty, Array.Empty<object>());
         }
 
         private SocketMessageType Receiving()
@@ -311,9 +312,9 @@ namespace Milimoe.FunGame.Desktop.Model
             SocketMessageType result = SocketMessageType.Unknown;
             try
             {
-                object[] ServerMessage = GetServerMessage();
-                SocketMessageType type = (SocketMessageType)ServerMessage[0];
-                object[] objs = (object[])ServerMessage[1];
+                SocketObject ServerMessage = GetServerMessage();
+                SocketMessageType type = ServerMessage.SocketType;
+                object[] objs = ServerMessage.Parameters;
                 result = type;
                 switch (type)
                 {

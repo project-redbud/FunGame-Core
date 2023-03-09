@@ -13,7 +13,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public string JsonString { get; }
 
         [JsonConstructor]
-        public JsonObject(SocketMessageType MessageType, Guid Token, object[] Parameters)
+        public JsonObject(SocketMessageType MessageType, Guid Token, params object[] Parameters)
         {
             this.MessageType = MessageType;
             this.Token = Token;
@@ -21,7 +21,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             this.JsonString = JsonSerializer.Serialize(this);
         }
 
-        public static string GetString(SocketMessageType MessageType, Guid Token, object[] Parameters)
+        public static string GetString(SocketMessageType MessageType, Guid Token, params object[] Parameters)
         {
             return new JsonObject(MessageType, Token, Parameters).JsonString;
         }

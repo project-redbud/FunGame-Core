@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using Milimoe.FunGame.Core.Library.Constant;
+﻿using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Interface.Base
 {
@@ -15,7 +14,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public bool Connected => Instance != null && Instance.Connected;
         public bool Receiving { get; }
         public SocketResult Send(SocketMessageType type, params object[] objs);
-        public object[] Receive();
+        public Library.Common.Network.SocketObject Receive();
         public void Close();
         public void StartReceiving(Task t);
     }

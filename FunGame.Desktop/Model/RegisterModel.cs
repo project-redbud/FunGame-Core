@@ -8,7 +8,7 @@ using Milimoe.FunGame.Desktop.UI;
 
 namespace Milimoe.FunGame.Desktop.Model
 {
-    public class RegisterModel : ISocketCallBack
+    public class RegisterModel
     {
         private readonly Register Register;
 

@@ -37,11 +37,16 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             Instance?.Close();
         }
 
-        public object[] Receive()
+        public SocketObject Receive()
         {
-            object[] result = SocketManager.Receive(Instance);
-            if (result.Length != 3) throw new SocketWrongInfoException();
-            return result;
+            try
+            {
+                return SocketManager.Receive(Instance);
+            }
+            catch
+            {
+                throw new SocketWrongInfoException();
+            }
         }
 
         public SocketResult Send(SocketMessageType type, params object[] objs)

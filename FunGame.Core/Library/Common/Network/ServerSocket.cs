@@ -77,7 +77,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             throw new ListeningSocketCanNotSendException();
         }
 
-        public object[] Receive()
+        public SocketObject Receive()
         {
             throw new ListeningSocketCanNotSendException();
         }

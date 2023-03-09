@@ -54,16 +54,22 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             return SocketResult.NotSent;
         }
 
-        public object[] Receive()
+        public SocketObject Receive()
         {
-            object[] result = SocketManager.Receive();
-            if (result.Length != 2) throw new SocketWrongInfoException();
-            if ((SocketMessageType)result[0] == SocketMessageType.HeartBeat)
+            try
             {
-                if (WaitHeartBeatReply != null && !WaitHeartBeatReply.IsCompleted) WaitHeartBeatReply.Wait(1);
-                _HeartBeatFaileds = 0;
+                SocketObject result = SocketManager.Receive();
+                if (result.SocketType == SocketMessageType.HeartBeat)
+                {
+                    if (WaitHeartBeatReply != null && !WaitHeartBeatReply.IsCompleted) WaitHeartBeatReply.Wait(1);
+                    _HeartBeatFaileds = 0;
+                }
+                return result;
             }
-            return result;
+            catch
+            {
+                throw new SocketWrongInfoException();
+            }
         }
 
         public void CheckHeartBeatFaileds()

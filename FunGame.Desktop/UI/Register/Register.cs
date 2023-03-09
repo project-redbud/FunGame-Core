@@ -10,7 +10,7 @@ using Milimoe.FunGame.Desktop.Library.Interface;
 
 namespace Milimoe.FunGame.Desktop.UI
 {
-    public partial class Register : BaseReg, ISocketCallBack
+    public partial class Register : BaseReg
     {
         public bool CheckReg { get; set; } = false;
         public RegisterEventArgs EventArgs { get; set; } = new RegisterEventArgs();

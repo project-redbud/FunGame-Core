@@ -3,11 +3,11 @@ using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Model;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Desktop.UI;
-using Milimoe.FunGame.Desktop.Library.Interface;
+using Milimoe.FunGame.Core.Library.Common.Network;
 
 namespace Milimoe.FunGame.Desktop.Controller
 {
-    public class RegisterController : ISocketCallBack
+    public class RegisterController
     {
         private readonly Register Register;
         private readonly RegisterModel RegModel;
