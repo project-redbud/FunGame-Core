@@ -15,12 +15,10 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public string ServerName { get; } = "";
         public string ServerNotice { get; } = "";
         public bool Connected => Instance != null && Instance.Connected;
-        public bool Receiving => _Receiving;
         public List<BaseModel> GetUsersList => OnlineUsers.GetList();
         public int UsersCount => OnlineUsers.Count;
 
         private readonly ThreadManager OnlineUsers;
-        private bool _Receiving = false;
 
         private ServerSocket(System.Net.Sockets.Socket Instance, int ServerPort, int MaxConnection = 0)
         {
@@ -72,24 +70,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             return OnlineUsers[UserName];
         }
 
-        public SocketResult Send(SocketMessageType type, params object[] objs)
-        {
-            throw new ListeningSocketCanNotSendException();
-        }
-
-        public SocketObject Receive()
-        {
-            throw new ListeningSocketCanNotSendException();
-        }
-
         public void Close()
         {
             Instance?.Close();
-        }
-
-        public void StartReceiving(Task t)
-        {
-            throw new ListeningSocketCanNotSendException();
         }
 
         public static string GetTypeString(SocketMessageType type)

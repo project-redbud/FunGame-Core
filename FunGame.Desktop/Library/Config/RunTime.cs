@@ -7,6 +7,7 @@
     public class RunTime
     {
         public static Core.Library.Common.Network.Socket? Socket { get; set; } = null;
+        public static Controller.RunTimeController? Connector { get; set; } = null;
         public static UI.Main? Main { get; set; } = null;
         public static UI.Login? Login { get; set; } = null;
         public static UI.Register? Register { get; set; } = null;

@@ -16,7 +16,7 @@ namespace Milimoe.FunGame.Desktop.Library.Base
         {
             if (AfterLogin != null)
             {
-                return AfterLogin(this, e);
+                return AfterLogin.Invoke(this, e);
             }
             else return EventResult.NoEventImplement;
         }
@@ -25,7 +25,7 @@ namespace Milimoe.FunGame.Desktop.Library.Base
         {
             if (BeforeLogin != null)
             {
-                return BeforeLogin(this, e);
+                return BeforeLogin.Invoke(this, e);
             }
             else return EventResult.NoEventImplement;
         }
@@ -34,7 +34,7 @@ namespace Milimoe.FunGame.Desktop.Library.Base
         {
             if (FailedLogin != null)
             {
-                return FailedLogin(this, e);
+                return FailedLogin.Invoke(this, e);
             }
             else return EventResult.NoEventImplement;
         }
@@ -43,7 +43,7 @@ namespace Milimoe.FunGame.Desktop.Library.Base
         {
             if (SucceedLogin != null)
             {
-                return SucceedLogin(this, e);
+                return SucceedLogin.Invoke(this, e);
             }
             else return EventResult.NoEventImplement;
         }

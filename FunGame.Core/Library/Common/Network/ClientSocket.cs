@@ -4,7 +4,7 @@ using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
 {
-    public class ClientSocket : ISocket
+    public class ClientSocket : IClientSocket
     {
         public System.Net.Sockets.Socket Instance { get; }
         public int Runtime { get; } = (int)SocketRuntimeType.Server;
@@ -60,6 +60,18 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
                 else return SocketResult.Fail;
             }
             return SocketResult.NotSent;
+        }
+
+        public void BindEvent(Delegate Method, bool Remove = false)
+        {
+            if (!Remove)
+            {
+                SocketManager.SocketReceive += (SocketManager.SocketReceiveHandler)Method;
+            }
+            else
+            {
+                SocketManager.SocketReceive -= (SocketManager.SocketReceiveHandler)Method;
+            }
         }
 
         public void StartReceiving(Task t)

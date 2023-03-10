@@ -129,4 +129,14 @@
     {
         public override string Message => "无法创建Smtp服务 (#10026)";
     }
+
+    public class IndexOutOfArrayLengthException : Exception
+    {
+        public override string Message => "索引超过数组长度上限 (#10027)";
+    }
+
+    public class SocketCreateReceivingException : Exception
+    {
+        public override string Message => "无法创建监听套接字 (#10027)";
+    }
 }

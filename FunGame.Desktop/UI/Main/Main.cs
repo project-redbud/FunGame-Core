@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Event;
@@ -8,7 +9,6 @@ using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Library.Base;
 using Milimoe.FunGame.Desktop.Library.Component;
 using Milimoe.FunGame.Desktop.Utility;
-using System.Diagnostics;
 
 namespace Milimoe.FunGame.Desktop.UI
 {
@@ -39,23 +39,23 @@ namespace Milimoe.FunGame.Desktop.UI
         public Main()
         {
             InitializeComponent();
-            Init();
+            InitAsync();
         }
 
         /// <summary>
         /// 所有自定义初始化的内容
         /// </summary>
-        public void Init()
+        public async void InitAsync()
         {
             RunTime.Main = this;
             SetButtonEnableIfLogon(false, ClientState.WaitConnect);
             SetRoomid("-1"); // 房间号初始化
             ShowFunGameInfo(); // 显示FunGame信息
             GetFunGameConfig(); // 获取FunGame配置
-            // 创建一个UI控制器
-            MainController = new MainController(this);
+            // 创建RunTime
+            RunTime.Connector = new RunTimeController(this);
             // 窗口句柄创建后，进行委托
-            Task.Factory.StartNew(() =>
+            await Task.Factory.StartNew(() =>
             {
                 while (true)
                 {
@@ -64,13 +64,8 @@ namespace Milimoe.FunGame.Desktop.UI
                         break;
                     }
                 }
-                void action()
-                {
-                    if (Config.FunGame_isAutoConnect)
-                        MainController.GetServerConnection();
-                }
-                InvokeUpdateUI(action);
             });
+            if (Config.FunGame_isAutoConnect) RunTime.Connector?.GetServerConnection();
         }
 
         /// <summary>
@@ -79,6 +74,7 @@ namespace Milimoe.FunGame.Desktop.UI
         protected override void BindEvent()
         {
             base.BindEvent();
+            Disposed += Main_Disposed;
             FailedConnect += FailedConnectEvent;
             SucceedConnect += SucceedConnectEvent;
             SucceedLogin += SucceedLoginEvent;
@@ -134,7 +130,7 @@ namespace Milimoe.FunGame.Desktop.UI
                             if (MainController != null && Config.FunGame_isAutoConnect)
                             {
                                 // 自动连接服务器
-                                MainController.Connect();
+                                RunTime.Connector?.Connect();
                             }
                             break;
 
@@ -630,7 +626,6 @@ namespace Milimoe.FunGame.Desktop.UI
             Login.Visible = false;
             Logout.Visible = true;
             UpdateUI(MainInvokeType.SetGreenAndPing);
-            RunTime.Login?.Close();
             Thread.Sleep(100);
             string welcome = $"欢迎回来， {Usercfg.LoginUserName}！";
             ShowMessage.Message(welcome, "登录成功", 5);
@@ -840,11 +835,7 @@ namespace Milimoe.FunGame.Desktop.UI
         {
             if (ShowMessage.OKCancelMessage("你确定关闭游戏？", "退出") == (int)MessageResult.OK)
             {
-                if (MainController != null)
-                {
-                    MainController.Close();
-                    MainController = null;
-                }
+                RunTime.Connector?.Close();
                 Environment.Exit(0);
             }
         }
@@ -1174,6 +1165,11 @@ namespace Milimoe.FunGame.Desktop.UI
             }
         }
 
+        private void Main_Disposed(object? sender, EventArgs e)
+        {
+            MainController?.Dispose();
+        }
+
         /// <summary>
         /// 连接服务器失败后触发事件
         /// </summary>
@@ -1188,7 +1184,7 @@ namespace Milimoe.FunGame.Desktop.UI
                 Task.Run(() =>
                 {
                     Thread.Sleep(5000);
-                    if (Config.FunGame_isConnected && Config.FunGame_isAutoRetry) MainController?.Connect(); // 再次判断是否开启自动重连
+                    if (Config.FunGame_isConnected && Config.FunGame_isAutoRetry) RunTime.Connector?.Connect(); // 再次判断是否开启自动重连
                 });
                 GetMessage("连接服务器失败，5秒后自动尝试重连。");
             }
@@ -1204,6 +1200,8 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <returns></returns>
         public EventResult SucceedConnectEvent(object sender, GeneralEventArgs e)
         {
+            // 创建MainController
+            MainController = new MainController(this);
             if (MainController != null && Config.FunGame_isAutoLogin && Config.FunGame_AutoLoginUser != "" && Config.FunGame_AutoLoginPassword != "" && Config.FunGame_AutoLoginKey != "")
             {
                 // 自动登录
@@ -1305,7 +1303,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     {
                         CurrentRetryTimes = -1;
                         Config.FunGame_isAutoLogin = true;
-                        MainController?.Connect();
+                        RunTime.Connector?.Connect();
                     }
                     else
                         WritelnGameInfo(">> 你不能在连接服务器的同时重试连接！");
@@ -1315,20 +1313,20 @@ namespace Milimoe.FunGame.Desktop.UI
                     {
                         CurrentRetryTimes = -1;
                         Config.FunGame_isAutoLogin = true;
-                        MainController?.GetServerConnection();
+                        RunTime.Connector?.GetServerConnection();
                     }
                     break;
                 case Constant.FunGame_Disconnect:
                     if (Config.FunGame_isConnected && MainController != null)
                     {
                         // 先退出登录再断开连接
-                        if (MainController?.LogOut() ?? false) MainController?.Disconnect();
+                        if (MainController?.LogOut() ?? false) RunTime.Connector?.Disconnect();
                     }
                     break;
                 case Constant.FunGame_DisconnectWhenNotLogin:
                     if (Config.FunGame_isConnected && MainController != null)
                     {
-                        MainController?.Disconnect();
+                        RunTime.Connector?.Disconnect();
                     }
                     break;
                 case Constant.FunGame_ConnectTo:
@@ -1359,7 +1357,7 @@ namespace Milimoe.FunGame.Desktop.UI
                         Constant.Server_Port = port;
                         CurrentRetryTimes = -1;
                         Config.FunGame_isAutoLogin = true;
-                        MainController?.Connect();
+                        RunTime.Connector?.Connect();
                     }
                     else if (ErrorType == Core.Library.Constant.ErrorType.IsNotIP) ShowMessage.ErrorMessage("这不是一个IP地址！");
                     else if (ErrorType == Core.Library.Constant.ErrorType.IsNotPort) ShowMessage.ErrorMessage("这不是一个端口号！\n正确范围：1~65535");

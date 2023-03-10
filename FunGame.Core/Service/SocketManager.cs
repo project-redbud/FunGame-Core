@@ -162,7 +162,7 @@ namespace Milimoe.FunGame.Core.Service
             if (Socket != null)
             {
                 // 从服务器接收消息
-                byte[] buffer = new byte[2048];
+                byte[] buffer = new byte[General.SocketByteSize];
                 int length = Socket.Receive(buffer);
                 if (length > 0)
                 {
@@ -172,6 +172,8 @@ namespace Milimoe.FunGame.Core.Service
                     {
                         result = new Library.Common.Network.SocketObject(json.MessageType, json.Token, json.Parameters);
                     }
+                    // 客户端接收消息，广播ScoketObject到每个UIModel
+                    OnSocketReceive(result);
                     return result;
                 }
             }
@@ -189,7 +191,7 @@ namespace Milimoe.FunGame.Core.Service
             if (ClientSocket != null)
             {
                 // 从客户端接收消息
-                byte[] buffer = new byte[2048];
+                byte[] buffer = new byte[General.SocketByteSize];
                 int length = ClientSocket.Receive(buffer);
                 if (length > 0)
                 {
@@ -238,38 +240,23 @@ namespace Milimoe.FunGame.Core.Service
         #region 事件
 
         /// <summary>
-        /// 异步监听事件
+        /// 监听事件的委托
         /// </summary>
-        /// <typeparam name="T">结果类</typeparam>
-        /// <param name="type">通信类型</param>
-        /// <param name="objs">参数</param>
-        /// <returns>结果</returns>
-        internal delegate Task<T> SocketHandler<T>(Library.Common.Network.SocketObject SocketObject);
+        /// <param name="SocketObject">SocketObject</param>
+        internal delegate void SocketReceiveHandler(Library.Common.Network.SocketObject SocketObject);
 
         /// <summary>
-        /// 异步监听事件
+        /// 监听事件
         /// </summary>
-        /// <param name="type">通信类型</param>
-        /// <param name="objs">参数</param>
-        /// <returns>线程</returns>
-        internal delegate Task SocketHandler(Library.Common.Network.SocketObject SocketObject);
+        internal static event SocketReceiveHandler? SocketReceive;
 
         /// <summary>
-        /// 监听没有返回值的事件
+        /// 触发异步监听事件
         /// </summary>
-        internal static event SocketHandler? SocketReceiveAsync;
-
-        /// <summary>
-        /// 触发异步无返回值事件
-        /// </summary>
-        /// <param name="type">通信类型</param>
-        /// <param name="objs">参数</param>
-        internal static void OnSocketReceiveAsync(Library.Common.Network.SocketObject SocketObject)
+        /// <param name="SocketObject">SocketObject</param>
+        internal static void OnSocketReceive(Library.Common.Network.SocketObject SocketObject)
         {
-            if (SocketReceiveAsync != null)
-            {
-                SocketReceiveAsync.Invoke(SocketObject);
-            }
+            SocketReceive?.Invoke(SocketObject);
         }
 
         #endregion

@@ -56,39 +56,38 @@ namespace Milimoe.FunGame.Desktop.Library.Component
         /// </summary>
         protected virtual void FormClosedEvent(object? sender, FormClosedEventArgs e)
         {
-            Dispose();
-            if (GetType() == typeof(ShowMessage))
+            if (GetType() != typeof(ShowMessage))
             {
-                return;
-            }
-            Singleton.Remove(this);
-            if (GetType() == typeof(Main))
-            {
-                RunTime.Main = null;
-            }
-            else if (GetType() == typeof(Login))
-            {
-                RunTime.Login = null;
-            }
-            else if (GetType() == typeof(Register))
-            {
-                RunTime.Register = null;
-            }
-            else if (GetType() == typeof(InventoryUI))
-            {
-                RunTime.Inventory = null;
-            }
-            else if (GetType() == typeof(StoreUI))
-            {
-                RunTime.Store = null;
-            }
-            else if (GetType() == typeof(RoomSetting))
-            {
-                RunTime.RoomSetting = null;
-            }
-            else if (GetType() == typeof(UserCenter))
-            {
-                RunTime.UserCenter = null;
+                Singleton.Remove(this);
+                if (GetType() == typeof(Main))
+                {
+                    RunTime.Main = null;
+                }
+                else if (GetType() == typeof(Login))
+                {
+                    RunTime.Login = null;
+                }
+                else if (GetType() == typeof(Register))
+                {
+                    RunTime.Register = null;
+                }
+                else if (GetType() == typeof(InventoryUI))
+                {
+                    RunTime.Inventory = null;
+                }
+                else if (GetType() == typeof(StoreUI))
+                {
+                    RunTime.Store = null;
+                }
+                else if (GetType() == typeof(RoomSetting))
+                {
+                    RunTime.RoomSetting = null;
+                }
+                else if (GetType() == typeof(UserCenter))
+                {
+                    RunTime.UserCenter = null;
+                }
+                Dispose();
             }
         }
 

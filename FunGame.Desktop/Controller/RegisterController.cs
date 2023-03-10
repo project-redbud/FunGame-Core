@@ -3,11 +3,11 @@ using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Model;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Desktop.UI;
-using Milimoe.FunGame.Core.Library.Common.Network;
+using Milimoe.FunGame.Core.Library.Common.Architecture;
 
 namespace Milimoe.FunGame.Desktop.Controller
 {
-    public class RegisterController
+    public class RegisterController : BaseController
     {
         private readonly Register Register;
         private readonly RegisterModel RegModel;
@@ -18,9 +18,9 @@ namespace Milimoe.FunGame.Desktop.Controller
             RegModel = new RegisterModel(reg);
         }
 
-        public void SocketHandler(SocketMessageType type, params object[]? objs)
+        public override void Dispose()
         {
-            RegModel.SocketHandler(type, objs);
+            RegModel.Dispose();
         }
 
         public bool Reg(params object[]? objs)

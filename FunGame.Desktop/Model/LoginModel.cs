@@ -1,20 +1,55 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Common.Event;
+using Milimoe.FunGame.Core.Library.Common.Architecture;
+using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
+using Milimoe.FunGame.Desktop.Controller;
 using Milimoe.FunGame.Desktop.Library;
+using Milimoe.FunGame.Desktop.Library.Component;
+using Milimoe.FunGame.Desktop.UI;
 
 namespace Milimoe.FunGame.Desktop.Model
 {
     /// <summary>
     /// 请不要越过Controller直接调用Model中的方法。
     /// </summary>
-    public class LoginModel
+    public class LoginModel : BaseModel
     {
+        public LoginModel() : base(RunTime.Socket)
+        {
+
+        }
+
+        public override void SocketHandler(SocketObject SocketObject)
+        {
+            try
+            {
+                SocketMessageType type = SocketObject.SocketType;
+                object[] objs = SocketObject.Parameters;
+                switch (SocketObject.SocketType)
+                {
+                    case SocketMessageType.Login:
+                        SocketHandler_Login(SocketObject);
+                        break;
+
+                    case SocketMessageType.CheckLogin:
+                        SocketHandler_CheckLogin(SocketObject);
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                RunTime.WritelnSystemInfo(e.GetErrorInfo());
+            }
+        }
+
         public static bool LoginAccount(params object[]? objs)
         {
             try
             {
-                Core.Library.Common.Network.Socket? Socket = RunTime.Socket;
+                Socket? Socket = RunTime.Socket;
                 if (Socket != null && objs != null)
                 {
                     string username = "";
@@ -41,7 +76,7 @@ namespace Milimoe.FunGame.Desktop.Model
         {
             try
             {
-                Core.Library.Common.Network.Socket? Socket = RunTime.Socket;
+                Socket? Socket = RunTime.Socket;
                 if (Socket != null && objs != null)
                 {
                     Guid key = Guid.Empty;
@@ -58,5 +93,53 @@ namespace Milimoe.FunGame.Desktop.Model
             }
             return false;
         }
+
+        private void SocketHandler_Login(SocketObject SocketObject)
+        {
+            Guid key = Guid.Empty;
+            string? msg = "";
+            // 返回一个Key，再发回去给服务器就行了
+            if (SocketObject.Length > 0) key = SocketObject.GetParam<Guid>(0);
+            if (SocketObject.Length > 1) msg = SocketObject.GetParam<string>(1);
+            // 如果返回了msg，说明验证错误。
+            if (msg != null && msg.Trim() != "")
+            {
+                ShowMessage.ErrorMessage(msg, "登录失败");
+                RunTime.Login?.OnFailedLoginEvent(new GeneralEventArgs());
+                RunTime.Login?.OnAfterLoginEvent(new GeneralEventArgs());
+            }
+            else
+            {
+                if (key != Guid.Empty)
+                {
+                    Config.Guid_LoginKey = key;
+                    LoginController.CheckLogin(key);
+                }
+                else
+                {
+                    ShowMessage.ErrorMessage("登录失败！！", "登录失败", 5);
+                    RunTime.Login?.OnFailedLoginEvent(new GeneralEventArgs());
+                    RunTime.Login?.OnAfterLoginEvent(new GeneralEventArgs());
+                }
+            }
+        }
+
+        private void SocketHandler_CheckLogin(SocketObject SocketObject)
+        {
+            // 返回的objs是该Login的User对象的各个属性
+            object[] objs = SocketObject.Parameters;
+            if (objs != null && objs.Length > 0)
+            {
+                // 创建User对象并返回到Main
+                RunTime.Main?.UpdateUI(MainInvokeType.SetUser, new object[] { Factory.New<User>(objs) });
+                RunTime.Login?.OnSucceedLoginEvent(new GeneralEventArgs());
+                RunTime.Login?.OnAfterLoginEvent(new GeneralEventArgs());
+                return;
+            }
+            ShowMessage.ErrorMessage("登录失败！！", "登录失败", 5);
+            RunTime.Login?.OnFailedLoginEvent(new GeneralEventArgs());
+            RunTime.Login?.OnAfterLoginEvent(new GeneralEventArgs());
+        }
+
     }
 }

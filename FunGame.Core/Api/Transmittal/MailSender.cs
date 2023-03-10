@@ -34,15 +34,24 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             return _LastestResult;
         }
 
-        public bool Dispose()
+        private bool IsDisposed = false;
+
+        public void Dispose()
         {
-            return MailManager.Dispose(this);
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        void IDisposable.Dispose()
+        protected void Dispose(bool Disposing)
         {
-            MailManager.Dispose(this);
-            GC.SuppressFinalize(this);
+            if (!IsDisposed)
+            {
+                if (Disposing)
+                {
+                    MailManager.Dispose(this);
+                }
+            }
+            IsDisposed = true;
         }
     }
 }

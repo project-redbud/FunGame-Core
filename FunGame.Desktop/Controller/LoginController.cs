@@ -1,12 +1,26 @@
 ﻿using Milimoe.FunGame.Core.Library.Common.Event;
+using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Library.Component;
 using Milimoe.FunGame.Desktop.Model;
+using Milimoe.FunGame.Desktop.UI;
 
 namespace Milimoe.FunGame.Desktop.Controller
 {
-    public class LoginController
+    public class LoginController : BaseController
     {
+        private readonly LoginModel LoginModel;
+
+        public LoginController()
+        {
+            LoginModel = new LoginModel();
+        }
+
+        public override void Dispose()
+        {
+            LoginModel.Dispose();
+        }
+
         public static bool LoginAccount(params object[]? objs)
         {
             if (RunTime.Login?.OnBeforeLoginEvent(new GeneralEventArgs()) == Core.Library.Constant.EventResult.Fail) return false;

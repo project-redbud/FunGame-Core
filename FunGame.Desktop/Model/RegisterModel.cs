@@ -1,38 +1,41 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Library.Common.Architecture;
+using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
 using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Library.Component;
-using Milimoe.FunGame.Desktop.Library.Interface;
 using Milimoe.FunGame.Desktop.UI;
 
 namespace Milimoe.FunGame.Desktop.Model
 {
-    public class RegisterModel
+    public class RegisterModel : BaseModel
     {
         private readonly Register Register;
 
-        public RegisterModel(Register reg)
+        public RegisterModel(Register reg) : base(RunTime.Socket)
         {
             Register = reg;
         }
 
-        public void SocketHandler(SocketMessageType type, params object[]? objs)
+        public override void SocketHandler(SocketObject SocketObject)
         {
             try
             {
-                switch (type)
+                SocketMessageType type = SocketObject.SocketType;
+                object[] objs = SocketObject.Parameters;
+                switch (SocketObject.SocketType)
                 {
                     case SocketMessageType.Reg:
                         RegInvokeType invokeType = RegInvokeType.None;
                         if (objs != null && objs.Length > 0)
                         {
-                            invokeType = NetworkUtility.ConvertJsonObject<RegInvokeType>(objs[0]);
+                            invokeType = SocketObject.GetParam<RegInvokeType>(0);
                             Register.UpdateUI(invokeType);
                         }
                         break;
                     case SocketMessageType.CheckReg:
-                        SocketHandler_CheckReg(objs);
+                        SocketHandler_CheckReg(SocketObject);
                         break;
                 }
             }
@@ -42,12 +45,12 @@ namespace Milimoe.FunGame.Desktop.Model
             }
         }
 
-        private void SocketHandler_CheckReg(params object[]? objs)
+        private void SocketHandler_CheckReg(SocketObject SocketObject)
         {
-            if (objs != null && objs.Length > 1)
+            if (SocketObject.Parameters != null && SocketObject.Parameters.Length > 1)
             {
-                bool successful = NetworkUtility.ConvertJsonObject<bool>(objs[0])!;
-                string msg = NetworkUtility.ConvertJsonObject<string>(objs[1])!;
+                bool successful = SocketObject.GetParam<bool>(0)!;
+                string msg = SocketObject.GetParam<string>(1)!;
                 ShowMessage.Message(msg, "注册结果");
                 if (successful)
                 {
