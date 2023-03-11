@@ -156,7 +156,7 @@ namespace Milimoe.FunGame.Desktop.UI
         {
             string username = ((RegisterEventArgs)e).Username;
             string password = ((RegisterEventArgs)e).Password;
-            if (LoginController.LoginAccount(username, password)) Close();
+            LoginController.LoginAccount(username, password);
             return EventResult.Success;
         }
 

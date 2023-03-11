@@ -56,6 +56,8 @@ namespace Milimoe.FunGame.Desktop.Model
                 {
                     Register.OnSucceedRegEvent(Register.EventArgs);
                     Register.OnAfterRegEvent(Register.EventArgs);
+                    Register.Close();
+                    return;
                 }
             }
             Register.OnFailedRegEvent(Register.EventArgs);
@@ -67,7 +69,7 @@ namespace Milimoe.FunGame.Desktop.Model
         {
             try
             {
-                Core.Library.Common.Network.Socket? Socket = RunTime.Socket;
+                Socket? Socket = RunTime.Socket;
                 if (Socket != null && objs != null)
                 {
                     string username = "";
@@ -91,7 +93,7 @@ namespace Milimoe.FunGame.Desktop.Model
         {
             try
             {
-                Core.Library.Common.Network.Socket? Socket = RunTime.Socket;
+                Socket? Socket = RunTime.Socket;
                 if (Socket != null && objs != null)
                 {
                     string username = "";
