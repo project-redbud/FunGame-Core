@@ -223,27 +223,37 @@
         FiveStar
     }
 
+    public enum RunTimeInvokeType
+    {
+        None,
+        GetServerConnection,
+        Connect,
+        Connected,
+        Disconnect,
+        Disconnected,
+        Close
+    }
+
     public enum MainInvokeType
     {
         None,
+        Connected,
+        Disconnected,
+        Disconnect,
         SetGreen,
         SetGreenAndPing,
         SetRed,
         SetYellow,
         WaitConnectAndSetYellow,
         WaitLoginAndSetYellow,
-        Disconnect,
-        Disconnected,
         LogOut,
         LogIn,
         SetUser,
-        Connected,
-        Connect,
-        GetServerConnection,
-        Close,
         IntoRoom,
-        Chat,
-        QuitRoom
+        QuitRoom,
+        UpdateRoom,
+        CreateRoom,
+        Chat
     }
 
     public enum RegInvokeType

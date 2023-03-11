@@ -12,6 +12,7 @@ namespace Milimoe.FunGame.Desktop.Model
     public class MainModel : BaseModel
     {
         private readonly Main Main;
+        private string LastSendTalkMessage = "";
 
         public MainModel(Main main) : base(RunTime.Socket)
         {
@@ -44,25 +45,78 @@ namespace Milimoe.FunGame.Desktop.Model
             return false;
         }
 
-        public bool IntoRoom()
+        public bool IntoRoom(string roomid)
         {
             try
             {
-                if (RunTime.Socket?.Send(SocketMessageType.IntoRoom, Config.FunGame_Roomid) == SocketResult.Success)
+                if (RunTime.Socket?.Send(SocketMessageType.IntoRoom, roomid) == SocketResult.Success)
                     return true;
                 else throw new CanNotIntoRoomException();
             }
             catch (Exception e)
             {
                 Main.GetMessage(e.GetErrorInfo());
-                Main.OnFailedIntoRoomEvent(new GeneralEventArgs());
-                Main.OnAfterIntoRoomEvent(new GeneralEventArgs());
+                RoomEventArgs args = new(roomid);
+                Main.OnFailedIntoRoomEvent(args);
+                Main.OnAfterIntoRoomEvent(args);
                 return false;
             }
         }
         
+        public bool UpdateRoom()
+        {
+            try
+            {
+                if (RunTime.Socket?.Send(SocketMessageType.UpdateRoom) == SocketResult.Success)
+                    return true;
+                else throw new GetRoomListException();
+            }
+            catch (Exception e)
+            {
+                Main.GetMessage(e.GetErrorInfo());
+                return false;
+            }
+        }
+        
+        public bool QuitRoom(string roomid)
+        {
+            try
+            {
+                if (RunTime.Socket?.Send(SocketMessageType.QuitRoom, roomid) == SocketResult.Success)
+                    return true;
+                else throw new QuitRoomException();
+            }
+            catch (Exception e)
+            {
+                Main.GetMessage(e.GetErrorInfo());
+                RoomEventArgs args = new(roomid);
+                Main.OnFailedQuitRoomEvent(args);
+                Main.OnAfterQuitRoomEvent(args);
+                return false;
+            }
+        }
+        
+        public bool CreateRoom()
+        {
+            try
+            {
+                if (RunTime.Socket?.Send(SocketMessageType.CreateRoom) == SocketResult.Success)
+                    return true;
+                else throw new QuitRoomException();
+            }
+            catch (Exception e)
+            {
+                Main.GetMessage(e.GetErrorInfo());
+                RoomEventArgs args = new();
+                Main.OnFailedCreateRoomEvent(args);
+                Main.OnAfterCreateRoomEvent(args);
+                return false;
+            }
+        }
+
         public bool Chat(string msg)
         {
+            LastSendTalkMessage = msg;
             try
             {
                 if (RunTime.Socket?.Send(SocketMessageType.Chat, msg) == SocketResult.Success)
@@ -72,8 +126,9 @@ namespace Milimoe.FunGame.Desktop.Model
             catch (Exception e)
             {
                 Main.GetMessage(e.GetErrorInfo());
-                Main.OnFailedSendTalkEvent(new GeneralEventArgs());
-                Main.OnAfterSendTalkEvent(new GeneralEventArgs());
+                SendTalkEventArgs SendTalkEventArgs = new(LastSendTalkMessage);
+                Main.OnFailedSendTalkEvent(SendTalkEventArgs);
+                Main.OnAfterSendTalkEvent(SendTalkEventArgs);
                 return false;
             }
         }
@@ -161,12 +216,14 @@ namespace Milimoe.FunGame.Desktop.Model
             {
                 Config.FunGame_Roomid = roomid;
             }
-            Main.OnSucceedIntoRoomEvent(new GeneralEventArgs());
-            Main.OnAfterIntoRoomEvent(new GeneralEventArgs());
+            RoomEventArgs args = new(roomid);
+            Main.OnSucceedIntoRoomEvent(args);
+            Main.OnAfterIntoRoomEvent(args);
         }
         
         private void SocketHandler_Chat(SocketObject SocketObject)
         {
+            SendTalkEventArgs SendTalkEventArgs = new(LastSendTalkMessage);
             if (SocketObject.Parameters != null && SocketObject.Length > 1)
             {
                 string user = SocketObject.GetParam<string>(0)!;
@@ -175,12 +232,12 @@ namespace Milimoe.FunGame.Desktop.Model
                 {
                     Main.GetMessage(msg, TimeType.None);
                 }
-                Main.OnSucceedSendTalkEvent(new GeneralEventArgs());
-                Main.OnAfterSendTalkEvent(new GeneralEventArgs());
+                Main.OnSucceedSendTalkEvent(SendTalkEventArgs);
+                Main.OnAfterSendTalkEvent(SendTalkEventArgs);
                 return;
             }
-            Main.OnFailedSendTalkEvent(new GeneralEventArgs());
-            Main.OnAfterSendTalkEvent(new GeneralEventArgs());
+            Main.OnFailedSendTalkEvent(SendTalkEventArgs);
+            Main.OnAfterSendTalkEvent(SendTalkEventArgs);
         }
         
         #endregion

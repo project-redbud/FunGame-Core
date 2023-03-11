@@ -190,7 +190,7 @@ namespace Milimoe.FunGame.Desktop.UI
                         case MainInvokeType.SetUser:
                             if (objs != null && objs.Length > 0)
                             {
-                                SetLoginUser(objs);
+                                LoginAccount(objs);
                             }
                             break;
 
@@ -314,18 +314,6 @@ namespace Milimoe.FunGame.Desktop.UI
             }
             else
                 Room.Text = "暂未进入房间";
-        }
-
-        /// <summary>
-        /// 设置登录信息
-        /// </summary>
-        /// <param name="objs"></param>
-        private void SetLoginUser(params object[]? objs)
-        {
-            if (InvokeRequired)
-                Invoke(LoginAccount, objs);
-            else
-                LoginAccount(objs);
         }
 
         /// <summary>
@@ -626,7 +614,6 @@ namespace Milimoe.FunGame.Desktop.UI
             Login.Visible = false;
             Logout.Visible = true;
             UpdateUI(MainInvokeType.SetGreenAndPing);
-            Thread.Sleep(100);
             string welcome = $"欢迎回来， {Usercfg.LoginUserName}！";
             ShowMessage.Message(welcome, "登录成功", 5);
             WritelnSystemInfo(welcome);
@@ -812,7 +799,7 @@ namespace Milimoe.FunGame.Desktop.UI
         /// <summary>
         /// 关闭所有登录后才能访问的窗口
         /// </summary>
-        private void CloseConnectedWindows()
+        private static void CloseConnectedWindows()
         {
             RunTime.Login?.Close();
             RunTime.Register?.Close();
@@ -1219,7 +1206,7 @@ namespace Milimoe.FunGame.Desktop.UI
         private EventResult SucceedLoginEvent(object sender, GeneralEventArgs e)
         {
             // 接入-1号房间聊天室
-            if (MainController?.IntoRoom() ?? false) return EventResult.Success;
+            if (MainController?.IntoRoom("-1") ?? false) return EventResult.Success;
             else return EventResult.Fail;
         }
 

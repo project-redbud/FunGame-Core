@@ -7,12 +7,12 @@ namespace Milimoe.FunGame.Desktop.Library.Base
 {
     public class BaseLogin : GeneralForm, ILoginEventHandler
     {
-        public event IEventHandler.BeforeEventHandler? BeforeLogin;
-        public event IEventHandler.AfterEventHandler? AfterLogin;
-        public event IEventHandler.SucceedEventHandler? SucceedLogin;
-        public event IEventHandler.FailedEventHandler? FailedLogin;
+        public event ILoginEventHandler.BeforeEventHandler? BeforeLogin;
+        public event ILoginEventHandler.AfterEventHandler? AfterLogin;
+        public event ILoginEventHandler.SucceedEventHandler? SucceedLogin;
+        public event ILoginEventHandler.FailedEventHandler? FailedLogin;
 
-        public EventResult OnAfterLoginEvent(GeneralEventArgs e)
+        public EventResult OnAfterLoginEvent(LoginEventArgs e)
         {
             if (AfterLogin != null)
             {
@@ -21,7 +21,7 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public EventResult OnBeforeLoginEvent(GeneralEventArgs e)
+        public EventResult OnBeforeLoginEvent(LoginEventArgs e)
         {
             if (BeforeLogin != null)
             {
@@ -30,7 +30,7 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public EventResult OnFailedLoginEvent(GeneralEventArgs e)
+        public EventResult OnFailedLoginEvent(LoginEventArgs e)
         {
             if (FailedLogin != null)
             {
@@ -39,7 +39,7 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public EventResult OnSucceedLoginEvent(GeneralEventArgs e)
+        public EventResult OnSucceedLoginEvent(LoginEventArgs e)
         {
             if (SucceedLogin != null)
             {

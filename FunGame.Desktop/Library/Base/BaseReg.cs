@@ -7,15 +7,10 @@ namespace Milimoe.FunGame.Desktop.Library.Base
 {
     public class BaseReg : GeneralForm, IRegEventHandler
     {
-        public delegate EventResult BeforeEventHandler(object sender, RegisterEventArgs e);
-        public delegate EventResult AfterEventHandler(object sender, RegisterEventArgs e);
-        public delegate EventResult SucceedEventHandler(object sender, RegisterEventArgs e);
-        public delegate EventResult FailedEventHandler(object sender, RegisterEventArgs e);
-
-        public event IEventHandler.BeforeEventHandler? BeforeReg;
-        public event IEventHandler.AfterEventHandler? AfterReg;
-        public event IEventHandler.SucceedEventHandler? SucceedReg;
-        public event IEventHandler.FailedEventHandler? FailedReg;
+        public event IRegEventHandler.BeforeEventHandler? BeforeReg;
+        public event IRegEventHandler.AfterEventHandler? AfterReg;
+        public event IRegEventHandler.SucceedEventHandler? SucceedReg;
+        public event IRegEventHandler.FailedEventHandler? FailedReg;
 
         public EventResult OnAfterRegEvent(RegisterEventArgs e)
         {

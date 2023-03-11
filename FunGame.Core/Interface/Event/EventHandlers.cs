@@ -42,15 +42,20 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface ILoginEventHandler : IEventHandler
     {
+        public new delegate EventResult BeforeEventHandler(object sender, LoginEventArgs e);
+        public new delegate EventResult AfterEventHandler(object sender, LoginEventArgs e);
+        public new delegate EventResult SucceedEventHandler(object sender, LoginEventArgs e);
+        public new delegate EventResult FailedEventHandler(object sender, LoginEventArgs e);
+
         public event BeforeEventHandler? BeforeLogin;
         public event AfterEventHandler? AfterLogin;
         public event SucceedEventHandler? SucceedLogin;
         public event FailedEventHandler? FailedLogin;
 
-        public EventResult OnBeforeLoginEvent(GeneralEventArgs e);
-        public EventResult OnAfterLoginEvent(GeneralEventArgs e);
-        public EventResult OnSucceedLoginEvent(GeneralEventArgs e);
-        public EventResult OnFailedLoginEvent(GeneralEventArgs e);
+        public EventResult OnBeforeLoginEvent(LoginEventArgs e);
+        public EventResult OnAfterLoginEvent(LoginEventArgs e);
+        public EventResult OnSucceedLoginEvent(LoginEventArgs e);
+        public EventResult OnFailedLoginEvent(LoginEventArgs e);
     }
 
     public interface ILogoutEventHandler : IEventHandler
@@ -68,6 +73,11 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface IRegEventHandler : IEventHandler
     {
+        public new delegate EventResult BeforeEventHandler(object sender, RegisterEventArgs e);
+        public new delegate EventResult AfterEventHandler(object sender, RegisterEventArgs e);
+        public new delegate EventResult SucceedEventHandler(object sender, RegisterEventArgs e);
+        public new delegate EventResult FailedEventHandler(object sender, RegisterEventArgs e);
+
         public event BeforeEventHandler? BeforeReg;
         public event AfterEventHandler? AfterReg;
         public event SucceedEventHandler? SucceedReg;
@@ -81,54 +91,74 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface IIntoRoomEventHandler : IEventHandler
     {
+        public new delegate EventResult BeforeEventHandler(object sender, RoomEventArgs e);
+        public new delegate EventResult AfterEventHandler(object sender, RoomEventArgs e);
+        public new delegate EventResult SucceedEventHandler(object sender, RoomEventArgs e);
+        public new delegate EventResult FailedEventHandler(object sender, RoomEventArgs e);
+
         public event BeforeEventHandler? BeforeIntoRoom;
         public event AfterEventHandler? AfterIntoRoom;
         public event SucceedEventHandler? SucceedIntoRoom;
         public event FailedEventHandler? FailedIntoRoom;
 
-        public EventResult OnBeforeIntoRoomEvent(GeneralEventArgs e);
-        public EventResult OnAfterIntoRoomEvent(GeneralEventArgs e);
-        public EventResult OnSucceedIntoRoomEvent(GeneralEventArgs e);
-        public EventResult OnFailedIntoRoomEvent(GeneralEventArgs e);
+        public EventResult OnBeforeIntoRoomEvent(RoomEventArgs e);
+        public EventResult OnAfterIntoRoomEvent(RoomEventArgs e);
+        public EventResult OnSucceedIntoRoomEvent(RoomEventArgs e);
+        public EventResult OnFailedIntoRoomEvent(RoomEventArgs e);
     }
 
     public interface ISendTalkEventHandler : IEventHandler
     {
+        public new delegate EventResult BeforeEventHandler(object sender, SendTalkEventArgs e);
+        public new delegate EventResult AfterEventHandler(object sender, SendTalkEventArgs e);
+        public new delegate EventResult SucceedEventHandler(object sender, SendTalkEventArgs e);
+        public new delegate EventResult FailedEventHandler(object sender, SendTalkEventArgs e);
+
         public event BeforeEventHandler? BeforeSendTalk;
         public event AfterEventHandler? AfterSendTalk;
         public event SucceedEventHandler? SucceedSendTalk;
         public event FailedEventHandler? FailedSendTalk;
 
-        public EventResult OnBeforeSendTalkEvent(GeneralEventArgs e);
-        public EventResult OnAfterSendTalkEvent(GeneralEventArgs e);
-        public EventResult OnSucceedSendTalkEvent(GeneralEventArgs e);
-        public EventResult OnFailedSendTalkEvent(GeneralEventArgs e);
+        public EventResult OnBeforeSendTalkEvent(SendTalkEventArgs e);
+        public EventResult OnAfterSendTalkEvent(SendTalkEventArgs e);
+        public EventResult OnSucceedSendTalkEvent(SendTalkEventArgs e);
+        public EventResult OnFailedSendTalkEvent(SendTalkEventArgs e);
     }
 
     public interface ICreateRoomEventHandler : IEventHandler
     {
+        public new delegate EventResult BeforeEventHandler(object sender, RoomEventArgs e);
+        public new delegate EventResult AfterEventHandler(object sender, RoomEventArgs e);
+        public new delegate EventResult SucceedEventHandler(object sender, RoomEventArgs e);
+        public new delegate EventResult FailedEventHandler(object sender, RoomEventArgs e);
+
         public event BeforeEventHandler? BeforeCreateRoom;
         public event AfterEventHandler? AfterCreateRoom;
         public event SucceedEventHandler? SucceedCreateRoom;
         public event FailedEventHandler? FailedCreateRoom;
 
-        public EventResult OnBeforeCreateRoomEvent(GeneralEventArgs e);
-        public EventResult OnAfterCreateRoomEvent(GeneralEventArgs e);
-        public EventResult OnSucceedCreateRoomEvent(GeneralEventArgs e);
-        public EventResult OnFailedCreateRoomEvent(GeneralEventArgs e);
+        public EventResult OnBeforeCreateRoomEvent(RoomEventArgs e);
+        public EventResult OnAfterCreateRoomEvent(RoomEventArgs e);
+        public EventResult OnSucceedCreateRoomEvent(RoomEventArgs e);
+        public EventResult OnFailedCreateRoomEvent(RoomEventArgs e);
     }
 
     public interface IQuitRoomEventHandler : IEventHandler
     {
+        public new delegate EventResult BeforeEventHandler(object sender, RoomEventArgs e);
+        public new delegate EventResult AfterEventHandler(object sender, RoomEventArgs e);
+        public new delegate EventResult SucceedEventHandler(object sender, RoomEventArgs e);
+        public new delegate EventResult FailedEventHandler(object sender, RoomEventArgs e);
+
         public event BeforeEventHandler? BeforeQuitRoom;
         public event AfterEventHandler? AfterQuitRoom;
         public event SucceedEventHandler? SucceedQuitRoom;
         public event FailedEventHandler? FailedQuitRoom;
 
-        public EventResult OnBeforeQuitRoomEvent(GeneralEventArgs e);
-        public EventResult OnAfterQuitRoomEvent(GeneralEventArgs e);
-        public EventResult OnSucceedQuitRoomEvent(GeneralEventArgs e);
-        public EventResult OnFailedQuitRoomEvent(GeneralEventArgs e);
+        public EventResult OnBeforeQuitRoomEvent(RoomEventArgs e);
+        public EventResult OnAfterQuitRoomEvent(RoomEventArgs e);
+        public EventResult OnSucceedQuitRoomEvent(RoomEventArgs e);
+        public EventResult OnFailedQuitRoomEvent(RoomEventArgs e);
     }
 
     public interface IChangeRoomSettingEventHandler : IEventHandler

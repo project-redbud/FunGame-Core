@@ -7,7 +7,7 @@ namespace Milimoe.FunGame.Desktop.Controller
 {
     public class RunTimeController
     {
-        public bool Connected => Do<bool>(MainInvokeType.Connected);
+        public bool Connected => Do<bool>(RunTimeInvokeType.Connected);
 
         private RunTimeModel RunTimeModel { get; }
         private Main Main { get; }
@@ -21,16 +21,16 @@ namespace Milimoe.FunGame.Desktop.Controller
         /**
          * 从内部去调用Model的方法，并记录日志。
          */
-        private T Do<T>(MainInvokeType DoType, params object[] args)
+        private T Do<T>(RunTimeInvokeType DoType, params object[] args)
         {
             object result = new();
             switch (DoType)
             {
-                case MainInvokeType.GetServerConnection:
+                case RunTimeInvokeType.GetServerConnection:
                     result = RunTimeModel.GetServerConnection();
                     break;
 
-                case MainInvokeType.Connect:
+                case RunTimeInvokeType.Connect:
                     result = RunTimeModel.Connect();
                     if ((ConnectResult)result != ConnectResult.Success)
                     {
@@ -39,19 +39,19 @@ namespace Milimoe.FunGame.Desktop.Controller
                     }
                     break;
 
-                case MainInvokeType.Connected:
+                case RunTimeInvokeType.Connected:
                     result = RunTimeModel.Connected;
                     break;
 
-                case MainInvokeType.Disconnect:
+                case RunTimeInvokeType.Disconnect:
                     if (Main.OnBeforeDisconnectEvent(new GeneralEventArgs()) == EventResult.Fail) return (T)result;
                     RunTimeModel.Disconnect();
                     break;
 
-                case MainInvokeType.Disconnected:
+                case RunTimeInvokeType.Disconnected:
                     break;
                     
-                case MainInvokeType.Close:
+                case RunTimeInvokeType.Close:
                     if (args != null && args.Length > 0)
                     {
                         RunTimeModel.Error((Exception)args[0]);
@@ -69,32 +69,32 @@ namespace Milimoe.FunGame.Desktop.Controller
 
         public bool GetServerConnection()
         {
-            return Do<bool>(MainInvokeType.GetServerConnection);
+            return Do<bool>(RunTimeInvokeType.GetServerConnection);
         }
 
         public ConnectResult Connect()
         {
-            return Do<ConnectResult>(MainInvokeType.Connect);
+            return Do<ConnectResult>(RunTimeInvokeType.Connect);
         }
 
         public void Disconnect()
         {
-            Do<object>(MainInvokeType.Disconnect);
+            Do<object>(RunTimeInvokeType.Disconnect);
         }
 
         public void Disconnected()
         {
-            Do<object>(MainInvokeType.Disconnected);
+            Do<object>(RunTimeInvokeType.Disconnected);
         }
 
         public bool Close()
         {
-            return Do<bool>(MainInvokeType.Close);
+            return Do<bool>(RunTimeInvokeType.Close);
         }
 
         public bool Error(Exception e)
         {
-            return Do<bool>(MainInvokeType.Close, e);
+            return Do<bool>(RunTimeInvokeType.Close, e);
         }
     }
 }

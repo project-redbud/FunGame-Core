@@ -26,11 +26,27 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         public abstract int Execute(out SQLResult Result);
 
         /// <summary>
+        /// 执行一个指定的命令
+        /// </summary>
+        /// <param name="Script">命令</param>
+        /// <param name="Result">执行结果</param>
+        /// <returns>影响的行数</returns>
+        public abstract int Execute(string Script, out SQLResult Result);
+
+        /// <summary>
         /// 查询DataSet
         /// </summary>
         /// <param name="Result">执行结果</param>
         /// <returns>结果集</returns>
         public abstract DataSet ExecuteDataSet(out SQLResult Result);
+
+        /// <summary>
+        /// 执行指定的命令查询DataSet
+        /// </summary>
+        /// <param name="Script">命令</param>
+        /// <param name="Result">执行结果</param>
+        /// <returns>结果集</returns>
+        public abstract DataSet ExecuteDataSet(string Script, out SQLResult Result);
 
         /// <summary>
         /// 关闭连接

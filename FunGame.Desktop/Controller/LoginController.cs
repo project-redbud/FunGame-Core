@@ -23,12 +23,12 @@ namespace Milimoe.FunGame.Desktop.Controller
 
         public static bool LoginAccount(params object[]? objs)
         {
-            if (RunTime.Login?.OnBeforeLoginEvent(new GeneralEventArgs()) == Core.Library.Constant.EventResult.Fail) return false;
+            if (RunTime.Login?.OnBeforeLoginEvent(Login.EventArgs) == Core.Library.Constant.EventResult.Fail) return false;
             bool result = LoginModel.LoginAccount(objs);
             if (!result)
             {
                 ShowMessage.ErrorMessage("登录失败！！", "登录失败", 5);
-                RunTime.Login?.OnFailedLoginEvent(new GeneralEventArgs());
+                RunTime.Login?.OnFailedLoginEvent(Login.EventArgs);
             }
             return result;
         }
@@ -39,7 +39,7 @@ namespace Milimoe.FunGame.Desktop.Controller
             if (!result)
             {
                 ShowMessage.ErrorMessage("登录失败！！", "登录失败", 5);
-                RunTime.Login?.OnFailedLoginEvent(new GeneralEventArgs());
+                RunTime.Login?.OnFailedLoginEvent(Login.EventArgs);
             }
             return result;
         }

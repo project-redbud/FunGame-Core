@@ -90,12 +90,12 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public event IEventHandler.BeforeEventHandler? BeforeLogin;
-        public event IEventHandler.AfterEventHandler? AfterLogin;
-        public event IEventHandler.SucceedEventHandler? SucceedLogin;
-        public event IEventHandler.FailedEventHandler? FailedLogin;
+        public event ILoginEventHandler.BeforeEventHandler? BeforeLogin;
+        public event ILoginEventHandler.AfterEventHandler? AfterLogin;
+        public event ILoginEventHandler.SucceedEventHandler? SucceedLogin;
+        public event ILoginEventHandler.FailedEventHandler? FailedLogin;
 
-        public EventResult OnBeforeLoginEvent(GeneralEventArgs e)
+        public EventResult OnBeforeLoginEvent(LoginEventArgs e)
         {
             if (BeforeLogin != null)
             {
@@ -104,7 +104,7 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public EventResult OnAfterLoginEvent(GeneralEventArgs e)
+        public EventResult OnAfterLoginEvent(LoginEventArgs e)
         {
             if (AfterLogin != null)
             {
@@ -113,7 +113,7 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public EventResult OnSucceedLoginEvent(GeneralEventArgs e)
+        public EventResult OnSucceedLoginEvent(LoginEventArgs e)
         {
             if (SucceedLogin != null)
             {
@@ -122,7 +122,7 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public EventResult OnFailedLoginEvent(GeneralEventArgs e)
+        public EventResult OnFailedLoginEvent(LoginEventArgs e)
         {
             if (FailedLogin != null)
             {
@@ -172,12 +172,12 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public event IEventHandler.BeforeEventHandler? BeforeIntoRoom;
-        public event IEventHandler.AfterEventHandler? AfterIntoRoom;
-        public event IEventHandler.SucceedEventHandler? SucceedIntoRoom;
-        public event IEventHandler.FailedEventHandler? FailedIntoRoom;
+        public event IIntoRoomEventHandler.BeforeEventHandler? BeforeIntoRoom;
+        public event IIntoRoomEventHandler.AfterEventHandler? AfterIntoRoom;
+        public event IIntoRoomEventHandler.SucceedEventHandler? SucceedIntoRoom;
+        public event IIntoRoomEventHandler.FailedEventHandler? FailedIntoRoom;
 
-        public EventResult OnBeforeIntoRoomEvent(GeneralEventArgs e)
+        public EventResult OnBeforeIntoRoomEvent(RoomEventArgs e)
         {
             if (BeforeIntoRoom != null)
             {
@@ -186,7 +186,7 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public EventResult OnAfterIntoRoomEvent(GeneralEventArgs e)
+        public EventResult OnAfterIntoRoomEvent(RoomEventArgs e)
         {
             if (AfterIntoRoom != null)
             {
@@ -195,7 +195,7 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public EventResult OnSucceedIntoRoomEvent(GeneralEventArgs e)
+        public EventResult OnSucceedIntoRoomEvent(RoomEventArgs e)
         {
             if (SucceedIntoRoom != null)
             {
@@ -204,7 +204,7 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public EventResult OnFailedIntoRoomEvent(GeneralEventArgs e)
+        public EventResult OnFailedIntoRoomEvent(RoomEventArgs e)
         {
             if (FailedIntoRoom != null)
             {
@@ -213,12 +213,12 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public event IEventHandler.BeforeEventHandler? BeforeSendTalk;
-        public event IEventHandler.AfterEventHandler? AfterSendTalk;
-        public event IEventHandler.SucceedEventHandler? SucceedSendTalk;
-        public event IEventHandler.FailedEventHandler? FailedSendTalk;
+        public event ISendTalkEventHandler.BeforeEventHandler? BeforeSendTalk;
+        public event ISendTalkEventHandler.AfterEventHandler? AfterSendTalk;
+        public event ISendTalkEventHandler.SucceedEventHandler? SucceedSendTalk;
+        public event ISendTalkEventHandler.FailedEventHandler? FailedSendTalk;
 
-        public EventResult OnBeforeSendTalkEvent(GeneralEventArgs e)
+        public EventResult OnBeforeSendTalkEvent(SendTalkEventArgs e)
         {
             if (BeforeSendTalk != null)
             {
@@ -227,7 +227,7 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public EventResult OnAfterSendTalkEvent(GeneralEventArgs e)
+        public EventResult OnAfterSendTalkEvent(SendTalkEventArgs e)
         {
             if (AfterSendTalk != null)
             {
@@ -236,7 +236,7 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public EventResult OnSucceedSendTalkEvent(GeneralEventArgs e)
+        public EventResult OnSucceedSendTalkEvent(SendTalkEventArgs e)
         {
             if (SucceedSendTalk != null)
             {
@@ -245,7 +245,7 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public EventResult OnFailedSendTalkEvent(GeneralEventArgs e)
+        public EventResult OnFailedSendTalkEvent(SendTalkEventArgs e)
         {
             if (FailedSendTalk != null)
             {
@@ -254,12 +254,12 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public event IEventHandler.BeforeEventHandler? BeforeCreateRoom;
-        public event IEventHandler.AfterEventHandler? AfterCreateRoom;
-        public event IEventHandler.SucceedEventHandler? SucceedCreateRoom;
-        public event IEventHandler.FailedEventHandler? FailedCreateRoom;
+        public event ICreateRoomEventHandler.BeforeEventHandler? BeforeCreateRoom;
+        public event ICreateRoomEventHandler.AfterEventHandler? AfterCreateRoom;
+        public event ICreateRoomEventHandler.SucceedEventHandler? SucceedCreateRoom;
+        public event ICreateRoomEventHandler.FailedEventHandler? FailedCreateRoom;
 
-        public EventResult OnBeforeCreateRoomEvent(GeneralEventArgs e)
+        public EventResult OnBeforeCreateRoomEvent(RoomEventArgs e)
         {
             if (BeforeCreateRoom != null)
             {
@@ -268,7 +268,7 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public EventResult OnAfterCreateRoomEvent(GeneralEventArgs e)
+        public EventResult OnAfterCreateRoomEvent(RoomEventArgs e)
         {
             if (AfterCreateRoom != null)
             {
@@ -277,7 +277,7 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public EventResult OnSucceedCreateRoomEvent(GeneralEventArgs e)
+        public EventResult OnSucceedCreateRoomEvent(RoomEventArgs e)
         {
             if (SucceedCreateRoom != null)
             {
@@ -286,7 +286,7 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public EventResult OnFailedCreateRoomEvent(GeneralEventArgs e)
+        public EventResult OnFailedCreateRoomEvent(RoomEventArgs e)
         {
             if (FailedCreateRoom != null)
             {
@@ -295,12 +295,12 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public event IEventHandler.BeforeEventHandler? BeforeQuitRoom;
-        public event IEventHandler.AfterEventHandler? AfterQuitRoom;
-        public event IEventHandler.SucceedEventHandler? SucceedQuitRoom;
-        public event IEventHandler.FailedEventHandler? FailedQuitRoom;
+        public event IQuitRoomEventHandler.BeforeEventHandler? BeforeQuitRoom;
+        public event IQuitRoomEventHandler.AfterEventHandler? AfterQuitRoom;
+        public event IQuitRoomEventHandler.SucceedEventHandler? SucceedQuitRoom;
+        public event IQuitRoomEventHandler.FailedEventHandler? FailedQuitRoom;
 
-        public EventResult OnBeforeQuitRoomEvent(GeneralEventArgs e)
+        public EventResult OnBeforeQuitRoomEvent(RoomEventArgs e)
         {
             if (BeforeQuitRoom != null)
             {
@@ -309,7 +309,7 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public EventResult OnAfterQuitRoomEvent(GeneralEventArgs e)
+        public EventResult OnAfterQuitRoomEvent(RoomEventArgs e)
         {
             if (AfterQuitRoom != null)
             {
@@ -318,7 +318,7 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public EventResult OnSucceedQuitRoomEvent(GeneralEventArgs e)
+        public EventResult OnSucceedQuitRoomEvent(RoomEventArgs e)
         {
             if (SucceedQuitRoom != null)
             {
@@ -327,7 +327,7 @@ namespace Milimoe.FunGame.Desktop.Library.Base
             else return EventResult.NoEventImplement;
         }
 
-        public EventResult OnFailedQuitRoomEvent(GeneralEventArgs e)
+        public EventResult OnFailedQuitRoomEvent(RoomEventArgs e)
         {
             if (FailedQuitRoom != null)
             {

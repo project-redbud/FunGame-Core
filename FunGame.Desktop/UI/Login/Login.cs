@@ -11,6 +11,8 @@ namespace Milimoe.FunGame.Desktop.UI
 {
     public partial class Login : BaseLogin
     {
+        public static LoginEventArgs EventArgs { get; set; } = new LoginEventArgs();
+
         private readonly LoginController LoginController;
 
         public Login()
@@ -46,6 +48,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     UsernameText.Focus();
                     return false;
                 }
+                EventArgs = new LoginEventArgs(username, password);
                 if (!LoginController.LoginAccount(username, password))
                 {
                     ShowMessage.Message("登录失败！！", "登录失败");
@@ -86,7 +89,7 @@ namespace Milimoe.FunGame.Desktop.UI
             ShowMessage.TipMessage("暂不支持找回密码~");
         }
 
-        public EventResult FailedLoginEvent(object sender, GeneralEventArgs e)
+        public EventResult FailedLoginEvent(object sender, LoginEventArgs e)
         {
             if (InvokeRequired) GoToLogin.Invoke(() => GoToLogin.Enabled = true);
             else GoToLogin.Enabled = true;
@@ -94,7 +97,7 @@ namespace Milimoe.FunGame.Desktop.UI
             return EventResult.Success;
         }
 
-        private EventResult SucceedLoginEvent(object sender, GeneralEventArgs e)
+        private EventResult SucceedLoginEvent(object sender, LoginEventArgs e)
         {
             if (!IsDisposed)
             {
@@ -105,13 +108,13 @@ namespace Milimoe.FunGame.Desktop.UI
             return EventResult.Success;
         }
 
-        private EventResult BeforeLoginEvent(object sender, GeneralEventArgs e)
+        private EventResult BeforeLoginEvent(object sender, LoginEventArgs e)
         {
             if (RunTime.Main?.OnBeforeLoginEvent(e) == EventResult.Fail) return EventResult.Fail;
             return EventResult.Success;
         }
 
-        private EventResult AfterLoginEvent(object sender, GeneralEventArgs e)
+        private EventResult AfterLoginEvent(object sender, LoginEventArgs e)
         {
             RunTime.Main?.OnAfterLoginEvent(e);
             return EventResult.Success;

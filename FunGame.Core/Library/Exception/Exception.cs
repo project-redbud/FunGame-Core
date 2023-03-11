@@ -137,6 +137,16 @@
 
     public class SocketCreateReceivingException : Exception
     {
-        public override string Message => "无法创建监听套接字 (#10027)";
+        public override string Message => "无法创建监听套接字 (#10028)";
+    }
+
+    public class GetRoomListException : Exception
+    {
+        public override string Message => "获取房间列表失败 (#10029)";
+    }
+
+    public class QuitRoomException : Exception
+    {
+        public override string Message => "退出房间失败 (#10030)";
     }
 }
