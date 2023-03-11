@@ -38,14 +38,14 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             else throw new SocketCreateListenException();
         }
 
-        public ClientSocket Accept()
+        public ClientSocket Accept(Guid Token)
         {
             object[] result = SocketManager.Accept();
             if (result != null && result.Length == 2)
             {
                 string ClientIP = (string)result[0];
                 System.Net.Sockets.Socket Client = (System.Net.Sockets.Socket)result[1];
-                return new ClientSocket(Client, ServerPort, ClientIP, ClientIP);
+                return new ClientSocket(Client, ServerPort, ClientIP, ClientIP, Token);
             }
             throw new SocketGetClientException();
         }

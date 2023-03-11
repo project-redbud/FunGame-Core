@@ -155,7 +155,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 用于客户端接收服务器信息
         /// </summary>
-        /// <returns>通信类型[0]和参数[1]</returns>
+        /// <returns>SocketObject</returns>
         internal static Library.Common.Network.SocketObject Receive()
         {
             Library.Common.Network.SocketObject result = default;
@@ -184,7 +184,7 @@ namespace Milimoe.FunGame.Core.Service
         /// 用于服务器接收客户端信息
         /// </summary>
         /// <param name="ClientSocket">客户端Socket</param>
-        /// <returns>通信类型[0]、Token[1]和参数[2]</returns>
+        /// <returns>SocketObject</returns>
         internal static Library.Common.Network.SocketObject Receive(Socket ClientSocket)
         {
             Library.Common.Network.SocketObject result = default;

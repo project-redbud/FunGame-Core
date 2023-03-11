@@ -137,6 +137,11 @@ namespace Milimoe.FunGame.Desktop.Model
                                         }
                                     }
                                 }
+                                else
+                                {
+                                    Config.FunGame_isRetrying = false;
+                                    Socket.Close();
+                                }
                             });
                             return ConnectResult.Success;
                         }
@@ -238,7 +243,7 @@ namespace Milimoe.FunGame.Desktop.Model
                 switch (type)
                 {
                     case SocketMessageType.Connect:
-                        SocketHandler_Connect(ServerMessage);
+                        if (!SocketHandler_Connect(ServerMessage)) return SocketMessageType.Unknown;
                         break;
 
                     case SocketMessageType.Disconnect:
@@ -267,12 +272,20 @@ namespace Milimoe.FunGame.Desktop.Model
 
         #region SocketHandler
 
-        private void SocketHandler_Connect(SocketObject ServerMessage)
+        private bool SocketHandler_Connect(SocketObject ServerMessage)
         {
             string msg = "";
             Guid token = Guid.Empty;
             if (ServerMessage.Parameters.Length > 0) msg = ServerMessage.GetParam<string>(0)!;
             string[] strings = msg.Split(';');
+            if (strings.Length != 2)
+            {
+                // 服务器拒绝连接
+                msg = strings[0];
+                Main.GetMessage(msg);
+                ShowMessage.ErrorMessage(msg);
+                return false;
+            }
             string ServerName = strings[0];
             string ServerNotice = strings[1];
             Config.FunGame_ServerName = ServerName;
@@ -283,6 +296,7 @@ namespace Milimoe.FunGame.Desktop.Model
             Main.GetMessage($"已连接服务器：{ServerName}。\n\n********** 服务器公告 **********\n\n{ServerNotice}\n\n");
             // 设置等待登录的黄灯
             Main.UpdateUI(MainInvokeType.WaitLoginAndSetYellow);
+            return true;
         }
 
         private void SocketHandler_Disconnect(SocketObject ServerMessage)

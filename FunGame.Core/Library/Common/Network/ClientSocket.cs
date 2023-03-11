@@ -23,12 +23,13 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         private bool _Receiving;
         private string _ClientName;
 
-        public ClientSocket(System.Net.Sockets.Socket Instance, int ServerPort, string ClientIP, string ClientName)
+        public ClientSocket(System.Net.Sockets.Socket Instance, int ServerPort, string ClientIP, string ClientName, Guid Token)
         {
             this.Instance= Instance;
             this.ServerPort = ServerPort;
             this.ClientIP = ClientIP;
             this._ClientName = ClientName;
+            this.Token = Token;
         }
 
         public void Close()
