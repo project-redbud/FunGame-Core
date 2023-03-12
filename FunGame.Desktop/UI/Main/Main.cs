@@ -64,8 +64,8 @@ namespace Milimoe.FunGame.Desktop.UI
                         break;
                     }
                 }
+                if (Config.FunGame_isAutoConnect) RunTime.Connector?.GetServerConnection();
             });
-            if (Config.FunGame_isAutoConnect) RunTime.Connector?.GetServerConnection();
         }
 
         /// <summary>
@@ -661,10 +661,10 @@ namespace Milimoe.FunGame.Desktop.UI
         {
             // 向消息队列发送消息
             string text = TalkText.Text;
-            if (!text.Trim().Equals("") && !TalkText.ForeColor.Equals(Color.DarkGray))
+            if (text.Trim() != "" && !TalkText.ForeColor.Equals(Color.DarkGray))
             {
-                string msg = "";
-                if (Usercfg.LoginUserName.Equals(""))
+                string msg;
+                if (Usercfg.LoginUserName == "")
                 {
                     msg = ":> " + text;
                 }
@@ -673,7 +673,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     msg = DateTimeUtility.GetNowShortTime() + " [ " + Usercfg.LoginUserName + " ] 说： " + text;
                 }
                 WritelnGameInfo(msg);
-                if (!SwitchTalkMessage(text))
+                if (Usercfg.LoginUser != null && !SwitchTalkMessage(text))
                 {
                     MainController?.Chat(msg);
                 }

@@ -1,5 +1,6 @@
-﻿using Milimoe.FunGame.Core.Library.Constant;
+﻿using System.IO;
 using System.Runtime.InteropServices;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Api.Utility
 {
@@ -34,8 +35,8 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns>读取到的值</returns>
         public static string ReadINI(string Section, string Key, string FileName = @"FunGame.ini")
         {
-            char[] val = new char[2048];
-            _ = GetPrivateProfileString(Section, Key, "", val, 2048, Environment.CurrentDirectory.ToString() + @"\" + FileName);
+            char[] val = new char[General.StreamByteSize];
+            _ = GetPrivateProfileString(Section, Key, "", val, General.StreamByteSize, Environment.CurrentDirectory.ToString() + @"\" + FileName);
             string? read = new(val);
             return read != null ? read.Trim('\0') : "";
         }
@@ -45,10 +46,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="FileName">文件名，缺省为FunGame.ini</param>
         /// <returns>是否存在</returns>
-        public static bool ExistINIFile(string FileName = @"FunGame.ini")
-        {
-            return File.Exists(Environment.CurrentDirectory.ToString() + @"\" + FileName);
-        }
+        public static bool ExistINIFile(string FileName = @"FunGame.ini") => File.Exists($@"{Environment.CurrentDirectory}\{FileName}");
 
         /// <summary>
         /// 初始化ini模板文件
@@ -83,6 +81,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     WriteINI("Server", "Notice", "This is the FunGame Server's Notice.");
                     WriteINI("Server", "Key", "");
                     WriteINI("Server", "Status", "1");
+                    WriteINI("Server", "BannedList", "");
                     /**
                      * ServerMail
                      */
@@ -114,6 +113,35 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     WriteINI("Mailer", "OpenSSL", "true");
                     break;
             }
+        }
+    }
+
+    public class TXTHelper
+    {
+        /// <summary>
+        /// 读取TXT文件内容
+        /// </summary>
+        /// <param name="filename">文件名</param>
+        /// <param name="path">相对路径</param>
+        /// <returns>内容</returns>
+        public static string ReadTXT(string filename, string path = "")
+        {
+            if (path.Trim() != "") path = Path.Combine(path, filename);
+            else path =  $@"{Environment.CurrentDirectory}\{filename}";
+            if (File.Exists(path))
+            {
+                string s = "";
+                // 创建一个 StreamReader 的实例来读取文件
+                using StreamReader sr = new(path);
+                string? line;
+                // 从文件读取并显示行，直到文件的末尾 
+                while ((line = sr.ReadLine()) != null)
+                {
+                    s += line + " ";
+                }
+                return s;
+            }
+            return "";
         }
     }
 }

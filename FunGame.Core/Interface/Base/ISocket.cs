@@ -5,7 +5,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
     public interface ISocket
     {
         public System.Net.Sockets.Socket Instance { get; }
-        public int Runtime { get; }
+        public SocketRuntimeType Runtime { get; }
         public Guid Token { get; }
         public string ServerIP { get; }
         public int ServerPort { get; }

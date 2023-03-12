@@ -19,21 +19,37 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        public static bool IsIP(string str)
-        {
-            //判断是否为IP
-            return Regex.IsMatch(str, @"^((2[0-4]\d|25[0-5]|[01]?\d\d?)\.){3}(2[0-4]\d|25[0-5]|[01]?\d\d?)$");
-        }
+        public static bool IsIP(string str) => Regex.IsMatch(str, @"^((2[0-4]\d|25[0-5]|[01]?\d\d?)\.){3}(2[0-4]\d|25[0-5]|[01]?\d\d?)$");
 
         /// <summary>
         /// 判断字符串是否为邮箱地址
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        public static bool IsEmail(string str)
+        public static bool IsEmail(string str) => Regex.IsMatch(str, @"^(\w)+(\.\w)*@(\w)+((\.\w+)+)$");
+
+        /// <summary>
+        /// 判断字符串是否是正常的用户名（只有中英文和数字）
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static bool IsUserName(string str) => Regex.IsMatch(str, @"^[\u4e00-\u9fa5A-Za-z0-9]+$");
+
+        /// <summary>
+        /// 获取用户名长度
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static int GetUserNameLength(string str)
         {
-            //判断是否为Email
-            return Regex.IsMatch(str, @"^(\w)+(\.\w)*@(\w)+((\.\w+)+)$");
+            int length = 0;
+            for (int i = 0; i < str.Length; i++)
+            {
+                char c = str[i];
+                if (c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9') length++;
+                else length += 2;
+            }
+            return length;
         }
 
         /// <summary>

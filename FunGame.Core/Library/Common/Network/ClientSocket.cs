@@ -7,7 +7,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
     public class ClientSocket : IClientSocket
     {
         public System.Net.Sockets.Socket Instance { get; }
-        public int Runtime { get; } = (int)SocketRuntimeType.Server;
+        public SocketRuntimeType Runtime => SocketRuntimeType.Server;
         public Guid Token { get; } = Guid.Empty;
         public string ServerIP { get; } = "";
         public int ServerPort { get; } = 0;

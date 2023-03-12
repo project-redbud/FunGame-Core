@@ -8,7 +8,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
     public class ServerSocket : ISocket
     {
         public System.Net.Sockets.Socket Instance { get; }
-        public int Runtime { get; } = (int)SocketRuntimeType.Server;
+        public SocketRuntimeType Runtime => SocketRuntimeType.Server;
         public Guid Token { get; } = Guid.Empty;
         public string ServerIP { get; } = "";
         public int ServerPort { get; } = 0;
@@ -16,7 +16,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public string ServerNotice { get; } = "";
         public bool Connected => Instance != null && Instance.Connected;
         public List<BaseModel> GetUsersList => OnlineUsers.GetList();
+        public List<string> BannedList { get; } = new();
         public int UsersCount => OnlineUsers.Count;
+        public int BannedCount => BannedList.Count;
 
         private readonly ThreadManager OnlineUsers;
 

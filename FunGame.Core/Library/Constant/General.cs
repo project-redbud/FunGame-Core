@@ -16,5 +16,6 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const int MaxTask_4C4G = 40;
 
         public const int SocketByteSize = 2048;
+        public const int StreamByteSize = 2048;
     }
 }

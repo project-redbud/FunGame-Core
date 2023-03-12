@@ -44,19 +44,28 @@ namespace Milimoe.FunGame.Desktop.UI
                 string email = EmailText.Text.Trim();
                 if (username != "")
                 {
-                    int length = General.DefaultEncoding.GetBytes(username).Length;
-                    if (length >= 3 && length <= 12) // 字节范围 3~12
+                    if (NetworkUtility.IsUserName(username))
                     {
-                        if (password != checkpassword)
+                        int length = NetworkUtility.GetUserNameLength(username);
+                        if (length >= 3 && length <= 12) // 字节范围 3~12
                         {
-                            ShowMessage.ErrorMessage("两个密码不相同，请重新输入！");
-                            CheckPasswordText.Focus();
+                            if (password != checkpassword)
+                            {
+                                ShowMessage.ErrorMessage("两个密码不相同，请重新输入！");
+                                CheckPasswordText.Focus();
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            ShowMessage.ErrorMessage("账号名长度不符合要求：最多6个中文字符或12个英文字符");
+                            UsernameText.Focus();
                             return false;
                         }
                     }
                     else
                     {
-                        ShowMessage.ErrorMessage("账号名长度不符合要求：2~6个字符数");
+                        ShowMessage.ErrorMessage("账号名不符合要求：不能包含特殊字符");
                         UsernameText.Focus();
                         return false;
                     }
