@@ -41,19 +41,24 @@
             return $"{Select_Users} {Constant.Command_Where} {Where}'";
         }
 
+        public static string Select_CheckAutoKey(string Username, string AutoKey)
+        {
+            return $"{Select_Users} {Constant.Command_Where} {Column_Username} = '{Username}' and {Column_AutoKey} = '{AutoKey}'";
+        }
+
         public static string Update_CheckLogin(string Username, string IP)
         {
             return $"{Constant.Command_Update} {TableName} {Constant.Command_Set} {Column_LastTime} = '{DateTime.Now}', {Column_LastIP} = '{IP}' {Constant.Command_Where} {Column_Username} = '{Username}'";
+        }
+        
+        public static string Update_GameTime(string Username, int GameTimeMinutes)
+        {
+            return $"{Constant.Command_Update} {TableName} {Constant.Command_Set} {Column_GameTime} = {Column_GameTime} + {GameTimeMinutes} {Constant.Command_Where} {Column_Username} = '{Username}'";
         }
 
         public static string Insert_Register(string Username, string Password, string Email)
         {
             return $"{Constant.Command_Insert} {Constant.Command_Into} {TableName} ({Column_Username}, {Column_Password}, {Column_Email}, {Column_RegTime}) {Constant.Command_Values} ('{Username}', '{Password}', '{Email}', '{DateTime.Now}')";
-        }
-
-        public static string Select_CheckAutoKey(string Username, string AutoKey)
-        {
-            return $"{Select_Users} {Constant.Command_Where} {Column_Username} = '{Username}' and {Column_AutoKey} = '{AutoKey}'";
         }
     }
 }

@@ -675,7 +675,7 @@ namespace Milimoe.FunGame.Desktop.UI
                 WritelnGameInfo(msg);
                 if (Usercfg.LoginUser != null && !SwitchTalkMessage(text))
                 {
-                    MainController?.Chat(msg);
+                    MainController?.Chat(" [ " + Usercfg.LoginUserName + " ] 说： " + text);
                 }
                 TalkText.Text = "";
                 if (isLeave) TalkText_Leave(); // 回车不离开焦点
