@@ -1,6 +1,6 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
+﻿using System.Data;
+using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -126,12 +126,13 @@ namespace Milimoe.FunGame.Desktop.Model
 
         private static void SocketHandler_CheckLogin(SocketObject SocketObject)
         {
-            // 返回的objs是该Login的User对象的各个属性
+            // 返回构造User对象的DataTable
             object[] objs = SocketObject.Parameters;
             if (objs != null && objs.Length > 0)
             {
+                DataSet? Set = SocketObject.GetParam<DataSet>(0);
                 // 创建User对象并返回到Main
-                RunTime.Main?.UpdateUI(MainInvokeType.SetUser, new object[] { Factory.New<User>(objs) });
+                RunTime.Main?.UpdateUI(MainInvokeType.SetUser, new object[] { Factory.GetInstance<User>(Set) });
                 RunTime.Login?.OnSucceedLoginEvent(Login.EventArgs);
                 RunTime.Login?.OnAfterLoginEvent(Login.EventArgs);
                 return;

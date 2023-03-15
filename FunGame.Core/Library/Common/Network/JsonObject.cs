@@ -1,6 +1,5 @@
-﻿using Milimoe.FunGame.Core.Library.Constant;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
 {
@@ -12,13 +11,12 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public object[] Parameters { get; }
         public string JsonString { get; }
 
-        [JsonConstructor]
         public JsonObject(SocketMessageType MessageType, Guid Token, params object[] Parameters)
         {
             this.MessageType = MessageType;
             this.Token = Token;
             this.Parameters = Parameters;
-            this.JsonString = JsonSerializer.Serialize(this);
+            this.JsonString = JsonConvert.SerializeObject(this);
         }
 
         public static string GetString(SocketMessageType MessageType, Guid Token, params object[] Parameters)
@@ -28,7 +26,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
 
         public static JsonObject? GetObject(string JsonString)
         {
-            return JsonSerializer.Deserialize<JsonObject>(JsonString);
+            return JsonConvert.DeserializeObject<JsonObject>(JsonString);
         }
     }
 }

@@ -1,20 +1,18 @@
+using System.Data;
+using Milimoe.FunGame.Core.Entity;
+
 namespace Milimoe.FunGame.Core.Api.Factory
 {
     internal class UserFactory
     {
-        internal static Milimoe.FunGame.Core.Entity.User GetInstance()
+        internal static User GetInstance()
         {
-            return new Milimoe.FunGame.Core.Entity.User();
+            return new User();
         }
 
-        internal static Milimoe.FunGame.Core.Entity.User GetInstance(string username)
+        internal static User GetInstance(DataSet? ds)
         {
-            return new Milimoe.FunGame.Core.Entity.User(username);
-        }
-
-        internal static Milimoe.FunGame.Core.Entity.User GetInstance(string username, string password)
-        {
-            return new Milimoe.FunGame.Core.Entity.User(username, password);
+            return new User(ds);
         }
     }
 }

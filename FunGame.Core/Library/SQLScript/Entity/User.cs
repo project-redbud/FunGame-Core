@@ -14,7 +14,6 @@
         public const string Column_IsAdmin = "IsAdmin";
         public const string Column_IsOperator = "IsOperator";
         public const string Column_IsEnable = "IsEnable";
-        public const string Column_OnlineState = "OnlineState";
         public const string Column_Credits = "Credits";
         public const string Column_Materials = "Materials";
         public const string Column_GameTime = "GameTime";

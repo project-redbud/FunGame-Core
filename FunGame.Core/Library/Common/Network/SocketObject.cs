@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Library.Constant;
+﻿using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
 {
@@ -29,7 +28,12 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         {
             if (index < Parameters.Length)
             {
-                return NetworkUtility.ConvertJsonObject<T>(Parameters[index]);
+                if (typeof(T) == typeof(Guid))
+                {
+                    object param = Guid.Parse((string)Parameters[index]);
+                    return (T)param;
+                }
+                return (T)Parameters[index];
             }
             throw new IndexOutOfArrayLengthException();
         }
