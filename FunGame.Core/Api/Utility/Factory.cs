@@ -31,6 +31,10 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 instance = SkillFactory.GetInstance(DataSet, SkillType.Active);
             }
+            else if (typeof(T) == typeof(Room))
+            {
+                instance = RoomFactory.GetInstance(DataSet);
+            }
             return (T)instance;
         }
     }

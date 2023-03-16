@@ -1,7 +1,7 @@
-﻿using Milimoe.FunGame.Core.Interface.Entity;
-using Milimoe.FunGame.Core.Library.Constant;
+﻿using System.Data;
 using System.Collections;
-using System.Data;
+using Milimoe.FunGame.Core.Interface.Entity;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Entity
 {
