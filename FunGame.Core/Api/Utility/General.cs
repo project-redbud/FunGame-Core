@@ -115,34 +115,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
             return -1;
         }
-
-        /// <summary>
-        /// 将JsonElement转换为泛型
-        /// </summary>
-        /// <typeparam name="T">泛型</typeparam>
-        /// <param name="obj">为JsonElement的对象</param>
-        /// <returns></returns>
-        public static T? ConvertJsonObject<T>(object obj)
-        {
-            return ((JsonElement)obj).ToObject<T>();
-        }
-    }
-
-    /// <summary>
-    /// Json工具类
-    /// </summary>
-    internal static class JsonUtility
-    {
-        /// <summary>
-        /// 将JsonElement转换为泛型
-        /// </summary>
-        /// <typeparam name="T">泛型</typeparam>
-        /// <param name="element">JsonElement</param>
-        /// <returns></returns>
-        internal static T? ToObject<T>(this JsonElement element)
-        {
-            return JsonSerializer.Deserialize<T>(element.GetRawText());
-        }
     }
 
     #endregion

@@ -6,7 +6,7 @@ namespace Milimoe.FunGame.Core.Entity
 {
     public class User : BaseEntity
     {
-        public new long Id { get; set; }
+        public override long Id { get; set; }
         public string Username { get; set; } = "";
         public string Password { get; set; } = "";
         public DateTime RegTime { get; set; }
@@ -28,11 +28,11 @@ namespace Milimoe.FunGame.Core.Entity
 
         }
 
-        internal User(DataSet? ds)
+        internal User(DataSet? DataSet)
         {
-            if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+            if (DataSet != null && DataSet.Tables.Count > 0 && DataSet.Tables[0].Rows.Count > 0)
             {
-                DataRow row = ds.Tables[0].Rows[0];
+                DataRow row = DataSet.Tables[0].Rows[0];
                 Id = (long)row[UserQuery.Column_UID];
                 Username = (string)row[UserQuery.Column_Username];
                 Password = (string)row[UserQuery.Column_Password];
@@ -40,12 +40,12 @@ namespace Milimoe.FunGame.Core.Entity
                 LastTime = (DateTime)row[UserQuery.Column_LastTime];
                 Email = (string)row[UserQuery.Column_Email];
                 NickName = (string)row[UserQuery.Column_Nickname];
-                IsAdmin = (int)row[UserQuery.Column_IsAdmin] == 1;
-                IsOperator = (int)row[UserQuery.Column_IsOperator] == 1;
-                IsEnable = (int)row[UserQuery.Column_IsEnable] == 1;
-                Credits = (decimal)row[UserQuery.Column_Credits];
-                Materials = (decimal)row[UserQuery.Column_Materials];
-                GameTime = (decimal)row[UserQuery.Column_GameTime];
+                IsAdmin = Convert.ToInt32(row[UserQuery.Column_IsAdmin]) == 1;
+                IsOperator = Convert.ToInt32(row[UserQuery.Column_IsOperator]) == 1;
+                IsEnable = Convert.ToInt32(row[UserQuery.Column_IsEnable]) == 1;
+                Credits = Convert.ToDecimal(row[UserQuery.Column_Credits]);
+                Materials = Convert.ToDecimal(row[UserQuery.Column_Materials]);
+                GameTime = Convert.ToDecimal(row[UserQuery.Column_GameTime]);
                 AutoKey = (string)row[UserQuery.Column_AutoKey];
             }
         }

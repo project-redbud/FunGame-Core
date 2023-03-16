@@ -170,7 +170,7 @@ namespace Milimoe.FunGame.Core.Service
                     Library.Common.Network.JsonObject? json = Library.Common.Network.JsonObject.GetObject(msg);
                     if (json != null)
                     {
-                        result = new Library.Common.Network.SocketObject(json.MessageType, json.Token, json.Parameters);
+                        result = new Library.Common.Network.SocketObject(json);
                     }
                     // 客户端接收消息，广播ScoketObject到每个UIModel
                     OnSocketReceive(result);
@@ -199,7 +199,7 @@ namespace Milimoe.FunGame.Core.Service
                     Library.Common.Network.JsonObject? json = Library.Common.Network.JsonObject.GetObject(msg);
                     if (json != null)
                     {
-                        result = new Library.Common.Network.SocketObject(json.MessageType, json.Token, json.Parameters);
+                        result = new Library.Common.Network.SocketObject(json);
                     }
                     return result;
                 }

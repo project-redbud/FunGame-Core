@@ -1,13 +1,13 @@
-﻿using Milimoe.FunGame.Core.Interface.Entity;
-using System.Collections;
+﻿using System.Collections;
+using Milimoe.FunGame.Core.Interface.Entity;
 
 namespace Milimoe.FunGame.Core.Entity
 {
     public abstract class BaseEntity : IBaseEntity
     {
-        public long Id { get; set; } = 0;
-        public Guid Guid { get; set; } = Guid.Empty;
-        public string Name { get; set; } = "";
+        public virtual long Id { get; set; } = 0;
+        public virtual Guid Guid { get; set; } = Guid.Empty;
+        public virtual string Name { get; set; } = "";
 
         public abstract bool Equals(IBaseEntity? other);
         public abstract IEnumerator<IBaseEntity> GetEnumerator();

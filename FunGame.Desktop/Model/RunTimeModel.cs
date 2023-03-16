@@ -3,7 +3,6 @@ using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
-using Milimoe.FunGame.Desktop.Controller;
 using Milimoe.FunGame.Desktop.Library.Component;
 using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.UI;
@@ -227,7 +226,7 @@ namespace Milimoe.FunGame.Desktop.Model
             {
                 return Socket.Receive();
             }
-            return new SocketObject(SocketMessageType.Unknown, Guid.Empty, Array.Empty<object>());
+            return new SocketObject();
         }
 
         private SocketMessageType Receiving()
