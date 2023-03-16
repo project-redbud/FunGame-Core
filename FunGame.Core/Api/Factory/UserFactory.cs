@@ -5,11 +5,6 @@ namespace Milimoe.FunGame.Core.Api.Factory
 {
     internal class UserFactory
     {
-        internal static User GetInstance()
-        {
-            return new User();
-        }
-
         internal static User GetInstance(DataSet? DataSet)
         {
             return new User(DataSet);

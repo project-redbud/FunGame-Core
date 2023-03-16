@@ -1,22 +1,18 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using System.Data;
 
 namespace Milimoe.FunGame.Core.Api.Factory
 {
     internal class SkillFactory
     {
-        internal static Skill? GetInstance(SkillType type, string Name)
+        internal static Skill GetInstance(DataSet? DataSet, SkillType type = SkillType.Passive)
         {
-            Skill? skill = null;
-            switch (type)
+            Skill skill = type switch
             {
-                case SkillType.Active:
-                    skill = new Milimoe.FunGame.Core.Entity.ActiveSkill(Name);
-                    break;
-                case SkillType.Passive:
-                    skill = new Milimoe.FunGame.Core.Entity.PassiveSkill(Name);
-                    break;
-            }
+                SkillType.Active => new ActiveSkill(DataSet),
+                _ => new PassiveSkill(DataSet)
+            };
             return skill;
         }
     }

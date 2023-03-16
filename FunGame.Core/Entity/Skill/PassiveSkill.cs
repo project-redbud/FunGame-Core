@@ -1,4 +1,6 @@
-﻿namespace Milimoe.FunGame.Core.Entity
+﻿using System.Data;
+
+namespace Milimoe.FunGame.Core.Entity
 {
     public class PassiveSkill : Skill
     {
@@ -13,15 +15,9 @@
         public decimal Reference9 { get; set; } = 0;
         public decimal Reference10 { get; set; } = 0;
 
-        internal PassiveSkill()
+        internal PassiveSkill(DataSet? DataSet)
         {
             Active = false;
-        }
-
-        internal PassiveSkill(string Name)
-        {
-            Active = false;
-            this.Name = Name;
         }
     }
 }

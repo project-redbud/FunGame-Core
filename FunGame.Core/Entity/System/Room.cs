@@ -1,13 +1,14 @@
 ﻿using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using System.Collections;
+using System.Data;
 
 namespace Milimoe.FunGame.Core.Entity
 {
     public class Room : BaseEntity
     {
         public string Roomid { get; set; } = "";
-        public DateTime Time { get; set; } = DateTime.Now;
+        public DateTime CreateTime { get; set; } = DateTime.Now;
         public Hashtable PlayerList { get; set; } = new Hashtable();
         public User? RoomMaster { get; set; }
         public RoomType RoomType { get; set; }
@@ -24,15 +25,12 @@ namespace Milimoe.FunGame.Core.Entity
         public string Password { get; set; } = "";
         public GameStatistics? Statistics { get; set; } = null;
 
-        internal Room(User? master = null)
+        internal Room(DataSet? DataSet)
         {
-            if (master != null) RoomMaster = master;
-        }
-        
-        internal Room(string roomid, User? master = null)
-        {
-            Roomid = roomid;
-            if (master != null) RoomMaster = master;
+            if (DataSet != null && DataSet.Tables.Count > 0 && DataSet.Tables[0].Rows.Count > 0)
+            {
+
+            }
         }
 
         public bool Equals(Room other)

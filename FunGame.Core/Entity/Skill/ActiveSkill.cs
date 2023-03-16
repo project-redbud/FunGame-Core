@@ -1,4 +1,6 @@
-﻿namespace Milimoe.FunGame.Core.Entity
+﻿using System.Data;
+
+namespace Milimoe.FunGame.Core.Entity
 {
     public class ActiveSkill : Skill
     {
@@ -15,15 +17,9 @@
         public decimal Reference9 { get; set; } = 0;
         public decimal Reference10 { get; set; } = 0;
 
-        internal ActiveSkill()
+        internal ActiveSkill(DataSet? DataSet)
         {
             Active = true;
-        }
-
-        internal ActiveSkill(string Name)
-        {
-            Active = true;
-            this.Name = Name;
         }
     }
 }
