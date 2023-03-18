@@ -3,6 +3,7 @@
     public class RoomQuery
     {
         public const string TableName = "Rooms";
+        public const string Column_ID = "Id";
         public const string Column_RoomID = "Roomid";
         public const string Column_CreateTime = "CreateTime";
         public const string Column_RoomMaster = "RoomMaster";

@@ -14,26 +14,27 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <para>若无法找到T，返回唯一的空对象</para>
         /// </summary>
         /// <typeparam name="T">Entity类</typeparam>
-        /// <param name="DataSet">使用DataSet构造对象（真香）</param>
+        /// <param name="DataSets">使用DataSet构造对象（真香）</param>
         /// <returns></returns>
-        public static T GetInstance<T>(DataSet? DataSet)
+        public static T GetInstance<T>(params DataSet?[] DataSets)
         {
+            if (DataSets is null || DataSets.Length == 0) throw new GetInstanceException();
             object instance = General.EntityInstance;
             if (typeof(T) == typeof(User))
             {
-                instance = UserFactory.GetInstance(DataSet);
+                instance = UserFactory.GetInstance(DataSets[0]);
             }
             else if (typeof(T) == typeof(Skill) || typeof(T) == typeof(PassiveSkill))
             {
-                instance = SkillFactory.GetInstance(DataSet);
+                instance = SkillFactory.GetInstance(DataSets[0]);
             }
             else if (typeof(T) == typeof(ActiveSkill))
             {
-                instance = SkillFactory.GetInstance(DataSet, SkillType.Active);
+                instance = SkillFactory.GetInstance(DataSets[0], SkillType.Active);
             }
             else if (typeof(T) == typeof(Room))
             {
-                instance = RoomFactory.GetInstance(DataSet);
+                instance = RoomFactory.GetInstance(DataSets[0], DataSets[1]);
             }
             return (T)instance;
         }
