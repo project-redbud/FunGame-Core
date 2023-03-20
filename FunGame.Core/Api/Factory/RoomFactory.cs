@@ -5,9 +5,9 @@ namespace Milimoe.FunGame.Core.Api.Factory
 {
     internal class RoomFactory
     {
-        internal static Room GetInstance(DataSet? DsRoom, DataSet? DsUser)
+        internal static Room GetInstance(DataRow? DrRoom, DataRow? DrUser)
         {
-            return new Room(DsRoom, DsUser);
+            return new Room(DrRoom, DrUser);
         }
     }
 }

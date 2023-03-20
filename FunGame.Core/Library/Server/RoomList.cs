@@ -17,19 +17,37 @@ namespace Milimoe.FunGame.Core.Library.Server
             _Server = Server;
         }
 
-        public List<Room> GetList()
+        public List<Room> GetRoomList()
         {
             return _List.Values.Cast<Room>().ToList();
+        }
+        
+        public List<string> GetRoomIDList()
+        {
+            return _List.Keys.Cast<string>().ToList();
+        }
+
+        public void Clear()
+        {
+            _List.Clear();
         }
 
         public void AddRoom(Room Room)
         {
-            _List.Add(Room.Name, Room);
+            _List.Add(Room.Roomid, Room);
+        }
+        
+        public void AddRooms(List<Room> Rooms)
+        {
+            foreach (Room Room in Rooms)
+            {
+                _List.Add(Room.Roomid, Room);
+            }
         }
         
         public void RemoveRoom(Room Room)
         {
-            _List.Remove(Room.Name);
+            _List.Remove(Room.Roomid);
         }
 
         public Room? GetRoom(string RoomID)

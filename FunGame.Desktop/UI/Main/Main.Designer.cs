@@ -306,18 +306,7 @@ namespace Milimoe.FunGame.Desktop.UI
             this.PresetText.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.PresetText.Font = new System.Drawing.Font("LanaPixel", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.PresetText.FormattingEnabled = true;
-            this.PresetText.Items.AddRange(new object[] {
-            "- 快捷消息 -",
-            "签到",
-            "积分",
-            "查看库存",
-            "游戏商店",
-            "创建游戏 混战",
-            "创建游戏 团队",
-            "开始游戏",
-            "重新连接",
-            "开启自动重连",
-            "关闭自动重连"});
+            this.PresetText.Items.AddRange(new object[] { "- 快捷消息 -" });
             this.PresetText.Location = new System.Drawing.Point(195, 422);
             this.PresetText.Name = "PresetText";
             this.PresetText.Size = new System.Drawing.Size(121, 26);
@@ -360,19 +349,6 @@ namespace Milimoe.FunGame.Desktop.UI
             this.RoomList.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.RoomList.FormattingEnabled = true;
             this.RoomList.ItemHeight = 19;
-            this.RoomList.Items.AddRange(new object[] {
-            "114514",
-            "1919810",
-            "12900",
-            "12600",
-            "12100",
-            "3329500",
-            "111111",
-            "123456",
-            "123698745",
-            "667678970",
-            "3305106902",
-            "987654"});
             this.RoomList.Location = new System.Drawing.Point(0, 26);
             this.RoomList.Name = "RoomList";
             this.RoomList.Size = new System.Drawing.Size(186, 192);

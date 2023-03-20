@@ -17,7 +17,7 @@ namespace Milimoe.FunGame.Core.Entity
         public decimal Reference9 { get; set; } = 0;
         public decimal Reference10 { get; set; } = 0;
 
-        internal ActiveSkill(DataSet? DataSet)
+        internal ActiveSkill(DataRow? DataRow)
         {
             Active = true;
         }

@@ -27,18 +27,17 @@ namespace Milimoe.FunGame.Core.Entity
         public string Password { get; set; } = "";
         public GameStatistics? Statistics { get; set; } = null;
 
-        internal Room(DataSet? DsRoom, DataSet? DsUser)
+        internal Room(DataRow? DrRoom, DataRow? DrUser)
         {
-            if (DsRoom != null && DsRoom.Tables.Count > 0 && DsRoom.Tables[0].Rows.Count > 0)
+            if (DrRoom != null)
             {
-                DataRow row = DsRoom.Tables[0].Rows[0];
-                Id = (long)row[RoomQuery.Column_ID];
-                Roomid = (string)row[RoomQuery.Column_RoomID];
-                CreateTime = (DateTime)row[RoomQuery.Column_CreateTime];
-                RoomMaster = Api.Utility.Factory.GetInstance<User>(DsUser);
-                RoomType = (RoomType)Convert.ToInt32(row[RoomQuery.Column_RoomType]);
-                RoomState = (RoomState)Convert.ToInt32(row[RoomQuery.Column_RoomState]);
-                Password = (string)row[RoomQuery.Column_Password];
+                Id = (long)DrRoom[RoomQuery.Column_ID];
+                Roomid = (string)DrRoom[RoomQuery.Column_RoomID];
+                CreateTime = (DateTime)DrRoom[RoomQuery.Column_CreateTime];
+                RoomMaster = Api.Utility.Factory.GetInstance<User>(DrUser);
+                RoomType = (RoomType)Convert.ToInt32(DrRoom[RoomQuery.Column_RoomType]);
+                RoomState = (RoomState)Convert.ToInt32(DrRoom[RoomQuery.Column_RoomState]);
+                Password = (string)DrRoom[RoomQuery.Column_Password];
             }
         }
 

@@ -200,6 +200,14 @@ namespace Milimoe.FunGame.Desktop.UI
                             NoticeText.Text = Config.FunGame_Notice;
                             break;
 
+                        case MainInvokeType.UpdateRoom:
+                            if (objs != null && objs.Length > 0)
+                            {
+                                List<string> list = (List<string>)objs[0];
+                                RoomList.Items.AddRange(list.ToArray());
+                            }
+                            break;
+
                         default:
                             break;
                     }

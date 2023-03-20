@@ -162,6 +162,10 @@ namespace Milimoe.FunGame.Desktop.Model
                     case SocketMessageType.Chat:
                         SocketHandler_Chat(SocketObject);
                         break;
+                        
+                    case SocketMessageType.UpdateRoom:
+                        SocketHandler_UpdateRoom(SocketObject);
+                        break;
 
                     case SocketMessageType.Unknown:
                     default:
@@ -219,6 +223,11 @@ namespace Milimoe.FunGame.Desktop.Model
             RoomEventArgs args = new(roomid);
             Main.OnSucceedIntoRoomEvent(args);
             Main.OnAfterIntoRoomEvent(args);
+        }
+        
+        private void SocketHandler_UpdateRoom(SocketObject SocketObject)
+        {
+            Main.UpdateUI(MainInvokeType.UpdateRoom, SocketObject.Parameters);
         }
         
         private void SocketHandler_Chat(SocketObject SocketObject)
