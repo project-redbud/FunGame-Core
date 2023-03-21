@@ -6,12 +6,12 @@ namespace Milimoe.FunGame.Core.Api.Factory
 {
     internal class SkillFactory
     {
-        internal static Skill GetInstance(DataRow? DataRow, SkillType type = SkillType.Passive)
+        internal static Skill GetInstance(DataSet? DataSet, SkillType type = SkillType.Passive, int Index = 0)
         {
             Skill skill = type switch
             {
-                SkillType.Active => new ActiveSkill(DataRow),
-                _ => new PassiveSkill(DataRow)
+                SkillType.Active => new ActiveSkill(DataSet, Index),
+                _ => new PassiveSkill(DataSet, Index)
             };
             return skill;
         }

@@ -1216,8 +1216,10 @@ namespace Milimoe.FunGame.Desktop.UI
         private EventResult SucceedLoginEvent(object sender, GeneralEventArgs e)
         {
             // 接入-1号房间聊天室
-            if (MainController?.IntoRoom("-1") ?? false) return EventResult.Success;
-            else return EventResult.Fail;
+            MainController?.IntoRoom("-1");
+            // 获取在线的房间列表
+            MainController?.UpdateRoom();
+            return EventResult.Success;
         }
 
         #endregion

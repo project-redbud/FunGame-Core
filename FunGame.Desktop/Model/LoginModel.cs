@@ -130,9 +130,9 @@ namespace Milimoe.FunGame.Desktop.Model
             object[] objs = SocketObject.Parameters;
             if (objs != null && objs.Length > 0)
             {
-                DataRow? row = SocketObject.GetParam<DataRow>(0);
+                DataSet? DataSet = SocketObject.GetParam<DataSet>(0);
                 // 创建User对象并返回到Main
-                RunTime.Main?.UpdateUI(MainInvokeType.SetUser, new object[] { Factory.GetInstance<User>(row) });
+                RunTime.Main?.UpdateUI(MainInvokeType.SetUser, new object[] { Factory.GetInstance<User>(DataSet) });
                 RunTime.Login?.OnSucceedLoginEvent(Login.EventArgs);
                 RunTime.Login?.OnAfterLoginEvent(Login.EventArgs);
                 return;

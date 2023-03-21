@@ -13,30 +13,30 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="DrRoom">RoomRow</param>
         /// <param name="DrUser">UserRow(RoomMaster)</param>
         /// <returns></returns>
-        public static Room GetRoom(DataRow? DrRoom, DataRow? DrUser)
+        public static Room GetRoom(DataSet? DsRoom, DataSet? DsUser, int Index = 0)
         {
-            return RoomFactory.GetInstance(DrRoom, DrUser);
+            return RoomFactory.GetInstance(DsRoom, DsUser, Index);
         }
 
         /// <summary>
         /// 获取Skill实例，默认返回PassiveSkill
         /// </summary>
-        /// <param name="DataRow">SkillRow</param>
+        /// <param name="DataSet">SkillRow</param>
         /// <param name="SkillType">Skill类型</param>
         /// <returns></returns>
-        public static Skill GetSkill(DataRow? DataRow, SkillType SkillType = SkillType.Passive)
+        public static Skill GetSkill(DataSet? DataSet, SkillType SkillType = SkillType.Passive, int Index = 0)
         {
-            return SkillFactory.GetInstance(DataRow, SkillType);
+            return SkillFactory.GetInstance(DataSet, SkillType, Index);
         }
 
         /// <summary>
         /// 获取User实例
-        /// </summary>
-        /// <param name="DataRow">UserRow</param>
+        /// </summary>awaa
+        /// <param name="DataSet">UserRow</param>
         /// <returns></returns>
-        public static User GetUser(DataRow? DataRow)
+        public static User GetUser(DataSet? DataSet, int Index = 0)
         {
-            return UserFactory.GetInstance(DataRow);
+            return UserFactory.GetInstance(DataSet, Index);
         }
 
         /// <summary>
@@ -46,27 +46,27 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <para>若无法找到T，返回唯一的空对象</para>
         /// </summary>
         /// <typeparam name="T">Entity类</typeparam>
-        /// <param name="DataRows">使用DataRow构造对象</param>
+        /// <param name="DataSets">使用DataSets构造对象</param>
         /// <returns>T</returns>
-        public static T GetInstance<T>(params DataRow?[] DataRows)
+        public static T GetInstance<T>(params DataSet?[] DataSets)
         {
-            if (DataRows is null || DataRows.Length == 0) throw new GetInstanceException();
+            if (DataSets is null || DataSets.Length == 0) throw new GetInstanceException();
             object instance = General.EntityInstance;
             if (typeof(T) == typeof(User))
             {
-                instance = GetUser(DataRows[0]);
+                instance = GetUser(DataSets[0]);
             }
             else if (typeof(T) == typeof(Skill) || typeof(T) == typeof(PassiveSkill))
             {
-                instance = GetSkill(DataRows[0]);
+                instance = GetSkill(DataSets[0]);
             }
             else if (typeof(T) == typeof(ActiveSkill))
             {
-                instance = GetSkill(DataRows[0], SkillType.Active);
+                instance = GetSkill(DataSets[0], SkillType.Active);
             }
             else if (typeof(T) == typeof(Room))
             {
-                instance = GetRoom(DataRows[0], DataRows[1]);
+                instance = GetRoom(DataSets[0], DataSets[1]);
             }
             return (T)instance;
         }
@@ -89,9 +89,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 DataSet? ds = DataSets[0];
                 if (ds != null && ds.Tables[0].Rows.Count > 0)
                 {
-                    foreach (DataRow? row in ds.Tables[0].Rows)
+                    for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
                     {
-                        object entity = GetUser(row);
+                        object entity = GetUser(ds, i);
                         list.Add((T)entity);
                     }
                 }
@@ -101,9 +101,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 DataSet? ds = DataSets[0];
                 if (ds != null && ds.Tables[0].Rows.Count > 0)
                 {
-                    foreach (DataRow? row in ds.Tables[0].Rows)
+                    for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
                     {
-                        object entity = GetSkill(row);
+                        object entity = GetSkill(ds, SkillType.Passive, i);
                         list.Add((T)entity);
                     }
                 }
@@ -113,33 +113,27 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 DataSet? ds = DataSets[0];
                 if (ds != null && ds.Tables[0].Rows.Count > 0)
                 {
-                    foreach (DataRow? row in ds.Tables[0].Rows)
+                    for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
                     {
-                        object entity = GetSkill(row, SkillType.Active);
+                        object entity = GetSkill(ds, SkillType.Active, i);
                         list.Add((T)entity);
                     }
                 }
             }
             else if (typeof(T) == typeof(Room))
             {
-                DataSet? ds = DataSets[0];
-                if (ds != null && ds.Tables[0].Rows.Count > 0)
+                DataSet? DsRoom = DataSets[0];
+                DataSet? DsUser = DataSets[1];
+                if (DsRoom != null && DsRoom.Tables[0].Rows.Count > 0)
                 {
-                    foreach (DataRow? row in ds.Tables[0].Rows)
+                    for (int i = 0; i < DsRoom.Tables[0].Rows.Count; i++)
                     {
-                        if (row != null)
-                        {
-                            DataRow[] rows = ds.Tables[1].Select($"{Library.SQLScript.Entity.UserQuery.Column_Username} = '{row[Library.SQLScript.Entity.RoomQuery.Column_RoomMasterName]}'");
-                            if (rows != null && rows.Length > 0)
-                            {
-                                object entity = GetRoom(row, rows[0]);
-                                list.Add((T)entity);
-                            }
-                        }
+                        object entity = GetRoom(DsRoom, DsUser, i);
+                        list.Add((T)entity);
                     }
                 }
             }
-            return new List<T>();
+            return list;
         }
     }
 }

@@ -227,7 +227,9 @@ namespace Milimoe.FunGame.Desktop.Model
         
         private void SocketHandler_UpdateRoom(SocketObject SocketObject)
         {
-            Main.UpdateUI(MainInvokeType.UpdateRoom, SocketObject.Parameters);
+            List<string>? list = SocketObject.GetParam<List<string>>(0);
+            list ??= new List<string>();
+            Main.UpdateUI(MainInvokeType.UpdateRoom, list);
         }
         
         private void SocketHandler_Chat(SocketObject SocketObject)

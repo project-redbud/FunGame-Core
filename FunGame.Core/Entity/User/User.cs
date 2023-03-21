@@ -28,10 +28,11 @@ namespace Milimoe.FunGame.Core.Entity
 
         }
 
-        internal User(DataRow? DataRow)
+        internal User(DataSet? DataSet, int Index = 0)
         {
-            if (DataRow != null)
+            if (DataSet != null && DataSet.Tables[0].Rows.Count > 0)
             {
+                DataRow DataRow = DataSet.Tables[0].Rows[Index];
                 Id = (long)DataRow[UserQuery.Column_UID];
                 Username = (string)DataRow[UserQuery.Column_Username];
                 Password = (string)DataRow[UserQuery.Column_Password];
