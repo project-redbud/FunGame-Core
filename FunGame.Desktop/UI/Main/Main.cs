@@ -149,6 +149,7 @@ namespace Milimoe.FunGame.Desktop.UI
                             break;
 
                         case MainInvokeType.Disconnected:
+                            RoomList.Items.Clear();
                             Config.FunGame_isRetrying = false;
                             Config.FunGame_isConnected = false;
                             SetServerStatusLight((int)LightType.Red);
@@ -159,6 +160,7 @@ namespace Milimoe.FunGame.Desktop.UI
                             break;
 
                         case MainInvokeType.Disconnect:
+                            RoomList.Items.Clear();
                             Config.FunGame_isAutoRetry = false;
                             Config.FunGame_isRetrying = false;
                             Config.FunGame_isAutoConnect = false;

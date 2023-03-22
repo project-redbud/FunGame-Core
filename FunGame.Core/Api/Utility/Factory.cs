@@ -10,8 +10,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <summary>
         /// 获取Room实例
         /// </summary>
-        /// <param name="DrRoom">RoomRow</param>
-        /// <param name="DrUser">UserRow(RoomMaster)</param>
+        /// <param name="DsRoom">Room</param>
+        /// <param name="DsUser">User(RoomMaster)</param>
+        /// <param name="Index">取指定行</param>
         /// <returns></returns>
         public static Room GetRoom(DataSet? DsRoom, DataSet? DsUser, int Index = 0)
         {
@@ -23,6 +24,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="DataSet">SkillRow</param>
         /// <param name="SkillType">Skill类型</param>
+        /// <param name="Index">取指定行</param>
         /// <returns></returns>
         public static Skill GetSkill(DataSet? DataSet, SkillType SkillType = SkillType.Passive, int Index = 0)
         {
@@ -33,6 +35,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// 获取User实例
         /// </summary>awaa
         /// <param name="DataSet">UserRow</param>
+        /// <param name="Index">取指定行</param>
         /// <returns></returns>
         public static User GetUser(DataSet? DataSet, int Index = 0)
         {

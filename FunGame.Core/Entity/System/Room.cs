@@ -28,7 +28,7 @@ namespace Milimoe.FunGame.Core.Entity
         public string Password { get; set; } = "";
         public GameStatistics? Statistics { get; set; } = null;
 
-        internal Room(DataSet? DsRoom, DataSet? DsUser, int Index)
+        internal Room(DataSet? DsRoom, DataSet? DsUser, int Index = 0)
         {
             if (DsRoom != null && DsRoom.Tables[0].Rows.Count > 0)
             {
