@@ -20,16 +20,16 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public int UsersCount => OnlineUsers.Count;
         public int BannedCount => BannedList.Count;
 
-        private readonly ThreadManager OnlineUsers;
+        private readonly ModelManager OnlineUsers;
 
         private ServerSocket(System.Net.Sockets.Socket Instance, int ServerPort, int MaxConnection = 0)
         {
             this.Instance = Instance;
             this.ServerPort = ServerPort;
             if (MaxConnection <= 0)
-                OnlineUsers = new ThreadManager();
+                OnlineUsers = new ModelManager();
             else
-                OnlineUsers = new ThreadManager(MaxConnection);
+                OnlineUsers = new ModelManager(MaxConnection);
         }
 
         public static ServerSocket StartListening(int Port = 22222, int MaxConnection = 0)

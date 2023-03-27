@@ -50,6 +50,7 @@
     public enum SocketMessageType
     {
         Unknown,
+        DataRequest,
         Connect,
         GetNotice,
         Login,
@@ -65,6 +66,11 @@
         CreateRoom,
         UpdateRoom,
         ChangeRoomSetting
+    }
+
+    public enum DataRequestType
+    {
+
     }
 
     public enum SocketRuntimeType

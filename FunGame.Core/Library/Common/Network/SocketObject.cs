@@ -2,6 +2,7 @@
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
 {
+    [Serializable]
     public readonly struct SocketObject
     {
         public SocketMessageType SocketType { get; } = SocketMessageType.Unknown;

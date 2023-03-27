@@ -23,6 +23,13 @@
         NotSent,
         NotReceived
     }
+    
+    public enum RequestResult
+    {
+        Success,
+        Fail,
+        Missing
+    }
 
     public enum ConnectResult
     {
