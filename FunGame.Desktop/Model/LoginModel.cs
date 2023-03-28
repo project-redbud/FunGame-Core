@@ -5,10 +5,8 @@ using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
-using Milimoe.FunGame.Desktop.Controller;
 using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Library.Component;
-using Milimoe.FunGame.Desktop.UI;
 
 namespace Milimoe.FunGame.Desktop.Model
 {
@@ -17,6 +15,10 @@ namespace Milimoe.FunGame.Desktop.Model
     /// </summary>
     public class LoginModel : BaseModel
     {
+        private static SocketObject Work;
+        private static bool Working = false;
+        private static bool Success = false;
+
         public LoginModel() : base(RunTime.Socket)
         {
 
@@ -26,18 +28,9 @@ namespace Milimoe.FunGame.Desktop.Model
         {
             try
             {
-                SocketMessageType type = SocketObject.SocketType;
-                object[] objs = SocketObject.Parameters;
-                switch (SocketObject.SocketType)
-                {
-                    case SocketMessageType.Login:
-                        SocketHandler_Login(SocketObject);
-                        break;
-
-                    case SocketMessageType.CheckLogin:
-                        SocketHandler_CheckLogin(SocketObject);
-                        break;
-                }
+                Work = SocketObject;
+                Success = true;
+                Working = false;
             }
             catch (Exception e)
             {
@@ -45,7 +38,7 @@ namespace Milimoe.FunGame.Desktop.Model
             }
         }
 
-        public static bool LoginAccount(params object[]? objs)
+        public static async Task<bool> LoginAccountAsync(params object[]? objs)
         {
             try
             {
@@ -61,14 +54,26 @@ namespace Milimoe.FunGame.Desktop.Model
                     password = password.Encrypt(username);
                     if (Socket.Send(SocketMessageType.Login, username, password, autokey) == SocketResult.Success)
                     {
-                        return true;
+                        SetWorking();
+                        await Task.Factory.StartNew(async() =>
+                        {
+                            while (true)
+                            {
+                                if (!Working) break;
+                            }
+                            if (Success)
+                            {
+                                await CheckLoginAsync(Work);
+                            }
+                        });
                     }
                 }
             }
             catch (Exception e)
             {
-                e.GetErrorInfo();
+                RunTime.WritelnSystemInfo(e.GetErrorInfo());
             }
+
             return false;
         }
 
@@ -89,12 +94,12 @@ namespace Milimoe.FunGame.Desktop.Model
             }
             catch (Exception e)
             {
-                e.GetErrorInfo();
+                RunTime.WritelnSystemInfo(e.GetErrorInfo());
             }
             return false;
         }
 
-        private static void SocketHandler_Login(SocketObject SocketObject)
+        private static async Task<bool> CheckLoginAsync(SocketObject SocketObject)
         {
             Guid key = Guid.Empty;
             string? msg = "";
@@ -105,26 +110,41 @@ namespace Milimoe.FunGame.Desktop.Model
             if (msg != null && msg.Trim() != "")
             {
                 ShowMessage.ErrorMessage(msg, "登录失败");
-                RunTime.Login?.OnFailedLoginEvent(Login.EventArgs);
-                RunTime.Login?.OnAfterLoginEvent(Login.EventArgs);
+                return false;
             }
             else
             {
                 if (key != Guid.Empty)
                 {
                     Config.Guid_LoginKey = key;
-                    LoginController.CheckLogin(key);
+                    Socket Socket = RunTime.Socket!;
+                    if (Socket.Send(SocketMessageType.CheckLogin, key) == SocketResult.Success)
+                    {
+                        SetWorking();
+                        await Task.Factory.StartNew(() =>
+                        {
+                            while (true)
+                            {
+                                if (!Working) break;
+                            }
+                            if (Success)
+                            {
+                                SocketHandler_CheckLogin(Work);
+                            }
+                        });
+                        return true;
+                    }
                 }
                 else
                 {
                     ShowMessage.ErrorMessage("登录失败！！", "登录失败", 5);
-                    RunTime.Login?.OnFailedLoginEvent(Login.EventArgs);
-                    RunTime.Login?.OnAfterLoginEvent(Login.EventArgs);
+                    return false;
                 }
             }
+            return true;
         }
 
-        private static void SocketHandler_CheckLogin(SocketObject SocketObject)
+        private static bool SocketHandler_CheckLogin(SocketObject SocketObject)
         {
             // 返回构造User对象的DataTable
             object[] objs = SocketObject.Parameters;
@@ -133,14 +153,17 @@ namespace Milimoe.FunGame.Desktop.Model
                 DataSet? DataSet = SocketObject.GetParam<DataSet>(0);
                 // 创建User对象并返回到Main
                 RunTime.Main?.UpdateUI(MainInvokeType.SetUser, new object[] { Factory.GetInstance<User>(DataSet) });
-                RunTime.Login?.OnSucceedLoginEvent(Login.EventArgs);
-                RunTime.Login?.OnAfterLoginEvent(Login.EventArgs);
-                return;
+                return true;
             }
             ShowMessage.ErrorMessage("登录失败！！", "登录失败", 5);
-            RunTime.Login?.OnFailedLoginEvent(Login.EventArgs);
-            RunTime.Login?.OnAfterLoginEvent(Login.EventArgs);
+            return false;
         }
 
+        private static void SetWorking()
+        {
+            Working = true;
+            Success = false;
+            Work = default;
+        }
     }
 }

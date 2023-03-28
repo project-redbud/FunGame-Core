@@ -11,8 +11,6 @@ namespace Milimoe.FunGame.Desktop.UI
 {
     public partial class Login : BaseLogin
     {
-        public static LoginEventArgs EventArgs { get; set; } = new LoginEventArgs();
-
         private readonly LoginController LoginController;
 
         public Login()
@@ -48,7 +46,6 @@ namespace Milimoe.FunGame.Desktop.UI
                     UsernameText.Focus();
                     return false;
                 }
-                EventArgs = new LoginEventArgs(username, password);
                 if (!LoginController.LoginAccount(username, password))
                 {
                     ShowMessage.Message("登录失败！！", "登录失败");

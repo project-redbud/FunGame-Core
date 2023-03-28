@@ -22,7 +22,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
 
         public async Task SendRequest()
         {
-            Queue.Add(Worker);
+            Queue.AddAsync(Worker);
             if (await Worker.SendRequest() == RequestResult.Success)
             {
                 Queue.Delete();
@@ -83,13 +83,17 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
             {
                 if (SocketObject.SocketType == SocketMessageType.DataRequest)
                 {
-                    Dispose();
-                    switch (RequestType)
+                    DataRequestType type = SocketObject.GetParam<DataRequestType>(0);
+                    if (type == RequestType)
                     {
-                        default:
-                            break;
+                        Dispose();
+                        switch (RequestType)
+                        {
+                            default:
+                                break;
+                        }
+                        JobFinish = true;
                     }
-                    JobFinish = true;
                 }
             }
         }

@@ -2,35 +2,30 @@
 {
     public class ConcurrentQueue<T>
     {
-        public bool Lock { get; set; }
+        private bool Lock { get; set; }
 
-        private System.Collections.Concurrent.ConcurrentQueue<T> Instance { get; }
+        private System.Collections.Concurrent.ConcurrentQueue<T> Instance { get; } = new();
 
-        public ConcurrentQueue()
-        {
-            Instance = new System.Collections.Concurrent.ConcurrentQueue<T>();
-        }
-
-        public void Add(T obj)
+        public async void AddAsync(T obj)
         {
             if (Lock)
             {
-                return;
+                await Task.Run(() =>
+                {
+                    while (true)
+                    {
+                        if (!Lock) break;
+                        Thread.Sleep(100);
+                    }
+                });
             }
             Lock = true;
-            lock (Instance)
-            {
-                Instance.Enqueue(obj);
-            }
+            Instance.Enqueue(obj);
         }
 
         public bool Delete()
         {
-            bool result = false;
-            lock (Instance)
-            {
-                result = Instance.TryDequeue(out _);
-            }
+            bool result = Instance.TryDequeue(out _);
             Lock = false;
             return result;
         }
