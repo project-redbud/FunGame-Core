@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Windows.Forms;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Architecture;
@@ -55,17 +56,25 @@ namespace Milimoe.FunGame.Desktop.Model
                     if (Socket.Send(SocketMessageType.Login, username, password, autokey) == SocketResult.Success)
                     {
                         SetWorking();
-                        await Task.Factory.StartNew(async() =>
+                        string ErrorMsg = "";
+                        Guid CheckLoginKey = Guid.Empty;
+                        (CheckLoginKey, ErrorMsg) = await Task.Factory.StartNew(GetCheckLoginKeyAsync);
+                        if (ErrorMsg != null && ErrorMsg.Trim() != "")
                         {
-                            while (true)
+                            ShowMessage.ErrorMessage(ErrorMsg, "登录失败");
+                            return false;
+                        }
+                        if (Socket.Send(SocketMessageType.CheckLogin, CheckLoginKey) == SocketResult.Success)
+                        {
+                            SetWorking();
+                            DataSet ds = await Task.Factory.StartNew(GetLoginUserAsync);
+                            if (ds != null)
                             {
-                                if (!Working) break;
+                                // 创建User对象并返回到Main
+                                RunTime.Main?.UpdateUI(MainInvokeType.SetUser, new object[] { Factory.GetInstance<User>(ds) });
+                                return true;
                             }
-                            if (Success)
-                            {
-                                await CheckLoginAsync(Work);
-                            }
-                        });
+                        }
                     }
                 }
             }
@@ -77,86 +86,56 @@ namespace Milimoe.FunGame.Desktop.Model
             return false;
         }
 
-        public static bool CheckLogin(params object[]? objs)
-        {
-            try
-            {
-                Socket? Socket = RunTime.Socket;
-                if (Socket != null && objs != null)
-                {
-                    Guid key = Guid.Empty;
-                    if (objs.Length > 0) key = (Guid)objs[0];
-                    if (Socket.Send(SocketMessageType.CheckLogin, key) == SocketResult.Success)
-                    {
-                        return true;
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                RunTime.WritelnSystemInfo(e.GetErrorInfo());
-            }
-            return false;
-        }
-
-        private static async Task<bool> CheckLoginAsync(SocketObject SocketObject)
+        public static (Guid, string) GetCheckLoginKeyAsync()
         {
             Guid key = Guid.Empty;
             string? msg = "";
-            // 返回一个Key，再发回去给服务器就行了
-            if (SocketObject.Length > 0) key = SocketObject.GetParam<Guid>(0);
-            if (SocketObject.Length > 1) msg = SocketObject.GetParam<string>(1);
-            // 如果返回了msg，说明验证错误。
-            if (msg != null && msg.Trim() != "")
+            try
             {
-                ShowMessage.ErrorMessage(msg, "登录失败");
-                return false;
-            }
-            else
-            {
-                if (key != Guid.Empty)
+                while (true)
                 {
-                    Config.Guid_LoginKey = key;
-                    Socket Socket = RunTime.Socket!;
-                    if (Socket.Send(SocketMessageType.CheckLogin, key) == SocketResult.Success)
+                    if (!Working) break;
+                }
+                if (Success)
+                {
+                    // 返回一个确认登录的Key
+                    if (Work.Length > 0) key = Work.GetParam<Guid>(0);
+                    if (Work.Length > 1) msg = Work.GetParam<string>(1);
+                    if (key != Guid.Empty)
                     {
-                        SetWorking();
-                        await Task.Factory.StartNew(() =>
-                        {
-                            while (true)
-                            {
-                                if (!Working) break;
-                            }
-                            if (Success)
-                            {
-                                SocketHandler_CheckLogin(Work);
-                            }
-                        });
-                        return true;
+                        Config.Guid_LoginKey = key;
                     }
                 }
-                else
-                {
-                    ShowMessage.ErrorMessage("登录失败！！", "登录失败", 5);
-                    return false;
-                }
             }
-            return true;
+            catch (Exception e)
+            {
+                RunTime.WritelnSystemInfo(e.GetErrorInfo());
+            }
+            msg ??= "";
+            return (key, msg);
         }
 
-        private static bool SocketHandler_CheckLogin(SocketObject SocketObject)
+        private static DataSet GetLoginUserAsync()
         {
-            // 返回构造User对象的DataTable
-            object[] objs = SocketObject.Parameters;
-            if (objs != null && objs.Length > 0)
+            DataSet? ds = new();
+            try
             {
-                DataSet? DataSet = SocketObject.GetParam<DataSet>(0);
-                // 创建User对象并返回到Main
-                RunTime.Main?.UpdateUI(MainInvokeType.SetUser, new object[] { Factory.GetInstance<User>(DataSet) });
-                return true;
+                while (true)
+                {
+                    if (!Working) break;
+                }
+                if (Success)
+                {
+                    // 返回构造User对象的DataTable
+                    if (Work.Length > 0) ds = Work.GetParam<DataSet>(0);
+                }
             }
-            ShowMessage.ErrorMessage("登录失败！！", "登录失败", 5);
-            return false;
+            catch (Exception e)
+            {
+                RunTime.WritelnSystemInfo(e.GetErrorInfo());
+            }
+            ds ??= new();
+            return ds;
         }
 
         private static void SetWorking()

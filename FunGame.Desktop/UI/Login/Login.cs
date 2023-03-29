@@ -34,7 +34,7 @@ namespace Milimoe.FunGame.Desktop.UI
             LoginController.Dispose();
         }
 
-        private bool Login_Handler()
+        private async Task<bool> Login_Handler()
         {
             try
             {
@@ -46,18 +46,13 @@ namespace Milimoe.FunGame.Desktop.UI
                     UsernameText.Focus();
                     return false;
                 }
-                if (!LoginController.LoginAccount(username, password))
-                {
-                    ShowMessage.Message("登录失败！！", "登录失败");
-                    return false;
-                }
+                return await LoginController.LoginAccount(username, password);
             }
             catch (Exception e)
             {
                 RunTime.WritelnSystemInfo(e.GetErrorInfo());
                 return false;
             }
-            return true;
         }
 
         /// <summary>
@@ -75,10 +70,10 @@ namespace Milimoe.FunGame.Desktop.UI
             ShowMessage.TipMessage("与No.16对话即可获得快速登录秘钥，快去试试吧！");
         }
 
-        private void GoToLogin_Click(object sender, EventArgs e)
+        private async void GoToLogin_Click(object sender, EventArgs e)
         {
             GoToLogin.Enabled = false;
-            if (!Login_Handler()) GoToLogin.Enabled = true;
+            if (await Login_Handler() == false) GoToLogin.Enabled = true;
         }
 
         private void ForgetPassword_Click(object sender, EventArgs e)

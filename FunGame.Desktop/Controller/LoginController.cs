@@ -2,6 +2,7 @@
 using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Model;
+using Milimoe.FunGame.Core.Library.Exception;
 
 namespace Milimoe.FunGame.Desktop.Controller
 {
@@ -19,14 +20,26 @@ namespace Milimoe.FunGame.Desktop.Controller
             LoginModel.Dispose();
         }
 
-        public static bool LoginAccount(params object[]? objs)
+        public static async Task<bool> LoginAccount(params object[]? objs)
         {
-            LoginEventArgs LoginEventArgs = new(objs);
-            if (RunTime.Login?.OnBeforeLoginEvent(LoginEventArgs) == Core.Library.Constant.EventResult.Fail) return false;
-            bool result = LoginModel.LoginAccountAsync(objs).Result;
-            if (result) RunTime.Login?.OnSucceedLoginEvent(LoginEventArgs);
-            else RunTime.Login?.OnFailedLoginEvent(LoginEventArgs);
-            RunTime.Login?.OnAfterLoginEvent(LoginEventArgs);
+            bool result = false;
+
+            try
+            {
+                LoginEventArgs LoginEventArgs = new(objs);
+                if (RunTime.Login?.OnBeforeLoginEvent(LoginEventArgs) == Core.Library.Constant.EventResult.Fail) return false;
+
+                result = await LoginModel.LoginAccountAsync(objs);
+
+                if (result) RunTime.Login?.OnSucceedLoginEvent(LoginEventArgs);
+                else RunTime.Login?.OnFailedLoginEvent(LoginEventArgs);
+                RunTime.Login?.OnAfterLoginEvent(LoginEventArgs);
+            }
+            catch (Exception e)
+            {
+                RunTime.WritelnSystemInfo(e.GetErrorInfo());
+            }
+
             return result;
         }
     }

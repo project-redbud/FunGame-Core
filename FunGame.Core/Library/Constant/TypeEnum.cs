@@ -237,6 +237,7 @@
         Connected,
         Disconnect,
         Disconnected,
+        AutoLogin,
         Close
     }
 

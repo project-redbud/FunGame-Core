@@ -1,5 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Desktop.Library;
 using Milimoe.FunGame.Desktop.Model;
 using Milimoe.FunGame.Desktop.UI;
 
@@ -50,6 +51,9 @@ namespace Milimoe.FunGame.Desktop.Controller
 
                 case RunTimeInvokeType.Disconnected:
                     break;
+
+                case RunTimeInvokeType.AutoLogin:
+                    break;
                     
                 case RunTimeInvokeType.Close:
                     if (args != null && args.Length > 0)
@@ -95,6 +99,14 @@ namespace Milimoe.FunGame.Desktop.Controller
         public bool Error(Exception e)
         {
             return Do<bool>(RunTimeInvokeType.Close, e);
+        }
+
+        public async void AutoLogin(params object[] objs)
+        {
+            Do<object>(RunTimeInvokeType.AutoLogin);
+            LoginController LoginController = new();
+            await LoginController.LoginAccount(objs);
+            LoginController.Dispose();
         }
     }
 }
