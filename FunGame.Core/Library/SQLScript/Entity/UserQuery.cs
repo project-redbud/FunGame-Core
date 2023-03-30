@@ -55,10 +55,10 @@
             return $"{Constant.Command_Update} {TableName} {Constant.Command_Set} {Column_GameTime} = {Column_GameTime} + {GameTimeMinutes} {Constant.Command_Where} {Column_Username} = '{Username}'";
         }
 
-        public static string Insert_Register(string Username, string Password, string Email)
+        public static string Insert_Register(string Username, string Password, string Email, string IP)
         {
             DateTime Now = DateTime.Now;
-            return $"{Constant.Command_Insert} {Constant.Command_Into} {TableName} ({Column_Username}, {Column_Password}, {Column_Email}, {Column_RegTime}, {Column_LastTime}) {Constant.Command_Values} ('{Username}', '{Password}', '{Email}', '{Now}', '{Now}')";
+            return $"{Constant.Command_Insert} {Constant.Command_Into} {TableName} ({Column_Username}, {Column_Password}, {Column_Email}, {Column_RegTime}, {Column_LastTime}, {Column_LastIP}) {Constant.Command_Values} ('{Username}', '{Password}', '{Email}', '{Now}', '{Now}', '{IP}')";
         }
     }
 }
