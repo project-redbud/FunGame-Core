@@ -57,7 +57,8 @@
 
         public static string Insert_Register(string Username, string Password, string Email)
         {
-            return $"{Constant.Command_Insert} {Constant.Command_Into} {TableName} ({Column_Username}, {Column_Password}, {Column_Email}, {Column_RegTime}) {Constant.Command_Values} ('{Username}', '{Password}', '{Email}', '{DateTime.Now}')";
+            DateTime Now = DateTime.Now;
+            return $"{Constant.Command_Insert} {Constant.Command_Into} {TableName} ({Column_Username}, {Column_Password}, {Column_Email}, {Column_RegTime}, {Column_LastTime}) {Constant.Command_Values} ('{Username}', '{Password}', '{Email}', '{Now}', '{Now}')";
         }
     }
 }

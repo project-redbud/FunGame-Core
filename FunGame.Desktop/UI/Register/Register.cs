@@ -120,7 +120,8 @@ namespace Milimoe.FunGame.Desktop.UI
         {
             string username = ((RegisterEventArgs)e).Username;
             string password = ((RegisterEventArgs)e).Password;
-            RunTime.Connector?.AutoLogin(username, password);
+            _ = LoginController.LoginAccount(username, password);
+            RunTime.Login?.Close();
             return EventResult.Success;
         }
 

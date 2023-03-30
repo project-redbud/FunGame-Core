@@ -74,6 +74,7 @@ namespace Milimoe.FunGame.Desktop.UI
         {
             GoToLogin.Enabled = false;
             if (await Login_Handler() == false) GoToLogin.Enabled = true;
+            else Dispose();
         }
 
         private void ForgetPassword_Click(object sender, EventArgs e)
@@ -91,11 +92,6 @@ namespace Milimoe.FunGame.Desktop.UI
 
         private EventResult SucceedLoginEvent(object sender, LoginEventArgs e)
         {
-            if (!IsDisposed)
-            {
-                if (InvokeRequired) Invoke(Close);
-                else Close();
-            }
             RunTime.Main?.OnSucceedLoginEvent(e);
             return EventResult.Success;
         }
