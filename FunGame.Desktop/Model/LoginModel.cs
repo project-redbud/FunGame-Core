@@ -97,15 +97,12 @@ namespace Milimoe.FunGame.Desktop.Model
                 {
                     if (!Working) break;
                 }
-                if (Work != null)
+                // 返回一个确认登录的Key
+                if (Work.Length > 0) key = Work.GetParam<Guid>(0);
+                if (Work.Length > 1) msg = Work.GetParam<string>(1);
+                if (key != Guid.Empty)
                 {
-                    // 返回一个确认登录的Key
-                    if (Work.Length > 0) key = Work.GetParam<Guid>(0);
-                    if (Work.Length > 1) msg = Work.GetParam<string>(1);
-                    if (key != Guid.Empty)
-                    {
-                        Config.Guid_LoginKey = key;
-                    }
+                    Config.Guid_LoginKey = key;
                 }
             }
             catch (Exception e)
@@ -125,11 +122,8 @@ namespace Milimoe.FunGame.Desktop.Model
                 {
                     if (!Working) break;
                 }
-                if (Work != null)
-                {
-                    // 返回构造User对象的DataTable
-                    if (Work.Length > 0) ds = Work.GetParam<DataSet>(0);
-                }
+                // 返回构造User对象的DataSet
+                if (Work.Length > 0) ds = Work.GetParam<DataSet>(0);
             }
             catch (Exception e)
             {

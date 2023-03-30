@@ -12,6 +12,8 @@ namespace Milimoe.FunGame.Desktop.Model
     public class RegisterModel : BaseModel
     {
         private readonly Register Register;
+        private SocketObject Work;
+        private bool Working = false;
 
         public RegisterModel(Register reg) : base(RunTime.Socket)
         {
@@ -22,21 +24,10 @@ namespace Milimoe.FunGame.Desktop.Model
         {
             try
             {
-                SocketMessageType type = SocketObject.SocketType;
-                object[] objs = SocketObject.Parameters;
-                switch (SocketObject.SocketType)
+                if (SocketObject.SocketType == SocketMessageType.Reg || SocketObject.SocketType == SocketMessageType.CheckReg)
                 {
-                    case SocketMessageType.Reg:
-                        RegInvokeType invokeType = RegInvokeType.None;
-                        if (objs != null && objs.Length > 0)
-                        {
-                            invokeType = SocketObject.GetParam<RegInvokeType>(0);
-                            Register.UpdateUI(invokeType);
-                        }
-                        break;
-                    case SocketMessageType.CheckReg:
-                        SocketHandler_CheckReg(SocketObject);
-                        break;
+                    Work = SocketObject;
+                    Working = false;
                 }
             }
             catch (Exception e)
@@ -45,51 +36,7 @@ namespace Milimoe.FunGame.Desktop.Model
             }
         }
 
-        private void SocketHandler_CheckReg(SocketObject SocketObject)
-        {
-            if (SocketObject.Parameters != null && SocketObject.Parameters.Length > 1)
-            {
-                bool successful = SocketObject.GetParam<bool>(0)!;
-                string msg = SocketObject.GetParam<string>(1)!;
-                ShowMessage.Message(msg, "注册结果");
-                if (successful)
-                {
-                    Register.OnSucceedRegEvent(Register.EventArgs);
-                    Register.OnAfterRegEvent(Register.EventArgs);
-                    Register.Close();
-                    return;
-                }
-            }
-            Register.OnFailedRegEvent(Register.EventArgs);
-            Register.OnAfterRegEvent(Register.EventArgs);
-            Register.UpdateUI(RegInvokeType.InputVerifyCode);
-        }
-
-        public bool Reg(params object[]? objs)
-        {
-            try
-            {
-                Socket? Socket = RunTime.Socket;
-                if (Socket != null && objs != null)
-                {
-                    string username = "";
-                    string email = "";
-                    if (objs.Length > 0) username = (string)objs[0];
-                    if (objs.Length > 1) email = (string)objs[1];
-                    if (Socket.Send(SocketMessageType.Reg, username, email) == SocketResult.Success)
-                    {
-                        return true;
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                RunTime.WritelnSystemInfo(e.GetErrorInfo());
-            }
-            return false;
-        }
-
-        public bool CheckReg(params object[]? objs)
+        public async Task<bool> Reg(params object[]? objs)
         {
             try
             {
@@ -99,15 +46,42 @@ namespace Milimoe.FunGame.Desktop.Model
                     string username = "";
                     string password = "";
                     string email = "";
-                    string verifycode = "";
                     if (objs.Length > 0) username = (string)objs[0];
                     if (objs.Length > 1) password = (string)objs[1];
                     password = password.Encrypt(username);
                     if (objs.Length > 2) email = (string)objs[2];
-                    if (objs.Length > 3) verifycode = (string)objs[3];
-                    if (Socket.Send(SocketMessageType.CheckReg, username, password, email, verifycode) == SocketResult.Success)
+                    SetWorking();
+                    if (Socket.Send(SocketMessageType.Reg, username, email) == SocketResult.Success)
                     {
-                        return true;
+                        RegInvokeType InvokeType = await Task.Factory.StartNew(GetRegInvokeType);
+                        while (true)
+                        {
+                            switch (InvokeType)
+                            {
+                                case RegInvokeType.InputVerifyCode:
+                                    string verifycode = ShowMessage.InputMessageCancel("请输入注册邮件中的6位数字验证码", "注册验证码", out MessageResult cancel);
+                                    if (cancel != MessageResult.Cancel)
+                                    {
+                                        SetWorking();
+                                        if (Socket.Send(SocketMessageType.CheckReg, username, password, email, verifycode) == SocketResult.Success)
+                                        {
+                                            bool success = false;
+                                            string msg = "";
+                                            (success, msg) = await Task.Factory.StartNew(GetRegResult);
+                                            ShowMessage.Message(msg, "注册结果");
+                                            if (success) return success;
+                                        }
+                                        break;
+                                    }
+                                    else return false;
+                                case RegInvokeType.DuplicateUserName:
+                                    ShowMessage.WarningMessage("此账号名已被注册，请使用其他账号名。");
+                                    return false;
+                                case RegInvokeType.DuplicateEmail:
+                                    ShowMessage.WarningMessage("此邮箱已被使用，请使用其他邮箱注册。");
+                                    return false;
+                            }
+                        }
                     }
                 }
             }
@@ -116,6 +90,50 @@ namespace Milimoe.FunGame.Desktop.Model
                 RunTime.WritelnSystemInfo(e.GetErrorInfo());
             }
             return false;
+        }
+
+        private RegInvokeType GetRegInvokeType()
+        {
+            RegInvokeType type = RegInvokeType.None;
+            try
+            {
+                while (true)
+                {
+                    if (!Working) break;
+                }
+                if (Work.Length > 0) type = Work.GetParam<RegInvokeType>(0);
+            }
+            catch (Exception e)
+            {
+                RunTime.WritelnSystemInfo(e.GetErrorInfo());
+            }
+            return type;
+        }
+
+        private (bool, string) GetRegResult()
+        {
+            bool success = false;
+            string? msg = "";
+            try
+            {
+                while (true)
+                {
+                    if (!Working) break;
+                }
+                if (Work.Length > 0) success = Work.GetParam<bool>(0);
+                if (Work.Length > 1) msg = Work.GetParam<string>(1) ?? "";
+            }
+            catch (Exception e)
+            {
+                RunTime.WritelnSystemInfo(e.GetErrorInfo());
+            }
+            return (success, msg);
+        }
+
+        private void SetWorking()
+        {
+            Working = true;
+            Work = default;
         }
     }
 }

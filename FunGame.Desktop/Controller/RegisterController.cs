@@ -4,6 +4,8 @@ using Milimoe.FunGame.Desktop.Model;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Desktop.UI;
 using Milimoe.FunGame.Core.Library.Common.Architecture;
+using Milimoe.FunGame.Core.Library.Exception;
+using Milimoe.FunGame.Core.Library.Common.Event;
 
 namespace Milimoe.FunGame.Desktop.Controller
 {
@@ -23,26 +25,26 @@ namespace Milimoe.FunGame.Desktop.Controller
             RegModel.Dispose();
         }
 
-        public bool Reg(params object[]? objs)
+        public async Task<bool> Reg(params object[]? objs)
         {
-            if (Register.OnBeforeRegEvent(Register.EventArgs) == EventResult.Fail) return false;
-            bool result = RegModel.Reg(objs);
-            if (!result)
-            {
-                ShowMessage.ErrorMessage("注册失败！", "注册失败", 5);
-                Register.OnFailedRegEvent(Register.EventArgs);
-            }
-            return result;
-        }
+            bool result = false;
 
-        public bool CheckReg(params object[]? objs)
-        {
-            bool result = RegModel.CheckReg(objs);
-            if (!result)
+            try
             {
-                ShowMessage.ErrorMessage("注册失败！", "注册失败", 5);
-                RunTime.Register?.OnFailedRegEvent(Register.EventArgs);
+                RegisterEventArgs RegEventArgs = new (objs);
+                if (Register.OnBeforeRegEvent(RegEventArgs) == EventResult.Fail) return false;
+
+                result = await RegModel.Reg(objs);
+
+                if (result) Register.OnSucceedRegEvent(RegEventArgs);
+                else Register.OnFailedRegEvent(RegEventArgs);
+                Register.OnAfterRegEvent(RegEventArgs);
             }
+            catch (Exception e)
+            {
+                RunTime.WritelnSystemInfo(e.GetErrorInfo());
+            }
+            
             return result;
         }
     }

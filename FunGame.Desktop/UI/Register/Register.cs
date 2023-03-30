@@ -12,7 +12,6 @@ namespace Milimoe.FunGame.Desktop.UI
     public partial class Register : BaseReg
     {
         public bool CheckReg { get; set; } = false;
-        public RegisterEventArgs EventArgs { get; set; } = new RegisterEventArgs();
 
         private readonly RegisterController RegController;
 
@@ -34,7 +33,7 @@ namespace Milimoe.FunGame.Desktop.UI
             RegController.Dispose();
         }
 
-        private bool Reg_Handler()
+        private async Task<bool> Reg_Handler()
         {
             try
             {
@@ -98,56 +97,12 @@ namespace Milimoe.FunGame.Desktop.UI
                     EmailText.Focus();
                     return false;
                 }
-                EventArgs = new RegisterEventArgs(username, password, email);
-                if (!RegController.Reg(username, email))
-                {
-                    ShowMessage.Message("注册失败！", "注册失败");
-                    return false;
-                }
+                return await RegController.Reg(username, password, email);
             }
             catch (Exception e)
             {
                 RunTime.WritelnSystemInfo(e.GetErrorInfo());
                 return false;
-            }
-            return true;
-        }
-
-        public void UpdateUI(RegInvokeType type)
-        {
-            try
-            {
-                void Action()
-                {
-                    switch (type)
-                    {
-                        case RegInvokeType.InputVerifyCode:
-                            string username = UsernameText.Text.Trim();
-                            string password = PasswordText.Text.Trim();
-                            string email = EmailText.Text.Trim();
-                            string verifycode = ShowMessage.InputMessageCancel("请输入注册邮件中的6位数字验证码", "注册验证码", out MessageResult cancel);
-                            if (cancel != MessageResult.Cancel) RegController.CheckReg(username, password, email, verifycode);
-                            else RegButton.Enabled = true;
-                            break;
-                        case RegInvokeType.DuplicateUserName:
-                            ShowMessage.WarningMessage("此账号名已被注册，请使用其他账号名。");
-                            RegButton.Enabled = true;
-                            break;
-                        case RegInvokeType.DuplicateEmail:
-                            ShowMessage.WarningMessage("此邮箱已被使用，请使用其他邮箱注册。");
-                            RegButton.Enabled = true;
-                            break;
-                    }
-                };
-                if (!IsDisposed)
-                {
-                    if (InvokeRequired) Invoke(Action);
-                    else Action();
-                }
-            }
-            catch (Exception e)
-            {
-                RunTime.WritelnSystemInfo(e.GetErrorInfo());
             }
         }
 
@@ -169,10 +124,11 @@ namespace Milimoe.FunGame.Desktop.UI
             return EventResult.Success;
         }
 
-        private void RegButton_Click(object sender, EventArgs e)
+        private async void RegButton_Click(object sender, EventArgs e)
         {
             RegButton.Enabled = false;
-            if (!Reg_Handler()) RegButton.Enabled = true;
+            if (!await Reg_Handler()) RegButton.Enabled = true;
+            else Dispose();
         }
 
         private void GoToLogin_Click(object sender, EventArgs e)

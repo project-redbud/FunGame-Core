@@ -1303,7 +1303,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     if (!Config.FunGame_isRetrying)
                     {
                         CurrentRetryTimes = -1;
-                        Config.FunGame_isAutoLogin = true;
+                        Config.FunGame_isAutoRetry = true;
                         RunTime.Connector?.Connect();
                     }
                     else
@@ -1313,7 +1313,7 @@ namespace Milimoe.FunGame.Desktop.UI
                     if (!Config.FunGame_isConnected)
                     {
                         CurrentRetryTimes = -1;
-                        Config.FunGame_isAutoLogin = true;
+                        Config.FunGame_isAutoRetry = true;
                         RunTime.Connector?.GetServerConnection();
                     }
                     break;
@@ -1357,7 +1357,7 @@ namespace Milimoe.FunGame.Desktop.UI
                         Constant.Server_Address = ip;
                         Constant.Server_Port = port;
                         CurrentRetryTimes = -1;
-                        Config.FunGame_isAutoLogin = true;
+                        Config.FunGame_isAutoRetry = true;
                         RunTime.Connector?.Connect();
                     }
                     else if (ErrorType == Core.Library.Constant.ErrorType.IsNotIP) ShowMessage.ErrorMessage("这不是一个IP地址！");
