@@ -18,7 +18,6 @@ namespace Milimoe.FunGame.Desktop.Model
     {
         private static SocketObject Work;
         private static bool Working = false;
-        private static bool Success = false;
 
         public LoginModel() : base(RunTime.Socket)
         {
@@ -29,9 +28,11 @@ namespace Milimoe.FunGame.Desktop.Model
         {
             try
             {
-                Work = SocketObject;
-                Success = true;
-                Working = false;
+                if (SocketObject.SocketType == SocketMessageType.Login || SocketObject.SocketType == SocketMessageType.CheckLogin)
+                {
+                    Work = SocketObject;
+                    Working = false;
+                }
             }
             catch (Exception e)
             {
@@ -53,9 +54,9 @@ namespace Milimoe.FunGame.Desktop.Model
                     if (objs.Length > 1) password = (string)objs[1];
                     if (objs.Length > 2) autokey = (string)objs[2];
                     password = password.Encrypt(username);
+                    SetWorking();
                     if (Socket.Send(SocketMessageType.Login, username, password, autokey) == SocketResult.Success)
                     {
-                        SetWorking();
                         string ErrorMsg = "";
                         Guid CheckLoginKey = Guid.Empty;
                         (CheckLoginKey, ErrorMsg) = await Task.Factory.StartNew(GetCheckLoginKeyAsync);
@@ -64,9 +65,9 @@ namespace Milimoe.FunGame.Desktop.Model
                             ShowMessage.ErrorMessage(ErrorMsg, "登录失败");
                             return false;
                         }
+                        SetWorking();
                         if (Socket.Send(SocketMessageType.CheckLogin, CheckLoginKey) == SocketResult.Success)
                         {
-                            SetWorking();
                             DataSet ds = await Task.Factory.StartNew(GetLoginUserAsync);
                             if (ds != null)
                             {
@@ -96,7 +97,7 @@ namespace Milimoe.FunGame.Desktop.Model
                 {
                     if (!Working) break;
                 }
-                if (Success)
+                if (Work != null)
                 {
                     // 返回一个确认登录的Key
                     if (Work.Length > 0) key = Work.GetParam<Guid>(0);
@@ -124,7 +125,7 @@ namespace Milimoe.FunGame.Desktop.Model
                 {
                     if (!Working) break;
                 }
-                if (Success)
+                if (Work != null)
                 {
                     // 返回构造User对象的DataTable
                     if (Work.Length > 0) ds = Work.GetParam<DataSet>(0);
@@ -141,7 +142,6 @@ namespace Milimoe.FunGame.Desktop.Model
         private static void SetWorking()
         {
             Working = true;
-            Success = false;
             Work = default;
         }
     }
