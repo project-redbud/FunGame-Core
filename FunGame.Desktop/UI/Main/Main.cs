@@ -1204,7 +1204,7 @@ namespace Milimoe.FunGame.Desktop.UI
             if (MainController != null && Config.FunGame_isAutoLogin && Config.FunGame_AutoLoginUser != "" && Config.FunGame_AutoLoginPassword != "" && Config.FunGame_AutoLoginKey != "")
             {
                 // 自动登录
-                RunTime.Connector?.AutoLogin(Config.FunGame_AutoLoginUser, Config.FunGame_AutoLoginPassword, Config.FunGame_AutoLoginKey);
+                _ = RunTime.Connector?.AutoLogin(Config.FunGame_AutoLoginUser, Config.FunGame_AutoLoginPassword, Config.FunGame_AutoLoginKey);
             }
             return EventResult.Success;
         }
