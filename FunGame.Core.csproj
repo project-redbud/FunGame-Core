@@ -11,9 +11,9 @@
     <FileVersion>1.0</FileVersion>
     <PackageOutputPath>..\bin</PackageOutputPath>
     <Title>Core</Title>
-    <RootNamespace>Milimoe.FunGame.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <RootNamespace>Milimoe.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <AssemblyName>FunGame.$(MSBuildProjectName)</AssemblyName>
+    <AssemblyName>$(MSBuildProjectName)</AssemblyName>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

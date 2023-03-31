@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32804.467
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunGame", "FunGame.csproj", "{842BB22E-4309-4ADD-93CD-A981CE10C30E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunGame.Core", "FunGame.Core.csproj", "{842BB22E-4309-4ADD-93CD-A981CE10C30E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -10,10 +10,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{CC6C83C6-5818-4565-8873-67587FED1D0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CC6C83C6-5818-4565-8873-67587FED1D0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CC6C83C6-5818-4565-8873-67587FED1D0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CC6C83C6-5818-4565-8873-67587FED1D0A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{842BB22E-4309-4ADD-93CD-A981CE10C30E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{842BB22E-4309-4ADD-93CD-A981CE10C30E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{842BB22E-4309-4ADD-93CD-A981CE10C30E}.Release|Any CPU.ActiveCfg = Release|Any CPU
