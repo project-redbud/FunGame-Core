@@ -101,12 +101,19 @@ namespace Milimoe.FunGame.Desktop.Controller
             return Do<bool>(RunTimeInvokeType.Close, e);
         }
 
-        public async void AutoLogin(params object[] objs)
+        public async Task AutoLogin(params object[] objs)
         {
-            Do<object>(RunTimeInvokeType.AutoLogin);
-            LoginController LoginController = new();
-            await LoginController.LoginAccount(objs);
-            LoginController.Dispose();
+            try
+            {
+                Do<object>(RunTimeInvokeType.AutoLogin);
+                LoginController LoginController = new();
+                await LoginController.LoginAccount(objs);
+                LoginController.Dispose();
+            }
+            catch (Exception e)
+            {
+                RunTime.WriteGameInfo(e.GetErrorInfo());
+            }
         }
     }
 }
