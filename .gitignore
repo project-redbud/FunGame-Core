@@ -363,5 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # FunGame Implement
-FunGame.Implement/*.cs
-FunGame.Implement/Implement/*.cs
+Implement/*.cs
+Implement/Implement/*.cs
