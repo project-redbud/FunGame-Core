@@ -16,15 +16,20 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface IConnectEventHandler : IEventHandler
     {
+        public new delegate EventResult BeforeEventHandler(object sender, ConnectEventArgs e);
+        public new delegate EventResult AfterEventHandler(object sender, ConnectEventArgs e);
+        public new delegate EventResult SucceedEventHandler(object sender, ConnectEventArgs e);
+        public new delegate EventResult FailedEventHandler(object sender, ConnectEventArgs e);
+
         public event BeforeEventHandler? BeforeConnect;
         public event AfterEventHandler? AfterConnect;
         public event SucceedEventHandler? SucceedConnect;
         public event FailedEventHandler? FailedConnect;
 
-        public EventResult OnBeforeConnectEvent(GeneralEventArgs e);
-        public EventResult OnAfterConnectEvent(GeneralEventArgs e);
-        public EventResult OnSucceedConnectEvent(GeneralEventArgs e);
-        public EventResult OnFailedConnectEvent(GeneralEventArgs e);
+        public EventResult OnBeforeConnectEvent(ConnectEventArgs e);
+        public EventResult OnAfterConnectEvent(ConnectEventArgs e);
+        public EventResult OnSucceedConnectEvent(ConnectEventArgs e);
+        public EventResult OnFailedConnectEvent(ConnectEventArgs e);
     }
 
     public interface IDisconnectEventHandler : IEventHandler

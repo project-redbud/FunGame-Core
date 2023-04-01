@@ -7,6 +7,16 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
     public class BaseModel : ISocketHandler, IDisposable
     {
         /// <summary>
+        /// 接收到的SocketObject实例
+        /// </summary>
+        protected virtual SocketObject Work { get; set; }
+
+        /// <summary>
+        /// 是否处于等待服务器响应的状态
+        /// </summary>
+        protected virtual bool Working { get; set; } = false;
+
+        /// <summary>
         /// Socket
         /// </summary>
         private readonly Socket _Socket;
@@ -62,6 +72,15 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
                 }
             }
             IsDisposed = true;
+        }
+
+        /// <summary>
+        /// 调用Socket.Send()前，请设置为等待状态
+        /// </summary>
+        protected void SetWorking()
+        {
+            Working = true;
+            Work = default;
         }
     }
 }
