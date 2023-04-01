@@ -1,9 +1,10 @@
 ﻿using System.Collections;
 using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Library.Common.Architecture
+namespace Milimoe.FunGame.Core.Api.Transmittal
 {
     public class DataRequest
     {
