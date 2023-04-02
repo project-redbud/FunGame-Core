@@ -82,5 +82,16 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
             Working = true;
             Work = default;
         }
+
+        /// <summary>
+        /// 调用Socket.Send() == Success后，请等待任务完成
+        /// </summary>
+        protected void WaitForWorkDone()
+        {
+            while (true)
+            {
+                if (!Working) break;
+            }
+        }
     }
 }
