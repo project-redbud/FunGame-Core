@@ -149,9 +149,14 @@
     {
         public override string Message => "退出房间失败 (#10030)";
     }
+    
+    public class CreateRoomException : Exception
+    {
+        public override string Message => "创建房间失败 (#10031)";
+    }
 
     public class GetInstanceException : Exception
     {
-        public override string Message => "构造对象实例遇到错误 (#10031)";
+        public override string Message => "构造对象实例遇到错误 (#10032)";
     }
 }
