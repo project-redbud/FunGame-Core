@@ -56,6 +56,7 @@
         Login,
         CheckLogin,
         Logout,
+        ForceLogout,
         Disconnect,
         HeartBeat,
         IntoRoom,
