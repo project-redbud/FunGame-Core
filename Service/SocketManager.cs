@@ -33,7 +33,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <returns>服务器端专用Socket</returns>
         internal static Socket? StartListening(int Port = 22222, int MaxConnection = 0)
         {
-            if (MaxConnection <= 0) MaxConnection = SocketSet.MaxConnection_General;
+            if (MaxConnection <= 0) MaxConnection = SocketSet.MaxConnection_2C2G;
             try
             {
                 _ServerSocket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
