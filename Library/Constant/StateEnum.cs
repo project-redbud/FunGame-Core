@@ -8,12 +8,6 @@
         Cancel
     }
 
-    public enum CreateRoomState
-    {
-        Creating,
-        Success
-    }
-
     public enum RoomState
     {
         Created,

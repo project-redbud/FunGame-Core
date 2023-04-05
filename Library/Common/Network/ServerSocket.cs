@@ -34,7 +34,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
 
         public static ServerSocket StartListening(int Port = 22222, int MaxConnection = 0)
         {
-            if (MaxConnection <= 0) MaxConnection = SocketSet.MaxConnection_General;
+            if (MaxConnection <= 0) MaxConnection = SocketSet.MaxConnection_2C2G;
             System.Net.Sockets.Socket? socket = SocketManager.StartListening(Port, MaxConnection);
             if (socket != null) return new ServerSocket(socket, Port);
             else throw new SocketCreateListenException();

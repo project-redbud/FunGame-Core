@@ -20,7 +20,7 @@
     {
         public const int MaxRetryTimes = 20;
         public const int MaxConnection_1C2G = 10;
-        public const int MaxConnection_General = 20;
+        public const int MaxConnection_2C2G = 20;
         public const int MaxConnection_4C4G = 40;
 
         public const string Socket = "Socket";
@@ -58,5 +58,13 @@
         public const string Store = "Store";
         public const string RoomSetting = "RoomSetting";
         public const string UserCenter = "UserCenter";
+    }
+
+    public class GameMode
+    {
+        public const string GameMode_Mix = "混战模式";
+        public const string GameMode_Team = "团队模式";
+        public const string GameMode_MixHasPass = "带密码的混战模式";
+        public const string GameMode_TeamHasPass = "带密码的团队模式";
     }
 }

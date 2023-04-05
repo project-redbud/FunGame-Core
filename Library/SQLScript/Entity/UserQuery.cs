@@ -25,12 +25,12 @@
             return $"{Select_Users} {Constant.Command_Where} {Column_Username} = '{Username}' and {Column_Password} = '{Password}'";
         }
         
-        public static string Select_DuplicateEmail(string Email)
+        public static string Select_IsExistEmail(string Email)
         {
             return $"{Select_Users} {Constant.Command_Where} {Column_Email} = '{Email}'";
         }
         
-        public static string Select_DuplicateUsername(string Username)
+        public static string Select_IsExistUsername(string Username)
         {
             return $"{Select_Users} {Constant.Command_Where} {Column_Username} = '{Username}'";
         }
