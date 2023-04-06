@@ -8,10 +8,10 @@ namespace Milimoe.FunGame.Core.Interface
     /// </summary>
     public interface IConnectEvent
     {
-        public EventResult BeforeConnectEvent(object sender, GeneralEventArgs e);
-        public EventResult AfterConnectEvent(object sender, GeneralEventArgs e);
-        public EventResult SucceedConnectEvent(object sender, GeneralEventArgs e);
-        public EventResult FailedConnectEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeConnectEvent(object sender, ConnectEventArgs e);
+        public EventResult AfterConnectEvent(object sender, ConnectEventArgs e);
+        public EventResult SucceedConnectEvent(object sender, ConnectEventArgs e);
+        public EventResult FailedConnectEvent(object sender, ConnectEventArgs e);
     }
 
     public interface IDisconnectEvent
@@ -24,10 +24,10 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface ILoginEvent
     {
-        public EventResult BeforeLoginEvent(object sender, GeneralEventArgs e);
-        public EventResult AfterLoginEvent(object sender, GeneralEventArgs e);
-        public EventResult SucceedLoginEvent(object sender, GeneralEventArgs e);
-        public EventResult FailedLoginEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeLoginEvent(object sender, LoginEventArgs e);
+        public EventResult AfterLoginEvent(object sender, LoginEventArgs e);
+        public EventResult SucceedLoginEvent(object sender, LoginEventArgs e);
+        public EventResult FailedLoginEvent(object sender, LoginEventArgs e);
     }
 
     public interface ILogoutEvent
@@ -48,34 +48,34 @@ namespace Milimoe.FunGame.Core.Interface
 
     public interface IIntoRoomEvent
     {
-        public EventResult BeforeIntoRoomEvent(object sender, GeneralEventArgs e);
-        public EventResult AfterIntoRoomEvent(object sender, GeneralEventArgs e);
-        public EventResult SucceedIntoRoomEvent(object sender, GeneralEventArgs e);
-        public EventResult FailedIntoRoomEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeIntoRoomEvent(object sender, RoomEventArgs e);
+        public EventResult AfterIntoRoomEvent(object sender, RoomEventArgs e);
+        public EventResult SucceedIntoRoomEvent(object sender, RoomEventArgs e);
+        public EventResult FailedIntoRoomEvent(object sender, RoomEventArgs e);
     }
 
     public interface ISendTalkEvent
     {
-        public EventResult BeforeSendTalkEvent(object sender, GeneralEventArgs e);
-        public EventResult AfterSendTalkEvent(object sender, GeneralEventArgs e);
-        public EventResult SucceedSendTalkEvent(object sender, GeneralEventArgs e);
-        public EventResult FailedSendTalkEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeSendTalkEvent(object sender, SendTalkEventArgs e);
+        public EventResult AfterSendTalkEvent(object sender, SendTalkEventArgs e);
+        public EventResult SucceedSendTalkEvent(object sender, SendTalkEventArgs e);
+        public EventResult FailedSendTalkEvent(object sender, SendTalkEventArgs e);
     }
 
     public interface ICreateRoomEvent
     {
-        public EventResult BeforeCreateRoomEvent(object sender, GeneralEventArgs e);
-        public EventResult AfterCreateRoomEvent(object sender, GeneralEventArgs e);
-        public EventResult SucceedCreateRoomEvent(object sender, GeneralEventArgs e);
-        public EventResult FailedCreateRoomEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeCreateRoomEvent(object sender, RoomEventArgs e);
+        public EventResult AfterCreateRoomEvent(object sender, RoomEventArgs e);
+        public EventResult SucceedCreateRoomEvent(object sender, RoomEventArgs e);
+        public EventResult FailedCreateRoomEvent(object sender, RoomEventArgs e);
     }
 
     public interface IQuitRoomEvent
     {
-        public EventResult BeforeQuitRoomEvent(object sender, GeneralEventArgs e);
-        public EventResult AfterQuitRoomEvent(object sender, GeneralEventArgs e);
-        public EventResult SucceedQuitRoomEvent(object sender, GeneralEventArgs e);
-        public EventResult FailedQuitRoomEvent(object sender, GeneralEventArgs e);
+        public EventResult BeforeQuitRoomEvent(object sender, RoomEventArgs e);
+        public EventResult AfterQuitRoomEvent(object sender, RoomEventArgs e);
+        public EventResult SucceedQuitRoomEvent(object sender, RoomEventArgs e);
+        public EventResult FailedQuitRoomEvent(object sender, RoomEventArgs e);
     }
 
     public interface IChangeRoomSettingEvent
