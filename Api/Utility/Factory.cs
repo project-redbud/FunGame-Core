@@ -20,6 +20,15 @@ namespace Milimoe.FunGame.Core.Api.Utility
         }
 
         /// <summary>
+        /// 获取大厅（-1号房）
+        /// </summary>
+        /// <returns></returns>
+        internal static Room GetHall()
+        {
+            return GetRoom(null, null);
+        }
+
+        /// <summary>
         /// 获取Skill实例，默认返回PassiveSkill
         /// </summary>
         /// <param name="DataSet">SkillRow</param>

@@ -17,15 +17,13 @@ namespace Milimoe.FunGame.Core.Library.Server
             _Server = Server;
         }
 
-        public List<Room> GetRoomList()
-        {
-            return _List.Values.Cast<Room>().ToList();
-        }
+        public Room? this[string RoomID] => GetRoom(RoomID);
+
+        public Hashtable GetHashTable => _List;
+
+        public List<Room> GetRoomList => _List.Values.Cast<Room>().ToList();
         
-        public List<string> GetRoomIDList()
-        {
-            return _List.Keys.Cast<string>().ToList();
-        }
+        public List<string> GetRoomIDList => _List.Keys.Cast<string>().ToList();
 
         public void Clear()
         {
