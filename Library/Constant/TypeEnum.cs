@@ -25,6 +25,7 @@
 
     public enum RoomType
     {
+        None,
         Mix,
         Team,
         MixHasPass,
@@ -66,7 +67,8 @@
         CheckReg,
         CreateRoom,
         UpdateRoom,
-        ChangeRoomSetting
+        ChangeRoomSetting,
+        MatchRoom
     }
 
     public enum DataRequestType

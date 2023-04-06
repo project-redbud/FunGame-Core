@@ -16,15 +16,7 @@ namespace Milimoe.FunGame.Core.Entity
         public User? RoomMaster { get; set; }
         public RoomType RoomType { get; set; }
         public RoomState RoomState { get; set; }
-        public bool HasPass
-        {
-            get
-            {
-                if (RoomType == RoomType.MixHasPass || RoomType == RoomType.TeamHasPass)
-                    return true;
-                else return false;
-            }
-        }
+        public bool HasPass => Password.Trim() != "";
         public string Password { get; set; } = "";
         public GameStatistics? Statistics { get; set; } = null;
 
@@ -40,6 +32,16 @@ namespace Milimoe.FunGame.Core.Entity
                 RoomType = (RoomType)Convert.ToInt32(DrRoom[RoomQuery.Column_RoomType]);
                 RoomState = (RoomState)Convert.ToInt32(DrRoom[RoomQuery.Column_RoomState]);
                 Password = (string)DrRoom[RoomQuery.Column_Password];
+            }
+            else
+            {
+                Id = 0;
+                Roomid = "-1";
+                CreateTime = DateTime.MinValue;
+                RoomMaster = null;
+                RoomType = RoomType.None;
+                RoomState = RoomState.Created;
+                Password = "";
             }
         }
 
