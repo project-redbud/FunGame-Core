@@ -1,6 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Interface.Base;
 
-namespace Milimoe.FunGame.Core.Library.Server
+namespace Milimoe.FunGame.Core.Library.Common.Architecture
 {
     public class SmtpClientInfo : IMailSender
     {

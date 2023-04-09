@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using Milimoe.FunGame.Core.Library.Server;
+using Milimoe.FunGame.Core.Interface.Base;
 
 namespace Milimoe.FunGame.Core.Service
 {
@@ -18,7 +18,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 可参与高并发的字典，但添加效率较低
         /// </summary>
-        private ConcurrentDictionary<string, BaseModel> Models { get; } = new();
+        private ConcurrentDictionary<string, IServerModel> Models { get; } = new();
 
         /// <summary>
         /// Init ModelManager
@@ -39,7 +39,7 @@ namespace Milimoe.FunGame.Core.Service
         /// </summary>
         /// <param name="name">Model的Key</param>
         /// <returns>Model对象</returns>
-        internal BaseModel this[string name] => Models[name];
+        internal IServerModel this[string name] => Models[name];
 
         /// <summary>
         /// 向Model管理器中添加Model
@@ -47,7 +47,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="name">Model的Key</param>
         /// <param name="t">Model对象</param>
         /// <returns>True：操作成功</returns>
-        internal bool Add(string name, BaseModel t)
+        internal bool Add(string name, IServerModel t)
         {
             if (Models.Count + 1 > MaxModel) return false;
             return Models.TryAdd(name, t);
@@ -69,7 +69,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="name">Model的Key</param>
         /// <param name="t">Model对象</param>
         /// <returns>被移除的Model</returns>
-        internal bool Remove(string name, ref BaseModel? t)
+        internal bool Remove(string name, ref IServerModel? t)
         {
             return Models.TryRemove(name, out t);
         }
@@ -79,9 +79,9 @@ namespace Milimoe.FunGame.Core.Service
         /// </summary>
         /// <param name="name">Model的Key</param>
         /// <returns>被移除的Model</returns>
-        internal BaseModel? RemoveAndGet(string name)
+        internal IServerModel? RemoveAndGet(string name)
         {
-            Models.TryRemove(name, out BaseModel? result);
+            Models.TryRemove(name, out IServerModel? result);
             return result;
         }
 
@@ -102,7 +102,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 获取Model对象的列表
         /// </summary>
-        internal List<BaseModel> GetList()
+        internal List<IServerModel> GetList()
         {
             return Models.Values.ToList();
         }

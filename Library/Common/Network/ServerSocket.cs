@@ -1,6 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Core.Library.Server;
 using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
@@ -15,7 +14,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public string ServerName { get; } = "";
         public string ServerNotice { get; } = "";
         public bool Connected => Instance != null && Instance.Connected;
-        public List<BaseModel> GetUsersList => OnlineUsers.GetList();
+        public List<IServerModel> GetUsersList => OnlineUsers.GetList();
         public List<string> BannedList { get; } = new();
         public int UsersCount => OnlineUsers.Count;
         public int BannedCount => BannedList.Count;
@@ -52,7 +51,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             throw new SocketGetClientException();
         }
 
-        public bool AddUser(string UserName, BaseModel t)
+        public bool AddUser(string UserName, IServerModel t)
         {
             return OnlineUsers.Add(UserName, t);
         }
@@ -67,7 +66,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             return OnlineUsers.ContainsKey(UserName);
         }
         
-        public BaseModel GetUser(string UserName)
+        public IServerModel GetUser(string UserName)
         {
             return OnlineUsers[UserName];
         }
