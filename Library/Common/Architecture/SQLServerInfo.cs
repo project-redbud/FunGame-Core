@@ -1,4 +1,4 @@
-﻿namespace Milimoe.FunGame.Core.Library.Server
+﻿namespace Milimoe.FunGame.Core.Library.Common.Architecture
 {
     public class SQLServerInfo
     {

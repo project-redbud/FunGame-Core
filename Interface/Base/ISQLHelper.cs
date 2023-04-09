@@ -1,6 +1,6 @@
-﻿using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Core.Library.Server;
-using System.Data;
+﻿using System.Data;
+using Milimoe.FunGame.Core.Library.Common.Architecture;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Interface.Base
 {

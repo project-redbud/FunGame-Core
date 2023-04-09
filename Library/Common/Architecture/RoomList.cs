@@ -2,7 +2,7 @@
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Network;
 
-namespace Milimoe.FunGame.Core.Library.Server
+namespace Milimoe.FunGame.Core.Library.Common.Architecture
 {
     public class RoomList
     {
@@ -22,7 +22,7 @@ namespace Milimoe.FunGame.Core.Library.Server
         public Hashtable GetHashTable => _List;
 
         public List<Room> GetRoomList => _List.Values.Cast<Room>().ToList();
-        
+
         public List<string> GetRoomIDList => _List.Keys.Cast<string>().ToList();
 
         public void Clear()
@@ -34,7 +34,7 @@ namespace Milimoe.FunGame.Core.Library.Server
         {
             _List.Add(Room.Roomid, Room);
         }
-        
+
         public void AddRooms(List<Room> Rooms)
         {
             foreach (Room Room in Rooms)
@@ -42,7 +42,7 @@ namespace Milimoe.FunGame.Core.Library.Server
                 _List.Add(Room.Roomid, Room);
             }
         }
-        
+
         public void RemoveRoom(Room Room)
         {
             _List.Remove(Room.Roomid);
