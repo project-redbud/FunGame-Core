@@ -50,11 +50,6 @@ namespace Milimoe.FunGame.Core.Entity
             return other.Id == Id;
         }
 
-        public override IEnumerator<Room> GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
         public override bool Equals(IBaseEntity? other)
         {
             return Equals(other);
