@@ -7,6 +7,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
     {
         // Static Variable
         public static Empty EntityInstance { get; } = new();
+        public static User UnknownUserInstance { get; } = new();
         public static Room HallInstance { get; } = Api.Utility.Factory.GetHall();
         public static Encoding DefaultEncoding { get; } = Encoding.Unicode;
 

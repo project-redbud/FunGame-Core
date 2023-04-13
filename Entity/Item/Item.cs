@@ -10,10 +10,5 @@ namespace Milimoe.FunGame.Core.Entity
         public bool Active { get; set; }
         public bool Enable { get; set; }
         public Character? Character { get; set; } = null;
-
-        public override IEnumerator<IBaseEntity> GetEnumerator()
-        {
-            return GetEnumerator();
-        }
     }
 }

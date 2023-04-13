@@ -136,11 +136,13 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 DataSet? DsRoom = DataSets[0];
                 DataSet? DsUser = DataSets[1];
+                object entity = General.HallInstance;
+                list.Add((T)entity);
                 if (DsRoom != null && DsRoom.Tables[0].Rows.Count > 0)
                 {
                     for (int i = 0; i < DsRoom.Tables[0].Rows.Count; i++)
                     {
-                        object entity = GetRoom(DsRoom, DsUser, i);
+                        entity = GetRoom(DsRoom, DsUser, i);
                         list.Add((T)entity);
                     }
                 }

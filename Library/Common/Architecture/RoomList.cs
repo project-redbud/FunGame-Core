@@ -1,29 +1,25 @@
 ﻿using System.Collections;
 using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Network;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Library.Common.Architecture
 {
-    public class RoomList
+    public class RoomList : IEnumerable
     {
-        public ServerSocket Server => _Server;
-        public int Count => _List.Count;
-
-        private readonly ServerSocket _Server;
         private readonly Hashtable _List = new();
 
-        public RoomList(ServerSocket Server)
+        public int Count => _List.Count;
+
+        public List<Room> ListRoom => _List.Values.Cast<Room>().ToList();
+
+        public List<string> ListRoomID => _List.Keys.Cast<string>().ToList();
+
+        public RoomList()
         {
-            _Server = Server;
+
         }
-
+        
         public Room? this[string RoomID] => GetRoom(RoomID);
-
-        public Hashtable GetHashTable => _List;
-
-        public List<Room> GetRoomList => _List.Values.Cast<Room>().ToList();
-
-        public List<string> GetRoomIDList => _List.Keys.Cast<string>().ToList();
 
         public void Clear()
         {
@@ -56,6 +52,31 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
                 room = (Room?)_List[RoomID];
             }
             return room;
+        }
+
+        public bool IsExist(string RoomID)
+        {
+            return _List.ContainsKey(RoomID);
+        }
+
+        public User GetRoomMaster(string RoomID)
+        {
+            foreach (Room room in ListRoom)
+            {
+                if (room.Roomid == RoomID && room.RoomMaster != null)
+                {
+                    return room.RoomMaster;
+                }
+            }
+            return General.UnknownUserInstance;
+        }
+
+        public IEnumerator GetEnumerator()
+        {
+            foreach(Room room in ListRoom)
+            {
+                yield return room;
+            }
         }
     }
 }

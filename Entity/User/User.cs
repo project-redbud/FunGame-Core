@@ -56,10 +56,5 @@ namespace Milimoe.FunGame.Core.Entity
             if (((User)other).Id == Id) return true;
             return false;
         }
-
-        public override IEnumerator<IBaseEntity> GetEnumerator()
-        {
-            return GetEnumerator();
-        }
     }
 }
