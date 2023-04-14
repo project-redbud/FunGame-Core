@@ -231,6 +231,9 @@ namespace Milimoe.FunGame.Core.Service
                 SocketMessageType.CreateRoom => SocketSet.CreateRoom,
                 SocketMessageType.UpdateRoom => SocketSet.UpdateRoom,
                 SocketMessageType.ChangeRoomSetting => SocketSet.ChangeRoomSetting,
+                SocketMessageType.MatchRoom => SocketSet.MatchRoom,
+                SocketMessageType.UpdateRoomMaster => SocketSet.UpdateRoomMaster,
+                SocketMessageType.DissolveRoom => SocketSet.DissolveRoom,
                 _ => SocketSet.Unknown,
             };
         }

@@ -39,6 +39,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
             }
         }
 
+        public void RemoveRoom(string RoomID)
+        {
+            _List.Remove(RoomID);
+        }
+        
         public void RemoveRoom(Room Room)
         {
             _List.Remove(Room.Roomid);
@@ -69,6 +74,15 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
                 }
             }
             return General.UnknownUserInstance;
+        }
+
+        public void SetRoomMaster(string RoomID, User User)
+        {
+            Room? room = this[RoomID];
+            if (room != null)
+            {
+                room.RoomMaster = User;
+            }
         }
 
         public IEnumerator GetEnumerator()
