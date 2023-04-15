@@ -73,7 +73,7 @@
         ChangeRoomSetting,
         MatchRoom,
         UpdateRoomMaster,
-        DissolveRoom
+        GetRoomPlayerCount
     }
 
     public enum DataRequestType
@@ -271,7 +271,7 @@
         Chat,
         MatchRoom,
         UpdateRoomMaster,
-        DissolveRoom
+        GetRoomPlayerCount
     }
 
     public enum RegInvokeType

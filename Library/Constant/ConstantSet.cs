@@ -17,7 +17,9 @@
     }
 
     /// <summary>
-    /// 需要同步更新Milimoe.FunGame.Core.Library.Constant.SocketMessageType
+    /// 需要同步更新
+    /// Milimoe.FunGame.Core.Library.Constant.SocketMessageType, 
+    /// Milimoe.FunGame.Core.Service.SocketManager.GetTypeString(SocketMessageType type)
     /// </summary>
     public class SocketSet
     {
@@ -45,7 +47,7 @@
         public const string ChangeRoomSetting = "ChangeRoomSetting";
         public const string MatchRoom = "MatchRoom";
         public const string UpdateRoomMaster = "UpdateRoomMaster";
-        public const string DissolveRoom = "DissolveRoom";
+        public const string GetRoomPlayerCount = "GetRoomPlayerCount";
     }
 
     public class ReflectionSet

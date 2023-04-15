@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Numerics;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
@@ -7,6 +8,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
     public class RoomList : IEnumerable
     {
         private readonly Hashtable _List = new();
+        private readonly Hashtable _PlayerList = new();
 
         public int Count => _List.Count;
 
@@ -24,29 +26,44 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
         public void Clear()
         {
             _List.Clear();
+            _PlayerList.Clear();
         }
 
         public void AddRoom(Room Room)
         {
             _List.Add(Room.Roomid, Room);
+            _PlayerList.Add(Room.Roomid, new List<User>());
         }
 
         public void AddRooms(List<Room> Rooms)
         {
             foreach (Room Room in Rooms)
             {
-                _List.Add(Room.Roomid, Room);
+                AddRoom(Room);
             }
         }
 
         public void RemoveRoom(string RoomID)
         {
             _List.Remove(RoomID);
+            _PlayerList.Remove(RoomID);
         }
         
         public void RemoveRoom(Room Room)
         {
-            _List.Remove(Room.Roomid);
+            RemoveRoom(Room.Roomid);
+        }
+
+        public void IntoRoom(string RoomID, User Player)
+        {
+            if (RoomID == "-1" || Player.Id == 0) return;
+            GetPlayerList(RoomID).Add(Player);
+        }
+        
+        public void QuitRoom(string RoomID, User Player)
+        {
+            if (RoomID == "-1" || Player.Id == 0) return;
+            GetPlayerList(RoomID).Remove(Player);
         }
 
         public Room? GetRoom(string RoomID)
@@ -84,6 +101,19 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
                 room.RoomMaster = User;
             }
         }
+
+        public List<User> GetPlayerList(string RoomID)
+        {
+            List<User>? list = new();
+            if (_PlayerList.ContainsKey(RoomID) && _PlayerList[RoomID] != null)
+            {
+                list = (List<User>?)_PlayerList[RoomID];
+            }
+            list ??= new();
+            return list;
+        }
+
+        public int GetPlayerCount(string RoomID) => GetPlayerList(RoomID).Count;
 
         public IEnumerator GetEnumerator()
         {
