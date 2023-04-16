@@ -48,6 +48,9 @@
         Red
     }
 
+    /// <summary>
+    /// 需要同步更新Milimoe.FunGame.Core.Library.Constant.SocketSet
+    /// </summary>
     public enum SocketMessageType
     {
         Unknown,
@@ -68,7 +71,9 @@
         CreateRoom,
         UpdateRoom,
         ChangeRoomSetting,
-        MatchRoom
+        MatchRoom,
+        UpdateRoomMaster,
+        GetRoomPlayerCount
     }
 
     public enum DataRequestType
@@ -263,7 +268,10 @@
         QuitRoom,
         UpdateRoom,
         CreateRoom,
-        Chat
+        Chat,
+        MatchRoom,
+        UpdateRoomMaster,
+        GetRoomPlayerCount
     }
 
     public enum RegInvokeType

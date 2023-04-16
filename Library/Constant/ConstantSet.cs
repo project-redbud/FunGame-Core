@@ -16,6 +16,11 @@
         }
     }
 
+    /// <summary>
+    /// 需要同步更新
+    /// Milimoe.FunGame.Core.Library.Constant.SocketMessageType, 
+    /// Milimoe.FunGame.Core.Service.SocketManager.GetTypeString(SocketMessageType type)
+    /// </summary>
     public class SocketSet
     {
         public const int MaxRetryTimes = 20;
@@ -40,6 +45,9 @@
         public const string CreateRoom = "CreateRoom";
         public const string UpdateRoom = "UpdateRoom";
         public const string ChangeRoomSetting = "ChangeRoomSetting";
+        public const string MatchRoom = "MatchRoom";
+        public const string UpdateRoomMaster = "UpdateRoomMaster";
+        public const string GetRoomPlayerCount = "GetRoomPlayerCount";
     }
 
     public class ReflectionSet
