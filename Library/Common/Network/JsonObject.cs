@@ -5,7 +5,7 @@ using Milimoe.FunGame.Core.Library.Constant;
 namespace Milimoe.FunGame.Core.Library.Common.Network
 {
     [Serializable]
-    public class JsonObject
+    public struct JsonObject
     {
         public SocketMessageType MessageType { get; } = SocketMessageType.Unknown;
         public Guid Token { get; }
@@ -34,7 +34,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             return new JsonObject(MessageType, Token, Parameters).JsonString;
         }
 
-        public static JsonObject? GetObject(string JsonString)
+        public static JsonObject GetObject(string JsonString)
         {
             return JsonConvert.DeserializeObject<JsonObject>(JsonString);
         }

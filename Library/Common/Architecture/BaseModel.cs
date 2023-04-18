@@ -4,7 +4,7 @@ using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Library.Common.Architecture
 {
-    public class BaseModel : ISocketHandler, IDisposable
+    public class BaseController : ISocketHandler, IDisposable
     {
         /// <summary>
         /// 接收到的SocketObject实例
@@ -25,7 +25,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
         /// 继承请调用base构造
         /// </summary>
         /// <param name="socket">Socket</param>
-        public BaseModel(Socket? socket)
+        public BaseController(Socket? socket)
         {
             if (socket != null)
             {
@@ -34,7 +34,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
             }
             else throw new SocketCreateReceivingException();
         }
-
+        
         /// <summary>
         /// 继承请重写此方法
         /// </summary>
