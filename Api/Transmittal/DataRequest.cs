@@ -42,7 +42,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             return default;
         }
 
-        private class Request : BaseModel
+        private class Request : BaseController
         {
             public Hashtable RequestData { get; } = new();
             public Hashtable ResultData { get; } = new();

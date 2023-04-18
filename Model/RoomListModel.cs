@@ -1,11 +1,10 @@
 ﻿using System.Collections;
-using System.Numerics;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Library.Common.Architecture
+namespace Milimoe.FunGame.Core.Model
 {
-    public class RoomList : IEnumerable
+    public class RoomListModel : IEnumerable
     {
         private readonly Hashtable _List = new();
         private readonly Hashtable _PlayerList = new();
@@ -16,11 +15,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
 
         public List<string> ListRoomID => _List.Keys.Cast<string>().ToList();
 
-        public RoomList()
+        public RoomListModel()
         {
 
         }
-        
+
         public Room? this[string RoomID] => GetRoom(RoomID);
 
         public void Clear()
@@ -48,7 +47,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
             _List.Remove(RoomID);
             _PlayerList.Remove(RoomID);
         }
-        
+
         public void RemoveRoom(Room Room)
         {
             RemoveRoom(Room.Roomid);
@@ -59,7 +58,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
             if (RoomID == "-1" || Player.Id == 0) return;
             GetPlayerList(RoomID).Add(Player);
         }
-        
+
         public void QuitRoom(string RoomID, User Player)
         {
             if (RoomID == "-1" || Player.Id == 0) return;
@@ -117,7 +116,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
 
         public IEnumerator GetEnumerator()
         {
-            foreach(Room room in ListRoom)
+            foreach (Room room in ListRoom)
             {
                 yield return room;
             }
