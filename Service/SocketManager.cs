@@ -179,7 +179,7 @@ namespace Milimoe.FunGame.Core.Service
             }
             return result;
         }
-
+        
         /// <summary>
         /// 用于服务器接收客户端信息
         /// </summary>
@@ -203,7 +203,62 @@ namespace Milimoe.FunGame.Core.Service
             }
             return result;
         }
-        
+
+        /// <summary>
+        /// 用于客户端接收服务器信息（数组版）
+        /// </summary>
+        /// <returns>SocketObjects</returns>
+        internal static Library.Common.Network.SocketObject[] ReceiveArray()
+        {
+            List<Library.Common.Network.SocketObject> result = new();
+            if (Socket != null)
+            {
+                // 从服务器接收消息
+                byte[] buffer = new byte[General.SocketByteSize];
+                int length = Socket.Receive(buffer);
+                if (length > 0)
+                {
+                    string msg = General.DefaultEncoding.GetString(buffer, 0, length);
+                    Library.Common.Network.JsonObject[] jsons = Library.Common.Network.JsonObject.GetObjects(msg);
+                    foreach (Library.Common.Network.JsonObject json in jsons)
+                    {
+                        // 客户端接收消息，广播ScoketObject到每个UIModel
+                        Library.Common.Network.SocketObject obj = new(json);
+                        result.Add(obj);
+                        OnSocketReceive(obj);
+                    }
+                }
+            }
+            return result.ToArray();
+        }
+
+        /// <summary>
+        /// 用于服务器接收客户端信息（数组版）
+        /// </summary>
+        /// <param name="ClientSocket">客户端Socket</param>
+        /// <returns>SocketObjects</returns>
+        internal static Library.Common.Network.SocketObject[] ReceiveArray(Socket ClientSocket)
+        {
+            List<Library.Common.Network.SocketObject> result = new();
+            if (ClientSocket != null)
+            {
+                // 从客户端接收消息
+                byte[] buffer = new byte[General.SocketByteSize];
+                int length = ClientSocket.Receive(buffer);
+                if (length > 0)
+                {
+                    string msg = General.DefaultEncoding.GetString(buffer, 0, length);
+                    Library.Common.Network.JsonObject[] jsons = Library.Common.Network.JsonObject.GetObjects(msg);
+                    foreach (Library.Common.Network.JsonObject json in jsons)
+                    {
+                        Library.Common.Network.SocketObject so = new(json);
+                        result.Add(so);
+                    }
+                }
+            }
+            return result.ToArray();
+        }
+
         /// <summary>
         /// 将通信类型的枚举转换为字符串
         /// </summary>
