@@ -38,6 +38,30 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         {
             return JsonConvert.DeserializeObject<JsonObject>(JsonString);
         }
+
+        public static JsonObject[] GetObjects(string JsonString)
+        {
+            List<JsonObject> jsons = new();
+
+            JsonSerializer serializer = new();
+            JsonTextReader reader = new(new StringReader(JsonString))
+            {
+                SupportMultipleContent = true
+            };
+
+            while (true)
+            {
+                if (!reader.Read())
+                {
+                    break;
+                }
+
+                JsonObject json = serializer.Deserialize<JsonObject>(reader);
+
+                jsons.Add(json);
+            }
+
+            return jsons.ToArray();
+        }
     }
-    
 }

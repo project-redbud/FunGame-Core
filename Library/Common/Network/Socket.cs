@@ -71,6 +71,27 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
                 throw new SocketWrongInfoException();
             }
         }
+        
+        public SocketObject[] ReceiveArray()
+        {
+            try
+            {
+                SocketObject[] result = SocketManager.ReceiveArray();
+                foreach (SocketObject obj in result)
+                {
+                    if (obj.SocketType == SocketMessageType.HeartBeat)
+                    {
+                        if (WaitHeartBeatReply != null && !WaitHeartBeatReply.IsCompleted) WaitHeartBeatReply.Wait(1);
+                        _HeartBeatFaileds = 0;
+                    }
+                }
+                return result;
+            }
+            catch
+            {
+                throw new SocketWrongInfoException();
+            }
+        }
 
         public void BindEvent(Delegate Method, bool Remove = false)
         {

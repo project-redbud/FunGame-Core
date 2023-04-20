@@ -49,6 +49,18 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
                 throw new SocketWrongInfoException();
             }
         }
+        
+        public SocketObject[] ReceiveArray()
+        {
+            try
+            {
+                return SocketManager.ReceiveArray(Instance);
+            }
+            catch
+            {
+                throw new SocketWrongInfoException();
+            }
+        }
 
         public SocketResult Send(SocketMessageType type, params object[] objs)
         {
