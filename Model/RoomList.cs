@@ -4,7 +4,7 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Model
 {
-    public class RoomListModel : IEnumerable
+    public class RoomList : IEnumerable
     {
         private readonly Hashtable _List = new();
         private readonly Hashtable _PlayerList = new();
@@ -15,7 +15,7 @@ namespace Milimoe.FunGame.Core.Model
 
         public List<string> ListRoomID => _List.Keys.Cast<string>().ToList();
 
-        public RoomListModel()
+        public RoomList()
         {
 
         }
