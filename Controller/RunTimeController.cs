@@ -4,7 +4,20 @@ namespace Milimoe.FunGame.Core.Controller
 {
     public abstract class RunTimeController
     {
+        public abstract bool Connected { get; }
+
+        public abstract Task<bool> GetServerConnection();
+
         public abstract Task<ConnectResult> Connect();
-        public abstract void Disconnect();
+
+        public abstract bool Disconnect();
+
+        public abstract bool Close(Exception? e = null);
+
+        public abstract bool Error(Exception e);
+
+        public abstract Task AutoLogin(string Username, string Password, string AutoKey);
+
+        public abstract void WritelnSystemInfo(string msg);
     }
 }
