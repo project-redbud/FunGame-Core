@@ -238,7 +238,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns></returns>
         public static string Encrypt(this string msg, string key)
         {
-            return Encryption.HmacSha512(msg, Encryption.HmacSha512(msg, key));
+            return Encryption.HmacSha512(msg, Encryption.HmacSha512(msg, key.ToLower()));
         }
     }
 
