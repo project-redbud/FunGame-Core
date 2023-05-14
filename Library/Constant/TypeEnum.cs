@@ -78,7 +78,7 @@
 
     public enum DataRequestType
     {
-
+        UnKnown
     }
 
     public enum SocketRuntimeType
