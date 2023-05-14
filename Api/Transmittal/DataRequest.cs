@@ -8,7 +8,6 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
 {
     public class DataRequest
     {
-        private static readonly ConcurrentQueue<Request> Queue = new();
         private readonly Request Worker;
 
         public DataRequest(Socket Socket, DataRequestType RequestType)
@@ -23,11 +22,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
 
         public async Task SendRequest()
         {
-            Queue.AddAsync(Worker);
-            if (await Worker.SendRequest() == RequestResult.Success)
-            {
-                Queue.Delete();
-            }
+            await Worker.SendRequest();
         }
 
         public object? this[string key] => Worker.ResultData[key];
