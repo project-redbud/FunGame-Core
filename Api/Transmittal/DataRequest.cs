@@ -8,7 +8,6 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
 {
     public class DataRequest
     {
-        private static readonly ConcurrentQueue<Request> Queue = new();
         private readonly Request Worker;
 
         public DataRequest(Socket Socket, DataRequestType RequestType)
@@ -23,11 +22,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
 
         public async Task SendRequest()
         {
-            Queue.AddAsync(Worker);
-            if (await Worker.SendRequest() == RequestResult.Success)
-            {
-                Queue.Delete();
-            }
+            await Worker.SendRequest();
         }
 
         public object? this[string key] => Worker.ResultData[key];
@@ -45,11 +40,12 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         private class Request : BaseModel
         {
             public Hashtable RequestData { get; } = new();
-            public Hashtable ResultData { get; } = new();
+            public Hashtable ResultData => _Result;
 
             private bool JobFinish = false;
             private readonly Socket? Socket;
             private readonly DataRequestType RequestType;
+            private Hashtable _Result = new();
 
             public async Task<RequestResult> SendRequest()
             {
@@ -88,11 +84,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                     if (type == RequestType)
                     {
                         Dispose();
-                        switch (RequestType)
-                        {
-                            default:
-                                break;
-                        }
+                        _Result = SocketObject.GetParam<Hashtable>(1) ?? new();
                         JobFinish = true;
                     }
                 }
