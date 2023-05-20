@@ -1,9 +1,7 @@
 ﻿using System.Data;
-using System.Collections;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.SQLScript.Entity;
-using System.Linq;
 
 namespace Milimoe.FunGame.Core.Entity
 {
@@ -12,7 +10,7 @@ namespace Milimoe.FunGame.Core.Entity
         public override long Id { get => base.Id ; set => base.Id = value; }
         public string Roomid { get; set; } = "";
         public DateTime CreateTime { get; set; } = DateTime.Now;
-        public Hashtable PlayerList { get; set; } = new Hashtable();
+        public Dictionary<string, User> Players { get; set; } = new();
         public User? RoomMaster { get; set; }
         public RoomType RoomType { get; set; }
         public RoomState RoomState { get; set; }
@@ -47,12 +45,12 @@ namespace Milimoe.FunGame.Core.Entity
 
         public bool Equals(Room other)
         {
-            return other.Id == Id;
+            return Equals(other);
         }
 
         public override bool Equals(IBaseEntity? other)
         {
-            return Equals(other);
+            return other?.Id == Id;
         }
 
         private static int GetUserRowIndex(DataSet? DsUser, long UID)
