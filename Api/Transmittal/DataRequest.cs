@@ -3,7 +3,6 @@ using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Milimoe.FunGame.Core.Api.Transmittal
 {
