@@ -30,6 +30,7 @@
 
         public const string Socket = "Socket";
         public const string Unknown = "Unknown";
+        public const string DataRequest = "DataRequest";
         public const string Connect = "Connect";
         public const string GetNotice = "GetNotice";
         public const string Login = "Login";
