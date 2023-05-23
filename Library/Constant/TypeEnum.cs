@@ -8,7 +8,8 @@
         Inventory,
         RoomSetting,
         Store,
-        UserCenter
+        UserCenter,
+        ForgetPassword
     }
 
     public enum OpenFormType
@@ -78,7 +79,8 @@
 
     public enum DataRequestType
     {
-        UnKnown
+        UnKnown,
+        GetFindPasswordVerifyCode
     }
 
     public enum SocketRuntimeType

@@ -268,6 +268,7 @@ namespace Milimoe.FunGame.Core.Service
         {
             return type switch
             {
+                SocketMessageType.DataRequest => SocketSet.DataRequest,
                 SocketMessageType.Connect => SocketSet.Connect,
                 SocketMessageType.GetNotice => SocketSet.GetNotice,
                 SocketMessageType.Login => SocketSet.Login,

@@ -1,13 +1,17 @@
 ﻿using System.Collections;
-using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Library.Exception;
 
 namespace Milimoe.FunGame.Core.Api.Transmittal
 {
     public class DataRequest
     {
+        public bool Success => Worker.Success;
+        public string Error => Worker.Error;
+        public object? this[string key] => Worker.ResultData[key];
+
         private readonly Request Worker;
 
         public DataRequest(Socket Socket, DataRequestType RequestType)
@@ -20,12 +24,10 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             Worker.RequestData.Add(key, value);
         }
 
-        public async Task SendRequest()
+        public void SendRequest()
         {
-            await Worker.SendRequest();
+            Worker.SendRequest();
         }
-
-        public object? this[string key] => Worker.ResultData[key];
 
         public T? GetResult<T>(string key)
         {
@@ -41,33 +43,36 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         {
             public Hashtable RequestData { get; } = new();
             public Hashtable ResultData => _Result;
+            public bool Success => _Success;
+            public string Error => _Error;
 
-            private bool JobFinish = false;
             private readonly Socket? Socket;
             private readonly DataRequestType RequestType;
+
+            private bool _Finish = false;
+            private bool _Success = false;
+            private string _Error = "";
             private Hashtable _Result = new();
 
-            public async Task<RequestResult> SendRequest()
+            public void SendRequest()
             {
                 try
                 {
-                    if (Socket?.Send(SocketMessageType.DataRequest, RequestData) == SocketResult.Success)
+                    if (Socket?.Send(SocketMessageType.DataRequest, RequestType, RequestData) == SocketResult.Success)
                     {
-                        await Task.Run(() =>
+                        while (true)
                         {
-                            while (true)
-                            {
-                                if (JobFinish) break;
-                                Thread.Sleep(100);
-                            }
-                        });
+                            if (_Finish) break;
+                            Thread.Sleep(100);
+                        }
                     }
                 }
-                catch
+                catch (Exception e)
                 {
-                    return RequestResult.Fail;
+                    _Finish = true;
+                    _Success = false;
+                    _Error = e.GetErrorInfo();
                 }
-                return RequestResult.Success;
             }
 
             public Request(Socket? socket, DataRequestType requestType) : base(socket)
@@ -78,15 +83,25 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
 
             public override void SocketHandler(SocketObject SocketObject)
             {
-                if (SocketObject.SocketType == SocketMessageType.DataRequest)
+                try
                 {
-                    DataRequestType type = SocketObject.GetParam<DataRequestType>(0);
-                    if (type == RequestType)
+                    if (SocketObject.SocketType == SocketMessageType.DataRequest)
                     {
-                        Dispose();
-                        _Result = SocketObject.GetParam<Hashtable>(1) ?? new();
-                        JobFinish = true;
+                        DataRequestType type = SocketObject.GetParam<DataRequestType>(0);
+                        if (type == RequestType)
+                        {
+                            Dispose();
+                            _Result = SocketObject.GetParam<Hashtable>(1) ?? new();
+                            _Finish = true;
+                            _Success = true;
+                        }
                     }
+                }
+                catch (Exception e)
+                {
+                    _Finish = true;
+                    _Success = false;
+                    _Error = e.GetErrorInfo();
                 }
             }
         }
