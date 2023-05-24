@@ -8,7 +8,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
 {
     public class DataRequest
     {
-        public bool Success => Worker.Success;
+        public RequestResult Result => Worker.Result;
         public string Error => Worker.Error;
         public object? this[string key] => Worker.ResultData[key];
 
@@ -24,9 +24,10 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             Worker.RequestData.Add(key, value);
         }
 
-        public void SendRequest()
+        public RequestResult SendRequest()
         {
             Worker.SendRequest();
+            return Result;
         }
 
         public T? GetResult<T>(string key)
@@ -42,17 +43,17 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         private class Request : BaseModel
         {
             public Hashtable RequestData { get; } = new();
-            public Hashtable ResultData => _Result;
-            public bool Success => _Success;
+            public Hashtable ResultData => _ResultData;
+            public RequestResult Result => _Result;
             public string Error => _Error;
 
             private readonly Socket? Socket;
             private readonly DataRequestType RequestType;
 
             private bool _Finish = false;
-            private bool _Success = false;
+            private RequestResult _Result = RequestResult.Missing;
             private string _Error = "";
-            private Hashtable _Result = new();
+            private Hashtable _ResultData = new();
 
             public void SendRequest()
             {
@@ -70,7 +71,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 catch (Exception e)
                 {
                     _Finish = true;
-                    _Success = false;
+                    _Result = RequestResult.Fail;
                     _Error = e.GetErrorInfo();
                 }
             }
@@ -91,16 +92,16 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                         if (type == RequestType)
                         {
                             Dispose();
-                            _Result = SocketObject.GetParam<Hashtable>(1) ?? new();
+                            _ResultData = SocketObject.GetParam<Hashtable>(1) ?? new();
                             _Finish = true;
-                            _Success = true;
+                            _Result = RequestResult.Success;
                         }
                     }
                 }
                 catch (Exception e)
                 {
                     _Finish = true;
-                    _Success = false;
+                    _Result = RequestResult.Fail;
                     _Error = e.GetErrorInfo();
                 }
             }
