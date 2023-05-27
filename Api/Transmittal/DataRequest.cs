@@ -67,6 +67,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                             Thread.Sleep(100);
                         }
                     }
+                    else throw new ConnectFailedException();
                 }
                 catch (Exception e)
                 {
