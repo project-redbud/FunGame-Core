@@ -34,6 +34,11 @@
         {
             return $"{Select_Users} {Constant.Command_Where} {Column_Username} = '{Username}'";
         }
+        
+        public static string Select_CheckEmailWithUsername(string Username, string email)
+        {
+            return $"{Select_Users} {Constant.Command_Where} {Column_Username} = '{Username}' and {Column_Email} = '{email}'";
+        }
 
         public static string Select_Users_Where(string Where)
         {
