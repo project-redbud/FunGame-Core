@@ -8,7 +8,7 @@
         public const string Column_RegVerifyCode = "RegVerifyCode";
         public const string Column_RegTime = "RegTime";
 
-        public static string Insert_RegVerifyCodes(string Username, string Email, string RegVerifyCodes)
+        public static string Insert_RegVerifyCode(string Username, string Email, string RegVerifyCodes)
         {
             return $"{Constant.Command_Insert} {Constant.Command_Into} {TableName} ({Column_Username}, {Column_Email}, {Column_RegVerifyCode}, {Column_RegTime}) {Constant.Command_Values} ('{Username}', '{Email}', '{RegVerifyCodes}', '{DateTime.Now}')";
         }
@@ -37,7 +37,7 @@
         public const string Column_ForgetVerifyCode = "ForgetVerifyCode";
         public const string Column_SendTime = "SendTime";
 
-        public static string Insert_ForgetVerifyCodes(string Username, string Email, string ForgetVerifyCodes)
+        public static string Insert_ForgetVerifyCode(string Username, string Email, string ForgetVerifyCodes)
         {
             return $"{Constant.Command_Insert} {Constant.Command_Into} {TableName} ({Column_Username}, {Column_Email}, {Column_ForgetVerifyCode}, {Column_SendTime}) {Constant.Command_Values} ('{Username}', '{Email}', '{ForgetVerifyCodes}', '{DateTime.Now}')";
         }
