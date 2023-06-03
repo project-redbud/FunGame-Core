@@ -1,4 +1,6 @@
-﻿using Milimoe.FunGame.Core.Library.Constant;
+﻿using System.Text.Json.Serialization;
+using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
 {
@@ -8,34 +10,47 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public SocketMessageType SocketType { get; } = SocketMessageType.Unknown;
         public Guid Token { get; } = Guid.Empty;
         public object[] Parameters { get; } = Array.Empty<object>();
-        public int Length { get; } = 0;
-        private JsonObject Json { get; }
+        public int Length => Parameters.Length;
 
-        public SocketObject(JsonObject json)
+        /// <summary>
+        /// 从参数列表中获取指定索引的参数的Json字符串
+        /// -- 此方法仅返回Json字符串，对象类型请使用反序列化方法GetParam<T>() --
+        /// -- 当然也可以自己反序列化 --
+        /// </summary>
+        /// <param name="index">索引</param>
+        /// <returns></returns>
+        /// <exception cref="IndexOutOfArrayLengthException">索引超过数组上限</exception>
+        public object? this[int index]
         {
-            Json = json;
-            SocketType = Json.MessageType;
-            Token = Json.Token;
-            Parameters = Json.Parameters;
-            Length = Parameters.Length;
+            get
+            {
+                if (index >= Parameters.Length) throw new IndexOutOfArrayLengthException();
+                object? obj = Parameters[index];
+                return JsonManager.GetObject(obj.ToString() ?? "");
+            }
         }
 
-        public SocketObject()
+        [JsonConstructor]
+        public SocketObject(SocketMessageType SocketType, Guid Token, params object[] Parameters)
         {
-            Json = new JsonObject(SocketMessageType.Unknown, Guid.Empty, Array.Empty<object>());
-            SocketType = Json.MessageType;
-            Token = Json.Token;
-            Parameters = Json.Parameters;
-            Length = Parameters.Length;
+            this.SocketType = SocketType;
+            this.Token = Token;
+            if (Parameters != null && Parameters.Length > 0) this.Parameters = Parameters;
         }
 
         /// <summary>
-        /// 从参数列表中获取指定类型的参数
+        /// 从参数列表中获取指定类型和索引的参数
         /// </summary>
         /// <typeparam name="T">类型</typeparam>
         /// <param name="index">索引</param>
         /// <returns>类型的参数</returns>
         /// <exception cref="IndexOutOfArrayLengthException">索引超过数组上限</exception>
-        public T? GetParam<T>(int index) => Json.GetObject<T>(index);
+        public T? GetParam<T>(int index)
+        {
+            if (index >= Parameters.Length) throw new IndexOutOfArrayLengthException();
+            object obj = Parameters[index];
+            T? result = JsonManager.GetObject<T>(obj.ToString() ?? "");
+            return result;
+        }
     }
 }

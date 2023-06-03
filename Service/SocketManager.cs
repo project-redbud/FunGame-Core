@@ -116,14 +116,13 @@ namespace Milimoe.FunGame.Core.Service
         /// 用于服务器端向客户端Socket发送信息
         /// </summary>
         /// <param name="ClientSocket">客户端Socket</param>
-        /// <param name="type">通信类型</param>
-        /// <param name="objs">参数</param>
+        /// <param name="SocketObject">Socket信息容器</param>
         /// <returns>通信结果</returns>
-        internal static SocketResult Send(Socket ClientSocket, SocketMessageType type, Guid token, params object[] objs)
+        internal static SocketResult Send(Socket ClientSocket, Library.Common.Network.SocketObject SocketObject)
         {
-            if (ClientSocket != null && objs != null && objs.Length > 0)
+            if (ClientSocket != null)
             {
-                if (ClientSocket.Send(General.DefaultEncoding.GetBytes(Library.Common.Network.JsonObject.GetString(type, token, objs))) > 0)
+                if (ClientSocket.Send(General.DefaultEncoding.GetBytes(JsonManager.GetString(SocketObject))) > 0)
                 {
                     return SocketResult.Success;
                 }
@@ -135,18 +134,13 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 用于客户端向服务器Socket发送信息
         /// </summary>
-        /// <param name="type">通信类型</param>
-        /// <param name="objs">参数</param>
+        /// <param name="SocketObject">Socket信息容器</param>
         /// <returns>通信结果</returns>
-        internal static SocketResult Send(SocketMessageType type, Guid token, params object[] objs)
+        internal static SocketResult Send(Library.Common.Network.SocketObject SocketObject)
         {
-            if (objs is null || objs.Length <= 0)
-            {
-                objs = new object[] { "" };
-            }
             if (Socket != null)
             {
-                if (Socket.Send(General.DefaultEncoding.GetBytes(Library.Common.Network.JsonObject.GetString(type, token, objs))) > 0)
+                if (Socket.Send(General.DefaultEncoding.GetBytes(JsonManager.GetString(SocketObject))) > 0)
                 {
                     return SocketResult.Success;
                 }
@@ -170,8 +164,7 @@ namespace Milimoe.FunGame.Core.Service
                 if (length > 0)
                 {
                     string msg = General.DefaultEncoding.GetString(buffer, 0, length);
-                    Library.Common.Network.JsonObject json = Library.Common.Network.JsonObject.GetObject(msg);
-                    result = new Library.Common.Network.SocketObject(json);
+                    result = JsonManager.GetObject<Library.Common.Network.SocketObject>(msg);
                     // 客户端接收消息，广播ScoketObject到每个UIModel
                     OnSocketReceive(result);
                     return result;
@@ -196,8 +189,7 @@ namespace Milimoe.FunGame.Core.Service
                 if (length > 0)
                 {
                     string msg = General.DefaultEncoding.GetString(buffer, 0, length);
-                    Library.Common.Network.JsonObject json = Library.Common.Network.JsonObject.GetObject(msg);
-                    result = new Library.Common.Network.SocketObject(json);
+                    result = JsonManager.GetObject<Library.Common.Network.SocketObject>(msg);
                     return result;
                 }
             }
@@ -219,11 +211,9 @@ namespace Milimoe.FunGame.Core.Service
                 if (length > 0)
                 {
                     string msg = General.DefaultEncoding.GetString(buffer, 0, length);
-                    Library.Common.Network.JsonObject[] jsons = Library.Common.Network.JsonObject.GetObjects(msg);
-                    foreach (Library.Common.Network.JsonObject json in jsons)
+                    foreach (Library.Common.Network.SocketObject obj in JsonManager.GetObjects<Library.Common.Network.SocketObject>(msg))
                     {
                         // 客户端接收消息，广播ScoketObject到每个UIModel
-                        Library.Common.Network.SocketObject obj = new(json);
                         result.Add(obj);
                         OnSocketReceive(obj);
                     }
@@ -248,11 +238,9 @@ namespace Milimoe.FunGame.Core.Service
                 if (length > 0)
                 {
                     string msg = General.DefaultEncoding.GetString(buffer, 0, length);
-                    Library.Common.Network.JsonObject[] jsons = Library.Common.Network.JsonObject.GetObjects(msg);
-                    foreach (Library.Common.Network.JsonObject json in jsons)
+                    foreach (Library.Common.Network.SocketObject obj in JsonManager.GetObjects<Library.Common.Network.SocketObject>(msg))
                     {
-                        Library.Common.Network.SocketObject so = new(json);
-                        result.Add(so);
+                        result.Add(obj);
                     }
                 }
             }

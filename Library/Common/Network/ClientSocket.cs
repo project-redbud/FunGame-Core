@@ -66,7 +66,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         {
             if (Instance != null)
             {
-                if (SocketManager.Send(Instance, type, Token, objs) == SocketResult.Success)
+                if (SocketManager.Send(Instance, new(type, Token, objs)) == SocketResult.Success)
                 {
                     return SocketResult.Success;
                 }
