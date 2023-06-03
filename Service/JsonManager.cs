@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using Milimoe.FunGame.Core.Library.Common.JsonConverter;
+using Milimoe.FunGame.Core.Library.Common.Network;
 
 namespace Milimoe.FunGame.Core.Service
 {
@@ -83,6 +84,22 @@ namespace Milimoe.FunGame.Core.Service
         {
             json = "[" + json.Replace("}{", "},{") + "]"; // 将Json字符串转换为数组
             return JsonSerializer.Deserialize<List<T>>(json, GeneralOptions) ?? new List<T>();
+        }
+
+        /// <summary>
+        /// 反序列化SocketObject中索引为index的Json对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        /// <exception cref="IndexOutOfArrayLengthException"></exception>
+        public static T? GetObject<T>(SocketObject obj, int index)
+        {
+            if (index >= obj.Parameters.Length) throw new IndexOutOfArrayLengthException();
+            JsonElement element = (JsonElement)obj.Parameters[index];
+            T? result = element.Deserialize<T>(GeneralOptions);
+            return result;
         }
     }
 }
