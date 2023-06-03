@@ -114,6 +114,28 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
             return -1;
         }
+
+        /// <summary>
+        /// 返回目标对象的Json字符串
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static string JsonSerialize<T>(T obj)
+        {
+            return Service.JsonManager.GetString(obj);
+        }
+
+        /// <summary>
+        /// 反序列化Json对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="json"></param>
+        /// <returns></returns>
+        public static T? JsonDeserialize<T>(string json)
+        {
+            return Service.JsonManager.GetObject<T>(json);
+        }
     }
 
     #endregion
