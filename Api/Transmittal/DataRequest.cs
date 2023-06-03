@@ -10,7 +10,17 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
     {
         public RequestResult Result => Worker.Result;
         public string Error => Worker.Error;
-        public object? this[string key] => Worker.ResultData[key];
+        public object? this[string key]
+        {
+            get
+            {
+                return Worker.ResultData[key];
+            }
+            set
+            {
+                AddRequestData(key, value);
+            }
+        }
 
         private readonly Request Worker;
 
@@ -19,9 +29,10 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             Worker = new(Socket, RequestType);
         }
 
-        public void AddRequestData(string key, object value)
+        public void AddRequestData(string key, object? value)
         {
-            Worker.RequestData.Add(key, value);
+            if (Worker.RequestData.ContainsKey(key)) Worker.RequestData[key] = value;
+            else Worker.RequestData.Add(key, value);
         }
 
         public RequestResult SendRequest()
