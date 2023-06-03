@@ -47,10 +47,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         /// <exception cref="IndexOutOfArrayLengthException">索引超过数组上限</exception>
         public T? GetParam<T>(int index)
         {
-            if (index >= Parameters.Length) throw new IndexOutOfArrayLengthException();
-            object obj = Parameters[index];
-            T? result = JsonManager.GetObject<T>(obj.ToString() ?? "");
-            return result;
+            return JsonManager.GetObject<T>(this, index);
         }
     }
 }
