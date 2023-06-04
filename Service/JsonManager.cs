@@ -5,7 +5,7 @@ using Milimoe.FunGame.Core.Library.Common.Network;
 
 namespace Milimoe.FunGame.Core.Service
 {
-    public class JsonManager
+    internal class JsonManager
     {
         private static bool _IsFirst = true;
         private readonly static JsonSerializerOptions _GeneralOptions = new()
@@ -47,7 +47,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <typeparam name="T"></typeparam>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static string GetString<T>(T obj)
+        internal static string GetString<T>(T obj)
         {
             return JsonSerializer.Serialize(obj, GeneralOptions);
         }
@@ -58,7 +58,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <typeparam name="T"></typeparam>
         /// <param name="json"></param>
         /// <returns></returns>
-        public static T? GetObject<T>(string json)
+        internal static T? GetObject<T>(string json)
         {
             return JsonSerializer.Deserialize<T>(json, GeneralOptions);
         }
@@ -68,7 +68,7 @@ namespace Milimoe.FunGame.Core.Service
         /// </summary>
         /// <param name="json"></param>
         /// <returns></returns>
-        public static object? GetObject(string json)
+        internal static object? GetObject(string json)
         {
             return JsonSerializer.Deserialize<object>(json, GeneralOptions);
         }
@@ -80,7 +80,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <typeparam name="T"></typeparam>
         /// <param name="json"></param>
         /// <returns></returns>
-        public static List<T> GetObjects<T>(string json)
+        internal static List<T> GetObjects<T>(string json)
         {
             json = "[" + json.Replace("}{", "},{") + "]"; // 将Json字符串转换为数组
             return JsonSerializer.Deserialize<List<T>>(json, GeneralOptions) ?? new List<T>();
@@ -94,7 +94,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="index"></param>
         /// <returns></returns>
         /// <exception cref="IndexOutOfArrayLengthException"></exception>
-        public static T? GetObject<T>(SocketObject obj, int index)
+        internal static T? GetObject<T>(SocketObject obj, int index)
         {
             if (index >= obj.Parameters.Length) throw new IndexOutOfArrayLengthException();
             JsonElement element = (JsonElement)obj.Parameters[index];
