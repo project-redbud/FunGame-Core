@@ -48,6 +48,8 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
         {
             writer.WriteStartObject();
 
+            if (value.Tables.Count == 0) value.Tables.Add(new DataTable());
+
             writer.WriteString("TableName", value.Tables[0].TableName);
 
             writer.WritePropertyName("Columns");
