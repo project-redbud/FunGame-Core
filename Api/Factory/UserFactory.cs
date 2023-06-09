@@ -1,13 +1,15 @@
-using System.Data;
 using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface.Base;
 
 namespace Milimoe.FunGame.Core.Api.Factory
 {
-    internal class UserFactory
+    internal class UserFactory : IFactory<User>
     {
-        internal static User GetInstance(DataSet? DataSet, int Index = 0)
+        public Type EntityType => typeof(User);
+
+        public User Create()
         {
-            return new User(DataSet, Index);
+            return new User();
         }
     }
 }

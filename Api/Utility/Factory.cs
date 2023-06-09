@@ -1,5 +1,4 @@
-﻿using System.Data;
-using Milimoe.FunGame.Core.Api.Factory;
+﻿using Milimoe.FunGame.Core.Api.Factory;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
@@ -7,16 +6,73 @@ namespace Milimoe.FunGame.Core.Api.Utility
 {
     public class Factory
     {
+        private readonly static CharacterFactory CharacterFactory = new();
+        private readonly static InventoryFactory InventoryFactory = new();
+        private readonly static ItemFactory ItemFactory = new();
+        private readonly static RoomFactory RoomFactory = new();
+        private readonly static SkillFactory SkillFactory = new();
+        private readonly static UserFactory UserFactory = new();
+
         /// <summary>
-        /// 获取Room实例
+        /// 获取角色实例
         /// </summary>
-        /// <param name="DsRoom">Room</param>
-        /// <param name="DsUser">User(RoomMaster)</param>
-        /// <param name="Index">取指定行</param>
         /// <returns></returns>
-        public static Room GetRoom(DataSet? DsRoom, DataSet? DsUser, int Index = 0)
+        public static Character GetCharacter()
         {
-            return RoomFactory.GetInstance(DsRoom, DsUser, Index);
+            return CharacterFactory.Create();
+        }
+
+        /// <summary>
+        /// 获取库存实例
+        /// </summary>
+        /// <returns></returns>
+        public static Inventory GetInventory()
+        {
+            return InventoryFactory.Create();
+        }
+
+        /// <summary>
+        /// 获取物品实例，默认返回Passiveitem 被动物品 需要强制转换
+        /// </summary>
+        /// <param name="type">Item类型 主动 或 被动</param>
+        /// <returns></returns>
+        public static Item GetItem(ItemType type = ItemType.Passive)
+        {
+            return ItemFactory.Create(type);
+        }
+
+        /// <summary>
+        /// 获取主动物品实例
+        /// </summary>
+        /// <returns></returns>
+        public static ActiveItem GetActiveItem()
+        {
+            return (ActiveItem)ItemFactory.Create(ItemType.Active);
+        }
+
+        /// <summary>
+        /// 获取被动物品实例
+        /// </summary>
+        /// <returns></returns>
+        public static PassiveItem GetPassiveItem()
+        {
+            return (PassiveItem)ItemFactory.Create(ItemType.Passive);
+        }
+
+        /// <summary>
+        /// 获取房间实例
+        /// </summary>
+        /// <param name="Id">房间内部序列号</param>
+        /// <param name="Roomid">房间号</param>
+        /// <param name="CreateTime">创建时间</param>
+        /// <param name="RoomMaster">房主</param>
+        /// <param name="RoomType">房间类型</param>
+        /// <param name="RoomState">房间状态</param>
+        /// <param name="Password">房间密码</param>
+        /// <returns></returns>
+        public static Room GetRoom(long Id = 0, string Roomid = "-1", DateTime? CreateTime = null, User? RoomMaster = null, RoomType RoomType = RoomType.None, RoomState RoomState = RoomState.Created, string Password = "")
+        {
+            return RoomFactory.Create(Id, Roomid, CreateTime, RoomMaster, RoomType, RoomState, Password);
         }
 
         /// <summary>
@@ -25,129 +81,44 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns></returns>
         internal static Room GetHall()
         {
-            return GetRoom(null, null);
+            return RoomFactory.Create();
         }
 
         /// <summary>
-        /// 获取Skill实例，默认返回PassiveSkill
+        /// 获取技能实例，默认返回PassiveSkill 被动技能 需要强制转换
         /// </summary>
-        /// <param name="DataSet">SkillRow</param>
-        /// <param name="SkillType">Skill类型</param>
-        /// <param name="Index">取指定行</param>
+        /// <param name="type">Skill类型 主动 或 被动</param>
         /// <returns></returns>
-        public static Skill GetSkill(DataSet? DataSet, SkillType SkillType = SkillType.Passive, int Index = 0)
+        public static Skill GetSkill(SkillType type = SkillType.Passive)
         {
-            return SkillFactory.GetInstance(DataSet, SkillType, Index);
+            return SkillFactory.Create(type);
         }
-
+        
         /// <summary>
-        /// 获取User实例
-        /// </summary>awaa
-        /// <param name="DataSet">UserRow</param>
-        /// <param name="Index">取指定行</param>
+        /// 获取主动技能实例
+        /// </summary>
         /// <returns></returns>
-        public static User GetUser(DataSet? DataSet, int Index = 0)
+        public static ActiveSkill GetActiveSkill()
         {
-            return UserFactory.GetInstance(DataSet, Index);
+            return (ActiveSkill)SkillFactory.Create(SkillType.Active);
+        }
+        
+        /// <summary>
+        /// 获取被动技能实例
+        /// </summary>
+        /// <returns></returns>
+        public static PassiveSkill GetPassiveSkill()
+        {
+            return (PassiveSkill)SkillFactory.Create(SkillType.Passive);
         }
 
         /// <summary>
-        /// 获取一个不为NULL的实例
-        /// <para>Item默认返回PassiveItem</para>
-        /// <para>Skill默认返回PassiveSkill</para>
-        /// <para>若无法找到T，返回唯一的空对象</para>
+        /// 获取用户实例
         /// </summary>
-        /// <typeparam name="T">Entity类</typeparam>
-        /// <param name="DataSets">使用DataSets构造对象</param>
-        /// <returns>T</returns>
-        public static T GetInstance<T>(params DataSet?[] DataSets)
+        /// <returns></returns>
+        public static User GetUser()
         {
-            if (DataSets is null || DataSets.Length == 0) throw new GetInstanceException();
-            object instance = General.EntityInstance;
-            if (typeof(T) == typeof(User))
-            {
-                instance = GetUser(DataSets[0]);
-            }
-            else if (typeof(T) == typeof(Skill) || typeof(T) == typeof(PassiveSkill))
-            {
-                instance = GetSkill(DataSets[0]);
-            }
-            else if (typeof(T) == typeof(ActiveSkill))
-            {
-                instance = GetSkill(DataSets[0], SkillType.Active);
-            }
-            else if (typeof(T) == typeof(Room))
-            {
-                instance = GetRoom(DataSets[0], DataSets[1]);
-            }
-            return (T)instance;
-        }
-
-        /// <summary>
-        /// 获取T的数组
-        /// <para>Item默认返回PassiveItem数组</para>
-        /// <para>Skill默认返回PassiveSkill数组</para>
-        /// <para>若无法找到T，返回空数组</para>
-        /// </summary>
-        /// <typeparam name="T">Entity类</typeparam>
-        /// <param name="DataSets">使用DataSet构造对象数组</param>
-        /// <returns>List T</returns>
-        public static List<T> GetList<T>(params DataSet?[] DataSets)
-        {
-            List<T> list = new();
-            if (DataSets is null || DataSets.Length == 0) throw new GetInstanceException();
-            if (typeof(T) == typeof(User))
-            {
-                DataSet? ds = DataSets[0];
-                if (ds != null && ds.Tables[0].Rows.Count > 0)
-                {
-                    for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
-                    {
-                        object entity = GetUser(ds, i);
-                        list.Add((T)entity);
-                    }
-                }
-            }
-            else if (typeof(T) == typeof(Skill) || typeof(T) == typeof(PassiveSkill))
-            {
-                DataSet? ds = DataSets[0];
-                if (ds != null && ds.Tables[0].Rows.Count > 0)
-                {
-                    for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
-                    {
-                        object entity = GetSkill(ds, SkillType.Passive, i);
-                        list.Add((T)entity);
-                    }
-                }
-            }
-            else if (typeof(T) == typeof(ActiveSkill))
-            {
-                DataSet? ds = DataSets[0];
-                if (ds != null && ds.Tables[0].Rows.Count > 0)
-                {
-                    for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
-                    {
-                        object entity = GetSkill(ds, SkillType.Active, i);
-                        list.Add((T)entity);
-                    }
-                }
-            }
-            else if (typeof(T) == typeof(Room))
-            {
-                DataSet? DsRoom = DataSets[0];
-                DataSet? DsUser = DataSets[1];
-                object entity = General.HallInstance;
-                list.Add((T)entity);
-                if (DsRoom != null && DsRoom.Tables[0].Rows.Count > 0)
-                {
-                    for (int i = 0; i < DsRoom.Tables[0].Rows.Count; i++)
-                    {
-                        entity = GetRoom(DsRoom, DsUser, i);
-                        list.Add((T)entity);
-                    }
-                }
-            }
-            return list;
+            return UserFactory.Create();
         }
     }
 }

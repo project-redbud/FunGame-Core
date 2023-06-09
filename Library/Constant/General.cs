@@ -8,9 +8,10 @@ namespace Milimoe.FunGame.Core.Library.Constant
         // Static Variable
         public static Empty EntityInstance { get; } = new();
         public static User UnknownUserInstance { get; } = new();
-        public static Room HallInstance => Api.Utility.Factory.GetHall();
+        public static Room HallInstance { get; } = Api.Utility.Factory.GetHall();
         public static Encoding DefaultEncoding => Encoding.Unicode;
         public static string GeneralDateTimeFormat => "yyyy-MM-dd HH:mm:ss.fff";
+        public static DateTime DefaultTime { get; } = new(1970,1,1,8,0,0);
 
         // Const
         public const int MaxRetryTimes = 20;
