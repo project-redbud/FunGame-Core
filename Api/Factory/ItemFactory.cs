@@ -1,22 +1,32 @@
-﻿using Milimoe.FunGame.Core.Library.Constant;
+﻿using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface.Base;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Api.Factory
 {
-    internal class ItemFactory
+    internal class ItemFactory : IFactory<Item>
     {
-        internal static Milimoe.FunGame.Core.Entity.Item? GetInstance(ItemType type, int id, string name)
+        public Type EntityType => _EntityType;
+
+        private Type _EntityType = typeof(Item);
+
+        public Item Create(ItemType type = ItemType.Passive)
         {
-            Milimoe.FunGame.Core.Entity.Item? item = null;
             switch (type)
             {
-                case ItemType.Active:
-                    item = new Milimoe.FunGame.Core.Entity.ActiveItem(id, name);
-                    break;
                 case ItemType.Passive:
-                    item = new Milimoe.FunGame.Core.Entity.PassiveItem(id, name);
-                    break;
+                    _EntityType = typeof(PassiveItem);
+                    return new PassiveItem();
+                case ItemType.Active:
+                default:
+                    _EntityType = typeof(ActiveItem);
+                    return new ActiveItem();
             }
-            return item;
+        }
+
+        public Item Create()
+        {
+            return Create(ItemType.Passive);
         }
     }
 }

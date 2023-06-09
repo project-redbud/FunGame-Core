@@ -7,30 +7,15 @@ namespace Milimoe.FunGame.Core.Service
 {
     internal class JsonManager
     {
-        private static bool _IsFirst = true;
-        private readonly static JsonSerializerOptions _GeneralOptions = new()
+        /// <summary>
+        /// 默认的序列化选项
+        /// </summary>
+        private readonly static JsonSerializerOptions GeneralOptions = new()
         {
             WriteIndented = true,
-            ReferenceHandler = ReferenceHandler.IgnoreCycles
+            ReferenceHandler = ReferenceHandler.IgnoreCycles,
+            Converters = { new DateTimeConverter(), new DataTableConverter(), new DataSetConverter() }
         };
-
-        /// <summary>
-        /// 默认的JsonSerializerOptions
-        /// </summary>
-        internal static JsonSerializerOptions GeneralOptions
-        {
-            get
-            {
-                if (_IsFirst)
-                {
-                    // 首次使用时，向其添加自定义转换器
-                    _IsFirst = false;
-                    AddConverter(new DataSetConverter());
-                    AddConverter(new DateTimeConverter());
-                }
-                return _GeneralOptions;
-            }
-        }
         
         /// <summary>
         /// 注册一个自定义转换器
@@ -38,7 +23,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="converter"></param>
         internal static void AddConverter(JsonConverter converter)
         {
-            _GeneralOptions.Converters.Add(converter);
+            GeneralOptions.Converters.Add(converter);
         }
 
         /// <summary>

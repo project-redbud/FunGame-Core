@@ -10,12 +10,13 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public string Script { get; set; }
         public CommandType CommandType { get; set; }
         public SQLResult Result { get; }
+        public bool Success { get; }
         public SQLServerInfo ServerInfo { get; }
         public int UpdateRows { get; }
         public DataSet DataSet { get; }
 
-        public int Execute(out SQLResult Result);
-        public DataSet ExecuteDataSet(out SQLResult Result);
+        public int Execute();
+        public DataSet ExecuteDataSet();
         public void Close();
     }
 }

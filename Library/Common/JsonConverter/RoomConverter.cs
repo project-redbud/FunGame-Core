@@ -1,0 +1,84 @@
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Library.SQLScript.Entity;
+
+namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
+{
+    public class RoomConverter : JsonConverter<Room>
+    {
+        public override Room Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options)
+        {
+            Room room = Factory.GetRoom();
+
+            while (reader.Read())
+            {
+                if (reader.TokenType == JsonTokenType.PropertyName)
+                {
+                    string property = reader.GetString() ?? "";
+
+                    switch (property)
+                    {
+                        case RoomQuery.Column_ID:
+                            reader.Read();
+                            room.Id = reader.GetInt64();
+                            break;
+
+                        case RoomQuery.Column_RoomID:
+                            reader.Read();
+                            room.Roomid = reader.GetString() ?? "";
+                            break;
+
+                        case RoomQuery.Column_CreateTime:
+                            reader.Read();
+                            string dateString = reader.GetString() ?? "";
+                            if (DateTime.TryParseExact(dateString, General.GeneralDateTimeFormat, null, System.Globalization.DateTimeStyles.None, out DateTime result))
+                            {
+                                room.CreateTime = result;
+                            }
+                            else room.CreateTime = DateTime.MinValue;
+                            break;
+
+                        case RoomQuery.Column_RoomMaster:
+                            reader.Read();
+                            string master = reader.GetString() ?? "";
+                            room.RoomMaster = JsonSerializer.Deserialize<User>(master, options);
+                            break;
+
+                        case RoomQuery.Column_RoomType:
+                            reader.Read();
+                            room.RoomType = (RoomType)reader.GetInt64();
+                            break;
+
+                        case RoomQuery.Column_RoomState:
+                            reader.Read();
+                            room.RoomState = (RoomState)reader.GetInt64();
+                            break;
+
+                        case RoomQuery.Column_Password:
+                            reader.Read();
+                            room.Password = reader.GetString() ?? "";
+                            break;
+                    }
+                }
+            }
+
+            return room;
+        }
+
+        public override void Write(Utf8JsonWriter writer, Room value, JsonSerializerOptions options)
+        {
+            writer.WriteStartObject();
+            writer.WriteNumber(RoomQuery.Column_ID, value.Id);
+            writer.WriteString(RoomQuery.Column_RoomID, value.Roomid);
+            writer.WriteString(RoomQuery.Column_CreateTime, value.CreateTime.ToString(General.GeneralDateTimeFormat));
+            writer.WriteString(RoomQuery.Column_RoomMaster, JsonSerializer.Serialize(value.RoomMaster, typeof(User), options));
+            writer.WriteNumber(RoomQuery.Column_RoomType, (long)value.RoomType);
+            writer.WriteNumber(RoomQuery.Column_RoomState, (long)value.RoomState);
+            writer.WriteString(RoomQuery.Column_Password, value.Password);
+            writer.WriteEndObject();
+        }
+    }
+}
