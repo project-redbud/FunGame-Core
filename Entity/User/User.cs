@@ -1,11 +1,13 @@
 using System.Data;
 using Milimoe.FunGame.Core.Interface.Entity;
+using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.SQLScript.Entity;
 
 namespace Milimoe.FunGame.Core.Entity
 {
     public class User : BaseEntity
     {
+        public override Guid Guid { get; set; } = Guid.NewGuid();
         public override long Id { get; set; }
         public string Username { get; set; } = "";
         public string Password { get; set; } = "";
@@ -15,7 +17,7 @@ namespace Milimoe.FunGame.Core.Entity
         public string NickName { get; set; } = "";
         public bool IsAdmin { get; set; } = false;
         public bool IsOperator { get; set; } = false;
-        public bool IsEnable { get; set; } = false;
+        public bool IsEnable { get; set; } = true;
         public decimal Credits { get; set; } = 0;
         public decimal Materials { get; set; } = 0;
         public decimal GameTime { get; set; } = 0;
@@ -28,26 +30,22 @@ namespace Milimoe.FunGame.Core.Entity
 
         }
 
-        internal User(DataSet? DataSet, int Index = 0)
+        internal User(long Id = 0, string Username = "", string Password = "", DateTime? RegTime = null, DateTime? LastTime = null, string Email = "", string NickName = "", bool IsAdmin = false, bool IsOperator = false, bool IsEnable = true, decimal Credits = 0, decimal Materials = 0, decimal GameTime = 0, string AutoKey = "")
         {
-            if (DataSet != null && DataSet.Tables[0].Rows.Count > 0)
-            {
-                DataRow DataRow = DataSet.Tables[0].Rows[Index];
-                Id = (long)DataRow[UserQuery.Column_UID];
-                Username = (string)DataRow[UserQuery.Column_Username];
-                Password = (string)DataRow[UserQuery.Column_Password];
-                RegTime = (DateTime)DataRow[UserQuery.Column_RegTime];
-                LastTime = (DateTime)DataRow[UserQuery.Column_LastTime];
-                Email = (string)DataRow[UserQuery.Column_Email];
-                NickName = (string)DataRow[UserQuery.Column_Nickname];
-                IsAdmin = Convert.ToInt32(DataRow[UserQuery.Column_IsAdmin]) == 1;
-                IsOperator = Convert.ToInt32(DataRow[UserQuery.Column_IsOperator]) == 1;
-                IsEnable = Convert.ToInt32(DataRow[UserQuery.Column_IsEnable]) == 1;
-                Credits = Convert.ToDecimal(DataRow[UserQuery.Column_Credits]);
-                Materials = Convert.ToDecimal(DataRow[UserQuery.Column_Materials]);
-                GameTime = Convert.ToDecimal(DataRow[UserQuery.Column_GameTime]);
-                AutoKey = (string)DataRow[UserQuery.Column_AutoKey];
-            }
+            this.Id = Id;
+            this.Username = Username;
+            this.Password = Password;
+            this.RegTime = RegTime ?? General.DefaultTime;
+            this.LastTime = LastTime ?? General.DefaultTime;
+            this.Email = Email;
+            this.NickName = NickName;
+            this.IsAdmin = IsAdmin;
+            this.IsOperator = IsOperator;
+            this.IsEnable = IsEnable;
+            this.Credits = Credits;
+            this.Materials = Materials;
+            this.GameTime = GameTime;
+            this.AutoKey = AutoKey;
         }
 
         public override bool Equals(IBaseEntity? other)

@@ -9,59 +9,60 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
 {
     public class RoomConverter : JsonConverter<Room>
     {
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(Room);
+        }
+
         public override Room Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options)
         {
             Room room = Factory.GetRoom();
 
             while (reader.Read())
             {
+                if (reader.TokenType == JsonTokenType.EndObject) break;
+
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
                     string property = reader.GetString() ?? "";
-
+                    reader.Read();
                     switch (property)
                     {
                         case RoomQuery.Column_ID:
-                            reader.Read();
                             room.Id = reader.GetInt64();
                             break;
 
                         case RoomQuery.Column_RoomID:
-                            reader.Read();
                             room.Roomid = reader.GetString() ?? "";
                             break;
 
                         case RoomQuery.Column_CreateTime:
-                            reader.Read();
                             string dateString = reader.GetString() ?? "";
                             if (DateTime.TryParseExact(dateString, General.GeneralDateTimeFormat, null, System.Globalization.DateTimeStyles.None, out DateTime result))
                             {
                                 room.CreateTime = result;
                             }
-                            else room.CreateTime = DateTime.MinValue;
+                            else room.CreateTime = General.DefaultTime;
                             break;
 
                         case RoomQuery.Column_RoomMaster:
-                            reader.Read();
                             string master = reader.GetString() ?? "";
                             room.RoomMaster = JsonSerializer.Deserialize<User>(master, options);
                             break;
 
                         case RoomQuery.Column_RoomType:
-                            reader.Read();
                             room.RoomType = (RoomType)reader.GetInt64();
                             break;
 
                         case RoomQuery.Column_RoomState:
-                            reader.Read();
                             room.RoomState = (RoomState)reader.GetInt64();
                             break;
 
                         case RoomQuery.Column_Password:
-                            reader.Read();
                             room.Password = reader.GetString() ?? "";
                             break;
                     }
+
                 }
             }
 

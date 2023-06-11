@@ -14,7 +14,7 @@ namespace Milimoe.FunGame.Core.Service
         {
             WriteIndented = true,
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
-            Converters = { new DateTimeConverter(), new DataTableConverter(), new DataSetConverter() }
+            Converters = { new DateTimeConverter(), new DataTableConverter(), new DataSetConverter(), new UserConverter(), new RoomConverter() }
         };
         
         /// <summary>

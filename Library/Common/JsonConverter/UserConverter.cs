@@ -20,61 +20,64 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
 
             while (reader.Read())
             {
+                if (reader.TokenType == JsonTokenType.EndObject) break;
+
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
                     string propertyName = reader.GetString() ?? "";
+                    reader.Read();
                     switch (propertyName)
                     {
-                        case "Id":
+                        case UserQuery.Column_UID:
                             user.Id = reader.GetInt64();
                             break;
-                        case "Username":
+                        case UserQuery.Column_Username:
                             user.Username = reader.GetString() ?? "";
                             break;
-                        case "Password":
+                        case UserQuery.Column_Password:
                             user.Password = reader.GetString() ?? "";
                             break;
-                        case "RegTime":
+                        case UserQuery.Column_RegTime:
                             string regTime = reader.GetString() ?? "";
                             if (DateTime.TryParseExact(regTime, General.GeneralDateTimeFormat, null, System.Globalization.DateTimeStyles.None, out DateTime RegTime))
                             {
                                 user.RegTime = RegTime;
                             }
-                            else user.RegTime = DateTime.MinValue;
+                            else user.RegTime = General.DefaultTime;
                             break;
-                        case "LastTime":
+                        case UserQuery.Column_LastTime:
                             string lastTime = reader.GetString() ?? "";
                             if (DateTime.TryParseExact(lastTime, General.GeneralDateTimeFormat, null, System.Globalization.DateTimeStyles.None, out DateTime LastTime))
                             {
                                 user.LastTime = LastTime;
                             }
-                            else user.LastTime = DateTime.MinValue;
+                            else user.LastTime = General.DefaultTime;
                             break;
-                        case "Email":
+                        case UserQuery.Column_Email:
                             user.Email = reader.GetString() ?? "";
                             break;
-                        case "NickName":
+                        case UserQuery.Column_Nickname:
                             user.NickName = reader.GetString() ?? "";
                             break;
-                        case "IsAdmin":
+                        case UserQuery.Column_IsAdmin:
                             user.IsAdmin = reader.GetBoolean();
                             break;
-                        case "IsOperator":
+                        case UserQuery.Column_IsOperator:
                             user.IsOperator = reader.GetBoolean();
                             break;
-                        case "IsEnable":
+                        case UserQuery.Column_IsEnable:
                             user.IsEnable = reader.GetBoolean();
                             break;
-                        case "Credits":
+                        case UserQuery.Column_Credits:
                             user.Credits = reader.GetDecimal();
                             break;
-                        case "Materials":
+                        case UserQuery.Column_Materials:
                             user.Materials = reader.GetDecimal();
                             break;
-                        case "GameTime":
+                        case UserQuery.Column_GameTime:
                             user.GameTime = reader.GetDecimal();
                             break;
-                        case "AutoKey":
+                        case UserQuery.Column_AutoKey:
                             user.AutoKey = reader.GetString() ?? "";
                             break;
                     }
