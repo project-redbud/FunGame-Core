@@ -1,6 +1,9 @@
-﻿using Milimoe.FunGame.Core.Api.Factory;
+﻿using System;
+using System.Data;
+using Milimoe.FunGame.Core.Api.Factory;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Library.SQLScript.Entity;
 
 namespace Milimoe.FunGame.Core.Api.Utility
 {
@@ -75,6 +78,37 @@ namespace Milimoe.FunGame.Core.Api.Utility
             return RoomFactory.Create(Id, Roomid, CreateTime, RoomMaster, RoomType, RoomState, Password);
         }
 
+        public static List<Room> GetRooms(DataSet DsRoom, DataSet DsUser)
+        {
+            List<Room> list = new()
+            {
+                General.HallInstance
+            };
+            if (DsRoom != null && DsRoom.Tables.Count > 0)
+            {
+                foreach (DataRow DrRoom in DsRoom.Tables[0].Rows)
+                {
+                    long Id = (long)DrRoom[RoomQuery.Column_ID];
+                    string Roomid = (string)DrRoom[RoomQuery.Column_RoomID];
+                    DateTime CreateTime = (DateTime)DrRoom[RoomQuery.Column_CreateTime];
+                    User RoomMaster = General.UnknownUserInstance;
+                    if (DsUser != null && DsUser.Tables.Count > 0)
+                    {
+                        DataRow[] rows = DsUser.Tables[0].Select($"{UserQuery.Column_UID} = {(long)DrRoom[RoomQuery.Column_RoomMaster]}");
+                        if (rows.Length > 0)
+                        {
+                            RoomMaster = GetUser(rows[0]);
+                        }
+                    }
+                    RoomType RoomType = (RoomType)Convert.ToInt32(DrRoom[RoomQuery.Column_RoomType]);
+                    RoomState RoomState = (RoomState)Convert.ToInt32(DrRoom[RoomQuery.Column_RoomState]);
+                    string Password = (string)DrRoom[RoomQuery.Column_Password];
+                    list.Add(GetRoom(Id, Roomid, CreateTime, RoomMaster, RoomType, RoomState, Password));
+                }
+            }
+            return list;
+        }
+
         /// <summary>
         /// 获取大厅（-1号房）
         /// </summary>
@@ -118,6 +152,71 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns></returns>
         public static User GetUser()
         {
+            return UserFactory.Create();
+        }
+
+        /// <summary>
+        /// 获取用户实例
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="Username"></param>
+        /// <param name="Password"></param>
+        /// <param name="RegTime"></param>
+        /// <param name="LastTime"></param>
+        /// <param name="Email"></param>
+        /// <param name="NickName"></param>
+        /// <param name="IsAdmin"></param>
+        /// <param name="IsOperator"></param>
+        /// <param name="IsEnable"></param>
+        /// <param name="Credits"></param>
+        /// <param name="Materials"></param>
+        /// <param name="GameTime"></param>
+        /// <param name="AutoKey"></param>
+        /// <returns></returns>
+        public static User GetUser(long Id = 0, string Username = "", string Password = "", DateTime? RegTime = null, DateTime? LastTime = null, string Email = "", string NickName = "", bool IsAdmin = false, bool IsOperator = false, bool IsEnable = true, decimal Credits = 0, decimal Materials = 0, decimal GameTime = 0, string AutoKey = "")
+        {
+            return UserFactory.Create(Id, Username, Password, RegTime, LastTime, Email, NickName, IsAdmin, IsOperator, IsEnable, Credits, Materials, GameTime, AutoKey);
+        }
+
+        /// <summary>
+        /// 获取用户实例
+        /// </summary>
+        /// <param name="ds"></param>
+        /// <returns></returns>
+        public static User GetUser(DataSet ds)
+        {
+            if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+            {
+                return GetUser(ds.Tables[0].Rows[0]);
+            }
+            return UserFactory.Create();
+        }
+
+        /// <summary>
+        /// 获取用户实例
+        /// </summary>
+        /// <param name="ds"></param>
+        /// <returns></returns>
+        public static User GetUser(DataRow dr)
+        {
+            if (dr != null)
+            {
+                long Id = (long)dr[UserQuery.Column_UID];
+                string Username = (string)dr[UserQuery.Column_Username];
+                string Password = (string)dr[UserQuery.Column_Password];
+                DateTime RegTime = (DateTime)dr[UserQuery.Column_RegTime];
+                DateTime LastTime = (DateTime)dr[UserQuery.Column_LastTime];
+                string Email = (string)dr[UserQuery.Column_Email];
+                string NickName = (string)dr[UserQuery.Column_Nickname];
+                bool IsAdmin = Convert.ToInt32(dr[UserQuery.Column_IsAdmin]) == 1;
+                bool IsOperator = Convert.ToInt32(dr[UserQuery.Column_IsOperator]) == 1;
+                bool IsEnable = Convert.ToInt32(dr[UserQuery.Column_IsEnable]) == 1;
+                decimal Credits = Convert.ToDecimal(dr[UserQuery.Column_Credits]);
+                decimal Materials = Convert.ToDecimal(dr[UserQuery.Column_Materials]);
+                decimal GameTime = Convert.ToDecimal(dr[UserQuery.Column_GameTime]);
+                string AutoKey = (string)dr[UserQuery.Column_AutoKey];
+                return UserFactory.Create(Id, Username, Password, RegTime, LastTime, Email, NickName, IsAdmin, IsOperator, IsEnable, Credits, Materials, GameTime, AutoKey);
+            }
             return UserFactory.Create();
         }
     }

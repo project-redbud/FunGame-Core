@@ -93,7 +93,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                                 {
                                     values[index] = result;
                                 }
-                                else values[index] = DateTime.MinValue;
+                                else values[index] = General.DefaultTime;
                                 break;
 
                             case "System.Decimal":

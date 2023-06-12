@@ -53,7 +53,7 @@ namespace Milimoe.FunGame.Core.Entity
         public Hashtable Skills { get; set; } = new();
         public Hashtable Items { get; set; } = new();
 
-        public Character()
+        internal Character()
         {
             
         }
