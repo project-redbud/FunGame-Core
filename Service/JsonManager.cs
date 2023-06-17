@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Collections;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Milimoe.FunGame.Core.Library.Common.JsonConverter;
 using Milimoe.FunGame.Core.Library.Common.Network;
@@ -59,19 +61,6 @@ namespace Milimoe.FunGame.Core.Service
         }
 
         /// <summary>
-        /// 反序列化多个Json对象
-        /// 注意必须是相同的Json对象才可以使用此方法解析
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="json"></param>
-        /// <returns></returns>
-        internal static List<T> GetObjects<T>(string json)
-        {
-            json = "[" + json.Replace("}{", "},{") + "]"; // 将Json字符串转换为数组
-            return JsonSerializer.Deserialize<List<T>>(json, GeneralOptions) ?? new List<T>();
-        }
-
-        /// <summary>
         /// 反序列化SocketObject中索引为index的Json对象
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -85,6 +74,40 @@ namespace Milimoe.FunGame.Core.Service
             JsonElement element = (JsonElement)obj.Parameters[index];
             T? result = element.Deserialize<T>(GeneralOptions);
             return result;
+        }
+        
+        /// <summary>
+        /// 反序列化Hashtable中Key对应的Json对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="table"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        internal static T? GetObject<T>(Hashtable table, string key)
+        {
+            if (table.ContainsKey(key))
+            {
+                JsonElement? element = (JsonElement?)table[key];
+                if (element != null)
+                { 
+                    T? result = ((JsonElement)element).Deserialize<T>(GeneralOptions);
+                    return result;
+                }
+            }
+            return default;
+        }
+
+        /// <summary>
+        /// 反序列化多个Json对象
+        /// 注意必须是相同的Json对象才可以使用此方法解析
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="json"></param>
+        /// <returns></returns>
+        internal static List<T> GetObjects<T>(string json)
+        {
+            json = "[" + json.Replace("}{", "},{") + "]"; // 将Json字符串转换为数组
+            return JsonSerializer.Deserialize<List<T>>(json, GeneralOptions) ?? new List<T>();
         }
     }
 }

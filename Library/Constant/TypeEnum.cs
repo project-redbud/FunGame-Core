@@ -80,6 +80,12 @@
     public enum DataRequestType
     {
         UnKnown,
+        GetNotice,
+        GetRegVerifyCode,   
+        CreateRoom,
+        UpdateRoom,
+        GetRoomSettings,
+        GetRoomPlayerCount,
         GetFindPasswordVerifyCode
     }
 
