@@ -50,10 +50,11 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
 
         /// <summary>
         /// 基于本地已连接的Socket创建新的数据请求
+        /// 使用RunTimeModel中的NewDataRequest创建一个新的请求
         /// </summary>
         /// <param name="Socket"></param>
         /// <param name="RequestType"></param>
-        public DataRequest(Socket Socket, DataRequestType RequestType)
+        internal DataRequest(Socket Socket, DataRequestType RequestType)
         {
             Worker = new(Socket, RequestType);
         }
