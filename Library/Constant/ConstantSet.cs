@@ -72,6 +72,7 @@
     public class GameMode
     {
         public const string GameMode_All = "所有模式";
+        public const string GameMode_AllHasPass = "带密码的所有模式";
         public const string GameMode_Mix = "混战模式";
         public const string GameMode_Team = "团队模式";
         public const string GameMode_MixHasPass = "带密码的混战模式";
