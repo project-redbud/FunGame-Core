@@ -64,11 +64,11 @@ namespace Milimoe.FunGame.Core.Model
         }
 
         /// <summary>
-        /// 获取服务器连接
+        /// 获取服务器地址
         /// </summary>
         /// <returns>string：IP地址；int：端口号</returns>
         /// <exception cref="FindServerFailedException"></exception>
-        public (string, int) GetServerConnection()
+        public (string, int) GetServerAddress()
         {
             try
             {
