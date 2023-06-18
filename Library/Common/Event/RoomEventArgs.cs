@@ -7,7 +7,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Event
     {
         public string RoomID { get; set; } = "";
         public long RoomMaster { get; set; } = 0;
-        public RoomType RoomType { get; set; } = RoomType.None;
+        public RoomType RoomType { get; set; } = RoomType.All;
         public RoomState RoomState { get; set; } = RoomState.Created;
         public bool HasPassword => Password.Trim() != "";
         public string Password { get; set; } = "";
@@ -20,7 +20,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Event
                 GameMode.GameMode_Team => Constant.RoomType.Team,
                 GameMode.GameMode_MixHasPass => Constant.RoomType.MixHasPass,
                 GameMode.GameMode_TeamHasPass => Constant.RoomType.TeamHasPass,
-                _ => Constant.RoomType.None
+                _ => Constant.RoomType.All
             };
             this.Password = Password;
         }

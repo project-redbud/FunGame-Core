@@ -21,7 +21,7 @@ namespace Milimoe.FunGame.Core.Entity
             
         }
 
-        internal Room(long Id = 0, string Roomid = "-1", DateTime? CreateTime = null, User? RoomMaster = null, RoomType RoomType = RoomType.None, RoomState RoomState = RoomState.Created, string Password = "")
+        internal Room(long Id = 0, string Roomid = "-1", DateTime? CreateTime = null, User? RoomMaster = null, RoomType RoomType = RoomType.All, RoomState RoomState = RoomState.Created, string Password = "")
         {
             this.Id = Id;
             this.Roomid = Roomid;

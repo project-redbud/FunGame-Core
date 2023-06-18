@@ -26,7 +26,7 @@
 
     public enum RoomType
     {
-        None,
+        All,
         Mix,
         Team,
         MixHasPass,

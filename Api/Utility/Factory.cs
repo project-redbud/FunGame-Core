@@ -73,7 +73,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="RoomState">房间状态</param>
         /// <param name="Password">房间密码</param>
         /// <returns></returns>
-        public static Room GetRoom(long Id = 0, string Roomid = "-1", DateTime? CreateTime = null, User? RoomMaster = null, RoomType RoomType = RoomType.None, RoomState RoomState = RoomState.Created, string Password = "")
+        public static Room GetRoom(long Id = 0, string Roomid = "-1", DateTime? CreateTime = null, User? RoomMaster = null, RoomType RoomType = RoomType.All, RoomState RoomState = RoomState.Created, string Password = "")
         {
             return RoomFactory.Create(Id, Roomid, CreateTime, RoomMaster, RoomType, RoomState, Password);
         }
