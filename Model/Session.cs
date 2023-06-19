@@ -5,10 +5,39 @@ namespace Milimoe.FunGame.Core.Model
 {
     public class Session
     {
-        public Guid SocketToken { get; set; } = Guid.Empty; // SocketToken
-        public Guid LoginKey { get; set; } = Guid.Empty; // LoginKey
-        public User LoginUser { get; set; } = General.UnknownUserInstance; // 已登录的用户
-        public string LoginUserName { get; set; } = ""; // 已登录用户名
-        public Room InRoom { get; set; } = General.HallInstance; // 所处的房间
+        /// <summary>
+        /// 服务器IP地址
+        /// </summary>
+        public string Server_IP { get; set; } = "";
+
+        /// <summary>
+        /// 服务器端口号
+        /// </summary>
+        public int Server_Port { get; set; } = 0;
+
+        /// <summary>
+        /// SocketToken
+        /// </summary>
+        public Guid SocketToken { get; set; } = Guid.Empty;
+
+        /// <summary>
+        /// LoginKey
+        /// </summary>
+        public Guid LoginKey { get; set; } = Guid.Empty;
+
+        /// <summary>
+        /// 已登录的用户
+        /// </summary>
+        public User LoginUser { get; set; } = General.UnknownUserInstance;
+
+        /// <summary>
+        /// 已登录用户名
+        /// </summary>
+        public string LoginUserName { get; set; } = "";
+
+        /// <summary>
+        /// 所处的房间
+        /// </summary>
+        public Room InRoom { get; set; } = General.HallInstance;
     }
 }

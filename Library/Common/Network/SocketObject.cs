@@ -14,8 +14,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
 
         /// <summary>
         /// 从参数列表中获取指定索引的参数的Json字符串
-        /// -- 此方法仅返回Json字符串，对象类型请使用反序列化方法GetParam<T>() --
+        /// -- 此索引器仅返回Json字符串，对象类型请使用反序列化方法GetParam<T>() --
         /// -- 当然也可以自己反序列化 --
+        /// -- 基本类型可能有效，但仍建议使用反序列化方法 --
         /// </summary>
         /// <param name="index">索引</param>
         /// <returns></returns>
