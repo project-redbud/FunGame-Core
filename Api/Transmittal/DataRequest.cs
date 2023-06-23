@@ -88,12 +88,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// <returns></returns>
         public T? GetResult<T>(string key)
         {
-            object? obj = this[key];
-            if (obj != null)
-            {
-                return JsonManager.GetObject<T>(Worker.ResultData, key);
-            }
-            return default;
+            return JsonManager.GetObject<T>(Worker.ResultData, key);
         }
 
         private class Request : BaseModel
