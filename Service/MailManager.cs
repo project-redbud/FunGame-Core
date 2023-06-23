@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Net;
+﻿using System.Net;
 using System.Net.Mail;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Library.Common.Architecture;
@@ -11,8 +10,39 @@ namespace Milimoe.FunGame.Core.Service
 {
     internal class MailManager
     {
-        internal static Hashtable HashClient { get; } = new Hashtable();
+        /// <summary>
+        /// 用于保存Smtp客户端
+        /// 一个邮件服务对应一个Smtp客户端
+        /// </summary>
+        internal static Dictionary<Guid, SmtpClient> SmtpClients { get; } = new();
+        
+        /// <summary>
+        /// 用于保存邮件服务
+        /// 允许服务器同时存在多个服务
+        /// </summary>
+        internal static Dictionary<Guid, MailSender> MailSenders { get; } = new();
 
+        /// <summary>
+        /// 获取某个已经保存过的邮件服务
+        /// </summary>
+        /// <param name="MailSenderID"></param>
+        /// <returns></returns>
+        internal static MailSender? GetSender(Guid MailSenderID)
+        {
+            if (MailSenders.TryGetValue(MailSenderID, out MailSender? value))
+            {
+                return value;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 统一调用此方法发送邮件
+        /// </summary>
+        /// <param name="Sender"></param>
+        /// <param name="Mail"></param>
+        /// <param name="ErrorMsg"></param>
+        /// <returns></returns>
         internal static MailSendResult Send(MailSender Sender, MailObject Mail, out string ErrorMsg)
         {
             ErrorMsg = "";
@@ -21,7 +51,7 @@ namespace Milimoe.FunGame.Core.Service
                 SmtpClientInfo Info = Sender.SmtpClientInfo;
                 SmtpClient Smtp;
                 Guid MailSenderID = Sender.MailSenderID;
-                if (!HashClient.ContainsKey(MailSenderID))
+                if (!SmtpClients.ContainsKey(MailSenderID))
                 {
                     Smtp = new()
                     {
@@ -31,9 +61,9 @@ namespace Milimoe.FunGame.Core.Service
                         DeliveryMethod = SmtpDeliveryMethod.Network,
                         Credentials = new NetworkCredential(Info.SenderMailAddress, Info.SenderPassword)
                     };
-                    HashClient.Add(MailSenderID, Smtp);
+                    SmtpClients.Add(MailSenderID, Smtp);
                 }
-                else Smtp = (SmtpClient)HashClient[MailSenderID]!;
+                else Smtp = SmtpClients[MailSenderID];
                 MailMessage Msg = new()
                 {
                     Subject = Mail.Subject,
@@ -48,19 +78,13 @@ namespace Milimoe.FunGame.Core.Service
                 {
                     if (To.Trim() != "") Msg.To.Add(To);
                 }
-                if (Mail.CCList != null)
+                foreach (string CC in Mail.CCList)
                 {
-                    foreach (string CC in Mail.CCList)
-                    {
-                        if (CC.Trim() != "") Msg.CC.Add(CC);
-                    }
+                    if (CC.Trim() != "") Msg.CC.Add(CC);
                 }
-                if (Mail.BCCList != null)
+                foreach (string BCC in Mail.BCCList)
                 {
-                    foreach (string BCC in Mail.BCCList)
-                    {
-                        if (BCC.Trim() != "") Msg.Bcc.Add(BCC);
-                    }
+                    if (BCC.Trim() != "") Msg.Bcc.Add(BCC);
                 }
                 Smtp.SendMailAsync(Msg);
                 return MailSendResult.Success;
@@ -72,15 +96,21 @@ namespace Milimoe.FunGame.Core.Service
             }
         }
 
+        /// <summary>
+        /// 关闭邮件服务
+        /// </summary>
+        /// <param name="Sender"></param>
+        /// <returns></returns>
         internal static bool Dispose(MailSender Sender)
         {
             try
             {
                 Guid MailSenderID = Sender.MailSenderID;
-                if (HashClient.ContainsKey(MailSenderID))
+                if (SmtpClients.TryGetValue(MailSenderID, out SmtpClient? value))
                 {
-                    ((SmtpClient)HashClient[MailSenderID]!).Dispose();
-                    HashClient.Remove(MailSenderID);
+                    value.Dispose();
+                    SmtpClients.Remove(MailSenderID);
+                    MailSenders.Remove(MailSenderID);
                     return true;
                 }
                 return false;
