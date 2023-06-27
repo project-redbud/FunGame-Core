@@ -1,4 +1,5 @@
-﻿using System.Net.NetworkInformation;
+﻿using System.Collections;
+using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -135,6 +136,18 @@ namespace Milimoe.FunGame.Core.Api.Utility
         public static T? JsonDeserialize<T>(string json)
         {
             return Service.JsonManager.GetObject<T>(json);
+        }
+
+        /// <summary>
+        /// 反序列化Hashtable中的Json对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="hashtable"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public static T? JsonDeserializeFromHashtable<T>(Hashtable hashtable, string key)
+        {
+            return Service.JsonManager.GetObject<T>(hashtable, key);
         }
     }
 
