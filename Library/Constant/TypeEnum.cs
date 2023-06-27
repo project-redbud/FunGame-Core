@@ -95,7 +95,7 @@
         Server
     }
 
-    public enum ErrorType
+    public enum ErrorIPAddressType
     {
         None,
         IsNotIP,
