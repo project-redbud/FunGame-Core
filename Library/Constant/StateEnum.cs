@@ -11,8 +11,9 @@
     public enum RoomState
     {
         Created,
+        Closed,
+        Matching,
         Gaming,
-        Close,
         Complete
     }
 

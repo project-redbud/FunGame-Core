@@ -1,4 +1,5 @@
-﻿using System.Net.NetworkInformation;
+﻿using System.Collections;
+using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -56,7 +57,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        public static ErrorType IsServerAddress(string str)
+        public static ErrorIPAddressType IsServerAddress(string str)
         {
             string[] strs = str.Split(':');
             string ip;
@@ -71,11 +72,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 ip = strs[0];
                 port = Convert.ToInt32(strs[1]);
             }
-            else return ErrorType.WrongFormat;
-            if (IsIP(ip) && port > 0 && port < 65536) return ErrorType.None;
-            else if (!IsIP(ip) && port > 0 && port < 65536) return ErrorType.IsNotIP;
-            else if (IsIP(ip) && (port <= 0 || port >= 65536)) return ErrorType.IsNotPort;
-            else return ErrorType.WrongFormat;
+            else return ErrorIPAddressType.WrongFormat;
+            if (IsIP(ip) && port > 0 && port < 65536) return ErrorIPAddressType.None;
+            else if (!IsIP(ip) && port > 0 && port < 65536) return ErrorIPAddressType.IsNotIP;
+            else if (IsIP(ip) && (port <= 0 || port >= 65536)) return ErrorIPAddressType.IsNotPort;
+            else return ErrorIPAddressType.WrongFormat;
         }
 
         /// <summary>
@@ -84,12 +85,12 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="ip"></param>
         /// <param name="port"></param>
         /// <returns></returns>
-        public static ErrorType IsServerAddress(string ip, int port)
+        public static ErrorIPAddressType IsServerAddress(string ip, int port)
         {
-            if (IsIP(ip) && port > 0 && port < 65536) return ErrorType.None;
-            else if (!IsIP(ip) && port > 0 && port < 65536) return ErrorType.IsNotIP;
-            else if (IsIP(ip) && (port <= 0 || port >= 65536)) return ErrorType.IsNotPort;
-            else return ErrorType.WrongFormat;
+            if (IsIP(ip) && port > 0 && port < 65536) return ErrorIPAddressType.None;
+            else if (!IsIP(ip) && port > 0 && port < 65536) return ErrorIPAddressType.IsNotIP;
+            else if (IsIP(ip) && (port <= 0 || port >= 65536)) return ErrorIPAddressType.IsNotPort;
+            else return ErrorIPAddressType.WrongFormat;
         }
 
         /// <summary>
@@ -135,6 +136,18 @@ namespace Milimoe.FunGame.Core.Api.Utility
         public static T? JsonDeserialize<T>(string json)
         {
             return Service.JsonManager.GetObject<T>(json);
+        }
+
+        /// <summary>
+        /// 反序列化Hashtable中的Json对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="hashtable"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public static T? JsonDeserializeFromHashtable<T>(Hashtable hashtable, string key)
+        {
+            return Service.JsonManager.GetObject<T>(hashtable, key);
         }
     }
 
