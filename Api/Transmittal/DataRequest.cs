@@ -173,6 +173,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 DataRequestType.Main_UpdateRoom => DataRequestSet.Main_UpdateRoom,
                 DataRequestType.Reg_GetRegVerifyCode => DataRequestSet.Reg_GetRegVerifyCode,
                 DataRequestType.Login_GetFindPasswordVerifyCode => DataRequestSet.Login_GetFindPasswordVerifyCode,
+                DataRequestType.Login_UpdatePassword => DataRequestSet.Login_UpdatePassword,
                 DataRequestType.Room_GetRoomSettings => DataRequestSet.Room_GetRoomSettings,
                 DataRequestType.Room_GetRoomPlayerCount => DataRequestSet.Room_GetRoomPlayerCount,
                 _ => DataRequestSet.UnKnown

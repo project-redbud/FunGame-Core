@@ -67,6 +67,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string Main_UpdateRoom = "Main_UpdateRoom";
         public const string Reg_GetRegVerifyCode = "Reg_GetRegVerifyCode";
         public const string Login_GetFindPasswordVerifyCode = "Login_GetFindPasswordVerifyCode";
+        public const string Login_UpdatePassword = "Login_UpdatePassword";
         public const string Room_GetRoomSettings = "Room_GetRoomSettings";
         public const string Room_GetRoomPlayerCount = "Room_GetRoomPlayerCount";
     }
