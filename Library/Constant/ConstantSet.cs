@@ -1,4 +1,7 @@
-﻿namespace Milimoe.FunGame.Core.Library.Constant
+﻿/**
+ * 此文件用于保存字符串常量（String Set）
+ */
+namespace Milimoe.FunGame.Core.Library.Constant
 {
     public class InterfaceSet
     {
@@ -31,24 +34,41 @@
         public const string Socket = "Socket";
         public const string Unknown = "Unknown";
         public const string DataRequest = "DataRequest";
-        public const string Connect = "Connect";
-        public const string GetNotice = "GetNotice";
-        public const string Login = "Login";
-        public const string CheckLogin = "CheckLogin";
-        public const string Logout = "Logout";
-        public const string Disconnect = "Disconnect";
-        public const string HeartBeat = "HeartBeat";
-        public const string IntoRoom = "IntoRoom";
-        public const string QuitRoom = "QuitRoom";
-        public const string Chat = "Chat";
-        public const string Reg = "Reg";
-        public const string CheckReg = "CheckReg";
-        public const string CreateRoom = "CreateRoom";
-        public const string UpdateRoom = "UpdateRoom";
-        public const string ChangeRoomSetting = "ChangeRoomSetting";
-        public const string MatchRoom = "MatchRoom";
-        public const string UpdateRoomMaster = "UpdateRoomMaster";
-        public const string GetRoomPlayerCount = "GetRoomPlayerCount";
+        public const string RunTime_Connect = "RunTime_Connect";
+        public const string RunTime_Reg = "RunTime_Reg";
+        public const string RunTime_CheckReg = "RunTime_CheckReg";
+        public const string RunTime_Login = "RunTime_Login";
+        public const string RunTime_CheckLogin = "RunTime_CheckLogin";
+        public const string RunTime_Logout = "RunTime_Logout";
+        public const string RunTime_Disconnect = "RunTime_Disconnect";
+        public const string RunTime_HeartBeat = "RunTime_HeartBeat";
+        public const string Main_GetNotice = "Main_GetNotice";
+        public const string Main_IntoRoom = "Main_IntoRoom";
+        public const string Main_QuitRoom = "Main_QuitRoom";
+        public const string Main_Chat = "Main_Chat";
+        public const string Main_CreateRoom = "Main_CreateRoom";
+        public const string Main_UpdateRoom = "Main_UpdateRoom";
+        public const string Main_MatchRoom = "Main_MatchRoom";
+        public const string Room_ChangeRoomSetting = "Room_ChangeRoomSetting";
+        public const string Room_UpdateRoomMaster = "Room_UpdateRoomMaster";
+        public const string Room_GetRoomPlayerCount = "Room_GetRoomPlayerCount";
+    }
+
+    /// <summary>
+    /// 需要同步更新
+    /// Milimoe.FunGame.Core.Library.Constant.DataRequestType,
+    /// Milimoe.FunGame.Core.Api.Transmittal.DataRequest.GetTypeString(DataRequestType type)
+    /// </summary>
+    public class DataRequestSet
+    {
+        public const string UnKnown = "UnKnown";
+        public const string Main_GetNotice = "Main_GetNotice";
+        public const string Main_CreateRoom = "Main_CreateRoom";
+        public const string Main_UpdateRoom = "Main_UpdateRoom";
+        public const string Reg_GetRegVerifyCode = "Reg_GetRegVerifyCode";
+        public const string Login_GetFindPasswordVerifyCode = "Login_GetFindPasswordVerifyCode";
+        public const string Room_GetRoomSettings = "Room_GetRoomSettings";
+        public const string Room_GetRoomPlayerCount = "Room_GetRoomPlayerCount";
     }
 
     public class ReflectionSet

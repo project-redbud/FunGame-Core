@@ -59,7 +59,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             try
             {
                 SocketObject result = SocketManager.Receive();
-                if (result.SocketType == SocketMessageType.HeartBeat)
+                if (result.SocketType == SocketMessageType.RunTime_HeartBeat)
                 {
                     if (WaitHeartBeatReply != null && !WaitHeartBeatReply.IsCompleted) WaitHeartBeatReply.Wait(1);
                     _HeartBeatFaileds = 0;
@@ -79,7 +79,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
                 SocketObject[] result = SocketManager.ReceiveArray();
                 foreach (SocketObject obj in result)
                 {
-                    if (obj.SocketType == SocketMessageType.HeartBeat)
+                    if (obj.SocketType == SocketMessageType.RunTime_HeartBeat)
                     {
                         if (WaitHeartBeatReply != null && !WaitHeartBeatReply.IsCompleted) WaitHeartBeatReply.Wait(1);
                         _HeartBeatFaileds = 0;
@@ -155,7 +155,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             {
                 if (!SendingHeartBeat) _SendingHeartBeat= true;
                 // 发送心跳包
-                if (Send(SocketMessageType.HeartBeat) == SocketResult.Success)
+                if (Send(SocketMessageType.RunTime_HeartBeat) == SocketResult.Success)
                 {
                     WaitHeartBeatReply = Task.Run(() =>
                     {

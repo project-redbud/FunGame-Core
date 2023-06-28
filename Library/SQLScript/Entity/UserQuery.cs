@@ -55,6 +55,11 @@
             return $"{Constant.Command_Update} {TableName} {Constant.Command_Set} {Column_LastTime} = '{DateTime.Now}', {Column_LastIP} = '{IP}' {Constant.Command_Where} {Column_Username} = '{Username}'";
         }
         
+        public static string Update_Password(string Username, string Password)
+        {
+            return $"{Constant.Command_Update} {TableName} {Constant.Command_Set} {Column_Password} = '{Password}' {Constant.Command_Where} {Column_Username} = '{Username}'";
+        }
+        
         public static string Update_GameTime(string Username, int GameTimeMinutes)
         {
             return $"{Constant.Command_Update} {TableName} {Constant.Command_Set} {Column_GameTime} = {Column_GameTime} + {GameTimeMinutes} {Constant.Command_Where} {Column_Username} = '{Username}'";

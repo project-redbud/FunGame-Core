@@ -158,5 +158,25 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 }
             }
         }
+
+        /// <summary>
+        /// 获取Type的等效字符串
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static string GetTypeString(DataRequestType type)
+        {
+            return type switch
+            {
+                DataRequestType.Main_GetNotice => DataRequestSet.Main_GetNotice,
+                DataRequestType.Main_CreateRoom => DataRequestSet.Main_CreateRoom,
+                DataRequestType.Main_UpdateRoom => DataRequestSet.Main_UpdateRoom,
+                DataRequestType.Reg_GetRegVerifyCode => DataRequestSet.Reg_GetRegVerifyCode,
+                DataRequestType.Login_GetFindPasswordVerifyCode => DataRequestSet.Login_GetFindPasswordVerifyCode,
+                DataRequestType.Room_GetRoomSettings => DataRequestSet.Room_GetRoomSettings,
+                DataRequestType.Room_GetRoomPlayerCount => DataRequestSet.Room_GetRoomPlayerCount,
+                _ => DataRequestSet.UnKnown
+            };
+        }
     }
 }

@@ -1,4 +1,7 @@
-﻿namespace Milimoe.FunGame.Core.Library.Constant
+﻿/**
+ * 此文件保存Result（结果）的枚举
+ */
+namespace Milimoe.FunGame.Core.Library.Constant
 {
     public enum MessageResult
     {
