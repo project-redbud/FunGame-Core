@@ -179,5 +179,17 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 _ => DataRequestSet.UnKnown
             };
         }
+
+        /// <summary>
+        /// 反序列化Hashtable中的Json对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="hashtable"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public static T? GetHashtableJsonObject<T>(Hashtable hashtable, string key)
+        {
+            return Service.JsonManager.GetObject<T>(hashtable, key);
+        }
     }
 }
