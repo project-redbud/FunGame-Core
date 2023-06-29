@@ -3,7 +3,6 @@ using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
-using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Api.Transmittal
 {
@@ -88,7 +87,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// <returns></returns>
         public T? GetResult<T>(string key)
         {
-            return JsonManager.GetObject<T>(Worker.ResultData, key);
+            return GetHashtableJsonObject<T>(Worker.ResultData, key);
         }
 
         private class Request : BaseModel
@@ -189,7 +188,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// <returns></returns>
         public static T? GetHashtableJsonObject<T>(Hashtable hashtable, string key)
         {
-            return Service.JsonManager.GetObject<T>(hashtable, key);
+            return Utility.NetworkUtility.JsonDeserializeFromHashtable<T>(hashtable, key);
         }
     }
 }
