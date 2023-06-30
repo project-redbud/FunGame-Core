@@ -3,7 +3,6 @@ using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
-using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Api.Transmittal
 {
@@ -88,7 +87,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// <returns></returns>
         public T? GetResult<T>(string key)
         {
-            return JsonManager.GetObject<T>(Worker.ResultData, key);
+            return GetHashtableJsonObject<T>(Worker.ResultData, key);
         }
 
         private class Request : BaseModel
@@ -157,6 +156,39 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                     _Error = e.GetErrorInfo();
                 }
             }
+        }
+
+        /// <summary>
+        /// 获取Type的等效字符串
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static string GetTypeString(DataRequestType type)
+        {
+            return type switch
+            {
+                DataRequestType.Main_GetNotice => DataRequestSet.Main_GetNotice,
+                DataRequestType.Main_CreateRoom => DataRequestSet.Main_CreateRoom,
+                DataRequestType.Main_UpdateRoom => DataRequestSet.Main_UpdateRoom,
+                DataRequestType.Reg_GetRegVerifyCode => DataRequestSet.Reg_GetRegVerifyCode,
+                DataRequestType.Login_GetFindPasswordVerifyCode => DataRequestSet.Login_GetFindPasswordVerifyCode,
+                DataRequestType.Login_UpdatePassword => DataRequestSet.Login_UpdatePassword,
+                DataRequestType.Room_GetRoomSettings => DataRequestSet.Room_GetRoomSettings,
+                DataRequestType.Room_GetRoomPlayerCount => DataRequestSet.Room_GetRoomPlayerCount,
+                _ => DataRequestSet.UnKnown
+            };
+        }
+
+        /// <summary>
+        /// 反序列化Hashtable中的Json对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="hashtable"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public static T? GetHashtableJsonObject<T>(Hashtable hashtable, string key)
+        {
+            return Utility.NetworkUtility.JsonDeserializeFromHashtable<T>(hashtable, key);
         }
     }
 }

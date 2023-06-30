@@ -53,7 +53,7 @@ namespace Milimoe.FunGame.Core.Model
 
             try
             {
-                result = _Socket?.Send(SocketMessageType.Disconnect, "") == SocketResult.Success;
+                result = _Socket?.Send(SocketMessageType.RunTime_Disconnect, "") == SocketResult.Success;
             }
             catch (Exception e)
             {
@@ -196,15 +196,15 @@ namespace Milimoe.FunGame.Core.Model
                     result = type;
                     switch (type)
                     {
-                        case SocketMessageType.Connect:
+                        case SocketMessageType.RunTime_Connect:
                             if (!SocketHandler_Connect(ServerMessage)) return SocketMessageType.Unknown;
                             break;
 
-                        case SocketMessageType.Disconnect:
+                        case SocketMessageType.RunTime_Disconnect:
                             SocketHandler_Disconnect(ServerMessage);
                             break;
 
-                        case SocketMessageType.HeartBeat:
+                        case SocketMessageType.RunTime_HeartBeat:
                             if (_Socket != null && _Socket.Connected)
                             {
                                 SocketHandler_HeartBeat(ServerMessage);

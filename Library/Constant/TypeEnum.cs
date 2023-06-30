@@ -1,4 +1,7 @@
-﻿namespace Milimoe.FunGame.Core.Library.Constant
+﻿/**
+ * 此文件保存Type（类型）的枚举
+ */
+namespace Milimoe.FunGame.Core.Library.Constant
 {
     public enum FormType
     {
@@ -56,37 +59,41 @@
     {
         Unknown,
         DataRequest,
-        Connect,
-        GetNotice,
-        Login,
-        CheckLogin,
-        Logout,
-        ForceLogout,
-        Disconnect,
-        HeartBeat,
-        IntoRoom,
-        QuitRoom,
-        Chat,
-        Reg,
-        CheckReg,
-        CreateRoom,
-        UpdateRoom,
-        ChangeRoomSetting,
-        MatchRoom,
-        UpdateRoomMaster,
-        GetRoomPlayerCount
+        RunTime_Connect,
+        RunTime_Reg,
+        RunTime_CheckReg,
+        RunTime_Login,
+        RunTime_CheckLogin,
+        RunTime_Logout,
+        RunTime_ForceLogout,
+        RunTime_Disconnect,
+        RunTime_HeartBeat,
+        Main_GetNotice,
+        Main_IntoRoom,
+        Main_QuitRoom,
+        Main_Chat,
+        Main_CreateRoom,
+        Main_UpdateRoom,
+        Main_MatchRoom,
+        Room_ChangeRoomSetting,
+        Room_UpdateRoomMaster,
+        Room_GetRoomPlayerCount
     }
 
+    /// <summary>
+    /// 需要同步更新Milimoe.FunGame.Core.Library.Constant.DataRequestSet
+    /// </summary>
     public enum DataRequestType
     {
         UnKnown,
-        GetNotice,
-        GetRegVerifyCode,   
-        CreateRoom,
-        UpdateRoom,
-        GetRoomSettings,
-        GetRoomPlayerCount,
-        GetFindPasswordVerifyCode
+        Main_GetNotice,
+        Main_CreateRoom,
+        Main_UpdateRoom,
+        Reg_GetRegVerifyCode,   
+        Login_GetFindPasswordVerifyCode,
+        Login_UpdatePassword,
+        Room_GetRoomSettings,
+        Room_GetRoomPlayerCount
     }
 
     public enum SocketRuntimeType

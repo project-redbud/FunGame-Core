@@ -1,6 +1,9 @@
 ﻿using System.Text;
 using Milimoe.FunGame.Core.Entity;
 
+/**
+ * 此文件保存常用的对象常量
+ */
 namespace Milimoe.FunGame.Core.Library.Constant
 {
     public class General
