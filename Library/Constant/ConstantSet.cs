@@ -34,24 +34,33 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string Socket = "Socket";
         public const string Unknown = "Unknown";
         public const string DataRequest = "DataRequest";
-        public const string RunTime_Connect = "RunTime_Connect";
-        public const string RunTime_Reg = "RunTime_Reg";
-        public const string RunTime_CheckReg = "RunTime_CheckReg";
-        public const string RunTime_Login = "RunTime_Login";
-        public const string RunTime_CheckLogin = "RunTime_CheckLogin";
-        public const string RunTime_Logout = "RunTime_Logout";
-        public const string RunTime_Disconnect = "RunTime_Disconnect";
-        public const string RunTime_HeartBeat = "RunTime_HeartBeat";
-        public const string Main_GetNotice = "Main_GetNotice";
-        public const string Main_IntoRoom = "Main_IntoRoom";
-        public const string Main_QuitRoom = "Main_QuitRoom";
-        public const string Main_Chat = "Main_Chat";
-        public const string Main_CreateRoom = "Main_CreateRoom";
-        public const string Main_UpdateRoom = "Main_UpdateRoom";
-        public const string Main_MatchRoom = "Main_MatchRoom";
-        public const string Room_ChangeRoomSetting = "Room_ChangeRoomSetting";
-        public const string Room_UpdateRoomMaster = "Room_UpdateRoomMaster";
-        public const string Room_GetRoomPlayerCount = "Room_GetRoomPlayerCount";
+        /**
+         * RunTime
+         */
+        public const string RunTime_Connect = "RunTime::Connect";
+        public const string RunTime_Reg = "RunTime::Reg";
+        public const string RunTime_CheckReg = "RunTime::CheckReg";
+        public const string RunTime_Login = "RunTime::Login";
+        public const string RunTime_CheckLogin = "RunTime::CheckLogin";
+        public const string RunTime_Logout = "RunTime::Logout";
+        public const string RunTime_Disconnect = "RunTime::Disconnect";
+        public const string RunTime_HeartBeat = "RunTime::HeartBeat";
+        /**
+         * Main
+         */
+        public const string Main_GetNotice = "Main::GetNotice";
+        public const string Main_IntoRoom = "Main::IntoRoom";
+        public const string Main_QuitRoom = "Main::QuitRoom";
+        public const string Main_Chat = "Main::Chat";
+        public const string Main_CreateRoom = "Main::CreateRoom";
+        public const string Main_UpdateRoom = "Main::UpdateRoom";
+        public const string Main_MatchRoom = "Main::MatchRoom";
+        /**
+         * Room
+         */
+        public const string Room_ChangeRoomSetting = "Room::ChangeRoomSetting";
+        public const string Room_UpdateRoomMaster = "Room::UpdateRoomMaster";
+        public const string Room_GetRoomPlayerCount = "Room::GetRoomPlayerCount";
     }
 
     /// <summary>
@@ -62,14 +71,26 @@ namespace Milimoe.FunGame.Core.Library.Constant
     public class DataRequestSet
     {
         public const string UnKnown = "UnKnown";
-        public const string Main_GetNotice = "Main_GetNotice";
-        public const string Main_CreateRoom = "Main_CreateRoom";
-        public const string Main_UpdateRoom = "Main_UpdateRoom";
-        public const string Reg_GetRegVerifyCode = "Reg_GetRegVerifyCode";
-        public const string Login_GetFindPasswordVerifyCode = "Login_GetFindPasswordVerifyCode";
-        public const string Login_UpdatePassword = "Login_UpdatePassword";
-        public const string Room_GetRoomSettings = "Room_GetRoomSettings";
-        public const string Room_GetRoomPlayerCount = "Room_GetRoomPlayerCount";
+        /**
+         * Main
+         */
+        public const string Main_GetNotice = "Main::GetNotice";
+        public const string Main_CreateRoom = "Main::CreateRoom";
+        public const string Main_UpdateRoom = "Main::UpdateRoom";
+        /**
+         * Register
+         */
+        public const string Reg_GetRegVerifyCode = "Reg::GetRegVerifyCode";
+        /**
+         * Login
+         */
+        public const string Login_GetFindPasswordVerifyCode = "Login::GetFindPasswordVerifyCode";
+        public const string Login_UpdatePassword = "Login::UpdatePassword";
+        /**
+         * Room
+         */
+        public const string Room_GetRoomSettings = "Room::GetRoomSettings";
+        public const string Room_GetRoomPlayerCount = "Room::GetRoomPlayerCount";
     }
 
     public class ReflectionSet
