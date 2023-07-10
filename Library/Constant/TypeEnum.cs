@@ -185,7 +185,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Starmark,
         PurityNatural,
         PurityContemporary,
-        Light,
+        Bright,
         Shadow,
         Element,
         Fleabane,
