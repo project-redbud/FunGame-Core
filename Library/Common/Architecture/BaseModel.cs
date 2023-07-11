@@ -4,17 +4,18 @@ using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Library.Common.Architecture
 {
-    public class BaseModel : ISocketHandler, IDisposable
+    /// <summary>
+    /// <para>继承 AsyncWorker 用法：</para>
+    /// <para>1、调用Socket.Send()前，请设置为等待状态：SetWorking();</para>
+    /// <para>2、调用Socket.Send() == Success后，请等待任务完成：WaitForWorkDone();</para>
+    /// <para>3、在其他任何地方修改Working状态，均会使任务终止。</para>
+    /// </summary>
+    public class BaseModel : AsyncWorker<SocketObject>, ISocketHandler, IDisposable
     {
         /// <summary>
         /// 接收到的SocketObject实例
         /// </summary>
-        protected virtual SocketObject Work { get; set; }
-
-        /// <summary>
-        /// 是否处于等待服务器响应的状态
-        /// </summary>
-        protected virtual bool Working { get; set; } = false;
+        protected override SocketObject Work { get; set; }
 
         /// <summary>
         /// Socket
@@ -72,26 +73,6 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
                 }
             }
             IsDisposed = true;
-        }
-
-        /// <summary>
-        /// 调用Socket.Send()前，请设置为等待状态
-        /// </summary>
-        protected void SetWorking()
-        {
-            Working = true;
-            Work = default;
-        }
-
-        /// <summary>
-        /// 调用Socket.Send() == Success后，请等待任务完成
-        /// </summary>
-        protected void WaitForWorkDone()
-        {
-            while (true)
-            {
-                if (!Working) break;
-            }
         }
     }
 }

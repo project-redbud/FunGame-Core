@@ -100,7 +100,6 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             private readonly Socket? Socket;
             private readonly DataRequestType RequestType;
 
-            private bool _Finish = false;
             private RequestResult _Result = RequestResult.Missing;
             private string _Error = "";
             private Hashtable _ResultData = new();
@@ -109,19 +108,35 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             {
                 try
                 {
+                    SetWorking();
                     if (Socket?.Send(SocketMessageType.DataRequest, RequestType, RequestData) == SocketResult.Success)
                     {
-                        while (true)
-                        {
-                            if (_Finish) break;
-                            Thread.Sleep(100);
-                        }
+                        WaitForWorkDone();
                     }
                     else throw new ConnectFailedException();
                 }
                 catch (Exception e)
                 {
-                    _Finish = true;
+                    Working = false;
+                    _Result = RequestResult.Fail;
+                    _Error = e.GetErrorInfo();
+                }
+            }
+            
+            public async Task SendRequestAsync()
+            {
+                try
+                {
+                    SetWorking();
+                    if (Socket?.Send(SocketMessageType.DataRequest, RequestType, RequestData) == SocketResult.Success)
+                    {
+                        await Task.Factory.StartNew(WaitForWorkDone);
+                    }
+                    else throw new ConnectFailedException();
+                }
+                catch (Exception e)
+                {
+                    Working = false;
                     _Result = RequestResult.Fail;
                     _Error = e.GetErrorInfo();
                 }
@@ -139,19 +154,20 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 {
                     if (SocketObject.SocketType == SocketMessageType.DataRequest)
                     {
+                        Dispose();
+                        Work = SocketObject;
+                        Working = false;
                         DataRequestType type = SocketObject.GetParam<DataRequestType>(0);
                         if (type == RequestType)
                         {
-                            Dispose();
                             _ResultData = SocketObject.GetParam<Hashtable>(1) ?? new();
-                            _Finish = true;
                             _Result = RequestResult.Success;
                         }
                     }
                 }
                 catch (Exception e)
                 {
-                    _Finish = true;
+                    Working = false;
                     _Result = RequestResult.Fail;
                     _Error = e.GetErrorInfo();
                 }
