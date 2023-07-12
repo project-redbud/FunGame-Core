@@ -10,7 +10,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
     /// <para>2、调用Socket.Send() == Success后，请等待任务完成：WaitForWorkDone();</para>
     /// <para>3、在其他任何地方修改Working状态，均会使任务终止。</para>
     /// </summary>
-    public class BaseModel : AsyncWorker<SocketObject>, ISocketHandler, IDisposable
+    public class BaseSocketHandlerModel : AsyncAwaiter<SocketObject>, ISocketHandler, IDisposable
     {
         /// <summary>
         /// 接收到的SocketObject实例
@@ -26,7 +26,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
         /// 继承请调用base构造
         /// </summary>
         /// <param name="socket">Socket</param>
-        public BaseModel(Socket? socket)
+        public BaseSocketHandlerModel(Socket? socket)
         {
             if (socket != null)
             {

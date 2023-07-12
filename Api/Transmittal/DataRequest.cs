@@ -90,7 +90,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             return GetHashtableJsonObject<T>(Worker.ResultData, key);
         }
 
-        private class Request : BaseModel
+        private class Request : BaseSocketHandlerModel
         {
             public Hashtable RequestData { get; } = new();
             public Hashtable ResultData => _ResultData;
@@ -130,7 +130,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                     SetWorking();
                     if (Socket?.Send(SocketMessageType.DataRequest, RequestType, RequestData) == SocketResult.Success)
                     {
-                        await Task.Factory.StartNew(WaitForWorkDone);
+                        await WaitForWorkDoneAsync();
                     }
                     else throw new ConnectFailedException();
                 }

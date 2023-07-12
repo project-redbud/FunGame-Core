@@ -1,12 +1,10 @@
-﻿using Milimoe.FunGame.Core.Library.Common.Network;
-
-namespace Milimoe.FunGame.Core.Library.Common.Architecture
+﻿namespace Milimoe.FunGame.Core.Library.Common.Architecture
 {
     /// <summary>
-    /// 继承这个类可以获得后台等待的功能
-    /// <para>参考实现 <see cref="BaseModel"/></para>
+    /// 继承这个类可以获得异步等待的功能
+    /// <para>参考实现 <see cref="BaseSocketHandlerModel"/></para>
     /// </summary>
-    public abstract class AsyncWorker<T>
+    public abstract class AsyncAwaiter<T>
     {
         /// <summary>
         /// 接收到的实例
@@ -28,7 +26,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
         }
 
         /// <summary>
-        /// 请等待任务完成
+        /// 等待任务完成（需要自己异步）
         /// </summary>
         protected virtual void WaitForWorkDone()
         {
@@ -37,6 +35,21 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
                 if (!Working) break;
                 Thread.Sleep(100);
             }
+        }
+
+        /// <summary>
+        /// 异步等待任务完成
+        /// </summary>
+        protected async virtual Task WaitForWorkDoneAsync()
+        {
+            await Task.Factory.StartNew(() =>
+            {
+                while (true)
+                {
+                    if (!Working) break;
+                    Thread.Sleep(100);
+                }
+            });
         }
     }
 }
