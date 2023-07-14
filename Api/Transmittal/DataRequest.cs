@@ -1,8 +1,8 @@
 ﻿using System.Collections;
-using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
+using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Api.Transmittal
 {
@@ -78,6 +78,16 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             Worker.SendRequest();
             return Result;
         }
+        
+        /// <summary>
+        /// 异步向服务器发送数据请求
+        /// </summary>
+        /// <returns></returns>
+        public async Task<RequestResult> SendRequestAsync()
+        {
+            await Worker.SendRequestAsync();
+            return Result;
+        }
 
         /// <summary>
         /// 获取指定key对应的反序列化对象
@@ -90,7 +100,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             return GetHashtableJsonObject<T>(Worker.ResultData, key);
         }
 
-        private class Request : BaseSocketHandlerModel
+        private class Request : SocketHandlerModel
         {
             public Hashtable RequestData { get; } = new();
             public Hashtable ResultData => _ResultData;
@@ -204,7 +214,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// <returns></returns>
         public static T? GetHashtableJsonObject<T>(Hashtable hashtable, string key)
         {
-            return Utility.NetworkUtility.JsonDeserializeFromHashtable<T>(hashtable, key);
+            return Service.JsonManager.GetObject<T>(hashtable, key);
         }
     }
 }

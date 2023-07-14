@@ -1,16 +1,17 @@
 ﻿using Milimoe.FunGame.Core.Interface.Base;
+using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Service;
 
-namespace Milimoe.FunGame.Core.Library.Common.Architecture
+namespace Milimoe.FunGame.Core.Model
 {
     /// <summary>
-    /// <para>继承 AsyncWorker 用法：</para>
+    /// <para>继承 AsyncAwaiter 用法：</para>
     /// <para>1、调用Socket.Send()前，请设置为等待状态：SetWorking();</para>
     /// <para>2、调用Socket.Send() == Success后，请等待任务完成：WaitForWorkDone();</para>
     /// <para>3、在其他任何地方修改Working状态，均会使任务终止。</para>
     /// </summary>
-    public class BaseSocketHandlerModel : AsyncAwaiter<SocketObject>, ISocketHandler, IDisposable
+    public class SocketHandlerModel : AsyncAwaiter<SocketObject>, ISocketHandler, IDisposable
     {
         /// <summary>
         /// 接收到的SocketObject实例
@@ -26,7 +27,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
         /// 继承请调用base构造
         /// </summary>
         /// <param name="socket">Socket</param>
-        public BaseSocketHandlerModel(Socket? socket)
+        public SocketHandlerModel(Socket? socket)
         {
             if (socket != null)
             {
@@ -35,14 +36,14 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
             }
             else throw new SocketCreateReceivingException();
         }
-        
+
         /// <summary>
         /// 继承请重写此方法
         /// </summary>
         /// <param name="SocketObject">SocketObject</param>
         public virtual void SocketHandler(SocketObject SocketObject)
         {
-            
+
         }
 
         /// <summary>

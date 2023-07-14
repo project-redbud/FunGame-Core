@@ -1,10 +1,10 @@
 ﻿using System.Net;
 using System.Net.Mail;
 using Milimoe.FunGame.Core.Api.Transmittal;
-using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
+using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Service
 {

@@ -147,7 +147,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns></returns>
         public static T? JsonDeserializeFromHashtable<T>(Hashtable hashtable, string key)
         {
-            return Service.JsonManager.GetObject<T>(hashtable, key);
+            return Transmittal.DataRequest.GetHashtableJsonObject<T>(hashtable, key);
         }
     }
 

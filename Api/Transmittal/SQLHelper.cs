@@ -1,7 +1,7 @@
 ﻿using System.Data;
 using Milimoe.FunGame.Core.Interface.Base;
-using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Api.Transmittal
 {

@@ -1,8 +1,10 @@
-﻿namespace Milimoe.FunGame.Core.Library.Common.Architecture
+﻿using Milimoe.FunGame.Core.Model;
+
+namespace Milimoe.FunGame.Core.Library.Common.Architecture
 {
     /// <summary>
     /// 继承这个类可以获得异步等待的功能
-    /// <para>参考实现 <see cref="BaseSocketHandlerModel"/></para>
+    /// <para>参考实现 <see cref="SocketHandlerModel"/></para>
     /// </summary>
     public abstract class AsyncAwaiter<T>
     {
