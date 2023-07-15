@@ -1,8 +1,8 @@
 ﻿using System.Collections;
+using Milimoe.FunGame.Core.Controller;
 using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
-using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Api.Transmittal
 {
@@ -100,7 +100,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             return GetHashtableJsonObject<T>(Worker.ResultData, key);
         }
 
-        private class Request : SocketHandlerModel
+        private class Request : SocketHandlerController
         {
             public Hashtable RequestData { get; } = new();
             public Hashtable ResultData => _ResultData;
