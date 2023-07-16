@@ -89,6 +89,11 @@ namespace Milimoe.FunGame.Core.Controller
         /// </summary>
         /// <returns>连接结果</returns>
         public abstract ConnectResult Connect();
+        
+        /// <summary>
+        /// 客户端需要自行实现自动登录的事务
+        /// </summary>
+        public abstract void AutoLogin();
 
         /// <summary>
         /// 关闭所有连接
