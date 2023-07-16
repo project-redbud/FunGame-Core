@@ -93,7 +93,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// <summary>
         /// 客户端需要自行实现自动登录的事务
         /// </summary>
-        public abstract void AutoLogin();
+        public abstract void AutoLogin(string Username, string Password, string AutoKey);
 
         /// <summary>
         /// 关闭所有连接
