@@ -164,12 +164,12 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 {
                     if (SocketObject.SocketType == SocketMessageType.DataRequest)
                     {
-                        Dispose();
                         Work = SocketObject;
                         Working = false;
                         DataRequestType type = SocketObject.GetParam<DataRequestType>(0);
                         if (type == RequestType)
                         {
+                            Dispose();
                             _ResultData = SocketObject.GetParam<Hashtable>(1) ?? new();
                             _Result = RequestResult.Success;
                         }
