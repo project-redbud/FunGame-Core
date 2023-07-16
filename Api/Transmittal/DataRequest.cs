@@ -53,9 +53,10 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// </summary>
         /// <param name="Socket"></param>
         /// <param name="RequestType"></param>
-        internal DataRequest(Socket Socket, DataRequestType RequestType)
+        /// <param name="IsLongRunning"></param>
+        internal DataRequest(Socket Socket, DataRequestType RequestType, bool IsLongRunning = false)
         {
-            Worker = new(Socket, RequestType);
+            Worker = new(Socket, RequestType, IsLongRunning);
         }
 
         /// <summary>
@@ -67,6 +68,14 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         {
             if (Worker.RequestData.ContainsKey(key)) Worker.RequestData[key] = value;
             else Worker.RequestData.Add(key, value);
+        }
+
+        /// <summary>
+        /// 长时间运行的数据请求需要在使用完毕后自行关闭
+        /// </summary>
+        public void Dispose()
+        {
+            Worker.Dispose();
         }
 
         /// <summary>
@@ -109,10 +118,11 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
 
             private readonly Socket? Socket;
             private readonly DataRequestType RequestType;
+            private readonly bool _IsLongRunning;
 
+            private Hashtable _ResultData = new();
             private RequestResult _Result = RequestResult.Missing;
             private string _Error = "";
-            private Hashtable _ResultData = new();
 
             public void SendRequest()
             {
@@ -152,10 +162,11 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 }
             }
 
-            public Request(Socket? socket, DataRequestType requestType) : base(socket)
+            public Request(Socket? Socket, DataRequestType RequestType, bool IsLongRunning = false) : base(Socket)
             {
-                Socket = socket;
-                RequestType = requestType;
+                this.Socket = Socket;
+                this.RequestType = RequestType;
+                _IsLongRunning = IsLongRunning;
             }
 
             public override void SocketHandler(SocketObject SocketObject)
@@ -169,7 +180,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                         DataRequestType type = SocketObject.GetParam<DataRequestType>(0);
                         if (type == RequestType)
                         {
-                            Dispose();
+                            if (!_IsLongRunning) Dispose();
                             _ResultData = SocketObject.GetParam<Hashtable>(1) ?? new();
                             _Result = RequestResult.Success;
                         }

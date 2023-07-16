@@ -56,6 +56,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// </summary>
         public void Dispose()
         {
+            OnDisposed();
             Dispose(true);
             GC.SuppressFinalize(this);
         }
@@ -74,6 +75,28 @@ namespace Milimoe.FunGame.Core.Controller
                 }
             }
             IsDisposed = true;
+        }
+
+        /// <summary>
+        /// 关闭事件
+        /// </summary>
+        /// <param name="SocketObject">SocketObject</param>
+        protected delegate void DisposedEvent();
+
+        /// <summary>
+        /// <para>Controller关闭时事件</para>
+        /// <para>不建议对Disposed事件重写，建议使用事件</para>
+        /// <para>事件会在base.Dispose()执行前触发</para>
+        /// </summary>
+        protected static event DisposedEvent? Disposed;
+
+        /// <summary>
+        /// 触发关闭事件
+        /// </summary>
+        /// <param name="SocketObject">SocketObject</param>
+        protected static void OnDisposed()
+        {
+            Disposed?.Invoke();
         }
     }
 }

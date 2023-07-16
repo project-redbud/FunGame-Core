@@ -151,6 +151,22 @@ namespace Milimoe.FunGame.Core.Controller
             }
             throw new ConnectFailedException();
         }
+        
+        /// <summary>
+        /// 基于本地已连接的Socket创建长时间运行的数据请求
+        /// </summary>
+        /// <param name="RequestType"></param>
+        /// <returns></returns>
+        /// <exception cref="ConnectFailedException"></exception>
+        public DataRequest NewLongRunningDataRequest(DataRequestType RequestType)
+        {
+            if (_Socket != null)
+            {
+                DataRequest request = new(_Socket, RequestType, true);
+                return request;
+            }
+            throw new ConnectFailedException();
+        }
 
         /// <summary>
         /// 开始接收服务器信息
