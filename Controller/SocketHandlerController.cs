@@ -85,7 +85,7 @@ namespace Milimoe.FunGame.Core.Controller
 
         /// <summary>
         /// <para>Controller关闭时事件</para>
-        /// <para>不建议对Disposed事件重写，建议使用事件</para>
+        /// <para>不建议new Dispose()方法，建议使用事件</para>
         /// <para>事件会在base.Dispose()执行前触发</para>
         /// </summary>
         protected static event DisposedEvent? Disposed;
