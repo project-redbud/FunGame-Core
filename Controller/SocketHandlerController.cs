@@ -88,13 +88,13 @@ namespace Milimoe.FunGame.Core.Controller
         /// <para>不建议new Dispose()方法，建议使用事件</para>
         /// <para>事件会在base.Dispose()执行前触发</para>
         /// </summary>
-        protected static event DisposedEvent? Disposed;
+        protected event DisposedEvent? Disposed;
 
         /// <summary>
         /// 触发关闭事件
         /// </summary>
         /// <param name="SocketObject">SocketObject</param>
-        protected static void OnDisposed()
+        protected void OnDisposed()
         {
             Disposed?.Invoke();
         }
