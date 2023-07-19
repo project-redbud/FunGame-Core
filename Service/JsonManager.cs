@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Milimoe.FunGame.Core.Library.Common.JsonConverter;

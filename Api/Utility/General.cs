@@ -2,6 +2,7 @@
 using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Core.Library.Constant;
 
 // 通用工具类，客户端和服务器端都可以直接调用的工具方法都可以写在这里
@@ -379,6 +380,25 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
             return new string(Verification);
         }
+    }
+
+    #endregion
+
+    #region 多线程服务
+
+    public class TaskUtility
+    {
+        /// <summary>
+        /// 开启一个任务：调用返回对象的OnCompleted()方法可以执行后续操作，支持异步
+        /// </summary>
+        /// <param name="action"></param>
+        public static TaskAwaiter StartAndAwaitTask(Action action) => new(Service.TaskManager.StartAndAwaitTask(action));
+
+        /// <summary>
+        /// 开启一个任务：调用返回对象的OnCompleted()方法可以执行后续操作，支持异步
+        /// </summary>
+        /// <param name="task"></param>
+        public static TaskAwaiter StartAndAwaitTask(Func<Task> task) => new(Service.TaskManager.StartAndAwaitTask(task));
     }
 
     #endregion
