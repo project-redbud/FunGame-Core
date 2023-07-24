@@ -17,13 +17,13 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
                     string propertyName = reader.GetString() ?? "";
-                    ReadPropertyName(ref reader, propertyName, ref result);
+                    ReadPropertyName(ref reader, propertyName, options, ref result);
                 }
             }
 
             return result;
         }
 
-        public abstract void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, ref T? result);
+        public abstract void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref T? result);
     }
 }
