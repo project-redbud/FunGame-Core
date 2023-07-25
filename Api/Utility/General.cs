@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -129,6 +130,18 @@ namespace Milimoe.FunGame.Core.Api.Utility
         }
 
         /// <summary>
+        /// 返回目标对象的Json字符串 可指定反序列化选项
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static string JsonSerialize<T>(T obj, JsonSerializerOptions options)
+        {
+            return Service.JsonManager.GetString(obj, options);
+        }
+
+        /// <summary>
         /// 反序列化Json对象
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -140,6 +153,18 @@ namespace Milimoe.FunGame.Core.Api.Utility
         }
 
         /// <summary>
+        /// 反序列化Json对象 可指定反序列化选项
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="json"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static T? JsonDeserialize<T>(string json, JsonSerializerOptions options)
+        {
+            return Service.JsonManager.GetObject<T>(json, options);
+        }
+
+        /// <summary>
         /// 反序列化Hashtable中的Json对象
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -148,7 +173,20 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns></returns>
         public static T? JsonDeserializeFromHashtable<T>(Hashtable hashtable, string key)
         {
-            return Transmittal.DataRequest.GetHashtableJsonObject<T>(hashtable, key);
+            return Service.JsonManager.GetObject<T>(hashtable, key);
+        }
+
+        /// <summary>
+        /// 反序列化Hashtable中的Json对象 可指定反序列化选项
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="hashtable"></param>
+        /// <param name="key"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static T? JsonDeserializeFromHashtable<T>(Hashtable hashtable, string key, JsonSerializerOptions options)
+        {
+            return Service.JsonManager.GetObject<T>(hashtable, key, options);
         }
     }
 
