@@ -17,6 +17,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
                     string propertyName = reader.GetString() ?? "";
+                    reader.Read();
                     ReadPropertyName(ref reader, propertyName, options, ref result);
                 }
             }
