@@ -437,6 +437,19 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="task"></param>
         public static TaskAwaiter StartAndAwaitTask(Func<Task> task) => new(Service.TaskManager.StartAndAwaitTask(task));
+
+        /// <summary>
+        /// 开启一个计时器任务
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="milliseconds"></param>
+        public static void RunTimer(Action action, int milliseconds)
+        {
+            Service.TaskManager.StartAndAwaitTask(async () =>
+            {
+                await Task.Delay(milliseconds);
+            }).OnCompleted(action);
+        }
     }
 
     #endregion
