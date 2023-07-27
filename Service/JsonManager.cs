@@ -39,6 +39,18 @@ namespace Milimoe.FunGame.Core.Service
         }
 
         /// <summary>
+        /// 获取Json字符串
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        internal static string GetString<T>(T obj, JsonSerializerOptions options)
+        {
+            return JsonSerializer.Serialize(obj, options);
+        }
+
+        /// <summary>
         /// 反序列化Json对象
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -47,6 +59,18 @@ namespace Milimoe.FunGame.Core.Service
         internal static T? GetObject<T>(string json)
         {
             return JsonSerializer.Deserialize<T>(json, GeneralOptions);
+        }
+
+        /// <summary>
+        /// 反序列化Json对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="json"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        internal static T? GetObject<T>(string json, JsonSerializerOptions options)
+        {
+            return JsonSerializer.Deserialize<T>(json, options);
         }
         
         /// <summary>
@@ -57,6 +81,18 @@ namespace Milimoe.FunGame.Core.Service
         internal static object? GetObject(string json)
         {
             return JsonSerializer.Deserialize<object>(json, GeneralOptions);
+        }
+
+        /// <summary>
+        /// 反序列化Json对象，此方法可能无法返回正确的类型，请注意辨别
+        /// </summary>
+        /// <param name="json"></param>
+        /// <param name=""></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        internal static object? GetObject(string json, JsonSerializerOptions options)
+        {
+            return JsonSerializer.Deserialize<object>(json, options);
         }
 
         /// <summary>
@@ -97,6 +133,28 @@ namespace Milimoe.FunGame.Core.Service
         }
 
         /// <summary>
+        /// 反序列化Hashtable中Key对应的Json对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="table"></param>
+        /// <param name="key"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        internal static T? GetObject<T>(Hashtable table, string key, JsonSerializerOptions options)
+        {
+            if (table.ContainsKey(key))
+            {
+                JsonElement? element = (JsonElement?)table[key];
+                if (element != null)
+                { 
+                    T? result = ((JsonElement)element).Deserialize<T>(options);
+                    return result;
+                }
+            }
+            return default;
+        }
+
+        /// <summary>
         /// 反序列化多个Json对象
         /// 注意必须是相同的Json对象才可以使用此方法解析
         /// </summary>
@@ -107,6 +165,20 @@ namespace Milimoe.FunGame.Core.Service
         {
             json = "[" + json.Replace("}{", "},{") + "]"; // 将Json字符串转换为数组
             return JsonSerializer.Deserialize<List<T>>(json, GeneralOptions) ?? new List<T>();
+        }
+
+        /// <summary>
+        /// 反序列化多个Json对象
+        /// 注意必须是相同的Json对象才可以使用此方法解析
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="json"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        internal static List<T> GetObjects<T>(string json, JsonSerializerOptions options)
+        {
+            json = "[" + json.Replace("}{", "},{") + "]"; // 将Json字符串转换为数组
+            return JsonSerializer.Deserialize<List<T>>(json, options) ?? new List<T>();
         }
     }
 }
