@@ -34,9 +34,6 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                         case UserQuery.Column_Username:
                             user.Username = reader.GetString() ?? "";
                             break;
-                        case UserQuery.Column_Password:
-                            user.Password = reader.GetString() ?? "";
-                            break;
                         case UserQuery.Column_RegTime:
                             string regTime = reader.GetString() ?? "";
                             if (DateTime.TryParseExact(regTime, General.GeneralDateTimeFormat, null, System.Globalization.DateTimeStyles.None, out DateTime RegTime))
@@ -92,7 +89,6 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteStartObject();
             writer.WriteNumber(UserQuery.Column_UID, value.Id);
             writer.WriteString(UserQuery.Column_Username, value.Username);
-            writer.WriteString(UserQuery.Column_Password, value.Password);
             writer.WriteString(UserQuery.Column_RegTime, value.RegTime.ToString(General.GeneralDateTimeFormat));
             writer.WriteString(UserQuery.Column_LastTime, value.LastTime.ToString(General.GeneralDateTimeFormat));
             writer.WriteString(UserQuery.Column_Email, value.Email);

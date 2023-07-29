@@ -10,7 +10,6 @@ namespace Milimoe.FunGame.Core.Entity
         public override Guid Guid { get; set; } = Guid.NewGuid();
         public override long Id { get; set; }
         public string Username { get; set; } = "";
-        public string Password { get; set; } = "";
         public DateTime RegTime { get; set; }
         public DateTime LastTime { get; set; }
         public string Email { get; set; } = "";
@@ -30,11 +29,10 @@ namespace Milimoe.FunGame.Core.Entity
 
         }
 
-        internal User(long Id = 0, string Username = "", string Password = "", DateTime? RegTime = null, DateTime? LastTime = null, string Email = "", string NickName = "", bool IsAdmin = false, bool IsOperator = false, bool IsEnable = true, decimal Credits = 0, decimal Materials = 0, decimal GameTime = 0, string AutoKey = "")
+        internal User(long Id = 0, string Username = "", DateTime? RegTime = null, DateTime? LastTime = null, string Email = "", string NickName = "", bool IsAdmin = false, bool IsOperator = false, bool IsEnable = true, decimal Credits = 0, decimal Materials = 0, decimal GameTime = 0, string AutoKey = "")
         {
             this.Id = Id;
             this.Username = Username;
-            this.Password = Password;
             this.RegTime = RegTime ?? General.DefaultTime;
             this.LastTime = LastTime ?? General.DefaultTime;
             this.Email = Email;
