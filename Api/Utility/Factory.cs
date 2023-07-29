@@ -160,7 +160,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="Id"></param>
         /// <param name="Username"></param>
-        /// <param name="Password"></param>
         /// <param name="RegTime"></param>
         /// <param name="LastTime"></param>
         /// <param name="Email"></param>
@@ -173,9 +172,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="GameTime"></param>
         /// <param name="AutoKey"></param>
         /// <returns></returns>
-        public static User GetUser(long Id = 0, string Username = "", string Password = "", DateTime? RegTime = null, DateTime? LastTime = null, string Email = "", string NickName = "", bool IsAdmin = false, bool IsOperator = false, bool IsEnable = true, decimal Credits = 0, decimal Materials = 0, decimal GameTime = 0, string AutoKey = "")
+        public static User GetUser(long Id = 0, string Username = "", DateTime? RegTime = null, DateTime? LastTime = null, string Email = "", string NickName = "", bool IsAdmin = false, bool IsOperator = false, bool IsEnable = true, decimal Credits = 0, decimal Materials = 0, decimal GameTime = 0, string AutoKey = "")
         {
-            return UserFactory.Create(Id, Username, Password, RegTime, LastTime, Email, NickName, IsAdmin, IsOperator, IsEnable, Credits, Materials, GameTime, AutoKey);
+            return UserFactory.Create(Id, Username, RegTime, LastTime, Email, NickName, IsAdmin, IsOperator, IsEnable, Credits, Materials, GameTime, AutoKey);
         }
 
         /// <summary>
@@ -203,7 +202,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 long Id = (long)dr[UserQuery.Column_UID];
                 string Username = (string)dr[UserQuery.Column_Username];
-                string Password = (string)dr[UserQuery.Column_Password];
                 DateTime RegTime = (DateTime)dr[UserQuery.Column_RegTime];
                 DateTime LastTime = (DateTime)dr[UserQuery.Column_LastTime];
                 string Email = (string)dr[UserQuery.Column_Email];
@@ -215,7 +213,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 decimal Materials = Convert.ToDecimal(dr[UserQuery.Column_Materials]);
                 decimal GameTime = Convert.ToDecimal(dr[UserQuery.Column_GameTime]);
                 string AutoKey = (string)dr[UserQuery.Column_AutoKey];
-                return UserFactory.Create(Id, Username, Password, RegTime, LastTime, Email, NickName, IsAdmin, IsOperator, IsEnable, Credits, Materials, GameTime, AutoKey);
+                return UserFactory.Create(Id, Username, RegTime, LastTime, Email, NickName, IsAdmin, IsOperator, IsEnable, Credits, Materials, GameTime, AutoKey);
             }
             return UserFactory.Create();
         }
