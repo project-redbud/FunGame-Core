@@ -17,15 +17,6 @@ namespace Milimoe.FunGame.Core.Service
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
             Converters = { new DateTimeConverter(), new DataTableConverter(), new DataSetConverter(), new UserConverter(), new RoomConverter() }
         };
-        
-        /// <summary>
-        /// 注册一个自定义转换器
-        /// </summary>
-        /// <param name="converter"></param>
-        internal static void AddConverter(JsonConverter converter)
-        {
-            GeneralOptions.Converters.Add(converter);
-        }
 
         /// <summary>
         /// 获取Json字符串
