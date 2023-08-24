@@ -24,19 +24,24 @@ namespace Milimoe.FunGame.Core.Service
         private class TaskAwaiter : ITaskAwaiter
         {
             public bool IsCompleted => _IsCompleted;
+            public Exception Exception => _Exception;
 
             private delegate void CompletedEvent();
+            private delegate void ErrorEvent();
             private event CompletedEvent? Completed;
+            private event ErrorEvent? Error;
+
             private bool _IsCompleted = false;
+            private Exception _Exception = new();
 
             internal TaskAwaiter(Action action) => _ = Worker(action);
 
             internal TaskAwaiter(Func<Task> function) => _ = Worker(function);
 
             /// <summary>
-            /// <para>返回ITaskAwaiter可以进一步调用方法</para>
-            /// <para>但是意义不大，前一个OnCompleted方法并不会等待下一个方法</para>
-            /// <para>可以理解为并行广播</para>
+            /// 返回ITaskAwaiter可以进一步调用方法<para/>
+            /// 但是意义不大，前一个OnCompleted方法并不会等待下一个方法<para/>
+            /// 可以理解为并行广播<para/>
             /// </summary>
             /// <param name="action"></param>
             /// <returns></returns>
@@ -47,18 +52,45 @@ namespace Milimoe.FunGame.Core.Service
                 return this;
             }
 
+            /// <summary>
+            /// 在捕获到异常时，将触发Error事件
+            /// </summary>
+            /// <param name="action"></param>
+            /// <returns></returns>
+            public ITaskAwaiter OnError(Action action)
+            {
+                Error += new ErrorEvent(action);
+                return this;
+            }
+
             private async Task Worker(Action action)
             {
-                await Task.Run(action);
-                _IsCompleted = true;
-                Completed?.Invoke();
+                try
+                {
+                    await Task.Run(action);
+                    _IsCompleted = true;
+                    Completed?.Invoke();
+                }
+                catch (Exception e)
+                {
+                    _Exception = e;
+                    Error?.Invoke();
+                }
             }
 
             private async Task Worker(Func<Task> function)
             {
-                await function();
-                _IsCompleted = true;
-                Completed?.Invoke();
+                try
+                {
+                    await function();
+                    _IsCompleted = true;
+                    Completed?.Invoke();
+                }
+                catch (Exception e)
+                {
+                    _Exception = e;
+                    Error?.Invoke();
+                }
             }
         }
     }

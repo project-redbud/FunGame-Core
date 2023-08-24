@@ -11,10 +11,15 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
         /// 任务是否完成
         /// </summary>
         public readonly bool IsCompleted => awaiter.IsCompleted;
+        
+        /// <summary>
+        /// 捕获到的异常
+        /// </summary>
+        public readonly System.Exception Exception => awaiter.Exception;
 
         /// <summary>
         /// <para>内部实现类</para>
-        /// <see cref="Service.TaskManager.TaskAwaiter"/>
+        /// 实现参见 <see cref="Service.TaskManager.TaskAwaiter"/>
         /// </summary>
         private ITaskAwaiter awaiter;
 
@@ -28,15 +33,26 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
         }
 
         /// <summary>
-        /// <para>返回TaskAwaiter可以连续的调用方法</para>
-        /// <para>但是意义不大，前一个OnCompleted方法并不会等待下一个方法</para>
-        /// <para>可以理解为并行广播</para>
+        /// 返回TaskAwaiter可以连续的调用方法<para/>
+        /// 但是意义不大，前一个OnCompleted方法并不会等待下一个方法<para/>
+        /// 可以理解为并行广播<para/>
         /// </summary>
         /// <param name="action"></param>
         /// <returns></returns>
         public TaskAwaiter OnCompleted(Action action)
         {
             awaiter = awaiter.OnCompleted(action);
+            return this;
+        }
+
+        /// <summary>
+        /// 在捕获到异常时，将触发Error事件
+        /// </summary>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public TaskAwaiter OnError(Action action)
+        {
+            awaiter = awaiter.OnError(action);
             return this;
         }
     }
