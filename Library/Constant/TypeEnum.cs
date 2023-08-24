@@ -59,25 +59,9 @@ namespace Milimoe.FunGame.Core.Library.Constant
     {
         Unknown,
         DataRequest,
-        RunTime_Connect,
-        RunTime_Reg,
-        RunTime_CheckReg,
-        RunTime_Login,
-        RunTime_CheckLogin,
-        RunTime_Logout,
-        RunTime_ForceLogout,
-        RunTime_Disconnect,
-        RunTime_HeartBeat,
-        Main_GetNotice,
-        Main_IntoRoom,
-        Main_QuitRoom,
-        Main_Chat,
-        Main_CreateRoom,
-        Main_UpdateRoom,
-        Main_MatchRoom,
-        Room_ChangeRoomSetting,
-        Room_UpdateRoomMaster,
-        Room_GetRoomPlayerCount
+        Disconnect,
+        HeartBeat,
+        ForceLogout
     }
 
     /// <summary>
@@ -86,16 +70,25 @@ namespace Milimoe.FunGame.Core.Library.Constant
     public enum DataRequestType
     {
         UnKnown,
+        RunTime_Connect,
+        RunTime_Reg,
+        RunTime_CheckReg,
+        RunTime_Login,
+        RunTime_CheckLogin,
+        RunTime_Logout,
+        RunTime_Disconnect,
         Main_GetNotice,
         Main_CreateRoom,
         Main_UpdateRoom,
         Main_IntoRoom,
         Main_QuitRoom,
+        Main_MatchRoom,
         Reg_GetRegVerifyCode,   
         Login_GetFindPasswordVerifyCode,
         Login_UpdatePassword,
         Room_GetRoomSettings,
-        Room_GetRoomPlayerCount
+        Room_GetRoomPlayerCount,
+        Room_UpdateRoomMaster
     }
 
     public enum SocketRuntimeType

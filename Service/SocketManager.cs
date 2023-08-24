@@ -257,24 +257,9 @@ namespace Milimoe.FunGame.Core.Service
             return type switch
             {
                 SocketMessageType.DataRequest => SocketSet.DataRequest,
-                SocketMessageType.RunTime_Connect => SocketSet.RunTime_Connect,
-                SocketMessageType.RunTime_Reg => SocketSet.RunTime_Reg,
-                SocketMessageType.RunTime_CheckReg => SocketSet.RunTime_CheckReg,
-                SocketMessageType.RunTime_Login => SocketSet.RunTime_Login,
-                SocketMessageType.RunTime_CheckLogin => SocketSet.RunTime_CheckLogin,
-                SocketMessageType.RunTime_Logout => SocketSet.RunTime_Logout,
-                SocketMessageType.RunTime_Disconnect => SocketSet.RunTime_Disconnect,
-                SocketMessageType.RunTime_HeartBeat => SocketSet.RunTime_HeartBeat,
-                SocketMessageType.Main_GetNotice => SocketSet.Main_GetNotice,
-                SocketMessageType.Main_IntoRoom => SocketSet.Main_IntoRoom,
-                SocketMessageType.Main_QuitRoom => SocketSet.Main_QuitRoom,
-                SocketMessageType.Main_Chat => SocketSet.Main_Chat,
-                SocketMessageType.Main_CreateRoom => SocketSet.Main_CreateRoom,
-                SocketMessageType.Main_UpdateRoom => SocketSet.Main_UpdateRoom,
-                SocketMessageType.Main_MatchRoom => SocketSet.Main_MatchRoom,
-                SocketMessageType.Room_ChangeRoomSetting => SocketSet.Room_ChangeRoomSetting,
-                SocketMessageType.Room_UpdateRoomMaster => SocketSet.Room_UpdateRoomMaster,
-                SocketMessageType.Room_GetRoomPlayerCount => SocketSet.Room_GetRoomPlayerCount,
+                SocketMessageType.Disconnect => SocketSet.Disconnect,
+                SocketMessageType.HeartBeat => SocketSet.HeartBeat,
+                SocketMessageType.ForceLogout => SocketSet.ForceLogout,
                 _ => SocketSet.Unknown,
             };
         }

@@ -204,14 +204,25 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         {
             return type switch
             {
+                DataRequestType.RunTime_Connect => DataRequestSet.RunTime_Connect,
+                DataRequestType.RunTime_Reg => DataRequestSet.RunTime_Reg,
+                DataRequestType.RunTime_CheckReg => DataRequestSet.RunTime_CheckReg,
+                DataRequestType.RunTime_Login => DataRequestSet.RunTime_Login,
+                DataRequestType.RunTime_CheckLogin => DataRequestSet.RunTime_CheckLogin,
+                DataRequestType.RunTime_Logout => DataRequestSet.RunTime_Logout,
+                DataRequestType.RunTime_Disconnect => DataRequestSet.RunTime_Disconnect,
                 DataRequestType.Main_GetNotice => DataRequestSet.Main_GetNotice,
                 DataRequestType.Main_CreateRoom => DataRequestSet.Main_CreateRoom,
                 DataRequestType.Main_UpdateRoom => DataRequestSet.Main_UpdateRoom,
+                DataRequestType.Main_IntoRoom => DataRequestSet.Main_IntoRoom,
+                DataRequestType.Main_QuitRoom => DataRequestSet.Main_QuitRoom,
+                DataRequestType.Main_MatchRoom => DataRequestSet.Main_MatchRoom,
                 DataRequestType.Reg_GetRegVerifyCode => DataRequestSet.Reg_GetRegVerifyCode,
                 DataRequestType.Login_GetFindPasswordVerifyCode => DataRequestSet.Login_GetFindPasswordVerifyCode,
                 DataRequestType.Login_UpdatePassword => DataRequestSet.Login_UpdatePassword,
                 DataRequestType.Room_GetRoomSettings => DataRequestSet.Room_GetRoomSettings,
                 DataRequestType.Room_GetRoomPlayerCount => DataRequestSet.Room_GetRoomPlayerCount,
+                DataRequestType.Room_UpdateRoomMaster => DataRequestSet.Room_UpdateRoomMaster,
                 _ => DataRequestSet.UnKnown
             };
         }
