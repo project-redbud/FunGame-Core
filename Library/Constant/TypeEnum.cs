@@ -91,7 +91,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Main_UpdateRoom,
         Main_IntoRoom,
         Main_QuitRoom,
-        Reg_GetRegVerifyCode,   
+        Reg_GetRegVerifyCode,
         Login_GetFindPasswordVerifyCode,
         Login_UpdatePassword,
         Room_GetRoomSettings,
