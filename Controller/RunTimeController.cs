@@ -217,10 +217,6 @@ namespace Milimoe.FunGame.Core.Controller
                     result = type;
                     switch (type)
                     {
-                        case SocketMessageType.RunTime_Connect:
-                            if (!SocketHandler_Connect(ServerMessage)) return SocketMessageType.Unknown;
-                            break;
-
                         case SocketMessageType.Disconnect:
                             SocketHandler_Disconnect(ServerMessage);
                             break;
@@ -245,13 +241,6 @@ namespace Milimoe.FunGame.Core.Controller
             }
             return result;
         }
-
-        /// <summary>
-        /// 客户端连接服务器的处理方法（即将废除）
-        /// </summary>
-        /// <param name="ServerMessage"></param>
-        /// <returns></returns>
-        protected abstract bool SocketHandler_Connect(SocketObject ServerMessage);
 
         /// <summary>
         /// 客户端接收到服务器断开连接的通知后的处理方法
