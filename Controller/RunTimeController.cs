@@ -47,7 +47,7 @@ namespace Milimoe.FunGame.Core.Controller
 
             try
             {
-                result = _Socket?.Send(SocketMessageType.RunTime_Disconnect, "") == SocketResult.Success;
+                result = _Socket?.Send(SocketMessageType.Disconnect, "") == SocketResult.Success;
             }
             catch (Exception e)
             {
@@ -217,15 +217,11 @@ namespace Milimoe.FunGame.Core.Controller
                     result = type;
                     switch (type)
                     {
-                        case SocketMessageType.RunTime_Connect:
-                            if (!SocketHandler_Connect(ServerMessage)) return SocketMessageType.Unknown;
-                            break;
-
-                        case SocketMessageType.RunTime_Disconnect:
+                        case SocketMessageType.Disconnect:
                             SocketHandler_Disconnect(ServerMessage);
                             break;
 
-                        case SocketMessageType.RunTime_HeartBeat:
+                        case SocketMessageType.HeartBeat:
                             if (_Socket != null && _Socket.Connected)
                             {
                                 SocketHandler_HeartBeat(ServerMessage);
@@ -247,20 +243,13 @@ namespace Milimoe.FunGame.Core.Controller
         }
 
         /// <summary>
-        /// 连接服务器的处理方法
-        /// </summary>
-        /// <param name="ServerMessage"></param>
-        /// <returns></returns>
-        protected abstract bool SocketHandler_Connect(SocketObject ServerMessage);
-
-        /// <summary>
-        /// 与服务器断开连接的处理方法
+        /// 客户端接收到服务器断开连接的通知后的处理方法
         /// </summary>
         /// <param name="ServerMessage"></param>
         protected abstract void SocketHandler_Disconnect(SocketObject ServerMessage);
 
         /// <summary>
-        /// 心跳检测处理方法
+        /// 客户端接收到服务器心跳后的处理方法
         /// </summary>
         /// <param name="ServerMessage"></param>
         protected abstract void SocketHandler_HeartBeat(SocketObject ServerMessage);

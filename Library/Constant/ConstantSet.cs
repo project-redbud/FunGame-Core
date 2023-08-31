@@ -34,33 +34,9 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string Socket = "Socket";
         public const string Unknown = "Unknown";
         public const string DataRequest = "DataRequest";
-        /**
-         * RunTime
-         */
-        public const string RunTime_Connect = "RunTime::Connect";
-        public const string RunTime_Reg = "RunTime::Reg";
-        public const string RunTime_CheckReg = "RunTime::CheckReg";
-        public const string RunTime_Login = "RunTime::Login";
-        public const string RunTime_CheckLogin = "RunTime::CheckLogin";
-        public const string RunTime_Logout = "RunTime::Logout";
-        public const string RunTime_Disconnect = "RunTime::Disconnect";
-        public const string RunTime_HeartBeat = "RunTime::HeartBeat";
-        /**
-         * Main
-         */
-        public const string Main_GetNotice = "Main::GetNotice";
-        public const string Main_IntoRoom = "Main::IntoRoom";
-        public const string Main_QuitRoom = "Main::QuitRoom";
-        public const string Main_Chat = "Main::Chat";
-        public const string Main_CreateRoom = "Main::CreateRoom";
-        public const string Main_UpdateRoom = "Main::UpdateRoom";
-        public const string Main_MatchRoom = "Main::MatchRoom";
-        /**
-         * Room
-         */
-        public const string Room_ChangeRoomSetting = "Room::ChangeRoomSetting";
-        public const string Room_UpdateRoomMaster = "Room::UpdateRoomMaster";
-        public const string Room_GetRoomPlayerCount = "Room::GetRoomPlayerCount";
+        public const string Disconnect = "Disconnect";
+        public const string HeartBeat = "HeartBeat";
+        public const string ForceLogout = "ForceLogout";
     }
 
     /// <summary>
@@ -72,11 +48,24 @@ namespace Milimoe.FunGame.Core.Library.Constant
     {
         public const string UnKnown = "UnKnown";
         /**
+         * RunTime
+         */
+        public const string RunTime_Connect = "RunTime::Connect";
+        public const string RunTime_Reg = "RunTime::Reg";
+        public const string RunTime_CheckReg = "RunTime::CheckReg";
+        public const string RunTime_Login = "RunTime::Login";
+        public const string RunTime_CheckLogin = "RunTime::CheckLogin";
+        public const string RunTime_Logout = "RunTime::Logout";
+        public const string RunTime_Disconnect = "RunTime::Disconnect";
+        /**
          * Main
          */
         public const string Main_GetNotice = "Main::GetNotice";
+        public const string Main_IntoRoom = "Main::IntoRoom";
+        public const string Main_QuitRoom = "Main::QuitRoom";
         public const string Main_CreateRoom = "Main::CreateRoom";
         public const string Main_UpdateRoom = "Main::UpdateRoom";
+        public const string Main_MatchRoom = "Main::MatchRoom";
         /**
          * Register
          */
@@ -91,6 +80,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
          */
         public const string Room_GetRoomSettings = "Room::GetRoomSettings";
         public const string Room_GetRoomPlayerCount = "Room::GetRoomPlayerCount";
+        public const string Room_UpdateRoomMaster = "Room::UpdateRoomMaster";
     }
 
     public class ReflectionSet
