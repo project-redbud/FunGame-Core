@@ -66,6 +66,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string Main_CreateRoom = "Main::CreateRoom";
         public const string Main_UpdateRoom = "Main::UpdateRoom";
         public const string Main_MatchRoom = "Main::MatchRoom";
+        public const string Main_Chat = "Main::Chat";
         /**
          * Register
          */
