@@ -37,6 +37,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string Disconnect = "Disconnect";
         public const string HeartBeat = "HeartBeat";
         public const string ForceLogout = "ForceLogout";
+        public const string Chat = "Chat";
+        public const string UpdateRoomMaster = "UpdateRoomMaster";
     }
 
     /// <summary>

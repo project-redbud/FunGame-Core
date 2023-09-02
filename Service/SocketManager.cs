@@ -260,6 +260,8 @@ namespace Milimoe.FunGame.Core.Service
                 SocketMessageType.Disconnect => SocketSet.Disconnect,
                 SocketMessageType.HeartBeat => SocketSet.HeartBeat,
                 SocketMessageType.ForceLogout => SocketSet.ForceLogout,
+                SocketMessageType.Chat => SocketSet.Chat,
+                SocketMessageType.UpdateRoomMaster => SocketSet.UpdateRoomMaster,
                 _ => SocketSet.Unknown,
             };
         }

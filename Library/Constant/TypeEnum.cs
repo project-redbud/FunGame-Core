@@ -61,7 +61,9 @@ namespace Milimoe.FunGame.Core.Library.Constant
         DataRequest,
         Disconnect,
         HeartBeat,
-        ForceLogout
+        ForceLogout,
+        Chat,
+        UpdateRoomMaster
     }
 
     /// <summary>
