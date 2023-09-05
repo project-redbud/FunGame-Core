@@ -222,12 +222,21 @@ namespace Milimoe.FunGame.Core.Controller
                             break;
 
                         case SocketMessageType.HeartBeat:
-                            if (_Socket != null && _Socket.Connected)
-                            {
-                                SocketHandler_HeartBeat(ServerMessage);
-                            }
+                            SocketHandler_HeartBeat(ServerMessage);
                             break;
-
+                            
+                        case SocketMessageType.ForceLogout:
+                            SocketHandler_ForceLogout(ServerMessage);
+                            break;
+                            
+                        case SocketMessageType.Chat:
+                            SocketHandler_Chat(ServerMessage);
+                            break;
+                            
+                        case SocketMessageType.UpdateRoomMaster:
+                            SocketHandler_UpdateRoomMaster(ServerMessage);
+                            break;
+                            
                         case SocketMessageType.Unknown:
                         default:
                             break;
@@ -253,5 +262,23 @@ namespace Milimoe.FunGame.Core.Controller
         /// </summary>
         /// <param name="ServerMessage"></param>
         protected abstract void SocketHandler_HeartBeat(SocketObject ServerMessage);
+
+        /// <summary>
+        /// 客户端接收到强制退出登录的通知后的处理方法
+        /// </summary>
+        /// <param name="ServerMessage"></param>
+        protected abstract void SocketHandler_ForceLogout(SocketObject ServerMessage);
+
+        /// <summary>
+        /// 客户端接收到聊天信息后的处理方法
+        /// </summary>
+        /// <param name="ServerMessage"></param>
+        protected abstract void SocketHandler_Chat(SocketObject ServerMessage);
+
+        /// <summary>
+        /// 客户端接收到更换房主后的处理方法
+        /// </summary>
+        /// <param name="ServerMessage"></param>
+        protected abstract void SocketHandler_UpdateRoomMaster(SocketObject ServerMessage);
     }
 }
