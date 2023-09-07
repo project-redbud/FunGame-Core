@@ -204,13 +204,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         {
             return type switch
             {
-                DataRequestType.RunTime_Connect => DataRequestSet.RunTime_Connect,
-                DataRequestType.RunTime_Reg => DataRequestSet.RunTime_Reg,
-                DataRequestType.RunTime_CheckReg => DataRequestSet.RunTime_CheckReg,
-                DataRequestType.RunTime_Login => DataRequestSet.RunTime_Login,
-                DataRequestType.RunTime_CheckLogin => DataRequestSet.RunTime_CheckLogin,
                 DataRequestType.RunTime_Logout => DataRequestSet.RunTime_Logout,
-                DataRequestType.RunTime_Disconnect => DataRequestSet.RunTime_Disconnect,
                 DataRequestType.Main_GetNotice => DataRequestSet.Main_GetNotice,
                 DataRequestType.Main_CreateRoom => DataRequestSet.Main_CreateRoom,
                 DataRequestType.Main_UpdateRoom => DataRequestSet.Main_UpdateRoom,
@@ -219,6 +213,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 DataRequestType.Main_MatchRoom => DataRequestSet.Main_MatchRoom,
                 DataRequestType.Main_Chat => DataRequestSet.Main_Chat,
                 DataRequestType.Reg_GetRegVerifyCode => DataRequestSet.Reg_GetRegVerifyCode,
+                DataRequestType.Login_Login => DataRequestSet.Login_Login,
                 DataRequestType.Login_GetFindPasswordVerifyCode => DataRequestSet.Login_GetFindPasswordVerifyCode,
                 DataRequestType.Login_UpdatePassword => DataRequestSet.Login_UpdatePassword,
                 DataRequestType.Room_GetRoomSettings => DataRequestSet.Room_GetRoomSettings,

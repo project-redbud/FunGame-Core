@@ -59,6 +59,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
     {
         Unknown,
         DataRequest,
+        Connect,
         Disconnect,
         HeartBeat,
         ForceLogout,
@@ -72,13 +73,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
     public enum DataRequestType
     {
         UnKnown,
-        RunTime_Connect,
-        RunTime_Reg,
-        RunTime_CheckReg,
-        RunTime_Login,
-        RunTime_CheckLogin,
         RunTime_Logout,
-        RunTime_Disconnect,
         Main_GetNotice,
         Main_CreateRoom,
         Main_UpdateRoom,
@@ -87,6 +82,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Main_MatchRoom,
         Main_Chat,
         Reg_GetRegVerifyCode,
+        Login_Login,
         Login_GetFindPasswordVerifyCode,
         Login_UpdatePassword,
         Room_GetRoomSettings,

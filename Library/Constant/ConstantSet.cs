@@ -34,6 +34,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string Socket = "Socket";
         public const string Unknown = "Unknown";
         public const string DataRequest = "DataRequest";
+        public const string Connect = "Connect";
         public const string Disconnect = "Disconnect";
         public const string HeartBeat = "HeartBeat";
         public const string ForceLogout = "ForceLogout";
@@ -52,13 +53,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /**
          * RunTime
          */
-        public const string RunTime_Connect = "RunTime::Connect";
-        public const string RunTime_Reg = "RunTime::Reg";
-        public const string RunTime_CheckReg = "RunTime::CheckReg";
-        public const string RunTime_Login = "RunTime::Login";
-        public const string RunTime_CheckLogin = "RunTime::CheckLogin";
         public const string RunTime_Logout = "RunTime::Logout";
-        public const string RunTime_Disconnect = "RunTime::Disconnect";
         /**
          * Main
          */
@@ -76,6 +71,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /**
          * Login
          */
+        public const string Login_Login = "Login::Login";
         public const string Login_GetFindPasswordVerifyCode = "Login::GetFindPasswordVerifyCode";
         public const string Login_UpdatePassword = "Login::UpdatePassword";
         /**
