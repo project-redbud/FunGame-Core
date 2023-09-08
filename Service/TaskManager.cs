@@ -27,7 +27,7 @@ namespace Milimoe.FunGame.Core.Service
             public Exception Exception => _Exception;
 
             private delegate void CompletedEvent();
-            private delegate void ErrorEvent();
+            private delegate void ErrorEvent(Exception e);
             private event CompletedEvent? Completed;
             private event ErrorEvent? Error;
 
@@ -57,7 +57,7 @@ namespace Milimoe.FunGame.Core.Service
             /// </summary>
             /// <param name="action"></param>
             /// <returns></returns>
-            public ITaskAwaiter OnError(Action action)
+            public ITaskAwaiter OnError(Action<Exception> action)
             {
                 Error += new ErrorEvent(action);
                 return this;
@@ -74,7 +74,7 @@ namespace Milimoe.FunGame.Core.Service
                 catch (Exception e)
                 {
                     _Exception = e;
-                    Error?.Invoke();
+                    Error?.Invoke(e);
                 }
             }
 
@@ -89,7 +89,7 @@ namespace Milimoe.FunGame.Core.Service
                 catch (Exception e)
                 {
                     _Exception = e;
-                    Error?.Invoke();
+                    Error?.Invoke(e);
                 }
             }
         }

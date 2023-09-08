@@ -50,7 +50,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
         /// </summary>
         /// <param name="action"></param>
         /// <returns></returns>
-        public TaskAwaiter OnError(Action action)
+        public TaskAwaiter OnError(Action<System.Exception> action)
         {
             awaiter = awaiter.OnError(action);
             return this;
