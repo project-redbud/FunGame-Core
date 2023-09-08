@@ -58,6 +58,84 @@ namespace Milimoe.FunGame.Core.Controller
         }
 
         /// <summary>
+        /// 连接服务器
+        /// </summary>
+        /// <param name="ip"></param>
+        /// <param name="port"></param>
+        /// <returns></returns>
+        public ConnectResult Connect(string ip, int port)
+        {
+            if (!BeforeConnect())
+            {
+                return ConnectResult.ConnectFailed;
+            }
+
+            ConnectResult result = ConnectResult.Success;
+            string msg = "";
+            string servername = "";
+            string notice = "";
+
+            // 检查服务器IP地址和端口是否正确
+            if (ip == "" || port <= 0)
+            {
+                (ip, port) = GetServerAddress();
+                if (ip == "" || port <= 0)
+                {
+                    result = ConnectResult.FindServerFailed;
+                }
+            }
+            if (result == ConnectResult.Success)
+            {
+                // 与服务器建立连接
+                _Socket?.Close();
+                _Socket = Socket.Connect(ip, port);
+                if (_Socket != null && _Socket.Connected)
+                {
+                    if (_Socket.Send(SocketMessageType.Connect) == SocketResult.Success)
+                    {
+                        SocketObject[] objs = _Socket.ReceiveArray();
+                        foreach (SocketObject obj in objs)
+                        {
+                            if (obj.SocketType == SocketMessageType.Connect)
+                            {
+                                bool success = obj.GetParam<bool>(0);
+                                msg = obj.GetParam<string>(1) ?? "";
+                                if (success)
+                                {
+                                    _Socket.Token = obj.GetParam<Guid>(2);
+                                    servername = obj.GetParam<string>(3) ?? "";
+                                    notice = obj.GetParam<string>(4) ?? "";
+                                    StartReceiving();
+                                    Task.Run(() =>
+                                    {
+                                        while (true)
+                                        {
+                                            if (_IsReceiving)
+                                            {
+                                                break;
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        result = ConnectResult.ConnectFailed;
+                    }
+                }
+                else _Socket?.Close();
+            }
+
+            object[] ConnectArgs = new object[] { result, msg, servername, notice };
+            AfterConnect(ConnectArgs);
+
+            // 允许修改数组中的result，强行改变连接的结果
+            return (ConnectResult)ConnectArgs[0];
+        }
+
+        /// <summary>
         /// 获取服务器地址
         /// </summary>
         /// <returns>string：IP地址；int：端口号</returns>
@@ -85,11 +163,26 @@ namespace Milimoe.FunGame.Core.Controller
         }
 
         /// <summary>
-        /// 客户端需要自行实现连接服务器的事务
+        /// 此方法将在连接服务器前触发<para/>
+        /// 客户端可以重写此方法
         /// </summary>
-        /// <returns>连接结果</returns>
-        public abstract ConnectResult Connect();
+        /// <returns>false：中止连接</returns>
+        public virtual bool BeforeConnect()
+        {
+            return true;
+        }
         
+        /// <summary>
+        /// 此方法将在连接服务器后触发（Connect结果返回前）<para/>
+        /// 客户端可以重写此方法
+        /// </summary>
+        /// <param name="ConnectArgs">连接服务器后返回的一些数据，可以使用也可以修改它们</param>
+        /// <returns></returns>
+        public virtual void AfterConnect(object[] ConnectArgs)
+        {
+
+        }
+
         /// <summary>
         /// 客户端需要自行实现自动登录的事务
         /// </summary>
@@ -218,6 +311,7 @@ namespace Milimoe.FunGame.Core.Controller
                     switch (type)
                     {
                         case SocketMessageType.Disconnect:
+                            Close();
                             SocketHandler_Disconnect(ServerMessage);
                             break;
 
