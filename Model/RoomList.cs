@@ -20,7 +20,7 @@ namespace Milimoe.FunGame.Core.Model
 
         }
 
-        public Room? this[string RoomID] => GetRoom(RoomID);
+        public Room this[string RoomID] => GetRoom(RoomID);
 
         public void Clear()
         {
@@ -65,13 +65,14 @@ namespace Milimoe.FunGame.Core.Model
             GetPlayerList(RoomID).Remove(Player);
         }
 
-        public Room? GetRoom(string RoomID)
+        public Room GetRoom(string RoomID)
         {
             Room? room = null;
             if (_List.ContainsKey(RoomID))
             {
                 room = (Room?)_List[RoomID];
             }
+            room ??= General.HallInstance;
             return room;
         }
 
