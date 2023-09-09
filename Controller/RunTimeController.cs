@@ -65,7 +65,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// <returns></returns>
         public ConnectResult Connect(string ip, int port)
         {
-            if (!BeforeConnect(ip, port))
+            if (!BeforeConnect(ref ip, ref port))
             {
                 return ConnectResult.ConnectFailed;
             }
@@ -165,7 +165,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// <param name="ip"></param>
         /// <param name="port"></param>
         /// <returns>false：中止连接</returns>
-        public virtual bool BeforeConnect(string ip, int port)
+        public virtual bool BeforeConnect(ref string ip, ref int port)
         {
             return true;
         }
