@@ -14,7 +14,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public string ServerName { get; } = "";
         public string ServerNotice { get; } = "";
         public bool Connected => Instance != null && Instance.Connected;
-        public List<IServerModel> GetUsersList => OnlineUsers.GetList();
+        public List<IServerModel> UserList => OnlineUsers.GetList();
         public List<string> BannedList { get; } = new();
         public int UsersCount => OnlineUsers.Count;
         public int BannedCount => BannedList.Count;
