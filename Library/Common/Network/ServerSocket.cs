@@ -14,21 +14,21 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public string ServerName { get; } = "";
         public string ServerNotice { get; } = "";
         public bool Connected => Instance != null && Instance.Connected;
-        public List<IServerModel> UserList => OnlineUsers.GetList();
+        public List<IServerModel> ClientList => OnlineClients.GetList();
         public List<string> BannedList { get; } = new();
-        public int UsersCount => OnlineUsers.Count;
+        public int ClientCount => OnlineClients.Count;
         public int BannedCount => BannedList.Count;
 
-        private readonly ModelManager OnlineUsers;
+        private readonly ModelManager OnlineClients;
 
         private ServerSocket(System.Net.Sockets.Socket Instance, int ServerPort, int MaxConnection = 0)
         {
             this.Instance = Instance;
             this.ServerPort = ServerPort;
             if (MaxConnection <= 0)
-                OnlineUsers = new ModelManager();
+                OnlineClients = new ModelManager();
             else
-                OnlineUsers = new ModelManager(MaxConnection);
+                OnlineClients = new ModelManager(MaxConnection);
         }
 
         public static ServerSocket StartListening(int Port = 22222, int MaxConnection = 0)
@@ -51,24 +51,28 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             throw new SocketGetClientException();
         }
 
-        public bool AddUser(string UserName, IServerModel t)
+        public bool Add(string name, IServerModel t)
         {
-            return OnlineUsers.Add(UserName, t);
+            name = name.ToLower();
+            return OnlineClients.Add(name, t);
         }
         
-        public bool RemoveUser(string UserName)
+        public bool Remove(string name)
         {
-            return OnlineUsers.Remove(UserName);
+            name = name.ToLower();
+            return OnlineClients.Remove(name);
         }
         
-        public bool ContainsUser(string UserName)
+        public bool Contains(string name)
         {
-            return OnlineUsers.ContainsKey(UserName);
+            name = name.ToLower();
+            return OnlineClients.ContainsKey(name);
         }
         
-        public IServerModel GetUser(string UserName)
+        public IServerModel Get(string name)
         {
-            return OnlineUsers[UserName];
+            name = name.ToLower();
+            return OnlineClients[name];
         }
 
         public void Close()
