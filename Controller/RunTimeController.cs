@@ -78,11 +78,7 @@ namespace Milimoe.FunGame.Core.Controller
             // 检查服务器IP地址和端口是否正确
             if (ip == "" || port <= 0)
             {
-                (ip, port) = GetServerAddress();
-                if (ip == "" || port <= 0)
-                {
-                    result = ConnectResult.FindServerFailed;
-                }
+                result = ConnectResult.FindServerFailed;
             }
             if (result == ConnectResult.Success)
             {
