@@ -96,6 +96,7 @@ namespace Milimoe.FunGame.Core.Controller
                             {
                                 bool success = obj.GetParam<bool>(0);
                                 msg = obj.GetParam<string>(1) ?? "";
+                                result = success ? ConnectResult.Success : ConnectResult.ConnectFailed;
                                 if (success)
                                 {
                                     _Socket.Token = obj.GetParam<Guid>(2);
@@ -116,10 +117,7 @@ namespace Milimoe.FunGame.Core.Controller
                             }
                         }
                     }
-                    else
-                    {
-                        result = ConnectResult.ConnectFailed;
-                    }
+                    else result = ConnectResult.ConnectFailed;
                 }
                 else _Socket?.Close();
             }
