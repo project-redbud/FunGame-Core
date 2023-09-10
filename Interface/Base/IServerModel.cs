@@ -9,7 +9,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public abstract bool Running { get; }
         public abstract ClientSocket? Socket { get; }
         public abstract Task? Task { get; }
-        public abstract User? User { get; }
+        public abstract User User { get; }
         public abstract string ClientName { get; }
 
         public abstract bool Read(ClientSocket socket);
