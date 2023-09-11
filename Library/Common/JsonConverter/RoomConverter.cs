@@ -47,7 +47,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
 
                         case RoomQuery.Column_RoomMaster:
                             string master = reader.GetString() ?? "";
-                            room.RoomMaster = JsonSerializer.Deserialize<User>(master, options);
+                            room.RoomMaster = JsonSerializer.Deserialize<User>(master, options) ?? General.UnknownUserInstance;
                             break;
 
                         case RoomQuery.Column_RoomType:

@@ -5,11 +5,12 @@ namespace Milimoe.FunGame.Core.Entity
 {
     public class Room : BaseEntity
     {
+        public static readonly Room Empty = new();
         public override long Id { get => base.Id ; set => base.Id = value; }
         public string Roomid { get; set; } = "-1";
         public DateTime CreateTime { get; set; } = General.DefaultTime;
         public Dictionary<string, User> Players { get; set; } = new();
-        public User? RoomMaster { get; set; }
+        public User RoomMaster { get; set; } = General.UnknownUserInstance;
         public RoomType RoomType { get; set; }
         public RoomState RoomState { get; set; }
         public bool HasPass => Password.Trim() != "";
@@ -26,7 +27,7 @@ namespace Milimoe.FunGame.Core.Entity
             this.Id = Id;
             this.Roomid = Roomid;
             this.CreateTime = CreateTime ?? General.DefaultTime;
-            this.RoomMaster = RoomMaster;
+            this.RoomMaster = RoomMaster ?? General.UnknownUserInstance;
             this.RoomType = RoomType;
             this.RoomState = RoomState;
             this.Password = Password;

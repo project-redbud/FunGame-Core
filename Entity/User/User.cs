@@ -7,6 +7,7 @@ namespace Milimoe.FunGame.Core.Entity
 {
     public class User : BaseEntity
     {
+        public static readonly User Empty = new();
         public override Guid Guid { get; set; } = Guid.NewGuid();
         public override long Id { get; set; }
         public string Username { get; set; } = "";
