@@ -10,6 +10,12 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
     /// </summary>
     public class Example : BasePlugin, ILoginEvent
     {
+        public override BasePlugin Init()
+        {
+            // 初始化一个此类的对象并返回，用于插件管理器调用
+            return new Example();
+        }
+
         public EventResult AfterLoginEvent(object sender, LoginEventArgs e)
         {
             return EventResult.Success;

@@ -37,6 +37,12 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
         protected string _Author = "FunGamer";
 
         /// <summary>
+        /// 在此方法中初始化插件
+        /// </summary>
+        /// <returns></returns>
+        public abstract BasePlugin Init();
+
+        /// <summary>
         /// 读取插件时触发的方法
         /// </summary>
         public void Load()
