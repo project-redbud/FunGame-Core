@@ -1,6 +1,7 @@
 ﻿using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Library.Common.Plugin
 {
@@ -11,62 +12,59 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
         /// <summary>
         /// 插件名称
         /// </summary>
-        public string Name => _Name;
+        public abstract string Name { get; }
 
         /// <summary>
         /// 插件描述
         /// </summary>
-        public string Description => _Description;
+        public abstract string Description { get; }
 
         /// <summary>
         /// 插件版本
         /// </summary>
-        public string Version => _Version;
+        public abstract string Version { get; }
 
         /// <summary>
         /// 插件作者
         /// </summary>
-        public string Author => _Author;
-
-        /**
-         * Private
-         */
-        protected string _Name = "Plugin";
-        protected string _Description = "My First Plugin";
-        protected string _Version = "1.0.0";
-        protected string _Author = "FunGamer";
+        public abstract string Author { get; }
 
         /// <summary>
-        /// 在此方法中初始化插件
+        /// 加载标记
         /// </summary>
-        /// <returns></returns>
-        public abstract BasePlugin Init();
+        private bool IsLoaded = false;
 
         /// <summary>
-        /// 读取插件时触发的方法
+        /// 加载插件
         /// </summary>
         public void Load()
         {
-            if (!BeforeLoad())
+            if (IsLoaded)
             {
                 return;
             }
-
-            BindEvent();
-
-            AfterLoad();
+            // BeforeLoad可以阻止加载此插件
+            if (BeforeLoad())
+            {
+                // 插件加载后，不允许再次加载此插件
+                IsLoaded = true;
+                // 触发绑定事件
+                BindEvent();
+                // 如果加载后需要执行代码，请重写AfterLoad方法
+                AfterLoad();
+            }
         }
 
         /// <summary>
-        /// 插件读取后做的事
+        /// 插件加载后需要做的事
         /// </summary>
         protected virtual void AfterLoad()
         {
-
+            // override
         }
 
         /// <summary>
-        /// 允许返回false来停止读取此插件
+        /// 允许返回false来阻止加载此插件
         /// </summary>
         /// <returns></returns>
         protected virtual bool BeforeLoad()
