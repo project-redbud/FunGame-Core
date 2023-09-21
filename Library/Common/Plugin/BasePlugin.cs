@@ -1,7 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Library.Common.Plugin
 {

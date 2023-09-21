@@ -5,9 +5,13 @@ namespace Milimoe.FunGame.Core.Service
 {
     internal class PluginManager
     {
-        public static Dictionary<string, BasePlugin> LoadPlugin()
+        /// <summary>
+        /// 从plugins目录加载所有插件
+        /// </summary>
+        /// <param name="plugins"></param>
+        /// <returns></returns>
+        public static Dictionary<string, BasePlugin> LoadPlugins(Dictionary<string, BasePlugin> plugins)
         {
-            Dictionary<string, BasePlugin> plugins = new();
             string directory = "plugins";
 
             // 获取目录中所有的 DLL 文件路径
@@ -15,22 +19,17 @@ namespace Milimoe.FunGame.Core.Service
 
             foreach (string dll in dlls)
             {
-                try
-                {
-                    // 加载 DLL
-                    Assembly assembly = Assembly.LoadFrom(dll);
+                // 加载 DLL
+                Assembly assembly = Assembly.LoadFrom(dll);
 
-                    // 遍历 DLL 中的类型
-                    foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(BasePlugin))))
-                    {
-                        BasePlugin instance = Activator.CreateInstance<BasePlugin>();
-                        plugins.Add(instance.Name, instance);
-                    }
-                }
-                catch (Exception e)
+                // 遍历 DLL 中的类型
+                foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(BasePlugin))))
                 {
-                    Console.WriteLine($"Failed to load DLL: {dll}");
-                    Console.WriteLine($"Error: {e.Message}");
+                    BasePlugin? instance = (BasePlugin?)Activator.CreateInstance(type);
+                    if (instance != null)
+                    {
+                        plugins.TryAdd(instance.Name, instance);
+                    }
                 }
             }
 
