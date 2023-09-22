@@ -3,7 +3,7 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Library.Common.Event
 {
-    public class RoomEventArgs
+    public class RoomEventArgs : GeneralEventArgs
     {
         public string RoomID { get; set; } = "";
         public long RoomMaster { get; set; } = 0;

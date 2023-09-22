@@ -18,24 +18,24 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
 
         public override string Author => "FunGamer";
 
-        public EventResult AfterLoginEvent(object sender, LoginEventArgs e)
+        public void AfterLoginEvent(object sender, LoginEventArgs e)
         {
-            return EventResult.Success;
+
         }
 
-        public EventResult BeforeLoginEvent(object sender, LoginEventArgs e)
+        public void BeforeLoginEvent(object sender, LoginEventArgs e)
         {
-            return EventResult.Success;
+
         }
 
-        public EventResult FailedLoginEvent(object sender, LoginEventArgs e)
+        public void FailedLoginEvent(object sender, LoginEventArgs e)
         {
-            return EventResult.Success;
+
         }
 
-        public EventResult SucceedLoginEvent(object sender, LoginEventArgs e)
+        public void SucceedLoginEvent(object sender, LoginEventArgs e)
         {
-            return EventResult.Success;
+            
         }
     }
 }
