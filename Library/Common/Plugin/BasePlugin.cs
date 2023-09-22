@@ -75,9 +75,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
         /// </summary>
         private void BindEvent()
         {
-            Type type = GetType();
-
-            if (type == typeof(IConnectEvent))
+            if (this is IConnectEvent)
             {
                 IConnectEvent bind = (IConnectEvent)this;
                 BeforeConnect += bind.BeforeConnectEvent;
@@ -86,7 +84,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedConnect += bind.FailedConnectEvent;
             }
 
-            if (type == typeof(IDisconnectEvent))
+            if (this is IDisconnectEvent)
             {
                 IDisconnectEvent bind = (IDisconnectEvent)this;
                 BeforeDisconnect += bind.BeforeDisconnectEvent;
@@ -95,7 +93,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedDisconnect += bind.FailedDisconnectEvent;
             }
 
-            if (type == typeof(ILoginEvent))
+            if (this is ILoginEvent)
             {
                 ILoginEvent bind = (ILoginEvent)this;
                 BeforeLogin += bind.BeforeLoginEvent;
@@ -104,7 +102,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedLogin += bind.FailedLoginEvent;
             }
 
-            if (type == typeof(ILogoutEvent))
+            if (this is ILogoutEvent)
             {
                 ILogoutEvent bind = (ILogoutEvent)this;
                 BeforeLogout += bind.BeforeLogoutEvent;
@@ -113,7 +111,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedLogout += bind.FailedLogoutEvent;
             }
 
-            if (type == typeof(IRegEvent))
+            if (this is IRegEvent)
             {
                 IRegEvent bind = (IRegEvent)this;
                 BeforeReg += bind.BeforeRegEvent;
@@ -122,7 +120,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedReg += bind.FailedRegEvent;
             }
 
-            if (type == typeof(IIntoRoomEvent))
+            if (this is IIntoRoomEvent)
             {
                 IIntoRoomEvent bind = (IIntoRoomEvent)this;
                 BeforeIntoRoom += bind.BeforeIntoRoomEvent;
@@ -131,7 +129,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedIntoRoom += bind.FailedIntoRoomEvent;
             }
 
-            if (type == typeof(ISendTalkEvent))
+            if (this is ISendTalkEvent)
             {
                 ISendTalkEvent bind = (ISendTalkEvent)this;
                 BeforeSendTalk += bind.BeforeSendTalkEvent;
@@ -140,7 +138,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedSendTalk += bind.FailedSendTalkEvent;
             }
 
-            if (type == typeof(ICreateRoomEvent))
+            if (this is ICreateRoomEvent)
             {
                 ICreateRoomEvent bind = (ICreateRoomEvent)this;
                 BeforeCreateRoom += bind.BeforeCreateRoomEvent;
@@ -149,7 +147,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedCreateRoom += bind.FailedCreateRoomEvent;
             }
 
-            if (type == typeof(IQuitRoomEvent))
+            if (this is IQuitRoomEvent)
             {
                 IQuitRoomEvent bind = (IQuitRoomEvent)this;
                 BeforeQuitRoom += bind.BeforeQuitRoomEvent;
@@ -158,7 +156,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedQuitRoom += bind.FailedQuitRoomEvent;
             }
 
-            if (type == typeof(IChangeRoomSettingEvent))
+            if (this is IChangeRoomSettingEvent)
             {
                 IChangeRoomSettingEvent bind = (IChangeRoomSettingEvent)this;
                 BeforeChangeRoomSetting += bind.BeforeChangeRoomSettingEvent;
@@ -167,7 +165,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedChangeRoomSetting += bind.FailedChangeRoomSettingEvent;
             }
 
-            if (type == typeof(IStartMatchEvent))
+            if (this is IStartMatchEvent)
             {
                 IStartMatchEvent bind = (IStartMatchEvent)this;
                 BeforeStartMatch += bind.BeforeStartMatchEvent;
@@ -176,7 +174,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedStartMatch += bind.FailedStartMatchEvent;
             }
 
-            if (type == typeof(IStartGameEvent))
+            if (this is IStartGameEvent)
             {
                 IStartGameEvent bind = (IStartGameEvent)this;
                 BeforeStartGame += bind.BeforeStartGameEvent;
@@ -185,7 +183,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedStartGame += bind.FailedStartGameEvent;
             }
 
-            if (type == typeof(IChangeProfileEvent))
+            if (this is IChangeProfileEvent)
             {
                 IChangeProfileEvent bind = (IChangeProfileEvent)this;
                 BeforeChangeProfile += bind.BeforeChangeProfileEvent;
@@ -194,7 +192,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedChangeProfile += bind.FailedChangeProfileEvent;
             }
 
-            if (type == typeof(IChangeAccountSettingEvent))
+            if (this is IChangeAccountSettingEvent)
             {
                 IChangeAccountSettingEvent bind = (IChangeAccountSettingEvent)this;
                 BeforeChangeAccountSetting += bind.BeforeChangeAccountSettingEvent;
@@ -203,7 +201,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedChangeAccountSetting += bind.FailedChangeAccountSettingEvent;
             }
 
-            if (type == typeof(IOpenInventoryEvent))
+            if (this is IOpenInventoryEvent)
             {
                 IOpenInventoryEvent bind = (IOpenInventoryEvent)this;
                 BeforeOpenInventory += bind.BeforeOpenInventoryEvent;
@@ -212,7 +210,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedOpenInventory += bind.FailedOpenInventoryEvent;
             }
 
-            if (type == typeof(ISignInEvent))
+            if (this is ISignInEvent)
             {
                 ISignInEvent bind = (ISignInEvent)this;
                 BeforeSignIn += bind.BeforeSignInEvent;
@@ -221,7 +219,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedSignIn += bind.FailedSignInEvent;
             }
 
-            if (type == typeof(IOpenStoreEvent))
+            if (this is IOpenStoreEvent)
             {
                 IOpenStoreEvent bind = (IOpenStoreEvent)this;
                 BeforeOpenStore += bind.BeforeOpenStoreEvent;
@@ -230,7 +228,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedOpenStore += bind.FailedOpenStoreEvent;
             }
 
-            if (type == typeof(IBuyItemEvent))
+            if (this is IBuyItemEvent)
             {
                 IBuyItemEvent bind = (IBuyItemEvent)this;
                 BeforeBuyItem += bind.BeforeBuyItemEvent;
@@ -239,7 +237,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedBuyItem += bind.FailedBuyItemEvent;
             }
 
-            if (type == typeof(IShowRankingEvent))
+            if (this is IShowRankingEvent)
             {
                 IShowRankingEvent bind = (IShowRankingEvent)this;
                 BeforeShowRanking += bind.BeforeShowRankingEvent;
@@ -248,7 +246,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedShowRanking += bind.FailedShowRankingEvent;
             }
 
-            if (type == typeof(IUseItemEvent))
+            if (this is IUseItemEvent)
             {
                 IUseItemEvent bind = (IUseItemEvent)this;
                 BeforeUseItem += bind.BeforeUseItemEvent;
@@ -257,7 +255,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedUseItem += bind.FailedUseItemEvent;
             }
 
-            if (type == typeof(IEndGameEvent))
+            if (this is IEndGameEvent)
             {
                 IEndGameEvent bind = (IEndGameEvent)this;
                 BeforeEndGame += bind.BeforeEndGameEvent;
