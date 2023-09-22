@@ -14,22 +14,10 @@ namespace Milimoe.FunGame.Core.Api.Utility
         {
 
         }
-        
-        private PluginLoader(Dictionary<string, BasePlugin> plugins)
-        {
-            Plugins = plugins;
-        }
 
         public static PluginLoader LoadPlugins()
         {
             PluginLoader loader = new();
-            PluginManager.LoadPlugins(loader.Plugins);
-            return loader;
-        }
-
-        public static PluginLoader LoadPlugins(Dictionary<string, BasePlugin> plugins)
-        {
-            PluginLoader loader = new(plugins);
             PluginManager.LoadPlugins(loader.Plugins);
             return loader;
         }
