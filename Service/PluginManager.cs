@@ -10,7 +10,7 @@ namespace Milimoe.FunGame.Core.Service
         /// </summary>
         /// <param name="plugins"></param>
         /// <returns></returns>
-        internal static Dictionary<string, BasePlugin> LoadPlugins(Dictionary<string, BasePlugin> plugins)
+        internal static Dictionary<string, BasePlugin> LoadPlugins(Dictionary<string, BasePlugin> plugins, params object[] objs)
         {
             string[] dlls = Directory.GetFiles("plugins", "*.dll");
 
@@ -23,7 +23,7 @@ namespace Milimoe.FunGame.Core.Service
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(BasePlugin))))
                 {
                     BasePlugin? instance = (BasePlugin?)Activator.CreateInstance(type);
-                    if (instance != null && instance.Load())
+                    if (instance != null && instance.Load(objs))
                     {
                         plugins.TryAdd(instance.Name, instance);
                     }

@@ -13,10 +13,10 @@ namespace Milimoe.FunGame.Core.Api.Utility
 
         }
 
-        public static PluginLoader LoadPlugins()
+        public static PluginLoader LoadPlugins(params object[] objs)
         {
             PluginLoader loader = new();
-            PluginManager.LoadPlugins(loader.Plugins);
+            PluginManager.LoadPlugins(loader.Plugins, objs);
             return loader;
         }
 
