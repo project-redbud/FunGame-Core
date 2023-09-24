@@ -102,11 +102,11 @@ namespace Milimoe.FunGame.Core.Library.Constant
 
     public class GameMode
     {
-        public const string GameMode_All = "所有模式";
-        public const string GameMode_AllHasPass = "带密码的所有模式";
-        public const string GameMode_Mix = "混战模式";
-        public const string GameMode_MixHasPass = "带密码的混战模式";
-        public const string GameMode_Team = "团队模式";
-        public const string GameMode_TeamHasPass = "带密码的团队模式";
+        public const string All = "所有模式";
+        public const string AllHasPass = "带密码的所有模式";
+        public const string Mix = "混战模式";
+        public const string MixHasPass = "带密码的混战模式";
+        public const string Team = "团队模式";
+        public const string TeamHasPass = "带密码的团队模式";
     }
 }
