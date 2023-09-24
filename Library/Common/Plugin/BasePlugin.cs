@@ -1,13 +1,9 @@
 ﻿using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Library.Common.Event;
-using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Library.Common.Plugin
 {
-    public abstract class BasePlugin : IPlugin, IConnectEventHandler, IDisconnectEventHandler, ILoginEventHandler, ILogoutEventHandler, IRegEventHandler, IIntoRoomEventHandler, ISendTalkEventHandler,
-        ICreateRoomEventHandler, IQuitRoomEventHandler, IChangeRoomSettingEventHandler, IStartMatchEventHandler, IStartGameEventHandler, IChangeProfileEventHandler, IChangeAccountSettingEventHandler,
-        IOpenInventoryEventHandler, ISignInEventHandler, IOpenStoreEventHandler, IBuyItemEventHandler, IShowRankingEventHandler, IUseItemEventHandler, IEndGameEventHandler
+    public abstract class BasePlugin : IPlugin
     {
         /// <summary>
         /// 插件名称
@@ -37,11 +33,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
         /// <summary>
         /// 加载插件
         /// </summary>
-        public void Load()
+        public bool Load()
         {
             if (IsLoaded)
             {
-                return;
+                return false;
             }
             // BeforeLoad可以阻止加载此插件
             if (BeforeLoad())
@@ -53,6 +49,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 // 如果加载后需要执行代码，请重写AfterLoad方法
                 AfterLoad();
             }
+            return IsLoaded;
         }
 
         /// <summary>
@@ -77,9 +74,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
         /// </summary>
         private void BindEvent()
         {
-            Type type = GetType();
-
-            if (type == typeof(IConnectEvent))
+            if (this is IConnectEvent)
             {
                 IConnectEvent bind = (IConnectEvent)this;
                 BeforeConnect += bind.BeforeConnectEvent;
@@ -88,7 +83,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedConnect += bind.FailedConnectEvent;
             }
 
-            if (type == typeof(IDisconnectEvent))
+            if (this is IDisconnectEvent)
             {
                 IDisconnectEvent bind = (IDisconnectEvent)this;
                 BeforeDisconnect += bind.BeforeDisconnectEvent;
@@ -97,7 +92,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedDisconnect += bind.FailedDisconnectEvent;
             }
 
-            if (type == typeof(ILoginEvent))
+            if (this is ILoginEvent)
             {
                 ILoginEvent bind = (ILoginEvent)this;
                 BeforeLogin += bind.BeforeLoginEvent;
@@ -106,7 +101,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedLogin += bind.FailedLoginEvent;
             }
 
-            if (type == typeof(ILogoutEvent))
+            if (this is ILogoutEvent)
             {
                 ILogoutEvent bind = (ILogoutEvent)this;
                 BeforeLogout += bind.BeforeLogoutEvent;
@@ -115,7 +110,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedLogout += bind.FailedLogoutEvent;
             }
 
-            if (type == typeof(IRegEvent))
+            if (this is IRegEvent)
             {
                 IRegEvent bind = (IRegEvent)this;
                 BeforeReg += bind.BeforeRegEvent;
@@ -124,7 +119,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedReg += bind.FailedRegEvent;
             }
 
-            if (type == typeof(IIntoRoomEvent))
+            if (this is IIntoRoomEvent)
             {
                 IIntoRoomEvent bind = (IIntoRoomEvent)this;
                 BeforeIntoRoom += bind.BeforeIntoRoomEvent;
@@ -133,7 +128,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedIntoRoom += bind.FailedIntoRoomEvent;
             }
 
-            if (type == typeof(ISendTalkEvent))
+            if (this is ISendTalkEvent)
             {
                 ISendTalkEvent bind = (ISendTalkEvent)this;
                 BeforeSendTalk += bind.BeforeSendTalkEvent;
@@ -142,7 +137,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedSendTalk += bind.FailedSendTalkEvent;
             }
 
-            if (type == typeof(ICreateRoomEvent))
+            if (this is ICreateRoomEvent)
             {
                 ICreateRoomEvent bind = (ICreateRoomEvent)this;
                 BeforeCreateRoom += bind.BeforeCreateRoomEvent;
@@ -151,7 +146,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedCreateRoom += bind.FailedCreateRoomEvent;
             }
 
-            if (type == typeof(IQuitRoomEvent))
+            if (this is IQuitRoomEvent)
             {
                 IQuitRoomEvent bind = (IQuitRoomEvent)this;
                 BeforeQuitRoom += bind.BeforeQuitRoomEvent;
@@ -160,7 +155,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedQuitRoom += bind.FailedQuitRoomEvent;
             }
 
-            if (type == typeof(IChangeRoomSettingEvent))
+            if (this is IChangeRoomSettingEvent)
             {
                 IChangeRoomSettingEvent bind = (IChangeRoomSettingEvent)this;
                 BeforeChangeRoomSetting += bind.BeforeChangeRoomSettingEvent;
@@ -169,7 +164,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedChangeRoomSetting += bind.FailedChangeRoomSettingEvent;
             }
 
-            if (type == typeof(IStartMatchEvent))
+            if (this is IStartMatchEvent)
             {
                 IStartMatchEvent bind = (IStartMatchEvent)this;
                 BeforeStartMatch += bind.BeforeStartMatchEvent;
@@ -178,7 +173,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedStartMatch += bind.FailedStartMatchEvent;
             }
 
-            if (type == typeof(IStartGameEvent))
+            if (this is IStartGameEvent)
             {
                 IStartGameEvent bind = (IStartGameEvent)this;
                 BeforeStartGame += bind.BeforeStartGameEvent;
@@ -187,7 +182,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedStartGame += bind.FailedStartGameEvent;
             }
 
-            if (type == typeof(IChangeProfileEvent))
+            if (this is IChangeProfileEvent)
             {
                 IChangeProfileEvent bind = (IChangeProfileEvent)this;
                 BeforeChangeProfile += bind.BeforeChangeProfileEvent;
@@ -196,7 +191,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedChangeProfile += bind.FailedChangeProfileEvent;
             }
 
-            if (type == typeof(IChangeAccountSettingEvent))
+            if (this is IChangeAccountSettingEvent)
             {
                 IChangeAccountSettingEvent bind = (IChangeAccountSettingEvent)this;
                 BeforeChangeAccountSetting += bind.BeforeChangeAccountSettingEvent;
@@ -205,7 +200,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedChangeAccountSetting += bind.FailedChangeAccountSettingEvent;
             }
 
-            if (type == typeof(IOpenInventoryEvent))
+            if (this is IOpenInventoryEvent)
             {
                 IOpenInventoryEvent bind = (IOpenInventoryEvent)this;
                 BeforeOpenInventory += bind.BeforeOpenInventoryEvent;
@@ -214,7 +209,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedOpenInventory += bind.FailedOpenInventoryEvent;
             }
 
-            if (type == typeof(ISignInEvent))
+            if (this is ISignInEvent)
             {
                 ISignInEvent bind = (ISignInEvent)this;
                 BeforeSignIn += bind.BeforeSignInEvent;
@@ -223,7 +218,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedSignIn += bind.FailedSignInEvent;
             }
 
-            if (type == typeof(IOpenStoreEvent))
+            if (this is IOpenStoreEvent)
             {
                 IOpenStoreEvent bind = (IOpenStoreEvent)this;
                 BeforeOpenStore += bind.BeforeOpenStoreEvent;
@@ -232,7 +227,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedOpenStore += bind.FailedOpenStoreEvent;
             }
 
-            if (type == typeof(IBuyItemEvent))
+            if (this is IBuyItemEvent)
             {
                 IBuyItemEvent bind = (IBuyItemEvent)this;
                 BeforeBuyItem += bind.BeforeBuyItemEvent;
@@ -241,7 +236,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedBuyItem += bind.FailedBuyItemEvent;
             }
 
-            if (type == typeof(IShowRankingEvent))
+            if (this is IShowRankingEvent)
             {
                 IShowRankingEvent bind = (IShowRankingEvent)this;
                 BeforeShowRanking += bind.BeforeShowRankingEvent;
@@ -250,7 +245,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedShowRanking += bind.FailedShowRankingEvent;
             }
 
-            if (type == typeof(IUseItemEvent))
+            if (this is IUseItemEvent)
             {
                 IUseItemEvent bind = (IUseItemEvent)this;
                 BeforeUseItem += bind.BeforeUseItemEvent;
@@ -259,7 +254,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
                 FailedUseItem += bind.FailedUseItemEvent;
             }
 
-            if (type == typeof(IEndGameEvent))
+            if (this is IEndGameEvent)
             {
                 IEndGameEvent bind = (IEndGameEvent)this;
                 BeforeEndGame += bind.BeforeEndGameEvent;
@@ -354,424 +349,424 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
         public event IEventHandler.SucceedEventHandler? SucceedEndGame;
         public event IEventHandler.FailedEventHandler? FailedEndGame;
 
-        public EventResult OnBeforeConnectEvent(ConnectEventArgs e)
+        public void OnBeforeConnectEvent(ConnectEventArgs e)
         {
-            return BeforeConnect?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            BeforeConnect?.Invoke(this, e);
         }
 
-        public EventResult OnAfterConnectEvent(ConnectEventArgs e)
+        public void OnAfterConnectEvent(ConnectEventArgs e)
         {
-            return AfterConnect?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            AfterConnect?.Invoke(this, e);
         }
 
-        public EventResult OnSucceedConnectEvent(ConnectEventArgs e)
+        public void OnSucceedConnectEvent(ConnectEventArgs e)
         {
-            return SucceedConnect?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            SucceedConnect?.Invoke(this, e);
         }
 
-        public EventResult OnFailedConnectEvent(ConnectEventArgs e)
+        public void OnFailedConnectEvent(ConnectEventArgs e)
         {
-            return FailedConnect?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            FailedConnect?.Invoke(this, e);
         }
 
-        public EventResult OnBeforeDisconnectEvent(GeneralEventArgs e)
+        public void OnBeforeDisconnectEvent(GeneralEventArgs e)
         {
-            return BeforeDisconnect?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            BeforeDisconnect?.Invoke(this, e);
         }
 
-        public EventResult OnAfterDisconnectEvent(GeneralEventArgs e)
+        public void OnAfterDisconnectEvent(GeneralEventArgs e)
         {
-            return AfterDisconnect?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            AfterDisconnect?.Invoke(this, e);
         }
 
-        public EventResult OnSucceedDisconnectEvent(GeneralEventArgs e)
+        public void OnSucceedDisconnectEvent(GeneralEventArgs e)
         {
-            return SucceedDisconnect?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            SucceedDisconnect?.Invoke(this, e);
         }
 
-        public EventResult OnFailedDisconnectEvent(GeneralEventArgs e)
+        public void OnFailedDisconnectEvent(GeneralEventArgs e)
         {
-            return FailedDisconnect?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            FailedDisconnect?.Invoke(this, e);
         }
 
-        public EventResult OnBeforeLoginEvent(LoginEventArgs e)
+        public void OnBeforeLoginEvent(LoginEventArgs e)
         {
-            return BeforeLogin?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            BeforeLogin?.Invoke(this, e);
         }
 
-        public EventResult OnAfterLoginEvent(LoginEventArgs e)
+        public void OnAfterLoginEvent(LoginEventArgs e)
         {
-            return AfterLogin?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            AfterLogin?.Invoke(this, e);
         }
 
-        public EventResult OnSucceedLoginEvent(LoginEventArgs e)
+        public void OnSucceedLoginEvent(LoginEventArgs e)
         {
-            return SucceedLogin?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            SucceedLogin?.Invoke(this, e);
         }
 
-        public EventResult OnFailedLoginEvent(LoginEventArgs e)
+        public void OnFailedLoginEvent(LoginEventArgs e)
         {
-            return FailedLogin?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            FailedLogin?.Invoke(this, e);
         }
 
-        public EventResult OnBeforeLogoutEvent(GeneralEventArgs e)
+        public void OnBeforeLogoutEvent(GeneralEventArgs e)
         {
-            return BeforeLogout?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            BeforeLogout?.Invoke(this, e);
         }
 
-        public EventResult OnAfterLogoutEvent(GeneralEventArgs e)
+        public void OnAfterLogoutEvent(GeneralEventArgs e)
         {
-            return AfterLogout?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            AfterLogout?.Invoke(this, e);
         }
 
-        public EventResult OnSucceedLogoutEvent(GeneralEventArgs e)
+        public void OnSucceedLogoutEvent(GeneralEventArgs e)
         {
-            return SucceedLogout?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            SucceedLogout?.Invoke(this, e);
         }
 
-        public EventResult OnFailedLogoutEvent(GeneralEventArgs e)
+        public void OnFailedLogoutEvent(GeneralEventArgs e)
         {
-            return FailedLogout?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            FailedLogout?.Invoke(this, e);
         }
 
-        public EventResult OnBeforeRegEvent(RegisterEventArgs e)
+        public void OnBeforeRegEvent(RegisterEventArgs e)
         {
-            return BeforeReg?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            BeforeReg?.Invoke(this, e);
         }
 
-        public EventResult OnAfterRegEvent(RegisterEventArgs e)
+        public void OnAfterRegEvent(RegisterEventArgs e)
         {
-            return AfterReg?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            AfterReg?.Invoke(this, e);
         }
 
-        public EventResult OnSucceedRegEvent(RegisterEventArgs e)
+        public void OnSucceedRegEvent(RegisterEventArgs e)
         {
-            return SucceedReg?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            SucceedReg?.Invoke(this, e);
         }
 
-        public EventResult OnFailedRegEvent(RegisterEventArgs e)
+        public void OnFailedRegEvent(RegisterEventArgs e)
         {
-            return FailedReg?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            FailedReg?.Invoke(this, e);
         }
 
-        public EventResult OnBeforeIntoRoomEvent(RoomEventArgs e)
+        public void OnBeforeIntoRoomEvent(RoomEventArgs e)
         {
-            return BeforeIntoRoom?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            BeforeIntoRoom?.Invoke(this, e);
         }
 
-        public EventResult OnAfterIntoRoomEvent(RoomEventArgs e)
+        public void OnAfterIntoRoomEvent(RoomEventArgs e)
         {
-            return AfterIntoRoom?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            AfterIntoRoom?.Invoke(this, e);
         }
 
-        public EventResult OnSucceedIntoRoomEvent(RoomEventArgs e)
+        public void OnSucceedIntoRoomEvent(RoomEventArgs e)
         {
-            return SucceedIntoRoom?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            SucceedIntoRoom?.Invoke(this, e);
         }
 
-        public EventResult OnFailedIntoRoomEvent(RoomEventArgs e)
+        public void OnFailedIntoRoomEvent(RoomEventArgs e)
         {
-            return FailedIntoRoom?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            FailedIntoRoom?.Invoke(this, e);
         }
 
-        public EventResult OnBeforeSendTalkEvent(SendTalkEventArgs e)
+        public void OnBeforeSendTalkEvent(SendTalkEventArgs e)
         {
-            return BeforeSendTalk?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            BeforeSendTalk?.Invoke(this, e);
         }
 
-        public EventResult OnAfterSendTalkEvent(SendTalkEventArgs e)
+        public void OnAfterSendTalkEvent(SendTalkEventArgs e)
         {
-            return AfterSendTalk?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            AfterSendTalk?.Invoke(this, e);
         }
 
-        public EventResult OnSucceedSendTalkEvent(SendTalkEventArgs e)
+        public void OnSucceedSendTalkEvent(SendTalkEventArgs e)
         {
-            return SucceedSendTalk?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            SucceedSendTalk?.Invoke(this, e);
         }
 
-        public EventResult OnFailedSendTalkEvent(SendTalkEventArgs e)
+        public void OnFailedSendTalkEvent(SendTalkEventArgs e)
         {
-            return FailedSendTalk?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            FailedSendTalk?.Invoke(this, e);
         }
 
-        public EventResult OnBeforeCreateRoomEvent(RoomEventArgs e)
+        public void OnBeforeCreateRoomEvent(RoomEventArgs e)
         {
-            return BeforeCreateRoom?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            BeforeCreateRoom?.Invoke(this, e);
         }
 
-        public EventResult OnAfterCreateRoomEvent(RoomEventArgs e)
+        public void OnAfterCreateRoomEvent(RoomEventArgs e)
         {
-            return AfterCreateRoom?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            AfterCreateRoom?.Invoke(this, e);
         }
 
-        public EventResult OnSucceedCreateRoomEvent(RoomEventArgs e)
+        public void OnSucceedCreateRoomEvent(RoomEventArgs e)
         {
-            return SucceedCreateRoom?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            SucceedCreateRoom?.Invoke(this, e);
         }
 
-        public EventResult OnFailedCreateRoomEvent(RoomEventArgs e)
+        public void OnFailedCreateRoomEvent(RoomEventArgs e)
         {
-            return FailedCreateRoom?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            FailedCreateRoom?.Invoke(this, e);
         }
 
-        public EventResult OnBeforeQuitRoomEvent(RoomEventArgs e)
+        public void OnBeforeQuitRoomEvent(RoomEventArgs e)
         {
-            return BeforeQuitRoom?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            BeforeQuitRoom?.Invoke(this, e);
         }
 
-        public EventResult OnAfterQuitRoomEvent(RoomEventArgs e)
+        public void OnAfterQuitRoomEvent(RoomEventArgs e)
         {
-            return AfterQuitRoom?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            AfterQuitRoom?.Invoke(this, e);
         }
 
-        public EventResult OnSucceedQuitRoomEvent(RoomEventArgs e)
+        public void OnSucceedQuitRoomEvent(RoomEventArgs e)
         {
-            return SucceedQuitRoom?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            SucceedQuitRoom?.Invoke(this, e);
         }
 
-        public EventResult OnFailedQuitRoomEvent(RoomEventArgs e)
+        public void OnFailedQuitRoomEvent(RoomEventArgs e)
         {
-            return FailedQuitRoom?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            FailedQuitRoom?.Invoke(this, e);
         }
 
-        public EventResult OnBeforeChangeRoomSettingEvent(GeneralEventArgs e)
+        public void OnBeforeChangeRoomSettingEvent(GeneralEventArgs e)
         {
-            return BeforeChangeRoomSetting?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            BeforeChangeRoomSetting?.Invoke(this, e);
         }
 
-        public EventResult OnAfterChangeRoomSettingEvent(GeneralEventArgs e)
+        public void OnAfterChangeRoomSettingEvent(GeneralEventArgs e)
         {
-            return AfterChangeRoomSetting?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            AfterChangeRoomSetting?.Invoke(this, e);
         }
 
-        public EventResult OnSucceedChangeRoomSettingEvent(GeneralEventArgs e)
+        public void OnSucceedChangeRoomSettingEvent(GeneralEventArgs e)
         {
-            return SucceedChangeRoomSetting?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            SucceedChangeRoomSetting?.Invoke(this, e);
         }
 
-        public EventResult OnFailedChangeRoomSettingEvent(GeneralEventArgs e)
+        public void OnFailedChangeRoomSettingEvent(GeneralEventArgs e)
         {
-            return FailedChangeRoomSetting?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            FailedChangeRoomSetting?.Invoke(this, e);
         }
 
-        public EventResult OnBeforeStartMatchEvent(GeneralEventArgs e)
+        public void OnBeforeStartMatchEvent(GeneralEventArgs e)
         {
-            return BeforeStartMatch?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            BeforeStartMatch?.Invoke(this, e);
         }
 
-        public EventResult OnAfterStartMatchEvent(GeneralEventArgs e)
+        public void OnAfterStartMatchEvent(GeneralEventArgs e)
         {
-            return AfterStartMatch?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            AfterStartMatch?.Invoke(this, e);
         }
 
-        public EventResult OnSucceedStartMatchEvent(GeneralEventArgs e)
+        public void OnSucceedStartMatchEvent(GeneralEventArgs e)
         {
-            return SucceedStartMatch?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            SucceedStartMatch?.Invoke(this, e);
         }
 
-        public EventResult OnFailedStartMatchEvent(GeneralEventArgs e)
+        public void OnFailedStartMatchEvent(GeneralEventArgs e)
         {
-            return FailedStartMatch?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            FailedStartMatch?.Invoke(this, e);
         }
 
-        public EventResult OnBeforeStartGameEvent(GeneralEventArgs e)
+        public void OnBeforeStartGameEvent(GeneralEventArgs e)
         {
-            return BeforeStartGame?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            BeforeStartGame?.Invoke(this, e);
         }
 
-        public EventResult OnAfterStartGameEvent(GeneralEventArgs e)
+        public void OnAfterStartGameEvent(GeneralEventArgs e)
         {
-            return AfterStartGame?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            AfterStartGame?.Invoke(this, e);
         }
 
-        public EventResult OnSucceedStartGameEvent(GeneralEventArgs e)
+        public void OnSucceedStartGameEvent(GeneralEventArgs e)
         {
-            return SucceedStartGame?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            SucceedStartGame?.Invoke(this, e);
         }
 
-        public EventResult OnFailedStartGameEvent(GeneralEventArgs e)
+        public void OnFailedStartGameEvent(GeneralEventArgs e)
         {
-            return FailedStartGame?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            FailedStartGame?.Invoke(this, e);
         }
 
-        public EventResult OnBeforeChangeProfileEvent(GeneralEventArgs e)
+        public void OnBeforeChangeProfileEvent(GeneralEventArgs e)
         {
-            return BeforeChangeProfile?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            BeforeChangeProfile?.Invoke(this, e);
         }
 
-        public EventResult OnAfterChangeProfileEvent(GeneralEventArgs e)
+        public void OnAfterChangeProfileEvent(GeneralEventArgs e)
         {
-            return AfterChangeProfile?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            AfterChangeProfile?.Invoke(this, e);
         }
 
-        public EventResult OnSucceedChangeProfileEvent(GeneralEventArgs e)
+        public void OnSucceedChangeProfileEvent(GeneralEventArgs e)
         {
-            return SucceedChangeProfile?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            SucceedChangeProfile?.Invoke(this, e);
         }
 
-        public EventResult OnFailedChangeProfileEvent(GeneralEventArgs e)
+        public void OnFailedChangeProfileEvent(GeneralEventArgs e)
         {
-            return FailedChangeProfile?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            FailedChangeProfile?.Invoke(this, e);
         }
 
-        public EventResult OnBeforeChangeAccountSettingEvent(GeneralEventArgs e)
+        public void OnBeforeChangeAccountSettingEvent(GeneralEventArgs e)
         {
-            return BeforeChangeAccountSetting?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            BeforeChangeAccountSetting?.Invoke(this, e);
         }
 
-        public EventResult OnAfterChangeAccountSettingEvent(GeneralEventArgs e)
+        public void OnAfterChangeAccountSettingEvent(GeneralEventArgs e)
         {
-            return AfterChangeAccountSetting?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            AfterChangeAccountSetting?.Invoke(this, e);
         }
 
-        public EventResult OnSucceedChangeAccountSettingEvent(GeneralEventArgs e)
+        public void OnSucceedChangeAccountSettingEvent(GeneralEventArgs e)
         {
-            return SucceedChangeAccountSetting?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            SucceedChangeAccountSetting?.Invoke(this, e);
         }
 
-        public EventResult OnFailedChangeAccountSettingEvent(GeneralEventArgs e)
+        public void OnFailedChangeAccountSettingEvent(GeneralEventArgs e)
         {
-            return FailedChangeAccountSetting?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            FailedChangeAccountSetting?.Invoke(this, e);
         }
 
-        public EventResult OnBeforeOpenInventoryEvent(GeneralEventArgs e)
+        public void OnBeforeOpenInventoryEvent(GeneralEventArgs e)
         {
-            return BeforeOpenInventory?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            BeforeOpenInventory?.Invoke(this, e);
         }
 
-        public EventResult OnAfterOpenInventoryEvent(GeneralEventArgs e)
+        public void OnAfterOpenInventoryEvent(GeneralEventArgs e)
         {
-            return AfterOpenInventory?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            AfterOpenInventory?.Invoke(this, e);
         }
 
-        public EventResult OnSucceedOpenInventoryEvent(GeneralEventArgs e)
+        public void OnSucceedOpenInventoryEvent(GeneralEventArgs e)
         {
-            return SucceedOpenInventory?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            SucceedOpenInventory?.Invoke(this, e);
         }
 
-        public EventResult OnFailedOpenInventoryEvent(GeneralEventArgs e)
+        public void OnFailedOpenInventoryEvent(GeneralEventArgs e)
         {
-            return FailedOpenInventory?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            FailedOpenInventory?.Invoke(this, e);
         }
 
-        public EventResult OnBeforeSignInEvent(GeneralEventArgs e)
+        public void OnBeforeSignInEvent(GeneralEventArgs e)
         {
-            return BeforeSignIn?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            BeforeSignIn?.Invoke(this, e);
         }
 
-        public EventResult OnAfterSignInEvent(GeneralEventArgs e)
+        public void OnAfterSignInEvent(GeneralEventArgs e)
         {
-            return AfterSignIn?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            AfterSignIn?.Invoke(this, e);
         }
 
-        public EventResult OnSucceedSignInEvent(GeneralEventArgs e)
+        public void OnSucceedSignInEvent(GeneralEventArgs e)
         {
-            return SucceedSignIn?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            SucceedSignIn?.Invoke(this, e);
         }
 
-        public EventResult OnFailedSignInEvent(GeneralEventArgs e)
+        public void OnFailedSignInEvent(GeneralEventArgs e)
         {
-            return FailedSignIn?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            FailedSignIn?.Invoke(this, e);
         }
 
-        public EventResult OnBeforeOpenStoreEvent(GeneralEventArgs e)
+        public void OnBeforeOpenStoreEvent(GeneralEventArgs e)
         {
-            return BeforeOpenStore?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            BeforeOpenStore?.Invoke(this, e);
         }
 
-        public EventResult OnAfterOpenStoreEvent(GeneralEventArgs e)
+        public void OnAfterOpenStoreEvent(GeneralEventArgs e)
         {
-            return AfterOpenStore?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            AfterOpenStore?.Invoke(this, e);
         }
 
-        public EventResult OnSucceedOpenStoreEvent(GeneralEventArgs e)
+        public void OnSucceedOpenStoreEvent(GeneralEventArgs e)
         {
-            return SucceedOpenStore?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            SucceedOpenStore?.Invoke(this, e);
         }
 
-        public EventResult OnFailedOpenStoreEvent(GeneralEventArgs e)
+        public void OnFailedOpenStoreEvent(GeneralEventArgs e)
         {
-            return FailedOpenStore?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            FailedOpenStore?.Invoke(this, e);
         }
 
-        public EventResult OnBeforeBuyItemEvent(GeneralEventArgs e)
+        public void OnBeforeBuyItemEvent(GeneralEventArgs e)
         {
-            return BeforeBuyItem?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            BeforeBuyItem?.Invoke(this, e);
         }
 
-        public EventResult OnAfterBuyItemEvent(GeneralEventArgs e)
+        public void OnAfterBuyItemEvent(GeneralEventArgs e)
         {
-            return AfterBuyItem?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            AfterBuyItem?.Invoke(this, e);
         }
 
-        public EventResult OnSucceedBuyItemEvent(GeneralEventArgs e)
+        public void OnSucceedBuyItemEvent(GeneralEventArgs e)
         {
-            return SucceedBuyItem?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            SucceedBuyItem?.Invoke(this, e);
         }
 
-        public EventResult OnFailedBuyItemEvent(GeneralEventArgs e)
+        public void OnFailedBuyItemEvent(GeneralEventArgs e)
         {
-            return FailedBuyItem?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            FailedBuyItem?.Invoke(this, e);
         }
 
-        public EventResult OnBeforeShowRankingEvent(GeneralEventArgs e)
+        public void OnBeforeShowRankingEvent(GeneralEventArgs e)
         {
-            return BeforeShowRanking?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            BeforeShowRanking?.Invoke(this, e);
         }
 
-        public EventResult OnAfterShowRankingEvent(GeneralEventArgs e)
+        public void OnAfterShowRankingEvent(GeneralEventArgs e)
         {
-            return AfterShowRanking?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            AfterShowRanking?.Invoke(this, e);
         }
 
-        public EventResult OnSucceedShowRankingEvent(GeneralEventArgs e)
+        public void OnSucceedShowRankingEvent(GeneralEventArgs e)
         {
-            return SucceedShowRanking?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            SucceedShowRanking?.Invoke(this, e);
         }
 
-        public EventResult OnFailedShowRankingEvent(GeneralEventArgs e)
+        public void OnFailedShowRankingEvent(GeneralEventArgs e)
         {
-            return FailedShowRanking?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            FailedShowRanking?.Invoke(this, e);
         }
 
-        public EventResult OnBeforeUseItemEvent(GeneralEventArgs e)
+        public void OnBeforeUseItemEvent(GeneralEventArgs e)
         {
-            return BeforeUseItem?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            BeforeUseItem?.Invoke(this, e);
         }
 
-        public EventResult OnAfterUseItemEvent(GeneralEventArgs e)
+        public void OnAfterUseItemEvent(GeneralEventArgs e)
         {
-            return AfterUseItem?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            AfterUseItem?.Invoke(this, e);
         }
 
-        public EventResult OnSucceedUseItemEvent(GeneralEventArgs e)
+        public void OnSucceedUseItemEvent(GeneralEventArgs e)
         {
-            return SucceedUseItem?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            SucceedUseItem?.Invoke(this, e);
         }
 
-        public EventResult OnFailedUseItemEvent(GeneralEventArgs e)
+        public void OnFailedUseItemEvent(GeneralEventArgs e)
         {
-            return FailedUseItem?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            FailedUseItem?.Invoke(this, e);
         }
 
-        public EventResult OnBeforeEndGameEvent(GeneralEventArgs e)
+        public void OnBeforeEndGameEvent(GeneralEventArgs e)
         {
-            return BeforeEndGame?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            BeforeEndGame?.Invoke(this, e);
         }
 
-        public EventResult OnAfterEndGameEvent(GeneralEventArgs e)
+        public void OnAfterEndGameEvent(GeneralEventArgs e)
         {
-            return AfterEndGame?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            AfterEndGame?.Invoke(this, e);
         }
 
-        public EventResult OnSucceedEndGameEvent(GeneralEventArgs e)
+        public void OnSucceedEndGameEvent(GeneralEventArgs e)
         {
-            return SucceedEndGame?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            SucceedEndGame?.Invoke(this, e);
         }
 
-        public EventResult OnFailedEndGameEvent(GeneralEventArgs e)
+        public void OnFailedEndGameEvent(GeneralEventArgs e)
         {
-            return FailedEndGame?.Invoke(this, e) ?? EventResult.NoEventImplement;
+            FailedEndGame?.Invoke(this, e);
         }
     }
 }

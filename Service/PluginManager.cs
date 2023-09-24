@@ -5,32 +5,28 @@ namespace Milimoe.FunGame.Core.Service
 {
     internal class PluginManager
     {
-        public static Dictionary<string, BasePlugin> LoadPlugin()
+        /// <summary>
+        /// 从plugins目录加载所有插件
+        /// </summary>
+        /// <param name="plugins"></param>
+        /// <returns></returns>
+        internal static Dictionary<string, BasePlugin> LoadPlugins(Dictionary<string, BasePlugin> plugins)
         {
-            Dictionary<string, BasePlugin> plugins = new();
-            string directory = "plugins";
-
-            // 获取目录中所有的 DLL 文件路径
-            string[] dlls = Directory.GetFiles(directory, "*.dll");
+            string[] dlls = Directory.GetFiles("plugins", "*.dll");
 
             foreach (string dll in dlls)
             {
-                try
-                {
-                    // 加载 DLL
-                    Assembly assembly = Assembly.LoadFrom(dll);
+                // 加载目录下所有的DLL
+                Assembly assembly = Assembly.LoadFrom(dll);
 
-                    // 遍历 DLL 中的类型
-                    foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(BasePlugin))))
-                    {
-                        BasePlugin instance = Activator.CreateInstance<BasePlugin>();
-                        plugins.Add(instance.Name, instance);
-                    }
-                }
-                catch (Exception e)
+                // 遍历DLL中继承了BasePlugin的类型
+                foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(BasePlugin))))
                 {
-                    Console.WriteLine($"Failed to load DLL: {dll}");
-                    Console.WriteLine($"Error: {e.Message}");
+                    BasePlugin? instance = (BasePlugin?)Activator.CreateInstance(type);
+                    if (instance != null && instance.Load())
+                    {
+                        plugins.TryAdd(instance.Name, instance);
+                    }
                 }
             }
 
