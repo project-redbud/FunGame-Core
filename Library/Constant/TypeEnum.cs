@@ -32,6 +32,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         All,
         Mix,
         Team,
+        AllHasPass,
         MixHasPass,
         TeamHasPass
     }

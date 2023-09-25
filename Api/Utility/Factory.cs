@@ -78,13 +78,42 @@ namespace Milimoe.FunGame.Core.Api.Utility
             return RoomFactory.Create(Id, Roomid, CreateTime, RoomMaster, RoomType, RoomState, Password);
         }
 
+        /// <summary>
+        /// 通过DataSet获取房间实例
+        /// </summary>
+        /// <param name="DsRoom"></param>
+        /// <param name="DsUser"></param>
+        /// <returns></returns>
+        public static Room GetRoom(DataRow DrRoom, User User)
+        {
+            Room room = General.HallInstance;
+            if (DrRoom != null)
+            {
+                long Id = (long)DrRoom[RoomQuery.Column_ID];
+                string Roomid = (string)DrRoom[RoomQuery.Column_RoomID];
+                DateTime CreateTime = (DateTime)DrRoom[RoomQuery.Column_CreateTime];
+                User RoomMaster = User;
+                RoomType RoomType = (RoomType)Convert.ToInt32(DrRoom[RoomQuery.Column_RoomType]);
+                RoomState RoomState = (RoomState)Convert.ToInt32(DrRoom[RoomQuery.Column_RoomState]);
+                string Password = (string)DrRoom[RoomQuery.Column_Password];
+                room = GetRoom(Id, Roomid, CreateTime, RoomMaster, RoomType, RoomState, Password);
+            }
+            return room;
+        }
+
+        /// <summary>
+        /// 通过DataSet获取房间列表
+        /// </summary>
+        /// <param name="DsRoom"></param>
+        /// <param name="DsUser"></param>
+        /// <returns></returns>
         public static List<Room> GetRooms(DataSet DsRoom, DataSet DsUser)
         {
             List<Room> list = new()
             {
                 General.HallInstance
             };
-            if (DsRoom != null && DsRoom.Tables.Count > 0)
+            if (DsRoom != null && DsRoom.Tables[0].Rows.Count > 0)
             {
                 foreach (DataRow DrRoom in DsRoom.Tables[0].Rows)
                 {

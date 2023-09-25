@@ -9,6 +9,6 @@
         public string Version { get; }
         public string Author { get; }
 
-        public bool Load();
+        public bool Load(params object[] objs);
     }
 }

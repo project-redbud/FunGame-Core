@@ -37,7 +37,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 当前游戏模式
         /// </summary>
-        public string FunGame_GameMode { get; set; } = GameMode.GameMode_Mix;
+        public string FunGame_GameMode { get; set; } = GameMode.Mix;
 
         /// <summary>
         /// 服务器名称

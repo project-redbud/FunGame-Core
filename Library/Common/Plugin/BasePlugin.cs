@@ -1,5 +1,8 @@
-﻿using Milimoe.FunGame.Core.Interface;
+﻿using Milimoe.FunGame.Core.Api.Transmittal;
+using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Library.Common.Event;
+using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Library.Common.Plugin
 {
@@ -33,7 +36,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
         /// <summary>
         /// 加载插件
         /// </summary>
-        public bool Load()
+        public bool Load(params object[] objs)
         {
             if (IsLoaded)
             {
@@ -44,6 +47,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
             {
                 // 插件加载后，不允许再次加载此插件
                 IsLoaded = true;
+                // 初始化此插件（传入委托或者Model）
+                Init(objs);
                 // 触发绑定事件
                 BindEvent();
                 // 如果加载后需要执行代码，请重写AfterLoad方法
@@ -68,6 +73,43 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
         {
             return true;
         }
+
+        /// <summary>
+        /// 传递委托以便让插件调用
+        /// </summary>
+        private void Init(params object[] objs)
+        {
+            if (objs.Length > 0) WritelnSystemInfo = (Action<string>)objs[0];
+            if (objs.Length > 1) NewDataRequest = (Func<DataRequestType, DataRequest>)objs[1];
+            if (objs.Length > 2) NewLongRunningDataRequest = (Func<DataRequestType, DataRequest>)objs[2];
+            if (objs.Length > 3) Session = (Session)objs[3];
+            if (objs.Length > 4) Config = (FunGameConfig)objs[4];
+        }
+
+        /// <summary>
+        /// 输出系统消息
+        /// </summary>
+        protected Action<string> WritelnSystemInfo = new(msg => Console.Write("\r" + msg + "\n\r> "));
+
+        /// <summary>
+        /// 基于本地已连接的Socket创建新的数据请求
+        /// </summary>
+        protected Func<DataRequestType, DataRequest> NewDataRequest = new(type => throw new ConnectFailedException());
+
+        /// <summary>
+        /// 基于本地已连接的Socket创建长时间运行的数据请求
+        /// </summary>
+        protected Func<DataRequestType, DataRequest> NewLongRunningDataRequest = new(type => throw new ConnectFailedException());
+
+        /// <summary>
+        /// Session对象
+        /// </summary>
+        protected Session Session = new();
+
+        /// <summary>
+        /// Config对象
+        /// </summary>
+        protected FunGameConfig Config = new();
 
         /// <summary>
         /// 绑定事件。在<see cref="BeforeLoad"/>后触发
@@ -349,424 +391,424 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
         public event IEventHandler.SucceedEventHandler? SucceedEndGame;
         public event IEventHandler.FailedEventHandler? FailedEndGame;
 
-        public void OnBeforeConnectEvent(ConnectEventArgs e)
+        public void OnBeforeConnectEvent(object sender, ConnectEventArgs e)
         {
-            BeforeConnect?.Invoke(this, e);
+            BeforeConnect?.Invoke(sender, e);
         }
 
-        public void OnAfterConnectEvent(ConnectEventArgs e)
+        public void OnAfterConnectEvent(object sender, ConnectEventArgs e)
         {
-            AfterConnect?.Invoke(this, e);
+            AfterConnect?.Invoke(sender, e);
         }
 
-        public void OnSucceedConnectEvent(ConnectEventArgs e)
+        public void OnSucceedConnectEvent(object sender, ConnectEventArgs e)
         {
-            SucceedConnect?.Invoke(this, e);
+            SucceedConnect?.Invoke(sender, e);
         }
 
-        public void OnFailedConnectEvent(ConnectEventArgs e)
+        public void OnFailedConnectEvent(object sender, ConnectEventArgs e)
         {
-            FailedConnect?.Invoke(this, e);
+            FailedConnect?.Invoke(sender, e);
         }
 
-        public void OnBeforeDisconnectEvent(GeneralEventArgs e)
+        public void OnBeforeDisconnectEvent(object sender, GeneralEventArgs e)
         {
-            BeforeDisconnect?.Invoke(this, e);
+            BeforeDisconnect?.Invoke(sender, e);
         }
 
-        public void OnAfterDisconnectEvent(GeneralEventArgs e)
+        public void OnAfterDisconnectEvent(object sender, GeneralEventArgs e)
         {
-            AfterDisconnect?.Invoke(this, e);
+            AfterDisconnect?.Invoke(sender, e);
         }
 
-        public void OnSucceedDisconnectEvent(GeneralEventArgs e)
+        public void OnSucceedDisconnectEvent(object sender, GeneralEventArgs e)
         {
-            SucceedDisconnect?.Invoke(this, e);
+            SucceedDisconnect?.Invoke(sender, e);
         }
 
-        public void OnFailedDisconnectEvent(GeneralEventArgs e)
+        public void OnFailedDisconnectEvent(object sender, GeneralEventArgs e)
         {
-            FailedDisconnect?.Invoke(this, e);
+            FailedDisconnect?.Invoke(sender, e);
         }
 
-        public void OnBeforeLoginEvent(LoginEventArgs e)
+        public void OnBeforeLoginEvent(object sender, LoginEventArgs e)
         {
-            BeforeLogin?.Invoke(this, e);
+            BeforeLogin?.Invoke(sender, e);
         }
 
-        public void OnAfterLoginEvent(LoginEventArgs e)
+        public void OnAfterLoginEvent(object sender, LoginEventArgs e)
         {
-            AfterLogin?.Invoke(this, e);
+            AfterLogin?.Invoke(sender, e);
         }
 
-        public void OnSucceedLoginEvent(LoginEventArgs e)
+        public void OnSucceedLoginEvent(object sender, LoginEventArgs e)
         {
-            SucceedLogin?.Invoke(this, e);
+            SucceedLogin?.Invoke(sender, e);
         }
 
-        public void OnFailedLoginEvent(LoginEventArgs e)
+        public void OnFailedLoginEvent(object sender, LoginEventArgs e)
         {
-            FailedLogin?.Invoke(this, e);
+            FailedLogin?.Invoke(sender, e);
         }
 
-        public void OnBeforeLogoutEvent(GeneralEventArgs e)
+        public void OnBeforeLogoutEvent(object sender, GeneralEventArgs e)
         {
-            BeforeLogout?.Invoke(this, e);
+            BeforeLogout?.Invoke(sender, e);
         }
 
-        public void OnAfterLogoutEvent(GeneralEventArgs e)
+        public void OnAfterLogoutEvent(object sender, GeneralEventArgs e)
         {
-            AfterLogout?.Invoke(this, e);
+            AfterLogout?.Invoke(sender, e);
         }
 
-        public void OnSucceedLogoutEvent(GeneralEventArgs e)
+        public void OnSucceedLogoutEvent(object sender, GeneralEventArgs e)
         {
-            SucceedLogout?.Invoke(this, e);
+            SucceedLogout?.Invoke(sender, e);
         }
 
-        public void OnFailedLogoutEvent(GeneralEventArgs e)
+        public void OnFailedLogoutEvent(object sender, GeneralEventArgs e)
         {
-            FailedLogout?.Invoke(this, e);
+            FailedLogout?.Invoke(sender, e);
         }
 
-        public void OnBeforeRegEvent(RegisterEventArgs e)
+        public void OnBeforeRegEvent(object sender, RegisterEventArgs e)
         {
-            BeforeReg?.Invoke(this, e);
+            BeforeReg?.Invoke(sender, e);
         }
 
-        public void OnAfterRegEvent(RegisterEventArgs e)
+        public void OnAfterRegEvent(object sender, RegisterEventArgs e)
         {
-            AfterReg?.Invoke(this, e);
+            AfterReg?.Invoke(sender, e);
         }
 
-        public void OnSucceedRegEvent(RegisterEventArgs e)
+        public void OnSucceedRegEvent(object sender, RegisterEventArgs e)
         {
-            SucceedReg?.Invoke(this, e);
+            SucceedReg?.Invoke(sender, e);
         }
 
-        public void OnFailedRegEvent(RegisterEventArgs e)
+        public void OnFailedRegEvent(object sender, RegisterEventArgs e)
         {
-            FailedReg?.Invoke(this, e);
+            FailedReg?.Invoke(sender, e);
         }
 
-        public void OnBeforeIntoRoomEvent(RoomEventArgs e)
+        public void OnBeforeIntoRoomEvent(object sender, RoomEventArgs e)
         {
-            BeforeIntoRoom?.Invoke(this, e);
+            BeforeIntoRoom?.Invoke(sender, e);
         }
 
-        public void OnAfterIntoRoomEvent(RoomEventArgs e)
+        public void OnAfterIntoRoomEvent(object sender, RoomEventArgs e)
         {
-            AfterIntoRoom?.Invoke(this, e);
+            AfterIntoRoom?.Invoke(sender, e);
         }
 
-        public void OnSucceedIntoRoomEvent(RoomEventArgs e)
+        public void OnSucceedIntoRoomEvent(object sender, RoomEventArgs e)
         {
-            SucceedIntoRoom?.Invoke(this, e);
+            SucceedIntoRoom?.Invoke(sender, e);
         }
 
-        public void OnFailedIntoRoomEvent(RoomEventArgs e)
+        public void OnFailedIntoRoomEvent(object sender, RoomEventArgs e)
         {
-            FailedIntoRoom?.Invoke(this, e);
+            FailedIntoRoom?.Invoke(sender, e);
         }
 
-        public void OnBeforeSendTalkEvent(SendTalkEventArgs e)
+        public void OnBeforeSendTalkEvent(object sender, SendTalkEventArgs e)
         {
-            BeforeSendTalk?.Invoke(this, e);
+            BeforeSendTalk?.Invoke(sender, e);
         }
 
-        public void OnAfterSendTalkEvent(SendTalkEventArgs e)
+        public void OnAfterSendTalkEvent(object sender, SendTalkEventArgs e)
         {
-            AfterSendTalk?.Invoke(this, e);
+            AfterSendTalk?.Invoke(sender, e);
         }
 
-        public void OnSucceedSendTalkEvent(SendTalkEventArgs e)
+        public void OnSucceedSendTalkEvent(object sender, SendTalkEventArgs e)
         {
-            SucceedSendTalk?.Invoke(this, e);
+            SucceedSendTalk?.Invoke(sender, e);
         }
 
-        public void OnFailedSendTalkEvent(SendTalkEventArgs e)
+        public void OnFailedSendTalkEvent(object sender, SendTalkEventArgs e)
         {
-            FailedSendTalk?.Invoke(this, e);
+            FailedSendTalk?.Invoke(sender, e);
         }
 
-        public void OnBeforeCreateRoomEvent(RoomEventArgs e)
+        public void OnBeforeCreateRoomEvent(object sender, RoomEventArgs e)
         {
-            BeforeCreateRoom?.Invoke(this, e);
+            BeforeCreateRoom?.Invoke(sender, e);
         }
 
-        public void OnAfterCreateRoomEvent(RoomEventArgs e)
+        public void OnAfterCreateRoomEvent(object sender, RoomEventArgs e)
         {
-            AfterCreateRoom?.Invoke(this, e);
+            AfterCreateRoom?.Invoke(sender, e);
         }
 
-        public void OnSucceedCreateRoomEvent(RoomEventArgs e)
+        public void OnSucceedCreateRoomEvent(object sender, RoomEventArgs e)
         {
-            SucceedCreateRoom?.Invoke(this, e);
+            SucceedCreateRoom?.Invoke(sender, e);
         }
 
-        public void OnFailedCreateRoomEvent(RoomEventArgs e)
+        public void OnFailedCreateRoomEvent(object sender, RoomEventArgs e)
         {
-            FailedCreateRoom?.Invoke(this, e);
+            FailedCreateRoom?.Invoke(sender, e);
         }
 
-        public void OnBeforeQuitRoomEvent(RoomEventArgs e)
+        public void OnBeforeQuitRoomEvent(object sender, RoomEventArgs e)
         {
-            BeforeQuitRoom?.Invoke(this, e);
+            BeforeQuitRoom?.Invoke(sender, e);
         }
 
-        public void OnAfterQuitRoomEvent(RoomEventArgs e)
+        public void OnAfterQuitRoomEvent(object sender, RoomEventArgs e)
         {
-            AfterQuitRoom?.Invoke(this, e);
+            AfterQuitRoom?.Invoke(sender, e);
         }
 
-        public void OnSucceedQuitRoomEvent(RoomEventArgs e)
+        public void OnSucceedQuitRoomEvent(object sender, RoomEventArgs e)
         {
-            SucceedQuitRoom?.Invoke(this, e);
+            SucceedQuitRoom?.Invoke(sender, e);
         }
 
-        public void OnFailedQuitRoomEvent(RoomEventArgs e)
+        public void OnFailedQuitRoomEvent(object sender, RoomEventArgs e)
         {
-            FailedQuitRoom?.Invoke(this, e);
+            FailedQuitRoom?.Invoke(sender, e);
         }
 
-        public void OnBeforeChangeRoomSettingEvent(GeneralEventArgs e)
+        public void OnBeforeChangeRoomSettingEvent(object sender, GeneralEventArgs e)
         {
-            BeforeChangeRoomSetting?.Invoke(this, e);
+            BeforeChangeRoomSetting?.Invoke(sender, e);
         }
 
-        public void OnAfterChangeRoomSettingEvent(GeneralEventArgs e)
+        public void OnAfterChangeRoomSettingEvent(object sender, GeneralEventArgs e)
         {
-            AfterChangeRoomSetting?.Invoke(this, e);
+            AfterChangeRoomSetting?.Invoke(sender, e);
         }
 
-        public void OnSucceedChangeRoomSettingEvent(GeneralEventArgs e)
+        public void OnSucceedChangeRoomSettingEvent(object sender, GeneralEventArgs e)
         {
-            SucceedChangeRoomSetting?.Invoke(this, e);
+            SucceedChangeRoomSetting?.Invoke(sender, e);
         }
 
-        public void OnFailedChangeRoomSettingEvent(GeneralEventArgs e)
+        public void OnFailedChangeRoomSettingEvent(object sender, GeneralEventArgs e)
         {
-            FailedChangeRoomSetting?.Invoke(this, e);
+            FailedChangeRoomSetting?.Invoke(sender, e);
         }
 
-        public void OnBeforeStartMatchEvent(GeneralEventArgs e)
+        public void OnBeforeStartMatchEvent(object sender, GeneralEventArgs e)
         {
-            BeforeStartMatch?.Invoke(this, e);
+            BeforeStartMatch?.Invoke(sender, e);
         }
 
-        public void OnAfterStartMatchEvent(GeneralEventArgs e)
+        public void OnAfterStartMatchEvent(object sender, GeneralEventArgs e)
         {
-            AfterStartMatch?.Invoke(this, e);
+            AfterStartMatch?.Invoke(sender, e);
         }
 
-        public void OnSucceedStartMatchEvent(GeneralEventArgs e)
+        public void OnSucceedStartMatchEvent(object sender, GeneralEventArgs e)
         {
-            SucceedStartMatch?.Invoke(this, e);
+            SucceedStartMatch?.Invoke(sender, e);
         }
 
-        public void OnFailedStartMatchEvent(GeneralEventArgs e)
+        public void OnFailedStartMatchEvent(object sender, GeneralEventArgs e)
         {
-            FailedStartMatch?.Invoke(this, e);
+            FailedStartMatch?.Invoke(sender, e);
         }
 
-        public void OnBeforeStartGameEvent(GeneralEventArgs e)
+        public void OnBeforeStartGameEvent(object sender, GeneralEventArgs e)
         {
-            BeforeStartGame?.Invoke(this, e);
+            BeforeStartGame?.Invoke(sender, e);
         }
 
-        public void OnAfterStartGameEvent(GeneralEventArgs e)
+        public void OnAfterStartGameEvent(object sender, GeneralEventArgs e)
         {
-            AfterStartGame?.Invoke(this, e);
+            AfterStartGame?.Invoke(sender, e);
         }
 
-        public void OnSucceedStartGameEvent(GeneralEventArgs e)
+        public void OnSucceedStartGameEvent(object sender, GeneralEventArgs e)
         {
-            SucceedStartGame?.Invoke(this, e);
+            SucceedStartGame?.Invoke(sender, e);
         }
 
-        public void OnFailedStartGameEvent(GeneralEventArgs e)
+        public void OnFailedStartGameEvent(object sender, GeneralEventArgs e)
         {
-            FailedStartGame?.Invoke(this, e);
+            FailedStartGame?.Invoke(sender, e);
         }
 
-        public void OnBeforeChangeProfileEvent(GeneralEventArgs e)
+        public void OnBeforeChangeProfileEvent(object sender, GeneralEventArgs e)
         {
-            BeforeChangeProfile?.Invoke(this, e);
+            BeforeChangeProfile?.Invoke(sender, e);
         }
 
-        public void OnAfterChangeProfileEvent(GeneralEventArgs e)
+        public void OnAfterChangeProfileEvent(object sender, GeneralEventArgs e)
         {
-            AfterChangeProfile?.Invoke(this, e);
+            AfterChangeProfile?.Invoke(sender, e);
         }
 
-        public void OnSucceedChangeProfileEvent(GeneralEventArgs e)
+        public void OnSucceedChangeProfileEvent(object sender, GeneralEventArgs e)
         {
-            SucceedChangeProfile?.Invoke(this, e);
+            SucceedChangeProfile?.Invoke(sender, e);
         }
 
-        public void OnFailedChangeProfileEvent(GeneralEventArgs e)
+        public void OnFailedChangeProfileEvent(object sender, GeneralEventArgs e)
         {
-            FailedChangeProfile?.Invoke(this, e);
+            FailedChangeProfile?.Invoke(sender, e);
         }
 
-        public void OnBeforeChangeAccountSettingEvent(GeneralEventArgs e)
+        public void OnBeforeChangeAccountSettingEvent(object sender, GeneralEventArgs e)
         {
-            BeforeChangeAccountSetting?.Invoke(this, e);
+            BeforeChangeAccountSetting?.Invoke(sender, e);
         }
 
-        public void OnAfterChangeAccountSettingEvent(GeneralEventArgs e)
+        public void OnAfterChangeAccountSettingEvent(object sender, GeneralEventArgs e)
         {
-            AfterChangeAccountSetting?.Invoke(this, e);
+            AfterChangeAccountSetting?.Invoke(sender, e);
         }
 
-        public void OnSucceedChangeAccountSettingEvent(GeneralEventArgs e)
+        public void OnSucceedChangeAccountSettingEvent(object sender, GeneralEventArgs e)
         {
-            SucceedChangeAccountSetting?.Invoke(this, e);
+            SucceedChangeAccountSetting?.Invoke(sender, e);
         }
 
-        public void OnFailedChangeAccountSettingEvent(GeneralEventArgs e)
+        public void OnFailedChangeAccountSettingEvent(object sender, GeneralEventArgs e)
         {
-            FailedChangeAccountSetting?.Invoke(this, e);
+            FailedChangeAccountSetting?.Invoke(sender, e);
         }
 
-        public void OnBeforeOpenInventoryEvent(GeneralEventArgs e)
+        public void OnBeforeOpenInventoryEvent(object sender, GeneralEventArgs e)
         {
-            BeforeOpenInventory?.Invoke(this, e);
+            BeforeOpenInventory?.Invoke(sender, e);
         }
 
-        public void OnAfterOpenInventoryEvent(GeneralEventArgs e)
+        public void OnAfterOpenInventoryEvent(object sender, GeneralEventArgs e)
         {
-            AfterOpenInventory?.Invoke(this, e);
+            AfterOpenInventory?.Invoke(sender, e);
         }
 
-        public void OnSucceedOpenInventoryEvent(GeneralEventArgs e)
+        public void OnSucceedOpenInventoryEvent(object sender, GeneralEventArgs e)
         {
-            SucceedOpenInventory?.Invoke(this, e);
+            SucceedOpenInventory?.Invoke(sender, e);
         }
 
-        public void OnFailedOpenInventoryEvent(GeneralEventArgs e)
+        public void OnFailedOpenInventoryEvent(object sender, GeneralEventArgs e)
         {
-            FailedOpenInventory?.Invoke(this, e);
+            FailedOpenInventory?.Invoke(sender, e);
         }
 
-        public void OnBeforeSignInEvent(GeneralEventArgs e)
+        public void OnBeforeSignInEvent(object sender, GeneralEventArgs e)
         {
-            BeforeSignIn?.Invoke(this, e);
+            BeforeSignIn?.Invoke(sender, e);
         }
 
-        public void OnAfterSignInEvent(GeneralEventArgs e)
+        public void OnAfterSignInEvent(object sender, GeneralEventArgs e)
         {
-            AfterSignIn?.Invoke(this, e);
+            AfterSignIn?.Invoke(sender, e);
         }
 
-        public void OnSucceedSignInEvent(GeneralEventArgs e)
+        public void OnSucceedSignInEvent(object sender, GeneralEventArgs e)
         {
-            SucceedSignIn?.Invoke(this, e);
+            SucceedSignIn?.Invoke(sender, e);
         }
 
-        public void OnFailedSignInEvent(GeneralEventArgs e)
+        public void OnFailedSignInEvent(object sender, GeneralEventArgs e)
         {
-            FailedSignIn?.Invoke(this, e);
+            FailedSignIn?.Invoke(sender, e);
         }
 
-        public void OnBeforeOpenStoreEvent(GeneralEventArgs e)
+        public void OnBeforeOpenStoreEvent(object sender, GeneralEventArgs e)
         {
-            BeforeOpenStore?.Invoke(this, e);
+            BeforeOpenStore?.Invoke(sender, e);
         }
 
-        public void OnAfterOpenStoreEvent(GeneralEventArgs e)
+        public void OnAfterOpenStoreEvent(object sender, GeneralEventArgs e)
         {
-            AfterOpenStore?.Invoke(this, e);
+            AfterOpenStore?.Invoke(sender, e);
         }
 
-        public void OnSucceedOpenStoreEvent(GeneralEventArgs e)
+        public void OnSucceedOpenStoreEvent(object sender, GeneralEventArgs e)
         {
-            SucceedOpenStore?.Invoke(this, e);
+            SucceedOpenStore?.Invoke(sender, e);
         }
 
-        public void OnFailedOpenStoreEvent(GeneralEventArgs e)
+        public void OnFailedOpenStoreEvent(object sender, GeneralEventArgs e)
         {
-            FailedOpenStore?.Invoke(this, e);
+            FailedOpenStore?.Invoke(sender, e);
         }
 
-        public void OnBeforeBuyItemEvent(GeneralEventArgs e)
+        public void OnBeforeBuyItemEvent(object sender, GeneralEventArgs e)
         {
-            BeforeBuyItem?.Invoke(this, e);
+            BeforeBuyItem?.Invoke(sender, e);
         }
 
-        public void OnAfterBuyItemEvent(GeneralEventArgs e)
+        public void OnAfterBuyItemEvent(object sender, GeneralEventArgs e)
         {
-            AfterBuyItem?.Invoke(this, e);
+            AfterBuyItem?.Invoke(sender, e);
         }
 
-        public void OnSucceedBuyItemEvent(GeneralEventArgs e)
+        public void OnSucceedBuyItemEvent(object sender, GeneralEventArgs e)
         {
-            SucceedBuyItem?.Invoke(this, e);
+            SucceedBuyItem?.Invoke(sender, e);
         }
 
-        public void OnFailedBuyItemEvent(GeneralEventArgs e)
+        public void OnFailedBuyItemEvent(object sender, GeneralEventArgs e)
         {
-            FailedBuyItem?.Invoke(this, e);
+            FailedBuyItem?.Invoke(sender, e);
         }
 
-        public void OnBeforeShowRankingEvent(GeneralEventArgs e)
+        public void OnBeforeShowRankingEvent(object sender, GeneralEventArgs e)
         {
-            BeforeShowRanking?.Invoke(this, e);
+            BeforeShowRanking?.Invoke(sender, e);
         }
 
-        public void OnAfterShowRankingEvent(GeneralEventArgs e)
+        public void OnAfterShowRankingEvent(object sender, GeneralEventArgs e)
         {
-            AfterShowRanking?.Invoke(this, e);
+            AfterShowRanking?.Invoke(sender, e);
         }
 
-        public void OnSucceedShowRankingEvent(GeneralEventArgs e)
+        public void OnSucceedShowRankingEvent(object sender, GeneralEventArgs e)
         {
-            SucceedShowRanking?.Invoke(this, e);
+            SucceedShowRanking?.Invoke(sender, e);
         }
 
-        public void OnFailedShowRankingEvent(GeneralEventArgs e)
+        public void OnFailedShowRankingEvent(object sender, GeneralEventArgs e)
         {
-            FailedShowRanking?.Invoke(this, e);
+            FailedShowRanking?.Invoke(sender, e);
         }
 
-        public void OnBeforeUseItemEvent(GeneralEventArgs e)
+        public void OnBeforeUseItemEvent(object sender, GeneralEventArgs e)
         {
-            BeforeUseItem?.Invoke(this, e);
+            BeforeUseItem?.Invoke(sender, e);
         }
 
-        public void OnAfterUseItemEvent(GeneralEventArgs e)
+        public void OnAfterUseItemEvent(object sender, GeneralEventArgs e)
         {
-            AfterUseItem?.Invoke(this, e);
+            AfterUseItem?.Invoke(sender, e);
         }
 
-        public void OnSucceedUseItemEvent(GeneralEventArgs e)
+        public void OnSucceedUseItemEvent(object sender, GeneralEventArgs e)
         {
-            SucceedUseItem?.Invoke(this, e);
+            SucceedUseItem?.Invoke(sender, e);
         }
 
-        public void OnFailedUseItemEvent(GeneralEventArgs e)
+        public void OnFailedUseItemEvent(object sender, GeneralEventArgs e)
         {
-            FailedUseItem?.Invoke(this, e);
+            FailedUseItem?.Invoke(sender, e);
         }
 
-        public void OnBeforeEndGameEvent(GeneralEventArgs e)
+        public void OnBeforeEndGameEvent(object sender, GeneralEventArgs e)
         {
-            BeforeEndGame?.Invoke(this, e);
+            BeforeEndGame?.Invoke(sender, e);
         }
 
-        public void OnAfterEndGameEvent(GeneralEventArgs e)
+        public void OnAfterEndGameEvent(object sender, GeneralEventArgs e)
         {
-            AfterEndGame?.Invoke(this, e);
+            AfterEndGame?.Invoke(sender, e);
         }
 
-        public void OnSucceedEndGameEvent(GeneralEventArgs e)
+        public void OnSucceedEndGameEvent(object sender, GeneralEventArgs e)
         {
-            SucceedEndGame?.Invoke(this, e);
+            SucceedEndGame?.Invoke(sender, e);
         }
 
-        public void OnFailedEndGameEvent(GeneralEventArgs e)
+        public void OnFailedEndGameEvent(object sender, GeneralEventArgs e)
         {
-            FailedEndGame?.Invoke(this, e);
+            FailedEndGame?.Invoke(sender, e);
         }
     }
 }
