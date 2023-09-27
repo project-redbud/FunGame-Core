@@ -14,7 +14,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
         protected abstract T? Work { get; set; }
 
         /// <summary>
-        /// 是否处于等待服务器响应的状态
+        /// 是否处于等待的状态
         /// </summary>
         protected bool Working { get; set; } = false;
 
