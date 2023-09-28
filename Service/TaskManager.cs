@@ -9,14 +9,14 @@ namespace Milimoe.FunGame.Core.Service
         /// </summary>
         /// <param name="action"></param>
         /// <returns></returns>
-        internal static ITaskAwaiter StartAndAwaitTask(Action action) => new TaskAwaiter(action);
+        internal static ITaskAwaiter NewTask(Action action) => new TaskAwaiter(action);
 
         /// <summary>
         /// 开启一个任务：调用返回对象的OnCompleted()方法可以执行后续操作，支持异步
         /// </summary>
         /// <param name="function"></param>
         /// <returns></returns>
-        internal static ITaskAwaiter StartAndAwaitTask(Func<Task> function) => new TaskAwaiter(function);
+        internal static ITaskAwaiter NewTask(Func<Task> function) => new TaskAwaiter(function);
 
         /// <summary>
         /// 内部实现类

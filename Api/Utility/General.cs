@@ -430,13 +430,13 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// 开启一个任务：调用返回对象的OnCompleted()方法可以执行后续操作，支持异步
         /// </summary>
         /// <param name="action"></param>
-        public static TaskAwaiter StartAndAwaitTask(Action action) => new(Service.TaskManager.StartAndAwaitTask(action));
+        public static TaskAwaiter NewTask(Action action) => new(Service.TaskManager.NewTask(action));
 
         /// <summary>
         /// 开启一个任务：调用返回对象的OnCompleted()方法可以执行后续操作，支持异步
         /// </summary>
         /// <param name="task"></param>
-        public static TaskAwaiter StartAndAwaitTask(Func<Task> task) => new(Service.TaskManager.StartAndAwaitTask(task));
+        public static TaskAwaiter NewTask(Func<Task> task) => new(Service.TaskManager.NewTask(task));
 
         /// <summary>
         /// 开启一个计时器任务
@@ -445,7 +445,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="milliseconds"></param>
         public static void RunTimer(Action action, int milliseconds)
         {
-            Service.TaskManager.StartAndAwaitTask(async () =>
+            Service.TaskManager.NewTask(async () =>
             {
                 await Task.Delay(milliseconds);
             }).OnCompleted(action);
