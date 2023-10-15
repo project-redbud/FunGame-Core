@@ -94,7 +94,9 @@ namespace Milimoe.FunGame.Core.Library.Constant
     public enum SocketRuntimeType
     {
         Client,
-        Server
+        Server,
+        Client_Plugin,
+        Server_Plugin
     }
 
     public enum ErrorIPAddressType
