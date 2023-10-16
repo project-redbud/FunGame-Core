@@ -14,10 +14,10 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         public abstract string Script { get; set; }
         public abstract CommandType CommandType { get; set; }
         public abstract SQLResult Result { get; }
-        public abstract bool Success { get; }
         public abstract SQLServerInfo ServerInfo { get; }
         public abstract int UpdateRows { get; }
         public abstract DataSet DataSet { get; }
+        public bool Success => Result == SQLResult.Success;
 
         /// <summary>
         /// 执行一个命令
