@@ -50,6 +50,25 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         public abstract DataSet ExecuteDataSet(string Script);
 
         /// <summary>
+        /// 执行指定的命令查询DataRow（可选实现）
+        /// </summary>
+        /// <returns>结果行</returns>
+        public virtual DataRow? ExecuteDataRow()
+        {
+            return null;
+        }
+        
+        /// <summary>
+        /// 执行指定的命令查询DataRow（可选实现）
+        /// </summary>
+        /// <param name="Script">命令</param>
+        /// <returns>结果行</returns>
+        public virtual DataRow? ExecuteDataRow(string Script)
+        {
+            return null;
+        }
+
+        /// <summary>
         /// 关闭连接
         /// </summary>
         public abstract void Close();
