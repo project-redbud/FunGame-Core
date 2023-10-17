@@ -293,4 +293,12 @@ namespace Milimoe.FunGame.Core.Library.Constant
         DuplicateEmail,
         InputVerifyCode
     }
+
+    public enum AuthenticationType
+    {
+        None,
+        ScriptOnly,
+        Column,
+        Username
+    }
 }
