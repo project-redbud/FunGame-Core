@@ -14,18 +14,31 @@
 
         public string GetTFACode(string username)
         {
-            return TFACodes.ContainsKey(username) ? TFACodes[username] : Verification.CreateVerifyCode(Library.Constant.VerifyCodeType.MixVerifyCode, 5);
+            string code = TFACodes.ContainsKey(username) ? TFACodes[username] : Verification.CreateVerifyCode(Library.Constant.VerifyCodeType.MixVerifyCode, 5);
+            TaskUtility.RunTimer(() =>
+            {
+                // 十分钟后删除此码
+                TFACodes.Remove(username, out _);
+            }, 1000 * 10 * 60);
+            return code;
         }
 
-        public bool Authenticate(string username, string code)
+        public bool Authenticate(string username, string code, out string msg)
         {
-            if (!IsAvailable(username)) return false;
-            if (TFACodes.ContainsKey(username) && TFACodes[username] == code)
+            msg = "";
+            if (!IsAvailable(username))
             {
+                msg = "此账号不需要双重认证。";
+                return false;
+            }
+            if (TFACodes.ContainsKey(username) && TFACodes.TryGetValue(username, out string? checkcode) && checkcode != null && checkcode == code)
+            {
+                TFACodes.Remove(username);
                 return true;
             }
             else
             {
+                msg = "验证码错误或已过期。";
                 return false;
             }
         }
