@@ -310,6 +310,10 @@ namespace Milimoe.FunGame.Core.Controller
                             Close();
                             SocketHandler_Disconnect(ServerMessage);
                             break;
+                            
+                        case SocketMessageType.System:
+                            SocketHandler_System(ServerMessage);
+                            break;
 
                         case SocketMessageType.HeartBeat:
                             SocketHandler_HeartBeat(ServerMessage);
@@ -325,6 +329,10 @@ namespace Milimoe.FunGame.Core.Controller
                             
                         case SocketMessageType.UpdateRoomMaster:
                             SocketHandler_UpdateRoomMaster(ServerMessage);
+                            break;
+                            
+                        case SocketMessageType.MatchRoom:
+                            SocketHandler_MatchRoom(ServerMessage);
                             break;
                             
                         case SocketMessageType.Unknown:
@@ -346,6 +354,12 @@ namespace Milimoe.FunGame.Core.Controller
         /// </summary>
         /// <param name="ServerMessage"></param>
         protected abstract void SocketHandler_Disconnect(SocketObject ServerMessage);
+
+        /// <summary>
+        /// 客户端接收到服务器系统消息后的处理方法
+        /// </summary>
+        /// <param name="ServerMessage"></param>
+        protected abstract void SocketHandler_System(SocketObject ServerMessage);
 
         /// <summary>
         /// 客户端接收到服务器心跳后的处理方法
@@ -370,5 +384,11 @@ namespace Milimoe.FunGame.Core.Controller
         /// </summary>
         /// <param name="ServerMessage"></param>
         protected abstract void SocketHandler_UpdateRoomMaster(SocketObject ServerMessage);
+
+        /// <summary>
+        /// 客户端接收到匹配房间成功后的处理方法
+        /// </summary>
+        /// <param name="ServerMessage"></param>
+        protected abstract void SocketHandler_MatchRoom(SocketObject ServerMessage);
     }
 }

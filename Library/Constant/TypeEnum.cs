@@ -62,10 +62,12 @@ namespace Milimoe.FunGame.Core.Library.Constant
         DataRequest,
         Connect,
         Disconnect,
+        System,
         HeartBeat,
         ForceLogout,
         Chat,
-        UpdateRoomMaster
+        UpdateRoomMaster,
+        MatchRoom
     }
 
     /// <summary>
