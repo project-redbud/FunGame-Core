@@ -37,7 +37,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
 
         public bool Authenticate<T>(string script, string column, T keyword)
         {
-            if (!BeforeAuthenticator(AuthenticationType.Column, script, column)) return false;
+            if (!BeforeAuthenticator(AuthenticationType.Column, script, column, keyword?.ToString() ?? "")) return false;
             SQLHelper.ExecuteDataSet(script);
             if (SQLHelper.Success)
             {
@@ -45,9 +45,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
                 if (ds.Tables.Count > 0 &&
                     ds.Tables[0].Columns.Contains(column) &&
                     ds.Tables[0].Rows.Count > 0 &&
-                    ds.Tables[0].AsEnumerable().Where(row => row.Field<T>(column)!.Equals(keyword)).Any())
+                    ds.Tables[0].AsEnumerable().Where(row => row.Field<T>(column)?.Equals(keyword) ?? false).Any())
                 {
-                    if (!AfterAuthenticator(AuthenticationType.Column, script, column)) return false;
+                    if (!AfterAuthenticator(AuthenticationType.Column, script, column, keyword?.ToString() ?? "")) return false;
                     return true;
                 }
             }
@@ -61,10 +61,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
             if (SQLHelper.Success)
             {
                 DataSet ds = SQLHelper.DataSet;
-                if (ds.Tables.Count > 0 &&
-                    ds.Tables[0].Columns.Contains(UserQuery.Column_Username) &&
-                    ds.Tables[0].Columns.Contains(UserQuery.Column_Password) &&
-                    ds.Tables[0].Rows.Count > 0)
+                if (ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
                 {
                     if (!AfterAuthenticator(AuthenticationType.Username, username, password)) return false;
                     return true;
