@@ -1,6 +1,7 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Text;
 using Milimoe.FunGame.Core.Api.Transmittal;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Api.Utility
 {
@@ -9,8 +10,20 @@ namespace Milimoe.FunGame.Core.Api.Utility
     /// </summary>
     public class TwoFactorAuthenticator
     {
-        private readonly SQLHelper SQLHelper;
+        /// <summary>
+        /// SQLHelper 允许为空
+        /// </summary>
+        private readonly SQLHelper? SQLHelper;
 
+        /// <summary>
+        /// 不使用SQL模式
+        /// </summary>
+        public TwoFactorAuthenticator() { }
+        
+        /// <summary>
+        /// 使用SQL模式 记录对应账号的密文到数据库中
+        /// </summary>
+        /// <param name="SQLHelper"></param>
         public TwoFactorAuthenticator(SQLHelper SQLHelper)
         {
             this.SQLHelper = SQLHelper;
@@ -37,7 +50,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         {
             // TODO
             // 使用username获取此账号记录在案的2FAKey，获取此时间戳内的验证码是否一致。
-            SQLHelper.Execute();
+            SQLHelper?.Execute();
             return true;
         }
 
@@ -52,12 +65,22 @@ namespace Milimoe.FunGame.Core.Api.Utility
         private const int DIGITS = 6;
 
         /// <summary>
+        /// ----- PUBLIC KEY -----
+        /// </summary>
+        private const string PUBLICKEY = "----- PUBLIC KEY -----\r\n";
+
+        /// <summary>
+        /// ----- SECRET SIGN -----
+        /// </summary>
+        private const string SECRETSIGN = "----- SECRET SIGN -----\r\n";
+
+        /// <summary>
         /// 创键私钥，用于绑定账号，并生成两个文件，需要用户保存
         /// </summary>
-        public static void CreateSecretKey()
+        public void CreateSecretKey(string username)
         {
-            string publicpath = "public.key"; // 公钥（密文）文件路径
-            string privatepath = "private.key"; // 私钥文件路径
+            // 秘钥文件路径
+            string keypath = "authenticator.key";
 
             // 创建RSA实例
             using RSACryptoServiceProvider rsa = new();
@@ -67,16 +90,20 @@ namespace Milimoe.FunGame.Core.Api.Utility
             string privatekey = rsa.ToXmlString(true);
 
             // 要加密的明文
-            string plain = Base32Encode(RandomNumberGenerator.GetBytes(10));
+            byte[] random = RandomNumberGenerator.GetBytes(10);
+            string randomstring = General.DefaultEncoding.GetString(random);
+            // TODO 记录对应账号的密文
+            SQLHelper?.Execute();
+            string plain = Base32Encode(random);
 
             // 加密明文，获得密文
             string secret = Encryption.RSAEncrypt(plain, publickey);
 
             // 保存密文到文件
-            File.WriteAllText(publicpath, secret);
+            File.WriteAllText(keypath, PUBLICKEY + secret + "\r\n");
 
             // 保存私钥到文件
-            File.WriteAllText(privatepath, privatekey);
+            File.AppendAllText(keypath, SECRETSIGN + privatekey);
         }
 
         /// <summary>
@@ -180,6 +207,25 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 }
             }
             return result;
+        }
+
+        /// <summary>
+        /// 拆分字符串中的密文和私钥
+        /// </summary>
+        /// <param name="content"></param>
+        /// <param name="strs"></param>
+        /// <returns></returns>
+        public static bool SplitKeyFile(string content, out string[] strs)
+        {
+            strs = content.Split(SECRETSIGN);
+            if (strs.Length == 2)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }
