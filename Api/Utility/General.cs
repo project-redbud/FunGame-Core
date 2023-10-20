@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Milimoe.FunGame.Core.Library.Common.Architecture;
@@ -281,7 +282,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
     /// <summary>
     /// 使用HMACSHA512算法加密
     /// </summary>
-    internal class Encryption
+    public class Encryption
     {
         /// <summary>
         /// 使用HMACSHA512算法加密
@@ -298,6 +299,36 @@ namespace Milimoe.FunGame.Core.Api.Utility
             byte[] Hash = Hmacsha512.ComputeHash(MessageBytes);
             string Hmac = BitConverter.ToString(Hash).Replace("-", "");
             return Hmac.ToLower();
+        }
+
+        /// <summary>
+        /// 使用RSA算法加密
+        /// </summary>
+        /// <param name="PlainText">明文</param>
+        /// <param name="PublicKey">公钥</param>
+        /// <returns></returns>
+        public static string RSAEncrypt(string PlainText, string PublicKey)
+        {
+            byte[] Plain = Encoding.UTF8.GetBytes(PlainText);
+            using RSACryptoServiceProvider RSA = new();
+            RSA.FromXmlString(PublicKey);
+            byte[] Encrypted = RSA.Encrypt(Plain, false);
+            return Convert.ToBase64String(Encrypted);
+        }
+
+        /// <summary>
+        /// 使用RSA算法解密
+        /// </summary>
+        /// <param name="SecretText">密文</param>
+        /// <param name="PrivateKey">私钥</param>
+        /// <returns></returns>
+        public static string RSADecrypt(string SecretText, string PrivateKey)
+        {
+            byte[] Encrypted = Convert.FromBase64String(SecretText);
+            using RSACryptoServiceProvider RSA = new();
+            RSA.FromXmlString(PrivateKey);
+            byte[] Decrypted = RSA.Decrypt(Encrypted, false);
+            return Encoding.UTF8.GetString(Decrypted);
         }
     }
 
