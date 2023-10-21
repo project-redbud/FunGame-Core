@@ -12,6 +12,8 @@ namespace Milimoe.FunGame.Core.Service
         /// <returns></returns>
         internal static Dictionary<string, BasePlugin> LoadPlugins(Dictionary<string, BasePlugin> plugins, params object[] objs)
         {
+            if (!Directory.Exists("plugins")) return plugins;
+
             string[] dlls = Directory.GetFiles("plugins", "*.dll");
 
             foreach (string dll in dlls)
