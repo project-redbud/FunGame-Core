@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
@@ -6,19 +6,14 @@ namespace Milimoe.FunGame.Core.Model
 {
     public class RoomList : IEnumerable
     {
-        private readonly Hashtable _List = new();
-        private readonly Hashtable _PlayerList = new();
+        private readonly Dictionary<string, Room> _List = new();
+        private readonly Dictionary<string, List<User>> _PlayerList = new();
 
         public int Count => _List.Count;
 
-        public List<Room> ListRoom => _List.Values.Cast<Room>().ToList();
+        public List<Room> ListRoom => _List.Values.ToList();
 
-        public List<string> ListRoomID => _List.Keys.Cast<string>().ToList();
-
-        public RoomList()
-        {
-
-        }
+        public List<string> ListRoomID => _List.Keys.ToList();
 
         public Room this[string RoomID] => GetRoom(RoomID);
 
@@ -48,70 +43,46 @@ namespace Milimoe.FunGame.Core.Model
             _PlayerList.Remove(RoomID);
         }
 
-        public void RemoveRoom(Room Room)
-        {
-            RemoveRoom(Room.Roomid);
-        }
+        public void RemoveRoom(Room Room) => RemoveRoom(Room.Roomid);
 
-        public void IntoRoom(string RoomID, User Player)
+        public void IntoRoom(string RoomID, User User)
         {
-            if (RoomID == "-1" || Player.Id == 0) return;
-            GetPlayerList(RoomID).Add(Player);
-        }
-
-        public void QuitRoom(string RoomID, User Player)
-        {
-            if (RoomID == "-1" || Player.Id == 0) return;
-            GetPlayerList(RoomID).Remove(Player);
-        }
-
-        public Room GetRoom(string RoomID)
-        {
-            Room? room = null;
-            if (_List.ContainsKey(RoomID))
+            if (RoomID != "-1" && User.Id != 0)
             {
-                room = (Room?)_List[RoomID];
+                GetPlayerList(RoomID).Add(User);
             }
-            room ??= General.HallInstance;
-            return room;
         }
 
-        public bool IsExist(string RoomID)
+        public void QuitRoom(string RoomID, User User)
         {
-            return _List.ContainsKey(RoomID);
+            if (RoomID != "-1" && User.Id != 0)
+            {
+                GetPlayerList(RoomID).Remove(User);
+            }
         }
+
+        public Room GetRoom(string RoomID) => _List.ContainsKey(RoomID) ? _List[RoomID] : General.HallInstance;
+
+        public bool IsExist(string RoomID) => _List.ContainsKey(RoomID);
 
         public User GetRoomMaster(string RoomID)
         {
-            foreach (Room room in ListRoom)
+            foreach (Room room in ListRoom.Where(r => r.Roomid == RoomID && r.RoomMaster != null))
             {
-                if (room.Roomid == RoomID && room.RoomMaster != null)
-                {
-                    return room.RoomMaster;
-                }
+                return room.RoomMaster;
             }
             return General.UnknownUserInstance;
         }
 
         public void SetRoomMaster(string RoomID, User User)
         {
-            Room? room = this[RoomID];
-            if (room != null)
+            if (RoomID != "-1" && User.Id != 0)
             {
-                room.RoomMaster = User;
+                this[RoomID].RoomMaster = User;
             }
         }
 
-        public List<User> GetPlayerList(string RoomID)
-        {
-            List<User>? list = new();
-            if (_PlayerList.ContainsKey(RoomID) && _PlayerList[RoomID] != null)
-            {
-                list = (List<User>?)_PlayerList[RoomID];
-            }
-            list ??= new();
-            return list;
-        }
+        public List<User> GetPlayerList(string RoomID) => _PlayerList.ContainsKey(RoomID) ? _PlayerList[RoomID] : new();
 
         public int GetPlayerCount(string RoomID) => GetPlayerList(RoomID).Count;
 
