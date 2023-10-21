@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Api.Utility
@@ -9,10 +10,15 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /*
          * 声明API函数
          */
-        [LibraryImport("kernel32", EntryPoint = "WritePrivateProfileStringW", StringMarshalling = StringMarshalling.Utf16)]
+        [LibraryImport("kernel32.dll", EntryPoint = "WritePrivateProfileStringW", StringMarshalling = StringMarshalling.Utf16)]
         private static partial long WritePrivateProfileString(string section, string key, string val, string filePath);
         [LibraryImport("Kernel32.dll", EntryPoint = "GetPrivateProfileStringW", StringMarshalling = StringMarshalling.Utf16)]
         private static partial int GetPrivateProfileString(string section, string key, string def, char[] val, int size, string filePath);
+
+        /// <summary>
+        /// 默认的配置文件名称
+        /// </summary>
+        public const string DefaultFileName = @"FunGame.ini";
 
         /// <summary>
         /// 写入ini文件
@@ -21,7 +27,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="Key">键</param>
         /// <param name="Value">值</param>
         /// <param name="FileName">文件名，缺省为FunGame.ini</param>
-        public static void WriteINI(string Section, string Key, string Value, string FileName = @"FunGame.ini")
+        public static void WriteINI(string Section, string Key, string Value, string FileName = DefaultFileName)
         {
             WritePrivateProfileString(Section, Key, Value, Environment.CurrentDirectory.ToString() + @"\" + FileName);
         }
@@ -33,7 +39,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="Key">键</param>
         /// <param name="FileName">文件名，缺省为FunGame.ini</param>
         /// <returns>读取到的值</returns>
-        public static string ReadINI(string Section, string Key, string FileName = @"FunGame.ini")
+        public static string ReadINI(string Section, string Key, string FileName = DefaultFileName)
         {
             char[] val = new char[General.StreamByteSize];
             _ = GetPrivateProfileString(Section, Key, "", val, General.StreamByteSize, Environment.CurrentDirectory.ToString() + @"\" + FileName);
@@ -46,13 +52,16 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="FileName">文件名，缺省为FunGame.ini</param>
         /// <returns>是否存在</returns>
-        public static bool ExistINIFile(string FileName = @"FunGame.ini") => File.Exists($@"{Environment.CurrentDirectory}\{FileName}");
+        public static bool ExistINIFile(string FileName = DefaultFileName) => File.Exists($@"{Environment.CurrentDirectory}\{FileName}");
 
         /// <summary>
         /// 初始化ini模板文件
         /// </summary>
         public static void Init(FunGameInfo.FunGame FunGameType)
         {
+            StreamWriter writer = new(DefaultFileName, false, General.DefaultEncoding);
+            writer.Write("[Server]");
+            writer.Close();
             switch (FunGameType)
             {
                 case FunGameInfo.FunGame.FunGame_Core:
