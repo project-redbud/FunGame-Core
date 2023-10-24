@@ -10,7 +10,7 @@ namespace Milimoe.FunGame.Core.Entity
          */
 
         public long Id => User?.Id ?? 0L;
-        public User? User { get; }
+        public User User { get; }
         public Dictionary<long, decimal> DamageStats { get; set; } = new Dictionary<long, decimal>();
         public Dictionary<long, decimal> PhysicalDamageStats { get; set; } = new Dictionary<long, decimal>();
         public Dictionary<long, decimal> MagicDamageStats { get; set; } = new Dictionary<long, decimal>();
