@@ -22,12 +22,12 @@ namespace Milimoe.FunGame.Core.Entity
         public decimal Materials { get; set; } = 0;
         public decimal GameTime { get; set; } = 0;
         public string AutoKey { get; set; } = "";
-        public UserStatistics? Statistics { get; set; } = null;
+        public UserStatistics Statistics { get; }
         public Inventory? Inventory { get; set; } = null;
 
         internal User()
         {
-
+            this.Statistics = new(this);
         }
 
         internal User(long Id = 0, string Username = "", DateTime? RegTime = null, DateTime? LastTime = null, string Email = "", string NickName = "", bool IsAdmin = false, bool IsOperator = false, bool IsEnable = true, decimal Credits = 0, decimal Materials = 0, decimal GameTime = 0, string AutoKey = "")
@@ -45,6 +45,7 @@ namespace Milimoe.FunGame.Core.Entity
             this.Materials = Materials;
             this.GameTime = GameTime;
             this.AutoKey = AutoKey;
+            this.Statistics = new(this);
         }
 
         public override bool Equals(IBaseEntity? other)
