@@ -9,8 +9,8 @@ namespace Milimoe.FunGame.Core.Entity
          * Key为赛季(long)，每个key代表第key赛季，key = 0时为生涯数据。
          */
 
-        public int Id { get; set; }
-        public User User { get; set; } = new User();
+        public long Id => User?.Id ?? 0L;
+        public User? User { get; }
         public Dictionary<long, decimal> DamageStats { get; set; } = new Dictionary<long, decimal>();
         public Dictionary<long, decimal> PhysicalDamageStats { get; set; } = new Dictionary<long, decimal>();
         public Dictionary<long, decimal> MagicDamageStats { get; set; } = new Dictionary<long, decimal>();
@@ -114,5 +114,10 @@ namespace Milimoe.FunGame.Core.Entity
         public Dictionary<string, decimal> RatingStats { get; set; } = new Dictionary<string, decimal>();
         public Dictionary<string, decimal> EloStats { get; set; } = new Dictionary<string, decimal>();
         public Dictionary<string, string> RankStats { get; set; } = new Dictionary<string, string>();
+
+        internal UserStatistics(User user)
+        {
+            User = user;
+        }
     }
 }
