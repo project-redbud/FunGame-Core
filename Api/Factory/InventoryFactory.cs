@@ -1,5 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Base;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Api.Factory
 {
@@ -9,7 +10,12 @@ namespace Milimoe.FunGame.Core.Api.Factory
 
         public Inventory Create()
         {
-            return new Inventory();
+            return new Inventory(General.UnknownUserInstance);
+        }
+
+        public static Inventory Create(User user)
+        {
+            return new Inventory(user);
         }
     }
 }
