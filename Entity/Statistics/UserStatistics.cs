@@ -8,10 +8,10 @@ namespace Milimoe.FunGame.Core.Entity
     {
         public long Id => User.Id;
         public User User { get; }
-        public Dictionary<long, decimal> DamageStats { get; set; } = new();
-        public Dictionary<long, decimal> PhysicalDamageStats { get; set; } = new();
-        public Dictionary<long, decimal> MagicDamageStats { get; set; } = new();
-        public Dictionary<long, decimal> RealDamageStats { get; set; } = new();
+        public Dictionary<long, decimal> DamageStats { get; } = new();
+        public Dictionary<long, decimal> PhysicalDamageStats { get; } = new();
+        public Dictionary<long, decimal> MagicDamageStats { get; } = new();
+        public Dictionary<long, decimal> RealDamageStats { get; } = new();
         public Dictionary<long, decimal> AvgDamageStats
         {
             get
@@ -84,12 +84,12 @@ namespace Milimoe.FunGame.Core.Entity
                 return avgdamage;
             }
         }
-        public Dictionary<long, long> Kills { get; set; } = new();
-        public Dictionary<long, long> Deaths { get; set; } = new();
-        public Dictionary<long, long> Assists { get; set; } = new();
-        public Dictionary<long, long> Plays { get; set; } = new();
-        public Dictionary<long, long> Wins { get; set; } = new();
-        public Dictionary<long, long> Loses { get; set; } = new();
+        public Dictionary<long, long> Kills { get; } = new();
+        public Dictionary<long, long> Deaths { get; } = new();
+        public Dictionary<long, long> Assists { get; } = new();
+        public Dictionary<long, long> Plays { get; } = new();
+        public Dictionary<long, long> Wins { get; } = new();
+        public Dictionary<long, long> Loses { get; } = new();
         public Dictionary<long, decimal> Winrates
         {
             get
@@ -108,9 +108,9 @@ namespace Milimoe.FunGame.Core.Entity
                 return winrates;
             }
         }
-        public Dictionary<long, decimal> RatingStats { get; set; } = new();
-        public Dictionary<long, decimal> EloStats { get; set; } = new();
-        public Dictionary<long, string> RankStats { get; set; } = new();
+        public Dictionary<long, decimal> RatingStats { get; } = new();
+        public Dictionary<long, decimal> EloStats { get; } = new();
+        public Dictionary<long, string> RankStats { get; } = new();
 
         public string GetWinrate(long season)
         {
