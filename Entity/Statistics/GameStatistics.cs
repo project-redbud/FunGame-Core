@@ -12,10 +12,54 @@ namespace Milimoe.FunGame.Core.Entity
         public Dictionary<User, decimal> PhysicalDamageStats { get; } = new();
         public Dictionary<User, decimal> MagicDamageStats { get; } = new();
         public Dictionary<User, decimal> RealDamageStats { get; } = new();
-        public Dictionary<User, decimal> AvgDamageStats { get; } = new();
-        public Dictionary<User, decimal> AvgPhysicalDamageStats { get; } = new();
-        public Dictionary<User, decimal> AvgMagicDamageStats { get; } = new();
-        public Dictionary<User, decimal> AvgRealDamageStats { get; } = new();
+        public decimal AvgDamageStats
+        {
+            get
+            {
+                decimal total = 0;
+                foreach (User user in DamageStats.Keys)
+                {
+                    total += DamageStats[user];
+                }
+                return Math.Round(total / DamageStats.Count, 2);
+            }
+        }
+        public decimal AvgPhysicalDamageStats
+        {
+            get
+            {
+                decimal total = 0;
+                foreach (User user in PhysicalDamageStats.Keys)
+                {
+                    total += PhysicalDamageStats[user];
+                }
+                return Math.Round(total / PhysicalDamageStats.Count, 2);
+            }
+        }
+        public decimal AvgMagicDamageStats
+        {
+            get
+            {
+                decimal total = 0;
+                foreach (User user in MagicDamageStats.Keys)
+                {
+                    total += MagicDamageStats[user];
+                }
+                return Math.Round(total / MagicDamageStats.Count, 2);
+            }
+        }
+        public decimal AvgRealDamageStats
+        {
+            get
+            {
+                decimal total = 0;
+                foreach (User user in RealDamageStats.Keys)
+                {
+                    total += RealDamageStats[user];
+                }
+                return Math.Round(total / RealDamageStats.Count, 2);
+            }
+        }
         public Dictionary<User, decimal> KillStats { get; } = new();
         public Dictionary<User, Dictionary<User, int>> KillDetailStats { get; } = new(); // 子字典记录的是被击杀者以及被击杀次数
         public Dictionary<User, decimal> DeathStats { get; } = new();
