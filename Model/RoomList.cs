@@ -4,7 +4,7 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Model
 {
-    public class RoomList : IEnumerable
+    public class RoomList : IEnumerable<Room>
     {
         private readonly Dictionary<string, Room> _List = new();
         private readonly Dictionary<string, List<User>> _PlayerList = new();
@@ -87,6 +87,14 @@ namespace Milimoe.FunGame.Core.Model
         public int GetPlayerCount(string RoomID) => GetPlayerList(RoomID).Count;
 
         public IEnumerator GetEnumerator()
+        {
+            foreach (Room room in ListRoom)
+            {
+                yield return room;
+            }
+        }
+
+        IEnumerator<Room> IEnumerable<Room>.GetEnumerator()
         {
             foreach (Room room in ListRoom)
             {
