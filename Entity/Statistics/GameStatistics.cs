@@ -1,11 +1,9 @@
-﻿using Milimoe.FunGame.Core.Library.Constant;
-
-namespace Milimoe.FunGame.Core.Entity
+﻿namespace Milimoe.FunGame.Core.Entity
 {
     public class GameStatistics
     {
         public long Id => Room.Id;
-        public Room Room { get; set; } = General.HallInstance;
+        public Room Room { get; }
         public DateTime RecordTime { get; set; } = DateTime.Now;
         public string Record { get; set; } = "";
         public Dictionary<User, decimal> DamageStats { get; set; } = new();
@@ -68,5 +66,10 @@ namespace Milimoe.FunGame.Core.Entity
         public Dictionary<User, decimal> RatingStats { get; } = new(); // 结算后的Rating
         public Dictionary<User, decimal> EloStats { get; } = new(); // Elo分数变化(+/-)
         public Dictionary<User, string> RankStats { get; } = new(); // 结算后的Rank（非比赛前）
+
+        public GameStatistics(Room Room)
+        {
+            this.Room = Room;
+        }
     }
 }

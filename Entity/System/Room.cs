@@ -14,11 +14,11 @@ namespace Milimoe.FunGame.Core.Entity
         public RoomState RoomState { get; set; }
         public bool HasPass => Password.Trim() != "";
         public string Password { get; set; } = "";
-        public GameStatistics Statistics { get; set; } = new();
+        public GameStatistics Statistics { get; set; }
 
         internal Room()
         {
-            
+            Statistics = new(this);
         }
 
         internal Room(long Id = 0, string Roomid = "-1", DateTime? CreateTime = null, User? RoomMaster = null, RoomType RoomType = RoomType.All, RoomState RoomState = RoomState.Created, string Password = "")
@@ -30,6 +30,7 @@ namespace Milimoe.FunGame.Core.Entity
             this.RoomType = RoomType;
             this.RoomState = RoomState;
             this.Password = Password;
+            Statistics = new(this);
         }
 
         public bool Equals(Room other)
