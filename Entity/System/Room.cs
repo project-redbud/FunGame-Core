@@ -9,13 +9,12 @@ namespace Milimoe.FunGame.Core.Entity
         public override long Id { get => base.Id ; set => base.Id = value; }
         public string Roomid { get; set; } = "-1";
         public DateTime CreateTime { get; set; } = General.DefaultTime;
-        public Dictionary<string, User> Players { get; set; } = new();
         public User RoomMaster { get; set; } = General.UnknownUserInstance;
         public RoomType RoomType { get; set; }
         public RoomState RoomState { get; set; }
         public bool HasPass => Password.Trim() != "";
         public string Password { get; set; } = "";
-        public GameStatistics? Statistics { get; set; } = null;
+        public GameStatistics Statistics { get; set; } = new();
 
         internal Room()
         {

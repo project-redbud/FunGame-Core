@@ -8,6 +8,7 @@ namespace Milimoe.FunGame.Core.Model
     {
         private readonly Dictionary<string, Room> _List = new();
         private readonly Dictionary<string, List<User>> _PlayerList = new();
+        private readonly Dictionary<string, List<User>> _ReadyPlayerList = new();
 
         public int Count => _List.Count;
 
@@ -21,6 +22,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             _List.Clear();
             _PlayerList.Clear();
+            _ReadyPlayerList.Clear();
         }
 
         public void AddRoom(Room Room)
@@ -50,6 +52,28 @@ namespace Milimoe.FunGame.Core.Model
             if (RoomID != "-1" && User.Id != 0)
             {
                 GetPlayerList(RoomID).Add(User);
+            }
+        }
+
+        public List<User> GetReadyPlayerList(string RoomID) => _ReadyPlayerList.ContainsKey(RoomID) ? _ReadyPlayerList[RoomID] : new();
+
+        public int GetReadyPlayerCount(string RoomID) => GetReadyPlayerList(RoomID).Count; 
+
+        public List<User> GetNotReadyPlayerList(string RoomID) => _PlayerList.ContainsKey(RoomID) ? _PlayerList[RoomID].Except(GetReadyPlayerList(RoomID)).ToList() : new();
+
+        public void SetReady(string RoomID, User User)
+        {
+            if (RoomID != "-1" && _ReadyPlayerList.ContainsKey(RoomID) && User.Id != 0)
+            {
+                _ReadyPlayerList[RoomID].Add(User);
+            }
+        }
+
+        public void SetNotReady(string RoomID, User User)
+        {
+            if (RoomID != "-1" && _ReadyPlayerList.ContainsKey(RoomID) && User.Id != 0)
+            {
+                _ReadyPlayerList[RoomID].Remove(User);
             }
         }
 
