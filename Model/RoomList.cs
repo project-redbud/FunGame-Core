@@ -28,7 +28,8 @@ namespace Milimoe.FunGame.Core.Model
         public void AddRoom(Room Room)
         {
             _List.Add(Room.Roomid, Room);
-            _PlayerList.Add(Room.Roomid, new List<User>());
+            _PlayerList.Add(Room.Roomid, new());
+            _ReadyPlayerList.Add(Room.Roomid, new());
         }
 
         public void AddRooms(List<Room> Rooms)
@@ -43,6 +44,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             _List.Remove(RoomID);
             _PlayerList.Remove(RoomID);
+            _ReadyPlayerList.Remove(RoomID);
         }
 
         public void RemoveRoom(Room Room) => RemoveRoom(Room.Roomid);
@@ -69,7 +71,7 @@ namespace Milimoe.FunGame.Core.Model
             }
         }
 
-        public void SetNotReady(string RoomID, User User)
+        public void CancelReady(string RoomID, User User)
         {
             if (RoomID != "-1" && _ReadyPlayerList.ContainsKey(RoomID) && User.Id != 0)
             {
