@@ -84,6 +84,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Main_QuitRoom,
         Main_MatchRoom,
         Main_Chat,
+        Main_Ready,
+        Main_CancelReady,
         Reg_GetRegVerifyCode,
         Login_Login,
         Login_GetFindPasswordVerifyCode,
