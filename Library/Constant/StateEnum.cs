@@ -31,8 +31,9 @@ namespace Milimoe.FunGame.Core.Library.Constant
 
     public enum ClientState
     {
-        Online,
         WaitConnect,
-        WaitLogin
+        WaitLogin,
+        Online,
+        InRoom
     }
 }
