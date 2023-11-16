@@ -33,6 +33,11 @@ namespace Milimoe.FunGame.Core.Model
         /// 是否自动重连
         /// </summary>
         public bool FunGame_isAutoRetry { get; set; } = true;
+        
+        /// <summary>
+        /// 是否在房间中
+        /// </summary>
+        public bool FunGame_isInRoom { get; set; } = false;
 
         /// <summary>
         /// 当前游戏模式
