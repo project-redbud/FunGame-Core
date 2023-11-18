@@ -130,8 +130,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
 
         private void StartSendingHeartBeat()
         {
-            _SendingHeartBeat = true;
-            SendingHeartBeatTask = Task.Factory.StartNew(SendHeartBeat);
+            if (!FunGameInfo.FunGame_DebugMode)
+            {
+                _SendingHeartBeat = true;
+                SendingHeartBeatTask = Task.Factory.StartNew(SendHeartBeat);
+            }
         }
 
         private void StopReceiving()

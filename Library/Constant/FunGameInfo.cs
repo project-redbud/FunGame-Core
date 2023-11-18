@@ -13,6 +13,12 @@
 
         public const string FunGame_CopyRight = @"©2023 Milimoe. 米粒的糖果屋";
 
+        /// <summary>
+        /// 添加-debug启动项将开启DebugMode（仅适用于Desktop或Console）
+        /// <para>目前支持禁用心跳检测功能</para>
+        /// </summary>
+        public static bool FunGame_DebugMode { get; set; } = false;
+
         private const string FunGame_Core = "FunGame Core";
         private const string FunGame_Core_Api = "FunGame Core Api";
         private const string FunGame_Console = "FunGame Console";
