@@ -6,7 +6,6 @@ namespace Milimoe.FunGame.Core.Entity
     public class User : BaseEntity
     {
         public static readonly User Empty = new();
-        public override long Id { get; set; }
         public string Username { get; set; } = "";
         public DateTime RegTime { get; set; }
         public DateTime LastTime { get; set; }
