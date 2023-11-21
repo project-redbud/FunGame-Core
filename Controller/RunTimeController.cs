@@ -335,6 +335,14 @@ namespace Milimoe.FunGame.Core.Controller
                             SocketHandler_MatchRoom(ServerMessage);
                             break;
                             
+                        case SocketMessageType.StartGame:
+                            SocketHandler_StartGame(ServerMessage);
+                            break;
+                            
+                        case SocketMessageType.Gaming:
+                            SocketHandler_Gaming(ServerMessage);
+                            break;
+                            
                         case SocketMessageType.Unknown:
                         default:
                             break;
@@ -390,5 +398,17 @@ namespace Milimoe.FunGame.Core.Controller
         /// </summary>
         /// <param name="ServerMessage"></param>
         protected abstract void SocketHandler_MatchRoom(SocketObject ServerMessage);
+
+        /// <summary>
+        /// 客户端接收到开始游戏信息后的处理方法
+        /// </summary>
+        /// <param name="ServerMessage"></param>
+        protected abstract void SocketHandler_StartGame(SocketObject ServerMessage);
+
+        /// <summary>
+        /// 客户端接收到局内消息后的处理方法
+        /// </summary>
+        /// <param name="ServerMessage"></param>
+        protected abstract void SocketHandler_Gaming(SocketObject ServerMessage);
     }
 }
