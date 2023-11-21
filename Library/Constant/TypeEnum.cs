@@ -167,6 +167,20 @@ namespace Milimoe.FunGame.Core.Library.Constant
         CharacterStatistics
     }
 
+    public enum ShowMessageType
+    {
+        None,
+        General,
+        Tip,
+        Warning,
+        Error,
+        YesNo,
+        OKCancel,
+        RetryCancel,
+        Input,
+        InputCancel
+    }
+
     public enum TimeType
     {
         None,
