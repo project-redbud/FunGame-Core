@@ -179,9 +179,6 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
                 throw new LostConnectException();
         }
 
-        public static string GetTypeString(SocketMessageType type)
-        {
-            return SocketManager.GetTypeString(type);
-        }
+        public static string GetTypeString(SocketMessageType type) => SocketSet.GetTypeString(type);
     }
 }

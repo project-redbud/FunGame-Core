@@ -247,26 +247,6 @@ namespace Milimoe.FunGame.Core.Service
             return result.ToArray();
         }
 
-        /// <summary>
-        /// 将通信类型的枚举转换为字符串
-        /// </summary>
-        /// <param name="type">通信类型</param>
-        /// <returns>等效字符串</returns>
-        internal static string GetTypeString(SocketMessageType type)
-        {
-            return type switch
-            {
-                SocketMessageType.DataRequest => SocketSet.DataRequest,
-                SocketMessageType.Connect => SocketSet.Connect,
-                SocketMessageType.Disconnect => SocketSet.Disconnect,
-                SocketMessageType.HeartBeat => SocketSet.HeartBeat,
-                SocketMessageType.ForceLogout => SocketSet.ForceLogout,
-                SocketMessageType.Chat => SocketSet.Chat,
-                SocketMessageType.UpdateRoomMaster => SocketSet.UpdateRoomMaster,
-                _ => SocketSet.Unknown,
-            };
-        }
-
         #endregion
 
         #region 事件

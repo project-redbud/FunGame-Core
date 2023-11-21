@@ -54,7 +54,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
     }
 
     /// <summary>
-    /// 需要同步更新Milimoe.FunGame.Core.Library.Constant.SocketSet
+    /// 需要同步更新 <see cref="SocketSet"/>
     /// </summary>
     public enum SocketMessageType
     {
@@ -67,11 +67,13 @@ namespace Milimoe.FunGame.Core.Library.Constant
         ForceLogout,
         Chat,
         UpdateRoomMaster,
-        MatchRoom
+        MatchRoom,
+        StartGame,
+        Gaming
     }
 
     /// <summary>
-    /// 需要同步更新Milimoe.FunGame.Core.Library.Constant.DataRequestSet
+    /// 需要同步更新 <see cref="DataRequestSet"/>
     /// </summary>
     public enum DataRequestType
     {
@@ -93,7 +95,24 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Login_UpdatePassword,
         Room_GetRoomSettings,
         Room_GetRoomPlayerCount,
-        Room_UpdateRoomMaster
+        Room_UpdateRoomMaster,
+        Gaming_Connect,
+        Gaming_Disconnect,
+        Gaming_Reconnect,
+        Gaming_Ban,
+        Gaming_Pick,
+        Gaming_Random,
+        Gaming_Move,
+        Gaming_Attack,
+        Gaming_Skill,
+        Gaming_Item,
+        Gaming_Magic,
+        Gaming_Buy,
+        Gaming_SuperSkill,
+        Gaming_Pause,
+        Gaming_Unpause,
+        Gaming_Surrender,
+        Gaming_UpdateUserInfo
     }
 
     public enum SocketRuntimeType

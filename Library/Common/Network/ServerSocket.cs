@@ -113,9 +113,6 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             Instance?.Close();
         }
 
-        public static string GetTypeString(SocketMessageType type)
-        {
-            return Socket.GetTypeString(type);
-        }
+        public static string GetTypeString(SocketMessageType type) => SocketSet.GetTypeString(type);
     }
 }
