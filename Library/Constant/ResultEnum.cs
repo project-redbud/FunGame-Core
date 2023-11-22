@@ -26,7 +26,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         NotSent,
         NotReceived
     }
-    
+
     public enum RequestResult
     {
         Success,

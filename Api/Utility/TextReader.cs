@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
+﻿using System.Runtime.InteropServices;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Api.Utility
@@ -138,7 +136,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         public static string ReadTXT(string filename, string path = "")
         {
             if (path.Trim() != "") path = Path.Combine(path, filename);
-            else path =  $@"{Environment.CurrentDirectory}\{filename}";
+            else path = $@"{Environment.CurrentDirectory}\{filename}";
             if (File.Exists(path))
             {
                 string s = "";

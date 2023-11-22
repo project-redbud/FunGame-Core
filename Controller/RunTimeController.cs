@@ -167,7 +167,7 @@ namespace Milimoe.FunGame.Core.Controller
         {
             return true;
         }
-        
+
         /// <summary>
         /// 此方法将在连接服务器后触发（Connect结果返回前）<para/>
         /// 客户端可以重写此方法
@@ -240,7 +240,7 @@ namespace Milimoe.FunGame.Core.Controller
             }
             throw new ConnectFailedException();
         }
-        
+
         /// <summary>
         /// 基于本地已连接的Socket创建长时间运行的数据请求
         /// </summary>
@@ -310,7 +310,7 @@ namespace Milimoe.FunGame.Core.Controller
                             Close();
                             SocketHandler_Disconnect(ServerMessage);
                             break;
-                            
+
                         case SocketMessageType.System:
                             SocketHandler_System(ServerMessage);
                             break;
@@ -318,23 +318,35 @@ namespace Milimoe.FunGame.Core.Controller
                         case SocketMessageType.HeartBeat:
                             SocketHandler_HeartBeat(ServerMessage);
                             break;
-                            
+
                         case SocketMessageType.ForceLogout:
                             SocketHandler_ForceLogout(ServerMessage);
                             break;
-                            
+
                         case SocketMessageType.Chat:
                             SocketHandler_Chat(ServerMessage);
                             break;
-                            
+
                         case SocketMessageType.UpdateRoomMaster:
                             SocketHandler_UpdateRoomMaster(ServerMessage);
                             break;
-                            
+
                         case SocketMessageType.MatchRoom:
                             SocketHandler_MatchRoom(ServerMessage);
                             break;
+
+                        case SocketMessageType.StartGame:
+                            SocketHandler_StartGame(ServerMessage);
+                            break;
+
+                        case SocketMessageType.EndGame:
+                            SocketHandler_EndGame(ServerMessage);
+                            break;
                             
+                        case SocketMessageType.Gaming:
+                            SocketHandler_Gaming(ServerMessage);
+                            break;
+
                         case SocketMessageType.Unknown:
                         default:
                             break;
@@ -390,5 +402,23 @@ namespace Milimoe.FunGame.Core.Controller
         /// </summary>
         /// <param name="ServerMessage"></param>
         protected abstract void SocketHandler_MatchRoom(SocketObject ServerMessage);
+
+        /// <summary>
+        /// 客户端接收到开始游戏信息后的处理方法
+        /// </summary>
+        /// <param name="ServerMessage"></param>
+        protected abstract void SocketHandler_StartGame(SocketObject ServerMessage);
+        
+        /// <summary>
+        /// 客户端接收到游戏结束信息后的处理方法
+        /// </summary>
+        /// <param name="ServerMessage"></param>
+        protected abstract void SocketHandler_EndGame(SocketObject ServerMessage);
+
+        /// <summary>
+        /// 客户端接收到局内消息后的处理方法
+        /// </summary>
+        /// <param name="ServerMessage"></param>
+        protected abstract void SocketHandler_Gaming(SocketObject ServerMessage);
     }
 }

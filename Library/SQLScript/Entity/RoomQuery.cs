@@ -32,12 +32,12 @@
         {
             return $"{Constant.Command_Delete} {Constant.Command_From} {TableName} {Constant.Command_Where} {Column_RoomID} = '{RoomID}' {Constant.Command_And} {Column_RoomMaster} = {RoomMaster}";
         }
-        
+
         public static string Update_QuitRoom(string RoomID, long OldRoomMaster, long NewRoomMaster)
         {
             return $"{Constant.Command_Update} {TableName} {Constant.Command_Set} {Column_RoomMaster} = {NewRoomMaster} {Constant.Command_Where} {Column_RoomID} = '{RoomID}' {Constant.Command_And} {Column_RoomMaster} = {OldRoomMaster}";
         }
-        
+
         public static string Select_IsExistRoom(string RoomID)
         {
             return $"{Constant.Command_Select} {Constant.Command_All} {Constant.Command_From} {TableName} {Constant.Command_Where} {Column_RoomID} = '{RoomID}'";

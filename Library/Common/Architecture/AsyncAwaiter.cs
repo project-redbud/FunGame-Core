@@ -1,6 +1,4 @@
-﻿using Milimoe.FunGame.Core.Model;
-
-namespace Milimoe.FunGame.Core.Library.Common.Architecture
+﻿namespace Milimoe.FunGame.Core.Library.Common.Architecture
 {
     /// <summary>
     /// 继承这个类可以获得异步等待的功能

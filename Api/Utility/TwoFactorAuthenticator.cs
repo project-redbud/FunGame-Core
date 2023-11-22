@@ -19,7 +19,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// 不使用SQL模式
         /// </summary>
         public TwoFactorAuthenticator() { }
-        
+
         /// <summary>
         /// 使用SQL模式 记录对应账号的密文到数据库中
         /// </summary>

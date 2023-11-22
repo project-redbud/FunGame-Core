@@ -20,6 +20,15 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Complete
     }
 
+    public enum SelectState
+    {
+        None,
+        SelectingOne,
+        SelectingMultiple,
+        SelectingRange,
+        SelectingLine
+    }
+
     public enum OnlineState
     {
         Offline,

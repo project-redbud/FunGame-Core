@@ -20,9 +20,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
     }
 
     /// <summary>
-    /// 需要同步更新
-    /// Milimoe.FunGame.Core.Library.Constant.SocketMessageType, 
-    /// Milimoe.FunGame.Core.Service.SocketManager.GetTypeString(SocketMessageType type)
+    /// 需要同步更新 <see cref="SocketMessageType"/>
     /// </summary>
     public class SocketSet
     {
@@ -36,16 +34,44 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string DataRequest = "DataRequest";
         public const string Connect = "Connect";
         public const string Disconnect = "Disconnect";
+        public const string System = "System";
         public const string HeartBeat = "HeartBeat";
         public const string ForceLogout = "ForceLogout";
         public const string Chat = "Chat";
         public const string UpdateRoomMaster = "UpdateRoomMaster";
+        public const string MatchRoom = "MatchRoom";
+        public const string StartGame = "StartGame";
+        public const string EndGame = "EndGame";
+        public const string Gaming = "Gaming";
+
+        /// <summary>
+        /// 将通信类型的枚举转换为字符串
+        /// </summary>
+        /// <param name="type">通信类型</param>
+        /// <returns>等效字符串</returns>
+        public static string GetTypeString(SocketMessageType type)
+        {
+            return type switch
+            {
+                SocketMessageType.DataRequest => DataRequest,
+                SocketMessageType.Connect => Connect,
+                SocketMessageType.Disconnect => Disconnect,
+                SocketMessageType.System => System,
+                SocketMessageType.HeartBeat => HeartBeat,
+                SocketMessageType.ForceLogout => ForceLogout,
+                SocketMessageType.Chat => Chat,
+                SocketMessageType.UpdateRoomMaster => UpdateRoomMaster,
+                SocketMessageType.MatchRoom => MatchRoom,
+                SocketMessageType.StartGame => StartGame,
+                SocketMessageType.EndGame => EndGame,
+                SocketMessageType.Gaming => Gaming,
+                _ => Unknown
+            };
+        }
     }
 
     /// <summary>
-    /// 需要同步更新
-    /// Milimoe.FunGame.Core.Library.Constant.DataRequestType,
-    /// Milimoe.FunGame.Core.Api.Transmittal.DataRequest.GetTypeString(DataRequestType type)
+    /// 需要同步更新 <see cref="DataRequestType"/>
     /// </summary>
     public class DataRequestSet
     {
@@ -64,6 +90,9 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string Main_UpdateRoom = "Main::UpdateRoom";
         public const string Main_MatchRoom = "Main::MatchRoom";
         public const string Main_Chat = "Main::Chat";
+        public const string Main_Ready = "Main::Ready";
+        public const string Main_CancelReady = "Main::CancelReady";
+        public const string Main_StartGame = "Main::StartGame";
         /**
          * Register
          */
@@ -80,6 +109,75 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string Room_GetRoomSettings = "Room::GetRoomSettings";
         public const string Room_GetRoomPlayerCount = "Room::GetRoomPlayerCount";
         public const string Room_UpdateRoomMaster = "Room::UpdateRoomMaster";
+        /**
+         * Gaming
+         */
+        public const string Gaming_Connect = "Gaming::Connect";
+        public const string Gaming_Disconnect = "Gaming::Disconnect";
+        public const string Gaming_Reconnect = "Gaming::Reconnect";
+        public const string Gaming_Ban = "Gaming::Ban";
+        public const string Gaming_Pick = "Gaming::Pick";
+        public const string Gaming_Random = "Gaming::Random";
+        public const string Gaming_Move = "Gaming::Move";
+        public const string Gaming_Attack = "Gaming::Attack";
+        public const string Gaming_Skill = "Gaming::Skill";
+        public const string Gaming_Item = "Gaming::Item";
+        public const string Gaming_Magic = "Gaming::Magic";
+        public const string Gaming_Buy = "Gaming::Buy";
+        public const string Gaming_SuperSkill = "Gaming::SuperSkill";
+        public const string Gaming_Pause = "Gaming::Pause";
+        public const string Gaming_Unpause = "Gaming::Unpause";
+        public const string Gaming_Surrender = "Gaming::Surrender";
+        public const string Gaming_UpdateUserInfo = "Gaming::UpdateUserInfo";
+
+        /// <summary>
+        /// 获取Type的等效字符串
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static string GetTypeString(DataRequestType type)
+        {
+            return type switch
+            {
+                DataRequestType.RunTime_Logout => RunTime_Logout,
+                DataRequestType.Main_GetNotice => Main_GetNotice,
+                DataRequestType.Main_CreateRoom => Main_CreateRoom,
+                DataRequestType.Main_UpdateRoom => Main_UpdateRoom,
+                DataRequestType.Main_IntoRoom => Main_IntoRoom,
+                DataRequestType.Main_QuitRoom => Main_QuitRoom,
+                DataRequestType.Main_MatchRoom => Main_MatchRoom,
+                DataRequestType.Main_Chat => Main_Chat,
+                DataRequestType.Main_Ready => Main_Ready,
+                DataRequestType.Main_CancelReady => Main_CancelReady,
+                DataRequestType.Main_StartGame => Main_StartGame,
+                DataRequestType.Reg_GetRegVerifyCode => Reg_GetRegVerifyCode,
+                DataRequestType.Login_Login => Login_Login,
+                DataRequestType.Login_GetFindPasswordVerifyCode => Login_GetFindPasswordVerifyCode,
+                DataRequestType.Login_UpdatePassword => Login_UpdatePassword,
+                DataRequestType.Room_GetRoomSettings => Room_GetRoomSettings,
+                DataRequestType.Room_GetRoomPlayerCount => Room_GetRoomPlayerCount,
+                DataRequestType.Room_UpdateRoomMaster => Room_UpdateRoomMaster,
+                DataRequestType.Gaming_Connect => Gaming_Connect,
+                DataRequestType.Gaming_Disconnect => Gaming_Disconnect,
+                DataRequestType.Gaming_Reconnect => Gaming_Reconnect,
+                DataRequestType.Gaming_Ban => Gaming_Ban,
+                DataRequestType.Gaming_Pick => Gaming_Pick,
+                DataRequestType.Gaming_Random => Gaming_Random,
+                DataRequestType.Gaming_Move => Gaming_Move,
+                DataRequestType.Gaming_Attack => Gaming_Attack,
+                DataRequestType.Gaming_Skill => Gaming_Skill,
+                DataRequestType.Gaming_Item => Gaming_Item,
+                DataRequestType.Gaming_Magic => Gaming_Magic,
+                DataRequestType.Gaming_Buy => Gaming_Buy,
+                DataRequestType.Gaming_SuperSkill => Gaming_SuperSkill,
+                DataRequestType.Gaming_Pause => Gaming_Pause,
+                DataRequestType.Gaming_Unpause => Gaming_Unpause,
+                DataRequestType.Gaming_Surrender => Gaming_Surrender,
+                DataRequestType.Gaming_UpdateUserInfo => Gaming_UpdateUserInfo,
+                _ => UnKnown
+            };
+        }
+
     }
 
     public class ReflectionSet
@@ -108,5 +206,41 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string MixHasPass = "带密码的混战模式";
         public const string Team = "团队模式";
         public const string TeamHasPass = "带密码的团队模式";
+
+        /// <summary>
+        /// 获取Type的等效字符串
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static string GetTypeString(RoomType type)
+        {
+            return type switch
+            {
+                RoomType.Mix => Mix,
+                RoomType.Team => Team,
+                RoomType.MixHasPass => MixHasPass,
+                RoomType.TeamHasPass => TeamHasPass,
+                RoomType.AllHasPass => AllHasPass,
+                _ => All
+            };
+        }
+
+        /// <summary>
+        /// 获取字符串对应的枚举
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static RoomType GetRoomType(string typestring)
+        {
+            return typestring switch
+            {
+                Mix => RoomType.Mix,
+                Team => RoomType.Team,
+                MixHasPass => RoomType.MixHasPass,
+                TeamHasPass => RoomType.TeamHasPass,
+                AllHasPass => RoomType.AllHasPass,
+                _ => RoomType.All
+            };
+        }
     }
 }

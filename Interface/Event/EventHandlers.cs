@@ -25,10 +25,10 @@ namespace Milimoe.FunGame.Core.Interface
         public event SucceedEventHandler? SucceedConnect;
         public event FailedEventHandler? FailedConnect;
 
-        public void OnBeforeConnectEvent(object sender,ConnectEventArgs e);
-        public void OnAfterConnectEvent(object sender,ConnectEventArgs e);
-        public void OnSucceedConnectEvent(object sender,ConnectEventArgs e);
-        public void OnFailedConnectEvent(object sender,ConnectEventArgs e);
+        public void OnBeforeConnectEvent(object sender, ConnectEventArgs e);
+        public void OnAfterConnectEvent(object sender, ConnectEventArgs e);
+        public void OnSucceedConnectEvent(object sender, ConnectEventArgs e);
+        public void OnFailedConnectEvent(object sender, ConnectEventArgs e);
     }
 
     public interface IDisconnectEventHandler : IEventHandler
@@ -38,10 +38,10 @@ namespace Milimoe.FunGame.Core.Interface
         public event SucceedEventHandler? SucceedDisconnect;
         public event FailedEventHandler? FailedDisconnect;
 
-        public void OnBeforeDisconnectEvent(object sender,GeneralEventArgs e);
-        public void OnAfterDisconnectEvent(object sender,GeneralEventArgs e);
-        public void OnSucceedDisconnectEvent(object sender,GeneralEventArgs e);
-        public void OnFailedDisconnectEvent(object sender,GeneralEventArgs e);
+        public void OnBeforeDisconnectEvent(object sender, GeneralEventArgs e);
+        public void OnAfterDisconnectEvent(object sender, GeneralEventArgs e);
+        public void OnSucceedDisconnectEvent(object sender, GeneralEventArgs e);
+        public void OnFailedDisconnectEvent(object sender, GeneralEventArgs e);
     }
 
     public interface ILoginEventHandler : IEventHandler
@@ -56,10 +56,10 @@ namespace Milimoe.FunGame.Core.Interface
         public event SucceedEventHandler? SucceedLogin;
         public event FailedEventHandler? FailedLogin;
 
-        public void OnBeforeLoginEvent(object sender,LoginEventArgs e);
-        public void OnAfterLoginEvent(object sender,LoginEventArgs e);
-        public void OnSucceedLoginEvent(object sender,LoginEventArgs e);
-        public void OnFailedLoginEvent(object sender,LoginEventArgs e);
+        public void OnBeforeLoginEvent(object sender, LoginEventArgs e);
+        public void OnAfterLoginEvent(object sender, LoginEventArgs e);
+        public void OnSucceedLoginEvent(object sender, LoginEventArgs e);
+        public void OnFailedLoginEvent(object sender, LoginEventArgs e);
     }
 
     public interface ILogoutEventHandler : IEventHandler
@@ -69,10 +69,10 @@ namespace Milimoe.FunGame.Core.Interface
         public event SucceedEventHandler? SucceedLogout;
         public event FailedEventHandler? FailedLogout;
 
-        public void OnBeforeLogoutEvent(object sender,GeneralEventArgs e);
-        public void OnAfterLogoutEvent(object sender,GeneralEventArgs e);
-        public void OnSucceedLogoutEvent(object sender,GeneralEventArgs e);
-        public void OnFailedLogoutEvent(object sender,GeneralEventArgs e);
+        public void OnBeforeLogoutEvent(object sender, GeneralEventArgs e);
+        public void OnAfterLogoutEvent(object sender, GeneralEventArgs e);
+        public void OnSucceedLogoutEvent(object sender, GeneralEventArgs e);
+        public void OnFailedLogoutEvent(object sender, GeneralEventArgs e);
     }
 
     public interface IRegEventHandler : IEventHandler
@@ -87,10 +87,10 @@ namespace Milimoe.FunGame.Core.Interface
         public event SucceedEventHandler? SucceedReg;
         public event FailedEventHandler? FailedReg;
 
-        public void OnBeforeRegEvent(object sender,RegisterEventArgs e);
-        public void OnAfterRegEvent(object sender,RegisterEventArgs e);
-        public void OnSucceedRegEvent(object sender,RegisterEventArgs e);
-        public void OnFailedRegEvent(object sender,RegisterEventArgs e);
+        public void OnBeforeRegEvent(object sender, RegisterEventArgs e);
+        public void OnAfterRegEvent(object sender, RegisterEventArgs e);
+        public void OnSucceedRegEvent(object sender, RegisterEventArgs e);
+        public void OnFailedRegEvent(object sender, RegisterEventArgs e);
     }
 
     public interface IIntoRoomEventHandler : IEventHandler
@@ -105,10 +105,10 @@ namespace Milimoe.FunGame.Core.Interface
         public event SucceedEventHandler? SucceedIntoRoom;
         public event FailedEventHandler? FailedIntoRoom;
 
-        public void OnBeforeIntoRoomEvent(object sender,RoomEventArgs e);
-        public void OnAfterIntoRoomEvent(object sender,RoomEventArgs e);
-        public void OnSucceedIntoRoomEvent(object sender,RoomEventArgs e);
-        public void OnFailedIntoRoomEvent(object sender,RoomEventArgs e);
+        public void OnBeforeIntoRoomEvent(object sender, RoomEventArgs e);
+        public void OnAfterIntoRoomEvent(object sender, RoomEventArgs e);
+        public void OnSucceedIntoRoomEvent(object sender, RoomEventArgs e);
+        public void OnFailedIntoRoomEvent(object sender, RoomEventArgs e);
     }
 
     public interface ISendTalkEventHandler : IEventHandler
@@ -123,10 +123,10 @@ namespace Milimoe.FunGame.Core.Interface
         public event SucceedEventHandler? SucceedSendTalk;
         public event FailedEventHandler? FailedSendTalk;
 
-        public void OnBeforeSendTalkEvent(object sender,SendTalkEventArgs e);
-        public void OnAfterSendTalkEvent(object sender,SendTalkEventArgs e);
-        public void OnSucceedSendTalkEvent(object sender,SendTalkEventArgs e);
-        public void OnFailedSendTalkEvent(object sender,SendTalkEventArgs e);
+        public void OnBeforeSendTalkEvent(object sender, SendTalkEventArgs e);
+        public void OnAfterSendTalkEvent(object sender, SendTalkEventArgs e);
+        public void OnSucceedSendTalkEvent(object sender, SendTalkEventArgs e);
+        public void OnFailedSendTalkEvent(object sender, SendTalkEventArgs e);
     }
 
     public interface ICreateRoomEventHandler : IEventHandler
@@ -141,10 +141,10 @@ namespace Milimoe.FunGame.Core.Interface
         public event SucceedEventHandler? SucceedCreateRoom;
         public event FailedEventHandler? FailedCreateRoom;
 
-        public void OnBeforeCreateRoomEvent(object sender,RoomEventArgs e);
-        public void OnAfterCreateRoomEvent(object sender,RoomEventArgs e);
-        public void OnSucceedCreateRoomEvent(object sender,RoomEventArgs e);
-        public void OnFailedCreateRoomEvent(object sender,RoomEventArgs e);
+        public void OnBeforeCreateRoomEvent(object sender, RoomEventArgs e);
+        public void OnAfterCreateRoomEvent(object sender, RoomEventArgs e);
+        public void OnSucceedCreateRoomEvent(object sender, RoomEventArgs e);
+        public void OnFailedCreateRoomEvent(object sender, RoomEventArgs e);
     }
 
     public interface IQuitRoomEventHandler : IEventHandler
@@ -159,10 +159,10 @@ namespace Milimoe.FunGame.Core.Interface
         public event SucceedEventHandler? SucceedQuitRoom;
         public event FailedEventHandler? FailedQuitRoom;
 
-        public void OnBeforeQuitRoomEvent(object sender,RoomEventArgs e);
-        public void OnAfterQuitRoomEvent(object sender,RoomEventArgs e);
-        public void OnSucceedQuitRoomEvent(object sender,RoomEventArgs e);
-        public void OnFailedQuitRoomEvent(object sender,RoomEventArgs e);
+        public void OnBeforeQuitRoomEvent(object sender, RoomEventArgs e);
+        public void OnAfterQuitRoomEvent(object sender, RoomEventArgs e);
+        public void OnSucceedQuitRoomEvent(object sender, RoomEventArgs e);
+        public void OnFailedQuitRoomEvent(object sender, RoomEventArgs e);
     }
 
     public interface IChangeRoomSettingEventHandler : IEventHandler
@@ -172,10 +172,10 @@ namespace Milimoe.FunGame.Core.Interface
         public event SucceedEventHandler? SucceedChangeRoomSetting;
         public event FailedEventHandler? FailedChangeRoomSetting;
 
-        public void OnBeforeChangeRoomSettingEvent(object sender,GeneralEventArgs e);
-        public void OnAfterChangeRoomSettingEvent(object sender,GeneralEventArgs e);
-        public void OnSucceedChangeRoomSettingEvent(object sender,GeneralEventArgs e);
-        public void OnFailedChangeRoomSettingEvent(object sender,GeneralEventArgs e);
+        public void OnBeforeChangeRoomSettingEvent(object sender, GeneralEventArgs e);
+        public void OnAfterChangeRoomSettingEvent(object sender, GeneralEventArgs e);
+        public void OnSucceedChangeRoomSettingEvent(object sender, GeneralEventArgs e);
+        public void OnFailedChangeRoomSettingEvent(object sender, GeneralEventArgs e);
     }
 
     public interface IStartMatchEventHandler : IEventHandler
@@ -185,10 +185,10 @@ namespace Milimoe.FunGame.Core.Interface
         public event SucceedEventHandler? SucceedStartMatch;
         public event FailedEventHandler? FailedStartMatch;
 
-        public void OnBeforeStartMatchEvent(object sender,GeneralEventArgs e);
-        public void OnAfterStartMatchEvent(object sender,GeneralEventArgs e);
-        public void OnSucceedStartMatchEvent(object sender,GeneralEventArgs e);
-        public void OnFailedStartMatchEvent(object sender,GeneralEventArgs e);
+        public void OnBeforeStartMatchEvent(object sender, GeneralEventArgs e);
+        public void OnAfterStartMatchEvent(object sender, GeneralEventArgs e);
+        public void OnSucceedStartMatchEvent(object sender, GeneralEventArgs e);
+        public void OnFailedStartMatchEvent(object sender, GeneralEventArgs e);
     }
 
     public interface IStartGameEventHandler : IEventHandler
@@ -198,10 +198,10 @@ namespace Milimoe.FunGame.Core.Interface
         public event SucceedEventHandler? SucceedStartGame;
         public event FailedEventHandler? FailedStartGame;
 
-        public void OnBeforeStartGameEvent(object sender,GeneralEventArgs e);
-        public void OnAfterStartGameEvent(object sender,GeneralEventArgs e);
-        public void OnSucceedStartGameEvent(object sender,GeneralEventArgs e);
-        public void OnFailedStartGameEvent(object sender,GeneralEventArgs e);
+        public void OnBeforeStartGameEvent(object sender, GeneralEventArgs e);
+        public void OnAfterStartGameEvent(object sender, GeneralEventArgs e);
+        public void OnSucceedStartGameEvent(object sender, GeneralEventArgs e);
+        public void OnFailedStartGameEvent(object sender, GeneralEventArgs e);
     }
 
     public interface IChangeProfileEventHandler : IEventHandler
@@ -211,10 +211,10 @@ namespace Milimoe.FunGame.Core.Interface
         public event SucceedEventHandler? SucceedChangeProfile;
         public event FailedEventHandler? FailedChangeProfile;
 
-        public void OnBeforeChangeProfileEvent(object sender,GeneralEventArgs e);
-        public void OnAfterChangeProfileEvent(object sender,GeneralEventArgs e);
-        public void OnSucceedChangeProfileEvent(object sender,GeneralEventArgs e);
-        public void OnFailedChangeProfileEvent(object sender,GeneralEventArgs e);
+        public void OnBeforeChangeProfileEvent(object sender, GeneralEventArgs e);
+        public void OnAfterChangeProfileEvent(object sender, GeneralEventArgs e);
+        public void OnSucceedChangeProfileEvent(object sender, GeneralEventArgs e);
+        public void OnFailedChangeProfileEvent(object sender, GeneralEventArgs e);
     }
 
     public interface IChangeAccountSettingEventHandler : IEventHandler
@@ -224,10 +224,10 @@ namespace Milimoe.FunGame.Core.Interface
         public event SucceedEventHandler? SucceedChangeAccountSetting;
         public event FailedEventHandler? FailedChangeAccountSetting;
 
-        public void OnBeforeChangeAccountSettingEvent(object sender,GeneralEventArgs e);
-        public void OnAfterChangeAccountSettingEvent(object sender,GeneralEventArgs e);
-        public void OnSucceedChangeAccountSettingEvent(object sender,GeneralEventArgs e);
-        public void OnFailedChangeAccountSettingEvent(object sender,GeneralEventArgs e);
+        public void OnBeforeChangeAccountSettingEvent(object sender, GeneralEventArgs e);
+        public void OnAfterChangeAccountSettingEvent(object sender, GeneralEventArgs e);
+        public void OnSucceedChangeAccountSettingEvent(object sender, GeneralEventArgs e);
+        public void OnFailedChangeAccountSettingEvent(object sender, GeneralEventArgs e);
     }
 
     public interface IOpenInventoryEventHandler : IEventHandler
@@ -237,10 +237,10 @@ namespace Milimoe.FunGame.Core.Interface
         public event SucceedEventHandler? SucceedOpenInventory;
         public event FailedEventHandler? FailedOpenInventory;
 
-        public void OnBeforeOpenInventoryEvent(object sender,GeneralEventArgs e);
-        public void OnAfterOpenInventoryEvent(object sender,GeneralEventArgs e);
-        public void OnSucceedOpenInventoryEvent(object sender,GeneralEventArgs e);
-        public void OnFailedOpenInventoryEvent(object sender,GeneralEventArgs e);
+        public void OnBeforeOpenInventoryEvent(object sender, GeneralEventArgs e);
+        public void OnAfterOpenInventoryEvent(object sender, GeneralEventArgs e);
+        public void OnSucceedOpenInventoryEvent(object sender, GeneralEventArgs e);
+        public void OnFailedOpenInventoryEvent(object sender, GeneralEventArgs e);
     }
 
     public interface ISignInEventHandler : IEventHandler
@@ -250,10 +250,10 @@ namespace Milimoe.FunGame.Core.Interface
         public event SucceedEventHandler? SucceedSignIn;
         public event FailedEventHandler? FailedSignIn;
 
-        public void OnBeforeSignInEvent(object sender,GeneralEventArgs e);
-        public void OnAfterSignInEvent(object sender,GeneralEventArgs e);
-        public void OnSucceedSignInEvent(object sender,GeneralEventArgs e);
-        public void OnFailedSignInEvent(object sender,GeneralEventArgs e);
+        public void OnBeforeSignInEvent(object sender, GeneralEventArgs e);
+        public void OnAfterSignInEvent(object sender, GeneralEventArgs e);
+        public void OnSucceedSignInEvent(object sender, GeneralEventArgs e);
+        public void OnFailedSignInEvent(object sender, GeneralEventArgs e);
     }
 
     public interface IOpenStoreEventHandler : IEventHandler
@@ -263,10 +263,10 @@ namespace Milimoe.FunGame.Core.Interface
         public event SucceedEventHandler? SucceedOpenStore;
         public event FailedEventHandler? FailedOpenStore;
 
-        public void OnBeforeOpenStoreEvent(object sender,GeneralEventArgs e);
-        public void OnAfterOpenStoreEvent(object sender,GeneralEventArgs e);
-        public void OnSucceedOpenStoreEvent(object sender,GeneralEventArgs e);
-        public void OnFailedOpenStoreEvent(object sender,GeneralEventArgs e);
+        public void OnBeforeOpenStoreEvent(object sender, GeneralEventArgs e);
+        public void OnAfterOpenStoreEvent(object sender, GeneralEventArgs e);
+        public void OnSucceedOpenStoreEvent(object sender, GeneralEventArgs e);
+        public void OnFailedOpenStoreEvent(object sender, GeneralEventArgs e);
     }
 
     public interface IBuyItemEventHandler : IEventHandler
@@ -276,10 +276,10 @@ namespace Milimoe.FunGame.Core.Interface
         public event SucceedEventHandler? SucceedBuyItem;
         public event FailedEventHandler? FailedBuyItem;
 
-        public void OnBeforeBuyItemEvent(object sender,GeneralEventArgs e);
-        public void OnAfterBuyItemEvent(object sender,GeneralEventArgs e);
-        public void OnSucceedBuyItemEvent(object sender,GeneralEventArgs e);
-        public void OnFailedBuyItemEvent(object sender,GeneralEventArgs e);
+        public void OnBeforeBuyItemEvent(object sender, GeneralEventArgs e);
+        public void OnAfterBuyItemEvent(object sender, GeneralEventArgs e);
+        public void OnSucceedBuyItemEvent(object sender, GeneralEventArgs e);
+        public void OnFailedBuyItemEvent(object sender, GeneralEventArgs e);
     }
 
     public interface IShowRankingEventHandler : IEventHandler
@@ -289,10 +289,10 @@ namespace Milimoe.FunGame.Core.Interface
         public event SucceedEventHandler? SucceedShowRanking;
         public event FailedEventHandler? FailedShowRanking;
 
-        public void OnBeforeShowRankingEvent(object sender,GeneralEventArgs e);
-        public void OnAfterShowRankingEvent(object sender,GeneralEventArgs e);
-        public void OnSucceedShowRankingEvent(object sender,GeneralEventArgs e);
-        public void OnFailedShowRankingEvent(object sender,GeneralEventArgs e);
+        public void OnBeforeShowRankingEvent(object sender, GeneralEventArgs e);
+        public void OnAfterShowRankingEvent(object sender, GeneralEventArgs e);
+        public void OnSucceedShowRankingEvent(object sender, GeneralEventArgs e);
+        public void OnFailedShowRankingEvent(object sender, GeneralEventArgs e);
     }
 
     public interface IUseItemEventHandler : IEventHandler
@@ -302,10 +302,10 @@ namespace Milimoe.FunGame.Core.Interface
         public event SucceedEventHandler? SucceedUseItem;
         public event FailedEventHandler? FailedUseItem;
 
-        public void OnBeforeUseItemEvent(object sender,GeneralEventArgs e);
-        public void OnAfterUseItemEvent(object sender,GeneralEventArgs e);
-        public void OnSucceedUseItemEvent(object sender,GeneralEventArgs e);
-        public void OnFailedUseItemEvent(object sender,GeneralEventArgs e);
+        public void OnBeforeUseItemEvent(object sender, GeneralEventArgs e);
+        public void OnAfterUseItemEvent(object sender, GeneralEventArgs e);
+        public void OnSucceedUseItemEvent(object sender, GeneralEventArgs e);
+        public void OnFailedUseItemEvent(object sender, GeneralEventArgs e);
     }
 
     public interface IEndGameEventHandler : IEventHandler
@@ -315,9 +315,9 @@ namespace Milimoe.FunGame.Core.Interface
         public event SucceedEventHandler? SucceedEndGame;
         public event FailedEventHandler? FailedEndGame;
 
-        public void OnBeforeEndGameEvent(object sender,GeneralEventArgs e);
-        public void OnAfterEndGameEvent(object sender,GeneralEventArgs e);
-        public void OnSucceedEndGameEvent(object sender,GeneralEventArgs e);
-        public void OnFailedEndGameEvent(object sender,GeneralEventArgs e);
+        public void OnBeforeEndGameEvent(object sender, GeneralEventArgs e);
+        public void OnAfterEndGameEvent(object sender, GeneralEventArgs e);
+        public void OnSucceedEndGameEvent(object sender, GeneralEventArgs e);
+        public void OnFailedEndGameEvent(object sender, GeneralEventArgs e);
     }
 }

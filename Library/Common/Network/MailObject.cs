@@ -65,7 +65,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             this.Sender = Sender.SmtpClientInfo.SenderMailAddress;
             this.SenderName = Sender.SmtpClientInfo.SenderName;
         }
-        
+
         /// <summary>
         /// 使用地址和名称创建邮件对象
         /// </summary>

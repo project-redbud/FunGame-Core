@@ -1,5 +1,4 @@
-﻿using System;
-using System.Data;
+﻿using System.Data;
 using Milimoe.FunGame.Core.Api.Factory;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -156,7 +155,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         {
             return SkillFactory.Create(type);
         }
-        
+
         /// <summary>
         /// 获取主动技能实例
         /// </summary>
@@ -165,7 +164,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         {
             return (ActiveSkill)SkillFactory.Create(SkillType.Active);
         }
-        
+
         /// <summary>
         /// 获取被动技能实例
         /// </summary>

@@ -149,7 +149,7 @@
     {
         public override string Message => "退出房间失败 (#10030)";
     }
-    
+
     public class CreateRoomException : Exception
     {
         public override string Message => "创建房间失败 (#10031)";

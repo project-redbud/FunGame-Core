@@ -29,7 +29,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         private Socket(System.Net.Sockets.Socket Instance, string ServerIP, int ServerPort)
         {
             this.Instance = Instance;
-            this.ServerIP= ServerIP;
+            this.ServerIP = ServerIP;
             this.ServerPort = ServerPort;
             this.StartSendingHeartBeat();
         }
@@ -40,7 +40,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             if (socket != null) return new Socket(socket, IP, Port);
             else throw new ConnectFailedException();
         }
-        
+
         public SocketResult Send(SocketMessageType type, params object[] objs)
         {
             if (Instance != null)
@@ -71,7 +71,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
                 throw new SocketWrongInfoException();
             }
         }
-        
+
         public SocketObject[] ReceiveArray()
         {
             try
@@ -156,7 +156,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             Thread.Sleep(100);
             while (Connected)
             {
-                if (!SendingHeartBeat) _SendingHeartBeat= true;
+                if (!SendingHeartBeat) _SendingHeartBeat = true;
                 // 发送心跳包
                 if (Send(SocketMessageType.HeartBeat) == SocketResult.Success)
                 {
@@ -179,9 +179,6 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
                 throw new LostConnectException();
         }
 
-        public static string GetTypeString(SocketMessageType type)
-        {
-            return SocketManager.GetTypeString(type);
-        }
+        public static string GetTypeString(SocketMessageType type) => SocketSet.GetTypeString(type);
     }
 }

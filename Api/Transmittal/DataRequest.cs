@@ -87,7 +87,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             Worker.SendRequest();
             return Result;
         }
-        
+
         /// <summary>
         /// 异步向服务器发送数据请求
         /// </summary>
@@ -142,7 +142,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                     _Error = e.GetErrorInfo();
                 }
             }
-            
+
             public async Task SendRequestAsync()
             {
                 try
@@ -193,34 +193,6 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                     _Error = e.GetErrorInfo();
                 }
             }
-        }
-
-        /// <summary>
-        /// 获取Type的等效字符串
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static string GetTypeString(DataRequestType type)
-        {
-            return type switch
-            {
-                DataRequestType.RunTime_Logout => DataRequestSet.RunTime_Logout,
-                DataRequestType.Main_GetNotice => DataRequestSet.Main_GetNotice,
-                DataRequestType.Main_CreateRoom => DataRequestSet.Main_CreateRoom,
-                DataRequestType.Main_UpdateRoom => DataRequestSet.Main_UpdateRoom,
-                DataRequestType.Main_IntoRoom => DataRequestSet.Main_IntoRoom,
-                DataRequestType.Main_QuitRoom => DataRequestSet.Main_QuitRoom,
-                DataRequestType.Main_MatchRoom => DataRequestSet.Main_MatchRoom,
-                DataRequestType.Main_Chat => DataRequestSet.Main_Chat,
-                DataRequestType.Reg_GetRegVerifyCode => DataRequestSet.Reg_GetRegVerifyCode,
-                DataRequestType.Login_Login => DataRequestSet.Login_Login,
-                DataRequestType.Login_GetFindPasswordVerifyCode => DataRequestSet.Login_GetFindPasswordVerifyCode,
-                DataRequestType.Login_UpdatePassword => DataRequestSet.Login_UpdatePassword,
-                DataRequestType.Room_GetRoomSettings => DataRequestSet.Room_GetRoomSettings,
-                DataRequestType.Room_GetRoomPlayerCount => DataRequestSet.Room_GetRoomPlayerCount,
-                DataRequestType.Room_UpdateRoomMaster => DataRequestSet.Room_UpdateRoomMaster,
-                _ => DataRequestSet.UnKnown
-            };
         }
 
         /// <summary>

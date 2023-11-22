@@ -34,7 +34,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Plugin
 
         public void SucceedLoginEvent(object sender, LoginEventArgs e)
         {
-            
+
         }
     }
 }

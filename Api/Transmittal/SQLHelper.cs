@@ -57,7 +57,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         {
             return null;
         }
-        
+
         /// <summary>
         /// 执行指定的命令查询DataRow（可选实现）
         /// </summary>
