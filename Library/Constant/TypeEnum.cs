@@ -69,6 +69,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         UpdateRoomMaster,
         MatchRoom,
         StartGame,
+        EndGame,
         Gaming
     }
 

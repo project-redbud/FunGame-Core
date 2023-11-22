@@ -41,6 +41,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string UpdateRoomMaster = "UpdateRoomMaster";
         public const string MatchRoom = "MatchRoom";
         public const string StartGame = "StartGame";
+        public const string EndGame = "EndGame";
         public const string Gaming = "Gaming";
 
         /// <summary>
@@ -62,6 +63,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 SocketMessageType.UpdateRoomMaster => UpdateRoomMaster,
                 SocketMessageType.MatchRoom => MatchRoom,
                 SocketMessageType.StartGame => StartGame,
+                SocketMessageType.EndGame => EndGame,
                 SocketMessageType.Gaming => Gaming,
                 _ => Unknown
             };
