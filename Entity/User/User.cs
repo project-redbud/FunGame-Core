@@ -52,5 +52,15 @@ namespace Milimoe.FunGame.Core.Entity
             if (((User)other).Id == Id) return true;
             return false;
         }
+
+        public override string ToString()
+        {
+            string str = Username;
+            if (NickName != "")
+            {
+                str += " ( " + NickName + " ) ";
+            }
+            return str;
+        }
     }
 }
