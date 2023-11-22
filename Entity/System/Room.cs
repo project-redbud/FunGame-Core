@@ -6,7 +6,7 @@ namespace Milimoe.FunGame.Core.Entity
     public class Room : BaseEntity
     {
         public static readonly Room Empty = new();
-        public override long Id { get => base.Id ; set => base.Id = value; }
+        public override long Id { get => base.Id; set => base.Id = value; }
         public string Roomid { get; set; } = "-1";
         public DateTime CreateTime { get; set; } = General.DefaultTime;
         public User RoomMaster { get; set; } = General.UnknownUserInstance;

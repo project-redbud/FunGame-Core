@@ -1,5 +1,5 @@
-﻿using Milimoe.FunGame.Core.Library.Constant;
-using System.Reflection;
+﻿using System.Reflection;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Api.Utility
 {
@@ -88,7 +88,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     return value;
                 else return null;
             }
-            
+
             return null;
         }
     }

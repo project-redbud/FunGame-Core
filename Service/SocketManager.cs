@@ -172,7 +172,7 @@ namespace Milimoe.FunGame.Core.Service
             }
             return result;
         }
-        
+
         /// <summary>
         /// 用于服务器接收客户端信息
         /// </summary>
@@ -195,7 +195,7 @@ namespace Milimoe.FunGame.Core.Service
             }
             return result;
         }
-        
+
         /// <summary>
         /// 用于客户端接收服务器信息（数组版）
         /// </summary>

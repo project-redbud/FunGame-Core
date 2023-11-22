@@ -63,7 +63,7 @@ namespace Milimoe.FunGame.Core.Service
         {
             return JsonSerializer.Deserialize<T>(json, options);
         }
-        
+
         /// <summary>
         /// 反序列化Json对象，此方法可能无法返回正确的类型，请注意辨别
         /// </summary>
@@ -101,7 +101,7 @@ namespace Milimoe.FunGame.Core.Service
             T? result = element.Deserialize<T>(GeneralOptions);
             return result;
         }
-        
+
         /// <summary>
         /// 反序列化Hashtable中Key对应的Json对象
         /// </summary>
@@ -115,7 +115,7 @@ namespace Milimoe.FunGame.Core.Service
             {
                 JsonElement? element = (JsonElement?)table[key];
                 if (element != null)
-                { 
+                {
                     T? result = ((JsonElement)element).Deserialize<T>(GeneralOptions);
                     return result;
                 }
@@ -137,7 +137,7 @@ namespace Milimoe.FunGame.Core.Service
             {
                 JsonElement? element = (JsonElement?)table[key];
                 if (element != null)
-                { 
+                {
                     T? result = ((JsonElement)element).Deserialize<T>(options);
                     return result;
                 }

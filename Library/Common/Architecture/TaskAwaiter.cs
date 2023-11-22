@@ -11,7 +11,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
         /// 任务是否完成
         /// </summary>
         public readonly bool IsCompleted => awaiter.IsCompleted;
-        
+
         /// <summary>
         /// 捕获到的异常
         /// </summary>

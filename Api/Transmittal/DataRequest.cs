@@ -87,7 +87,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             Worker.SendRequest();
             return Result;
         }
-        
+
         /// <summary>
         /// 异步向服务器发送数据请求
         /// </summary>
@@ -142,7 +142,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                     _Error = e.GetErrorInfo();
                 }
             }
-            
+
             public async Task SendRequestAsync()
             {
                 try

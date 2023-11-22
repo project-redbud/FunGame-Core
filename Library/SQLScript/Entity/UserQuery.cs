@@ -2,7 +2,7 @@
 {
     public class UserQuery
     {
-        public const string TableName= "Users";
+        public const string TableName = "Users";
         public const string Column_UID = "UID";
         public const string Column_Username = "Username";
         public const string Column_Password = "Password";
@@ -24,17 +24,17 @@
         {
             return $"{Select_Users} {Constant.Command_Where} {Column_Username} = '{Username}' and {Column_Password} = '{Password}'";
         }
-        
+
         public static string Select_IsExistEmail(string Email)
         {
             return $"{Select_Users} {Constant.Command_Where} {Column_Email} = '{Email}'";
         }
-        
+
         public static string Select_IsExistUsername(string Username)
         {
             return $"{Select_Users} {Constant.Command_Where} {Column_Username} = '{Username}'";
         }
-        
+
         public static string Select_CheckEmailWithUsername(string Username, string email)
         {
             return $"{Select_Users} {Constant.Command_Where} {Column_Username} = '{Username}' and {Column_Email} = '{email}'";
@@ -54,12 +54,12 @@
         {
             return $"{Constant.Command_Update} {TableName} {Constant.Command_Set} {Column_LastTime} = '{DateTime.Now}', {Column_LastIP} = '{IP}' {Constant.Command_Where} {Column_Username} = '{Username}'";
         }
-        
+
         public static string Update_Password(string Username, string Password)
         {
             return $"{Constant.Command_Update} {TableName} {Constant.Command_Set} {Column_Password} = '{Password}' {Constant.Command_Where} {Column_Username} = '{Username}'";
         }
-        
+
         public static string Update_GameTime(string Username, int GameTimeMinutes)
         {
             return $"{Constant.Command_Update} {TableName} {Constant.Command_Set} {Column_GameTime} = {Column_GameTime} + {GameTimeMinutes} {Constant.Command_Where} {Column_Username} = '{Username}'";

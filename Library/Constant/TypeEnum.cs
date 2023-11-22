@@ -112,7 +112,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Gaming_Pause,
         Gaming_Unpause,
         Gaming_Surrender,
-        Gaming_UpdateUserInfo
+        Gaming_UpdateUserInfo,
+        Gaming_Punish
     }
 
     public enum SocketRuntimeType
@@ -225,6 +226,26 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Element,
         Fleabane,
         Particle
+    }
+
+    public enum ActionType
+    {
+        None,
+        Ban,
+        Pick,
+        Random,
+        Move,
+        Attack,
+        Skill,
+        Item,
+        Magic,
+        Buy,
+        SuperSkill,
+        Pause,
+        Unpause,
+        Surrender,
+        UpdateUserInfo,
+        Punish
     }
 
     public enum VerifyCodeType

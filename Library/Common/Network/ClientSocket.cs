@@ -25,7 +25,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
 
         public ClientSocket(System.Net.Sockets.Socket Instance, int ServerPort, string ClientIP, string ClientName, Guid Token)
         {
-            this.Instance= Instance;
+            this.Instance = Instance;
             this.ServerPort = ServerPort;
             this.ClientIP = ClientIP;
             this._ClientName = ClientName;
@@ -49,7 +49,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
                 throw new SocketWrongInfoException();
             }
         }
-        
+
         public SocketObject[] ReceiveArray()
         {
             try

@@ -72,7 +72,7 @@ namespace Milimoe.FunGame.Core.Service
         {
             return Models.TryRemove(name, out t);
         }
-        
+
         /// <summary>
         /// 将Model移除，并取得这个Model
         /// </summary>
@@ -96,7 +96,7 @@ namespace Milimoe.FunGame.Core.Service
         {
             Models.Clear();
         }
-        
+
 
         /// <summary>
         /// 获取Model对象的列表

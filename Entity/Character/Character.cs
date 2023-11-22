@@ -1,5 +1,5 @@
-﻿using Milimoe.FunGame.Core.Library.Constant;
-using System.Collections;
+﻿using System.Collections;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Entity
 {
@@ -55,7 +55,7 @@ namespace Milimoe.FunGame.Core.Entity
 
         internal Character()
         {
-            
+
         }
     }
 }

@@ -53,7 +53,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
             }
             return false;
         }
-        
+
         public bool Authenticate(string username, string password)
         {
             if (!BeforeAuthenticator(AuthenticationType.Username, username, password)) return false;

@@ -15,7 +15,7 @@ namespace Milimoe.FunGame.Core.Service
         /// 一个邮件服务对应一个Smtp客户端
         /// </summary>
         internal static Dictionary<Guid, SmtpClient> SmtpClients { get; } = new();
-        
+
         /// <summary>
         /// 用于保存邮件服务
         /// 允许服务器同时存在多个服务

@@ -65,43 +65,43 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             name = name.ToLower();
             return OnlineClients.Add(name, t);
         }
-        
+
         public bool RemoveClient(string name)
         {
             name = name.ToLower();
             return OnlineClients.Remove(name);
         }
-        
+
         public bool ContainsClient(string name)
         {
             name = name.ToLower();
             return OnlineClients.ContainsKey(name);
         }
-        
+
         public IServerModel GetClient(string name)
         {
             name = name.ToLower();
             return OnlineClients[name];
         }
-        
+
         public bool AddUser(string name, IServerModel t)
         {
             name = name.ToLower();
             return OnlineUsers.Add(name, t);
         }
-        
+
         public bool RemoveUser(string name)
         {
             name = name.ToLower();
             return OnlineUsers.Remove(name);
         }
-        
+
         public bool ContainsUser(string name)
         {
             name = name.ToLower();
             return OnlineUsers.ContainsKey(name);
         }
-        
+
         public IServerModel GetUser(string name)
         {
             name = name.ToLower();

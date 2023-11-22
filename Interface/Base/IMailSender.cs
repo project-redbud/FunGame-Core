@@ -1,6 +1,4 @@
-﻿using Milimoe.FunGame.Core.Library.Constant;
-
-namespace Milimoe.FunGame.Core.Interface.Base
+﻿namespace Milimoe.FunGame.Core.Interface.Base
 {
     public interface IMailSender
     {
