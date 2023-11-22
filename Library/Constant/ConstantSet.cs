@@ -206,5 +206,23 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string MixHasPass = "带密码的混战模式";
         public const string Team = "团队模式";
         public const string TeamHasPass = "带密码的团队模式";
+
+        /// <summary>
+        /// 获取Type的等效字符串
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static string GetTypeString(RoomType type)
+        {
+            return type switch
+            {
+                RoomType.Mix => Mix,
+                RoomType.Team => Team,
+                RoomType.MixHasPass => MixHasPass,
+                RoomType.TeamHasPass => TeamHasPass,
+                RoomType.AllHasPass => AllHasPass,
+                _ => All
+            };
+        }
     }
 }

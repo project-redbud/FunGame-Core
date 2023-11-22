@@ -344,7 +344,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
         MatchRoom,
         UpdateRoomMaster,
         GetRoomPlayerCount,
-        StartGame
+        StartGame,
+        EndGame
     }
 
     public enum RegInvokeType
