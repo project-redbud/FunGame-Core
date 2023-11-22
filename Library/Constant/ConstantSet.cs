@@ -224,5 +224,23 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 _ => All
             };
         }
+
+        /// <summary>
+        /// 获取字符串对应的枚举
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static RoomType GetRoomType(string typestring)
+        {
+            return typestring switch
+            {
+                Mix => RoomType.Mix,
+                Team => RoomType.Team,
+                MixHasPass => RoomType.MixHasPass,
+                TeamHasPass => RoomType.TeamHasPass,
+                AllHasPass => RoomType.AllHasPass,
+                _ => RoomType.All
+            };
+        }
     }
 }
