@@ -44,7 +44,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="username"></param>
         /// <param name="code"></param>
-        /// <param name="msg"></param>
         /// <returns></returns>
         public bool Authenticate(string username, string code)
         {

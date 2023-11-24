@@ -80,7 +80,6 @@ namespace Milimoe.FunGame.Core.Controller
         /// <summary>
         /// 关闭事件
         /// </summary>
-        /// <param name="SocketObject">SocketObject</param>
         protected delegate void DisposedEvent();
 
         /// <summary>
@@ -93,7 +92,6 @@ namespace Milimoe.FunGame.Core.Controller
         /// <summary>
         /// 触发关闭事件
         /// </summary>
-        /// <param name="SocketObject">SocketObject</param>
         protected void OnDisposed()
         {
             Disposed?.Invoke();

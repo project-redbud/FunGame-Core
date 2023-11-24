@@ -80,8 +80,8 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <summary>
         /// 通过DataSet获取房间实例
         /// </summary>
-        /// <param name="DsRoom"></param>
-        /// <param name="DsUser"></param>
+        /// <param name="DrRoom"></param>
+        /// <param name="User"></param>
         /// <returns></returns>
         public static Room GetRoom(DataRow DrRoom, User User)
         {
@@ -222,7 +222,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <summary>
         /// 获取用户实例
         /// </summary>
-        /// <param name="ds"></param>
+        /// <param name="dr"></param>
         /// <returns></returns>
         public static User GetUser(DataRow dr)
         {

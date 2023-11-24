@@ -228,7 +228,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// <summary>
         /// 获取字符串对应的枚举
         /// </summary>
-        /// <param name="type"></param>
+        /// <param name="typestring"></param>
         /// <returns></returns>
         public static RoomType GetRoomType(string typestring)
         {

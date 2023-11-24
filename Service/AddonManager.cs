@@ -9,6 +9,7 @@ namespace Milimoe.FunGame.Core.Service
         /// 从plugins目录加载所有插件
         /// </summary>
         /// <param name="plugins"></param>
+        /// <param name="objs"></param>
         /// <returns></returns>
         internal static Dictionary<string, BasePlugin> LoadPlugins(Dictionary<string, BasePlugin> plugins, params object[] objs)
         {

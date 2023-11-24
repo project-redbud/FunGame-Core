@@ -2,7 +2,7 @@
 {
     /// <summary>
     /// 继承这个类可以获得异步等待的功能
-    /// <para>参考实现 <see cref="SocketHandlerModel"/></para>
+    /// <para>参考实现 <see cref="Controller.SocketHandlerController"/></para>
     /// </summary>
     public abstract class AsyncAwaiter<T>
     {

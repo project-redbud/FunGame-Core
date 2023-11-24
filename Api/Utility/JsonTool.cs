@@ -34,7 +34,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <summary>
         /// 注册多个自定义转换器，支持 <see cref="BaseEntityConverter{T}"/>
         /// </summary>
-        /// <param name="converter"></param>
+        /// <param name="converters"></param>
         public void AddConverters(IEnumerable<JsonConverter> converters)
         {
             foreach (JsonConverter converter in converters)
