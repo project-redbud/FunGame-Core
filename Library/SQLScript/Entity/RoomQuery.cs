@@ -30,7 +30,7 @@
 
         public static string Delete_Rooms(params string[] roomids)
         {
-            if (roomids.Length == 0)
+            if (roomids.Length != 0)
             {
                 string where = string.Join("', '", roomids);
                 return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_RoomID} {Command_In} ('{where}')";
