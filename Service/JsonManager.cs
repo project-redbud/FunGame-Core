@@ -78,7 +78,6 @@ namespace Milimoe.FunGame.Core.Service
         /// 反序列化Json对象，此方法可能无法返回正确的类型，请注意辨别
         /// </summary>
         /// <param name="json"></param>
-        /// <param name=""></param>
         /// <param name="options"></param>
         /// <returns></returns>
         internal static object? GetObject(string json, JsonSerializerOptions options)

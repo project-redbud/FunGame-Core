@@ -4,17 +4,17 @@ using Milimoe.FunGame.Core.Library.Constant;
 namespace Milimoe.FunGame.Core.Api.Utility
 {
     /// <summary>
-    /// Interface的定义已经搬至：
-    /// Milimoe.FunGame.Core.Library.Constant 中的 &InterfaceType 和 &InterfaceSet
+    /// See: <see cref="InterfaceType"/>, <see cref="InterfaceSet"/>, <see cref="InterfaceMethod"/>
     /// </summary>
     public class Implement
     {
         /// <summary>
         /// 获取FunGame.Implement.dll中接口的实现方法
         /// </summary>
+        /// <param name="Assembly">程序集</param>
         /// <param name="Interface">接口代号</param>
         /// <returns></returns>
-        private static Type? GetFunGameImplementType(System.Reflection.Assembly Assembly, InterfaceType Interface)
+        private static Type? GetFunGameImplementType(Assembly Assembly, InterfaceType Interface)
         {
             // 通过类名获取命名空间+类名称
             string ClassName = GetImplementClassName(Interface);
