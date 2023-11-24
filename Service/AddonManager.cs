@@ -3,7 +3,7 @@ using Milimoe.FunGame.Core.Library.Common.Plugin;
 
 namespace Milimoe.FunGame.Core.Service
 {
-    internal class PluginManager
+    internal class AddonManager
     {
         /// <summary>
         /// 从plugins目录加载所有插件
