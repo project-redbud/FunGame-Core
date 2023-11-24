@@ -1,6 +1,6 @@
 ﻿namespace Milimoe.FunGame.Core.Library.SQLScript.Common
 {
-    public class RegVerifyCodes
+    public class RegVerifyCodes : Constant
     {
         public const string TableName = "RegVerifyCodes";
         public const string Column_Username = "Username";
@@ -10,26 +10,26 @@
 
         public static string Insert_RegVerifyCode(string Username, string Email, string RegVerifyCodes)
         {
-            return $"{Constant.Command_Insert} {Constant.Command_Into} {TableName} ({Column_Username}, {Column_Email}, {Column_RegVerifyCode}, {Column_RegTime}) {Constant.Command_Values} ('{Username}', '{Email}', '{RegVerifyCodes}', '{DateTime.Now}')";
+            return $"{Command_Insert} {Command_Into} {TableName} ({Column_Username}, {Column_Email}, {Column_RegVerifyCode}, {Column_RegTime}) {Command_Values} ('{Username}', '{Email}', '{RegVerifyCodes}', '{DateTime.Now}')";
         }
 
         public static string Select_RegVerifyCode(string Username, string Email, string RegVerifyCode)
         {
-            return $"{Constant.Command_Select} {Constant.Command_All} {Constant.Command_From} {TableName} {Constant.Command_Where} {Column_Username} = '{Username}' and {Column_Email} = '{Email}' and {Column_RegVerifyCode} = '{RegVerifyCode}'";
+            return $"{Command_Select} {Command_All} {Command_From} {TableName} {Command_Where} {Column_Username} = '{Username}' and {Column_Email} = '{Email}' and {Column_RegVerifyCode} = '{RegVerifyCode}'";
         }
 
         public static string Select_HasSentRegVerifyCode(string Username, string Email)
         {
-            return $"{Constant.Command_Select} {Constant.Command_All} {Constant.Command_From} {TableName} {Constant.Command_Where} {Column_Username} = '{Username}' and {Column_Email} = '{Email}'";
+            return $"{Command_Select} {Command_All} {Command_From} {TableName} {Command_Where} {Column_Username} = '{Username}' and {Column_Email} = '{Email}'";
         }
 
         public static string Delete_RegVerifyCode(string Username, string Email)
         {
-            return $"{Constant.Command_Delete} {Constant.Command_From} {TableName} {Constant.Command_Where} {Column_Username} = '{Username}' and {Column_Email} = '{Email}'";
+            return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_Username} = '{Username}' and {Column_Email} = '{Email}'";
         }
     }
 
-    public class ForgetVerifyCodes
+    public class ForgetVerifyCodes : Constant
     {
         public const string TableName = "ForgetVerifyCodes";
         public const string Column_Username = "Username";
@@ -39,22 +39,22 @@
 
         public static string Insert_ForgetVerifyCode(string Username, string Email, string ForgetVerifyCodes)
         {
-            return $"{Constant.Command_Insert} {Constant.Command_Into} {TableName} ({Column_Username}, {Column_Email}, {Column_ForgetVerifyCode}, {Column_SendTime}) {Constant.Command_Values} ('{Username}', '{Email}', '{ForgetVerifyCodes}', '{DateTime.Now}')";
+            return $"{Command_Insert} {Command_Into} {TableName} ({Column_Username}, {Column_Email}, {Column_ForgetVerifyCode}, {Column_SendTime}) {Command_Values} ('{Username}', '{Email}', '{ForgetVerifyCodes}', '{DateTime.Now}')";
         }
 
         public static string Select_ForgetVerifyCode(string Username, string Email, string ForgetVerifyCode)
         {
-            return $"{Constant.Command_Select} {Constant.Command_All} {Constant.Command_From} {TableName} {Constant.Command_Where} {Column_Username} = '{Username}' and {Column_Email} = '{Email}' and {Column_ForgetVerifyCode} = '{ForgetVerifyCode}'";
+            return $"{Command_Select} {Command_All} {Command_From} {TableName} {Command_Where} {Column_Username} = '{Username}' and {Column_Email} = '{Email}' and {Column_ForgetVerifyCode} = '{ForgetVerifyCode}'";
         }
 
         public static string Select_HasSentForgetVerifyCode(string Username, string Email)
         {
-            return $"{Constant.Command_Select} {Constant.Command_All} {Constant.Command_From} {TableName} {Constant.Command_Where} {Column_Username} = '{Username}' and {Column_Email} = '{Email}'";
+            return $"{Command_Select} {Command_All} {Command_From} {TableName} {Command_Where} {Column_Username} = '{Username}' and {Column_Email} = '{Email}'";
         }
 
         public static string Delete_ForgetVerifyCode(string Username, string Email)
         {
-            return $"{Constant.Command_Delete} {Constant.Command_From} {TableName} {Constant.Command_Where} {Column_Username} = '{Username}' and {Column_Email} = '{Email}'";
+            return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_Username} = '{Username}' and {Column_Email} = '{Email}'";
         }
     }
 }

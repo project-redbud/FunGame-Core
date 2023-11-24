@@ -21,13 +21,15 @@
         public const string Command_LeftJoin = "Left Join";
         public const string Command_InnerJoin = "Inner Join";
         public const string Command_RightJoin = "Right Join";
+        public const string Command_CrossJoin = "Cross Join";
         public const string Command_On = "On";
+        public const string Command_In = "In";
     }
 }
 
 namespace Milimoe.FunGame.Core.Library.SQLScript.Common
 {
-    public class ServerLoginLogs
+    public class ServerLoginLogs : Constant
     {
         public const string TableName = "ServerLoginLogs";
         public const string Column_ServerName = "ServerName";
@@ -36,7 +38,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Common
 
         public static string Insert_ServerLoginLogs(string ServerName, string ServerKey)
         {
-            return $"{Constant.Command_Insert} {Constant.Command_Into} {TableName} ({Column_ServerName}, {Column_ServerKey}, {Column_LoginTime}) {Constant.Command_Values} ('{ServerName}', '{ServerKey}', '{DateTime.Now}')";
+            return $"{Command_Insert} {Command_Into} {TableName} ({Column_ServerName}, {Column_ServerKey}, {Column_LoginTime}) {Command_Values} ('{ServerName}', '{ServerKey}', '{DateTime.Now}')";
         }
     }
 }

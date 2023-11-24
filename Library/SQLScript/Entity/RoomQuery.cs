@@ -1,6 +1,6 @@
 ﻿namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
 {
-    public class RoomQuery
+    public class RoomQuery : Constant
     {
         public const string TableName = "Rooms";
         public const string Column_ID = "Id";
@@ -12,8 +12,8 @@
         public const string Column_RoomState = "RoomState";
         public const string Column_HasPass = "HasPass";
         public const string Column_Password = "Password";
-        public const string Select_Rooms = $"{Constant.Command_Select} {TableName}.{Constant.Command_All}, {UserQuery.TableName}.{UserQuery.Column_Username} {Constant.Command_As} {Column_RoomMasterName} " +
-            $"{Constant.Command_From} {TableName} {Constant.Command_LeftJoin} {UserQuery.TableName} {Constant.Command_On} {UserQuery.TableName}.{UserQuery.Column_UID} = {TableName}.{Column_RoomMaster}";
+        public const string Select_Rooms = $"{Command_Select} {TableName}.{Command_All}, {UserQuery.TableName}.{UserQuery.Column_Username} {Command_As} {Column_RoomMasterName} " +
+            $"{Command_From} {TableName} {Command_LeftJoin} {UserQuery.TableName} {Command_On} {UserQuery.TableName}.{UserQuery.Column_UID} = {TableName}.{Column_RoomMaster}";
 
         public static string Insert_CreateRoom(string RoomID, long RoomMaster, Library.Constant.RoomType RoomType, string Password)
         {
@@ -24,23 +24,33 @@
             {
                 HasPass = true;
             }
-            return $"{Constant.Command_Insert} {Constant.Command_Into} {TableName} ({Column_RoomID}, {Column_CreateTime}, {Column_RoomMaster}, {Column_RoomType}, {Column_RoomState}, {Column_HasPass}, {Column_Password})" +
-                $" {Constant.Command_Values} ('{RoomID}', '{NowTime}', {RoomMaster}, {(int)RoomType}, {(int)RoomState}, {(HasPass ? 1 : 0)}, '{Password}')";
+            return $"{Command_Insert} {Command_Into} {TableName} ({Column_RoomID}, {Column_CreateTime}, {Column_RoomMaster}, {Column_RoomType}, {Column_RoomState}, {Column_HasPass}, {Column_Password})" +
+                $" {Command_Values} ('{RoomID}', '{NowTime}', {RoomMaster}, {(int)RoomType}, {(int)RoomState}, {(HasPass ? 1 : 0)}, '{Password}')";
         }
 
+        public static string Delete_Rooms(params string[] roomids)
+        {
+            if (roomids.Length == 0)
+            {
+                string where = string.Join("', '", roomids);
+                return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_RoomID} {Command_In} ('{where}')";
+            }
+            return $"{Command_Delete} {Command_From} {TableName}";
+        }
+        
         public static string Delete_QuitRoom(string RoomID, long RoomMaster)
         {
-            return $"{Constant.Command_Delete} {Constant.Command_From} {TableName} {Constant.Command_Where} {Column_RoomID} = '{RoomID}' {Constant.Command_And} {Column_RoomMaster} = {RoomMaster}";
+            return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_RoomID} = '{RoomID}' {Command_And} {Column_RoomMaster} = {RoomMaster}";
         }
 
         public static string Update_QuitRoom(string RoomID, long OldRoomMaster, long NewRoomMaster)
         {
-            return $"{Constant.Command_Update} {TableName} {Constant.Command_Set} {Column_RoomMaster} = {NewRoomMaster} {Constant.Command_Where} {Column_RoomID} = '{RoomID}' {Constant.Command_And} {Column_RoomMaster} = {OldRoomMaster}";
+            return $"{Command_Update} {TableName} {Command_Set} {Column_RoomMaster} = {NewRoomMaster} {Command_Where} {Column_RoomID} = '{RoomID}' {Command_And} {Column_RoomMaster} = {OldRoomMaster}";
         }
 
         public static string Select_IsExistRoom(string RoomID)
         {
-            return $"{Constant.Command_Select} {Constant.Command_All} {Constant.Command_From} {TableName} {Constant.Command_Where} {Column_RoomID} = '{RoomID}'";
+            return $"{Command_Select} {Command_All} {Command_From} {TableName} {Command_Where} {Column_RoomID} = '{RoomID}'";
         }
     }
 }
