@@ -19,5 +19,8 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public DataSet ExecuteDataSet();
         public DataRow? ExecuteDataRow();
         public void Close();
+        public void NewTransaction();
+        public void Commit();
+        public void Rollback();
     }
 }

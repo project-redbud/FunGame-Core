@@ -72,5 +72,20 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// 关闭连接
         /// </summary>
         public abstract void Close();
+
+        /// <summary>
+        /// 创建一个SQL事务
+        /// </summary>
+        public abstract void NewTransaction();
+
+        /// <summary>
+        /// 提交事务
+        /// </summary>
+        public abstract void Commit();
+
+        /// <summary>
+        /// 回滚事务
+        /// </summary>
+        public abstract void Rollback();
     }
 }
