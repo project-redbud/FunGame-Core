@@ -27,14 +27,17 @@ namespace Milimoe.FunGame.Core.Library.Constant
         IServer
     }
 
+    /// <summary>
+    /// 配合 <see cref="RoomSet"/> 使用
+    /// </summary>
     public enum RoomType
     {
         All,
         Mix,
         Team,
-        AllHasPass,
-        MixHasPass,
-        TeamHasPass
+        Solo,
+        FastAuto,
+        Custom
     }
 
     public enum MessageButtonType

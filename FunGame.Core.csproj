@@ -28,4 +28,8 @@
     <NoWarn>1701;1702;CS1591;CS1587</NoWarn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Library\Common\GameMode\" />
+  </ItemGroup>
+
 </Project>

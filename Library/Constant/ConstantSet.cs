@@ -1,4 +1,7 @@
-﻿/**
+﻿
+using Milimoe.FunGame.Core.Library.Common.Addon;
+
+/**
  * 此文件用于保存字符串常量（String Set）
  */
 namespace Milimoe.FunGame.Core.Library.Constant
@@ -185,6 +188,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string FUNGAME_IMPL = "FunGame.Implement";
         public static string EXEFolderPath { get; } = Environment.CurrentDirectory.ToString() + "\\"; // 程序目录
         public static string PluginFolderPath { get; } = Environment.CurrentDirectory.ToString() + "\\plugins\\"; // 插件目录
+        public static string GameModeFolderPath { get; } = Environment.CurrentDirectory.ToString() + "\\gamemodes\\"; // 游戏模组目录
+        public static string GameMapFolderPath { get; } = Environment.CurrentDirectory.ToString() + "\\gamemaps\\"; // 游戏地图目录
     }
 
     public class FormSet
@@ -198,14 +203,14 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string UserCenter = "UserCenter";
     }
 
-    public class GameMode
+    public class RoomSet
     {
-        public const string All = "所有模式";
-        public const string AllHasPass = "带密码的所有模式";
+        public const string All = "全部";
         public const string Mix = "混战模式";
-        public const string MixHasPass = "带密码的混战模式";
         public const string Team = "团队模式";
-        public const string TeamHasPass = "带密码的团队模式";
+        public const string Solo = "对弈模式";
+        public const string FastAuto = "快速自走模式";
+        public const string Custom = "自定义模式";
 
         /// <summary>
         /// 获取Type的等效字符串
@@ -218,9 +223,9 @@ namespace Milimoe.FunGame.Core.Library.Constant
             {
                 RoomType.Mix => Mix,
                 RoomType.Team => Team,
-                RoomType.MixHasPass => MixHasPass,
-                RoomType.TeamHasPass => TeamHasPass,
-                RoomType.AllHasPass => AllHasPass,
+                RoomType.Solo => Solo,
+                RoomType.FastAuto => FastAuto,
+                RoomType.Custom => Custom,
                 _ => All
             };
         }
@@ -236,10 +241,25 @@ namespace Milimoe.FunGame.Core.Library.Constant
             {
                 Mix => RoomType.Mix,
                 Team => RoomType.Team,
-                MixHasPass => RoomType.MixHasPass,
-                TeamHasPass => RoomType.TeamHasPass,
-                AllHasPass => RoomType.AllHasPass,
+                FastAuto => RoomType.FastAuto,
+                Custom => RoomType.Custom,
                 _ => RoomType.All
+            };
+        }
+
+        /// <summary>
+        /// 获取默认的游戏模组
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static GameMode GetGameMode(RoomType type)
+        {
+            return type switch
+            {
+                RoomType.Mix => General.DefaultOfficialModeMix,
+                RoomType.Team => General.DefaultOfficialModeTeam,
+                RoomType.FastAuto => General.DefaultOfficialModeFastAuto,
+                _ => General.DefaultOfficialModeSolo
             };
         }
     }

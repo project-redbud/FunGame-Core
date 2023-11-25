@@ -1,12 +1,12 @@
 ﻿using Milimoe.FunGame.Core.Library.Common.Event;
-using Milimoe.FunGame.Core.Library.Common.Plugin;
+using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Api.Utility
 {
     public class PluginLoader
     {
-        public Dictionary<string, BasePlugin> Plugins { get; } = new();
+        public Dictionary<string, Plugin> Plugins { get; } = [];
 
         private PluginLoader()
         {

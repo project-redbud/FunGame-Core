@@ -19,14 +19,14 @@
         /// </summary>
         public static bool FunGame_DebugMode { get; set; } = false;
 
-        private const string FunGame_Core = "FunGame Core";
-        private const string FunGame_Core_Api = "FunGame Core Api";
-        private const string FunGame_Console = "FunGame Console";
-        private const string FunGame_Desktop = "FunGame Desktop";
-        private const string FunGame_Server = "FunGame Server Console";
+        public const string FunGame_Core = "FunGame Core";
+        public const string FunGame_Core_Api = "FunGame Core Api";
+        public const string FunGame_Console = "FunGame Console";
+        public const string FunGame_Desktop = "FunGame Desktop";
+        public const string FunGame_Server = "FunGame Server Console";
 
-        private const string FunGame_Version = "v1.0";
-        private const string FunGame_VersionPatch = "";
+        public const string FunGame_Version = "v1.0";
+        public const string FunGame_VersionPatch = "";
 
         public static string GetInfo(FunGame FunGameType)
         {
@@ -41,11 +41,5 @@
             };
             return type + " [ 版本: " + FunGame_Version + FunGame_VersionPatch + " ]\n" + (type.Equals(FunGame_Desktop) ? @"©" : "(C)") + "2023 Milimoe. 保留所有权利\n";
         }
-
-        /**
-         * 更新日志
-         * 
-         * 
-         */
     }
 }

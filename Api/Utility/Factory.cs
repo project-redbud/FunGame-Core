@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using Milimoe.FunGame.Core.Api.Factory;
 using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.SQLScript.Entity;
 
@@ -69,12 +70,13 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="CreateTime">创建时间</param>
         /// <param name="RoomMaster">房主</param>
         /// <param name="RoomType">房间类型</param>
+        /// <param name="GameMode">游戏模组</param>
         /// <param name="RoomState">房间状态</param>
         /// <param name="Password">房间密码</param>
         /// <returns></returns>
-        public static Room GetRoom(long Id = 0, string Roomid = "-1", DateTime? CreateTime = null, User? RoomMaster = null, RoomType RoomType = RoomType.All, RoomState RoomState = RoomState.Created, string Password = "")
+        public static Room GetRoom(long Id = 0, string Roomid = "-1", DateTime? CreateTime = null, User? RoomMaster = null, RoomType RoomType = RoomType.All, GameMode? GameMode = null, RoomState RoomState = RoomState.Created, string Password = "")
         {
-            return RoomFactory.Create(Id, Roomid, CreateTime, RoomMaster, RoomType, RoomState, Password);
+            return RoomFactory.Create(Id, Roomid, CreateTime, RoomMaster, RoomType, GameMode, RoomState, Password);
         }
 
         /// <summary>
@@ -93,9 +95,10 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 DateTime CreateTime = (DateTime)DrRoom[RoomQuery.Column_CreateTime];
                 User RoomMaster = User;
                 RoomType RoomType = (RoomType)Convert.ToInt32(DrRoom[RoomQuery.Column_RoomType]);
+                GameMode GameMode = RoomSet.GetGameMode(RoomType);
                 RoomState RoomState = (RoomState)Convert.ToInt32(DrRoom[RoomQuery.Column_RoomState]);
                 string Password = (string)DrRoom[RoomQuery.Column_Password];
-                room = GetRoom(Id, Roomid, CreateTime, RoomMaster, RoomType, RoomState, Password);
+                room = GetRoom(Id, Roomid, CreateTime, RoomMaster, RoomType, GameMode, RoomState, Password);
             }
             return room;
         }
@@ -129,9 +132,10 @@ namespace Milimoe.FunGame.Core.Api.Utility
                         }
                     }
                     RoomType RoomType = (RoomType)Convert.ToInt32(DrRoom[RoomQuery.Column_RoomType]);
+                    GameMode GameMode = RoomSet.GetGameMode(RoomType);
                     RoomState RoomState = (RoomState)Convert.ToInt32(DrRoom[RoomQuery.Column_RoomState]);
                     string Password = (string)DrRoom[RoomQuery.Column_Password];
-                    list.Add(GetRoom(Id, Roomid, CreateTime, RoomMaster, RoomType, RoomState, Password));
+                    list.Add(GetRoom(Id, Roomid, CreateTime, RoomMaster, RoomType, GameMode, RoomState, Password));
                 }
             }
             return list;
