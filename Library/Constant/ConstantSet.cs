@@ -204,8 +204,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string FUNGAME_IMPL = "FunGame.Implement";
         public static string EXEFolderPath { get; } = Environment.CurrentDirectory.ToString() + "\\"; // 程序目录
         public static string PluginFolderPath { get; } = Environment.CurrentDirectory.ToString() + "\\plugins\\"; // 插件目录
-        public static string GameModeFolderPath { get; } = Environment.CurrentDirectory.ToString() + "\\gamemodes\\"; // 游戏模组目录
-        public static string GameMapFolderPath { get; } = Environment.CurrentDirectory.ToString() + "\\gamemaps\\"; // 游戏地图目录
+        public static string GameModeFolderPath { get; } = Environment.CurrentDirectory.ToString() + "\\gamemods\\"; // 游戏模组目录
+        public static string GameMapFolderPath { get; } = Environment.CurrentDirectory.ToString() + "\\maps\\"; // 游戏地图目录
     }
 
     public class FormSet
