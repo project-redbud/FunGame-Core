@@ -563,7 +563,7 @@
         </member>
         <member name="T:Milimoe.FunGame.Core.Api.Utility.Implement">
             <summary>
-            See: <see cref="T:Milimoe.FunGame.Core.Library.Constant.InterfaceType"/>, <see cref="T:Milimoe.FunGame.Core.Library.Constant.InterfaceSet"/>, <see cref="T:Milimoe.FunGame.Core.Library.Constant.InterfaceMethod"/>
+            See: <see cref="T:Milimoe.FunGame.Core.Library.Constant.InterfaceMethod"/>, <see cref="T:Milimoe.FunGame.Core.Library.Constant.InterfaceType"/>, <see cref="T:Milimoe.FunGame.Core.Library.Constant.InterfaceSet"/>
             </summary>
         </member>
         <member name="M:Milimoe.FunGame.Core.Api.Utility.Implement.GetFunGameImplementType(System.Reflection.Assembly,Milimoe.FunGame.Core.Library.Constant.InterfaceType)">
@@ -583,17 +583,18 @@
         </member>
         <member name="M:Milimoe.FunGame.Core.Api.Utility.Implement.GetImplementMethodName(Milimoe.FunGame.Core.Library.Constant.InterfaceMethod)">
             <summary>
-            获取接口方法名
+            获取接口方法名（支持属性）
             </summary>
             <param name="Method">方法</param>
             <returns></returns>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Api.Utility.Implement.GetFunGameImplValue(Milimoe.FunGame.Core.Library.Constant.InterfaceType,Milimoe.FunGame.Core.Library.Constant.InterfaceMethod)">
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.Implement.GetFunGameImplValue(Milimoe.FunGame.Core.Library.Constant.InterfaceType,Milimoe.FunGame.Core.Library.Constant.InterfaceMethod,System.Boolean)">
             <summary>
-            公开方法：获取FunGame.Implement.DLL中指定方法的返回值
+            公开方法：获取FunGame.Implement.DLL中指定方法（属性）的返回值
             </summary>
             <param name="Interface">接口代号</param>
-            <param name="Method">方法代号</param>
+            <param name="Method">方法代号（支持属性）</param>
+            <param name="IsMethod">是否是方法（如是属性请传入false）</param>
             <returns></returns>
         </member>
         <member name="T:Milimoe.FunGame.Core.Api.Utility.JsonTool">
@@ -1117,6 +1118,11 @@
             局内事件的接口，与 <see cref="T:Milimoe.FunGame.Core.Library.Common.Addon.GameMode"/> 配套使用
             </summary>
         </member>
+        <member name="T:Milimoe.FunGame.Core.Interface.IClient">
+            <summary>
+            这是最基本的接口，要求客户端实现
+            </summary>
+        </member>
         <member name="T:Milimoe.FunGame.Core.Interface.IGameModeSupported">
             <summary>
             服务端和客户端都应该实现这个接口，用于初始化支持的Mod列表
@@ -1560,6 +1566,11 @@
             <returns>类型的参数</returns>
             <exception cref="T:Milimoe.FunGame.IndexOutOfArrayLengthException">索引超过数组上限</exception>
         </member>
+        <member name="T:Milimoe.FunGame.Core.Library.Constant.InterfaceSet">
+            <summary>
+            配合 <see cref="T:Milimoe.FunGame.Core.Library.Constant.InterfaceMethod"/> <see cref="T:Milimoe.FunGame.Core.Library.Constant.InterfaceType"/> 使用，也别忘了修改 <see cref="T:Milimoe.FunGame.Core.Api.Utility.Implement"/>
+            </summary>
+        </member>
         <member name="T:Milimoe.FunGame.Core.Library.Constant.SocketSet">
             <summary>
             需要同步更新 <see cref="T:Milimoe.FunGame.Core.Library.Constant.SocketMessageType"/>
@@ -1692,6 +1703,16 @@
         <member name="F:Milimoe.FunGame.Core.Library.Constant.General.StreamByteSize">
             <summary>
             默认Stream传输大小
+            </summary>
+        </member>
+        <member name="T:Milimoe.FunGame.Core.Library.Constant.InterfaceMethod">
+            <summary>
+            配合 <see cref="T:Milimoe.FunGame.Core.Library.Constant.InterfaceType"/> <see cref="T:Milimoe.FunGame.Core.Library.Constant.InterfaceSet"/> 使用，也别忘了修改 <see cref="T:Milimoe.FunGame.Core.Api.Utility.Implement"/>
+            </summary>
+        </member>
+        <member name="T:Milimoe.FunGame.Core.Library.Constant.InterfaceType">
+            <summary>
+            配合 <see cref="T:Milimoe.FunGame.Core.Library.Constant.InterfaceMethod"/> <see cref="T:Milimoe.FunGame.Core.Library.Constant.InterfaceSet"/> 使用，也别忘了修改 <see cref="T:Milimoe.FunGame.Core.Api.Utility.Implement"/>
             </summary>
         </member>
         <member name="T:Milimoe.FunGame.Core.Library.Constant.RoomType">

@@ -4,7 +4,7 @@ using Milimoe.FunGame.Core.Library.Constant;
 namespace Milimoe.FunGame.Core.Api.Utility
 {
     /// <summary>
-    /// See: <see cref="InterfaceType"/>, <see cref="InterfaceSet"/>, <see cref="InterfaceMethod"/>
+    /// See: <see cref="InterfaceMethod"/>, <see cref="InterfaceType"/>, <see cref="InterfaceSet"/>
     /// </summary>
     public class Implement
     {
@@ -43,12 +43,13 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 InterfaceType.IClient => InterfaceSet.Type.IClient,
                 InterfaceType.IServer => InterfaceSet.Type.IServer,
+                InterfaceType.IGameModeSupported => InterfaceSet.Type.IGameModeSupported,
                 _ => ""
             };
         }
 
         /// <summary>
-        /// 获取接口方法名
+        /// 获取接口方法名（支持属性）
         /// </summary>
         /// <param name="Method">方法</param>
         /// <returns></returns>
@@ -59,34 +60,54 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 InterfaceMethod.RemoteServerIP => InterfaceSet.Method.RemoteServerIP,
                 InterfaceMethod.DBConnection => InterfaceSet.Method.DBConnection,
                 InterfaceMethod.GetServerSettings => InterfaceSet.Method.GetServerSettings,
+                InterfaceMethod.GameModeList => InterfaceSet.Method.GameModeList,
+                InterfaceMethod.GameMapList => InterfaceSet.Method.GameMapList,
                 _ => ""
             };
         }
 
         /// <summary>
-        /// 公开方法：获取FunGame.Implement.DLL中指定方法的返回值
+        /// 公开方法：获取FunGame.Implement.DLL中指定方法（属性）的返回值
         /// </summary>
         /// <param name="Interface">接口代号</param>
-        /// <param name="Method">方法代号</param>
+        /// <param name="Method">方法代号（支持属性）</param>
+        /// <param name="IsMethod">是否是方法（如是属性请传入false）</param>
         /// <returns></returns>
-        public static object? GetFunGameImplValue(InterfaceType Interface, InterfaceMethod Method)
+        public static object? GetFunGameImplValue(InterfaceType Interface, InterfaceMethod Method, bool IsMethod = true)
         {
             MethodInfo? MethodInfo;
+            PropertyInfo? PropertyInfo;
 
+            // 反射读取程序集
             Assembly? Assembly = System.Reflection.Assembly.LoadFile(ReflectionSet.EXEFolderPath + ReflectionSet.FUNGAME_IMPL + ".dll");
-            Type? Type = GetFunGameImplementType(Assembly, Interface); // 通过类名获取命名空间+类名称
-            string MethodName = GetImplementMethodName(Method); // 获取方法名
+            // 通过类名获取命名空间+类名称
+            Type? Type = GetFunGameImplementType(Assembly, Interface);
 
-            if (Assembly != null && Type != null) MethodInfo = Type.GetMethod(MethodName); // 从Type中查找方法名
-            else return null;
-
-            object? Instance = Assembly.CreateInstance(Type.Namespace + "." + Type.Name);
-            if (Instance != null && MethodInfo != null)
+            if (Assembly != null && Type != null)
             {
-                object? value = MethodInfo.Invoke(Instance, Array.Empty<object>()); // 实例方法的调用
-                if (value != null)
-                    return value;
-                else return null;
+                // 创建类对象
+                object? Instance = Assembly.CreateInstance(Type.Namespace + "." + Type.Name);
+                // 获取方法/属性名
+                string MethodName = GetImplementMethodName(Method);
+                if (IsMethod)
+                {
+                    // 从Type中查找方法名
+                    MethodInfo = Type.GetMethod(MethodName);
+                    if (Instance != null && MethodInfo != null)
+                    {
+                        object? value = MethodInfo.Invoke(Instance, []);
+                        if (value != null) return value;
+                    }
+                }
+                else
+                {
+                    PropertyInfo = Type.GetProperty(MethodName);
+                    if (Instance != null && PropertyInfo != null)
+                    {
+                        object? value = PropertyInfo.GetValue(Instance);
+                        if (value != null) return value;
+                    }
+                }
             }
 
             return null;

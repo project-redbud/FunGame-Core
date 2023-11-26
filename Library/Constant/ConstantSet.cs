@@ -3,12 +3,16 @@
  */
 namespace Milimoe.FunGame.Core.Library.Constant
 {
+    /// <summary>
+    /// 配合 <see cref="InterfaceMethod"/> <see cref="InterfaceType"/> 使用，也别忘了修改 <see cref="Api.Utility.Implement"/>
+    /// </summary>
     public class InterfaceSet
     {
         public class Type
         {
             public const string IClient = "IClientImpl";
             public const string IServer = "IServerImpl";
+            public const string IGameModeSupported = "IGameModeSupported";
         }
 
         public class Method
@@ -16,6 +20,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
             public const string RemoteServerIP = "RemoteServerIP";
             public const string DBConnection = "DBConnection";
             public const string GetServerSettings = "GetServerSettings";
+            public const string GameModeList = "GameModeList";
+            public const string GameMapList = "GameMapList";
         }
     }
 

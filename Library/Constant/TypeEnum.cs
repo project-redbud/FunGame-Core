@@ -21,10 +21,14 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Dialog
     }
 
+    /// <summary>
+    /// 配合 <see cref="InterfaceMethod"/> <see cref="InterfaceSet"/> 使用，也别忘了修改 <see cref="Api.Utility.Implement"/>
+    /// </summary>
     public enum InterfaceType
     {
         IClient,
-        IServer
+        IServer,
+        IGameModeSupported
     }
 
     /// <summary>

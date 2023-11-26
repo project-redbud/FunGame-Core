@@ -14,7 +14,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
 
         }
 
-        public static GameModeLoader LoadPlugins(params object[] objs)
+        public static GameModeLoader LoadGameModes(params object[] objs)
         {
             GameModeLoader loader = new();
             AddonManager.LoadGameModes(loader.Modes, objs);
