@@ -20,6 +20,18 @@ namespace Milimoe.FunGame.Core.Api.Utility
             return loader;
         }
 
+        public Plugin this[string name]
+        {
+            get
+            {
+                return Plugins[name];
+            }
+            set
+            {
+                Plugins.TryAdd(name, value);
+            }
+        }
+
         public void OnBeforeConnectEvent(object sender, ConnectEventArgs e)
         {
             Parallel.ForEach(Plugins.Values, plugin =>

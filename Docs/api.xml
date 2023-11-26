@@ -1112,9 +1112,9 @@
             窗体继承这些接口便能实现事件，或为插件预留。
             </summary>
         </member>
-        <member name="T:Milimoe.FunGame.Core.Interface.IConnectEvent">
+        <member name="T:Milimoe.FunGame.Core.Interface.IGamingEventHandler">
             <summary>
-            插件需要实现什么事件就继承什么接口
+            局内事件的接口，与 <see cref="T:Milimoe.FunGame.Core.Library.Common.Addon.GameMode"/> 配套使用
             </summary>
         </member>
         <member name="T:Milimoe.FunGame.Core.Library.Common.Addon.ExamplePlugin">
@@ -1587,10 +1587,17 @@
         <member name="F:Milimoe.FunGame.Core.Library.Constant.DataRequestSet.Room_GetRoomSettings">
             Room
         </member>
-        <member name="F:Milimoe.FunGame.Core.Library.Constant.DataRequestSet.Gaming_Connect">
+        <member name="F:Milimoe.FunGame.Core.Library.Constant.DataRequestSet.Gaming">
             Gaming
         </member>
         <member name="M:Milimoe.FunGame.Core.Library.Constant.DataRequestSet.GetTypeString(Milimoe.FunGame.Core.Library.Constant.DataRequestType)">
+            <summary>
+            获取Type的等效字符串
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Library.Constant.GamingSet.GetTypeString(Milimoe.FunGame.Core.Library.Constant.GamingType)">
             <summary>
             获取Type的等效字符串
             </summary>

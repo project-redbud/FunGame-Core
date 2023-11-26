@@ -100,24 +100,31 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Room_GetRoomSettings,
         Room_GetRoomPlayerCount,
         Room_UpdateRoomMaster,
-        Gaming_Connect,
-        Gaming_Disconnect,
-        Gaming_Reconnect,
-        Gaming_Ban,
-        Gaming_Pick,
-        Gaming_Random,
-        Gaming_Move,
-        Gaming_Attack,
-        Gaming_Skill,
-        Gaming_Item,
-        Gaming_Magic,
-        Gaming_Buy,
-        Gaming_SuperSkill,
-        Gaming_Pause,
-        Gaming_Unpause,
-        Gaming_Surrender,
-        Gaming_UpdateUserInfo,
-        Gaming_Punish
+        Gaming,
+    }
+
+    public enum GamingType
+    {
+        None,
+        Connect,
+        Disconnect,
+        Reconnect,
+        BanCharacter,
+        PickCharacter,
+        Random,
+        LevelUp,
+        Move,
+        Attack,
+        Skill,
+        Item,
+        Magic,
+        Buy,
+        SuperSkill,
+        Pause,
+        Unpause,
+        Surrender,
+        UpdateInfo,
+        Punish
     }
 
     public enum SocketRuntimeType

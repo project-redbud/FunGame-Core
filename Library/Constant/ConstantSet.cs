@@ -112,23 +112,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /**
          * Gaming
          */
-        public const string Gaming_Connect = "Gaming::Connect";
-        public const string Gaming_Disconnect = "Gaming::Disconnect";
-        public const string Gaming_Reconnect = "Gaming::Reconnect";
-        public const string Gaming_Ban = "Gaming::Ban";
-        public const string Gaming_Pick = "Gaming::Pick";
-        public const string Gaming_Random = "Gaming::Random";
-        public const string Gaming_Move = "Gaming::Move";
-        public const string Gaming_Attack = "Gaming::Attack";
-        public const string Gaming_Skill = "Gaming::Skill";
-        public const string Gaming_Item = "Gaming::Item";
-        public const string Gaming_Magic = "Gaming::Magic";
-        public const string Gaming_Buy = "Gaming::Buy";
-        public const string Gaming_SuperSkill = "Gaming::SuperSkill";
-        public const string Gaming_Pause = "Gaming::Pause";
-        public const string Gaming_Unpause = "Gaming::Unpause";
-        public const string Gaming_Surrender = "Gaming::Surrender";
-        public const string Gaming_UpdateUserInfo = "Gaming::UpdateUserInfo";
+        public const string Gaming = "Gaming";
 
         /// <summary>
         /// 获取Type的等效字符串
@@ -157,27 +141,62 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 DataRequestType.Room_GetRoomSettings => Room_GetRoomSettings,
                 DataRequestType.Room_GetRoomPlayerCount => Room_GetRoomPlayerCount,
                 DataRequestType.Room_UpdateRoomMaster => Room_UpdateRoomMaster,
-                DataRequestType.Gaming_Connect => Gaming_Connect,
-                DataRequestType.Gaming_Disconnect => Gaming_Disconnect,
-                DataRequestType.Gaming_Reconnect => Gaming_Reconnect,
-                DataRequestType.Gaming_Ban => Gaming_Ban,
-                DataRequestType.Gaming_Pick => Gaming_Pick,
-                DataRequestType.Gaming_Random => Gaming_Random,
-                DataRequestType.Gaming_Move => Gaming_Move,
-                DataRequestType.Gaming_Attack => Gaming_Attack,
-                DataRequestType.Gaming_Skill => Gaming_Skill,
-                DataRequestType.Gaming_Item => Gaming_Item,
-                DataRequestType.Gaming_Magic => Gaming_Magic,
-                DataRequestType.Gaming_Buy => Gaming_Buy,
-                DataRequestType.Gaming_SuperSkill => Gaming_SuperSkill,
-                DataRequestType.Gaming_Pause => Gaming_Pause,
-                DataRequestType.Gaming_Unpause => Gaming_Unpause,
-                DataRequestType.Gaming_Surrender => Gaming_Surrender,
-                DataRequestType.Gaming_UpdateUserInfo => Gaming_UpdateUserInfo,
+                DataRequestType.Gaming => Gaming,
                 _ => UnKnown
             };
         }
+    }
 
+    public class GamingSet
+    {
+        public const string None = "Gaming::None";
+        public const string Connect = "Gaming::Connect";
+        public const string Disconnect = "Gaming::Disconnect";
+        public const string Reconnect = "Gaming::Reconnect";
+        public const string BanCharacter = "Gaming::BanCharacter";
+        public const string PickCharacter = "Gaming::PickCharacter";
+        public const string Random = "Gaming::Random";
+        public const string Move = "Gaming::Move";
+        public const string Attack = "Gaming::Attack";
+        public const string Skill = "Gaming::Skill";
+        public const string Item = "Gaming::Item";
+        public const string Magic = "Gaming::Magic";
+        public const string Buy = "Gaming::Buy";
+        public const string SuperSkill = "Gaming::SuperSkill";
+        public const string Pause = "Gaming::Pause";
+        public const string Unpause = "Gaming::Unpause";
+        public const string Surrender = "Gaming::Surrender";
+        public const string UpdateInfo = "Gaming::UpdateInfo";
+
+        /// <summary>
+        /// 获取Type的等效字符串
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static string GetTypeString(GamingType type)
+        {
+            return type switch
+            {
+                GamingType.Connect => Connect,
+                GamingType.Disconnect => Disconnect,
+                GamingType.Reconnect => Reconnect,
+                GamingType.BanCharacter => BanCharacter,
+                GamingType.PickCharacter => PickCharacter,
+                GamingType.Random => Random,
+                GamingType.Move => Move,
+                GamingType.Attack => Attack,
+                GamingType.Skill => Skill,
+                GamingType.Item => Item,
+                GamingType.Magic => Magic,
+                GamingType.Buy => Buy,
+                GamingType.SuperSkill => SuperSkill,
+                GamingType.Pause => Pause,
+                GamingType.Unpause => Unpause,
+                GamingType.Surrender => Surrender,
+                GamingType.UpdateInfo => UpdateInfo,
+                _ => None
+            };
+        }
     }
 
     public class ReflectionSet
