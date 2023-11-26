@@ -1117,6 +1117,11 @@
             局内事件的接口，与 <see cref="T:Milimoe.FunGame.Core.Library.Common.Addon.GameMode"/> 配套使用
             </summary>
         </member>
+        <member name="T:Milimoe.FunGame.Core.Interface.IGameModeSupported">
+            <summary>
+            服务端和客户端都应该实现这个接口，用于初始化支持的Mod列表
+            </summary>
+        </member>
         <member name="T:Milimoe.FunGame.Core.Library.Common.Addon.ExamplePlugin">
             <summary>
             必须继承基类：<see cref="T:Milimoe.FunGame.Core.Library.Common.Addon.Plugin"/><para/>
