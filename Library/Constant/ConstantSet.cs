@@ -1,7 +1,4 @@
-﻿
-using Milimoe.FunGame.Core.Library.Common.Addon;
-
-/**
+﻿/**
  * 此文件用于保存字符串常量（String Set）
  */
 namespace Milimoe.FunGame.Core.Library.Constant
@@ -244,22 +241,6 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 FastAuto => RoomType.FastAuto,
                 Custom => RoomType.Custom,
                 _ => RoomType.All
-            };
-        }
-
-        /// <summary>
-        /// 获取默认的游戏模组
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static GameMode GetGameMode(RoomType type)
-        {
-            return type switch
-            {
-                RoomType.Mix => General.DefaultOfficialModeMix,
-                RoomType.Team => General.DefaultOfficialModeTeam,
-                RoomType.FastAuto => General.DefaultOfficialModeFastAuto,
-                _ => General.DefaultOfficialModeSolo
             };
         }
     }

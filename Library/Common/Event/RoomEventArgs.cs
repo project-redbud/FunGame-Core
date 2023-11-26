@@ -1,6 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Library.Common.Event
@@ -12,8 +11,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Event
         public long RoomMaster { get; set; } = 0;
         public string RoomTypeString { get; set; } = RoomSet.All;
         public RoomType RoomType { get; set; } = RoomType.All;
-        public GameMode GameMode { get; set; }
-        public GameMap GameMap => GameMode.Map;
+        public string GameMode { get; set; } = "";
+        public string GameMap { get; set; } = "";
         public RoomState RoomState { get; set; } = RoomState.Created;
         public bool HasPassword => Password.Trim() != "";
         public string Password { get; set; } = "";
@@ -29,7 +28,6 @@ namespace Milimoe.FunGame.Core.Library.Common.Event
                 RoomSet.Custom => RoomType.Custom,
                 _ => RoomType.All
             };
-            GameMode = RoomSet.GetGameMode(RoomType);
             Password = password;
             Room = Factory.GetRoom(RoomType: RoomType, Password: Password);
         }
@@ -41,6 +39,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Event
             RoomMaster = room.RoomMaster != null ? room.RoomMaster.Id : 0;
             RoomType = room.RoomType;
             GameMode = room.GameMode;
+            GameMap = room.GameMap;
             RoomTypeString = room.RoomType switch
             {
                 RoomType.Mix => RoomSet.Mix,

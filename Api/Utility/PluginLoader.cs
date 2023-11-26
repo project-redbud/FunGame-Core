@@ -1,5 +1,5 @@
-﻿using Milimoe.FunGame.Core.Library.Common.Event;
-using Milimoe.FunGame.Core.Library.Common.Addon;
+﻿using Milimoe.FunGame.Core.Library.Common.Addon;
+using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Api.Utility

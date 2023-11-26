@@ -67,7 +67,7 @@ namespace Milimoe.FunGame.Core.Service
         }
 
         /// <summary>
-        /// 从gamemaps目录加载所有模组
+        /// 从gamemaps目录加载所有地图
         /// </summary>
         /// <param name="gamemaps"></param>
         /// <param name="objs"></param>

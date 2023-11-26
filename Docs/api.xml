@@ -235,7 +235,7 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Api.Utility.Factory.GetRoom(System.Int64,System.String,System.Nullable{System.DateTime},Milimoe.FunGame.Core.Entity.User,Milimoe.FunGame.Core.Library.Constant.RoomType,Milimoe.FunGame.Core.Library.Common.Addon.GameMode,Milimoe.FunGame.Core.Library.Constant.RoomState,System.String)">
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.Factory.GetRoom(System.Int64,System.String,System.Nullable{System.DateTime},Milimoe.FunGame.Core.Entity.User,Milimoe.FunGame.Core.Library.Constant.RoomType,System.String,System.String,Milimoe.FunGame.Core.Library.Constant.RoomState,System.String)">
             <summary>
             获取房间实例
             </summary>
@@ -245,6 +245,7 @@
             <param name="RoomMaster">房主</param>
             <param name="RoomType">房间类型</param>
             <param name="GameMode">游戏模组</param>
+            <param name="GameMap"></param>
             <param name="RoomState">房间状态</param>
             <param name="Password">房间密码</param>
             <returns></returns>
@@ -1610,13 +1611,6 @@
             <param name="typestring"></param>
             <returns></returns>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Library.Constant.RoomSet.GetGameMode(Milimoe.FunGame.Core.Library.Constant.RoomType)">
-            <summary>
-            获取默认的游戏模组
-            </summary>
-            <param name="type"></param>
-            <returns></returns>
-        </member>
         <member name="P:Milimoe.FunGame.Core.Library.Constant.FunGameInfo.FunGame_DebugMode">
             <summary>
             添加-debug启动项将开启DebugMode（仅适用于Desktop或Console）
@@ -1656,31 +1650,6 @@
         <member name="P:Milimoe.FunGame.Core.Library.Constant.General.DefaultTime">
             <summary>
             默认的时间值（1970年8月1日8点0分0秒）
-            </summary>
-        </member>
-        <member name="P:Milimoe.FunGame.Core.Library.Constant.General.DefaultOfficialModeMix">
-            <summary>
-            默认的混战模式模组
-            </summary>
-        </member>
-        <member name="P:Milimoe.FunGame.Core.Library.Constant.General.DefaultOfficialModeTeam">
-            <summary>
-            默认的团队模式模组
-            </summary>
-        </member>
-        <member name="P:Milimoe.FunGame.Core.Library.Constant.General.DefaultOfficialModeSolo">
-            <summary>
-            默认的对弈模式模组
-            </summary>
-        </member>
-        <member name="P:Milimoe.FunGame.Core.Library.Constant.General.DefaultOfficialModeFastAuto">
-            <summary>
-            默认的快速自走模式模组
-            </summary>
-        </member>
-        <member name="P:Milimoe.FunGame.Core.Library.Constant.General.DefaultOfficialMap">
-            <summary>
-            默认的游戏地图
             </summary>
         </member>
         <member name="F:Milimoe.FunGame.Core.Library.Constant.General.MaxRetryTimes">
@@ -1849,7 +1818,7 @@
         </member>
         <member name="M:Milimoe.FunGame.Core.Service.AddonManager.LoadGameMaps(System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.GameMap},System.Object[])">
             <summary>
-            从gamemaps目录加载所有模组
+            从gamemaps目录加载所有地图
             </summary>
             <param name="gamemaps"></param>
             <param name="objs"></param>

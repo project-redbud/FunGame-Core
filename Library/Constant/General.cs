@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Addon;
 
 namespace Milimoe.FunGame.Core.Library.Constant
 {
@@ -40,31 +39,6 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// 默认的时间值（1970年8月1日8点0分0秒）
         /// </summary>
         public static DateTime DefaultTime => new(1970, 1, 1, 8, 0, 0);
-
-        /// <summary>
-        /// 默认的混战模式模组
-        /// </summary>
-        public static GameMode DefaultOfficialModeMix => new OfficialModeMix8Players();
-
-        /// <summary>
-        /// 默认的团队模式模组
-        /// </summary>
-        public static GameMode DefaultOfficialModeTeam => new OfficialModeTeam4Players();
-
-        /// <summary>
-        /// 默认的对弈模式模组
-        /// </summary>
-        public static GameMode DefaultOfficialModeSolo => new OfficialModeSolo3Characters();
-        
-        /// <summary>
-        /// 默认的快速自走模式模组
-        /// </summary>
-        public static GameMode DefaultOfficialModeFastAuto => new OfficialModeFastAuto8Players();
-        
-        /// <summary>
-        /// 默认的游戏地图
-        /// </summary>
-        public static GameMap DefaultOfficialMap => new OfficialMap16x16();
 
         #endregion
 

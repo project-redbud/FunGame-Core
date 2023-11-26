@@ -342,7 +342,7 @@ namespace Milimoe.FunGame.Core.Controller
                         case SocketMessageType.EndGame:
                             SocketHandler_EndGame(ServerMessage);
                             break;
-                            
+
                         case SocketMessageType.Gaming:
                             SocketHandler_Gaming(ServerMessage);
                             break;
@@ -408,7 +408,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// </summary>
         /// <param name="ServerMessage"></param>
         protected abstract void SocketHandler_StartGame(SocketObject ServerMessage);
-        
+
         /// <summary>
         /// 客户端接收到游戏结束信息后的处理方法
         /// </summary>
