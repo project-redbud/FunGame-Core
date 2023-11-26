@@ -905,16 +905,17 @@
             <returns>string：IP地址；int：端口号</returns>
             <exception cref="T:Milimoe.FunGame.FindServerFailedException"></exception>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Controller.RunTimeController.BeforeConnect(System.String@,System.Int32@)">
+        <member name="M:Milimoe.FunGame.Core.Controller.RunTimeController.BeforeConnect(System.String@,System.Int32@,System.Collections.ArrayList)">
             <summary>
             此方法将在连接服务器前触发<para/>
             客户端可以重写此方法
             </summary>
-            <param name="ip"></param>
-            <param name="port"></param>
+            <param name="ip">服务器IP</param>
+            <param name="port">服务器端口</param>
+            <param name="args">重写时可以提供额外的连接参数</param>
             <returns>false：中止连接</returns>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Controller.RunTimeController.AfterConnect(System.Object[])">
+        <member name="M:Milimoe.FunGame.Core.Controller.RunTimeController.AfterConnect(System.Collections.ArrayList)">
             <summary>
             此方法将在连接服务器后触发（Connect结果返回前）<para/>
             客户端可以重写此方法

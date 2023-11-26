@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Api.Transmittal;
+﻿using System.Collections;
+using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -65,7 +66,8 @@ namespace Milimoe.FunGame.Core.Controller
         /// <returns></returns>
         public ConnectResult Connect(string ip, int port)
         {
-            if (!BeforeConnect(ref ip, ref port))
+            ArrayList ConnectArgs = [];
+            if (!BeforeConnect(ref ip, ref port, ConnectArgs))
             {
                 return ConnectResult.ConnectFailed;
             }
@@ -122,11 +124,17 @@ namespace Milimoe.FunGame.Core.Controller
                 else _Socket?.Close();
             }
 
-            object[] ConnectArgs = new object[] { result, msg, servername, notice };
+            ConnectArgs.Clear();
+            ConnectArgs = [ result, msg, servername, notice ];
             AfterConnect(ConnectArgs);
 
             // 允许修改数组中的result，强行改变连接的结果
-            return (ConnectResult)ConnectArgs[0];
+            if (ConnectArgs.Count > 0)
+            {
+                result = (ConnectResult?)ConnectArgs[0] ?? result;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -160,10 +168,11 @@ namespace Milimoe.FunGame.Core.Controller
         /// 此方法将在连接服务器前触发<para/>
         /// 客户端可以重写此方法
         /// </summary>
-        /// <param name="ip"></param>
-        /// <param name="port"></param>
+        /// <param name="ip">服务器IP</param>
+        /// <param name="port">服务器端口</param>
+        /// <param name="args">重写时可以提供额外的连接参数</param>
         /// <returns>false：中止连接</returns>
-        public virtual bool BeforeConnect(ref string ip, ref int port)
+        public virtual bool BeforeConnect(ref string ip, ref int port, ArrayList args)
         {
             return true;
         }
@@ -174,7 +183,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// </summary>
         /// <param name="ConnectArgs">连接服务器后返回的一些数据，可以使用也可以修改它们</param>
         /// <returns></returns>
-        public virtual void AfterConnect(object[] ConnectArgs)
+        public virtual void AfterConnect(ArrayList ConnectArgs)
         {
 
         }
