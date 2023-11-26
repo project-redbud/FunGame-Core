@@ -40,9 +40,9 @@ namespace Milimoe.FunGame.Core.Model
         public bool FunGame_isInRoom { get; set; } = false;
 
         /// <summary>
-        /// 当前游戏模式
+        /// 当前所处的房间类型
         /// </summary>
-        public string FunGame_GameMode { get; set; } = GameMode.Mix;
+        public string FunGame_RoomType { get; set; } = RoomSet.All;
 
         /// <summary>
         /// 服务器名称

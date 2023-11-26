@@ -3,12 +3,16 @@
  */
 namespace Milimoe.FunGame.Core.Library.Constant
 {
+    /// <summary>
+    /// 配合 <see cref="InterfaceMethod"/> <see cref="InterfaceType"/> 使用，也别忘了修改 <see cref="Api.Utility.Implement"/>
+    /// </summary>
     public class InterfaceSet
     {
         public class Type
         {
             public const string IClient = "IClientImpl";
             public const string IServer = "IServerImpl";
+            public const string IGameModeSupported = "IGameModeSupported";
         }
 
         public class Method
@@ -16,6 +20,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
             public const string RemoteServerIP = "RemoteServerIP";
             public const string DBConnection = "DBConnection";
             public const string GetServerSettings = "GetServerSettings";
+            public const string GameModeList = "GameModeList";
+            public const string GameMapList = "GameMapList";
         }
     }
 
@@ -112,23 +118,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /**
          * Gaming
          */
-        public const string Gaming_Connect = "Gaming::Connect";
-        public const string Gaming_Disconnect = "Gaming::Disconnect";
-        public const string Gaming_Reconnect = "Gaming::Reconnect";
-        public const string Gaming_Ban = "Gaming::Ban";
-        public const string Gaming_Pick = "Gaming::Pick";
-        public const string Gaming_Random = "Gaming::Random";
-        public const string Gaming_Move = "Gaming::Move";
-        public const string Gaming_Attack = "Gaming::Attack";
-        public const string Gaming_Skill = "Gaming::Skill";
-        public const string Gaming_Item = "Gaming::Item";
-        public const string Gaming_Magic = "Gaming::Magic";
-        public const string Gaming_Buy = "Gaming::Buy";
-        public const string Gaming_SuperSkill = "Gaming::SuperSkill";
-        public const string Gaming_Pause = "Gaming::Pause";
-        public const string Gaming_Unpause = "Gaming::Unpause";
-        public const string Gaming_Surrender = "Gaming::Surrender";
-        public const string Gaming_UpdateUserInfo = "Gaming::UpdateUserInfo";
+        public const string Gaming = "Gaming";
 
         /// <summary>
         /// 获取Type的等效字符串
@@ -157,27 +147,62 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 DataRequestType.Room_GetRoomSettings => Room_GetRoomSettings,
                 DataRequestType.Room_GetRoomPlayerCount => Room_GetRoomPlayerCount,
                 DataRequestType.Room_UpdateRoomMaster => Room_UpdateRoomMaster,
-                DataRequestType.Gaming_Connect => Gaming_Connect,
-                DataRequestType.Gaming_Disconnect => Gaming_Disconnect,
-                DataRequestType.Gaming_Reconnect => Gaming_Reconnect,
-                DataRequestType.Gaming_Ban => Gaming_Ban,
-                DataRequestType.Gaming_Pick => Gaming_Pick,
-                DataRequestType.Gaming_Random => Gaming_Random,
-                DataRequestType.Gaming_Move => Gaming_Move,
-                DataRequestType.Gaming_Attack => Gaming_Attack,
-                DataRequestType.Gaming_Skill => Gaming_Skill,
-                DataRequestType.Gaming_Item => Gaming_Item,
-                DataRequestType.Gaming_Magic => Gaming_Magic,
-                DataRequestType.Gaming_Buy => Gaming_Buy,
-                DataRequestType.Gaming_SuperSkill => Gaming_SuperSkill,
-                DataRequestType.Gaming_Pause => Gaming_Pause,
-                DataRequestType.Gaming_Unpause => Gaming_Unpause,
-                DataRequestType.Gaming_Surrender => Gaming_Surrender,
-                DataRequestType.Gaming_UpdateUserInfo => Gaming_UpdateUserInfo,
+                DataRequestType.Gaming => Gaming,
                 _ => UnKnown
             };
         }
+    }
 
+    public class GamingSet
+    {
+        public const string None = "Gaming::None";
+        public const string Connect = "Gaming::Connect";
+        public const string Disconnect = "Gaming::Disconnect";
+        public const string Reconnect = "Gaming::Reconnect";
+        public const string BanCharacter = "Gaming::BanCharacter";
+        public const string PickCharacter = "Gaming::PickCharacter";
+        public const string Random = "Gaming::Random";
+        public const string Move = "Gaming::Move";
+        public const string Attack = "Gaming::Attack";
+        public const string Skill = "Gaming::Skill";
+        public const string Item = "Gaming::Item";
+        public const string Magic = "Gaming::Magic";
+        public const string Buy = "Gaming::Buy";
+        public const string SuperSkill = "Gaming::SuperSkill";
+        public const string Pause = "Gaming::Pause";
+        public const string Unpause = "Gaming::Unpause";
+        public const string Surrender = "Gaming::Surrender";
+        public const string UpdateInfo = "Gaming::UpdateInfo";
+
+        /// <summary>
+        /// 获取Type的等效字符串
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static string GetTypeString(GamingType type)
+        {
+            return type switch
+            {
+                GamingType.Connect => Connect,
+                GamingType.Disconnect => Disconnect,
+                GamingType.Reconnect => Reconnect,
+                GamingType.BanCharacter => BanCharacter,
+                GamingType.PickCharacter => PickCharacter,
+                GamingType.Random => Random,
+                GamingType.Move => Move,
+                GamingType.Attack => Attack,
+                GamingType.Skill => Skill,
+                GamingType.Item => Item,
+                GamingType.Magic => Magic,
+                GamingType.Buy => Buy,
+                GamingType.SuperSkill => SuperSkill,
+                GamingType.Pause => Pause,
+                GamingType.Unpause => Unpause,
+                GamingType.Surrender => Surrender,
+                GamingType.UpdateInfo => UpdateInfo,
+                _ => None
+            };
+        }
     }
 
     public class ReflectionSet
@@ -185,6 +210,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string FUNGAME_IMPL = "FunGame.Implement";
         public static string EXEFolderPath { get; } = Environment.CurrentDirectory.ToString() + "\\"; // 程序目录
         public static string PluginFolderPath { get; } = Environment.CurrentDirectory.ToString() + "\\plugins\\"; // 插件目录
+        public static string GameModeFolderPath { get; } = Environment.CurrentDirectory.ToString() + "\\gamemods\\"; // 游戏模组目录
+        public static string GameMapFolderPath { get; } = Environment.CurrentDirectory.ToString() + "\\maps\\"; // 游戏地图目录
     }
 
     public class FormSet
@@ -198,14 +225,14 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string UserCenter = "UserCenter";
     }
 
-    public class GameMode
+    public class RoomSet
     {
-        public const string All = "所有模式";
-        public const string AllHasPass = "带密码的所有模式";
+        public const string All = "全部";
         public const string Mix = "混战模式";
-        public const string MixHasPass = "带密码的混战模式";
         public const string Team = "团队模式";
-        public const string TeamHasPass = "带密码的团队模式";
+        public const string Solo = "对弈模式";
+        public const string FastAuto = "快速自走模式";
+        public const string Custom = "自定义模式";
 
         /// <summary>
         /// 获取Type的等效字符串
@@ -218,9 +245,9 @@ namespace Milimoe.FunGame.Core.Library.Constant
             {
                 RoomType.Mix => Mix,
                 RoomType.Team => Team,
-                RoomType.MixHasPass => MixHasPass,
-                RoomType.TeamHasPass => TeamHasPass,
-                RoomType.AllHasPass => AllHasPass,
+                RoomType.Solo => Solo,
+                RoomType.FastAuto => FastAuto,
+                RoomType.Custom => Custom,
                 _ => All
             };
         }
@@ -236,9 +263,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
             {
                 Mix => RoomType.Mix,
                 Team => RoomType.Team,
-                MixHasPass => RoomType.MixHasPass,
-                TeamHasPass => RoomType.TeamHasPass,
-                AllHasPass => RoomType.AllHasPass,
+                FastAuto => RoomType.FastAuto,
+                Custom => RoomType.Custom,
                 _ => RoomType.All
             };
         }

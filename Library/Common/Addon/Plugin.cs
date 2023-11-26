@@ -4,9 +4,9 @@ using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
 
-namespace Milimoe.FunGame.Core.Library.Common.Plugin
+namespace Milimoe.FunGame.Core.Library.Common.Addon
 {
-    public abstract class BasePlugin : IPlugin
+    public abstract class Plugin : IPlugin
     {
         /// <summary>
         /// 插件名称

@@ -1,10 +1,8 @@
 ﻿using Milimoe.FunGame.Core.Library.Common.Event;
 
+// 插件需要实现什么事件就继承什么接口
 namespace Milimoe.FunGame.Core.Interface
 {
-    /// <summary>
-    /// 插件需要实现什么事件就继承什么接口
-    /// </summary>
     public interface IConnectEvent
     {
         public void BeforeConnectEvent(object sender, ConnectEventArgs e);

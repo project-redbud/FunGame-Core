@@ -49,7 +49,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             for (int i = 0; i < str.Length; i++)
             {
                 char c = str[i];
-                if (c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9') length++;
+                if (c is >= 'A' and <= 'Z' or >= 'a' and <= 'z' or >= '0' and <= '9') length++;
                 else length += 2;
             }
             return length;

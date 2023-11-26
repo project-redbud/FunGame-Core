@@ -13,9 +13,9 @@ namespace Milimoe.FunGame.Core.Api.Factory
             return RoomFactory.Create();
         }
 
-        public static Room Create(long Id = 0, string Roomid = "-1", DateTime? CreateTime = null, User? RoomMaster = null, RoomType RoomType = RoomType.All, RoomState RoomState = RoomState.Created, string Password = "")
+        public static Room Create(long Id = 0, string Roomid = "-1", DateTime? CreateTime = null, User? RoomMaster = null, RoomType RoomType = RoomType.All, string GameMode = "", string GameMap = "", RoomState RoomState = RoomState.Created, string Password = "")
         {
-            return new Room(Id, Roomid, CreateTime, RoomMaster, RoomType, RoomState, Password);
+            return new Room(Id, Roomid, CreateTime, RoomMaster, RoomType, GameMode, GameMap, RoomState, Password);
         }
     }
 }
