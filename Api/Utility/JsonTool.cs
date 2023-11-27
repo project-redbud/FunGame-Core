@@ -76,6 +76,15 @@ namespace Milimoe.FunGame.Core.Api.Utility
         public T? GetObject<T>(Hashtable table, string key) => JsonManager.GetObject<T>(table, key, options);
 
         /// <summary>
+        /// 反序列化IEnumerable中的Json对象 可指定反序列化选项
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="e"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public T? JsonDeserializeFromIEnumerable<T>(IEnumerable<object> e, int index) => JsonManager.GetObject<T>(e, index, options);
+
+        /// <summary>
         /// 反序列化多个Json对象
         /// 注意必须是相同的Json对象才可以使用此方法解析
         /// </summary>
@@ -91,7 +100,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         {
             WriteIndented = true,
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
-            Converters = { new DateTimeConverter(), new DataTableConverter(), new DataSetConverter() }
+            Converters = { new DateTimeConverter(), new DataTableConverter(), new DataSetConverter(), new UserConverter(), new RoomConverter() }
         };
     }
 }
