@@ -125,10 +125,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <typeparam name="T"></typeparam>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static string JsonSerialize<T>(T obj)
-        {
-            return Service.JsonManager.GetString(obj);
-        }
+        public static string JsonSerialize<T>(T obj) => Service.JsonManager.GetString(obj);
 
         /// <summary>
         /// 返回目标对象的Json字符串 可指定反序列化选项
@@ -137,10 +134,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="obj"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static string JsonSerialize<T>(T obj, JsonSerializerOptions options)
-        {
-            return Service.JsonManager.GetString(obj, options);
-        }
+        public static string JsonSerialize<T>(T obj, JsonSerializerOptions options) => Service.JsonManager.GetString(obj, options);
 
         /// <summary>
         /// 反序列化Json对象
@@ -148,10 +142,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <typeparam name="T"></typeparam>
         /// <param name="json"></param>
         /// <returns></returns>
-        public static T? JsonDeserialize<T>(string json)
-        {
-            return Service.JsonManager.GetObject<T>(json);
-        }
+        public static T? JsonDeserialize<T>(string json) => Service.JsonManager.GetObject<T>(json);
 
         /// <summary>
         /// 反序列化Json对象 可指定反序列化选项
@@ -160,10 +151,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="json"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static T? JsonDeserialize<T>(string json, JsonSerializerOptions options)
-        {
-            return Service.JsonManager.GetObject<T>(json, options);
-        }
+        public static T? JsonDeserialize<T>(string json, JsonSerializerOptions options) => Service.JsonManager.GetObject<T>(json, options);
 
         /// <summary>
         /// 反序列化Hashtable中的Json对象
@@ -172,10 +160,26 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="hashtable"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        public static T? JsonDeserializeFromHashtable<T>(Hashtable hashtable, string key)
-        {
-            return Service.JsonManager.GetObject<T>(hashtable, key);
-        }
+        public static T? JsonDeserializeFromHashtable<T>(Hashtable hashtable, string key) => Service.JsonManager.GetObject<T>(hashtable, key);
+
+        /// <summary>
+        /// 反序列化IEnumerable中的Json对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="e"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public static T? JsonDeserializeFromIEnumerable<T>(IEnumerable<object> e, int index) => Service.JsonManager.GetObject<T>(e, index);
+
+        /// <summary>
+        /// 反序列化IEnumerable中的Json对象 可指定反序列化选项
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="e"></param>
+        /// <param name="index"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static T? JsonDeserializeFromIEnumerable<T>(IEnumerable<object> e, int index, JsonSerializerOptions options) => Service.JsonManager.GetObject<T>(e, index, options);
 
         /// <summary>
         /// 反序列化Hashtable中的Json对象 可指定反序列化选项
@@ -185,10 +189,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="key"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static T? JsonDeserializeFromHashtable<T>(Hashtable hashtable, string key, JsonSerializerOptions options)
-        {
-            return Service.JsonManager.GetObject<T>(hashtable, key, options);
-        }
+        public static T? JsonDeserializeFromHashtable<T>(Hashtable hashtable, string key, JsonSerializerOptions options) => Service.JsonManager.GetObject<T>(hashtable, key, options);
     }
 
     #endregion

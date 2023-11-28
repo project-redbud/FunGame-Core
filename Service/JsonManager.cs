@@ -123,6 +123,51 @@ namespace Milimoe.FunGame.Core.Service
         }
 
         /// <summary>
+        /// 反序列化IEnumerable中的Json对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="e"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        internal static T? GetObject<T>(IEnumerable<object> e, int index)
+        {
+            IEnumerable<JsonElement> elements = e.Cast<JsonElement>();
+            if (elements.Count() > index)
+            {
+                JsonElement? element = (JsonElement?)elements.ElementAt(index);
+                if (element != null)
+                {
+                    T? result = ((JsonElement)element).Deserialize<T>(GeneralOptions);
+                    return result;
+                }
+            }
+            return default;
+        }
+
+        /// <summary>
+        /// 反序列化IEnumerable中的Json对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="e"></param>
+        /// <param name="index"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        internal static T? GetObject<T>(IEnumerable<object> e, int index, JsonSerializerOptions options)
+        {
+            IEnumerable<JsonElement> elements = e.Cast<JsonElement>();
+            if (elements.Count() > index)
+            {
+                JsonElement? element = (JsonElement?)elements.ElementAt(index);
+                if (element != null)
+                {
+                    T? result = ((JsonElement)element).Deserialize<T>(options);
+                    return result;
+                }
+            }
+            return default;
+        }
+
+        /// <summary>
         /// 反序列化Hashtable中Key对应的Json对象
         /// </summary>
         /// <typeparam name="T"></typeparam>

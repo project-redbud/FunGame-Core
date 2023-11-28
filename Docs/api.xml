@@ -428,6 +428,25 @@
             <param name="key"></param>
             <returns></returns>
         </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.NetworkUtility.JsonDeserializeFromIEnumerable``1(System.Collections.Generic.IEnumerable{System.Object},System.Int32)">
+            <summary>
+            反序列化IEnumerable中的Json对象
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="e"></param>
+            <param name="index"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.NetworkUtility.JsonDeserializeFromIEnumerable``1(System.Collections.Generic.IEnumerable{System.Object},System.Int32,System.Text.Json.JsonSerializerOptions)">
+            <summary>
+            反序列化IEnumerable中的Json对象 可指定反序列化选项
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="e"></param>
+            <param name="index"></param>
+            <param name="options"></param>
+            <returns></returns>
+        </member>
         <member name="M:Milimoe.FunGame.Core.Api.Utility.NetworkUtility.JsonDeserializeFromHashtable``1(System.Collections.Hashtable,System.String,System.Text.Json.JsonSerializerOptions)">
             <summary>
             反序列化Hashtable中的Json对象 可指定反序列化选项
@@ -653,6 +672,15 @@
             <typeparam name="T"></typeparam>
             <param name="table"></param>
             <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.JsonTool.JsonDeserializeFromIEnumerable``1(System.Collections.Generic.IEnumerable{System.Object},System.Int32)">
+            <summary>
+            反序列化IEnumerable中的Json对象 可指定反序列化选项
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="e"></param>
+            <param name="index"></param>
             <returns></returns>
         </member>
         <member name="M:Milimoe.FunGame.Core.Api.Utility.JsonTool.GetObjects``1(System.String)">
@@ -1929,6 +1957,25 @@
             <typeparam name="T"></typeparam>
             <param name="table"></param>
             <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Service.JsonManager.GetObject``1(System.Collections.Generic.IEnumerable{System.Object},System.Int32)">
+            <summary>
+            反序列化IEnumerable中的Json对象
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="e"></param>
+            <param name="index"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Service.JsonManager.GetObject``1(System.Collections.Generic.IEnumerable{System.Object},System.Int32,System.Text.Json.JsonSerializerOptions)">
+            <summary>
+            反序列化IEnumerable中的Json对象
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="e"></param>
+            <param name="index"></param>
+            <param name="options"></param>
             <returns></returns>
         </member>
         <member name="M:Milimoe.FunGame.Core.Service.JsonManager.GetObject``1(System.Collections.Hashtable,System.String,System.Text.Json.JsonSerializerOptions)">
