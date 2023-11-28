@@ -1287,7 +1287,12 @@
             模组作者
             </summary>
         </member>
-        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameMode.Map">
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameMode.DefaultMap">
+            <summary>
+            默认地图
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameMode.Maps">
             <summary>
             模组所使用的地图
             </summary>

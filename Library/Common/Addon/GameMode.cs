@@ -29,9 +29,14 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         public abstract string Author { get; }
 
         /// <summary>
+        /// 默认地图
+        /// </summary>
+        public abstract string DefaultMap { get; }
+        
+        /// <summary>
         /// 模组所使用的地图
         /// </summary>
-        public abstract string Map { get; }
+        public abstract string[] Maps { get; }
 
         /// <summary>
         /// 如模组有界面，请重写此方法
