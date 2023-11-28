@@ -1157,6 +1157,52 @@
             服务端和客户端都应该实现这个接口，用于初始化支持的Mod列表
             </summary>
         </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.CharacterMode.Name">
+            <summary>
+            模组名称
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.CharacterMode.Description">
+            <summary>
+            模组描述
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.CharacterMode.Version">
+            <summary>
+            模组版本
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.CharacterMode.Author">
+            <summary>
+            模组作者
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.CharacterMode.Characters">
+            <summary>
+            此模组中包含的角色
+            </summary>
+        </member>
+        <member name="F:Milimoe.FunGame.Core.Library.Common.Addon.CharacterMode.IsLoaded">
+            <summary>
+            加载标记
+            </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.CharacterMode.Load(System.Object[])">
+            <summary>
+            加载模组
+            </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.CharacterMode.AfterLoad">
+            <summary>
+            模组加载后需要做的事
+            </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.CharacterMode.BeforeLoad">
+            <summary>
+            允许返回false来阻止加载此模组
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:Milimoe.FunGame.Core.Library.Common.Addon.ExamplePlugin">
             <summary>
             必须继承基类：<see cref="T:Milimoe.FunGame.Core.Library.Common.Addon.Plugin"/><para/>
@@ -1246,6 +1292,14 @@
             模组所使用的地图
             </summary>
         </member>
+        <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.GameMode.StartUI(System.Object[])">
+            <summary>
+            如模组有界面，请重写此方法
+            此方法会在StartGame时调用
+            </summary>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
         <member name="F:Milimoe.FunGame.Core.Library.Common.Addon.GameMode.IsLoaded">
             <summary>
             加载标记
@@ -1301,6 +1355,52 @@
             <summary>
             绑定事件。在<see cref="M:Milimoe.FunGame.Core.Library.Common.Addon.GameMode.BeforeLoad"/>后触发
             </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.ItemMode.Name">
+            <summary>
+            模组名称
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.ItemMode.Description">
+            <summary>
+            模组描述
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.ItemMode.Version">
+            <summary>
+            模组版本
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.ItemMode.Author">
+            <summary>
+            模组作者
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.ItemMode.Items">
+            <summary>
+            此模组中包含的物品
+            </summary>
+        </member>
+        <member name="F:Milimoe.FunGame.Core.Library.Common.Addon.ItemMode.IsLoaded">
+            <summary>
+            加载标记
+            </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.ItemMode.Load(System.Object[])">
+            <summary>
+            加载模组
+            </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.ItemMode.AfterLoad">
+            <summary>
+            模组加载后需要做的事
+            </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.ItemMode.BeforeLoad">
+            <summary>
+            允许返回false来阻止加载此模组
+            </summary>
+            <returns></returns>
         </member>
         <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.Plugin.Name">
             <summary>
@@ -1377,6 +1477,52 @@
             <summary>
             绑定事件。在<see cref="M:Milimoe.FunGame.Core.Library.Common.Addon.Plugin.BeforeLoad"/>后触发
             </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.SkillMode.Name">
+            <summary>
+            模组名称
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.SkillMode.Description">
+            <summary>
+            模组描述
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.SkillMode.Version">
+            <summary>
+            模组版本
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.SkillMode.Author">
+            <summary>
+            模组作者
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.SkillMode.Skills">
+            <summary>
+            此模组中包含的技能
+            </summary>
+        </member>
+        <member name="F:Milimoe.FunGame.Core.Library.Common.Addon.SkillMode.IsLoaded">
+            <summary>
+            加载标记
+            </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.SkillMode.Load(System.Object[])">
+            <summary>
+            加载模组
+            </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.SkillMode.AfterLoad">
+            <summary>
+            模组加载后需要做的事
+            </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.SkillMode.BeforeLoad">
+            <summary>
+            允许返回false来阻止加载此模组
+            </summary>
+            <returns></returns>
         </member>
         <member name="T:Milimoe.FunGame.Core.Library.Common.Architecture.AsyncAwaiter`1">
             <summary>

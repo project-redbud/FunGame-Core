@@ -4,6 +4,6 @@
         IGamingRandomEventHandler, IGamingMoveEventHandler, IGamingAttackEventHandler, IGamingSkillEventHandler, IGamingItemEventHandler, IGamingMagicEventHandler, IGamingBuyEventHandler,
         IGamingSuperSkillEventHandler, IGamingPauseEventHandler, IGamingUnpauseEventHandler, IGamingSurrenderEventHandler, IGamingUpdateInfoEventHandler
     {
-
+        public abstract bool StartUI(params object[] args);
     }
 }

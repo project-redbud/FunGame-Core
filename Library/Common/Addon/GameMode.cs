@@ -34,6 +34,17 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         public abstract string Map { get; }
 
         /// <summary>
+        /// 如模组有界面，请重写此方法
+        /// 此方法会在StartGame时调用
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public virtual bool StartUI(params object[] args)
+        {
+            return true;
+        }
+
+        /// <summary>
         /// 加载标记
         /// </summary>
         private bool IsLoaded = false;
