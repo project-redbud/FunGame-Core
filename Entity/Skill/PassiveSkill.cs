@@ -13,9 +13,14 @@
         public decimal Reference9 { get; set; } = 0;
         public decimal Reference10 { get; set; } = 0;
 
-        internal PassiveSkill()
+        protected PassiveSkill()
         {
             Active = false;
+        }
+
+        internal static PassiveSkill GetInstance()
+        {
+            return new();
         }
     }
 }

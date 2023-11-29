@@ -2021,11 +2021,14 @@
             <param name="objs"></param>
             <returns></returns>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Service.AddonManager.LoadGameModes(System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.GameMode},System.Object[])">
+        <member name="M:Milimoe.FunGame.Core.Service.AddonManager.LoadGameModes(System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.GameMode},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Character},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Skill},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Item},System.Object[])">
             <summary>
             从gamemodes目录加载所有模组
             </summary>
             <param name="gamemodes"></param>
+            <param name="Characters"></param>
+            <param name="Skills"></param>
+            <param name="Items"></param>
             <param name="objs"></param>
             <returns></returns>
         </member>

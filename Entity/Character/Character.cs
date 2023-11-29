@@ -50,12 +50,17 @@ namespace Milimoe.FunGame.Core.Entity
         public decimal CritRate { get; set; } = 0.05M; // 暴击率
         public decimal CritDMG { get; set; } = 1.25M; // 暴击伤害
         public decimal EvadeRate { get; set; } = 0.05M; // 闪避率
-        public Hashtable Skills { get; set; } = new();
-        public Hashtable Items { get; set; } = new();
+        public Hashtable Skills { get; set; } = [];
+        public Hashtable Items { get; set; } = [];
 
-        internal Character()
+        protected Character()
         {
 
+        }
+
+        internal static Character GetInstance()
+        {
+            return new();
         }
     }
 }

@@ -15,9 +15,14 @@
         public decimal Reference9 { get; set; } = 0;
         public decimal Reference10 { get; set; } = 0;
 
-        internal ActiveSkill()
+        protected ActiveSkill()
         {
             Active = true;
+        }
+
+        internal static ActiveSkill GetInstance()
+        {
+            return new();
         }
     }
 }
