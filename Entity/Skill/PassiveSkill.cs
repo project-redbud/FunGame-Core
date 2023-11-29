@@ -1,4 +1,6 @@
-﻿namespace Milimoe.FunGame.Core.Entity
+﻿using Milimoe.FunGame.Core.Interface.Entity;
+
+namespace Milimoe.FunGame.Core.Entity
 {
     public class PassiveSkill : Skill
     {
@@ -21,6 +23,11 @@
         internal static PassiveSkill GetInstance()
         {
             return new();
+        }
+
+        public override bool Equals(IBaseEntity? other)
+        {
+            return other is PassiveSkill s && s.Name == Name;
         }
     }
 }

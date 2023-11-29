@@ -1,12 +1,12 @@
 ﻿using System.Collections;
+using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Entity
 {
-    public class Character
+    public class Character : BaseEntity
     {
-        public int Id { get; set; }
-        public string Name { get; set; } = "";
+        public string Symbol { get; set; } = "";
         public string FirstName { get; set; } = "";
         public string NickName { get; set; } = "";
         public User? User { get; set; } = null;
@@ -53,14 +53,19 @@ namespace Milimoe.FunGame.Core.Entity
         public Hashtable Skills { get; set; } = [];
         public Hashtable Items { get; set; } = [];
 
-        protected Character()
+        protected Character(string symbol)
         {
-
+            Symbol = symbol;
         }
 
-        internal static Character GetInstance()
+        internal static Character GetInstance(string symbol)
         {
-            return new();
+            return new(symbol);
+        }
+
+        public override bool Equals(IBaseEntity? other)
+        {
+            return other is Character c && c.Symbol == Symbol;
         }
     }
 }

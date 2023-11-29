@@ -30,9 +30,7 @@ namespace Milimoe.FunGame.Core.Entity
 
         public override bool Equals(IBaseEntity? other)
         {
-            if (other != null && other.Guid == this.Guid)
-                return true;
-            else return false;
+            return other is PassiveItem i && i.Name == Name;
         }
     }
 }

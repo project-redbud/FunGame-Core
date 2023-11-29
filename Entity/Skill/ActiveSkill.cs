@@ -1,4 +1,6 @@
-﻿namespace Milimoe.FunGame.Core.Entity
+﻿using Milimoe.FunGame.Core.Interface.Entity;
+
+namespace Milimoe.FunGame.Core.Entity
 {
     public class ActiveSkill : Skill
     {
@@ -23,6 +25,11 @@
         internal static ActiveSkill GetInstance()
         {
             return new();
+        }
+
+        public override bool Equals(IBaseEntity? other)
+        {
+            return other is ActiveSkill s && s.Name == Name;
         }
     }
 }

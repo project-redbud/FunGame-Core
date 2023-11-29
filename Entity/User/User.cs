@@ -48,9 +48,7 @@ namespace Milimoe.FunGame.Core.Entity
 
         public override bool Equals(IBaseEntity? other)
         {
-            if (other == null) return false;
-            if (((User)other).Id == Id) return true;
-            return false;
+            return other is User u && u.Id == Id;
         }
 
         public override string ToString()
