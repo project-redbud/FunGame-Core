@@ -6,7 +6,6 @@ namespace Milimoe.FunGame.Core.Entity
 {
     public class Character : BaseEntity
     {
-        public string Symbol { get; set; } = "";
         public string FirstName { get; set; } = "";
         public string NickName { get; set; } = "";
         public User? User { get; set; } = null;
@@ -53,19 +52,19 @@ namespace Milimoe.FunGame.Core.Entity
         public Hashtable Skills { get; set; } = [];
         public Hashtable Items { get; set; } = [];
 
-        protected Character(string symbol)
+        protected Character()
         {
-            Symbol = symbol;
+
         }
 
-        internal static Character GetInstance(string symbol)
+        internal static Character GetInstance()
         {
-            return new(symbol);
+            return new();
         }
 
         public override bool Equals(IBaseEntity? other)
         {
-            return other is Character c && c.Symbol == Symbol;
+            return other is Character c && c.Name == Name;
         }
     }
 }
