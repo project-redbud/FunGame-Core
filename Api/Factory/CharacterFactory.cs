@@ -7,9 +7,6 @@ namespace Milimoe.FunGame.Core.Api.Factory
     {
         public Type EntityType => typeof(Character);
 
-        public Character Create()
-        {
-            return new Character();
-        }
+        public Character Create() => Character.GetInstance();
     }
 }

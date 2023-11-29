@@ -6,23 +6,31 @@ namespace Milimoe.FunGame.Core.Entity
     {
         public ActiveSkill? Skill { get; set; } = null;
 
-        internal ActiveItem()
+        protected ActiveItem()
         {
             Active = true;
         }
 
-        internal ActiveItem(int id, string name)
+        protected ActiveItem(int id, string name)
         {
             Active = true;
             Id = id;
             Name = name;
         }
 
+        internal static ActiveItem GetInstance()
+        {
+            return new();
+        }
+        
+        internal static ActiveItem GetInstance(int id, string name)
+        {
+            return new(id, name);
+        }
+
         public override bool Equals(IBaseEntity? other)
         {
-            if (other != null && other.Guid == this.Guid)
-                return true;
-            else return false;
+            return other is ActiveItem i && i.Name == Name;
         }
     }
 }

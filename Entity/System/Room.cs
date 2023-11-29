@@ -36,14 +36,9 @@ namespace Milimoe.FunGame.Core.Entity
             Statistics = new(this);
         }
 
-        public bool Equals(Room other)
-        {
-            return Equals(other);
-        }
-
         public override bool Equals(IBaseEntity? other)
         {
-            return other?.Id == Id;
+            return other is Room r && r.Roomid == Roomid;
         }
     }
 }
