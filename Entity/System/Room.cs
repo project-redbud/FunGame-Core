@@ -24,14 +24,17 @@ namespace Milimoe.FunGame.Core.Entity
             Statistics = new(this);
         }
 
-        internal Room(long Id = 0, string Roomid = "-1", DateTime? CreateTime = null, User? RoomMaster = null, RoomType RoomType = RoomType.All, string GameMode = "", string GameMap = "", RoomState RoomState = RoomState.Created, string Password = "")
+        internal Room(long Id = 0, string Roomid = "-1", DateTime? CreateTime = null, User? RoomMaster = null, RoomType RoomType = RoomType.All, string GameMode = "", string GameMap = "", RoomState RoomState = RoomState.Created, bool IsRank = false, string Password = "")
         {
             this.Id = Id;
             this.Roomid = Roomid;
             this.CreateTime = CreateTime ?? General.DefaultTime;
             this.RoomMaster = RoomMaster ?? General.UnknownUserInstance;
             this.RoomType = RoomType;
+            this.GameMode = GameMode;
+            this.GameMap = GameMap;
             this.RoomState = RoomState;
+            this.IsRank = IsRank;
             this.Password = Password;
             Statistics = new(this);
         }

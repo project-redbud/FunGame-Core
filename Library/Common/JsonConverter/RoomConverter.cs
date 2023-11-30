@@ -65,6 +65,10 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                         case RoomQuery.Column_RoomState:
                             room.RoomState = (RoomState)reader.GetInt64();
                             break;
+                            
+                        case RoomQuery.Column_IsRank:
+                            room.IsRank = reader.GetBoolean();
+                            break;
 
                         case RoomQuery.Column_Password:
                             room.Password = reader.GetString() ?? "";

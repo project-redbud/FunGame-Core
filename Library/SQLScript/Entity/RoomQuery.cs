@@ -12,18 +12,19 @@
         public const string Column_GameMode = "GameMode";
         public const string Column_GameMap = "GameMap";
         public const string Column_RoomState = "RoomState";
+        public const string Column_IsRank = "IsRank";
         public const string Column_HasPass = "HasPass";
         public const string Column_Password = "Password";
         public const string Select_Rooms = $"{Command_Select} {TableName}.{Command_All}, {UserQuery.TableName}.{UserQuery.Column_Username} {Command_As} {Column_RoomMasterName} " +
             $"{Command_From} {TableName} {Command_LeftJoin} {UserQuery.TableName} {Command_On} {UserQuery.TableName}.{UserQuery.Column_UID} = {TableName}.{Column_RoomMaster}";
 
-        public static string Insert_CreateRoom(string RoomID, long RoomMaster, Library.Constant.RoomType RoomType, string GameMode, string GameMap, string Password)
+        public static string Insert_CreateRoom(string RoomID, long RoomMaster, Library.Constant.RoomType RoomType, string GameMode, string GameMap, bool IsRank, string Password)
         {
             Library.Constant.RoomState RoomState = Library.Constant.RoomState.Created;
             DateTime NowTime = DateTime.Now;
             bool HasPass = Password.Trim() != "";
-            return $"{Command_Insert} {Command_Into} {TableName} ({Column_RoomID}, {Column_CreateTime}, {Column_RoomMaster}, {Column_RoomType}, {Column_GameMode}, {Column_GameMap}, {Column_RoomState}, {Column_HasPass}, {Column_Password})" +
-                $" {Command_Values} ('{RoomID}', '{NowTime}', {RoomMaster}, {(int)RoomType}, '{GameMode}', '{GameMap}', {(int)RoomState}, {(HasPass ? 1 : 0)}, '{Password}')";
+            return $"{Command_Insert} {Command_Into} {TableName} ({Column_RoomID}, {Column_CreateTime}, {Column_RoomMaster}, {Column_RoomType}, {Column_GameMode}, {Column_GameMap}, {Column_RoomState}, {Column_IsRank}, {Column_HasPass}, {Column_Password})" +
+                $" {Command_Values} ('{RoomID}', '{NowTime}', {RoomMaster}, {(int)RoomType}, '{GameMode}', '{GameMap}', {(int)RoomState}, {(IsRank ? 1 : 0)}, {(HasPass ? 1 : 0)}, '{Password}')";
         }
 
         public static string Delete_Rooms(params string[] roomids)
