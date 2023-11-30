@@ -28,7 +28,7 @@ namespace Milimoe.FunGame.Core.Service
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(Plugin))))
                 {
                     Plugin? instance = (Plugin?)Activator.CreateInstance(type);
-                    if (instance != null && instance.Load(objs))
+                    if (instance != null && instance.Load(objs) && instance.Name.Trim() != "")
                     {
                         plugins.TryAdd(instance.Name, instance);
                     }
@@ -60,7 +60,7 @@ namespace Milimoe.FunGame.Core.Service
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(GameMode))))
                 {
                     GameMode? instance = (GameMode?)Activator.CreateInstance(type);
-                    if (instance != null && instance.Load(objs))
+                    if (instance != null && instance.Load(objs) && instance.Name.Trim() != "")
                     {
                         gamemodes.TryAdd(instance.Name, instance);
                     }
@@ -69,7 +69,7 @@ namespace Milimoe.FunGame.Core.Service
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(Character))))
                 {
                     Character? instance = (Character?)Activator.CreateInstance(type);
-                    if (instance != null && !Characters.Contains(instance))
+                    if (instance != null && instance.Name.Trim() != "" && !Characters.Contains(instance))
                     {
                         Characters.Add(instance);
                     }
@@ -78,7 +78,7 @@ namespace Milimoe.FunGame.Core.Service
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(Skill))))
                 {
                     Skill? instance = (Skill?)Activator.CreateInstance(type);
-                    if (instance != null && !Skills.Contains(instance))
+                    if (instance != null && instance.Name.Trim() != "" && !Skills.Contains(instance))
                     {
                         Skills.Add(instance);
                     }
@@ -87,7 +87,7 @@ namespace Milimoe.FunGame.Core.Service
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(Item))))
                 {
                     Item? instance = (Item?)Activator.CreateInstance(type);
-                    if (instance != null && !Items.Contains(instance))
+                    if (instance != null && instance.Name.Trim() != "" && !Items.Contains(instance))
                     {
                         Items.Add(instance);
                     }
@@ -116,7 +116,7 @@ namespace Milimoe.FunGame.Core.Service
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(GameMap))))
                 {
                     GameMap? instance = (GameMap?)Activator.CreateInstance(type);
-                    if (instance != null && instance.Load(objs))
+                    if (instance != null && instance.Load(objs) && instance.Name.Trim() != "")
                     {
                         gamemaps.TryAdd(instance.Name, instance);
                     }
