@@ -72,11 +72,12 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="GameMode">游戏模组</param>
         /// <param name="GameMap"></param>
         /// <param name="RoomState">房间状态</param>
+        /// <param name="IsRank"></param>
         /// <param name="Password">房间密码</param>
         /// <returns></returns>
-        public static Room GetRoom(long Id = 0, string Roomid = "-1", DateTime? CreateTime = null, User? RoomMaster = null, RoomType RoomType = RoomType.All, string GameMode = "", string GameMap = "", RoomState RoomState = RoomState.Created, string Password = "")
+        public static Room GetRoom(long Id = 0, string Roomid = "-1", DateTime? CreateTime = null, User? RoomMaster = null, RoomType RoomType = RoomType.All, string GameMode = "", string GameMap = "", RoomState RoomState = RoomState.Created, bool IsRank = false, string Password = "")
         {
-            return RoomFactory.Create(Id, Roomid, CreateTime, RoomMaster, RoomType, GameMode, GameMap, RoomState, Password);
+            return RoomFactory.Create(Id, Roomid, CreateTime, RoomMaster, RoomType, GameMode, GameMap, RoomState, IsRank, Password);
         }
 
         /// <summary>
@@ -98,8 +99,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 string GameMode = (string)DrRoom[RoomQuery.Column_GameMode];
                 string GameMap = (string)DrRoom[RoomQuery.Column_GameMap];
                 RoomState RoomState = (RoomState)Convert.ToInt32(DrRoom[RoomQuery.Column_RoomState]);
+                bool IsRank = Convert.ToInt32(DrRoom[RoomQuery.Column_IsRank]) == 1;
                 string Password = (string)DrRoom[RoomQuery.Column_Password];
-                room = GetRoom(Id, Roomid, CreateTime, RoomMaster, RoomType, GameMode, GameMap, RoomState, Password);
+                room = GetRoom(Id, Roomid, CreateTime, RoomMaster, RoomType, GameMode, GameMap, RoomState, IsRank, Password);
             }
             return room;
         }
@@ -136,8 +138,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     string GameMode = (string)DrRoom[RoomQuery.Column_GameMode];
                     string GameMap = (string)DrRoom[RoomQuery.Column_GameMap];
                     RoomState RoomState = (RoomState)Convert.ToInt32(DrRoom[RoomQuery.Column_RoomState]);
+                    bool IsRank = Convert.ToInt32(DrRoom[RoomQuery.Column_IsRank]) == 1;
                     string Password = (string)DrRoom[RoomQuery.Column_Password];
-                    list.Add(GetRoom(Id, Roomid, CreateTime, RoomMaster, RoomType, GameMode, GameMap, RoomState, Password));
+                    list.Add(GetRoom(Id, Roomid, CreateTime, RoomMaster, RoomType, GameMode, GameMap, RoomState, IsRank, Password));
                 }
             }
             return list;

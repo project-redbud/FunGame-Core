@@ -235,7 +235,7 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Api.Utility.Factory.GetRoom(System.Int64,System.String,System.Nullable{System.DateTime},Milimoe.FunGame.Core.Entity.User,Milimoe.FunGame.Core.Library.Constant.RoomType,System.String,System.String,Milimoe.FunGame.Core.Library.Constant.RoomState,System.String)">
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.Factory.GetRoom(System.Int64,System.String,System.Nullable{System.DateTime},Milimoe.FunGame.Core.Entity.User,Milimoe.FunGame.Core.Library.Constant.RoomType,System.String,System.String,Milimoe.FunGame.Core.Library.Constant.RoomState,System.Boolean,System.String)">
             <summary>
             获取房间实例
             </summary>
@@ -247,6 +247,7 @@
             <param name="GameMode">游戏模组</param>
             <param name="GameMap"></param>
             <param name="RoomState">房间状态</param>
+            <param name="IsRank"></param>
             <param name="Password">房间密码</param>
             <returns></returns>
         </member>
