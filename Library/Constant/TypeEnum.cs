@@ -107,6 +107,9 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Gaming,
     }
 
+    /// <summary>
+    /// 需要同步更新 <see cref="GamingSet"/>
+    /// </summary>
     public enum GamingType
     {
         None,
@@ -116,6 +119,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         BanCharacter,
         PickCharacter,
         Random,
+        Round,
         LevelUp,
         Move,
         Attack,

@@ -1911,6 +1911,11 @@
             需要同步更新 <see cref="T:Milimoe.FunGame.Core.Library.Constant.DataRequestSet"/>
             </summary>
         </member>
+        <member name="T:Milimoe.FunGame.Core.Library.Constant.GamingType">
+            <summary>
+            需要同步更新 <see cref="T:Milimoe.FunGame.Core.Library.Constant.GamingSet"/>
+            </summary>
+        </member>
         <member name="F:Milimoe.FunGame.Core.Library.SQLScript.Constant.Command_Select">
             Commands
         </member>

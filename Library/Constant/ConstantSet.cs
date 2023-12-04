@@ -162,6 +162,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string BanCharacter = "Gaming::BanCharacter";
         public const string PickCharacter = "Gaming::PickCharacter";
         public const string Random = "Gaming::Random";
+        public const string Round = "Gaming::Round";
+        public const string LevelUp = "Gaming::LevelUp";
         public const string Move = "Gaming::Move";
         public const string Attack = "Gaming::Attack";
         public const string Skill = "Gaming::Skill";
@@ -189,6 +191,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 GamingType.BanCharacter => BanCharacter,
                 GamingType.PickCharacter => PickCharacter,
                 GamingType.Random => Random,
+                GamingType.Round => Round,
+                GamingType.LevelUp => LevelUp,
                 GamingType.Move => Move,
                 GamingType.Attack => Attack,
                 GamingType.Skill => Skill,
