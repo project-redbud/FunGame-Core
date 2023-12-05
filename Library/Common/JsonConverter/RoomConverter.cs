@@ -88,8 +88,11 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteString(RoomQuery.Column_RoomID, value.Roomid);
             writer.WriteString(RoomQuery.Column_CreateTime, value.CreateTime.ToString(General.GeneralDateTimeFormat));
             writer.WriteString(RoomQuery.Column_RoomMaster, JsonSerializer.Serialize(value.RoomMaster, typeof(User), options));
+            writer.WriteString(RoomQuery.Column_GameMode, value.GameMode);
+            writer.WriteString(RoomQuery.Column_GameMap, value.GameMap);
             writer.WriteNumber(RoomQuery.Column_RoomType, (long)value.RoomType);
             writer.WriteNumber(RoomQuery.Column_RoomState, (long)value.RoomState);
+            writer.WriteBoolean(RoomQuery.Column_IsRank, value.IsRank);
             writer.WriteString(RoomQuery.Column_Password, value.Password);
             writer.WriteEndObject();
         }
