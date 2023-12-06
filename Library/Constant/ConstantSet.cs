@@ -12,7 +12,6 @@ namespace Milimoe.FunGame.Core.Library.Constant
         {
             public const string IClient = "IClientImpl";
             public const string IServer = "IServerImpl";
-            public const string IGameModeSupported = "IGameModeSupported";
         }
 
         public class Method
@@ -175,6 +174,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string Unpause = "Gaming::Unpause";
         public const string Surrender = "Gaming::Surrender";
         public const string UpdateInfo = "Gaming::UpdateInfo";
+        public const string Punish = "Gaming::Punish";
 
         /// <summary>
         /// 获取Type的等效字符串
@@ -204,6 +204,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 GamingType.Unpause => Unpause,
                 GamingType.Surrender => Surrender,
                 GamingType.UpdateInfo => UpdateInfo,
+                GamingType.Punish => Punish,
                 _ => None
             };
         }

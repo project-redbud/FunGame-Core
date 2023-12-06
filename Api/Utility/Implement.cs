@@ -43,7 +43,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 InterfaceType.IClient => InterfaceSet.Type.IClient,
                 InterfaceType.IServer => InterfaceSet.Type.IServer,
-                InterfaceType.IGameModeSupported => InterfaceSet.Type.IGameModeSupported,
                 _ => ""
             };
         }

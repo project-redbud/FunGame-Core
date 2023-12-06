@@ -1011,61 +1011,61 @@
         </member>
         <member name="M:Milimoe.FunGame.Core.Controller.RunTimeController.SocketHandler_Disconnect(Milimoe.FunGame.Core.Library.Common.Network.SocketObject)">
             <summary>
-            客户端接收到服务器断开连接的通知后的处理方法
+            客户端接收服务器断开连接的通知
             </summary>
             <param name="ServerMessage"></param>
         </member>
         <member name="M:Milimoe.FunGame.Core.Controller.RunTimeController.SocketHandler_System(Milimoe.FunGame.Core.Library.Common.Network.SocketObject)">
             <summary>
-            客户端接收到服务器系统消息后的处理方法
+            客户端接收并处理服务器系统消息
             </summary>
             <param name="ServerMessage"></param>
         </member>
         <member name="M:Milimoe.FunGame.Core.Controller.RunTimeController.SocketHandler_HeartBeat(Milimoe.FunGame.Core.Library.Common.Network.SocketObject)">
             <summary>
-            客户端接收到服务器心跳后的处理方法
+            客户端接收并处理服务器心跳
             </summary>
             <param name="ServerMessage"></param>
         </member>
         <member name="M:Milimoe.FunGame.Core.Controller.RunTimeController.SocketHandler_ForceLogout(Milimoe.FunGame.Core.Library.Common.Network.SocketObject)">
             <summary>
-            客户端接收到强制退出登录的通知后的处理方法
+            客户端接收强制退出登录的通知
             </summary>
             <param name="ServerMessage"></param>
         </member>
         <member name="M:Milimoe.FunGame.Core.Controller.RunTimeController.SocketHandler_Chat(Milimoe.FunGame.Core.Library.Common.Network.SocketObject)">
             <summary>
-            客户端接收到聊天信息后的处理方法
+            客户端接收并处理聊天信息
             </summary>
             <param name="ServerMessage"></param>
         </member>
         <member name="M:Milimoe.FunGame.Core.Controller.RunTimeController.SocketHandler_UpdateRoomMaster(Milimoe.FunGame.Core.Library.Common.Network.SocketObject)">
             <summary>
-            客户端接收到更换房主后的处理方法
+            客户端接收并处理更换房主信息
             </summary>
             <param name="ServerMessage"></param>
         </member>
         <member name="M:Milimoe.FunGame.Core.Controller.RunTimeController.SocketHandler_MatchRoom(Milimoe.FunGame.Core.Library.Common.Network.SocketObject)">
             <summary>
-            客户端接收到匹配房间成功后的处理方法
+            客户端接收并处理匹配房间成功信息
             </summary>
             <param name="ServerMessage"></param>
         </member>
         <member name="M:Milimoe.FunGame.Core.Controller.RunTimeController.SocketHandler_StartGame(Milimoe.FunGame.Core.Library.Common.Network.SocketObject)">
             <summary>
-            客户端接收到开始游戏信息后的处理方法
+            客户端接收并处理开始游戏信息
             </summary>
             <param name="ServerMessage"></param>
         </member>
         <member name="M:Milimoe.FunGame.Core.Controller.RunTimeController.SocketHandler_EndGame(Milimoe.FunGame.Core.Library.Common.Network.SocketObject)">
             <summary>
-            客户端接收到游戏结束信息后的处理方法
+            客户端接收并处理游戏结束信息
             </summary>
             <param name="ServerMessage"></param>
         </member>
         <member name="M:Milimoe.FunGame.Core.Controller.RunTimeController.SocketHandler_Gaming(Milimoe.FunGame.Core.Library.Common.Network.SocketObject)">
             <summary>
-            客户端接收到局内消息后的处理方法
+            客户端接收并处理局内消息
             </summary>
             <param name="ServerMessage"></param>
         </member>
@@ -1153,9 +1153,9 @@
             这是最基本的接口，要求客户端实现
             </summary>
         </member>
-        <member name="T:Milimoe.FunGame.Core.Interface.IGameModeSupported">
+        <member name="T:Milimoe.FunGame.Core.Interface.IServer">
             <summary>
-            服务端和客户端都应该实现这个接口，用于初始化支持的Mod列表
+            服务器需要实现此接口
             </summary>
         </member>
         <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.CharacterMode.Name">
@@ -1983,6 +1983,30 @@
             <summary>
             自动登录的秘钥
             </summary>
+        </member>
+        <member name="T:Milimoe.FunGame.Core.Model.Gaming">
+            <summary>
+            游戏局内类
+            客户端需要使用创建此类单例
+            </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Model.Gaming.StartGame(Milimoe.FunGame.Core.Library.Common.Addon.GameMode,Milimoe.FunGame.Core.Entity.Room,System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.User})">
+            <summary>
+            传入游戏所需的参数，构造一个Gaming实例
+            </summary>
+            <param name="GameMode"></param>
+            <param name="Room"></param>
+            <param name="Users"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Model.Gaming.GamingHandler(Milimoe.FunGame.Core.Library.Constant.GamingType,System.Collections.Hashtable)">
+            <summary>
+            需在RunTimeController的SocketHandler_Gaming方法中调用此方法
+            <para>客户端也可以参照此方法自行实现</para>
+            <para>此方法目的是为了触发 <see cref="T:Milimoe.FunGame.Core.Library.Common.Addon.GameMode"/> 的局内事件实现</para>
+            </summary>
+            <param name="GamingType"></param>
+            <param name="Data"></param>
         </member>
         <member name="P:Milimoe.FunGame.Core.Model.Session.Server_IP">
             <summary>

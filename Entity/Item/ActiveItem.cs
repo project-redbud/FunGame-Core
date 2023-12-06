@@ -22,7 +22,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             return new();
         }
-        
+
         internal static ActiveItem GetInstance(int id, string name)
         {
             return new(id, name);
