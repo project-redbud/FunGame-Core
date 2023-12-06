@@ -1,0 +1,118 @@
+﻿using System.Collections;
+using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface;
+using Milimoe.FunGame.Core.Interface.Base;
+using Milimoe.FunGame.Core.Library.Constant;
+
+namespace Milimoe.FunGame.Core.Library.Common.Addon
+{
+    public abstract class GameModeServer : IGameModeServer
+    {
+        /// <summary>
+        /// 模组名称
+        /// </summary>
+        public abstract string Name { get; }
+
+        /// <summary>
+        /// 模组描述
+        /// </summary>
+        public abstract string Description { get; }
+
+        /// <summary>
+        /// 模组版本
+        /// </summary>
+        public abstract string Version { get; }
+
+        /// <summary>
+        /// 模组作者
+        /// </summary>
+        public abstract string Author { get; }
+
+        /// <summary>
+        /// 默认地图
+        /// </summary>
+        public abstract string DefaultMap { get; }
+
+        /// <summary>
+        /// 模组所使用的地图
+        /// </summary>
+        public abstract string[] Maps { get; }
+
+        /// <summary>
+        /// 启动服务器监听 请在此处实现服务器逻辑
+        /// </summary>
+        /// <param name="GameMode"></param>
+        /// <param name="Room"></param>
+        /// <param name="Users"></param>
+        /// <param name="RoomMasterServerModel"></param>
+        /// <param name="OthersServerModel"></param>
+        /// <param name="Args"></param>
+        /// <returns></returns>
+        public abstract bool StartServer(string GameMode, Room Room, List<User> Users, IServerModel RoomMasterServerModel, Dictionary<string, IServerModel> OthersServerModel, params object[] Args);
+
+        /// <summary>
+        /// 接收并处理GamingMessage
+        /// </summary>
+        /// <param name="username">发送此消息的账号</param>
+        /// <param name="type">消息类型</param>
+        /// <param name="data">消息参数</param>
+        public abstract void GamingMessageHandler(string username, GamingType type, Hashtable data);
+
+        /// <summary>
+        /// 加载标记
+        /// </summary>
+        private bool IsLoaded = false;
+
+        /// <summary>
+        /// 加载模组
+        /// </summary>
+        public bool Load(params object[] objs)
+        {
+            if (IsLoaded)
+            {
+                return false;
+            }
+            // BeforeLoad可以阻止加载此模组
+            if (BeforeLoad())
+            {
+                // 模组加载后，不允许再次加载此模组
+                IsLoaded = true;
+                // 初始化此模组（传入委托或者Model）
+                Init(objs);
+                // 如果加载后需要执行代码，请重写AfterLoad方法
+                AfterLoad();
+            }
+            return IsLoaded;
+        }
+
+        /// <summary>
+        /// 模组加载后需要做的事
+        /// </summary>
+        protected virtual void AfterLoad()
+        {
+            // override
+        }
+
+        /// <summary>
+        /// 允许返回false来阻止加载此模组
+        /// </summary>
+        /// <returns></returns>
+        protected virtual bool BeforeLoad()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// 传递委托以便让模组调用
+        /// </summary>
+        private void Init(params object[] objs)
+        {
+            if (objs.Length > 0) ServerMethods = (Dictionary<string, Delegate>)objs[0];
+        }
+
+        /// <summary>
+        /// 工具方法组
+        /// </summary>
+        protected Dictionary<string, Delegate> ServerMethods = [];
+    }
+}

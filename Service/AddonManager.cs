@@ -96,6 +96,65 @@ namespace Milimoe.FunGame.Core.Service
 
             return gamemodes;
         }
+        
+        /// <summary>
+        /// 从gamemodes目录加载所有适用于服务器的模组
+        /// </summary>
+        /// <param name="gamemodes"></param>
+        /// <param name="Characters"></param>
+        /// <param name="Skills"></param>
+        /// <param name="Items"></param>
+        /// <param name="objs"></param>
+        /// <returns></returns>
+        internal static Dictionary<string, GameModeServer> LoadGameModesForServer(Dictionary<string, GameModeServer> gamemodes, List<Character> Characters, List<Skill> Skills, List<Item> Items, params object[] objs)
+        {
+            if (!Directory.Exists(ReflectionSet.GameModeFolderPath)) return gamemodes;
+
+            string[] dlls = Directory.GetFiles(ReflectionSet.GameModeFolderPath, "*.dll");
+
+            foreach (string dll in dlls)
+            {
+                Assembly assembly = Assembly.LoadFrom(dll);
+
+                foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(GameModeServer))))
+                {
+                    GameModeServer? instance = (GameModeServer?)Activator.CreateInstance(type);
+                    if (instance != null && instance.Load(objs) && instance.Name.Trim() != "")
+                    {
+                        gamemodes.TryAdd(instance.Name, instance);
+                    }
+                }
+
+                foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(Character))))
+                {
+                    Character? instance = (Character?)Activator.CreateInstance(type);
+                    if (instance != null && instance.Name.Trim() != "" && !Characters.Contains(instance))
+                    {
+                        Characters.Add(instance);
+                    }
+                }
+
+                foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(Skill))))
+                {
+                    Skill? instance = (Skill?)Activator.CreateInstance(type);
+                    if (instance != null && instance.Name.Trim() != "" && !Skills.Contains(instance))
+                    {
+                        Skills.Add(instance);
+                    }
+                }
+
+                foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(Item))))
+                {
+                    Item? instance = (Item?)Activator.CreateInstance(type);
+                    if (instance != null && instance.Name.Trim() != "" && !Items.Contains(instance))
+                    {
+                        Items.Add(instance);
+                    }
+                }
+            }
+
+            return gamemodes;
+        }
 
         /// <summary>
         /// 从gamemaps目录加载所有地图

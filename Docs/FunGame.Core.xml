@@ -331,6 +331,69 @@
             <param name="dr"></param>
             <returns></returns>
         </member>
+        <member name="P:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.Modes">
+            <summary>
+            适用于客户端的模组集
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.ServerModes">
+            <summary>
+            适用于服务器的模组集
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.Maps">
+            <summary>
+            游戏地图集
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.Characters">
+            <summary>
+            角色表
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.Skills">
+            <summary>
+            技能表
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.Items">
+            <summary>
+            物品表
+            </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.LoadGameModes(Milimoe.FunGame.Core.Library.Constant.FunGameInfo.FunGame,System.Object[])">
+            <summary>
+            传入 <see cref="T:Milimoe.FunGame.Core.Library.Constant.FunGameInfo.FunGame"/> 类型来创建指定端的模组读取器
+            <para>runtime = <see cref="F:Milimoe.FunGame.Core.Library.Constant.FunGameInfo.FunGame.FunGame_Desktop"/> 时，仅读取 <seealso cref="P:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.Modes"/></para>
+            <para>runtime = <see cref="F:Milimoe.FunGame.Core.Library.Constant.FunGameInfo.FunGame.FunGame_Server"/> 时，仅读取 <seealso cref="P:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.ServerModes"/></para>
+            <seealso cref="P:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.Maps"/> 都会读取
+            </summary>
+            <param name="runtime"></param>
+            <param name="objs"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.Item(System.String)">
+            <summary>
+            获取对应名称的模组实例
+            <para>如果需要取得服务器模组的实例，请调用 <see cref="M:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.GetServerMode(System.String)"/></para>
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.GetServerMode(System.String)">
+            <summary>
+            获取对应名称的服务器模组实例
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.GetGameMap(System.String)">
+            <summary>
+            获取对应名称的游戏地图
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
         <member name="T:Milimoe.FunGame.Core.Api.Utility.NetworkUtility">
             <summary>
             网络服务工具箱
@@ -1138,6 +1201,70 @@
             Key为赛季(long)，每个key代表第key赛季，key = 0时为生涯数据。
             </summary>
         </member>
+        <member name="P:Milimoe.FunGame.Core.Interface.Base.IServerModel.Running">
+            <summary>
+            服务器实例是否在运行
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Interface.Base.IServerModel.Socket">
+            <summary>
+            客户端的套接字实例
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Interface.Base.IServerModel.User">
+            <summary>
+            客户端的用户实例，在用户登录后有效
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Interface.Base.IServerModel.ClientName">
+            <summary>
+            客户端的名称，默认是客户端的IP地址
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Interface.Base.IServerModel.IsDebugMode">
+            <summary>
+            客户端是否启动了开发者模式
+            </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Interface.Base.IServerModel.Send(Milimoe.FunGame.Core.Library.Common.Network.ClientSocket,Milimoe.FunGame.Core.Library.Constant.SocketMessageType,System.Object[])">
+            <summary>
+            向客户端发送消息
+            </summary>
+            <param name="socket"></param>
+            <param name="type"></param>
+            <param name="objs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Interface.Base.IServerModel.SendSystemMessage(Milimoe.FunGame.Core.Library.Constant.ShowMessageType,System.String,System.String,System.Int32,System.String[])">
+            <summary>
+            向客户端发送系统消息
+            </summary>
+            <param name="showtype"></param>
+            <param name="msg"></param>
+            <param name="title"></param>
+            <param name="autoclose"></param>
+            <param name="usernames"></param>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Interface.Base.IServerModel.GetClientName">
+            <summary>
+            获取客户端的名称，通常未登录时显示为客户端的IP地址，登录后显示为账号名
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Interface.Base.IServerModel.Read(Milimoe.FunGame.Core.Library.Common.Network.ClientSocket)">
+            <summary>
+            开始接收客户端消息
+            <para>请勿在 <see cref="T:Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer"/> 中调用此方法</para>
+            </summary>
+            <param name="socket"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Interface.Base.IServerModel.Start">
+            <summary>
+            启动对客户端的监听
+            <para>请勿在 <see cref="T:Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer"/> 中调用此方法</para>
+            </summary>
+        </member>
         <member name="T:Milimoe.FunGame.Core.Interface.IEventHandler">
             <summary>
             窗体继承这些接口便能实现事件，或为插件预留。
@@ -1360,6 +1487,87 @@
         <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.GameMode.BindEvent">
             <summary>
             绑定事件。在<see cref="M:Milimoe.FunGame.Core.Library.Common.Addon.GameMode.BeforeLoad"/>后触发
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer.Name">
+            <summary>
+            模组名称
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer.Description">
+            <summary>
+            模组描述
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer.Version">
+            <summary>
+            模组版本
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer.Author">
+            <summary>
+            模组作者
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer.DefaultMap">
+            <summary>
+            默认地图
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer.Maps">
+            <summary>
+            模组所使用的地图
+            </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer.StartServer(System.String,Milimoe.FunGame.Core.Entity.Room,System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.User},Milimoe.FunGame.Core.Interface.Base.IServerModel,System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Interface.Base.IServerModel},System.Object[])">
+            <summary>
+            启动服务器监听 请在此处实现服务器逻辑
+            </summary>
+            <param name="GameMode"></param>
+            <param name="Room"></param>
+            <param name="Users"></param>
+            <param name="RoomMasterServerModel"></param>
+            <param name="OthersServerModel"></param>
+            <param name="Args"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer.GamingMessageHandler(System.String,Milimoe.FunGame.Core.Library.Constant.GamingType,System.Collections.Hashtable)">
+            <summary>
+            接收并处理GamingMessage
+            </summary>
+            <param name="username">发送此消息的账号</param>
+            <param name="type">消息类型</param>
+            <param name="data">消息参数</param>
+        </member>
+        <member name="F:Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer.IsLoaded">
+            <summary>
+            加载标记
+            </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer.Load(System.Object[])">
+            <summary>
+            加载模组
+            </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer.AfterLoad">
+            <summary>
+            模组加载后需要做的事
+            </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer.BeforeLoad">
+            <summary>
+            允许返回false来阻止加载此模组
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer.Init(System.Object[])">
+            <summary>
+            传递委托以便让模组调用
+            </summary>
+        </member>
+        <member name="F:Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer.ServerMethods">
+            <summary>
+            工具方法组
             </summary>
         </member>
         <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.ItemMode.Name">
@@ -2054,6 +2262,17 @@
         <member name="M:Milimoe.FunGame.Core.Service.AddonManager.LoadGameModes(System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.GameMode},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Character},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Skill},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Item},System.Object[])">
             <summary>
             从gamemodes目录加载所有模组
+            </summary>
+            <param name="gamemodes"></param>
+            <param name="Characters"></param>
+            <param name="Skills"></param>
+            <param name="Items"></param>
+            <param name="objs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Service.AddonManager.LoadGameModesForServer(System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Character},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Skill},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Item},System.Object[])">
+            <summary>
+            从gamemodes目录加载所有适用于服务器的模组
             </summary>
             <param name="gamemodes"></param>
             <param name="Characters"></param>
