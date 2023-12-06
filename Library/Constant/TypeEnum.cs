@@ -27,8 +27,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
     public enum InterfaceType
     {
         IClient,
-        IServer,
-        IGameModeSupported
+        IServer
     }
 
     /// <summary>
@@ -104,7 +103,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Room_GetRoomSettings,
         Room_GetRoomPlayerCount,
         Room_UpdateRoomMaster,
-        Gaming,
+        Gaming
     }
 
     /// <summary>

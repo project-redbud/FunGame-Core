@@ -53,11 +53,11 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                         case RoomQuery.Column_RoomType:
                             room.RoomType = (RoomType)reader.GetInt64();
                             break;
-                            
+
                         case RoomQuery.Column_GameMode:
                             room.GameMode = reader.GetString() ?? "";
                             break;
-                            
+
                         case RoomQuery.Column_GameMap:
                             room.GameMap = reader.GetString() ?? "";
                             break;
@@ -65,7 +65,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                         case RoomQuery.Column_RoomState:
                             room.RoomState = (RoomState)reader.GetInt64();
                             break;
-                            
+
                         case RoomQuery.Column_IsRank:
                             room.IsRank = reader.GetBoolean();
                             break;

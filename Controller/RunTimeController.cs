@@ -125,7 +125,7 @@ namespace Milimoe.FunGame.Core.Controller
             }
 
             ConnectArgs.Clear();
-            ConnectArgs = [ result, msg, servername, notice ];
+            ConnectArgs = [result, msg, servername, notice];
             AfterConnect(ConnectArgs);
 
             // 允许修改数组中的result，强行改变连接的结果
@@ -293,7 +293,7 @@ namespace Milimoe.FunGame.Core.Controller
             {
                 return _Socket.ReceiveArray();
             }
-            return Array.Empty<SocketObject>();
+            return [];
         }
 
         /// <summary>
@@ -371,61 +371,61 @@ namespace Milimoe.FunGame.Core.Controller
         }
 
         /// <summary>
-        /// 客户端接收到服务器断开连接的通知后的处理方法
+        /// 客户端接收服务器断开连接的通知
         /// </summary>
         /// <param name="ServerMessage"></param>
         protected abstract void SocketHandler_Disconnect(SocketObject ServerMessage);
 
         /// <summary>
-        /// 客户端接收到服务器系统消息后的处理方法
+        /// 客户端接收并处理服务器系统消息
         /// </summary>
         /// <param name="ServerMessage"></param>
         protected abstract void SocketHandler_System(SocketObject ServerMessage);
 
         /// <summary>
-        /// 客户端接收到服务器心跳后的处理方法
+        /// 客户端接收并处理服务器心跳
         /// </summary>
         /// <param name="ServerMessage"></param>
         protected abstract void SocketHandler_HeartBeat(SocketObject ServerMessage);
 
         /// <summary>
-        /// 客户端接收到强制退出登录的通知后的处理方法
+        /// 客户端接收强制退出登录的通知
         /// </summary>
         /// <param name="ServerMessage"></param>
         protected abstract void SocketHandler_ForceLogout(SocketObject ServerMessage);
 
         /// <summary>
-        /// 客户端接收到聊天信息后的处理方法
+        /// 客户端接收并处理聊天信息
         /// </summary>
         /// <param name="ServerMessage"></param>
         protected abstract void SocketHandler_Chat(SocketObject ServerMessage);
 
         /// <summary>
-        /// 客户端接收到更换房主后的处理方法
+        /// 客户端接收并处理更换房主信息
         /// </summary>
         /// <param name="ServerMessage"></param>
         protected abstract void SocketHandler_UpdateRoomMaster(SocketObject ServerMessage);
 
         /// <summary>
-        /// 客户端接收到匹配房间成功后的处理方法
+        /// 客户端接收并处理匹配房间成功信息
         /// </summary>
         /// <param name="ServerMessage"></param>
         protected abstract void SocketHandler_MatchRoom(SocketObject ServerMessage);
 
         /// <summary>
-        /// 客户端接收到开始游戏信息后的处理方法
+        /// 客户端接收并处理开始游戏信息
         /// </summary>
         /// <param name="ServerMessage"></param>
         protected abstract void SocketHandler_StartGame(SocketObject ServerMessage);
 
         /// <summary>
-        /// 客户端接收到游戏结束信息后的处理方法
+        /// 客户端接收并处理游戏结束信息
         /// </summary>
         /// <param name="ServerMessage"></param>
         protected abstract void SocketHandler_EndGame(SocketObject ServerMessage);
 
         /// <summary>
-        /// 客户端接收到局内消息后的处理方法
+        /// 客户端接收并处理局内消息
         /// </summary>
         /// <param name="ServerMessage"></param>
         protected abstract void SocketHandler_Gaming(SocketObject ServerMessage);
