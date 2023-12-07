@@ -361,15 +361,16 @@
             物品表
             </summary>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.LoadGameModes(Milimoe.FunGame.Core.Library.Constant.FunGameInfo.FunGame,System.Object[])">
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.LoadGameModes(Milimoe.FunGame.Core.Library.Constant.FunGameInfo.FunGame,System.Delegate[],System.Object[])">
             <summary>
             传入 <see cref="T:Milimoe.FunGame.Core.Library.Constant.FunGameInfo.FunGame"/> 类型来创建指定端的模组读取器
             <para>runtime = <see cref="F:Milimoe.FunGame.Core.Library.Constant.FunGameInfo.FunGame.FunGame_Desktop"/> 时，仅读取 <seealso cref="P:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.Modes"/></para>
             <para>runtime = <see cref="F:Milimoe.FunGame.Core.Library.Constant.FunGameInfo.FunGame.FunGame_Server"/> 时，仅读取 <seealso cref="P:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.ServerModes"/></para>
             <seealso cref="P:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.Maps"/> 都会读取
             </summary>
-            <param name="runtime"></param>
-            <param name="objs"></param>
+            <param name="runtime">传入 <see cref="T:Milimoe.FunGame.Core.Library.Constant.FunGameInfo.FunGame"/> 类型来创建指定端的模组读取器</param>
+            <param name="delegates">用于构建 <see cref="T:Milimoe.FunGame.Core.Controller.AddonController"/></param>
+            <param name="otherobjs">其他需要传入给插件初始化的对象</param>
             <returns></returns>
         </member>
         <member name="P:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.Item(System.String)">
@@ -761,6 +762,20 @@
             Private JsonSerializerOptions
             </summary>
         </member>
+        <member name="P:Milimoe.FunGame.Core.Api.Utility.PluginLoader.Plugins">
+            <summary>
+            已读取的插件列表
+            <para>key 是 <see cref="P:Milimoe.FunGame.Core.Library.Common.Addon.Plugin.Name"/></para>
+            </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.PluginLoader.LoadPlugins(System.Delegate[],System.Object[])">
+            <summary>
+            构建一个插件读取器并读取插件
+            </summary>
+            <param name="delegates">用于构建 <see cref="T:Milimoe.FunGame.Core.Controller.AddonController"/></param>
+            <param name="otherobjs">其他需要传入给插件初始化的对象</param>
+            <returns></returns>
+        </member>
         <member name="T:Milimoe.FunGame.Core.Api.Utility.Singleton">
             <summary>
             单例表：表中的对象以类名作为Key保存，并以Key获取该对象，Key具有唯一约束
@@ -944,6 +959,28 @@
             <param name="content"></param>
             <param name="strs"></param>
             <returns></returns>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Controller.AddonController.WriteLine">
+            <summary>
+            输出系统消息
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Controller.AddonController.NewDataRequest">
+            <summary>
+            基于本地已连接的Socket创建新的数据请求
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Controller.AddonController.NewLongRunningDataRequest">
+            <summary>
+            基于本地已连接的Socket创建长时间运行的数据请求
+            </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Controller.AddonController.#ctor(Milimoe.FunGame.Core.Interface.IAddon,System.Delegate[])">
+            <summary>
+            新建一个AddonController
+            </summary>
+            <param name="Addon"></param>
+            <param name="delegates"></param>
         </member>
         <member name="T:Milimoe.FunGame.Core.Controller.RunTimeController">
             <summary>
@@ -1425,6 +1462,16 @@
             模组所使用的地图
             </summary>
         </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameMode.Controller">
+            <summary>
+            包含了一些常用方法的控制器
+            </summary>
+        </member>
+        <member name="F:Milimoe.FunGame.Core.Library.Common.Addon.GameMode._Controller">
+            <summary>
+            控制器内部变量
+            </summary>
+        </member>
         <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.GameMode.StartUI(System.Object[])">
             <summary>
             如模组有界面，请重写此方法
@@ -1457,21 +1504,6 @@
         <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.GameMode.Init(System.Object[])">
             <summary>
             传递委托以便让模组调用
-            </summary>
-        </member>
-        <member name="F:Milimoe.FunGame.Core.Library.Common.Addon.GameMode.WritelnSystemInfo">
-            <summary>
-            输出系统消息
-            </summary>
-        </member>
-        <member name="F:Milimoe.FunGame.Core.Library.Common.Addon.GameMode.NewDataRequest">
-            <summary>
-            基于本地已连接的Socket创建新的数据请求
-            </summary>
-        </member>
-        <member name="F:Milimoe.FunGame.Core.Library.Common.Addon.GameMode.NewLongRunningDataRequest">
-            <summary>
-            基于本地已连接的Socket创建长时间运行的数据请求
             </summary>
         </member>
         <member name="F:Milimoe.FunGame.Core.Library.Common.Addon.GameMode.Session">
@@ -1519,6 +1551,16 @@
             模组所使用的地图
             </summary>
         </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer.Controller">
+            <summary>
+            包含了一些常用方法的控制器
+            </summary>
+        </member>
+        <member name="F:Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer._Controller">
+            <summary>
+            控制器内部变量
+            </summary>
+        </member>
         <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer.StartServer(System.String,Milimoe.FunGame.Core.Entity.Room,System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.User},Milimoe.FunGame.Core.Interface.Base.IServerModel,System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Interface.Base.IServerModel},System.Object[])">
             <summary>
             启动服务器监听 请在此处实现服务器逻辑
@@ -1559,16 +1601,6 @@
             允许返回false来阻止加载此模组
             </summary>
             <returns></returns>
-        </member>
-        <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer.Init(System.Object[])">
-            <summary>
-            传递委托以便让模组调用
-            </summary>
-        </member>
-        <member name="F:Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer.ServerMethods">
-            <summary>
-            工具方法组
-            </summary>
         </member>
         <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.ItemMode.Name">
             <summary>
@@ -1636,6 +1668,16 @@
             插件作者
             </summary>
         </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.Plugin.Controller">
+            <summary>
+            包含了一些常用方法的控制器
+            </summary>
+        </member>
+        <member name="F:Milimoe.FunGame.Core.Library.Common.Addon.Plugin._Controller">
+            <summary>
+            控制器内部变量
+            </summary>
+        </member>
         <member name="F:Milimoe.FunGame.Core.Library.Common.Addon.Plugin.IsLoaded">
             <summary>
             加载标记
@@ -1660,21 +1702,6 @@
         <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.Plugin.Init(System.Object[])">
             <summary>
             传递委托以便让插件调用
-            </summary>
-        </member>
-        <member name="F:Milimoe.FunGame.Core.Library.Common.Addon.Plugin.WritelnSystemInfo">
-            <summary>
-            输出系统消息
-            </summary>
-        </member>
-        <member name="F:Milimoe.FunGame.Core.Library.Common.Addon.Plugin.NewDataRequest">
-            <summary>
-            基于本地已连接的Socket创建新的数据请求
-            </summary>
-        </member>
-        <member name="F:Milimoe.FunGame.Core.Library.Common.Addon.Plugin.NewLongRunningDataRequest">
-            <summary>
-            基于本地已连接的Socket创建长时间运行的数据请求
             </summary>
         </member>
         <member name="F:Milimoe.FunGame.Core.Library.Common.Addon.Plugin.Session">
@@ -2251,34 +2278,37 @@
             所处的房间
             </summary>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Service.AddonManager.LoadPlugins(System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.Plugin},System.Object[])">
+        <member name="M:Milimoe.FunGame.Core.Service.AddonManager.LoadPlugins(System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.Plugin},System.Delegate[],System.Object[])">
             <summary>
             从plugins目录加载所有插件
             </summary>
             <param name="plugins"></param>
-            <param name="objs"></param>
+            <param name="delegates"></param>
+            <param name="otherobjs"></param>
             <returns></returns>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Service.AddonManager.LoadGameModes(System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.GameMode},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Character},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Skill},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Item},System.Object[])">
+        <member name="M:Milimoe.FunGame.Core.Service.AddonManager.LoadGameModes(System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.GameMode},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Character},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Skill},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Item},System.Delegate[],System.Object[])">
             <summary>
             从gamemodes目录加载所有模组
             </summary>
             <param name="gamemodes"></param>
-            <param name="Characters"></param>
-            <param name="Skills"></param>
-            <param name="Items"></param>
-            <param name="objs"></param>
+            <param name="characters"></param>
+            <param name="skills"></param>
+            <param name="items"></param>
+            <param name="delegates"></param>
+            <param name="otherobjs"></param>
             <returns></returns>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Service.AddonManager.LoadGameModesForServer(System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Character},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Skill},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Item},System.Object[])">
+        <member name="M:Milimoe.FunGame.Core.Service.AddonManager.LoadGameModesForServer(System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Character},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Skill},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Item},System.Delegate[],System.Object[])">
             <summary>
             从gamemodes目录加载所有适用于服务器的模组
             </summary>
             <param name="gamemodes"></param>
-            <param name="Characters"></param>
-            <param name="Skills"></param>
-            <param name="Items"></param>
-            <param name="objs"></param>
+            <param name="characters"></param>
+            <param name="skills"></param>
+            <param name="items"></param>
+            <param name="delegates"></param>
+            <param name="otherobjs"></param>
             <returns></returns>
         </member>
         <member name="M:Milimoe.FunGame.Core.Service.AddonManager.LoadGameMaps(System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.GameMap},System.Object[])">

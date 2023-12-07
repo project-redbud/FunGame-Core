@@ -48,21 +48,22 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <para>runtime = <see cref="FunGameInfo.FunGame.FunGame_Server"/> 时，仅读取 <seealso cref="ServerModes"/></para>
         /// <seealso cref="Maps"/> 都会读取
         /// </summary>
-        /// <param name="runtime"></param>
-        /// <param name="objs"></param>
+        /// <param name="runtime">传入 <see cref="FunGameInfo.FunGame"/> 类型来创建指定端的模组读取器</param>
+        /// <param name="delegates">用于构建 <see cref="Controller.AddonController"/></param>
+        /// <param name="otherobjs">其他需要传入给插件初始化的对象</param>
         /// <returns></returns>
-        public static GameModeLoader LoadGameModes(FunGameInfo.FunGame runtime, params object[] objs)
+        public static GameModeLoader LoadGameModes(FunGameInfo.FunGame runtime, Delegate[] delegates, params object[] otherobjs)
         {
             GameModeLoader loader = new();
             if (runtime == FunGameInfo.FunGame.FunGame_Desktop)
             {
-                AddonManager.LoadGameModes(loader.Modes, loader.Characters, loader.Skills, loader.Items, objs);
-                AddonManager.LoadGameMaps(loader.Maps, objs);
+                AddonManager.LoadGameModes(loader.Modes, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
+                AddonManager.LoadGameMaps(loader.Maps, otherobjs);
             }
             else if (runtime == FunGameInfo.FunGame.FunGame_Server)
             {
-                AddonManager.LoadGameModesForServer(loader.ServerModes, loader.Characters, loader.Skills, loader.Items, objs);
-                AddonManager.LoadGameMaps(loader.Maps, objs);
+                AddonManager.LoadGameModesForServer(loader.ServerModes, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
+                AddonManager.LoadGameMaps(loader.Maps, otherobjs);
             }
             return loader;
         }

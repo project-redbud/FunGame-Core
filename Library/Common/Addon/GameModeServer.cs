@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Milimoe.FunGame.Core.Controller;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Interface.Base;
@@ -39,6 +40,20 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         public abstract string[] Maps { get; }
 
         /// <summary>
+        /// 包含了一些常用方法的控制器
+        /// </summary>
+        public AddonController Controller
+        {
+            get => _Controller ?? throw new NotImplementedException();
+            set => _Controller = value;
+        }
+
+        /// <summary>
+        /// 控制器内部变量
+        /// </summary>
+        protected AddonController? _Controller;
+
+        /// <summary>
         /// 启动服务器监听 请在此处实现服务器逻辑
         /// </summary>
         /// <param name="GameMode"></param>
@@ -77,8 +92,6 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             {
                 // 模组加载后，不允许再次加载此模组
                 IsLoaded = true;
-                // 初始化此模组（传入委托或者Model）
-                Init(objs);
                 // 如果加载后需要执行代码，请重写AfterLoad方法
                 AfterLoad();
             }
@@ -101,18 +114,5 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         {
             return true;
         }
-
-        /// <summary>
-        /// 传递委托以便让模组调用
-        /// </summary>
-        private void Init(params object[] objs)
-        {
-            if (objs.Length > 0) ServerMethods = (Dictionary<string, Delegate>)objs[0];
-        }
-
-        /// <summary>
-        /// 工具方法组
-        /// </summary>
-        protected Dictionary<string, Delegate> ServerMethods = [];
     }
 }

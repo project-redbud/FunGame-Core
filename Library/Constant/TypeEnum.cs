@@ -380,4 +380,17 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Column,
         Username
     }
+
+    public enum InvokeMessageType
+    {
+        None,
+        Core,
+        Error,
+        System,
+        Api,
+        Interface,
+        DataRequest,
+        Plugin,
+        GameMode
+    }
 }

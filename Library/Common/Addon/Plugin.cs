@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Api.Transmittal;
+using Milimoe.FunGame.Core.Controller;
 using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -27,6 +28,20 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// 插件作者
         /// </summary>
         public abstract string Author { get; }
+
+        /// <summary>
+        /// 包含了一些常用方法的控制器
+        /// </summary>
+        public AddonController Controller
+        {
+            get => _Controller ?? throw new NotImplementedException();
+            set => _Controller = value;
+        }
+
+        /// <summary>
+        /// 控制器内部变量
+        /// </summary>
+        protected AddonController? _Controller;
 
         /// <summary>
         /// 加载标记
@@ -79,27 +94,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// </summary>
         private void Init(params object[] objs)
         {
-            if (objs.Length > 0) WritelnSystemInfo = (Action<string>)objs[0];
-            if (objs.Length > 1) NewDataRequest = (Func<DataRequestType, DataRequest>)objs[1];
-            if (objs.Length > 2) NewLongRunningDataRequest = (Func<DataRequestType, DataRequest>)objs[2];
-            if (objs.Length > 3) Session = (Session)objs[3];
-            if (objs.Length > 4) Config = (FunGameConfig)objs[4];
+            if (objs.Length > 0) Session = (Session)objs[0];
+            if (objs.Length > 1) Config = (FunGameConfig)objs[1];
         }
-
-        /// <summary>
-        /// 输出系统消息
-        /// </summary>
-        protected Action<string> WritelnSystemInfo = new(msg => Console.Write("\r" + msg + "\n\r> "));
-
-        /// <summary>
-        /// 基于本地已连接的Socket创建新的数据请求
-        /// </summary>
-        protected Func<DataRequestType, DataRequest> NewDataRequest = new(type => throw new ConnectFailedException());
-
-        /// <summary>
-        /// 基于本地已连接的Socket创建长时间运行的数据请求
-        /// </summary>
-        protected Func<DataRequestType, DataRequest> NewLongRunningDataRequest = new(type => throw new ConnectFailedException());
 
         /// <summary>
         /// Session对象

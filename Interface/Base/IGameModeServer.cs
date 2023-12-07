@@ -3,7 +3,7 @@ using Milimoe.FunGame.Core.Interface.Base;
 
 namespace Milimoe.FunGame.Core.Interface
 {
-    public interface IGameModeServer : IAddon
+    public interface IGameModeServer : IAddon, IAddonController
     {
         public abstract bool StartServer(string GameMode, Room Room, List<User> Users, IServerModel RoomMasterServerModel, Dictionary<string, IServerModel> OthersServerModel, params object[] args);
     }
