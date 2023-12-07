@@ -1019,6 +1019,12 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:Milimoe.FunGame.Core.Controller.RunTimeController.EndGame">
+            <summary>
+            发送结束游戏反馈
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:Milimoe.FunGame.Core.Controller.RunTimeController.Connect(System.String,System.Int32)">
             <summary>
             连接服务器
