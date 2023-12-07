@@ -960,20 +960,41 @@
             <param name="strs"></param>
             <returns></returns>
         </member>
-        <member name="P:Milimoe.FunGame.Core.Controller.AddonController.WriteLine">
+        <member name="P:Milimoe.FunGame.Core.Controller.AddonController.MaskMethod_WriteLine">
             <summary>
             输出系统消息
             </summary>
         </member>
-        <member name="P:Milimoe.FunGame.Core.Controller.AddonController.NewDataRequest">
+        <member name="P:Milimoe.FunGame.Core.Controller.AddonController.MaskMethod_NewDataRequest">
             <summary>
             基于本地已连接的Socket创建新的数据请求
             </summary>
         </member>
-        <member name="P:Milimoe.FunGame.Core.Controller.AddonController.NewLongRunningDataRequest">
+        <member name="P:Milimoe.FunGame.Core.Controller.AddonController.MaskMethod_NewLongRunningDataRequest">
             <summary>
             基于本地已连接的Socket创建长时间运行的数据请求
             </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Controller.AddonController.WriteLine(System.String)">
+            <summary>
+            输出系统消息
+            </summary>
+            <param name="msg"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Controller.AddonController.NewDataRequest(Milimoe.FunGame.Core.Library.Constant.DataRequestType)">
+            <summary>
+            基于本地已连接的Socket创建新的数据请求
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Controller.AddonController.NewLongRunningDataRequest(Milimoe.FunGame.Core.Library.Constant.DataRequestType)">
+            <summary>
+            基于本地已连接的Socket创建长时间运行的数据请求
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
         </member>
         <member name="M:Milimoe.FunGame.Core.Controller.AddonController.#ctor(Milimoe.FunGame.Core.Interface.IAddon,System.Delegate[])">
             <summary>
