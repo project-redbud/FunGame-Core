@@ -71,7 +71,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <param name="username">发送此消息的账号</param>
         /// <param name="type">消息类型</param>
         /// <param name="data">消息参数</param>
-        public abstract void GamingMessageHandler(string username, GamingType type, Hashtable data);
+        /// <returns>底层会将哈希表中的数据发送给客户端</returns>
+        public abstract Hashtable GamingMessageHandler(string username, GamingType type, Hashtable data);
 
         /// <summary>
         /// 加载标记
