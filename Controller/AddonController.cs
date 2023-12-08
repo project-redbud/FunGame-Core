@@ -32,7 +32,7 @@ namespace Milimoe.FunGame.Core.Controller
 
         /// <summary>
         /// 基于本地已连接的Socket创建新的数据请求
-        /// <para>请勿在 <see cref="GameModeServer"/> 中调用此方法</para>
+        /// <para>请勿在 <see cref="Library.Common.Addon.GameModeServer"/> 中调用此方法</para>
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
@@ -40,7 +40,7 @@ namespace Milimoe.FunGame.Core.Controller
 
         /// <summary>
         /// 基于本地已连接的Socket创建长时间运行的数据请求
-        /// <para>请勿在 <see cref="GameModeServer"/> 中调用此方法</para>
+        /// <para>请勿在 <see cref="Library.Common.Addon.GameModeServer"/> 中调用此方法</para>
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
