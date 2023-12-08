@@ -6,6 +6,10 @@ namespace Milimoe.FunGame.Core.Api.Utility
 {
     public class PluginLoader
     {
+        /// <summary>
+        /// 已读取的插件列表
+        /// <para>key 是 <see cref="Plugin.Name"/></para>
+        /// </summary>
         public Dictionary<string, Plugin> Plugins { get; } = [];
 
         private PluginLoader()
@@ -13,10 +17,16 @@ namespace Milimoe.FunGame.Core.Api.Utility
 
         }
 
-        public static PluginLoader LoadPlugins(params object[] objs)
+        /// <summary>
+        /// 构建一个插件读取器并读取插件
+        /// </summary>
+        /// <param name="delegates">用于构建 <see cref="Controller.AddonController"/></param>
+        /// <param name="otherobjs">其他需要传入给插件初始化的对象</param>
+        /// <returns></returns>
+        public static PluginLoader LoadPlugins(Delegate[] delegates, params object[] otherobjs)
         {
             PluginLoader loader = new();
-            AddonManager.LoadPlugins(loader.Plugins, objs);
+            AddonManager.LoadPlugins(loader.Plugins, delegates, otherobjs);
             return loader;
         }
 

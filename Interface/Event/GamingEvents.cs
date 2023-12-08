@@ -52,20 +52,20 @@ namespace Milimoe.FunGame.Core.Interface
         public void FailedGamingRandomEvent(object sender, GamingEventArgs e, Hashtable data);
     }
 
-    public interface IGamingLevelUpEvent
-    {
-        public void BeforeGamingLevelUpEvent(object sender, GamingEventArgs e, Hashtable data);
-        public void AfterGamingLevelUpEvent(object sender, GamingEventArgs e, Hashtable data);
-        public void SucceedGamingLevelUpEvent(object sender, GamingEventArgs e, Hashtable data);
-        public void FailedGamingLevelUpEvent(object sender, GamingEventArgs e, Hashtable data);
-    }
-
     public interface IGamingRoundEvent
     {
         public void BeforeGamingRoundEvent(object sender, GamingEventArgs e, Hashtable data);
         public void AfterGamingRoundEvent(object sender, GamingEventArgs e, Hashtable data);
         public void SucceedGamingRoundEvent(object sender, GamingEventArgs e, Hashtable data);
         public void FailedGamingRoundEvent(object sender, GamingEventArgs e, Hashtable data);
+    }
+
+    public interface IGamingLevelUpEvent
+    {
+        public void BeforeGamingLevelUpEvent(object sender, GamingEventArgs e, Hashtable data);
+        public void AfterGamingLevelUpEvent(object sender, GamingEventArgs e, Hashtable data);
+        public void SucceedGamingLevelUpEvent(object sender, GamingEventArgs e, Hashtable data);
+        public void FailedGamingLevelUpEvent(object sender, GamingEventArgs e, Hashtable data);
     }
 
     public interface IGamingMoveEvent

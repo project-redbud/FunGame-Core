@@ -57,6 +57,26 @@ namespace Milimoe.FunGame.Core.Controller
 
             return result;
         }
+        
+        /// <summary>
+        /// 发送结束游戏反馈
+        /// </summary>
+        /// <returns></returns>
+        public bool EndGame()
+        {
+            bool result = false;
+
+            try
+            {
+                result = _Socket?.Send(SocketMessageType.EndGame, "") == SocketResult.Success;
+            }
+            catch (Exception e)
+            {
+                WritelnSystemInfo(e.GetErrorInfo());
+            }
+
+            return result;
+        }
 
         /// <summary>
         /// 连接服务器

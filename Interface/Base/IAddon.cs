@@ -1,4 +1,6 @@
-﻿namespace Milimoe.FunGame.Core.Interface
+﻿using Milimoe.FunGame.Core.Controller;
+
+namespace Milimoe.FunGame.Core.Interface
 {
     public interface IAddon
     {
