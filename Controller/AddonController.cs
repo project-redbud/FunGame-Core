@@ -24,6 +24,11 @@ namespace Milimoe.FunGame.Core.Controller
         private Func<DataRequestType, DataRequest> MaskMethod_NewLongRunningDataRequest { get; set; }
 
         /// <summary>
+        /// 输出错误消息
+        /// </summary>
+        private Action<Exception> MaskMethod_Error { get; set; } = new(e => Console.Write("\r" + e + "\n\r> "));
+
+        /// <summary>
         /// 输出系统消息
         /// </summary>
         /// <param name="msg"></param>
@@ -45,7 +50,14 @@ namespace Milimoe.FunGame.Core.Controller
         /// <param name="type"></param>
         /// <returns></returns>
         public DataRequest NewLongRunningDataRequest(DataRequestType type) => MaskMethod_NewLongRunningDataRequest(type);
-        
+
+        /// <summary>
+        /// 输出错误消息
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        public void Error(Exception e) => MaskMethod_Error(e);
+
         /// <summary>
         /// 新建一个AddonController
         /// </summary>
@@ -57,6 +69,7 @@ namespace Milimoe.FunGame.Core.Controller
             if (delegates.Length > 0) MaskMethod_WriteLine = (Action<string>)delegates[0];
             if (delegates.Length > 1) MaskMethod_NewDataRequest = (Func<DataRequestType, DataRequest>)delegates[1];
             if (delegates.Length > 2) MaskMethod_NewLongRunningDataRequest = (Func<DataRequestType, DataRequest>)delegates[2];
+            if (delegates.Length > 3) MaskMethod_Error = (Action<Exception>)delegates[3];
             MaskMethod_NewDataRequest ??= new(DefaultNewDataRequest);
             MaskMethod_NewLongRunningDataRequest ??= new(DefaultNewDataRequest);
         }
