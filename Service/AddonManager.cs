@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections;
+using System.Reflection;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -14,7 +15,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="delegates"></param>
         /// <param name="otherobjs"></param>
         /// <returns></returns>
-        internal static Dictionary<string, Plugin> LoadPlugins(Dictionary<string, Plugin> plugins, Delegate[] delegates, params object[] otherobjs)
+        internal static Dictionary<string, Plugin> LoadPlugins(Dictionary<string, Plugin> plugins, Hashtable delegates, params object[] otherobjs)
         {
             if (!Directory.Exists(ReflectionSet.PluginFolderPath)) return plugins;
 
@@ -50,7 +51,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="delegates"></param>
         /// <param name="otherobjs"></param>
         /// <returns></returns>
-        internal static Dictionary<string, GameMode> LoadGameModes(Dictionary<string, GameMode> gamemodes, List<Character> characters, List<Skill> skills, List<Item> items, Delegate[] delegates, params object[] otherobjs)
+        internal static Dictionary<string, GameMode> LoadGameModes(Dictionary<string, GameMode> gamemodes, List<Character> characters, List<Skill> skills, List<Item> items, Hashtable delegates, params object[] otherobjs)
         {
             if (!Directory.Exists(ReflectionSet.GameModeFolderPath)) return gamemodes;
 
@@ -111,7 +112,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="delegates"></param>
         /// <param name="otherobjs"></param>
         /// <returns></returns>
-        internal static Dictionary<string, GameModeServer> LoadGameModesForServer(Dictionary<string, GameModeServer> gamemodes, List<Character> characters, List<Skill> skills, List<Item> items, Delegate[] delegates, params object[] otherobjs)
+        internal static Dictionary<string, GameModeServer> LoadGameModesForServer(Dictionary<string, GameModeServer> gamemodes, List<Character> characters, List<Skill> skills, List<Item> items, Hashtable delegates, params object[] otherobjs)
         {
             if (!Directory.Exists(ReflectionSet.GameModeFolderPath)) return gamemodes;
 

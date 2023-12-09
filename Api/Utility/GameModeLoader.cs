@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Entity;
+﻿using System.Collections;
+using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Service;
@@ -52,7 +53,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="delegates">用于构建 <see cref="Controller.AddonController"/></param>
         /// <param name="otherobjs">其他需要传入给插件初始化的对象</param>
         /// <returns></returns>
-        public static GameModeLoader LoadGameModes(FunGameInfo.FunGame runtime, Delegate[] delegates, params object[] otherobjs)
+        public static GameModeLoader LoadGameModes(FunGameInfo.FunGame runtime, Hashtable delegates, params object[] otherobjs)
         {
             GameModeLoader loader = new();
             if (runtime == FunGameInfo.FunGame.FunGame_Desktop)
