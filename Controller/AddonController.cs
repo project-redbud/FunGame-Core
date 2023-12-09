@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Api.Transmittal;
+﻿using System.Collections;
+using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Library.Constant;
 
@@ -11,7 +12,12 @@ namespace Milimoe.FunGame.Core.Controller
         /// <summary>
         /// 输出系统消息
         /// </summary>
-        private Action<string> MaskMethod_WriteLine { get; set; } = new(msg => Console.Write("\r" + msg + "\n\r> "));
+        private Action<string> MaskMethod_WriteLine { get; set; }
+
+        /// <summary>
+        /// 输出错误消息
+        /// </summary>
+        private Action<Exception> MaskMethod_Error { get; set; }
 
         /// <summary>
         /// 基于本地已连接的Socket创建新的数据请求
@@ -24,16 +30,18 @@ namespace Milimoe.FunGame.Core.Controller
         private Func<DataRequestType, DataRequest> MaskMethod_NewLongRunningDataRequest { get; set; }
 
         /// <summary>
-        /// 输出错误消息
-        /// </summary>
-        private Action<Exception> MaskMethod_Error { get; set; } = new(e => Console.Write("\r" + e + "\n\r> "));
-
-        /// <summary>
         /// 输出系统消息
         /// </summary>
         /// <param name="msg"></param>
         /// <returns></returns>
         public void WriteLine(string msg) => MaskMethod_WriteLine(msg);
+
+        /// <summary>
+        /// 输出错误消息
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        public void Error(Exception e) => MaskMethod_Error(e);
 
         /// <summary>
         /// 基于本地已连接的Socket创建新的数据请求
@@ -52,27 +60,26 @@ namespace Milimoe.FunGame.Core.Controller
         public DataRequest NewLongRunningDataRequest(DataRequestType type) => MaskMethod_NewLongRunningDataRequest(type);
 
         /// <summary>
-        /// 输出错误消息
-        /// </summary>
-        /// <param name="e"></param>
-        /// <returns></returns>
-        public void Error(Exception e) => MaskMethod_Error(e);
-
-        /// <summary>
         /// 新建一个AddonController
         /// </summary>
         /// <param name="Addon"></param>
         /// <param name="delegates"></param>
-        public AddonController(IAddon Addon, Delegate[] delegates)
+        public AddonController(IAddon Addon, Hashtable delegates)
         {
             this.Addon = Addon;
-            if (delegates.Length > 0) MaskMethod_WriteLine = (Action<string>)delegates[0];
-            if (delegates.Length > 1) MaskMethod_NewDataRequest = (Func<DataRequestType, DataRequest>)delegates[1];
-            if (delegates.Length > 2) MaskMethod_NewLongRunningDataRequest = (Func<DataRequestType, DataRequest>)delegates[2];
-            if (delegates.Length > 3) MaskMethod_Error = (Action<Exception>)delegates[3];
+            if (delegates.ContainsKey("WriteLine")) MaskMethod_WriteLine = delegates["WriteLine"] != null ? (Action<string>)delegates["WriteLine"]! : new(DefaultPrint);
+            if (delegates.ContainsKey("Error")) MaskMethod_Error = delegates["Error"] != null ? (Action<Exception>)delegates["Error"]! : new(DefaultPrint);
+            if (delegates.ContainsKey("NewDataRequest")) MaskMethod_NewDataRequest = delegates["NewDataRequest"] != null ? (Func<DataRequestType, DataRequest>)delegates["NewDataRequest"]! : new(DefaultNewDataRequest);
+            if (delegates.ContainsKey("NewLongRunningDataRequest")) MaskMethod_NewLongRunningDataRequest = delegates["NewLongRunningDataRequest"] != null ? (Func<DataRequestType, DataRequest>)delegates["NewLongRunningDataRequest"]! : new(DefaultNewDataRequest);
+            MaskMethod_WriteLine ??= new(DefaultPrint);
+            MaskMethod_Error ??= new(DefaultPrint);
             MaskMethod_NewDataRequest ??= new(DefaultNewDataRequest);
             MaskMethod_NewLongRunningDataRequest ??= new(DefaultNewDataRequest);
         }
+
+        private void DefaultPrint(string msg) => Console.Write("\r" + msg + "\n\r> ");
+        
+        private void DefaultPrint(Exception e) => DefaultPrint(e.ToString());
 
         private DataRequest DefaultNewDataRequest(DataRequestType type)
         {

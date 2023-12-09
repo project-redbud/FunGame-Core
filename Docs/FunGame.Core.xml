@@ -361,7 +361,7 @@
             物品表
             </summary>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.LoadGameModes(Milimoe.FunGame.Core.Library.Constant.FunGameInfo.FunGame,System.Delegate[],System.Object[])">
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.LoadGameModes(Milimoe.FunGame.Core.Library.Constant.FunGameInfo.FunGame,System.Collections.Hashtable,System.Object[])">
             <summary>
             传入 <see cref="T:Milimoe.FunGame.Core.Library.Constant.FunGameInfo.FunGame"/> 类型来创建指定端的模组读取器
             <para>runtime = <see cref="F:Milimoe.FunGame.Core.Library.Constant.FunGameInfo.FunGame.FunGame_Desktop"/> 时，仅读取 <seealso cref="P:Milimoe.FunGame.Core.Api.Utility.GameModeLoader.Modes"/></para>
@@ -768,7 +768,7 @@
             <para>key 是 <see cref="P:Milimoe.FunGame.Core.Library.Common.Addon.Plugin.Name"/></para>
             </summary>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Api.Utility.PluginLoader.LoadPlugins(System.Delegate[],System.Object[])">
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.PluginLoader.LoadPlugins(System.Collections.Hashtable,System.Object[])">
             <summary>
             构建一个插件读取器并读取插件
             </summary>
@@ -965,6 +965,11 @@
             输出系统消息
             </summary>
         </member>
+        <member name="P:Milimoe.FunGame.Core.Controller.AddonController.MaskMethod_Error">
+            <summary>
+            输出错误消息
+            </summary>
+        </member>
         <member name="P:Milimoe.FunGame.Core.Controller.AddonController.MaskMethod_NewDataRequest">
             <summary>
             基于本地已连接的Socket创建新的数据请求
@@ -975,16 +980,18 @@
             基于本地已连接的Socket创建长时间运行的数据请求
             </summary>
         </member>
-        <member name="P:Milimoe.FunGame.Core.Controller.AddonController.MaskMethod_Error">
-            <summary>
-            输出错误消息
-            </summary>
-        </member>
         <member name="M:Milimoe.FunGame.Core.Controller.AddonController.WriteLine(System.String)">
             <summary>
             输出系统消息
             </summary>
             <param name="msg"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Controller.AddonController.Error(System.Exception)">
+            <summary>
+            输出错误消息
+            </summary>
+            <param name="e"></param>
             <returns></returns>
         </member>
         <member name="M:Milimoe.FunGame.Core.Controller.AddonController.NewDataRequest(Milimoe.FunGame.Core.Library.Constant.DataRequestType)">
@@ -1003,14 +1010,7 @@
             <param name="type"></param>
             <returns></returns>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Controller.AddonController.Error(System.Exception)">
-            <summary>
-            输出错误消息
-            </summary>
-            <param name="e"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Milimoe.FunGame.Core.Controller.AddonController.#ctor(Milimoe.FunGame.Core.Interface.IAddon,System.Delegate[])">
+        <member name="M:Milimoe.FunGame.Core.Controller.AddonController.#ctor(Milimoe.FunGame.Core.Interface.IAddon,System.Collections.Hashtable)">
             <summary>
             新建一个AddonController
             </summary>
@@ -2320,7 +2320,7 @@
             所处的房间
             </summary>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Service.AddonManager.LoadPlugins(System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.Plugin},System.Delegate[],System.Object[])">
+        <member name="M:Milimoe.FunGame.Core.Service.AddonManager.LoadPlugins(System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.Plugin},System.Collections.Hashtable,System.Object[])">
             <summary>
             从plugins目录加载所有插件
             </summary>
@@ -2329,7 +2329,7 @@
             <param name="otherobjs"></param>
             <returns></returns>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Service.AddonManager.LoadGameModes(System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.GameMode},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Character},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Skill},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Item},System.Delegate[],System.Object[])">
+        <member name="M:Milimoe.FunGame.Core.Service.AddonManager.LoadGameModes(System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.GameMode},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Character},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Skill},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Item},System.Collections.Hashtable,System.Object[])">
             <summary>
             从gamemodes目录加载所有模组
             </summary>
@@ -2341,7 +2341,7 @@
             <param name="otherobjs"></param>
             <returns></returns>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Service.AddonManager.LoadGameModesForServer(System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Character},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Skill},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Item},System.Delegate[],System.Object[])">
+        <member name="M:Milimoe.FunGame.Core.Service.AddonManager.LoadGameModesForServer(System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Character},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Skill},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Item},System.Collections.Hashtable,System.Object[])">
             <summary>
             从gamemodes目录加载所有适用于服务器的模组
             </summary>
