@@ -975,6 +975,11 @@
             基于本地已连接的Socket创建长时间运行的数据请求
             </summary>
         </member>
+        <member name="P:Milimoe.FunGame.Core.Controller.AddonController.MaskMethod_Error">
+            <summary>
+            输出错误消息
+            </summary>
+        </member>
         <member name="M:Milimoe.FunGame.Core.Controller.AddonController.WriteLine(System.String)">
             <summary>
             输出系统消息
@@ -996,6 +1001,13 @@
             <para>请勿在 <see cref="T:Milimoe.FunGame.Core.Library.Common.Addon.GameModeServer"/> 中调用此方法</para>
             </summary>
             <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Controller.AddonController.Error(System.Exception)">
+            <summary>
+            输出错误消息
+            </summary>
+            <param name="e"></param>
             <returns></returns>
         </member>
         <member name="M:Milimoe.FunGame.Core.Controller.AddonController.#ctor(Milimoe.FunGame.Core.Interface.IAddon,System.Delegate[])">
