@@ -42,7 +42,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 当前所处的房间类型
         /// </summary>
-        public string FunGame_RoomType { get; set; } = RoomSet.All;
+        public RoomType FunGame_RoomType { get; set; } = RoomType.All;
 
         /// <summary>
         /// 服务器名称
