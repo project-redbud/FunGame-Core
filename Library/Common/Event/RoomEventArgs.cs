@@ -9,25 +9,18 @@ namespace Milimoe.FunGame.Core.Library.Common.Event
         public Room Room { get; set; } = General.HallInstance;
         public string RoomID { get; set; } = "";
         public long RoomMaster { get; set; } = 0;
-        public string RoomTypeString { get; set; } = RoomSet.All;
         public RoomType RoomType { get; set; } = RoomType.All;
+        public string RoomTypeString { get; set; } = RoomSet.All;
         public string GameMode { get; set; } = "";
         public string GameMap { get; set; } = "";
         public RoomState RoomState { get; set; } = RoomState.Created;
         public bool HasPassword => Password.Trim() != "";
         public string Password { get; set; } = "";
 
-        public RoomEventArgs(string type, string password)
+        public RoomEventArgs(RoomType type, string password)
         {
-            RoomTypeString = type;
-            RoomType = type switch
-            {
-                RoomSet.Mix => RoomType.Mix,
-                RoomSet.Team => RoomType.Team,
-                RoomSet.FastAuto => RoomType.FastAuto,
-                RoomSet.Custom => RoomType.Custom,
-                _ => RoomType.All
-            };
+            RoomType = type;
+            RoomTypeString = RoomSet.GetTypeString(type);
             Password = password;
             Room = Factory.GetRoom(RoomType: RoomType, Password: Password);
         }
