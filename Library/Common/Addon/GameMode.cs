@@ -2,6 +2,7 @@
 using Milimoe.FunGame.Core.Controller;
 using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Library.Common.Event;
+using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Library.Common.Addon
@@ -37,6 +38,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// 模组所使用的地图
         /// </summary>
         public abstract string[] Maps { get; }
+
+        /// <summary>
+        /// 适用的房间模式
+        /// </summary>
+        public abstract RoomType RoomType { get; }
 
         /// <summary>
         /// 包含了一些常用方法的控制器

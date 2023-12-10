@@ -1503,6 +1503,11 @@
             模组所使用的地图
             </summary>
         </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameMode.RoomType">
+            <summary>
+            适用的房间模式
+            </summary>
+        </member>
         <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameMode.Controller">
             <summary>
             包含了一些常用方法的控制器
