@@ -548,11 +548,18 @@
             <param name="type">格式化类型</param>
             <returns></returns>
         </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.DateTimeUtility.GetDateTimeToString(System.String)">
+            <summary>
+            获取系统时间并转为字符串
+            </summary>
+            <param name="format">格式化字符串</param>
+            <returns></returns>
+        </member>
         <member name="M:Milimoe.FunGame.Core.Api.Utility.DateTimeUtility.GetNowShortTime">
             <summary>
-            获取系统短日期
+            获取系统短时间
             </summary>
-            <returns></returns>
+            <returns>时:分:秒</returns>
         </member>
         <member name="M:Milimoe.FunGame.Core.Api.Utility.DateTimeUtility.GetNowTime">
             <summary>
@@ -862,6 +869,21 @@
             <param name="filename">文件名</param>
             <param name="path">相对路径</param>
             <returns>内容</returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.TXTHelper.WriteTXT(System.String,System.String,System.String)">
+            <summary>
+            写入TXT文件内容（如不存在文件会创建，反之新起一行追加）
+            </summary>
+            <param name="message"></param>
+            <param name="filename">文件名</param>
+            <param name="path">相对路径</param>
+            <returns>内容</returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.TXTHelper.AppendErrorLog(System.String)">
+            <summary>
+            追加错误日志 默认写入logs文件夹下的当日日期.log文件
+            </summary>
+            <param name="msg"></param>
         </member>
         <member name="T:Milimoe.FunGame.Core.Api.Utility.TwoFactorAuthenticator">
             <summary>
@@ -2485,6 +2507,13 @@
             <typeparam name="T"></typeparam>
             <param name="json"></param>
             <param name="options"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Service.JsonManager.IsCompleteJson``1(System.String)">
+            <summary>
+            检查字符串是否为完整的JSON对象
+            </summary>
+            <param name="json"></param>
             <returns></returns>
         </member>
         <member name="P:Milimoe.FunGame.Core.Service.MailManager.SmtpClients">

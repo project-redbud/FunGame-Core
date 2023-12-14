@@ -215,5 +215,25 @@ namespace Milimoe.FunGame.Core.Service
             json = "[" + json.Replace("}{", "},{") + "]"; // 将Json字符串转换为数组
             return JsonSerializer.Deserialize<List<T>>(json, options) ?? new List<T>();
         }
+
+        /// <summary>
+        /// 检查字符串是否为完整的JSON对象
+        /// </summary>
+        /// <param name="json"></param>
+        /// <returns></returns>
+        internal static bool IsCompleteJson<T>(string json)
+        {
+            try
+            {
+                // 尝试解析JSON数据，如果成功则表示接收到完整的JSON
+                GetObject<T>(json);
+                return true;
+            }
+            catch
+            {
+                // JSON解析失败，表示接收到的数据不完整
+                return false;
+            }
+        }
     }
 }

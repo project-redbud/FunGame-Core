@@ -51,7 +51,7 @@ namespace Milimoe.FunGame.Core.Service
                 SmtpClientInfo Info = Sender.SmtpClientInfo;
                 SmtpClient Smtp;
                 Guid MailSenderID = Sender.MailSenderID;
-                if (!SmtpClients.ContainsKey(MailSenderID))
+                if (!SmtpClients.TryGetValue(MailSenderID, out SmtpClient? value))
                 {
                     Smtp = new()
                     {
@@ -63,7 +63,7 @@ namespace Milimoe.FunGame.Core.Service
                     };
                     SmtpClients.Add(MailSenderID, Smtp);
                 }
-                else Smtp = SmtpClients[MailSenderID];
+                else Smtp = value;
                 MailMessage Msg = new()
                 {
                     Subject = Mail.Subject,
@@ -92,6 +92,7 @@ namespace Milimoe.FunGame.Core.Service
             catch (Exception e)
             {
                 ErrorMsg = e.GetErrorInfo();
+                Api.Utility.TXTHelper.AppendErrorLog(ErrorMsg);
                 return MailSendResult.Fail;
             }
         }

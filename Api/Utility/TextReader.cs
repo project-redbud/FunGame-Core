@@ -152,5 +152,33 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
             return "";
         }
+
+        /// <summary>
+        /// 写入TXT文件内容（如不存在文件会创建，反之新起一行追加）
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="filename">文件名</param>
+        /// <param name="path">相对路径</param>
+        /// <returns>内容</returns>
+        public static void WriteTXT(string message, string filename, string path = "")
+        {
+            if (path.Trim() != "")
+            {
+                // 不存在文件夹将创建文件夹
+                if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+                path = Path.Combine(path, filename);
+            }
+            else path = $@"{Environment.CurrentDirectory}\{filename}";
+            // 写入内容
+            StreamWriter writer = File.Exists(path) ? new(path, true, General.DefaultEncoding) : new(path, false, General.DefaultEncoding);
+            writer.WriteLine(message);
+            writer.Close();
+        }
+
+        /// <summary>
+        /// 追加错误日志 默认写入logs文件夹下的当日日期.log文件
+        /// </summary>
+        /// <param name="msg"></param>
+        public static void AppendErrorLog(string msg) => WriteTXT(DateTimeUtility.GetDateTimeToString(TimeType.General) + ": " + msg + "\r\n", DateTimeUtility.GetDateTimeToString("yyyy-MM-dd") + ".log", "logs");
     }
 }

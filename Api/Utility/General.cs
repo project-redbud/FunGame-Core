@@ -209,7 +209,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         public static DateTime GetDateTime(TimeType type)
         {
             DateTime now = DateTime.Now;
-            if (type == TimeType.DateOnly)
+            if (type == TimeType.LongDateOnly || type == TimeType.ShortDateOnly)
                 return now.Date;
             else return now;
         }
@@ -221,8 +221,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns>转换失败返回当前时间</returns>
         public static DateTime GetDateTime(string format)
         {
-            DateTime dt = default;
-            if (DateTime.TryParse(format, out dt))
+            if (DateTime.TryParse(format, out DateTime dt))
             {
                 return dt;
             }
@@ -242,8 +241,10 @@ namespace Milimoe.FunGame.Core.Api.Utility
             DateTime now = DateTime.Now;
             return type switch
             {
-                TimeType.DateOnly => now.Date.ToString("D"),
-                TimeType.TimeOnly => now.ToString("T"),
+                TimeType.LongDateOnly => now.Date.ToString("D"),
+                TimeType.ShortDateOnly => now.Date.ToString("d"),
+                TimeType.LongTimeOnly => now.ToString("T"),
+                TimeType.ShortTimeOnly => now.ToString("t"),
                 TimeType.Year4 => now.Year.ToString(),
                 TimeType.Year2 => "'" + now.ToString("yy"),
                 TimeType.Month => now.Month.ToString(),
@@ -256,9 +257,16 @@ namespace Milimoe.FunGame.Core.Api.Utility
         }
 
         /// <summary>
-        /// 获取系统短日期
+        /// 获取系统时间并转为字符串
         /// </summary>
+        /// <param name="format">格式化字符串</param>
         /// <returns></returns>
+        public static string GetDateTimeToString(string format) => DateTime.Now.ToString(format);
+
+        /// <summary>
+        /// 获取系统短时间
+        /// </summary>
+        /// <returns>时:分:秒</returns>
         public static string GetNowShortTime()
         {
             DateTime now = DateTime.Now;
@@ -421,8 +429,8 @@ namespace Milimoe.FunGame.Core.Api.Utility
         private static string LetterVerifyCode(int length)
         {
             char[] Verification = new char[length];
-            char[] Dictionary = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
+            char[] Dictionary = [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' ];
             Random random = new();
             for (int i = 0; i < length; i++)
             {
@@ -439,10 +447,10 @@ namespace Milimoe.FunGame.Core.Api.Utility
         private static string MixVerifyCode(int length)
         {
             char[] Verification = new char[length];
-            char[] Dictionary = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+            char[] Dictionary = [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
                 '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
-            };
+            ];
             Random random = new();
             for (int i = 0; i < length; i++)
             {

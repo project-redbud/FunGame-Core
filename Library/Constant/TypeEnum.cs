@@ -223,8 +223,10 @@ namespace Milimoe.FunGame.Core.Library.Constant
     {
         None,
         General,
-        DateOnly,
-        TimeOnly,
+        LongDateOnly,
+        ShortDateOnly,
+        LongTimeOnly,
+        ShortTimeOnly,
         Year4,
         Year2,
         Month,

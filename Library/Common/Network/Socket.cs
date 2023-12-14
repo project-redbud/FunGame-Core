@@ -1,5 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Library.Exception;
 using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
@@ -66,8 +67,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
                 }
                 return result;
             }
-            catch
+            catch (System.Exception e)
             {
+                Api.Utility.TXTHelper.AppendErrorLog(e.GetErrorInfo());
                 throw new SocketWrongInfoException();
             }
         }
@@ -87,8 +89,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
                 }
                 return result;
             }
-            catch
+            catch (System.Exception e)
             {
+                Api.Utility.TXTHelper.AppendErrorLog(e.GetErrorInfo());
                 throw new SocketWrongInfoException();
             }
         }
@@ -178,7 +181,5 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             if (_HeartBeatFaileds++ >= 3)
                 throw new LostConnectException();
         }
-
-        public static string GetTypeString(SocketMessageType type) => SocketSet.GetTypeString(type);
     }
 }
