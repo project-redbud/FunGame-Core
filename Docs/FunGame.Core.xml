@@ -2666,30 +2666,12 @@
             <param name="SocketObject">Socket信息容器</param>
             <returns>通信结果</returns>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Service.SocketManager.Receive">
-            <summary>
-            用于客户端接收服务器信息
-            </summary>
-            <returns>SocketObject</returns>
-        </member>
         <member name="M:Milimoe.FunGame.Core.Service.SocketManager.Receive(System.Net.Sockets.Socket)">
             <summary>
-            用于服务器接收客户端信息
+            接收数据流中的信息
+            <para/>如果是服务器接收信息需要传入客户端Socket <paramref name="ClientSocket"/>
             </summary>
-            <param name="ClientSocket">客户端Socket</param>
-            <returns>SocketObject</returns>
-        </member>
-        <member name="M:Milimoe.FunGame.Core.Service.SocketManager.ReceiveArray">
-            <summary>
-            用于客户端接收服务器信息（数组版）
-            </summary>
-            <returns>SocketObjects</returns>
-        </member>
-        <member name="M:Milimoe.FunGame.Core.Service.SocketManager.ReceiveArray(System.Net.Sockets.Socket)">
-            <summary>
-            用于服务器接收客户端信息（数组版）
-            </summary>
-            <param name="ClientSocket">客户端Socket</param>
+            <param name="ClientSocket">如果是服务器接收信息需要传入客户端Socket</param>
             <returns>SocketObjects</returns>
         </member>
         <member name="T:Milimoe.FunGame.Core.Service.SocketManager.SocketReceiveHandler">

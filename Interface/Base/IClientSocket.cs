@@ -7,8 +7,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public bool Receiving { get; }
         public void StartReceiving(Task t);
         public SocketResult Send(SocketMessageType type, params object[] objs);
-        public Library.Common.Network.SocketObject Receive();
-        public Library.Common.Network.SocketObject[] ReceiveArray();
+        public Library.Common.Network.SocketObject[] Receive();
         public void BindEvent(Delegate Method, bool Remove = false);
     }
 }

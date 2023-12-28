@@ -111,7 +111,7 @@ namespace Milimoe.FunGame.Core.Controller
                 {
                     if (_Socket.Send(SocketMessageType.Connect, ConnectArgs.Cast<object>().ToArray()) == SocketResult.Success)
                     {
-                        SocketObject[] objs = _Socket.ReceiveArray();
+                        SocketObject[] objs = _Socket.Receive();
                         foreach (SocketObject obj in objs)
                         {
                             if (obj.SocketType == SocketMessageType.Connect)
@@ -311,7 +311,7 @@ namespace Milimoe.FunGame.Core.Controller
         {
             if (_Socket != null && _Socket.Connected)
             {
-                return _Socket.ReceiveArray();
+                return _Socket.Receive();
             }
             return [];
         }
