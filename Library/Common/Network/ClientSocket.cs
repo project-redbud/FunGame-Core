@@ -38,23 +38,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             Instance?.Close();
         }
 
-        public SocketObject Receive()
+        public SocketObject[] Receive()
         {
             try
             {
                 return SocketManager.Receive(Instance);
-            }
-            catch
-            {
-                throw new SocketWrongInfoException();
-            }
-        }
-
-        public SocketObject[] ReceiveArray()
-        {
-            try
-            {
-                return SocketManager.ReceiveArray(Instance);
             }
             catch
             {
