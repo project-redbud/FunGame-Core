@@ -274,4 +274,15 @@ namespace Milimoe.FunGame.Core.Library.Constant
             };
         }
     }
+
+    public class UserSet
+    {
+        public const long UnknownUserId = 0;
+        public const long GuestUserId = -5;
+        public const long LocalUserId = -6;
+
+        public const string UnknownUserName = "未知用户";
+        public const string GuestUserName = "游客用户";
+        public const string LocalUserName = "本地用户";
+    }
 }

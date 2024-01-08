@@ -2140,6 +2140,16 @@
             默认的未知用户
             </summary>
         </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Constant.General.GuestUserInstance">
+            <summary>
+            游客用户
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Constant.General.LocalUserInstance">
+            <summary>
+            本地用户
+            </summary>
+        </member>
         <member name="P:Milimoe.FunGame.Core.Library.Constant.General.HallInstance">
             <summary>
             大厅（空房间）实例

@@ -15,7 +15,22 @@ namespace Milimoe.FunGame.Core.Api.Factory
 
         public static User Create(long Id = 0, string Username = "", DateTime? RegTime = null, DateTime? LastTime = null, string Email = "", string NickName = "", bool IsAdmin = false, bool IsOperator = false, bool IsEnable = true, decimal Credits = 0, decimal Materials = 0, decimal GameTime = 0, string AutoKey = "")
         {
-            return new User(Id, Username, RegTime, LastTime, Email, NickName, IsAdmin, IsOperator, IsEnable, Credits, Materials, GameTime, AutoKey);
+            return new(Id, Username, RegTime, LastTime, Email, NickName, IsAdmin, IsOperator, IsEnable, Credits, Materials, GameTime, AutoKey);
+        }
+
+        public static User Create(UserType type)
+        {
+            return new(type);
+        }
+
+        public static User CreateGuest()
+        {
+            return General.GuestUserInstance;
+        }
+
+        public static User CreateLocalUser()
+        {
+            return General.LocalUserInstance;
         }
     }
 }

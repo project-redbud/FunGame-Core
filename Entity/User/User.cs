@@ -46,6 +46,26 @@ namespace Milimoe.FunGame.Core.Entity
             Inventory = new(this);
         }
 
+        internal User(UserType usertype)
+        {
+            switch (usertype)
+            {
+                case UserType.General:
+                case UserType.Empty:
+                    break;
+                case UserType.Guest:
+                    Id = UserSet.GuestUserId;
+                    Username = UserSet.GuestUserName;
+                    break;
+                case UserType.LocalUser:
+                    Id = UserSet.LocalUserId;
+                    Username = UserSet.LocalUserName;
+                    break;
+            }
+            Statistics = new(this);
+            Inventory = new(this);
+        }
+
         public override bool Equals(IBaseEntity? other)
         {
             return other is User u && u.Id == Id;

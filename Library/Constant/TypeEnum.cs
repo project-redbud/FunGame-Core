@@ -205,6 +205,14 @@ namespace Milimoe.FunGame.Core.Library.Constant
         CharacterStatistics
     }
 
+    public enum UserType
+    {
+        General,
+        Empty,
+        Guest,
+        LocalUser
+    }
+
     public enum ShowMessageType
     {
         None,
