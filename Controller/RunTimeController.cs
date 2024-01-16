@@ -81,13 +81,13 @@ namespace Milimoe.FunGame.Core.Controller
         /// <summary>
         /// 连接服务器
         /// </summary>
-        /// <param name="ip"></param>
+        /// <param name="addr"></param>
         /// <param name="port"></param>
         /// <returns></returns>
-        public ConnectResult Connect(string ip, int port)
+        public ConnectResult Connect(string addr, int port)
         {
             ArrayList ConnectArgs = [];
-            if (!BeforeConnect(ref ip, ref port, ConnectArgs))
+            if (!BeforeConnect(ref addr, ref port, ConnectArgs))
             {
                 return ConnectResult.ConnectFailed;
             }
@@ -98,7 +98,7 @@ namespace Milimoe.FunGame.Core.Controller
             string notice = "";
 
             // 检查服务器IP地址和端口是否正确
-            if (ip == "" || port <= 0)
+            if (addr == "" || port <= 0)
             {
                 result = ConnectResult.FindServerFailed;
             }
@@ -106,7 +106,7 @@ namespace Milimoe.FunGame.Core.Controller
             {
                 // 与服务器建立连接
                 _Socket?.Close();
-                _Socket = Socket.Connect(ip, port);
+                _Socket = Socket.Connect(addr, port);
                 if (_Socket != null && _Socket.Connected)
                 {
                     if (_Socket.Send(SocketMessageType.Connect, ConnectArgs.Cast<object>().ToArray()) == SocketResult.Success)

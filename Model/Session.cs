@@ -6,9 +6,9 @@ namespace Milimoe.FunGame.Core.Model
     public class Session
     {
         /// <summary>
-        /// 服务器IP地址
+        /// 服务器地址
         /// </summary>
-        public string Server_IP { get; set; } = "";
+        public string Server_Address { get; set; } = "";
 
         /// <summary>
         /// 服务器端口号

@@ -9,7 +9,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public System.Net.Sockets.Socket Instance { get; }
         public SocketRuntimeType Runtime => SocketRuntimeType.Server;
         public Guid Token { get; } = Guid.Empty;
-        public string ServerIP { get; } = "";
+        public string ServerAddress { get; } = "";
         public int ServerPort { get; } = 0;
         public string ServerName { get; } = "";
         public string ServerNotice { get; } = "";

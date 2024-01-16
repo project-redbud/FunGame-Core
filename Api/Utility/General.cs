@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Net;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.Text;
@@ -56,30 +57,42 @@ namespace Milimoe.FunGame.Core.Api.Utility
         }
 
         /// <summary>
-        /// 判断字符串是否是一个FunGame可接受的服务器地址
+        /// 判断字符串是否是一个FunGame可接受的服务器地址<para/>
+        /// 此方法可以解析域名
         /// </summary>
         /// <param name="str"></param>
-        /// <returns></returns>
-        public static ErrorIPAddressType IsServerAddress(string str)
+        /// <param name="addr"></param>
+        /// <param name="port"></param>
+        /// <returns>返回地址验证结果，同时输出服务器地址和端口号</returns>
+        public static ErrorIPAddressType IsServerAddress(string str, out string addr, out int port)
         {
-            string[] strs = str.Split(':');
+            addr = "";
+            port = 22222;
             string ip;
-            int port;
-            if (strs.Length < 2)
+            // 包含端口号时，需要先截取
+            string[] strs = str.Split(':');
+            if (strs.Length == 1)
+            {
+                addr = str;
+            }
+            else if (strs.Length > 1)
+            {
+                addr = strs[0];
+                port = int.Parse(strs[1]);
+            }
+            else if (strs.Length > 2)
+            {
+                return ErrorIPAddressType.WrongFormat;
+            }
+            try
+            {
+                ip = GetIPAddress(addr);
+            }
+            catch
             {
                 ip = strs[0];
-                port = 22222;
             }
-            else if (strs.Length < 3)
-            {
-                ip = strs[0];
-                port = Convert.ToInt32(strs[1]);
-            }
-            else return ErrorIPAddressType.WrongFormat;
-            if (IsIP(ip) && port > 0 && port < 65536) return ErrorIPAddressType.None;
-            else if (!IsIP(ip) && port > 0 && port < 65536) return ErrorIPAddressType.IsNotIP;
-            else if (IsIP(ip) && (port <= 0 || port >= 65536)) return ErrorIPAddressType.IsNotPort;
-            else return ErrorIPAddressType.WrongFormat;
+            return IsServerAddress(ip, port);
         }
 
         /// <summary>
@@ -90,9 +103,21 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns></returns>
         public static ErrorIPAddressType IsServerAddress(string ip, int port)
         {
-            if (IsIP(ip) && port > 0 && port < 65536) return ErrorIPAddressType.None;
-            else if (!IsIP(ip) && port > 0 && port < 65536) return ErrorIPAddressType.IsNotIP;
-            else if (IsIP(ip) && (port <= 0 || port >= 65536)) return ErrorIPAddressType.IsNotPort;
+            if (IsIP(ip))
+            {
+                if (port > 0 && port < 65536)
+                {
+                    return ErrorIPAddressType.None;
+                }
+                else
+                {
+                    return ErrorIPAddressType.IsNotPort;
+                }
+            }
+            else if (port > 0 && port < 65536)
+            {
+                return ErrorIPAddressType.IsNotAddress;
+            }
             else return ErrorIPAddressType.WrongFormat;
         }
 
@@ -117,6 +142,20 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 return Convert.ToInt32(reply.RoundtripTime);
             }
             return -1;
+        }
+
+        /// <summary>
+        /// 解析域名为IP地址
+        /// </summary>
+        /// <param name="domain"></param>
+        /// <param name="family"></param>
+        /// <returns></returns>
+        internal static string GetIPAddress(string domain, System.Net.Sockets.AddressFamily family = System.Net.Sockets.AddressFamily.InterNetwork)
+        {
+            // 如果是域名，则解析为IP地址
+            IPHostEntry entrys = Dns.GetHostEntry(domain);
+            // 这里使用断言，请自行添加try catch配合使用
+            return entrys.AddressList.Where(addr => addr.AddressFamily == family).FirstOrDefault()!.ToString();
         }
 
         /// <summary>

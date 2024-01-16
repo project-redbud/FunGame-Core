@@ -77,31 +77,45 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 创建客户端Socket
         /// </summary>
-        /// <param name="IP">服务器IP地址</param>
+        /// <param name="Address">服务器IP地址</param>
         /// <param name="Port">服务器监听端口</param>
         /// <returns>客户端专用Socket</returns>
-        internal static Socket? Connect(string IP, int Port = 22222)
+        internal static Socket? Connect(string Address, int Port = 22222)
         {
             Socket? ClientSocket;
             EndPoint ServerEndPoint;
             try
             {
-                ClientSocket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                string IP = Api.Utility.NetworkUtility.GetIPAddress(Address);
                 ServerEndPoint = new IPEndPoint(IPAddress.Parse(IP), Port);
                 if (ServerEndPoint != null)
                 {
-                    while (true)
+                    ClientSocket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    bool Connecting = true;
+                    Task t = Task.Run(() =>
                     {
-                        if (!ClientSocket.Connected)
+                        while (Connecting)
                         {
-                            ClientSocket.Connect(ServerEndPoint);
-                            if (ClientSocket.Connected)
+                            if (!ClientSocket.Connected && Connecting)
                             {
-                                ClientSocket.NoDelay = true;
-                                _Socket = ClientSocket;
-                                return _Socket;
+                                ClientSocket.Connect(ServerEndPoint);
+                                if (ClientSocket.Connected)
+                                {
+                                    ClientSocket.NoDelay = true;
+                                    _Socket = ClientSocket;
+                                    break;
+                                }
                             }
                         }
+                    });
+                    if (t.Wait(10 * 1000) && (_Socket?.Connected ?? false))
+                    {
+                        return _Socket;
+                    }
+                    else
+                    {
+                        Connecting = false;
+                        throw new ConnectFailedException();
                     }
                 }
             }

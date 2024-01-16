@@ -145,7 +145,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
     public enum ErrorIPAddressType
     {
         None,
-        IsNotIP,
+        IsNotAddress,
         IsNotPort,
         WrongFormat
     }

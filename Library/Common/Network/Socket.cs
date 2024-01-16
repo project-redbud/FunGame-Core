@@ -10,7 +10,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public System.Net.Sockets.Socket Instance { get; }
         public SocketRuntimeType Runtime => SocketRuntimeType.Client;
         public Guid Token { get; set; } = Guid.Empty;
-        public string ServerIP { get; } = "";
+        public string ServerAddress { get; } = "";
         public int ServerPort { get; } = 0;
         public string ServerName { get; } = "";
         public string ServerNotice { get; } = "";
@@ -27,18 +27,18 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         private bool _SendingHeartBeat = false;
         private int _HeartBeatFaileds = 0;
 
-        private Socket(System.Net.Sockets.Socket Instance, string ServerIP, int ServerPort)
+        private Socket(System.Net.Sockets.Socket Instance, string ServerAddress, int ServerPort)
         {
             this.Instance = Instance;
-            this.ServerIP = ServerIP;
+            this.ServerAddress = ServerAddress;
             this.ServerPort = ServerPort;
             this.StartSendingHeartBeat();
         }
 
-        public static Socket Connect(string IP, int Port = 22222)
+        public static Socket Connect(string Address, int Port = 22222)
         {
-            System.Net.Sockets.Socket? socket = SocketManager.Connect(IP, Port);
-            if (socket != null) return new Socket(socket, IP, Port);
+            System.Net.Sockets.Socket? socket = SocketManager.Connect(Address, Port);
+            if (socket != null) return new Socket(socket, Address, Port);
             else throw new ConnectFailedException();
         }
 

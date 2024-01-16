@@ -428,12 +428,15 @@
             <param name="str"></param>
             <returns></returns>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Api.Utility.NetworkUtility.IsServerAddress(System.String)">
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.NetworkUtility.IsServerAddress(System.String,System.String@,System.Int32@)">
             <summary>
-            判断字符串是否是一个FunGame可接受的服务器地址
+            判断字符串是否是一个FunGame可接受的服务器地址<para/>
+            此方法可以解析域名
             </summary>
             <param name="str"></param>
-            <returns></returns>
+            <param name="addr"></param>
+            <param name="port"></param>
+            <returns>返回地址验证结果，同时输出服务器地址和端口号</returns>
         </member>
         <member name="M:Milimoe.FunGame.Core.Api.Utility.NetworkUtility.IsServerAddress(System.String,System.Int32)">
             <summary>
@@ -448,6 +451,14 @@
             获取服务器的延迟
             </summary>
             <param name="addr">服务器IP地址</param>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.NetworkUtility.GetIPAddress(System.String,System.Net.Sockets.AddressFamily)">
+            <summary>
+            解析域名为IP地址
+            </summary>
+            <param name="domain"></param>
+            <param name="family"></param>
             <returns></returns>
         </member>
         <member name="M:Milimoe.FunGame.Core.Api.Utility.NetworkUtility.JsonSerialize``1(``0)">
@@ -1086,7 +1097,7 @@
             <summary>
             连接服务器
             </summary>
-            <param name="ip"></param>
+            <param name="addr"></param>
             <param name="port"></param>
             <returns></returns>
         </member>
@@ -2322,9 +2333,9 @@
             <param name="GamingType"></param>
             <param name="Data"></param>
         </member>
-        <member name="P:Milimoe.FunGame.Core.Model.Session.Server_IP">
+        <member name="P:Milimoe.FunGame.Core.Model.Session.Server_Address">
             <summary>
-            服务器IP地址
+            服务器地址
             </summary>
         </member>
         <member name="P:Milimoe.FunGame.Core.Model.Session.Server_Port">
@@ -2657,7 +2668,7 @@
             <summary>
             创建客户端Socket
             </summary>
-            <param name="IP">服务器IP地址</param>
+            <param name="Address">服务器IP地址</param>
             <param name="Port">服务器监听端口</param>
             <returns>客户端专用Socket</returns>
         </member>
@@ -2735,6 +2746,15 @@
             </summary>
             <param name="action"></param>
             <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Service.TaskExtension.WithCancellation(System.Threading.Tasks.Task,System.Threading.CancellationToken)">
+            <summary>
+            用于取消任务
+            </summary>
+            <param name="task"></param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+            <exception cref="T:System.OperationCanceledException"></exception>
         </member>
     </members>
 </doc>
