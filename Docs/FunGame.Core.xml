@@ -2747,14 +2747,5 @@
             <param name="action"></param>
             <returns></returns>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Service.TaskExtension.WithCancellation(System.Threading.Tasks.Task,System.Threading.CancellationToken)">
-            <summary>
-            用于取消任务
-            </summary>
-            <param name="task"></param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
-            <exception cref="T:System.OperationCanceledException"></exception>
-        </member>
     </members>
 </doc>

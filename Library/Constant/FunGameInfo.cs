@@ -39,7 +39,7 @@
                 FunGame.FunGame_Server => FunGame_Server,
                 _ => ""
             };
-            return type + " [ 版本: " + FunGame_Version + FunGame_VersionPatch + " ]\n" + (type.Equals(FunGame_Desktop) ? @"©" : "(C)") + "2023 Milimoe. 保留所有权利\n";
+            return type + " [版本: " + FunGame_Version + FunGame_VersionPatch + "]\n" + (type.Equals(FunGame_Desktop) ? @"©" : "(C)") + "2023 Milimoe. 保留所有权利\n";
         }
     }
 }

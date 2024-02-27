@@ -27,7 +27,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="FileName">文件名，缺省为FunGame.ini</param>
         public static void WriteINI(string Section, string Key, string Value, string FileName = DefaultFileName)
         {
-            WritePrivateProfileString(Section, Key, Value, Environment.CurrentDirectory.ToString() + @"\" + FileName);
+            WritePrivateProfileString(Section, Key, Value, AppDomain.CurrentDomain.BaseDirectory + FileName);
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         public static string ReadINI(string Section, string Key, string FileName = DefaultFileName)
         {
             char[] val = new char[General.StreamByteSize];
-            _ = GetPrivateProfileString(Section, Key, "", val, General.StreamByteSize, Environment.CurrentDirectory.ToString() + @"\" + FileName);
+            _ = GetPrivateProfileString(Section, Key, "", val, General.StreamByteSize, AppDomain.CurrentDomain.BaseDirectory + FileName);
             string? read = new(val);
             return read != null ? read.Trim('\0') : "";
         }
@@ -50,7 +50,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="FileName">文件名，缺省为FunGame.ini</param>
         /// <returns>是否存在</returns>
-        public static bool ExistINIFile(string FileName = DefaultFileName) => File.Exists($@"{Environment.CurrentDirectory}\{FileName}");
+        public static bool ExistINIFile(string FileName = DefaultFileName) => File.Exists($@"{AppDomain.CurrentDomain.BaseDirectory}{FileName}");
 
         /// <summary>
         /// 初始化ini模板文件
@@ -136,7 +136,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         public static string ReadTXT(string filename, string path = "")
         {
             if (path.Trim() != "") path = Path.Combine(path, filename);
-            else path = $@"{Environment.CurrentDirectory}\{filename}";
+            else path = $@"{AppDomain.CurrentDomain.BaseDirectory}{filename}";
             if (File.Exists(path))
             {
                 string s = "";
@@ -168,7 +168,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 if (!Directory.Exists(path)) Directory.CreateDirectory(path);
                 path = Path.Combine(path, filename);
             }
-            else path = $@"{Environment.CurrentDirectory}\{filename}";
+            else path = $@"{AppDomain.CurrentDomain.BaseDirectory}{filename}";
             // 写入内容
             StreamWriter writer = File.Exists(path) ? new(path, true, General.DefaultEncoding) : new(path, false, General.DefaultEncoding);
             writer.WriteLine(message);
