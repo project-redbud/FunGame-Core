@@ -11,7 +11,7 @@
             FunGame_Server
         }
 
-        public const string FunGame_CopyRight = @"©2023 Milimoe. 米粒的糖果屋";
+        public const string FunGame_CopyRight = @"©2024 Milimoe. 米粒的糖果屋";
 
         /// <summary>
         /// 添加-debug启动项将开启DebugMode（仅适用于Desktop或Console）
