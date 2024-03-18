@@ -31,9 +31,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public new object? this[string key]
+        public new object this[string key]
         {
-            get => GetValue(key);
+            get => base[key];
             set
             {
                 if (value != null) Add(key, value);
