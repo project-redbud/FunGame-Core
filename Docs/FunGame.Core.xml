@@ -780,6 +780,94 @@
             Private JsonSerializerOptions
             </summary>
         </member>
+        <member name="T:Milimoe.FunGame.Core.Api.Utility.PluginConfig">
+            <summary>
+            简易的插件配置文件生成器<para/>
+            仅支持部分基本类型（<see cref="T:System.Int64"/>, <see cref="T:System.Decimal"/>, <see cref="T:System.String"/>, <see cref="T:System.Boolean"/>）及其数组（<see cref="T:System.Collections.Generic.List`1">List&lt;long&gt;, List&lt;decimal&gt;, List&lt;string&gt;, List&lt;bool&gt;</see>和<see cref="T:System.Array">long[], decimal[], string[], bool[]</see>）
+            <para/>文件会保存为：程序目录/configs/<see cref="P:Milimoe.FunGame.Core.Api.Utility.PluginConfig.PluginName"/>/<see cref="P:Milimoe.FunGame.Core.Api.Utility.PluginConfig.FileName"/>.json
+            </summary>
+            <remarks>
+            新建一个配置文件，文件会保存为：程序目录/configs/<see cref="P:Milimoe.FunGame.Core.Api.Utility.PluginConfig.PluginName"/>/<see cref="P:Milimoe.FunGame.Core.Api.Utility.PluginConfig.FileName"/>.json
+            </remarks>
+            <param name="plugin_name"></param>
+            <param name="file_name"></param>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.PluginConfig.#ctor(System.String,System.String)">
+            <summary>
+            简易的插件配置文件生成器<para/>
+            仅支持部分基本类型（<see cref="T:System.Int64"/>, <see cref="T:System.Decimal"/>, <see cref="T:System.String"/>, <see cref="T:System.Boolean"/>）及其数组（<see cref="T:System.Collections.Generic.List`1">List&lt;long&gt;, List&lt;decimal&gt;, List&lt;string&gt;, List&lt;bool&gt;</see>和<see cref="T:System.Array">long[], decimal[], string[], bool[]</see>）
+            <para/>文件会保存为：程序目录/configs/<see cref="P:Milimoe.FunGame.Core.Api.Utility.PluginConfig.PluginName"/>/<see cref="P:Milimoe.FunGame.Core.Api.Utility.PluginConfig.FileName"/>.json
+            </summary>
+            <remarks>
+            新建一个配置文件，文件会保存为：程序目录/configs/<see cref="P:Milimoe.FunGame.Core.Api.Utility.PluginConfig.PluginName"/>/<see cref="P:Milimoe.FunGame.Core.Api.Utility.PluginConfig.FileName"/>.json
+            </remarks>
+            <param name="plugin_name"></param>
+            <param name="file_name"></param>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Api.Utility.PluginConfig.PluginName">
+            <summary>
+            插件的名称
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Api.Utility.PluginConfig.FileName">
+            <summary>
+            配置文件的名称（后缀将是.json）
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Api.Utility.PluginConfig.Item(System.String)">
+            <summary>
+            使用索引器给指定key赋值，不存在key会新增
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.PluginConfig.Parse``1(System.String)">
+            <summary>
+            如果保存了对象，请使用此方法转换
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.PluginConfig.Get``1(System.String)">
+            <summary>
+            使用泛型获取指定key的value
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.PluginConfig.Add(System.String,System.Object)">
+            <summary>
+            添加一个配置，如果已存在key会覆盖
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.PluginConfig.LoadConfig">
+            <summary>
+            从配置文件中读取配置。
+            注意：所有保存时为数组的对象都会变成<see cref="T:System.Collections.Generic.List`1"/>对象，并且不支持<see cref="T:System.Object"/>类型
+            </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.PluginConfig.SaveConfig">
+            <summary>
+            将配置保存到配置文件。调用此方法会覆盖原有的.json，请注意备份
+            </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.PluginConfig.AddValue(System.String,System.Text.Json.JsonElement)">
+            <summary>
+            Json反序列化的方法
+            </summary>
+            <param name="key"></param>
+            <param name="obj"></param>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Utility.PluginConfig.AddValues(System.String,System.Text.Json.JsonElement.ArrayEnumerator)">
+            <summary>
+            Json数组反序列化的方法。不支持<see cref="T:System.Object"/>数组。
+            </summary>
+            <param name="key"></param>
+            <param name="obj"></param>
+        </member>
         <member name="P:Milimoe.FunGame.Core.Api.Utility.PluginLoader.Plugins">
             <summary>
             已读取的插件列表
