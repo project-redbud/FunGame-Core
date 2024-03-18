@@ -31,11 +31,15 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public new object this[string key]
+        public new object? this[string key]
         {
-            set => Add(key, value);
+            get => GetValue(key);
+            set
+            {
+                if (value != null) Add(key, value);
+            }
         }
-        
+
         /// <summary>
         /// 如果保存了对象，请使用此方法转换
         /// </summary>
@@ -52,7 +56,21 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 }
             }
         }
-        
+
+        /// <summary>
+        /// 获取指定key的value
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public object? GetValue(string key)
+        {
+            if (base.TryGetValue(key, out object? value) && value != null)
+            {
+                return value;
+            }
+            return null;
+        }
+
         /// <summary>
         /// 使用泛型获取指定key的value
         /// </summary>
