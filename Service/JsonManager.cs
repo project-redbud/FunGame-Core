@@ -1,6 +1,8 @@
 ﻿using System.Collections;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Unicode;
 using Milimoe.FunGame.Core.Library.Common.JsonConverter;
 using Milimoe.FunGame.Core.Library.Common.Network;
 
@@ -14,6 +16,7 @@ namespace Milimoe.FunGame.Core.Service
         private readonly static JsonSerializerOptions GeneralOptions = new()
         {
             WriteIndented = true,
+            Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
             Converters = { new DateTimeConverter(), new DataTableConverter(), new DataSetConverter(), new UserConverter(), new RoomConverter() }
         };
