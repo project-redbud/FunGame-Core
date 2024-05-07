@@ -134,6 +134,12 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Punish
     }
 
+    public enum TransmittalType
+    {
+        Socket,
+        WebSocket
+    }
+
     public enum SocketRuntimeType
     {
         Client,

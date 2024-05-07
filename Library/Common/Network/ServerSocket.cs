@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Interface.Base;
+using Milimoe.FunGame.Core.Interface.Sockets;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Service;
 
@@ -16,7 +17,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public bool Connected => Instance != null && Instance.Connected;
         public List<IServerModel> ClientList => OnlineClients.GetList();
         public List<IServerModel> UserList => OnlineUsers.GetList();
-        public List<string> BannedList { get; } = new();
+        public List<string> BannedList { get; } = [];
         public int ClientCount => OnlineClients.Count;
         public int UserCount => OnlineUsers.Count;
         public int BannedCount => BannedList.Count;

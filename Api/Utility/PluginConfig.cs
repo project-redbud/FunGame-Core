@@ -85,7 +85,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
             return default;
         }
-        
+
         /// <summary>
         /// 添加一个配置，如果已存在key会覆盖
         /// </summary>

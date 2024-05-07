@@ -1,4 +1,4 @@
-﻿using Milimoe.FunGame.Core.Interface;
+﻿using Milimoe.FunGame.Core.Interface.Addons;
 
 namespace Milimoe.FunGame.Core.Library.Common.Addon
 {

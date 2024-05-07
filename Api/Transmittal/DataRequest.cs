@@ -105,18 +105,18 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             return GetHashtableJsonObject<T>(Worker.ResultData, key);
         }
 
-        private class Request : SocketHandlerController
+        private class Request(Socket? Socket, DataRequestType RequestType, bool IsLongRunning = false) : SocketHandlerController(Socket)
         {
-            public Hashtable RequestData { get; } = new();
+            public Hashtable RequestData { get; } = [];
             public Hashtable ResultData => _ResultData;
             public RequestResult Result => _Result;
             public string Error => _Error;
 
-            private readonly Socket? Socket;
-            private readonly DataRequestType RequestType;
-            private readonly bool _IsLongRunning;
+            private readonly Socket? Socket = Socket;
+            private readonly DataRequestType RequestType = RequestType;
+            private readonly bool _IsLongRunning = IsLongRunning;
 
-            private Hashtable _ResultData = new();
+            private Hashtable _ResultData = [];
             private RequestResult _Result = RequestResult.Missing;
             private string _Error = "";
 
@@ -158,13 +158,6 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 }
             }
 
-            public Request(Socket? Socket, DataRequestType RequestType, bool IsLongRunning = false) : base(Socket)
-            {
-                this.Socket = Socket;
-                this.RequestType = RequestType;
-                _IsLongRunning = IsLongRunning;
-            }
-
             public override void SocketHandler(SocketObject SocketObject)
             {
                 try
@@ -177,7 +170,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                         if (type == RequestType)
                         {
                             if (!_IsLongRunning) Dispose();
-                            _ResultData = SocketObject.GetParam<Hashtable>(1) ?? new();
+                            _ResultData = SocketObject.GetParam<Hashtable>(1) ?? [];
                             _Result = RequestResult.Success;
                         }
                     }

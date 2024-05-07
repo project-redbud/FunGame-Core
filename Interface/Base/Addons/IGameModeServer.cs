@@ -3,7 +3,7 @@ using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Interface
+namespace Milimoe.FunGame.Core.Interface.Addons
 {
     public interface IGameModeServer : IAddon, IAddonController
     {

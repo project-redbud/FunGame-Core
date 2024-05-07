@@ -1,4 +1,4 @@
-﻿using Milimoe.FunGame.Core.Interface.Base;
+﻿using Milimoe.FunGame.Core.Interface.Sockets;
 using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Service;

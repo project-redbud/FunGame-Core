@@ -1138,7 +1138,7 @@
             <param name="type"></param>
             <returns></returns>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Controller.AddonController.#ctor(Milimoe.FunGame.Core.Interface.IAddon,System.Collections.Hashtable)">
+        <member name="M:Milimoe.FunGame.Core.Controller.AddonController.#ctor(Milimoe.FunGame.Core.Interface.Addons.IAddon,System.Collections.Hashtable)">
             <summary>
             新建一个AddonController
             </summary>

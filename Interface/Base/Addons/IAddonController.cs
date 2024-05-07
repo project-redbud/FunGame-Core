@@ -1,6 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Controller;
 
-namespace Milimoe.FunGame.Core.Interface.Base
+namespace Milimoe.FunGame.Core.Interface.Addons
 {
     public interface IAddonController
     {

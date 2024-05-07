@@ -19,12 +19,12 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// 默认的未知用户
         /// </summary>
         public static User UnknownUserInstance => new();
-        
+
         /// <summary>
         /// 游客用户
         /// </summary>
         public static User GuestUserInstance => new(UserType.Guest);
-        
+
         /// <summary>
         /// 本地用户
         /// </summary>
