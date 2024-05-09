@@ -6,7 +6,7 @@ namespace Milimoe.FunGame.Core.Interface.HTTP
 {
     public interface IHTTPClient : IBaseSocket
     {
-        public SocketResult Send(SocketMessageType type, params object[] objs);
+        public Task<SocketResult> Send(SocketMessageType type, params object[] objs);
         public SocketObject SocketObject_Handler(SocketObject objs);
     }
 }

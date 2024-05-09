@@ -1,16 +1,11 @@
 ﻿using System.Collections;
-using Milimoe.FunGame.Core.Controller;
 using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
 
 namespace Milimoe.FunGame.Core.Api.Transmittal
 {
-    /// <summary>
-    /// 需要配合Milimoe.FunGame.Core.Library.Constant.DataRequestType使用
-    /// 确保已添加对应的枚举
-    /// </summary>
-    public class DataRequest
+    public class WebDataRequest
     {
         /// <summary>
         /// 数据请求结果
@@ -41,20 +36,18 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// <summary>
         /// 私有的实现类
         /// </summary>
-        private readonly SocketRequest Worker;
+        private readonly WebSocketRequest Worker;
 
         /// <summary>
-        /// 基于本地已连接的 <see cref="Socket"/> 创建新的数据请求<para/>
-        /// 使用 <see cref="RunTimeController"/> 中的 <see cref="RunTimeController.NewDataRequest"/> 创建一个新的请求
+        /// 基于本地已连接的 <see cref="HTTPClient"/> 创建新的数据请求<para/>
         /// </summary>
         /// <param name="Socket"></param>
         /// <param name="RequestType"></param>
-        /// <param name="IsLongRunning"></param>
-        internal DataRequest(Socket Socket, DataRequestType RequestType, bool IsLongRunning = false)
+        internal WebDataRequest(HTTPClient Socket, DataRequestType RequestType)
         {
-            Worker = new(Socket, RequestType, IsLongRunning);
+            Worker = new(Socket, RequestType);
         }
-        
+
         /// <summary>
         /// 添加数据
         /// </summary>
@@ -67,20 +60,12 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         }
 
         /// <summary>
-        /// 长时间运行的数据请求需要在使用完毕后自行关闭
-        /// </summary>
-        public void Dispose()
-        {
-            Worker.Dispose();
-        }
-
-        /// <summary>
         /// 向服务器发送数据请求
         /// </summary>
         /// <returns></returns>
-        public RequestResult SendRequest()
+        public async Task<RequestResult> SendRequest()
         {
-            Worker.SendRequest();
+            await Worker.SendRequestAsync();
             return Result;
         }
 
@@ -105,78 +90,31 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             return GetHashtableJsonObject<T>(Worker.ResultData, key);
         }
 
-        private class SocketRequest(Socket? Socket, DataRequestType RequestType, bool IsLongRunning = false) : SocketHandlerController(Socket)
+        private class WebSocketRequest(HTTPClient? Socket, DataRequestType RequestType)
         {
             public Hashtable RequestData { get; } = [];
             public Hashtable ResultData => _ResultData;
             public RequestResult Result => _Result;
             public string Error => _Error;
 
-            private readonly Socket? Socket = Socket;
+            private readonly HTTPClient? Socket = Socket;
             private readonly DataRequestType RequestType = RequestType;
-            private readonly bool _IsLongRunning = IsLongRunning;
-            private Hashtable _ResultData = [];
+            private readonly Hashtable _ResultData = [];
             private RequestResult _Result = RequestResult.Missing;
             private string _Error = "";
-
-            public void SendRequest()
-            {
-                try
-                {
-                    SetWorking();
-                    if (Socket?.Send(SocketMessageType.DataRequest, RequestType, RequestData) == SocketResult.Success)
-                    {
-                        WaitForWorkDone();
-                    }
-                    else throw new ConnectFailedException();
-                }
-                catch (Exception e)
-                {
-                    Working = false;
-                    _Result = RequestResult.Fail;
-                    _Error = e.GetErrorInfo();
-                }
-            }
 
             public async Task SendRequestAsync()
             {
                 try
                 {
-                    SetWorking();
-                    if (Socket?.Send(SocketMessageType.DataRequest, RequestType, RequestData) == SocketResult.Success)
+                    if (Socket != null)
                     {
-                        await WaitForWorkDoneAsync();
+                        await Socket.Send(SocketMessageType.DataRequest, RequestType, RequestData);
                     }
                     else throw new ConnectFailedException();
                 }
                 catch (Exception e)
                 {
-                    Working = false;
-                    _Result = RequestResult.Fail;
-                    _Error = e.GetErrorInfo();
-                }
-            }
-
-            public override void SocketHandler(SocketObject SocketObject)
-            {
-                try
-                {
-                    if (SocketObject.SocketType == SocketMessageType.DataRequest)
-                    {
-                        Work = SocketObject;
-                        Working = false;
-                        DataRequestType type = SocketObject.GetParam<DataRequestType>(0);
-                        if (type == RequestType)
-                        {
-                            if (!_IsLongRunning) Dispose();
-                            _ResultData = SocketObject.GetParam<Hashtable>(1) ?? [];
-                            _Result = RequestResult.Success;
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    Working = false;
                     _Result = RequestResult.Fail;
                     _Error = e.GetErrorInfo();
                 }

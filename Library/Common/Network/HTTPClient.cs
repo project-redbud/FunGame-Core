@@ -72,9 +72,13 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             }
         }
 
-        public SocketResult Send(SocketMessageType type, params object[] objs)
+        public async Task<SocketResult> Send(SocketMessageType type, params object[] objs)
         {
-            throw new NotImplementedException();
+            if (Instance != null)
+            {
+                return await HTTPManager.Send(Instance, new(type, Token, objs));
+            }
+            return SocketResult.NotSent;
         }
 
         public virtual SocketObject SocketObject_Handler(SocketObject objs)
