@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using Milimoe.FunGame.Core.Controller;
 using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Interface;
+using Milimoe.FunGame.Core.Interface.Addons;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Constant;
 

@@ -1,19 +1,19 @@
-﻿using Milimoe.FunGame.Core.Interface.Base;
+﻿using Milimoe.FunGame.Core.Interface.Sockets;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
 {
-    public class ClientSocket : IClientSocket
+    public class ClientSocket(System.Net.Sockets.Socket Instance, int ServerPort, string ClientIP, string ClientName, Guid Token) : IClientSocket
     {
-        public System.Net.Sockets.Socket Instance { get; }
+        public System.Net.Sockets.Socket Instance { get; } = Instance;
         public SocketRuntimeType Runtime => SocketRuntimeType.Server;
-        public Guid Token { get; } = Guid.Empty;
+        public Guid Token { get; } = Token;
         public string ServerAddress { get; } = "";
-        public int ServerPort { get; } = 0;
+        public int ServerPort { get; } = ServerPort;
         public string ServerName { get; } = "";
         public string ServerNotice { get; } = "";
-        public string ClientIP { get; } = "";
+        public string ClientIP { get; } = ClientIP;
         public string ClientName => _ClientName;
         public bool Connected => Instance != null && Instance.Connected;
         public bool Receiving => _Receiving;
@@ -21,16 +21,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         private Task? ReceivingTask;
 
         private bool _Receiving;
-        private string _ClientName;
-
-        public ClientSocket(System.Net.Sockets.Socket Instance, int ServerPort, string ClientIP, string ClientName, Guid Token)
-        {
-            this.Instance = Instance;
-            this.ServerPort = ServerPort;
-            this.ClientIP = ClientIP;
-            this._ClientName = ClientName;
-            this.Token = Token;
-        }
+        private readonly string _ClientName = ClientName;
 
         public void Close()
         {

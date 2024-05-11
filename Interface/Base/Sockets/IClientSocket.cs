@@ -1,6 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Interface.Base
+namespace Milimoe.FunGame.Core.Interface.Sockets
 {
     public interface IClientSocket : ISocket
     {

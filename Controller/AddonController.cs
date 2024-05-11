@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using Milimoe.FunGame.Core.Api.Transmittal;
-using Milimoe.FunGame.Core.Interface;
+using Milimoe.FunGame.Core.Interface.Addons;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Controller
@@ -78,7 +78,7 @@ namespace Milimoe.FunGame.Core.Controller
         }
 
         private void DefaultPrint(string msg) => Console.Write("\r" + msg + "\n\r> ");
-        
+
         private void DefaultPrint(Exception e) => DefaultPrint(e.ToString());
 
         private DataRequest DefaultNewDataRequest(DataRequestType type)

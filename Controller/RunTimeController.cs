@@ -57,7 +57,7 @@ namespace Milimoe.FunGame.Core.Controller
 
             return result;
         }
-        
+
         /// <summary>
         /// 发送结束游戏反馈
         /// </summary>

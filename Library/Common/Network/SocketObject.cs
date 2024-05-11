@@ -9,7 +9,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
     {
         public SocketMessageType SocketType { get; } = SocketMessageType.Unknown;
         public Guid Token { get; } = Guid.Empty;
-        public object[] Parameters { get; } = Array.Empty<object>();
+        public object[] Parameters { get; } = [];
         public int Length => Parameters.Length;
 
         // 从参数列表中获取指定索引的参数的Json字符串

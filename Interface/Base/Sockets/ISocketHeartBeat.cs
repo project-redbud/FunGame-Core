@@ -1,4 +1,4 @@
-﻿namespace Milimoe.FunGame.Core.Interface.Base
+﻿namespace Milimoe.FunGame.Core.Interface.Sockets
 {
     public interface ISocketHeartBeat
     {

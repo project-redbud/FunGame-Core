@@ -27,8 +27,8 @@
         </member>
         <member name="M:Milimoe.FunGame.Core.Api.Transmittal.DataRequest.#ctor(Milimoe.FunGame.Core.Library.Common.Network.Socket,Milimoe.FunGame.Core.Library.Constant.DataRequestType,System.Boolean)">
             <summary>
-            基于本地已连接的Socket创建新的数据请求
-            使用RunTimeModel中的NewDataRequest创建一个新的请求
+            基于本地已连接的 <see cref="T:Milimoe.FunGame.Core.Library.Common.Network.Socket"/> 创建新的数据请求<para/>
+            使用 <see cref="T:Milimoe.FunGame.Core.Controller.RunTimeController"/> 中的 <see cref="M:Milimoe.FunGame.Core.Controller.RunTimeController.NewDataRequest(Milimoe.FunGame.Core.Library.Constant.DataRequestType)"/> 创建一个新的请求
             </summary>
             <param name="Socket"></param>
             <param name="RequestType"></param>
@@ -203,6 +203,64 @@
             <summary>
             回滚事务
             </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Api.Transmittal.WebDataRequest.Result">
+            <summary>
+            数据请求结果
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Api.Transmittal.WebDataRequest.Error">
+            <summary>
+            详细错误信息
+            </summary>
+        </member>
+        <member name="F:Milimoe.FunGame.Core.Api.Transmittal.WebDataRequest.Worker">
+            <summary>
+            私有的实现类
+            </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Transmittal.WebDataRequest.#ctor(Milimoe.FunGame.Core.Library.Common.Network.HTTPClient,Milimoe.FunGame.Core.Library.Constant.DataRequestType)">
+            <summary>
+            基于本地已连接的 <see cref="T:Milimoe.FunGame.Core.Library.Common.Network.HTTPClient"/> 创建新的数据请求<para/>
+            </summary>
+            <param name="Socket"></param>
+            <param name="RequestType"></param>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Transmittal.WebDataRequest.AddRequestData(System.String,System.Object)">
+            <summary>
+            添加数据
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Transmittal.WebDataRequest.SendRequest">
+            <summary>
+            向服务器发送数据请求
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Transmittal.WebDataRequest.SendRequestAsync">
+            <summary>
+            异步向服务器发送数据请求
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Transmittal.WebDataRequest.GetResult``1(System.String)">
+            <summary>
+            获取指定key对应的反序列化对象
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Api.Transmittal.WebDataRequest.GetHashtableJsonObject``1(System.Collections.Hashtable,System.String)">
+            <summary>
+            反序列化Hashtable中的Json对象
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashtable"></param>
+            <param name="key"></param>
+            <returns></returns>
         </member>
         <member name="M:Milimoe.FunGame.Core.Api.Utility.Factory.GetCharacter">
             <summary>
@@ -1138,7 +1196,7 @@
             <param name="type"></param>
             <returns></returns>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Controller.AddonController.#ctor(Milimoe.FunGame.Core.Interface.IAddon,System.Collections.Hashtable)">
+        <member name="M:Milimoe.FunGame.Core.Controller.AddonController.#ctor(Milimoe.FunGame.Core.Interface.Addons.IAddon,System.Collections.Hashtable)">
             <summary>
             新建一个AddonController
             </summary>
