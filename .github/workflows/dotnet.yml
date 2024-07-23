@@ -33,6 +33,7 @@ jobs:
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git stash
         git checkout latest || git checkout -b latest
         git rm -r *
         cp -r ./bin/Debug/net8.0/FunGame.Core.dll ./bin/Debug/net8.0/FunGame.Core.xml ./bin/Debug/net8.0/FunGame.Core.deps.json .
