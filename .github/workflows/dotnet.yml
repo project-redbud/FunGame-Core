@@ -38,6 +38,7 @@ jobs:
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git checkout --orphan latest
+        git rm -rf .
         cp -r latest/* .
         git add FunGame.Core.dll FunGame.Core.xml FunGame.Core.deps.json
         git commit -m "Update latest branch with build outputs"
