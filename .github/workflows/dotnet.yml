@@ -28,14 +28,18 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
+    - name: Prepare files for latest branch
+      run: |
+        mkdir -p latest
+        cp -r ./bin/Debug/net8.0/FunGame.Core.dll ./bin/Debug/net8.0/FunGame.Core.xml ./bin/Debug/net8.0/FunGame.Core.deps.json ./latest/
     - name: Commit and push to latest
       if: success()
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git checkout latest || git checkout -b latest
-        mkdir -p latest
-        cp -r ./bin/Debug/net8.0/FunGame.Core.dll ./bin/Debug/net8.0/FunGame.Core.xml ./bin/Debug/net8.0/FunGame.Core.deps.json ./latest/
-        git add ./latest/
-        git commit -m "update latest outputs"
+        git checkout --orphan latest
+        git rm -rf .
+        cp -r latest/* .
+        git add .
+        git commit -m "Update latest branch with build outputs"
         git push --force origin latest
