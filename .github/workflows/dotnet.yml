@@ -40,6 +40,6 @@ jobs:
         git checkout --orphan latest
         git rm -rf .
         cp -r latest/* .
-        git add .
+        git add git add FunGame.Core.dll FunGame.Core.xml FunGame.Core.deps.json
         git commit -m "Update latest branch with build outputs"
         git push --force origin latest
