@@ -34,7 +34,8 @@ jobs:
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git checkout latest || git checkout -b latest
-        cp -r ./bin/Debug/net8.0/FunGame.Core.dll ./bin/Debug/net8.0/FunGame.Core.xml ./bin/Debug/net8.0/FunGame.Core.deps.json .
-        git add .
+        mkdir -p latest
+        cp -r ./bin/Debug/net8.0/FunGame.Core.dll ./bin/Debug/net8.0/FunGame.Core.xml ./bin/Debug/net8.0/FunGame.Core.deps.json ./latest/
+        git add ./latest/
         git commit -m "update latest outputs"
         git push --force origin latest
