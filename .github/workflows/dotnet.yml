@@ -5,9 +5,9 @@ name: .NET
 
 on:
   push:
-    branches: [ "modifyworkflow" ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "modifyworkflow" ]
+    branches: [ "master" ]
 
 jobs:
   build:
