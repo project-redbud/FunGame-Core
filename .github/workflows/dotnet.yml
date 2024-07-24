@@ -15,11 +15,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0 # Fetch all history for all branches
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
     - name: Restore dependencies
@@ -28,17 +28,18 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
-    - name: Archive build output
+    - name: Prepare files for latest branch
       run: |
-        mkdir -p build_output
-        cp -r ./bin/Debug/net8.0/* build_output/
+        mkdir -p latest
+        cp -r ./bin/Debug/net8.0/FunGame.Core.dll ./bin/Debug/net8.0/FunGame.Core.xml ./bin/Debug/net8.0/FunGame.Core.deps.json ./latest/
     - name: Commit and push to latest
       if: success()
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git checkout latest || git checkout -b latest
-        cp -r build_output/* .
-        git add .
-        git commit -m "Update build output from master"
-        git push origin latest
+        git checkout --orphan latest
+        git rm -rf .
+        cp -r latest/* .
+        git add FunGame.Core.dll FunGame.Core.xml FunGame.Core.deps.json
+        git commit -m "Update latest branch with build outputs"
+        git push --force origin latest
