@@ -45,7 +45,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// <param name="RequestType"></param>
         internal WebDataRequest(HTTPClient Socket, DataRequestType RequestType)
         {
-            Worker = new(Socket, RequestType);
+            Worker = new(Socket, RequestType, Guid.NewGuid());
         }
 
         /// <summary>
@@ -90,7 +90,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             return GetHashtableJsonObject<T>(Worker.ResultData, key);
         }
 
-        private class WebSocketRequest(HTTPClient? Socket, DataRequestType RequestType)
+        private class WebSocketRequest(HTTPClient? Socket, DataRequestType RequestType, Guid RequestID)
         {
             public Hashtable RequestData { get; } = [];
             public Hashtable ResultData => _ResultData;
@@ -99,6 +99,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
 
             private readonly HTTPClient? Socket = Socket;
             private readonly DataRequestType RequestType = RequestType;
+            private readonly Guid RequestID = RequestID;
             private readonly Hashtable _ResultData = [];
             private RequestResult _Result = RequestResult.Missing;
             private string _Error = "";
@@ -109,7 +110,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 {
                     if (Socket != null)
                     {
-                        await Socket.Send(SocketMessageType.DataRequest, RequestType, RequestData);
+                        await Socket.Send(SocketMessageType.DataRequest, RequestType, RequestID, RequestData);
                     }
                     else throw new ConnectFailedException();
                 }
