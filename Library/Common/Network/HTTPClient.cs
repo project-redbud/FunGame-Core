@@ -10,7 +10,6 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
     public class HTTPClient : IHTTPClient
     {
         public ClientWebSocket? Instance { get; } = null;
-        public HeartBeat HeartBeat { get; }
         public SocketRuntimeType Runtime => SocketRuntimeType.Client;
         public Guid Token { get; } = Guid.Empty;
         public string ServerAddress { get; } = "";
@@ -19,6 +18,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public string ServerNotice { get; } = "";
 
         private bool _Listening = false;
+        private readonly HeartBeat HeartBeat;
 
         private HTTPClient(ClientWebSocket Instance, string ServerAddress, int ServerPort, params object[] args)
         {
