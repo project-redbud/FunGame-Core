@@ -30,10 +30,16 @@
         /// </summary>
         protected virtual void WaitForWorkDone()
         {
+            for (int i = 0; i < 10; i++)
+            {
+                if (!Working) break;
+                Thread.Sleep(50);
+            }
+
             while (true)
             {
                 if (!Working) break;
-                Thread.Sleep(100);
+                Thread.Sleep(20);
             }
         }
 
@@ -42,14 +48,16 @@
         /// </summary>
         protected async virtual Task WaitForWorkDoneAsync()
         {
-            await Task.Factory.StartNew(() =>
+            for (int i = 0; i < 10; i++)
             {
-                while (true)
-                {
-                    if (!Working) break;
-                    Thread.Sleep(100);
-                }
-            });
+                if (!Working) break;
+                await Task.Delay(50);
+            }
+
+            while (Working)
+            {
+                await Task.Delay(20);
+            }
         }
     }
 }

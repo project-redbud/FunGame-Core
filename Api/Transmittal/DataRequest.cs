@@ -52,7 +52,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// <param name="IsLongRunning"></param>
         internal DataRequest(Socket Socket, DataRequestType RequestType, bool IsLongRunning = false)
         {
-            Worker = new(Socket, RequestType, IsLongRunning);
+            Worker = new(Socket, RequestType, Guid.NewGuid(), IsLongRunning);
         }
         
         /// <summary>
@@ -105,7 +105,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             return GetHashtableJsonObject<T>(Worker.ResultData, key);
         }
 
-        private class SocketRequest(Socket? Socket, DataRequestType RequestType, bool IsLongRunning = false) : SocketHandlerController(Socket)
+        private class SocketRequest(Socket? Socket, DataRequestType RequestType, Guid RequestID, bool IsLongRunning = false) : SocketHandlerController(Socket)
         {
             public Hashtable RequestData { get; } = [];
             public Hashtable ResultData => _ResultData;
@@ -114,6 +114,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
 
             private readonly Socket? Socket = Socket;
             private readonly DataRequestType RequestType = RequestType;
+            private readonly Guid RequestID = RequestID;
             private readonly bool _IsLongRunning = IsLongRunning;
             private Hashtable _ResultData = [];
             private RequestResult _Result = RequestResult.Missing;
@@ -124,7 +125,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 try
                 {
                     SetWorking();
-                    if (Socket?.Send(SocketMessageType.DataRequest, RequestType, RequestData) == SocketResult.Success)
+                    if (Socket?.Send(SocketMessageType.DataRequest, RequestType, RequestID, RequestData) == SocketResult.Success)
                     {
                         WaitForWorkDone();
                     }
@@ -143,7 +144,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 try
                 {
                     SetWorking();
-                    if (Socket?.Send(SocketMessageType.DataRequest, RequestType, RequestData) == SocketResult.Success)
+                    if (Socket?.Send(SocketMessageType.DataRequest, RequestType, RequestID, RequestData) == SocketResult.Success)
                     {
                         await WaitForWorkDoneAsync();
                     }
@@ -163,13 +164,14 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 {
                     if (SocketObject.SocketType == SocketMessageType.DataRequest)
                     {
-                        Work = SocketObject;
-                        Working = false;
                         DataRequestType type = SocketObject.GetParam<DataRequestType>(0);
-                        if (type == RequestType)
+                        Guid id = SocketObject.GetParam<Guid>(1);
+                        if (type == RequestType && id == RequestID)
                         {
                             if (!_IsLongRunning) Dispose();
-                            _ResultData = SocketObject.GetParam<Hashtable>(1) ?? [];
+                            Work = SocketObject;
+                            Working = false;
+                            _ResultData = SocketObject.GetParam<Hashtable>(2) ?? [];
                             _Result = RequestResult.Success;
                         }
                     }
