@@ -11,6 +11,20 @@ using Milimoe.FunGame.Core.Model;
 namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
 {
     /// <summary>
+    /// 建议使用一个类来存储常量，方便重用
+    /// </summary>
+    public class ExampleGameModuleConstant
+    {
+        public static GameModuleDepend GameModuleDepend => _depends;
+
+        private static readonly string[] Maps = ["Example GameMap"];
+        private static readonly string[] Characters = [];
+        private static readonly string[] Items = [];
+        private static readonly string[] Skills = [];
+        private static readonly GameModuleDepend _depends = new(Maps, Characters, Items, Skills);
+    }
+
+    /// <summary>
     /// 模组：必须继承基类：<see cref="GameModule"/><para/>
     /// 继承事件接口并实现其方法来使模组生效。例如继承：<seealso cref="IGamingConnectEvent"/><para/>
     /// </summary>
@@ -24,16 +38,16 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
 
         public override string Author => "FunGamer";
 
-        public override string DefaultMap => Maps.Length > 0 ? Maps[0] : "";
+        public override string DefaultMap => GameModuleDepend.Maps.Length > 0 ? GameModuleDepend.Maps[0] : "";
 
-        public override string[] Maps => ["Example GameMap"];
+        public override GameModuleDepend GameModuleDepend => ExampleGameModuleConstant.GameModuleDepend;
 
         public override RoomType RoomType => RoomType.Mix;
 
         protected Gaming? Instance;
         protected Room room = General.HallInstance;
         protected List<User> users = [];
-        protected List<Character> characters = [];
+        protected Dictionary<string, Character> characters = [];
 
         public override void StartGame(Gaming instance, params object[] args)
         {
@@ -101,9 +115,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
 
         public override string Author => "FunGamer";
 
-        public override string DefaultMap => Maps.Length > 0 ? Maps[0] : "";
+        public override string DefaultMap => GameModuleDepend.Maps.Length > 0 ? GameModuleDepend.Maps.First() : "";
 
-        public override string[] Maps => ["Example GameMap"];
+        public override GameModuleDepend GameModuleDepend => ExampleGameModuleConstant.GameModuleDepend;
 
         protected Room Room = General.HallInstance;
         protected List<User> Users = [];

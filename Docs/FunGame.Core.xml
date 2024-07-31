@@ -1633,6 +1633,11 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="T:Milimoe.FunGame.Core.Library.Common.Addon.Example.ExampleGameModuleConstant">
+            <summary>
+            建议使用一个类来存储常量，方便重用
+            </summary>
+        </member>
         <member name="T:Milimoe.FunGame.Core.Library.Common.Addon.Example.ExampleGameModule">
             <summary>
             模组：必须继承基类：<see cref="T:Milimoe.FunGame.Core.Library.Common.Addon.GameModule"/><para/>
@@ -1739,9 +1744,9 @@
             默认地图
             </summary>
         </member>
-        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModule.Maps">
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModule.GameModuleDepend">
             <summary>
-            模组所使用的地图
+            模组的依赖集合
             </summary>
         </member>
         <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModule.RoomType">
@@ -1767,7 +1772,7 @@
         <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.GameModule.StartGame(Milimoe.FunGame.Core.Model.Gaming,System.Object[])">
             <summary>
             必须重写此方法，游戏的主要逻辑写在这里面<para/>
-            此方法会在 <see cref="M:Milimoe.FunGame.Core.Model.Gaming.StartGame(Milimoe.FunGame.Core.Library.Common.Addon.GameModule,Milimoe.FunGame.Core.Entity.Room,System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.User},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Character},System.Object[])"/> 时调用<para/>
+            此方法会在 <see cref="M:Milimoe.FunGame.Core.Model.Gaming.StartGame(Milimoe.FunGame.Core.Library.Common.Addon.GameModule,Milimoe.FunGame.Core.Entity.Room,System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.User},System.Object[])"/> 时调用<para/>
             </summary>
             <param name="instance"></param>
             <param name="args"></param>
@@ -1821,6 +1826,36 @@
             绑定事件。在<see cref="M:Milimoe.FunGame.Core.Library.Common.Addon.GameModule.BeforeLoad"/>后触发
             </summary>
         </member>
+        <member name="T:Milimoe.FunGame.Core.Library.Common.Addon.GameModuleDepend">
+            <summary>
+            模组的依赖集合
+            </summary>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.GameModuleDepend.#ctor(System.String[],System.String[],System.String[],System.String[])">
+            <summary>
+            模组的依赖集合
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModuleDepend.Maps">
+            <summary>
+            模组所使用的地图组
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModuleDepend.Characters">
+            <summary>
+            模组所使用的角色组
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModuleDepend.Items">
+            <summary>
+            模组所使用的物品组
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModuleDepend.Skills">
+            <summary>
+            模组所使用的技能组
+            </summary>
+        </member>
         <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModuleServer.Name">
             <summary>
             模组名称
@@ -1846,9 +1881,9 @@
             默认地图
             </summary>
         </member>
-        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModuleServer.Maps">
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModuleServer.GameModuleDepend">
             <summary>
-            模组所使用的地图
+            模组的依赖集合
             </summary>
         </member>
         <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModuleServer.Controller">
@@ -2551,14 +2586,13 @@
             游戏的参数
             </summary>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Model.Gaming.StartGame(Milimoe.FunGame.Core.Library.Common.Addon.GameModule,Milimoe.FunGame.Core.Entity.Room,System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.User},System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.Character},System.Object[])">
+        <member name="M:Milimoe.FunGame.Core.Model.Gaming.StartGame(Milimoe.FunGame.Core.Library.Common.Addon.GameModule,Milimoe.FunGame.Core.Entity.Room,System.Collections.Generic.List{Milimoe.FunGame.Core.Entity.User},System.Object[])">
             <summary>
             传入游戏所需的参数，构造一个Gaming实例
             </summary>
             <param name="module"></param>
             <param name="room"></param>
             <param name="users"></param>
-            <param name="characters"></param>
             <param name="args"></param>
             <returns></returns>
         </member>

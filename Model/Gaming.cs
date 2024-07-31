@@ -23,10 +23,10 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         public GamingEventArgs EventArgs { get; }
 
-        private Gaming(GameModule module, Room room, List<User> users, List<Character> characters)
+        private Gaming(GameModule module, Room room, List<User> users)
         {
             GameModule = module;
-            EventArgs = new(room, users, characters);
+            EventArgs = new(room, users);
         }
 
         /// <summary>
@@ -35,12 +35,11 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="module"></param>
         /// <param name="room"></param>
         /// <param name="users"></param>
-        /// <param name="characters"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public static Gaming StartGame(GameModule module, Room room, List<User> users, List<Character> characters, params object[] args)
+        public static Gaming StartGame(GameModule module, Room room, List<User> users, params object[] args)
         {
-            Gaming instance = new(module, room, users, characters);
+            Gaming instance = new(module, room, users);
             // 新建线程来启动模组的界面
             TaskUtility.NewTask(() =>
             {

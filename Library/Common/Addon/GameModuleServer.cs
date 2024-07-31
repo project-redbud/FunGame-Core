@@ -35,9 +35,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         public abstract string DefaultMap { get; }
 
         /// <summary>
-        /// 模组所使用的地图
+        /// 模组的依赖集合
         /// </summary>
-        public abstract string[] Maps { get; }
+        public abstract GameModuleDepend GameModuleDepend { get; }
 
         /// <summary>
         /// 包含了一些常用方法的控制器
