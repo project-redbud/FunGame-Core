@@ -11,7 +11,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Event
         public long RoomMaster { get; set; } = 0;
         public RoomType RoomType { get; set; } = RoomType.All;
         public string RoomTypeString { get; set; } = RoomSet.All;
-        public string GameMode { get; set; } = "";
+        public string GameModule { get; set; } = "";
         public string GameMap { get; set; } = "";
         public RoomState RoomState { get; set; } = RoomState.Created;
         public bool HasPassword => Password.Trim() != "";
@@ -31,7 +31,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Event
             RoomID = room.Roomid;
             RoomMaster = room.RoomMaster != null ? room.RoomMaster.Id : 0;
             RoomType = room.RoomType;
-            GameMode = room.GameMode;
+            GameModule = room.GameModule;
             GameMap = room.GameMap;
             RoomTypeString = room.RoomType switch
             {

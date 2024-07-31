@@ -11,7 +11,7 @@ namespace Milimoe.FunGame.Core.Entity
         public DateTime CreateTime { get; set; } = General.DefaultTime;
         public User RoomMaster { get; set; } = General.UnknownUserInstance;
         public RoomType RoomType { get; set; } = RoomType.All;
-        public string GameMode { get; set; } = "";
+        public string GameModule { get; set; } = "";
         public string GameMap { get; set; } = "";
         public RoomState RoomState { get; set; }
         public bool IsRank { get; set; } = false;
@@ -24,14 +24,14 @@ namespace Milimoe.FunGame.Core.Entity
             Statistics = new(this);
         }
 
-        internal Room(long Id = 0, string Roomid = "-1", DateTime? CreateTime = null, User? RoomMaster = null, RoomType RoomType = RoomType.All, string GameMode = "", string GameMap = "", RoomState RoomState = RoomState.Created, bool IsRank = false, string Password = "")
+        internal Room(long Id = 0, string Roomid = "-1", DateTime? CreateTime = null, User? RoomMaster = null, RoomType RoomType = RoomType.All, string GameModule = "", string GameMap = "", RoomState RoomState = RoomState.Created, bool IsRank = false, string Password = "")
         {
             this.Id = Id;
             this.Roomid = Roomid;
             this.CreateTime = CreateTime ?? General.DefaultTime;
             this.RoomMaster = RoomMaster ?? General.UnknownUserInstance;
             this.RoomType = RoomType;
-            this.GameMode = GameMode;
+            this.GameModule = GameModule;
             this.GameMap = GameMap;
             this.RoomState = RoomState;
             this.IsRank = IsRank;

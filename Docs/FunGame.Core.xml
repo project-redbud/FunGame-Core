@@ -302,7 +302,7 @@
             <param name="CreateTime">创建时间</param>
             <param name="RoomMaster">房主</param>
             <param name="RoomType">房间类型</param>
-            <param name="GameMode">游戏模组</param>
+            <param name="GameModule">游戏模组</param>
             <param name="GameMap"></param>
             <param name="RoomState">房间状态</param>
             <param name="IsRank"></param>
