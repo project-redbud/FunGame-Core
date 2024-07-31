@@ -407,6 +407,6 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Interface,
         DataRequest,
         Plugin,
-        GameMode
+        GameModule
     }
 }

@@ -21,7 +21,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <summary>
         /// 构建一个插件读取器并读取插件
         /// </summary>
-        /// <param name="delegates">用于构建 <see cref="Controller.AddonController"/></param>
+        /// <param name="delegates">用于构建 <see cref="Controller.AddonController{T}"/></param>
         /// <param name="otherobjs">其他需要传入给插件初始化的对象</param>
         /// <returns></returns>
         public static PluginLoader LoadPlugins(Hashtable delegates, params object[] otherobjs)

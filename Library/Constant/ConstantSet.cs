@@ -19,7 +19,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
             public const string RemoteServerIP = "RemoteServerIP";
             public const string DBConnection = "DBConnection";
             public const string GetServerSettings = "GetServerSettings";
-            public const string GameModeList = "GameModeList";
+            public const string GameModuleList = "GameModuleList";
             public const string GameMapList = "GameMapList";
         }
     }
@@ -215,7 +215,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string FUNGAME_IMPL = "FunGame.Implement";
         public static string EXEFolderPath { get; } = AppDomain.CurrentDomain.BaseDirectory; // 程序目录
         public static string PluginFolderPath { get; } = AppDomain.CurrentDomain.BaseDirectory + @"plugins\"; // 插件目录
-        public static string GameModeFolderPath { get; } = AppDomain.CurrentDomain.BaseDirectory + @"gamemods\"; // 游戏模组目录
+        public static string GameModuleFolderPath { get; } = AppDomain.CurrentDomain.BaseDirectory + @"modules\"; // 游戏模组目录
         public static string GameMapFolderPath { get; } = AppDomain.CurrentDomain.BaseDirectory + @"maps\"; // 游戏地图目录
     }
 

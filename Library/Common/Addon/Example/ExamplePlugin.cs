@@ -1,7 +1,7 @@
 ﻿using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Library.Common.Event;
 
-namespace Milimoe.FunGame.Core.Library.Common.Addon
+namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
 {
     /// <summary>
     /// 必须继承基类：<see cref="Plugin"/><para/>
@@ -24,7 +24,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
 
         public void BeforeLoginEvent(object sender, LoginEventArgs e)
         {
-
+            // 如果这里设置Cancel = true，将终止登录
+            e.Cancel = true;
         }
 
         public void FailedLoginEvent(object sender, LoginEventArgs e)

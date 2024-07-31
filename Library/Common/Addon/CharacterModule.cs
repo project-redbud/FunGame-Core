@@ -3,7 +3,7 @@ using Milimoe.FunGame.Core.Interface.Addons;
 
 namespace Milimoe.FunGame.Core.Library.Common.Addon
 {
-    public abstract class SkillMode : IAddon
+    public abstract class CharacterModule : IAddon
     {
         /// <summary>
         /// 模组名称
@@ -26,9 +26,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         public abstract string Author { get; }
 
         /// <summary>
-        /// 此模组中包含的技能
+        /// 此模组中包含的角色
         /// </summary>
-        public abstract List<Skill> Skills { get; }
+        public abstract List<Character> Characters { get; }
 
         /// <summary>
         /// 加载标记

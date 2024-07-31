@@ -7,7 +7,7 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Library.Common.Addon
 {
-    public abstract class GameModeServer : IGameModeServer
+    public abstract class GameModuleServer : IGameModuleServer
     {
         /// <summary>
         /// 模组名称
@@ -42,7 +42,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 包含了一些常用方法的控制器
         /// </summary>
-        public AddonController Controller
+        public BaseAddonController<IGameModuleServer> Controller
         {
             get => _Controller ?? throw new NotImplementedException();
             set => _Controller = value;
@@ -51,19 +51,19 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 控制器内部变量
         /// </summary>
-        protected AddonController? _Controller;
+        private BaseAddonController<IGameModuleServer>? _Controller;
 
         /// <summary>
         /// 启动服务器监听 请在此处实现服务器逻辑
         /// </summary>
-        /// <param name="GameMode"></param>
+        /// <param name="GameModule"></param>
         /// <param name="Room"></param>
         /// <param name="Users"></param>
         /// <param name="RoomMasterServerModel"></param>
         /// <param name="OthersServerModel"></param>
         /// <param name="Args"></param>
         /// <returns></returns>
-        public abstract bool StartServer(string GameMode, Room Room, List<User> Users, IServerModel RoomMasterServerModel, Dictionary<string, IServerModel> OthersServerModel, params object[] Args);
+        public abstract bool StartServer(string GameModule, Room Room, List<User> Users, IServerModel RoomMasterServerModel, Dictionary<string, IServerModel> OthersServerModel, params object[] Args);
 
         /// <summary>
         /// 接收并处理GamingMessage

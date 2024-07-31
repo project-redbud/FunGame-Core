@@ -6,17 +6,17 @@ using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Api.Utility
 {
-    public class GameModeLoader
+    public class GameModuleLoader
     {
         /// <summary>
         /// 适用于客户端的模组集
         /// </summary>
-        public Dictionary<string, GameMode> Modes { get; } = [];
+        public Dictionary<string, GameModule> Modes { get; } = [];
 
         /// <summary>
         /// 适用于服务器的模组集
         /// </summary>
-        public Dictionary<string, GameModeServer> ServerModes { get; } = [];
+        public Dictionary<string, GameModuleServer> ServerModes { get; } = [];
 
         /// <summary>
         /// 游戏地图集
@@ -38,7 +38,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         public List<Item> Items { get; } = [];
 
-        private GameModeLoader()
+        private GameModuleLoader()
         {
 
         }
@@ -50,20 +50,20 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <seealso cref="Maps"/> 都会读取
         /// </summary>
         /// <param name="runtime">传入 <see cref="FunGameInfo.FunGame"/> 类型来创建指定端的模组读取器</param>
-        /// <param name="delegates">用于构建 <see cref="Controller.AddonController"/></param>
+        /// <param name="delegates">用于构建 <see cref="Controller.AddonController{T}"/></param>
         /// <param name="otherobjs">其他需要传入给插件初始化的对象</param>
         /// <returns></returns>
-        public static GameModeLoader LoadGameModes(FunGameInfo.FunGame runtime, Hashtable delegates, params object[] otherobjs)
+        public static GameModuleLoader LoadGameModules(FunGameInfo.FunGame runtime, Hashtable delegates, params object[] otherobjs)
         {
-            GameModeLoader loader = new();
+            GameModuleLoader loader = new();
             if (runtime == FunGameInfo.FunGame.FunGame_Desktop)
             {
-                AddonManager.LoadGameModes(loader.Modes, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
+                AddonManager.LoadGameModules(loader.Modes, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
                 AddonManager.LoadGameMaps(loader.Maps, otherobjs);
             }
             else if (runtime == FunGameInfo.FunGame.FunGame_Server)
             {
-                AddonManager.LoadGameModesForServer(loader.ServerModes, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
+                AddonManager.LoadGameModulesForServer(loader.ServerModes, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
                 AddonManager.LoadGameMaps(loader.Maps, otherobjs);
             }
             return loader;
@@ -75,7 +75,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public GameMode this[string name]
+        public GameModule this[string name]
         {
             get
             {
@@ -92,7 +92,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public GameModeServer GetServerMode(string name)
+        public GameModuleServer GetServerMode(string name)
         {
             return ServerModes[name];
         }

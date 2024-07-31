@@ -5,9 +5,9 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Interface.Addons
 {
-    public interface IGameModeServer : IAddon, IAddonController
+    public interface IGameModuleServer : IAddon, IAddonController<IGameModuleServer>
     {
-        public bool StartServer(string GameMode, Room Room, List<User> Users, IServerModel RoomMasterServerModel, Dictionary<string, IServerModel> OthersServerModel, params object[] args);
+        public bool StartServer(string GameModule, Room Room, List<User> Users, IServerModel RoomMasterServerModel, Dictionary<string, IServerModel> OthersServerModel, params object[] args);
 
         public Hashtable GamingMessageHandler(string username, GamingType type, Hashtable data);
     }

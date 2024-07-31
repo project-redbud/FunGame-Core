@@ -42,32 +42,32 @@ namespace Milimoe.FunGame.Core.Service
         }
 
         /// <summary>
-        /// 从gamemodes目录加载所有模组
+        /// 从modules目录加载所有模组
         /// </summary>
-        /// <param name="gamemodes"></param>
+        /// <param name="modules"></param>
         /// <param name="characters"></param>
         /// <param name="skills"></param>
         /// <param name="items"></param>
         /// <param name="delegates"></param>
         /// <param name="otherobjs"></param>
         /// <returns></returns>
-        internal static Dictionary<string, GameMode> LoadGameModes(Dictionary<string, GameMode> gamemodes, List<Character> characters, List<Skill> skills, List<Item> items, Hashtable delegates, params object[] otherobjs)
+        internal static Dictionary<string, GameModule> LoadGameModules(Dictionary<string, GameModule> modules, List<Character> characters, List<Skill> skills, List<Item> items, Hashtable delegates, params object[] otherobjs)
         {
-            if (!Directory.Exists(ReflectionSet.GameModeFolderPath)) return gamemodes;
+            if (!Directory.Exists(ReflectionSet.GameModuleFolderPath)) return modules;
 
-            string[] dlls = Directory.GetFiles(ReflectionSet.GameModeFolderPath, "*.dll");
+            string[] dlls = Directory.GetFiles(ReflectionSet.GameModuleFolderPath, "*.dll");
 
             foreach (string dll in dlls)
             {
                 Assembly assembly = Assembly.LoadFrom(dll);
 
-                foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(GameMode))))
+                foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(GameModule))))
                 {
-                    GameMode? instance = (GameMode?)Activator.CreateInstance(type);
+                    GameModule? instance = (GameModule?)Activator.CreateInstance(type);
                     if (instance != null && instance.Load(otherobjs) && instance.Name.Trim() != "")
                     {
                         instance.Controller = new(instance, delegates);
-                        gamemodes.TryAdd(instance.Name, instance);
+                        modules.TryAdd(instance.Name, instance);
                     }
                 }
 
@@ -99,36 +99,36 @@ namespace Milimoe.FunGame.Core.Service
                 }
             }
 
-            return gamemodes;
+            return modules;
         }
 
         /// <summary>
-        /// 从gamemodes目录加载所有适用于服务器的模组
+        /// 从modules目录加载所有适用于服务器的模组
         /// </summary>
-        /// <param name="gamemodes"></param>
+        /// <param name="modules"></param>
         /// <param name="characters"></param>
         /// <param name="skills"></param>
         /// <param name="items"></param>
         /// <param name="delegates"></param>
         /// <param name="otherobjs"></param>
         /// <returns></returns>
-        internal static Dictionary<string, GameModeServer> LoadGameModesForServer(Dictionary<string, GameModeServer> gamemodes, List<Character> characters, List<Skill> skills, List<Item> items, Hashtable delegates, params object[] otherobjs)
+        internal static Dictionary<string, GameModuleServer> LoadGameModulesForServer(Dictionary<string, GameModuleServer> modules, List<Character> characters, List<Skill> skills, List<Item> items, Hashtable delegates, params object[] otherobjs)
         {
-            if (!Directory.Exists(ReflectionSet.GameModeFolderPath)) return gamemodes;
+            if (!Directory.Exists(ReflectionSet.GameModuleFolderPath)) return modules;
 
-            string[] dlls = Directory.GetFiles(ReflectionSet.GameModeFolderPath, "*.dll");
+            string[] dlls = Directory.GetFiles(ReflectionSet.GameModuleFolderPath, "*.dll");
 
             foreach (string dll in dlls)
             {
                 Assembly assembly = Assembly.LoadFrom(dll);
 
-                foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(GameModeServer))))
+                foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(GameModuleServer))))
                 {
-                    GameModeServer? instance = (GameModeServer?)Activator.CreateInstance(type);
+                    GameModuleServer? instance = (GameModuleServer?)Activator.CreateInstance(type);
                     if (instance != null && instance.Load(otherobjs) && instance.Name.Trim() != "")
                     {
                         instance.Controller = new(instance, delegates);
-                        gamemodes.TryAdd(instance.Name, instance);
+                        modules.TryAdd(instance.Name, instance);
                     }
                 }
 
@@ -160,18 +160,18 @@ namespace Milimoe.FunGame.Core.Service
                 }
             }
 
-            return gamemodes;
+            return modules;
         }
 
         /// <summary>
-        /// 从gamemaps目录加载所有地图
+        /// 从maps目录加载所有地图
         /// </summary>
-        /// <param name="gamemaps"></param>
+        /// <param name="maps"></param>
         /// <param name="objs"></param>
         /// <returns></returns>
-        internal static Dictionary<string, GameMap> LoadGameMaps(Dictionary<string, GameMap> gamemaps, params object[] objs)
+        internal static Dictionary<string, GameMap> LoadGameMaps(Dictionary<string, GameMap> maps, params object[] objs)
         {
-            if (!Directory.Exists(ReflectionSet.GameMapFolderPath)) return gamemaps;
+            if (!Directory.Exists(ReflectionSet.GameMapFolderPath)) return maps;
 
             string[] dlls = Directory.GetFiles(ReflectionSet.GameMapFolderPath, "*.dll");
 
@@ -184,12 +184,12 @@ namespace Milimoe.FunGame.Core.Service
                     GameMap? instance = (GameMap?)Activator.CreateInstance(type);
                     if (instance != null && instance.Load(objs) && instance.Name.Trim() != "")
                     {
-                        gamemaps.TryAdd(instance.Name, instance);
+                        maps.TryAdd(instance.Name, instance);
                     }
                 }
             }
 
-            return gamemaps;
+            return maps;
         }
     }
 }
