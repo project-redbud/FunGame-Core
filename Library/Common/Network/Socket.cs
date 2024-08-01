@@ -65,15 +65,15 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             }
         }
 
-        public void BindEvent(Delegate Method, bool Remove = false)
+        public void BindEvent(Delegate method, bool remove = false)
         {
-            if (!Remove)
+            if (!remove)
             {
-                SocketManager.SocketReceive += (SocketManager.SocketReceiveHandler)Method;
+                SocketManager.SocketReceive += (SocketManager.SocketReceiveHandler)method;
             }
             else
             {
-                SocketManager.SocketReceive -= (SocketManager.SocketReceiveHandler)Method;
+                SocketManager.SocketReceive -= (SocketManager.SocketReceiveHandler)method;
             }
         }
 

@@ -26,22 +26,19 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <summary>
         /// 角色表
         /// </summary>
-        public List<Character> Characters { get; } = [];
+        public Dictionary<string, List<Character>> Characters { get; } = [];
 
         /// <summary>
         /// 技能表
         /// </summary>
-        public List<Skill> Skills { get; } = [];
+        public Dictionary<string, List<Skill>> Skills { get; } = [];
 
         /// <summary>
         /// 物品表
         /// </summary>
-        public List<Item> Items { get; } = [];
+        public Dictionary<string, List<Item>> Items { get; } = [];
 
-        private GameModuleLoader()
-        {
-
-        }
+        private GameModuleLoader() { }
 
         /// <summary>
         /// 传入 <see cref="FunGameInfo.FunGame"/> 类型来创建指定端的模组读取器

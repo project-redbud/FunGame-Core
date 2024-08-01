@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface;
@@ -17,10 +18,12 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
     {
         public static GameModuleDepend GameModuleDepend => _depends;
 
+        // 地图是需要指定地图名字的
         private static readonly string[] Maps = ["Example GameMap"];
+        // 角色技能物品都是需要指定程序集（*.dll）的名字（*）
         private static readonly string[] Characters = [];
-        private static readonly string[] Items = [];
         private static readonly string[] Skills = [];
+        private static readonly string[] Items = [];
         private static readonly GameModuleDepend _depends = new(Maps, Characters, Items, Skills);
     }
 
@@ -38,7 +41,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
 
         public override string Author => "FunGamer";
 
-        public override string DefaultMap => GameModuleDepend.Maps.Length > 0 ? GameModuleDepend.Maps[0] : "";
+        public override string DefaultMap => GameModuleDepend.MapsDepend.Length > 0 ? GameModuleDepend.MapsDepend[0] : "";
 
         public override GameModuleDepend GameModuleDepend => ExampleGameModuleConstant.GameModuleDepend;
 
@@ -91,8 +94,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
         public async Task DiscountGameModuleServer()
         {
             // 这是一个主动请求服务器的示例：
-            Api.Transmittal.DataRequest request = Controller.NewDataRequest(DataRequestType.Gaming);
-            request.AddRequestData("type", GamingType.Disconnect);
+            DataRequest request = Controller.NewDataRequest(GamingType.Disconnect);
             if (await request.SendRequestAsync() == RequestResult.Success)
             {
                 string msg = request.GetResult<string>("msg") ?? string.Empty;
@@ -115,7 +117,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
 
         public override string Author => "FunGamer";
 
-        public override string DefaultMap => GameModuleDepend.Maps.Length > 0 ? GameModuleDepend.Maps.First() : "";
+        public override string DefaultMap => GameModuleDepend.MapsDepend.Length > 0 ? GameModuleDepend.MapsDepend.First() : "";
 
         public override GameModuleDepend GameModuleDepend => ExampleGameModuleConstant.GameModuleDepend;
 

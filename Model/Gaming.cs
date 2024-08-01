@@ -22,7 +22,7 @@ namespace Milimoe.FunGame.Core.Model
         /// 游戏的参数
         /// </summary>
         public GamingEventArgs EventArgs { get; }
-
+        
         private Gaming(GameModule module, Room room, List<User> users)
         {
             GameModule = module;
@@ -35,11 +35,14 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="module"></param>
         /// <param name="room"></param>
         /// <param name="users"></param>
+        /// <param name="loader"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public static Gaming StartGame(GameModule module, Room room, List<User> users, params object[] args)
+        public static Gaming StartGame(GameModule module, Room room, List<User> users, GameModuleLoader loader, params object[] args)
         {
             Gaming instance = new(module, room, users);
+            // 读取模组的依赖集合
+            module.GameModuleDepend.GetDependencies(loader);
             // 新建线程来启动模组的界面
             TaskUtility.NewTask(() =>
             {

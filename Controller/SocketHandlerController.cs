@@ -21,7 +21,12 @@ namespace Milimoe.FunGame.Core.Controller
         /// <summary>
         /// Socket
         /// </summary>
-        private readonly Socket _Socket;
+        private readonly Socket? _Socket;
+        
+        /// <summary>
+        /// WebSocket
+        /// </summary>
+        private readonly HTTPClient? _WebSocket;
 
         /// <summary>
         /// 继承请调用base构造
@@ -33,6 +38,20 @@ namespace Milimoe.FunGame.Core.Controller
             {
                 _Socket = socket;
                 socket.BindEvent(new SocketManager.SocketReceiveHandler(SocketHandler));
+            }
+            else throw new SocketCreateReceivingException();
+        }
+        
+        /// <summary>
+        /// 继承请调用base构造
+        /// </summary>
+        /// <param name="websocket">Socket</param>
+        public SocketHandlerController(HTTPClient? websocket)
+        {
+            if (websocket != null)
+            {
+                _WebSocket = websocket;
+                websocket.BindEvent(new SocketManager.SocketReceiveHandler(SocketHandler));
             }
             else throw new SocketCreateReceivingException();
         }
@@ -71,7 +90,8 @@ namespace Milimoe.FunGame.Core.Controller
             {
                 if (Disposing)
                 {
-                    _Socket.BindEvent(new SocketManager.SocketReceiveHandler(SocketHandler), true);
+                    _Socket?.BindEvent(new SocketManager.SocketReceiveHandler(SocketHandler), true);
+                    _WebSocket?.BindEvent(new SocketManager.SocketReceiveHandler(SocketHandler), true);
                 }
             }
             IsDisposed = true;
