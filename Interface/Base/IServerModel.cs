@@ -59,7 +59,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
 
         /// <summary>
         /// 开始接收客户端消息
-        /// <para>请勿在 <see cref="GameModeServer"/> 中调用此方法</para>
+        /// <para>请勿在 <see cref="GameModuleServer"/> 中调用此方法</para>
         /// </summary>
         /// <param name="socket"></param>
         /// <returns></returns>
@@ -67,7 +67,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
 
         /// <summary>
         /// 启动对客户端的监听
-        /// <para>请勿在 <see cref="GameModeServer"/> 中调用此方法</para>
+        /// <para>请勿在 <see cref="GameModuleServer"/> 中调用此方法</para>
         /// </summary>
         public void Start();
     }

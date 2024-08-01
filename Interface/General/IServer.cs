@@ -5,7 +5,7 @@
     /// </summary>
     public interface IServer
     {
-        public string[] GameModeList { get; }
+        public string[] GameModuleList { get; }
         public string[] GameMapList { get; }
     }
 }

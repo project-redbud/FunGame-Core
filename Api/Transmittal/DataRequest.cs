@@ -54,7 +54,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         {
             Worker = new(Socket, RequestType, Guid.NewGuid(), IsLongRunning);
         }
-        
+
         /// <summary>
         /// 添加数据
         /// </summary>

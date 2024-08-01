@@ -2,8 +2,8 @@
 
 namespace Milimoe.FunGame.Core.Interface.Addons
 {
-    public interface IAddonController
+    public interface IAddonController<T> where T : IAddon
     {
-        public AddonController Controller { get; set; }
+        public BaseAddonController<T> Controller { get; set; }
     }
 }

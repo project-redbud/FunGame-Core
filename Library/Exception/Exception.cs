@@ -159,4 +159,9 @@
     {
         public override string Message => "构造对象实例遇到错误 (#10032)";
     }
+
+    public class ModuleServerNewDataRequestException : Exception
+    {
+        public override string Message => "试图在GameModuleServer类中创建数据请求 (#10033)";
+    }
 }

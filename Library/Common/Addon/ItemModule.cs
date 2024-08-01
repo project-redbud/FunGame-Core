@@ -3,7 +3,7 @@ using Milimoe.FunGame.Core.Interface.Addons;
 
 namespace Milimoe.FunGame.Core.Library.Common.Addon
 {
-    public abstract class ItemMode : IAddon
+    public abstract class ItemModule : IAddon
     {
         /// <summary>
         /// 模组名称

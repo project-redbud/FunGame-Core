@@ -31,16 +31,25 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 包含了一些常用方法的控制器
         /// </summary>
-        public AddonController Controller
+        public AddonController<IPlugin> Controller
         {
             get => _Controller ?? throw new NotImplementedException();
-            set => _Controller = value;
+            internal set => _Controller = value;
+        }
+
+        /// <summary>
+        /// base控制器，没有DataRequest
+        /// </summary>
+        BaseAddonController<IPlugin> IAddonController<IPlugin>.Controller
+        {
+            get => Controller;
+            set => _Controller = (AddonController<IPlugin>?)value;
         }
 
         /// <summary>
         /// 控制器内部变量
         /// </summary>
-        protected AddonController? _Controller;
+        private AddonController<IPlugin>? _Controller;
 
         /// <summary>
         /// 加载标记
