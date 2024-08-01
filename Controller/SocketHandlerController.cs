@@ -22,7 +22,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// Socket
         /// </summary>
         private readonly Socket? _Socket;
-        
+
         /// <summary>
         /// WebSocket
         /// </summary>
@@ -41,7 +41,7 @@ namespace Milimoe.FunGame.Core.Controller
             }
             else throw new SocketCreateReceivingException();
         }
-        
+
         /// <summary>
         /// 继承请调用base构造
         /// </summary>

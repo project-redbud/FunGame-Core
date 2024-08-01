@@ -24,7 +24,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
         private static readonly string[] Characters = [];
         private static readonly string[] Skills = [];
         private static readonly string[] Items = [];
-        private static readonly GameModuleDepend _depends = new(Maps, Characters, Items, Skills);
+        private static readonly GameModuleDepend _depends = new(Maps, Characters, Skills, Items);
     }
 
     /// <summary>
@@ -171,7 +171,13 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
                 case GamingType.Connect:
                     // 编写处理“连接”命令的逻辑
                     ConnectedUser.Add(Users.Where(u => u.Username == username).First());
-                    Controller.WriteLine(username + "已经连接。");
+                    Controller.WriteLine(username + " 已经连接。");
+                    break;
+                case GamingType.Disconnect:
+                    // 编写处理“断开连接”命令的逻辑
+                    string msg = username + " 离开了游戏。";
+                    Controller.WriteLine(msg);
+                    result.Add("msg", msg);
                     break;
             }
 

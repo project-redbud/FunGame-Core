@@ -22,7 +22,7 @@ namespace Milimoe.FunGame.Core.Model
         /// 游戏的参数
         /// </summary>
         public GamingEventArgs EventArgs { get; }
-        
+
         private Gaming(GameModule module, Room room, List<User> users)
         {
             GameModule = module;

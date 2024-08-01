@@ -206,7 +206,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 this.RequestID = RequestID;
                 this.IsLongRunning = IsLongRunning;
             }
-            
+
             public SocketRequest(HTTPClient? WebSocket, DataRequestType RequestType, Guid RequestID, bool IsLongRunning = false) : base(WebSocket)
             {
                 this.WebSocket = WebSocket;

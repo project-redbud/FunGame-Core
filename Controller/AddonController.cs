@@ -15,17 +15,17 @@ namespace Milimoe.FunGame.Core.Controller
         /// 基于本地已连接的Socket创建新的数据请求
         /// </summary>
         private Func<DataRequestType, DataRequest> MaskMethod_NewDataRequest { get; set; }
-        
+
         /// <summary>
         /// 基于本地已连接的Socket创建长时间运行的数据请求
         /// </summary>
         private Func<DataRequestType, DataRequest> MaskMethod_NewLongRunningDataRequest { get; set; }
-        
+
         /// <summary>
         /// 基于本地已连接的Socket创建新的局内数据请求
         /// </summary>
         private Func<GamingType, DataRequest> MaskMethod_NewGamingRequest { get; set; }
-        
+
         /// <summary>
         /// 基于本地已连接的Socket创建长时间运行的局内数据请求
         /// </summary>
