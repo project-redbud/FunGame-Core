@@ -9,269 +9,146 @@ namespace Milimoe.FunGame.Core.Interface
     /// </summary>
     public interface IGamingEventHandler
     {
-        public delegate void BeforeEventHandler(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public delegate void AfterEventHandler(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public delegate void SucceedEventHandler(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public delegate void FailedEventHandler(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
+        public delegate void GamingEventHandler(object sender, GamingEventArgs e, Hashtable data);
     }
 
     public interface IGamingConnectEventHandler : IGamingEventHandler
     {
-        public event BeforeEventHandler? BeforeGamingConnect;
-        public event AfterEventHandler? AfterGamingConnect;
-        public event SucceedEventHandler? SucceedGamingConnect;
-        public event FailedEventHandler? FailedGamingConnect;
+        public event GamingEventHandler? GamingConnect;
 
-        public void OnBeforeGamingConnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnAfterGamingConnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnSucceedGamingConnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnFailedGamingConnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
+        public void OnGamingConnectEvent(object sender, GamingEventArgs e, Hashtable data);
     }
 
     public interface IGamingDisconnectEventHandler : IGamingEventHandler
     {
-        public event BeforeEventHandler? BeforeGamingDisconnect;
-        public event AfterEventHandler? AfterGamingDisconnect;
-        public event SucceedEventHandler? SucceedGamingDisconnect;
-        public event FailedEventHandler? FailedGamingDisconnect;
+        public event GamingEventHandler? GamingDisconnect;
 
-        public void OnBeforeGamingDisconnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnAfterGamingDisconnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnSucceedGamingDisconnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnFailedGamingDisconnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
+        public void OnGamingDisconnectEvent(object sender, GamingEventArgs e, Hashtable data);
     }
 
     public interface IGamingReconnectEventHandler : IGamingEventHandler
     {
-        public event BeforeEventHandler? BeforeGamingReconnect;
-        public event AfterEventHandler? AfterGamingReconnect;
-        public event SucceedEventHandler? SucceedGamingReconnect;
-        public event FailedEventHandler? FailedGamingReconnect;
+        public event GamingEventHandler? GamingReconnect;
 
-        public void OnBeforeGamingReconnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnAfterGamingReconnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnSucceedGamingReconnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnFailedGamingReconnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
+        public void OnGamingReconnectEvent(object sender, GamingEventArgs e, Hashtable data);
     }
 
     public interface IGamingBanCharacterEventHandler : IGamingEventHandler
     {
-        public event BeforeEventHandler? BeforeGamingBanCharacter;
-        public event AfterEventHandler? AfterGamingBanCharacter;
-        public event SucceedEventHandler? SucceedGamingBanCharacter;
-        public event FailedEventHandler? FailedGamingBanCharacter;
+        public event GamingEventHandler? GamingBanCharacter;
 
-        public void OnBeforeGamingBanCharacterEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnAfterGamingBanCharacterEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnSucceedGamingBanCharacterEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnFailedGamingBanCharacterEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
+        public void OnGamingBanCharacterEvent(object sender, GamingEventArgs e, Hashtable data);
     }
 
     public interface IGamingPickCharacterEventHandler : IGamingEventHandler
     {
-        public event BeforeEventHandler? BeforeGamingPickCharacter;
-        public event AfterEventHandler? AfterGamingPickCharacter;
-        public event SucceedEventHandler? SucceedGamingPickCharacter;
-        public event FailedEventHandler? FailedGamingPickCharacter;
+        public event GamingEventHandler? GamingPickCharacter;
 
-        public void OnBeforeGamingPickCharacterEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnAfterGamingPickCharacterEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnSucceedGamingPickCharacterEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnFailedGamingPickCharacterEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
+        public void OnGamingPickCharacterEvent(object sender, GamingEventArgs e, Hashtable data);
     }
 
     public interface IGamingRandomEventHandler : IGamingEventHandler
     {
-        public event BeforeEventHandler? BeforeGamingRandom;
-        public event AfterEventHandler? AfterGamingRandom;
-        public event SucceedEventHandler? SucceedGamingRandom;
-        public event FailedEventHandler? FailedGamingRandom;
+        public event GamingEventHandler? GamingRandom;
 
-        public void OnBeforeGamingRandomEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnAfterGamingRandomEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnSucceedGamingRandomEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnFailedGamingRandomEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
+        public void OnGamingRandomEvent(object sender, GamingEventArgs e, Hashtable data);
     }
 
     public interface IGamingRoundEventHandler : IGamingEventHandler
     {
-        public event BeforeEventHandler? BeforeGamingRound;
-        public event AfterEventHandler? AfterGamingRound;
-        public event SucceedEventHandler? SucceedGamingRound;
-        public event FailedEventHandler? FailedGamingRound;
+        public event GamingEventHandler? GamingRound;
 
-        public void OnBeforeGamingRoundEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnAfterGamingRoundEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnSucceedGamingRoundEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnFailedGamingRoundEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
+        public void OnGamingRoundEvent(object sender, GamingEventArgs e, Hashtable data);
     }
 
     public interface IGamingLevelUpEventHandler : IGamingEventHandler
     {
-        public event BeforeEventHandler? BeforeGamingLevelUp;
-        public event AfterEventHandler? AfterGamingLevelUp;
-        public event SucceedEventHandler? SucceedGamingLevelUp;
-        public event FailedEventHandler? FailedGamingLevelUp;
+        public event GamingEventHandler? GamingLevelUp;
 
-        public void OnBeforeGamingLevelUpEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnAfterGamingLevelUpEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnSucceedGamingLevelUpEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnFailedGamingLevelUpEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
+        public void OnGamingLevelUpEvent(object sender, GamingEventArgs e, Hashtable data);
     }
 
     public interface IGamingMoveEventHandler : IGamingEventHandler
     {
-        public event BeforeEventHandler? BeforeGamingMove;
-        public event AfterEventHandler? AfterGamingMove;
-        public event SucceedEventHandler? SucceedGamingMove;
-        public event FailedEventHandler? FailedGamingMove;
+        public event GamingEventHandler? GamingMove;
 
-        public void OnBeforeGamingMoveEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnAfterGamingMoveEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnSucceedGamingMoveEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnFailedGamingMoveEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
+        public void OnGamingMoveEvent(object sender, GamingEventArgs e, Hashtable data);
     }
 
     public interface IGamingAttackEventHandler : IGamingEventHandler
     {
-        public event BeforeEventHandler? BeforeGamingAttack;
-        public event AfterEventHandler? AfterGamingAttack;
-        public event SucceedEventHandler? SucceedGamingAttack;
-        public event FailedEventHandler? FailedGamingAttack;
+        public event GamingEventHandler? GamingAttack;
 
-        public void OnBeforeGamingAttackEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnAfterGamingAttackEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnSucceedGamingAttackEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnFailedGamingAttackEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
+        public void OnGamingAttackEvent(object sender, GamingEventArgs e, Hashtable data);
     }
 
     public interface IGamingSkillEventHandler : IGamingEventHandler
     {
-        public event BeforeEventHandler? BeforeGamingSkill;
-        public event AfterEventHandler? AfterGamingSkill;
-        public event SucceedEventHandler? SucceedGamingSkill;
-        public event FailedEventHandler? FailedGamingSkill;
+        public event GamingEventHandler? GamingSkill;
 
-        public void OnBeforeGamingSkillEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnAfterGamingSkillEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnSucceedGamingSkillEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnFailedGamingSkillEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
+        public void OnGamingSkillEvent(object sender, GamingEventArgs e, Hashtable data);
     }
 
     public interface IGamingItemEventHandler : IGamingEventHandler
     {
-        public event BeforeEventHandler? BeforeGamingItem;
-        public event AfterEventHandler? AfterGamingItem;
-        public event SucceedEventHandler? SucceedGamingItem;
-        public event FailedEventHandler? FailedGamingItem;
+        public event GamingEventHandler? GamingItem;
 
-        public void OnBeforeGamingItemEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnAfterGamingItemEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnSucceedGamingItemEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnFailedGamingItemEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
+        public void OnGamingItemEvent(object sender, GamingEventArgs e, Hashtable data);
     }
 
     public interface IGamingMagicEventHandler : IGamingEventHandler
     {
-        public event BeforeEventHandler? BeforeGamingMagic;
-        public event AfterEventHandler? AfterGamingMagic;
-        public event SucceedEventHandler? SucceedGamingMagic;
-        public event FailedEventHandler? FailedGamingMagic;
+        public event GamingEventHandler? GamingMagic;
 
-        public void OnBeforeGamingMagicEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnAfterGamingMagicEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnSucceedGamingMagicEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnFailedGamingMagicEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
+        public void OnGamingMagicEvent(object sender, GamingEventArgs e, Hashtable data);
     }
 
     public interface IGamingBuyEventHandler : IGamingEventHandler
     {
-        public event BeforeEventHandler? BeforeGamingBuy;
-        public event AfterEventHandler? AfterGamingBuy;
-        public event SucceedEventHandler? SucceedGamingBuy;
-        public event FailedEventHandler? FailedGamingBuy;
+        public event GamingEventHandler? GamingBuy;
 
-        public void OnBeforeGamingBuyEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnAfterGamingBuyEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnSucceedGamingBuyEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnFailedGamingBuyEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
+        public void OnGamingBuyEvent(object sender, GamingEventArgs e, Hashtable data);
     }
 
     public interface IGamingSuperSkillEventHandler : IGamingEventHandler
     {
-        public event BeforeEventHandler? BeforeGamingSuperSkill;
-        public event AfterEventHandler? AfterGamingSuperSkill;
-        public event SucceedEventHandler? SucceedGamingSuperSkill;
-        public event FailedEventHandler? FailedGamingSuperSkill;
+        public event GamingEventHandler? GamingSuperSkill;
 
-        public void OnBeforeGamingSuperSkillEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnAfterGamingSuperSkillEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnSucceedGamingSuperSkillEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnFailedGamingSuperSkillEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
+        public void OnGamingSuperSkillEvent(object sender, GamingEventArgs e, Hashtable data);
     }
 
     public interface IGamingPauseEventHandler : IGamingEventHandler
     {
-        public event BeforeEventHandler? BeforeGamingPause;
-        public event AfterEventHandler? AfterGamingPause;
-        public event SucceedEventHandler? SucceedGamingPause;
-        public event FailedEventHandler? FailedGamingPause;
+        public event GamingEventHandler? GamingPause;
 
-        public void OnBeforeGamingPauseEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnAfterGamingPauseEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnSucceedGamingPauseEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnFailedGamingPauseEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
+        public void OnGamingPauseEvent(object sender, GamingEventArgs e, Hashtable data);
     }
 
     public interface IGamingUnpauseEventHandler : IGamingEventHandler
     {
-        public event BeforeEventHandler? BeforeGamingUnpause;
-        public event AfterEventHandler? AfterGamingUnpause;
-        public event SucceedEventHandler? SucceedGamingUnpause;
-        public event FailedEventHandler? FailedGamingUnpause;
+        public event GamingEventHandler? GamingUnpause;
 
-        public void OnBeforeGamingUnpauseEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnAfterGamingUnpauseEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnSucceedGamingUnpauseEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnFailedGamingUnpauseEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
+        public void OnGamingUnpauseEvent(object sender, GamingEventArgs e, Hashtable data);
     }
 
     public interface IGamingSurrenderEventHandler : IGamingEventHandler
     {
-        public event BeforeEventHandler? BeforeGamingSurrender;
-        public event AfterEventHandler? AfterGamingSurrender;
-        public event SucceedEventHandler? SucceedGamingSurrender;
-        public event FailedEventHandler? FailedGamingSurrender;
+        public event GamingEventHandler? GamingSurrender;
 
-        public void OnBeforeGamingSurrenderEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnAfterGamingSurrenderEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnSucceedGamingSurrenderEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnFailedGamingSurrenderEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
+        public void OnGamingSurrenderEvent(object sender, GamingEventArgs e, Hashtable data);
     }
 
     public interface IGamingUpdateInfoEventHandler : IGamingEventHandler
     {
-        public event BeforeEventHandler? BeforeGamingUpdateInfo;
-        public event AfterEventHandler? AfterGamingUpdateInfo;
-        public event SucceedEventHandler? SucceedGamingUpdateInfo;
-        public event FailedEventHandler? FailedGamingUpdateInfo;
+        public event GamingEventHandler? GamingUpdateInfo;
 
-        public void OnBeforeGamingUpdateInfoEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnAfterGamingUpdateInfoEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnSucceedGamingUpdateInfoEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnFailedGamingUpdateInfoEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
+        public void OnGamingUpdateInfoEvent(object sender, GamingEventArgs e, Hashtable data);
     }
 
     public interface IGamingPunishEventHandler : IGamingEventHandler
     {
-        public event BeforeEventHandler? BeforeGamingPunish;
-        public event AfterEventHandler? AfterGamingPunish;
-        public event SucceedEventHandler? SucceedGamingPunish;
-        public event FailedEventHandler? FailedGamingPunish;
+        public event GamingEventHandler? GamingPunish;
 
-        public void OnBeforeGamingPunishEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnAfterGamingPunishEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnSucceedGamingPunishEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
-        public void OnFailedGamingPunishEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result);
+        public void OnGamingPunishEvent(object sender, GamingEventArgs e, Hashtable data);
     }
 }

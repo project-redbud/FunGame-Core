@@ -287,6 +287,40 @@ namespace Milimoe.FunGame.Core.Controller
         }
 
         /// <summary>
+        /// 基于本地已连接的Socket创建新的局内（<see cref="Model.Gaming"/>）数据请求<para/>
+        /// 此方法是给 <see cref="Library.Common.Addon.GameModule"/> 提供的
+        /// </summary>
+        /// <param name="GamingType"></param>
+        /// <returns></returns>
+        /// <exception cref="ConnectFailedException"></exception>
+        public DataRequest NewDataRequest(GamingType GamingType)
+        {
+            if (_Socket != null)
+            {
+                DataRequest request = new(_Socket, GamingType);
+                return request;
+            }
+            throw new ConnectFailedException();
+        }
+
+        /// <summary>
+        /// 基于本地已连接的Socket创建长时间运行的局内（<see cref="Model.Gaming"/>）数据请求<para/>
+        /// 此方法是给 <see cref="Library.Common.Addon.GameModule"/> 提供的
+        /// </summary>
+        /// <param name="GamingType"></param>
+        /// <returns></returns>
+        /// <exception cref="ConnectFailedException"></exception>
+        public DataRequest NewLongRunningDataRequest(GamingType GamingType)
+        {
+            if (_Socket != null)
+            {
+                DataRequest request = new(_Socket, GamingType, true);
+                return request;
+            }
+            throw new ConnectFailedException();
+        }
+
+        /// <summary>
         /// 开始接收服务器信息
         /// </summary>
         protected void StartReceiving()

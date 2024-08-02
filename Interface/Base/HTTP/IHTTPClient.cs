@@ -8,5 +8,6 @@ namespace Milimoe.FunGame.Core.Interface.HTTP
     {
         public Task<SocketResult> Send(SocketMessageType type, params object[] objs);
         public SocketObject SocketObject_Handler(SocketObject objs);
+        public void BindEvent(Delegate method, bool remove = false);
     }
 }

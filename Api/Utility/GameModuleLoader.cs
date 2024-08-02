@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Service;
@@ -11,12 +10,12 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <summary>
         /// 适用于客户端的模组集
         /// </summary>
-        public Dictionary<string, GameModule> Modes { get; } = [];
+        public Dictionary<string, GameModule> Modules { get; } = [];
 
         /// <summary>
         /// 适用于服务器的模组集
         /// </summary>
-        public Dictionary<string, GameModuleServer> ServerModes { get; } = [];
+        public Dictionary<string, GameModuleServer> ServerModules { get; } = [];
 
         /// <summary>
         /// 游戏地图集
@@ -26,27 +25,24 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <summary>
         /// 角色表
         /// </summary>
-        public List<Character> Characters { get; } = [];
+        public Dictionary<string, CharacterModule> Characters { get; } = [];
 
         /// <summary>
         /// 技能表
         /// </summary>
-        public List<Skill> Skills { get; } = [];
+        public Dictionary<string, SkillModule> Skills { get; } = [];
 
         /// <summary>
         /// 物品表
         /// </summary>
-        public List<Item> Items { get; } = [];
+        public Dictionary<string, ItemModule> Items { get; } = [];
 
-        private GameModuleLoader()
-        {
-
-        }
+        private GameModuleLoader() { }
 
         /// <summary>
         /// 传入 <see cref="FunGameInfo.FunGame"/> 类型来创建指定端的模组读取器
-        /// <para>runtime = <see cref="FunGameInfo.FunGame.FunGame_Desktop"/> 时，仅读取 <seealso cref="Modes"/></para>
-        /// <para>runtime = <see cref="FunGameInfo.FunGame.FunGame_Server"/> 时，仅读取 <seealso cref="ServerModes"/></para>
+        /// <para>runtime = <see cref="FunGameInfo.FunGame.FunGame_Desktop"/> 时，仅读取 <seealso cref="Modules"/></para>
+        /// <para>runtime = <see cref="FunGameInfo.FunGame.FunGame_Server"/> 时，仅读取 <seealso cref="ServerModules"/></para>
         /// <seealso cref="Maps"/> 都会读取
         /// </summary>
         /// <param name="runtime">传入 <see cref="FunGameInfo.FunGame"/> 类型来创建指定端的模组读取器</param>
@@ -58,12 +54,12 @@ namespace Milimoe.FunGame.Core.Api.Utility
             GameModuleLoader loader = new();
             if (runtime == FunGameInfo.FunGame.FunGame_Desktop)
             {
-                AddonManager.LoadGameModules(loader.Modes, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
+                AddonManager.LoadGameModules(loader.Modules, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
                 AddonManager.LoadGameMaps(loader.Maps, otherobjs);
             }
             else if (runtime == FunGameInfo.FunGame.FunGame_Server)
             {
-                AddonManager.LoadGameModulesForServer(loader.ServerModes, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
+                AddonManager.LoadGameModulesForServer(loader.ServerModules, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
                 AddonManager.LoadGameMaps(loader.Maps, otherobjs);
             }
             return loader;
@@ -79,11 +75,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
         {
             get
             {
-                return Modes[name];
+                return Modules[name];
             }
             set
             {
-                Modes.TryAdd(name, value);
+                Modules.TryAdd(name, value);
             }
         }
 
@@ -94,7 +90,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns></returns>
         public GameModuleServer GetServerMode(string name)
         {
-            return ServerModes[name];
+            return ServerModules[name];
         }
 
         /// <summary>

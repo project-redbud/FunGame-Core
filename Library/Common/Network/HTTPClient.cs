@@ -86,6 +86,18 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             return new(SocketMessageType.Unknown, Guid.Empty);
         }
 
+        public void BindEvent(Delegate method, bool remove = false)
+        {
+            if (!remove)
+            {
+                SocketManager.SocketReceive += (SocketManager.SocketReceiveHandler)method;
+            }
+            else
+            {
+                SocketManager.SocketReceive -= (SocketManager.SocketReceiveHandler)method;
+            }
+        }
+
         public void Close()
         {
             _Listening = false;

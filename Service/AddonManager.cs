@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Reflection;
-using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface.Addons;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 
@@ -26,15 +26,17 @@ namespace Milimoe.FunGame.Core.Service
                 // 加载目录下所有的DLL
                 Assembly assembly = Assembly.LoadFrom(dll);
 
-                // 遍历DLL中继承了Plugin的类型
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(Plugin))))
                 {
-                    Plugin? instance = (Plugin?)Activator.CreateInstance(type);
-                    if (instance != null && instance.Load(otherobjs) && instance.Name.Trim() != "")
+                    AddAddonInstances(type, plugins, (instance) =>
                     {
-                        instance.Controller = new(instance, delegates);
-                        plugins.TryAdd(instance.Name, instance);
-                    }
+                        if (instance.Load(otherobjs))
+                        {
+                            instance.Controller = new(instance, delegates);
+                            return true;
+                        }
+                        return false;
+                    });
                 }
             }
 
@@ -51,7 +53,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="delegates"></param>
         /// <param name="otherobjs"></param>
         /// <returns></returns>
-        internal static Dictionary<string, GameModule> LoadGameModules(Dictionary<string, GameModule> modules, List<Character> characters, List<Skill> skills, List<Item> items, Hashtable delegates, params object[] otherobjs)
+        internal static Dictionary<string, GameModule> LoadGameModules(Dictionary<string, GameModule> modules, Dictionary<string, CharacterModule> characters, Dictionary<string, SkillModule> skills, Dictionary<string, ItemModule> items, Hashtable delegates, params object[] otherobjs)
         {
             if (!Directory.Exists(ReflectionSet.GameModuleFolderPath)) return modules;
 
@@ -61,40 +63,31 @@ namespace Milimoe.FunGame.Core.Service
             {
                 Assembly assembly = Assembly.LoadFrom(dll);
 
-                foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(GameModule))))
+                foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => typeof(IAddon).IsAssignableFrom(type)))
                 {
-                    GameModule? instance = (GameModule?)Activator.CreateInstance(type);
-                    if (instance != null && instance.Load(otherobjs) && instance.Name.Trim() != "")
+                    if (type.IsSubclassOf(typeof(GameModule)))
                     {
-                        instance.Controller = new(instance, delegates);
-                        modules.TryAdd(instance.Name, instance);
+                        AddAddonInstances(type, modules, (instance) =>
+                        {
+                            if (instance.Load(otherobjs))
+                            {
+                                instance.Controller = new(instance, delegates);
+                                return true;
+                            }
+                            return false;
+                        });
                     }
-                }
-
-                foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(Character))))
-                {
-                    Character? instance = (Character?)Activator.CreateInstance(type);
-                    if (instance != null && instance.Name.Trim() != "" && !characters.Contains(instance))
+                    else if (type.IsSubclassOf(typeof(CharacterModule)))
                     {
-                        characters.Add(instance);
+                        AddAddonInstances(type, characters, (instance) => instance.Load(otherobjs));
                     }
-                }
-
-                foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(Skill))))
-                {
-                    Skill? instance = (Skill?)Activator.CreateInstance(type);
-                    if (instance != null && instance.Name.Trim() != "" && !skills.Contains(instance))
+                    else if (type.IsSubclassOf(typeof(SkillModule)))
                     {
-                        skills.Add(instance);
+                        AddAddonInstances(type, skills, (instance) => instance.Load(otherobjs));
                     }
-                }
-
-                foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(Item))))
-                {
-                    Item? instance = (Item?)Activator.CreateInstance(type);
-                    if (instance != null && instance.Name.Trim() != "" && !items.Contains(instance))
+                    else if (type.IsSubclassOf(typeof(ItemModule)))
                     {
-                        items.Add(instance);
+                        AddAddonInstances(type, items, (instance) => instance.Load(otherobjs));
                     }
                 }
             }
@@ -112,7 +105,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="delegates"></param>
         /// <param name="otherobjs"></param>
         /// <returns></returns>
-        internal static Dictionary<string, GameModuleServer> LoadGameModulesForServer(Dictionary<string, GameModuleServer> modules, List<Character> characters, List<Skill> skills, List<Item> items, Hashtable delegates, params object[] otherobjs)
+        internal static Dictionary<string, GameModuleServer> LoadGameModulesForServer(Dictionary<string, GameModuleServer> modules, Dictionary<string, CharacterModule> characters, Dictionary<string, SkillModule> skills, Dictionary<string, ItemModule> items, Hashtable delegates, params object[] otherobjs)
         {
             if (!Directory.Exists(ReflectionSet.GameModuleFolderPath)) return modules;
 
@@ -122,40 +115,31 @@ namespace Milimoe.FunGame.Core.Service
             {
                 Assembly assembly = Assembly.LoadFrom(dll);
 
-                foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(GameModuleServer))))
+                foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => typeof(IAddon).IsAssignableFrom(type)))
                 {
-                    GameModuleServer? instance = (GameModuleServer?)Activator.CreateInstance(type);
-                    if (instance != null && instance.Load(otherobjs) && instance.Name.Trim() != "")
+                    if (type.IsSubclassOf(typeof(GameModuleServer)))
                     {
-                        instance.Controller = new(instance, delegates);
-                        modules.TryAdd(instance.Name, instance);
+                        AddAddonInstances(type, modules, (instance) =>
+                        {
+                            if (instance.Load(otherobjs))
+                            {
+                                instance.Controller = new(instance, delegates);
+                                return true;
+                            }
+                            return false;
+                        });
                     }
-                }
-
-                foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(Character))))
-                {
-                    Character? instance = (Character?)Activator.CreateInstance(type);
-                    if (instance != null && instance.Name.Trim() != "" && !characters.Contains(instance))
+                    else if (type.IsSubclassOf(typeof(CharacterModule)))
                     {
-                        characters.Add(instance);
+                        AddAddonInstances(type, characters, (instance) => instance.Load(otherobjs));
                     }
-                }
-
-                foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(Skill))))
-                {
-                    Skill? instance = (Skill?)Activator.CreateInstance(type);
-                    if (instance != null && instance.Name.Trim() != "" && !skills.Contains(instance))
+                    else if (type.IsSubclassOf(typeof(SkillModule)))
                     {
-                        skills.Add(instance);
+                        AddAddonInstances(type, skills, (instance) => instance.Load(otherobjs));
                     }
-                }
-
-                foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(Item))))
-                {
-                    Item? instance = (Item?)Activator.CreateInstance(type);
-                    if (instance != null && instance.Name.Trim() != "" && !items.Contains(instance))
+                    else if (type.IsSubclassOf(typeof(ItemModule)))
                     {
-                        items.Add(instance);
+                        AddAddonInstances(type, items, (instance) => instance.Load(otherobjs));
                     }
                 }
             }
@@ -181,15 +165,31 @@ namespace Milimoe.FunGame.Core.Service
 
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(GameMap))))
                 {
-                    GameMap? instance = (GameMap?)Activator.CreateInstance(type);
-                    if (instance != null && instance.Load(objs) && instance.Name.Trim() != "")
-                    {
-                        maps.TryAdd(instance.Name, instance);
-                    }
+                    AddAddonInstances(type, maps, (instance) => instance.Load(objs));
                 }
             }
 
             return maps;
+        }
+
+        /// <summary>
+        /// 添加构造好的模组类实例到字典中
+        /// </summary>
+        /// <typeparam name="T">加载的类型</typeparam>
+        /// <param name="type">循环程序集的类型</param>
+        /// <param name="dictionary">实例的字典</param>
+        /// <param name="isadd">加载时触发的检查方法，返回false不添加</param>
+        private static void AddAddonInstances<T>(Type type, Dictionary<string, T> dictionary, Func<T, bool>? isadd = null) where T : IAddon
+        {
+            T? instance = (T?)Activator.CreateInstance(type);
+            if (instance != null)
+            {
+                string name = instance.Name;
+                if (!string.IsNullOrWhiteSpace(name) && (isadd == null || isadd(instance)))
+                {
+                    dictionary.TryAdd(name.Trim(), instance);
+                }
+            }
         }
     }
 }

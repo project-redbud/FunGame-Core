@@ -160,663 +160,243 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             if (this is IGamingConnectEvent)
             {
                 IGamingConnectEvent bind = (IGamingConnectEvent)this;
-                BeforeGamingConnect += bind.BeforeGamingConnectEvent;
-                AfterGamingConnect += bind.AfterGamingConnectEvent;
-                SucceedGamingConnect += bind.SucceedGamingConnectEvent;
-                FailedGamingConnect += bind.FailedGamingConnectEvent;
+                GamingConnect += bind.GamingConnectEvent;
             }
 
             if (this is IGamingDisconnectEvent)
             {
                 IGamingDisconnectEvent bind = (IGamingDisconnectEvent)this;
-                BeforeGamingDisconnect += bind.BeforeGamingDisconnectEvent;
-                AfterGamingDisconnect += bind.AfterGamingDisconnectEvent;
-                SucceedGamingDisconnect += bind.SucceedGamingDisconnectEvent;
-                FailedGamingDisconnect += bind.FailedGamingDisconnectEvent;
+                GamingDisconnect += bind.GamingDisconnectEvent;
             }
 
             if (this is IGamingReconnectEvent)
             {
                 IGamingReconnectEvent bind = (IGamingReconnectEvent)this;
-                BeforeGamingReconnect += bind.BeforeGamingReconnectEvent;
-                AfterGamingReconnect += bind.AfterGamingReconnectEvent;
-                SucceedGamingReconnect += bind.SucceedGamingReconnectEvent;
-                FailedGamingReconnect += bind.FailedGamingReconnectEvent;
+                GamingReconnect += bind.GamingReconnectEvent;
             }
 
             if (this is IGamingBanCharacterEvent)
             {
                 IGamingBanCharacterEvent bind = (IGamingBanCharacterEvent)this;
-                BeforeGamingBanCharacter += bind.BeforeGamingBanCharacterEvent;
-                AfterGamingBanCharacter += bind.AfterGamingBanCharacterEvent;
-                SucceedGamingBanCharacter += bind.SucceedGamingBanCharacterEvent;
-                FailedGamingBanCharacter += bind.FailedGamingBanCharacterEvent;
+                GamingBanCharacter += bind.GamingBanCharacterEvent;
             }
 
             if (this is IGamingPickCharacterEvent)
             {
                 IGamingPickCharacterEvent bind = (IGamingPickCharacterEvent)this;
-                BeforeGamingPickCharacter += bind.BeforeGamingPickCharacterEvent;
-                AfterGamingPickCharacter += bind.AfterGamingPickCharacterEvent;
-                SucceedGamingPickCharacter += bind.SucceedGamingPickCharacterEvent;
-                FailedGamingPickCharacter += bind.FailedGamingPickCharacterEvent;
+                GamingPickCharacter += bind.GamingPickCharacterEvent;
             }
 
             if (this is IGamingRandomEvent)
             {
                 IGamingRandomEvent bind = (IGamingRandomEvent)this;
-                BeforeGamingRandom += bind.BeforeGamingRandomEvent;
-                AfterGamingRandom += bind.AfterGamingRandomEvent;
-                SucceedGamingRandom += bind.SucceedGamingRandomEvent;
-                FailedGamingRandom += bind.FailedGamingRandomEvent;
+                GamingRandom += bind.GamingRandomEvent;
             }
 
             if (this is IGamingRoundEvent)
             {
                 IGamingRoundEvent bind = (IGamingRoundEvent)this;
-                BeforeGamingRound += bind.BeforeGamingRoundEvent;
-                AfterGamingRound += bind.AfterGamingRoundEvent;
-                SucceedGamingRound += bind.SucceedGamingRoundEvent;
-                FailedGamingRound += bind.FailedGamingRoundEvent;
+                GamingRound += bind.GamingRoundEvent;
             }
 
             if (this is IGamingLevelUpEvent)
             {
                 IGamingLevelUpEvent bind = (IGamingLevelUpEvent)this;
-                BeforeGamingLevelUp += bind.BeforeGamingLevelUpEvent;
-                AfterGamingLevelUp += bind.AfterGamingLevelUpEvent;
-                SucceedGamingLevelUp += bind.SucceedGamingLevelUpEvent;
-                FailedGamingLevelUp += bind.FailedGamingLevelUpEvent;
+                GamingLevelUp += bind.GamingLevelUpEvent;
             }
 
             if (this is IGamingMoveEvent)
             {
                 IGamingMoveEvent bind = (IGamingMoveEvent)this;
-                BeforeGamingMove += bind.BeforeGamingMoveEvent;
-                AfterGamingMove += bind.AfterGamingMoveEvent;
-                SucceedGamingMove += bind.SucceedGamingMoveEvent;
-                FailedGamingMove += bind.FailedGamingMoveEvent;
+                GamingMove += bind.GamingMoveEvent;
             }
 
             if (this is IGamingAttackEvent)
             {
                 IGamingAttackEvent bind = (IGamingAttackEvent)this;
-                BeforeGamingAttack += bind.BeforeGamingAttackEvent;
-                AfterGamingAttack += bind.AfterGamingAttackEvent;
-                SucceedGamingAttack += bind.SucceedGamingAttackEvent;
-                FailedGamingAttack += bind.FailedGamingAttackEvent;
+                GamingAttack += bind.GamingAttackEvent;
             }
 
             if (this is IGamingSkillEvent)
             {
                 IGamingSkillEvent bind = (IGamingSkillEvent)this;
-                BeforeGamingSkill += bind.BeforeGamingSkillEvent;
-                AfterGamingSkill += bind.AfterGamingSkillEvent;
-                SucceedGamingSkill += bind.SucceedGamingSkillEvent;
-                FailedGamingSkill += bind.FailedGamingSkillEvent;
+                GamingSkill += bind.GamingSkillEvent;
             }
 
             if (this is IGamingItemEvent)
             {
                 IGamingItemEvent bind = (IGamingItemEvent)this;
-                BeforeGamingItem += bind.BeforeGamingItemEvent;
-                AfterGamingItem += bind.AfterGamingItemEvent;
-                SucceedGamingItem += bind.SucceedGamingItemEvent;
-                FailedGamingItem += bind.FailedGamingItemEvent;
+                GamingItem += bind.GamingItemEvent;
             }
 
             if (this is IGamingMagicEvent)
             {
                 IGamingMagicEvent bind = (IGamingMagicEvent)this;
-                BeforeGamingMagic += bind.BeforeGamingMagicEvent;
-                AfterGamingMagic += bind.AfterGamingMagicEvent;
-                SucceedGamingMagic += bind.SucceedGamingMagicEvent;
-                FailedGamingMagic += bind.FailedGamingMagicEvent;
+                GamingMagic += bind.GamingMagicEvent;
             }
 
             if (this is IGamingBuyEvent)
             {
                 IGamingBuyEvent bind = (IGamingBuyEvent)this;
-                BeforeGamingBuy += bind.BeforeGamingBuyEvent;
-                AfterGamingBuy += bind.AfterGamingBuyEvent;
-                SucceedGamingBuy += bind.SucceedGamingBuyEvent;
-                FailedGamingBuy += bind.FailedGamingBuyEvent;
+                GamingBuy += bind.GamingBuyEvent;
             }
 
             if (this is IGamingSuperSkillEvent)
             {
                 IGamingSuperSkillEvent bind = (IGamingSuperSkillEvent)this;
-                BeforeGamingSuperSkill += bind.BeforeGamingSuperSkillEvent;
-                AfterGamingSuperSkill += bind.AfterGamingSuperSkillEvent;
-                SucceedGamingSuperSkill += bind.SucceedGamingSuperSkillEvent;
-                FailedGamingSuperSkill += bind.FailedGamingSuperSkillEvent;
+                GamingSuperSkill += bind.GamingSuperSkillEvent;
             }
 
             if (this is IGamingPauseEvent)
             {
                 IGamingPauseEvent bind = (IGamingPauseEvent)this;
-                BeforeGamingPause += bind.BeforeGamingPauseEvent;
-                AfterGamingPause += bind.AfterGamingPauseEvent;
-                SucceedGamingPause += bind.SucceedGamingPauseEvent;
-                FailedGamingPause += bind.FailedGamingPauseEvent;
+                GamingPause += bind.GamingPauseEvent;
             }
 
             if (this is IGamingUnpauseEvent)
             {
                 IGamingUnpauseEvent bind = (IGamingUnpauseEvent)this;
-                BeforeGamingUnpause += bind.BeforeGamingUnpauseEvent;
-                AfterGamingUnpause += bind.AfterGamingUnpauseEvent;
-                SucceedGamingUnpause += bind.SucceedGamingUnpauseEvent;
-                FailedGamingUnpause += bind.FailedGamingUnpauseEvent;
+                GamingUnpause += bind.GamingUnpauseEvent;
             }
 
             if (this is IGamingSurrenderEvent)
             {
                 IGamingSurrenderEvent bind = (IGamingSurrenderEvent)this;
-                BeforeGamingSurrender += bind.BeforeGamingSurrenderEvent;
-                AfterGamingSurrender += bind.AfterGamingSurrenderEvent;
-                SucceedGamingSurrender += bind.SucceedGamingSurrenderEvent;
-                FailedGamingSurrender += bind.FailedGamingSurrenderEvent;
+                GamingSurrender += bind.GamingSurrenderEvent;
             }
 
             if (this is IGamingUpdateInfoEvent)
             {
                 IGamingUpdateInfoEvent bind = (IGamingUpdateInfoEvent)this;
-                BeforeGamingUpdateInfo += bind.BeforeGamingUpdateInfoEvent;
-                AfterGamingUpdateInfo += bind.AfterGamingUpdateInfoEvent;
-                SucceedGamingUpdateInfo += bind.SucceedGamingUpdateInfoEvent;
-                FailedGamingUpdateInfo += bind.FailedGamingUpdateInfoEvent;
+                GamingUpdateInfo += bind.GamingUpdateInfoEvent;
             }
 
             if (this is IGamingPunishEvent)
             {
                 IGamingPunishEvent bind = (IGamingPunishEvent)this;
-                BeforeGamingPunish += bind.BeforeGamingPunishEvent;
-                AfterGamingPunish += bind.AfterGamingPunishEvent;
-                SucceedGamingPunish += bind.SucceedGamingPunishEvent;
-                FailedGamingPunish += bind.FailedGamingPunishEvent;
+                GamingPunish += bind.GamingPunishEvent;
             }
         }
 
-        public event IGamingEventHandler.BeforeEventHandler? BeforeGamingConnect;
-        public event IGamingEventHandler.AfterEventHandler? AfterGamingConnect;
-        public event IGamingEventHandler.SucceedEventHandler? SucceedGamingConnect;
-        public event IGamingEventHandler.FailedEventHandler? FailedGamingConnect;
-        public event IGamingEventHandler.BeforeEventHandler? BeforeGamingDisconnect;
-        public event IGamingEventHandler.AfterEventHandler? AfterGamingDisconnect;
-        public event IGamingEventHandler.SucceedEventHandler? SucceedGamingDisconnect;
-        public event IGamingEventHandler.FailedEventHandler? FailedGamingDisconnect;
-        public event IGamingEventHandler.BeforeEventHandler? BeforeGamingReconnect;
-        public event IGamingEventHandler.AfterEventHandler? AfterGamingReconnect;
-        public event IGamingEventHandler.SucceedEventHandler? SucceedGamingReconnect;
-        public event IGamingEventHandler.FailedEventHandler? FailedGamingReconnect;
-        public event IGamingEventHandler.BeforeEventHandler? BeforeGamingBanCharacter;
-        public event IGamingEventHandler.AfterEventHandler? AfterGamingBanCharacter;
-        public event IGamingEventHandler.SucceedEventHandler? SucceedGamingBanCharacter;
-        public event IGamingEventHandler.FailedEventHandler? FailedGamingBanCharacter;
-        public event IGamingEventHandler.BeforeEventHandler? BeforeGamingPickCharacter;
-        public event IGamingEventHandler.AfterEventHandler? AfterGamingPickCharacter;
-        public event IGamingEventHandler.SucceedEventHandler? SucceedGamingPickCharacter;
-        public event IGamingEventHandler.FailedEventHandler? FailedGamingPickCharacter;
-        public event IGamingEventHandler.BeforeEventHandler? BeforeGamingRandom;
-        public event IGamingEventHandler.AfterEventHandler? AfterGamingRandom;
-        public event IGamingEventHandler.SucceedEventHandler? SucceedGamingRandom;
-        public event IGamingEventHandler.FailedEventHandler? FailedGamingRandom;
-        public event IGamingEventHandler.BeforeEventHandler? BeforeGamingRound;
-        public event IGamingEventHandler.AfterEventHandler? AfterGamingRound;
-        public event IGamingEventHandler.SucceedEventHandler? SucceedGamingRound;
-        public event IGamingEventHandler.FailedEventHandler? FailedGamingRound;
-        public event IGamingEventHandler.BeforeEventHandler? BeforeGamingLevelUp;
-        public event IGamingEventHandler.AfterEventHandler? AfterGamingLevelUp;
-        public event IGamingEventHandler.SucceedEventHandler? SucceedGamingLevelUp;
-        public event IGamingEventHandler.FailedEventHandler? FailedGamingLevelUp;
-        public event IGamingEventHandler.BeforeEventHandler? BeforeGamingMove;
-        public event IGamingEventHandler.AfterEventHandler? AfterGamingMove;
-        public event IGamingEventHandler.SucceedEventHandler? SucceedGamingMove;
-        public event IGamingEventHandler.FailedEventHandler? FailedGamingMove;
-        public event IGamingEventHandler.BeforeEventHandler? BeforeGamingAttack;
-        public event IGamingEventHandler.AfterEventHandler? AfterGamingAttack;
-        public event IGamingEventHandler.SucceedEventHandler? SucceedGamingAttack;
-        public event IGamingEventHandler.FailedEventHandler? FailedGamingAttack;
-        public event IGamingEventHandler.BeforeEventHandler? BeforeGamingSkill;
-        public event IGamingEventHandler.AfterEventHandler? AfterGamingSkill;
-        public event IGamingEventHandler.SucceedEventHandler? SucceedGamingSkill;
-        public event IGamingEventHandler.FailedEventHandler? FailedGamingSkill;
-        public event IGamingEventHandler.BeforeEventHandler? BeforeGamingItem;
-        public event IGamingEventHandler.AfterEventHandler? AfterGamingItem;
-        public event IGamingEventHandler.SucceedEventHandler? SucceedGamingItem;
-        public event IGamingEventHandler.FailedEventHandler? FailedGamingItem;
-        public event IGamingEventHandler.BeforeEventHandler? BeforeGamingMagic;
-        public event IGamingEventHandler.AfterEventHandler? AfterGamingMagic;
-        public event IGamingEventHandler.SucceedEventHandler? SucceedGamingMagic;
-        public event IGamingEventHandler.FailedEventHandler? FailedGamingMagic;
-        public event IGamingEventHandler.BeforeEventHandler? BeforeGamingBuy;
-        public event IGamingEventHandler.AfterEventHandler? AfterGamingBuy;
-        public event IGamingEventHandler.SucceedEventHandler? SucceedGamingBuy;
-        public event IGamingEventHandler.FailedEventHandler? FailedGamingBuy;
-        public event IGamingEventHandler.BeforeEventHandler? BeforeGamingSuperSkill;
-        public event IGamingEventHandler.AfterEventHandler? AfterGamingSuperSkill;
-        public event IGamingEventHandler.SucceedEventHandler? SucceedGamingSuperSkill;
-        public event IGamingEventHandler.FailedEventHandler? FailedGamingSuperSkill;
-        public event IGamingEventHandler.BeforeEventHandler? BeforeGamingPause;
-        public event IGamingEventHandler.AfterEventHandler? AfterGamingPause;
-        public event IGamingEventHandler.SucceedEventHandler? SucceedGamingPause;
-        public event IGamingEventHandler.FailedEventHandler? FailedGamingPause;
-        public event IGamingEventHandler.BeforeEventHandler? BeforeGamingUnpause;
-        public event IGamingEventHandler.AfterEventHandler? AfterGamingUnpause;
-        public event IGamingEventHandler.SucceedEventHandler? SucceedGamingUnpause;
-        public event IGamingEventHandler.FailedEventHandler? FailedGamingUnpause;
-        public event IGamingEventHandler.BeforeEventHandler? BeforeGamingSurrender;
-        public event IGamingEventHandler.AfterEventHandler? AfterGamingSurrender;
-        public event IGamingEventHandler.SucceedEventHandler? SucceedGamingSurrender;
-        public event IGamingEventHandler.FailedEventHandler? FailedGamingSurrender;
-        public event IGamingEventHandler.BeforeEventHandler? BeforeGamingUpdateInfo;
-        public event IGamingEventHandler.AfterEventHandler? AfterGamingUpdateInfo;
-        public event IGamingEventHandler.SucceedEventHandler? SucceedGamingUpdateInfo;
-        public event IGamingEventHandler.FailedEventHandler? FailedGamingUpdateInfo;
-        public event IGamingEventHandler.BeforeEventHandler? BeforeGamingPunish;
-        public event IGamingEventHandler.AfterEventHandler? AfterGamingPunish;
-        public event IGamingEventHandler.SucceedEventHandler? SucceedGamingPunish;
-        public event IGamingEventHandler.FailedEventHandler? FailedGamingPunish;
+        public event IGamingEventHandler.GamingEventHandler? GamingConnect;
+        public event IGamingEventHandler.GamingEventHandler? GamingDisconnect;
+        public event IGamingEventHandler.GamingEventHandler? GamingReconnect;
+        public event IGamingEventHandler.GamingEventHandler? GamingBanCharacter;
+        public event IGamingEventHandler.GamingEventHandler? GamingPickCharacter;
+        public event IGamingEventHandler.GamingEventHandler? GamingRandom;
+        public event IGamingEventHandler.GamingEventHandler? GamingRound;
+        public event IGamingEventHandler.GamingEventHandler? GamingLevelUp;
+        public event IGamingEventHandler.GamingEventHandler? GamingMove;
+        public event IGamingEventHandler.GamingEventHandler? GamingAttack;
+        public event IGamingEventHandler.GamingEventHandler? GamingSkill;
+        public event IGamingEventHandler.GamingEventHandler? GamingItem;
+        public event IGamingEventHandler.GamingEventHandler? GamingMagic;
+        public event IGamingEventHandler.GamingEventHandler? GamingBuy;
+        public event IGamingEventHandler.GamingEventHandler? GamingSuperSkill;
+        public event IGamingEventHandler.GamingEventHandler? GamingPause;
+        public event IGamingEventHandler.GamingEventHandler? GamingUnpause;
+        public event IGamingEventHandler.GamingEventHandler? GamingSurrender;
+        public event IGamingEventHandler.GamingEventHandler? GamingUpdateInfo;
+        public event IGamingEventHandler.GamingEventHandler? GamingPunish;
 
-        public void OnBeforeGamingConnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
+        public void OnGamingConnectEvent(object sender, GamingEventArgs e, Hashtable data)
         {
-            BeforeGamingConnect?.Invoke(sender, e, data, result);
+            GamingConnect?.Invoke(sender, e, data);
         }
 
-        public void OnAfterGamingConnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
+        public void OnGamingDisconnectEvent(object sender, GamingEventArgs e, Hashtable data)
         {
-            AfterGamingConnect?.Invoke(sender, e, data, result);
+            GamingDisconnect?.Invoke(sender, e, data);
         }
 
-        public void OnSucceedGamingConnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
+        public void OnGamingReconnectEvent(object sender, GamingEventArgs e, Hashtable data)
         {
-            SucceedGamingConnect?.Invoke(sender, e, data, result);
+            GamingReconnect?.Invoke(sender, e, data);
         }
 
-        public void OnFailedGamingConnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
+        public void OnGamingBanCharacterEvent(object sender, GamingEventArgs e, Hashtable data)
         {
-            FailedGamingConnect?.Invoke(sender, e, data, result);
+            GamingBanCharacter?.Invoke(sender, e, data);
         }
 
-        public void OnBeforeGamingDisconnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
+        public void OnGamingPickCharacterEvent(object sender, GamingEventArgs e, Hashtable data)
         {
-            BeforeGamingDisconnect?.Invoke(sender, e, data, result);
+            GamingPickCharacter?.Invoke(sender, e, data);
         }
 
-        public void OnAfterGamingDisconnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
+        public void OnGamingRandomEvent(object sender, GamingEventArgs e, Hashtable data)
         {
-            AfterGamingDisconnect?.Invoke(sender, e, data, result);
+            GamingRandom?.Invoke(sender, e, data);
         }
 
-        public void OnSucceedGamingDisconnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
+        public void OnGamingRoundEvent(object sender, GamingEventArgs e, Hashtable data)
         {
-            SucceedGamingDisconnect?.Invoke(sender, e, data, result);
+            GamingRound?.Invoke(sender, e, data);
         }
 
-        public void OnFailedGamingDisconnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
+        public void OnGamingLevelUpEvent(object sender, GamingEventArgs e, Hashtable data)
         {
-            FailedGamingDisconnect?.Invoke(sender, e, data, result);
+            GamingLevelUp?.Invoke(sender, e, data);
         }
 
-        public void OnBeforeGamingReconnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
+        public void OnGamingMoveEvent(object sender, GamingEventArgs e, Hashtable data)
         {
-            BeforeGamingReconnect?.Invoke(sender, e, data, result);
+            GamingMove?.Invoke(sender, e, data);
         }
 
-        public void OnAfterGamingReconnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
+        public void OnGamingAttackEvent(object sender, GamingEventArgs e, Hashtable data)
         {
-            AfterGamingReconnect?.Invoke(sender, e, data, result);
+            GamingAttack?.Invoke(sender, e, data);
         }
 
-        public void OnSucceedGamingReconnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
+        public void OnGamingSkillEvent(object sender, GamingEventArgs e, Hashtable data)
         {
-            SucceedGamingReconnect?.Invoke(sender, e, data, result);
+            GamingSkill?.Invoke(sender, e, data);
         }
 
-        public void OnFailedGamingReconnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
+        public void OnGamingItemEvent(object sender, GamingEventArgs e, Hashtable data)
         {
-            FailedGamingReconnect?.Invoke(sender, e, data, result);
+            GamingItem?.Invoke(sender, e, data);
         }
 
-        public void OnBeforeGamingBanCharacterEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
+        public void OnGamingMagicEvent(object sender, GamingEventArgs e, Hashtable data)
         {
-            BeforeGamingBanCharacter?.Invoke(sender, e, data, result);
+            GamingMagic?.Invoke(sender, e, data);
         }
 
-        public void OnAfterGamingBanCharacterEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
+        public void OnGamingBuyEvent(object sender, GamingEventArgs e, Hashtable data)
         {
-            AfterGamingBanCharacter?.Invoke(sender, e, data, result);
+            GamingBuy?.Invoke(sender, e, data);
         }
 
-        public void OnSucceedGamingBanCharacterEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
+        public void OnGamingSuperSkillEvent(object sender, GamingEventArgs e, Hashtable data)
         {
-            SucceedGamingBanCharacter?.Invoke(sender, e, data, result);
+            GamingSuperSkill?.Invoke(sender, e, data);
         }
 
-        public void OnFailedGamingBanCharacterEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
+        public void OnGamingPauseEvent(object sender, GamingEventArgs e, Hashtable data)
         {
-            FailedGamingBanCharacter?.Invoke(sender, e, data, result);
+            GamingPause?.Invoke(sender, e, data);
         }
 
-        public void OnBeforeGamingPickCharacterEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
+        public void OnGamingUnpauseEvent(object sender, GamingEventArgs e, Hashtable data)
         {
-            BeforeGamingPickCharacter?.Invoke(sender, e, data, result);
+            GamingUnpause?.Invoke(sender, e, data);
         }
 
-        public void OnAfterGamingPickCharacterEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
+        public void OnGamingSurrenderEvent(object sender, GamingEventArgs e, Hashtable data)
         {
-            AfterGamingPickCharacter?.Invoke(sender, e, data, result);
+            GamingSurrender?.Invoke(sender, e, data);
         }
 
-        public void OnSucceedGamingPickCharacterEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
+        public void OnGamingUpdateInfoEvent(object sender, GamingEventArgs e, Hashtable data)
         {
-            SucceedGamingPickCharacter?.Invoke(sender, e, data, result);
+            GamingUpdateInfo?.Invoke(sender, e, data);
         }
 
-        public void OnFailedGamingPickCharacterEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
+        public void OnGamingPunishEvent(object sender, GamingEventArgs e, Hashtable data)
         {
-            FailedGamingPickCharacter?.Invoke(sender, e, data, result);
-        }
-
-        public void OnBeforeGamingRandomEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            BeforeGamingRandom?.Invoke(sender, e, data, result);
-        }
-
-        public void OnAfterGamingRandomEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            AfterGamingRandom?.Invoke(sender, e, data, result);
-        }
-
-        public void OnSucceedGamingRandomEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            SucceedGamingRandom?.Invoke(sender, e, data, result);
-        }
-
-        public void OnFailedGamingRandomEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            FailedGamingRandom?.Invoke(sender, e, data, result);
-        }
-
-        public void OnBeforeGamingRoundEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            BeforeGamingRound?.Invoke(sender, e, data, result);
-        }
-
-        public void OnAfterGamingRoundEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            AfterGamingRound?.Invoke(sender, e, data, result);
-        }
-
-        public void OnSucceedGamingRoundEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            SucceedGamingRound?.Invoke(sender, e, data, result);
-        }
-
-        public void OnFailedGamingRoundEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            FailedGamingRound?.Invoke(sender, e, data, result);
-        }
-
-        public void OnBeforeGamingLevelUpEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            BeforeGamingLevelUp?.Invoke(sender, e, data, result);
-        }
-
-        public void OnAfterGamingLevelUpEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            AfterGamingLevelUp?.Invoke(sender, e, data, result);
-        }
-
-        public void OnSucceedGamingLevelUpEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            SucceedGamingLevelUp?.Invoke(sender, e, data, result);
-        }
-
-        public void OnFailedGamingLevelUpEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            FailedGamingLevelUp?.Invoke(sender, e, data, result);
-        }
-
-        public void OnBeforeGamingMoveEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            BeforeGamingMove?.Invoke(sender, e, data, result);
-        }
-
-        public void OnAfterGamingMoveEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            AfterGamingMove?.Invoke(sender, e, data, result);
-        }
-
-        public void OnSucceedGamingMoveEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            SucceedGamingMove?.Invoke(sender, e, data, result);
-        }
-
-        public void OnFailedGamingMoveEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            FailedGamingMove?.Invoke(sender, e, data, result);
-        }
-
-        public void OnBeforeGamingAttackEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            BeforeGamingAttack?.Invoke(sender, e, data, result);
-        }
-
-        public void OnAfterGamingAttackEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            AfterGamingAttack?.Invoke(sender, e, data, result);
-        }
-
-        public void OnSucceedGamingAttackEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            SucceedGamingAttack?.Invoke(sender, e, data, result);
-        }
-
-        public void OnFailedGamingAttackEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            FailedGamingAttack?.Invoke(sender, e, data, result);
-        }
-
-        public void OnBeforeGamingSkillEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            BeforeGamingSkill?.Invoke(sender, e, data, result);
-        }
-
-        public void OnAfterGamingSkillEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            AfterGamingSkill?.Invoke(sender, e, data, result);
-        }
-
-        public void OnSucceedGamingSkillEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            SucceedGamingSkill?.Invoke(sender, e, data, result);
-        }
-
-        public void OnFailedGamingSkillEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            FailedGamingSkill?.Invoke(sender, e, data, result);
-        }
-
-        public void OnBeforeGamingItemEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            BeforeGamingItem?.Invoke(sender, e, data, result);
-        }
-
-        public void OnAfterGamingItemEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            AfterGamingItem?.Invoke(sender, e, data, result);
-        }
-
-        public void OnSucceedGamingItemEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            SucceedGamingItem?.Invoke(sender, e, data, result);
-        }
-
-        public void OnFailedGamingItemEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            FailedGamingItem?.Invoke(sender, e, data, result);
-        }
-
-        public void OnBeforeGamingMagicEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            BeforeGamingMagic?.Invoke(sender, e, data, result);
-        }
-
-        public void OnAfterGamingMagicEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            AfterGamingMagic?.Invoke(sender, e, data, result);
-        }
-
-        public void OnSucceedGamingMagicEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            SucceedGamingMagic?.Invoke(sender, e, data, result);
-        }
-
-        public void OnFailedGamingMagicEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            FailedGamingMagic?.Invoke(sender, e, data, result);
-        }
-
-        public void OnBeforeGamingBuyEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            BeforeGamingBuy?.Invoke(sender, e, data, result);
-        }
-
-        public void OnAfterGamingBuyEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            AfterGamingBuy?.Invoke(sender, e, data, result);
-        }
-
-        public void OnSucceedGamingBuyEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            SucceedGamingBuy?.Invoke(sender, e, data, result);
-        }
-
-        public void OnFailedGamingBuyEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            FailedGamingBuy?.Invoke(sender, e, data, result);
-        }
-
-        public void OnBeforeGamingSuperSkillEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            BeforeGamingSuperSkill?.Invoke(sender, e, data, result);
-        }
-
-        public void OnAfterGamingSuperSkillEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            AfterGamingSuperSkill?.Invoke(sender, e, data, result);
-        }
-
-        public void OnSucceedGamingSuperSkillEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            SucceedGamingSuperSkill?.Invoke(sender, e, data, result);
-        }
-
-        public void OnFailedGamingSuperSkillEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            FailedGamingSuperSkill?.Invoke(sender, e, data, result);
-        }
-
-        public void OnBeforeGamingPauseEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            BeforeGamingPause?.Invoke(sender, e, data, result);
-        }
-
-        public void OnAfterGamingPauseEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            AfterGamingPause?.Invoke(sender, e, data, result);
-        }
-
-        public void OnSucceedGamingPauseEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            SucceedGamingPause?.Invoke(sender, e, data, result);
-        }
-
-        public void OnFailedGamingPauseEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            FailedGamingPause?.Invoke(sender, e, data, result);
-        }
-
-        public void OnBeforeGamingUnpauseEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            BeforeGamingUnpause?.Invoke(sender, e, data, result);
-        }
-
-        public void OnAfterGamingUnpauseEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            AfterGamingUnpause?.Invoke(sender, e, data, result);
-        }
-
-        public void OnSucceedGamingUnpauseEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            SucceedGamingUnpause?.Invoke(sender, e, data, result);
-        }
-
-        public void OnFailedGamingUnpauseEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            FailedGamingUnpause?.Invoke(sender, e, data, result);
-        }
-
-        public void OnBeforeGamingSurrenderEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            BeforeGamingSurrender?.Invoke(sender, e, data, result);
-        }
-
-        public void OnAfterGamingSurrenderEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            AfterGamingSurrender?.Invoke(sender, e, data, result);
-        }
-
-        public void OnSucceedGamingSurrenderEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            SucceedGamingSurrender?.Invoke(sender, e, data, result);
-        }
-
-        public void OnFailedGamingSurrenderEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            FailedGamingSurrender?.Invoke(sender, e, data, result);
-        }
-
-        public void OnBeforeGamingUpdateInfoEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            BeforeGamingUpdateInfo?.Invoke(sender, e, data, result);
-        }
-
-        public void OnAfterGamingUpdateInfoEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            AfterGamingUpdateInfo?.Invoke(sender, e, data, result);
-        }
-
-        public void OnSucceedGamingUpdateInfoEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            SucceedGamingUpdateInfo?.Invoke(sender, e, data, result);
-        }
-
-        public void OnFailedGamingUpdateInfoEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            FailedGamingUpdateInfo?.Invoke(sender, e, data, result);
-        }
-
-        public void OnBeforeGamingPunishEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            BeforeGamingPunish?.Invoke(sender, e, data, result);
-        }
-
-        public void OnAfterGamingPunishEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            AfterGamingPunish?.Invoke(sender, e, data, result);
-        }
-
-        public void OnSucceedGamingPunishEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            SucceedGamingPunish?.Invoke(sender, e, data, result);
-        }
-
-        public void OnFailedGamingPunishEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            FailedGamingPunish?.Invoke(sender, e, data, result);
+            GamingPunish?.Invoke(sender, e, data);
         }
     }
 }

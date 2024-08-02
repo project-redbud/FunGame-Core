@@ -1,5 +1,4 @@
 ﻿using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
 
@@ -59,7 +58,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
 
         /// <summary>
         /// 开始接收客户端消息
-        /// <para>请勿在 <see cref="GameModuleServer"/> 中调用此方法</para>
+        /// <para>请勿在 <see cref="Library.Common.Addon.GameModuleServer"/> 中调用此方法</para>
         /// </summary>
         /// <param name="socket"></param>
         /// <returns></returns>
@@ -67,7 +66,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
 
         /// <summary>
         /// 启动对客户端的监听
-        /// <para>请勿在 <see cref="GameModuleServer"/> 中调用此方法</para>
+        /// <para>请勿在 <see cref="Library.Common.Addon.GameModuleServer"/> 中调用此方法</para>
         /// </summary>
         public void Start();
     }

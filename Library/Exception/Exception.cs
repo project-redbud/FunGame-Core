@@ -160,8 +160,13 @@
         public override string Message => "构造对象实例遇到错误 (#10032)";
     }
 
-    public class ModuleServerNewDataRequestException : Exception
+    public class InvalidNewDataRequestException : Exception
     {
-        public override string Message => "试图在GameModuleServer类中创建数据请求 (#10033)";
+        public override string Message => "试图在不支持的类中创建数据请求 (#10033)";
+    }
+
+    public class AsyncRequestException : Exception
+    {
+        public override string Message => "数据请求必须以异步方式发送 (#10034)";
     }
 }

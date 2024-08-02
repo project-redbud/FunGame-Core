@@ -328,7 +328,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
     #region 加密服务
 
     /// <summary>
-    /// 使用HMACSHA512算法加密
+    /// 加密服务工具箱
     /// </summary>
     public class Encryption
     {
@@ -380,6 +380,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
         }
     }
 
+    /// <summary>
+    /// 为字符串（string）添加扩展方法
+    /// </summary>
     public static class StringExtension
     {
         /// <summary>
@@ -398,6 +401,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
 
     #region 验证服务
 
+    /// <summary>
+    /// 验证码服务工具箱
+    /// </summary>
     public class Verification
     {
         /// <summary>
@@ -503,6 +509,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
 
     #region 多线程服务
 
+    /// <summary>
+    /// 多线程服务工具箱
+    /// </summary>
     public class TaskUtility
     {
         /// <summary>
