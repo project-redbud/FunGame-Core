@@ -60,10 +60,10 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <param name="Room"></param>
         /// <param name="Users"></param>
         /// <param name="RoomMasterServerModel"></param>
-        /// <param name="OthersServerModel"></param>
+        /// <param name="ServerModels"></param>
         /// <param name="Args"></param>
         /// <returns></returns>
-        public abstract bool StartServer(string GameModule, Room Room, List<User> Users, IServerModel RoomMasterServerModel, Dictionary<string, IServerModel> OthersServerModel, params object[] Args);
+        public abstract bool StartServer(string GameModule, Room Room, List<User> Users, IServerModel RoomMasterServerModel, Dictionary<string, IServerModel> ServerModels, params object[] Args);
 
         /// <summary>
         /// 接收并处理GamingMessage

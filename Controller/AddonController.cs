@@ -40,7 +40,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// <exception cref="InvalidNewDataRequestException"></exception>
         public DataRequest NewDataRequest(DataRequestType type)
         {
-            if (typeof(T).IsAssignableFrom(typeof(IGameModule)) || typeof(T).IsAssignableFrom(typeof(IGameModuleServer)))
+            if (typeof(IGameModule).IsAssignableFrom(typeof(T)) || typeof(IGameModuleServer).IsAssignableFrom(typeof(T)))
             {
                 throw new InvalidNewDataRequestException();
             }
@@ -56,7 +56,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// <exception cref="InvalidNewDataRequestException"></exception>
         public DataRequest NewLongRunningDataRequest(DataRequestType type)
         {
-            if (typeof(T).IsAssignableFrom(typeof(IGameModule)) || typeof(T).IsAssignableFrom(typeof(IGameModuleServer)))
+            if (typeof(IGameModule).IsAssignableFrom(typeof(T)) || typeof(IGameModuleServer).IsAssignableFrom(typeof(T)))
             {
                 throw new InvalidNewDataRequestException();
             }
@@ -74,7 +74,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// <exception cref="InvalidNewDataRequestException"></exception>
         public DataRequest NewDataRequest(GamingType type)
         {
-            if (typeof(T).IsAssignableFrom(typeof(IGameModuleServer)))
+            if (typeof(IGameModuleServer).IsAssignableFrom(typeof(T)))
             {
                 throw new InvalidNewDataRequestException();
             }
@@ -92,7 +92,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// <exception cref="InvalidNewDataRequestException"></exception>
         public DataRequest NewLongRunningDataRequest(GamingType type)
         {
-            if (typeof(T).IsAssignableFrom(typeof(IGameModuleServer)))
+            if (typeof(IGameModuleServer).IsAssignableFrom(typeof(T)))
             {
                 throw new InvalidNewDataRequestException();
             }

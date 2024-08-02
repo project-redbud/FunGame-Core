@@ -5,32 +5,32 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
 {
     /// <summary>
     /// 模组的依赖集合<para/>
-    /// <paramref name="Maps"></paramref>（地图名字（<see cref="GameMap.Name"/>）的数组）<para/>
-    /// <paramref name="Characters"></paramref>（程序集（*.dll）名字（*）的数组）<para/>
-    /// <paramref name="Skills"></paramref>（程序集（*.dll）名字（*）的数组）<para/>
-    /// <paramref name="Items"></paramref>（程序集（*.dll）名字（*）的数组）
+    /// <paramref name="maps"></paramref>（地图名称（<see cref="GameMap.Name"/>）的数组）<para/>
+    /// <paramref name="characters"></paramref>（角色模组名称（<see cref="CharacterModule.Name"/>）的数组）<para/>
+    /// <paramref name="skills"></paramref>（技能模组名称（<see cref="SkillModule.Name"/>）的数组）<para/>
+    /// <paramref name="items"></paramref>（物品模组名称（<see cref="ItemModule.Name"/>）的数组）
     /// </summary>
-    public readonly struct GameModuleDepend(string[] Maps, string[] Characters, string[] Skills, string[] Items)
+    public readonly struct GameModuleDepend(string[] maps, string[] characters, string[] skills, string[] items)
     {
         /// <summary>
-        /// 模组所使用的地图组（地图名字（<see cref="GameMap.Name"/>）的数组）
+        /// 模组所使用的地图组
         /// </summary>
-        public string[] MapsDepend { get; } = Maps;
+        public string[] MapsDepend { get; } = maps;
 
         /// <summary>
-        /// 模组所使用的角色组（程序集（*.dll）名字（*）的数组）
+        /// 模组所使用的角色组
         /// </summary>
-        public string[] CharactersDepend { get; } = Characters;
+        public string[] CharactersDepend { get; } = characters;
 
         /// <summary>
-        /// 模组所使用的技能组（程序集（*.dll）名字（*）的数组）
+        /// 模组所使用的技能组
         /// </summary>
-        public string[] SkillsDepend { get; } = Skills;
+        public string[] SkillsDepend { get; } = skills;
 
         /// <summary>
-        /// 模组所使用的物品组（程序集（*.dll）名字（*）的数组）
+        /// 模组所使用的物品组
         /// </summary>
-        public string[] ItemsDepend { get; } = Items;
+        public string[] ItemsDepend { get; } = items;
 
         /// <summary>
         /// 实际使用的地图组对象<para/>
@@ -67,17 +67,17 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             Skills.Clear();
             Items.Clear();
             Maps.AddRange(loader.Maps.Keys.Where(MapsDepend.Contains).Select(str => loader.Maps[str]));
-            foreach (List<Character> list in loader.Characters.Keys.Where(CharactersDepend.Contains).Select(str => loader.Characters[str]))
+            foreach (CharacterModule modules in loader.Characters.Keys.Where(CharactersDepend.Contains).Select(str => loader.Characters[str]))
             {
-                Characters.AddRange(list);
+                Characters.AddRange(modules.Characters);
             }
-            foreach (List<Skill> list in loader.Skills.Keys.Where(SkillsDepend.Contains).Select(str => loader.Skills[str]))
+            foreach (SkillModule modules in loader.Skills.Keys.Where(SkillsDepend.Contains).Select(str => loader.Skills[str]))
             {
-                Skills.AddRange(list);
+                Skills.AddRange(modules.Skills);
             }
-            foreach (List<Item> list in loader.Items.Keys.Where(ItemsDepend.Contains).Select(str => loader.Items[str]))
+            foreach (ItemModule modules in loader.Items.Keys.Where(ItemsDepend.Contains).Select(str => loader.Items[str]))
             {
-                Items.AddRange(list);
+                Items.AddRange(modules.Items);
             }
         }
     }

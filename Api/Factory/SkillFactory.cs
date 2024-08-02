@@ -12,16 +12,13 @@ namespace Milimoe.FunGame.Core.Api.Factory
 
         internal Skill Create(SkillType type = SkillType.Passive)
         {
-            switch (type)
+            _EntityType = typeof(Skill);
+            return type switch
             {
-                case SkillType.Passive:
-                    _EntityType = typeof(PassiveSkill);
-                    return PassiveSkill.GetInstance();
-                case SkillType.Active:
-                default:
-                    _EntityType = typeof(ActiveSkill);
-                    return ActiveSkill.GetInstance();
-            }
+                SkillType.Passive => new(false),
+                SkillType.Active => new(true),
+                _ => new(false)
+            };
         }
 
         public Skill Create()

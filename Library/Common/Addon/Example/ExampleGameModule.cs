@@ -8,7 +8,6 @@ using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
 
-// 此演示包含GameModule、GameModuleServer、GameMap
 namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
 {
     /// <summary>
@@ -18,20 +17,18 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
     {
         public static GameModuleDepend GameModuleDepend => _depends;
 
-        // 地图是需要指定地图名字的
         private static readonly string[] Maps = ["Example GameMap"];
-        // 角色技能物品都是需要指定程序集（*.dll）的名字（*）
-        private static readonly string[] Characters = [];
-        private static readonly string[] Skills = [];
-        private static readonly string[] Items = [];
+        private static readonly string[] Characters = ["Example CharacterModule"];
+        private static readonly string[] Skills = ["Example SkillModule"];
+        private static readonly string[] Items = ["Example ItemModule"];
         private static readonly GameModuleDepend _depends = new(Maps, Characters, Skills, Items);
     }
 
     /// <summary>
     /// 模组：必须继承基类：<see cref="GameModule"/><para/>
-    /// 继承事件接口并实现其方法来使模组生效。例如继承：<seealso cref="IGamingConnectEvent"/><para/>
+    /// 继承事件接口并实现其方法来使模组生效。例如继承：<seealso cref="IGamingUpdateInfoEvent"/><para/>
     /// </summary>
-    public class ExampleGameModule : GameModule, IGamingConnectEvent
+    public class ExampleGameModule : GameModule, IGamingUpdateInfoEvent
     {
         public override string Name => "FunGame Example GameModule";
 
@@ -69,36 +66,28 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             // 如果没有，则不需要重写此方法
         }
 
-        public void BeforeGamingConnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
+        public void GamingUpdateInfoEvent(object sender, GamingEventArgs e, Hashtable data)
         {
-            // 此方法预处理攻击消息
-            // 如果这里将Cancel设置为true，那么这个方法结束后，后续的事件就会终止
-            e.Cancel = true;
-        }
-
-        public void AfterGamingConnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-
-        }
-
-        public void SucceedGamingConnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-
-        }
-
-        public void FailedGamingConnectEvent(object sender, GamingEventArgs e, Hashtable data, Hashtable result)
-        {
-            _ = DiscountGameModuleServer();
-        }
-
-        public async Task DiscountGameModuleServer()
-        {
-            // 这是一个主动请求服务器的示例：
-            DataRequest request = Controller.NewDataRequest(GamingType.Disconnect);
-            if (await request.SendRequestAsync() == RequestResult.Success)
+            // 在下方的Server示例中，服务器发来的data中，包含check字符串，因此客户端要主动发起确认连接的请求。
+            if (data.ContainsKey("info_type"))
             {
-                string msg = request.GetResult<string>("msg") ?? string.Empty;
-                Controller.WriteLine(msg);
+                // 反序列化得到指定key的值
+                string info_type = DataRequest.GetHashtableJsonObject<string>(data, "info_type") ?? "";
+                if (info_type == "check")
+                {
+                    Guid token = DataRequest.GetHashtableJsonObject<Guid>(data, "connect_token");
+                    // 发起连接确认请求
+                    DataRequest request = Controller.NewDataRequest(GamingType.Connect);
+                    // 传递参数
+                    request.AddRequestData("username", ((Gaming)sender).CurrentUser.Username);
+                    request.AddRequestData("connect_token", token);
+                    if (request.SendRequest() == RequestResult.Success)
+                    {
+                        string msg = request.GetResult<string>("msg") ?? "";
+                        Controller.WriteLine(msg);
+                    }
+                    request.Dispose();
+                }
             }
         }
     }
@@ -124,34 +113,54 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
         protected Room Room = General.HallInstance;
         protected List<User> Users = [];
         protected IServerModel? RoomMaster;
-        protected Dictionary<string, IServerModel> Others = [];
         protected Dictionary<string, IServerModel> All = [];
 
-        public override bool StartServer(string GameModule, Room Room, List<User> Users, IServerModel RoomMasterServerModel, Dictionary<string, IServerModel> OthersServerModel, params object[] Args)
+        public override bool StartServer(string GameModule, Room Room, List<User> Users, IServerModel RoomMasterServerModel, Dictionary<string, IServerModel> ServerModels, params object[] Args)
         {
             // 将参数转为本地属性
             this.Room = Room;
             this.Users = Users;
             RoomMaster = RoomMasterServerModel;
-            Others = OthersServerModel;
-            if (RoomMaster != null)
-            {
-                // 这里获得了每名玩家的服务线程，保存为一个字典
-                All = OthersServerModel.ToDictionary(k => k.Key, v => v.Value);
-                All.Add(RoomMaster.User.Username, RoomMaster);
-            }
+            All = ServerModels;
             // 创建一个线程执行Test()
             TaskUtility.NewTask(Test).OnError(Controller.Error);
             return true;
         }
 
         private readonly List<User> ConnectedUser = [];
+        private readonly Dictionary<string, Hashtable> UserData = [];
 
         private async Task Test()
         {
-            // 通常，我们可以对客户端的连接状态进行确认，此方法展示如何确认客户端的连接
             Controller.WriteLine("欢迎各位玩家进入房间 " + Room.Roomid + " 。");
-            SendAll(SocketMessageType.Gaming, GamingType.Connect);
+
+            // 通常，我们可以对客户端的连接状态进行确认，此方法展示如何确认客户端的连接
+            // 有两种确认的方式，1是服务器主动确认，2是客户端发起确认
+            // 在FunGame项目中，建议永远使用客户端主动发起请求，因为服务器主动发起的实现难度较高
+            // 下面的演示基于综合的两种情况：服务器主动发送通知，客户端收到后，发起确认
+            // UpdateInfo是一个灵活的类型。如果发送check字符串，意味着服务器要求客户端发送确认
+            Hashtable data = [];
+            data.Add("info_type", "check");
+
+            // 进阶示例：传递一个token，让客户端返回
+            Guid token = Guid.NewGuid();
+            data.Add("connect_token", token);
+
+            // 我们保存到字典UserData中，这样可以方便跨方法检查变量
+            foreach (string username in Users.Select(u => u.Username).Distinct())
+            {
+                if (UserData.TryGetValue(username, out Hashtable? value))
+                {
+                    value.Add("connect_token", token);
+                }
+                else
+                {
+                    UserData.Add(username, []);
+                    UserData[username].Add("connect_token", token);
+                }
+            }
+            SendAllGamingMessage(GamingType.UpdateInfo, data);
+
             // 新建一个线程等待所有玩家确认
             while (true)
             {
@@ -170,21 +179,46 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             {
                 case GamingType.Connect:
                     // 编写处理“连接”命令的逻辑
-                    ConnectedUser.Add(Users.Where(u => u.Username == username).First());
-                    Controller.WriteLine(username + " 已经连接。");
-                    break;
-                case GamingType.Disconnect:
-                    // 编写处理“断开连接”命令的逻辑
-                    string msg = username + " 离开了游戏。";
-                    Controller.WriteLine(msg);
-                    result.Add("msg", msg);
+                    // 如果需要处理客户端传递的参数：获取与客户端约定好的参数key对应的值
+                    string un = NetworkUtility.JsonDeserializeFromHashtable<string>(data, "username") ?? "";
+                    Guid token = NetworkUtility.JsonDeserializeFromHashtable<Guid>(data, "connect_token");
+                    if (un == username && UserData.TryGetValue(username, out Hashtable? value) && value != null && (value["connect_token"]?.Equals(token) ?? false))
+                    {
+                        ConnectedUser.Add(Users.Where(u => u.Username == username).First());
+                        Controller.WriteLine(username + " 已经连接。");
+                    }
+                    else Controller.WriteLine(username + " 确认连接失败！");
                     break;
             }
 
             return result;
         }
 
-        private void SendAll(SocketMessageType type, params object[] args)
+        // === 下面是一些常用的工具方法，用于服务器给客户端发送消息，可以直接添加到你的项目中 === //
+
+        protected void SendAllGamingMessage(GamingType type, Hashtable data)
+        {
+            // 循环服务线程，向所有玩家发送局内消息
+            foreach (IServerModel s in All.Values)
+            {
+                if (s != null && s.Socket != null)
+                {
+                    s.Send(s.Socket, SocketMessageType.Gaming, type, data);
+                }
+            }
+        }
+
+        protected void SendGamingMessage(string username, GamingType type, Hashtable data)
+        {
+            // 向指定玩家发送局内消息
+            IServerModel s = All[username];
+            if (s != null && s.Socket != null)
+            {
+                s.Send(s.Socket, SocketMessageType.Gaming, type, data);
+            }
+        }
+
+        protected void SendAll(SocketMessageType type, params object[] args)
         {
             // 循环服务线程，向所有玩家发送消息
             foreach (IServerModel s in All.Values)
@@ -193,6 +227,16 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
                 {
                     s.Send(s.Socket, type, args);
                 }
+            }
+        }
+
+        protected void Send(string username, SocketMessageType type, params object[] args)
+        {
+            // 向指定玩家发送消息
+            IServerModel s = All[username];
+            if (s != null && s.Socket != null)
+            {
+                s.Send(s.Socket, type, args);
             }
         }
     }
@@ -215,5 +259,95 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
         public override float Height => 12.0f;
 
         public override float Size => 4.0f;
+    }
+
+    /// <summary>
+    /// 角色：必须继承基类：<see cref="CharacterModule"/><para/>
+    /// </summary>
+    public class ExampleCharacterModule : CharacterModule
+    {
+        public override string Name => "Example CharacterModule";
+
+        public override string Description => "My First CharacterModule";
+
+        public override string Version => "1.0.0";
+
+        public override string Author => "FunGamer";
+
+        public override List<Character> Characters
+        {
+            get
+            {
+                List<Character> list = [];
+                // 构建一个你想要的角色
+                Character c = Factory.GetCharacter();
+                c.Name = "Oshima";
+                c.FirstName = "Shiya";
+                c.NickName = "OSM";
+                c.MagicType = MagicType.PurityNatural;
+                c.BaseHP = 30;
+                c.BaseSTR = 20;
+                c.BaseAGI = 10;
+                c.BaseINT = 5;
+                c.BaseATK = 100;
+                c.BaseDEF = 10;
+                list.Add(c);
+                return list;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 技能：必须继承基类：<see cref="SkillModule"/><para/>
+    /// </summary>
+    public class ExampleSkillModule : SkillModule
+    {
+        public override string Name => "Example SkillModule";
+
+        public override string Description => "My First SkillModule";
+
+        public override string Version => "1.0.0";
+
+        public override string Author => "FunGamer";
+
+        public override List<Skill> Skills
+        {
+            get
+            {
+                List<Skill> list = [];
+                Skill s = Factory.GetSkill();
+                s.Name = "Example Skill";
+                s.MagicType = MagicType.PurityNatural;
+                list.Add(s);
+                return list;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 物品：必须继承基类：<see cref="ItemModule"/><para/>
+    /// </summary>
+    public class ExampleItemModule : ItemModule
+    {
+        public override string Name => "Example ItemModule";
+
+        public override string Description => "My First ItemModule";
+
+        public override string Version => "1.0.0";
+
+        public override string Author => "FunGamer";
+
+        public override List<Item> Items
+        {
+            get
+            {
+                List<Item> list = [];
+                Item i = Factory.GetItem();
+                i.Name = "Example Item";
+                i.Price = 20;
+                list.Add(i);
+                return list;
+            }
+        }
     }
 }

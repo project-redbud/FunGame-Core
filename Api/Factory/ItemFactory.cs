@@ -12,16 +12,13 @@ namespace Milimoe.FunGame.Core.Api.Factory
 
         public Item Create(ItemType type = ItemType.Passive)
         {
-            switch (type)
+            _EntityType = typeof(Item);
+            return type switch
             {
-                case ItemType.Passive:
-                    _EntityType = typeof(PassiveItem);
-                    return PassiveItem.GetInstance();
-                case ItemType.Active:
-                default:
-                    _EntityType = typeof(ActiveItem);
-                    return PassiveItem.GetInstance();
-            }
+                ItemType.Passive => new(false),
+                ItemType.Active => new(true),
+                _ => new(false)
+            };
         }
 
         public Item Create()

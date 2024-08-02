@@ -34,31 +34,13 @@ namespace Milimoe.FunGame.Core.Api.Utility
         }
 
         /// <summary>
-        /// 获取物品实例，默认返回Passiveitem 被动物品 需要强制转换
+        /// 获取物品实例
         /// </summary>
         /// <param name="type">Item类型 主动 或 被动</param>
         /// <returns></returns>
         public static Item GetItem(ItemType type = ItemType.Passive)
         {
             return ItemFactory.Create(type);
-        }
-
-        /// <summary>
-        /// 获取主动物品实例
-        /// </summary>
-        /// <returns></returns>
-        public static ActiveItem GetActiveItem()
-        {
-            return (ActiveItem)ItemFactory.Create(ItemType.Active);
-        }
-
-        /// <summary>
-        /// 获取被动物品实例
-        /// </summary>
-        /// <returns></returns>
-        public static PassiveItem GetPassiveItem()
-        {
-            return (PassiveItem)ItemFactory.Create(ItemType.Passive);
         }
 
         /// <summary>
@@ -156,31 +138,13 @@ namespace Milimoe.FunGame.Core.Api.Utility
         }
 
         /// <summary>
-        /// 获取技能实例，默认返回PassiveSkill 被动技能 需要强制转换
+        /// 获取技能实例
         /// </summary>
         /// <param name="type">Skill类型 主动 或 被动</param>
         /// <returns></returns>
         public static Skill GetSkill(SkillType type = SkillType.Passive)
         {
             return SkillFactory.Create(type);
-        }
-
-        /// <summary>
-        /// 获取主动技能实例
-        /// </summary>
-        /// <returns></returns>
-        public static ActiveSkill GetActiveSkill()
-        {
-            return (ActiveSkill)SkillFactory.Create(SkillType.Active);
-        }
-
-        /// <summary>
-        /// 获取被动技能实例
-        /// </summary>
-        /// <returns></returns>
-        public static PassiveSkill GetPassiveSkill()
-        {
-            return (PassiveSkill)SkillFactory.Create(SkillType.Passive);
         }
 
         /// <summary>

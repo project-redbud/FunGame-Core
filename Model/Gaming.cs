@@ -23,10 +23,16 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         public GamingEventArgs EventArgs { get; }
 
-        private Gaming(GameModule module, Room room, List<User> users)
+        /// <summary>
+        /// 此实例所属的玩家
+        /// </summary>
+        public User CurrentUser { get; }
+
+        private Gaming(GameModule module, Room room, User user, List<User> users)
         {
             GameModule = module;
             EventArgs = new(room, users);
+            CurrentUser = user;
         }
 
         /// <summary>
@@ -34,13 +40,14 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         /// <param name="module"></param>
         /// <param name="room"></param>
+        /// <param name="user"></param>
         /// <param name="users"></param>
         /// <param name="loader"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public static Gaming StartGame(GameModule module, Room room, List<User> users, GameModuleLoader loader, params object[] args)
+        public static Gaming StartGame(GameModule module, Room room, User user, List<User> users, GameModuleLoader loader, params object[] args)
         {
-            Gaming instance = new(module, room, users);
+            Gaming instance = new(module, room, user, users);
             // 读取模组的依赖集合
             module.GameModuleDepend.GetDependencies(loader);
             // 新建线程来启动模组的界面
@@ -60,437 +67,174 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         /// <param name="type">消息类型</param>
         /// <param name="data">接收到的数据</param>
-        /// <returns>底层会将哈希表中的数据发送给服务器</returns>
-        public Hashtable GamingHandler(GamingType type, Hashtable data)
+        public void GamingHandler(GamingType type, Hashtable data)
         {
-            Hashtable result = [];
             switch (type)
             {
                 case GamingType.Connect:
-                    Connect(data, result);
+                    Connect(data);
                     break;
                 case GamingType.Disconnect:
-                    Disconnect(data, result);
+                    Disconnect(data);
                     break;
                 case GamingType.Reconnect:
-                    Reconnect(data, result);
+                    Reconnect(data);
                     break;
                 case GamingType.BanCharacter:
-                    BanCharacter(data, result);
+                    BanCharacter(data);
                     break;
                 case GamingType.PickCharacter:
-                    PickCharacter(data, result);
+                    PickCharacter(data);
                     break;
                 case GamingType.Random:
-                    Random(data, result);
+                    Random(data);
                     break;
                 case GamingType.Round:
-                    Round(data, result);
+                    Round(data);
                     break;
                 case GamingType.LevelUp:
-                    LevelUp(data, result);
+                    LevelUp(data);
                     break;
                 case GamingType.Move:
-                    Move(data, result);
+                    Move(data);
                     break;
                 case GamingType.Attack:
-                    Attack(data, result);
+                    Attack(data);
                     break;
                 case GamingType.Skill:
-                    Skill(data, result);
+                    Skill(data);
                     break;
                 case GamingType.Item:
-                    Item(data, result);
+                    Item(data);
                     break;
                 case GamingType.Magic:
-                    Magic(data, result);
+                    Magic(data);
                     break;
                 case GamingType.Buy:
-                    Buy(data, result);
+                    Buy(data);
                     break;
                 case GamingType.SuperSkill:
-                    SuperSkill(data, result);
+                    SuperSkill(data);
                     break;
                 case GamingType.Pause:
-                    Pause(data, result);
+                    Pause(data);
                     break;
                 case GamingType.Unpause:
-                    Unpause(data, result);
+                    Unpause(data);
                     break;
                 case GamingType.Surrender:
-                    Surrender(data, result);
+                    Surrender(data);
                     break;
                 case GamingType.UpdateInfo:
-                    UpdateInfo(data, result);
+                    UpdateInfo(data);
                     break;
                 case GamingType.Punish:
-                    Punish(data, result);
+                    Punish(data);
                     break;
                 case GamingType.None:
                 default:
                     break;
             }
-            return result;
         }
 
-        private void Connect(Hashtable data, Hashtable result)
+        private void Connect(Hashtable data)
         {
-            GameModule.OnBeforeGamingConnectEvent(this, EventArgs, data, result);
-            if (EventArgs.Cancel)
-            {
-                return;
-            }
-            if (!EventArgs.Cancel)
-            {
-                GameModule.OnSucceedGamingConnectEvent(this, EventArgs, data, result);
-            }
-            else
-            {
-                GameModule.OnFailedGamingConnectEvent(this, EventArgs, data, result);
-            }
-            GameModule.OnAfterGamingConnectEvent(this, EventArgs, data, result);
+            GameModule.OnGamingConnectEvent(this, EventArgs, data);
         }
 
-        private void Disconnect(Hashtable data, Hashtable result)
+        private void Disconnect(Hashtable data)
         {
-            GameModule.OnBeforeGamingDisconnectEvent(this, EventArgs, data, result);
-            if (EventArgs.Cancel)
-            {
-                return;
-            }
-            if (!EventArgs.Cancel)
-            {
-                GameModule.OnSucceedGamingDisconnectEvent(this, EventArgs, data, result);
-            }
-            else
-            {
-                GameModule.OnFailedGamingDisconnectEvent(this, EventArgs, data, result);
-            }
-            GameModule.OnAfterGamingDisconnectEvent(this, EventArgs, data, result);
+            GameModule.OnGamingDisconnectEvent(this, EventArgs, data);
         }
 
-        private void Reconnect(Hashtable data, Hashtable result)
+        private void Reconnect(Hashtable data)
         {
-            GameModule.OnBeforeGamingReconnectEvent(this, EventArgs, data, result);
-            if (EventArgs.Cancel)
-            {
-                return;
-            }
-            if (!EventArgs.Cancel)
-            {
-                GameModule.OnSucceedGamingReconnectEvent(this, EventArgs, data, result);
-            }
-            else
-            {
-                GameModule.OnFailedGamingReconnectEvent(this, EventArgs, data, result);
-            }
-            GameModule.OnAfterGamingReconnectEvent(this, EventArgs, data, result);
+            GameModule.OnGamingReconnectEvent(this, EventArgs, data);
         }
 
-        private void BanCharacter(Hashtable data, Hashtable result)
+        private void BanCharacter(Hashtable data)
         {
-            GameModule.OnBeforeGamingBanCharacterEvent(this, EventArgs, data, result);
-            if (EventArgs.Cancel)
-            {
-                return;
-            }
-            if (!EventArgs.Cancel)
-            {
-                GameModule.OnSucceedGamingBanCharacterEvent(this, EventArgs, data, result);
-            }
-            else
-            {
-                GameModule.OnFailedGamingBanCharacterEvent(this, EventArgs, data, result);
-            }
-            GameModule.OnAfterGamingBanCharacterEvent(this, EventArgs, data, result);
+            GameModule.OnGamingBanCharacterEvent(this, EventArgs, data);
         }
 
-        private void PickCharacter(Hashtable data, Hashtable result)
+        private void PickCharacter(Hashtable data)
         {
-            GameModule.OnBeforeGamingPickCharacterEvent(this, EventArgs, data, result);
-            if (EventArgs.Cancel)
-            {
-                return;
-            }
-            if (!EventArgs.Cancel)
-            {
-                GameModule.OnSucceedGamingPickCharacterEvent(this, EventArgs, data, result);
-            }
-            else
-            {
-                GameModule.OnFailedGamingPickCharacterEvent(this, EventArgs, data, result);
-            }
-            GameModule.OnAfterGamingPickCharacterEvent(this, EventArgs, data, result);
+            GameModule.OnGamingPickCharacterEvent(this, EventArgs, data);
         }
 
-        private void Random(Hashtable data, Hashtable result)
+        private void Random(Hashtable data)
         {
-            GameModule.OnBeforeGamingRandomEvent(this, EventArgs, data, result);
-            if (EventArgs.Cancel)
-            {
-                return;
-            }
-            if (!EventArgs.Cancel)
-            {
-                GameModule.OnSucceedGamingRandomEvent(this, EventArgs, data, result);
-            }
-            else
-            {
-                GameModule.OnFailedGamingRandomEvent(this, EventArgs, data, result);
-            }
-            GameModule.OnAfterGamingRandomEvent(this, EventArgs, data, result);
+            GameModule.OnGamingRandomEvent(this, EventArgs, data);
         }
 
-        private void Round(Hashtable data, Hashtable result)
+        private void Round(Hashtable data)
         {
-            GameModule.OnBeforeGamingRoundEvent(this, EventArgs, data, result);
-            if (EventArgs.Cancel)
-            {
-                return;
-            }
-            if (!EventArgs.Cancel)
-            {
-                GameModule.OnSucceedGamingRoundEvent(this, EventArgs, data, result);
-            }
-            else
-            {
-                GameModule.OnFailedGamingRoundEvent(this, EventArgs, data, result);
-            }
-            GameModule.OnAfterGamingRoundEvent(this, EventArgs, data, result);
+            GameModule.OnGamingRoundEvent(this, EventArgs, data);
         }
 
-        private void LevelUp(Hashtable data, Hashtable result)
+        private void LevelUp(Hashtable data)
         {
-            GameModule.OnBeforeGamingLevelUpEvent(this, EventArgs, data, result);
-            if (EventArgs.Cancel)
-            {
-                return;
-            }
-            if (!EventArgs.Cancel)
-            {
-                GameModule.OnSucceedGamingLevelUpEvent(this, EventArgs, data, result);
-            }
-            else
-            {
-                GameModule.OnFailedGamingLevelUpEvent(this, EventArgs, data, result);
-            }
-            GameModule.OnAfterGamingLevelUpEvent(this, EventArgs, data, result);
+            GameModule.OnGamingLevelUpEvent(this, EventArgs, data);
         }
 
-        private void Move(Hashtable data, Hashtable result)
+        private void Move(Hashtable data)
         {
-            GameModule.OnBeforeGamingMoveEvent(this, EventArgs, data, result);
-            if (EventArgs.Cancel)
-            {
-                return;
-            }
-            if (!EventArgs.Cancel)
-            {
-                GameModule.OnSucceedGamingMoveEvent(this, EventArgs, data, result);
-            }
-            else
-            {
-                GameModule.OnFailedGamingMoveEvent(this, EventArgs, data, result);
-            }
-            GameModule.OnAfterGamingMoveEvent(this, EventArgs, data, result);
+            GameModule.OnGamingMoveEvent(this, EventArgs, data);
         }
 
-        private void Attack(Hashtable data, Hashtable result)
+        private void Attack(Hashtable data)
         {
-            GameModule.OnBeforeGamingAttackEvent(this, EventArgs, data, result);
-            if (EventArgs.Cancel)
-            {
-                return;
-            }
-            if (!EventArgs.Cancel)
-            {
-                GameModule.OnSucceedGamingAttackEvent(this, EventArgs, data, result);
-            }
-            else
-            {
-                GameModule.OnFailedGamingAttackEvent(this, EventArgs, data, result);
-            }
-            GameModule.OnAfterGamingAttackEvent(this, EventArgs, data, result);
+            GameModule.OnGamingAttackEvent(this, EventArgs, data);
         }
 
-        private void Skill(Hashtable data, Hashtable result)
+        private void Skill(Hashtable data)
         {
-            GameModule.OnBeforeGamingSkillEvent(this, EventArgs, data, result);
-            if (EventArgs.Cancel)
-            {
-                return;
-            }
-            if (!EventArgs.Cancel)
-            {
-                GameModule.OnSucceedGamingSkillEvent(this, EventArgs, data, result);
-            }
-            else
-            {
-                GameModule.OnFailedGamingSkillEvent(this, EventArgs, data, result);
-            }
-            GameModule.OnAfterGamingSkillEvent(this, EventArgs, data, result);
+            GameModule.OnGamingSkillEvent(this, EventArgs, data);
         }
 
-        private void Item(Hashtable data, Hashtable result)
+        private void Item(Hashtable data)
         {
-            GameModule.OnBeforeGamingItemEvent(this, EventArgs, data, result);
-            if (EventArgs.Cancel)
-            {
-                return;
-            }
-            if (!EventArgs.Cancel)
-            {
-                GameModule.OnSucceedGamingItemEvent(this, EventArgs, data, result);
-            }
-            else
-            {
-                GameModule.OnFailedGamingItemEvent(this, EventArgs, data, result);
-            }
-            GameModule.OnAfterGamingItemEvent(this, EventArgs, data, result);
+            GameModule.OnGamingItemEvent(this, EventArgs, data);
         }
 
-        private void Magic(Hashtable data, Hashtable result)
+        private void Magic(Hashtable data)
         {
-            GameModule.OnBeforeGamingMagicEvent(this, EventArgs, data, result);
-            if (EventArgs.Cancel)
-            {
-                return;
-            }
-            if (!EventArgs.Cancel)
-            {
-                GameModule.OnSucceedGamingMagicEvent(this, EventArgs, data, result);
-            }
-            else
-            {
-                GameModule.OnFailedGamingMagicEvent(this, EventArgs, data, result);
-            }
-            GameModule.OnAfterGamingMagicEvent(this, EventArgs, data, result);
+            GameModule.OnGamingMagicEvent(this, EventArgs, data);
         }
 
-        private void Buy(Hashtable data, Hashtable result)
+        private void Buy(Hashtable data)
         {
-            GameModule.OnBeforeGamingBuyEvent(this, EventArgs, data, result);
-            if (EventArgs.Cancel)
-            {
-                return;
-            }
-            if (!EventArgs.Cancel)
-            {
-                GameModule.OnSucceedGamingBuyEvent(this, EventArgs, data, result);
-            }
-            else
-            {
-                GameModule.OnFailedGamingBuyEvent(this, EventArgs, data, result);
-            }
-            GameModule.OnAfterGamingBuyEvent(this, EventArgs, data, result);
+            GameModule.OnGamingBuyEvent(this, EventArgs, data);
         }
 
-        private void SuperSkill(Hashtable data, Hashtable result)
+        private void SuperSkill(Hashtable data)
         {
-            GameModule.OnBeforeGamingSuperSkillEvent(this, EventArgs, data, result);
-            if (EventArgs.Cancel)
-            {
-                return;
-            }
-            if (!EventArgs.Cancel)
-            {
-                GameModule.OnSucceedGamingSuperSkillEvent(this, EventArgs, data, result);
-            }
-            else
-            {
-                GameModule.OnFailedGamingSuperSkillEvent(this, EventArgs, data, result);
-            }
-            GameModule.OnAfterGamingSuperSkillEvent(this, EventArgs, data, result);
+            GameModule.OnGamingSuperSkillEvent(this, EventArgs, data);
         }
 
-        private void Pause(Hashtable data, Hashtable result)
+        private void Pause(Hashtable data)
         {
-            GameModule.OnBeforeGamingPauseEvent(this, EventArgs, data, result);
-            if (EventArgs.Cancel)
-            {
-                return;
-            }
-            if (!EventArgs.Cancel)
-            {
-                GameModule.OnSucceedGamingPauseEvent(this, EventArgs, data, result);
-            }
-            else
-            {
-                GameModule.OnFailedGamingPauseEvent(this, EventArgs, data, result);
-            }
-            GameModule.OnAfterGamingPauseEvent(this, EventArgs, data, result);
+            GameModule.OnGamingPauseEvent(this, EventArgs, data);
         }
 
-        private void Unpause(Hashtable data, Hashtable result)
+        private void Unpause(Hashtable data)
         {
-            GameModule.OnBeforeGamingUnpauseEvent(this, EventArgs, data, result);
-            if (EventArgs.Cancel)
-            {
-                return;
-            }
-            if (!EventArgs.Cancel)
-            {
-                GameModule.OnSucceedGamingUnpauseEvent(this, EventArgs, data, result);
-            }
-            else
-            {
-                GameModule.OnFailedGamingUnpauseEvent(this, EventArgs, data, result);
-            }
-            GameModule.OnAfterGamingUnpauseEvent(this, EventArgs, data, result);
+            GameModule.OnGamingUnpauseEvent(this, EventArgs, data);
         }
 
-        private void Surrender(Hashtable data, Hashtable result)
+        private void Surrender(Hashtable data)
         {
-            GameModule.OnBeforeGamingSurrenderEvent(this, EventArgs, data, result);
-            if (EventArgs.Cancel)
-            {
-                return;
-            }
-            if (!EventArgs.Cancel)
-            {
-                GameModule.OnSucceedGamingSurrenderEvent(this, EventArgs, data, result);
-            }
-            else
-            {
-                GameModule.OnFailedGamingSurrenderEvent(this, EventArgs, data, result);
-            }
-            GameModule.OnAfterGamingSurrenderEvent(this, EventArgs, data, result);
+            GameModule.OnGamingSurrenderEvent(this, EventArgs, data);
         }
 
-        private void UpdateInfo(Hashtable data, Hashtable result)
+        private void UpdateInfo(Hashtable data)
         {
-            GameModule.OnBeforeGamingUpdateInfoEvent(this, EventArgs, data, result);
-            if (EventArgs.Cancel)
-            {
-                return;
-            }
-            if (!EventArgs.Cancel)
-            {
-                GameModule.OnSucceedGamingUpdateInfoEvent(this, EventArgs, data, result);
-            }
-            else
-            {
-                GameModule.OnFailedGamingUpdateInfoEvent(this, EventArgs, data, result);
-            }
-            GameModule.OnAfterGamingUpdateInfoEvent(this, EventArgs, data, result);
+            GameModule.OnGamingUpdateInfoEvent(this, EventArgs, data);
         }
 
-        private void Punish(Hashtable data, Hashtable result)
+        private void Punish(Hashtable data)
         {
-            GameModule.OnBeforeGamingPunishEvent(this, EventArgs, data, result);
-            if (EventArgs.Cancel)
-            {
-                return;
-            }
-            if (!EventArgs.Cancel)
-            {
-                GameModule.OnSucceedGamingPunishEvent(this, EventArgs, data, result);
-            }
-            else
-            {
-                GameModule.OnFailedGamingPunishEvent(this, EventArgs, data, result);
-            }
-            GameModule.OnAfterGamingPunishEvent(this, EventArgs, data, result);
+            GameModule.OnGamingPunishEvent(this, EventArgs, data);
         }
     }
 }
