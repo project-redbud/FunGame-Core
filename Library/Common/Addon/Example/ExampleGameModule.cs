@@ -56,7 +56,6 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             GamingEventArgs eventArgs = instance.EventArgs;
             room = eventArgs.Room;
             users = eventArgs.Users;
-            characters = eventArgs.Characters;
             // 客户端做好准备后，等待服务器的消息通知，下面可以根据需求进一步处理
         }
 
