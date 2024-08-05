@@ -1,4 +1,4 @@
-﻿using Milimoe.FunGame.Core.Interface.Addons;
+using Milimoe.FunGame.Core.Interface.Addons;
 
 namespace Milimoe.FunGame.Core.Library.Common.Addon
 {
@@ -25,6 +25,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         public abstract string Author { get; }
 
         /// <summary>
+        /// 长度
+        /// </summary>
+        public abstract float Length { get; }
+        
+        /// <summary>
         /// 宽度
         /// </summary>
         public abstract float Width { get; }
@@ -38,6 +43,44 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// 格子大小
         /// </summary>
         public abstract float Size { get; }
+
+        /// <summary>
+        /// 格子集
+        /// </summary>
+        public Dictionary<long, Grid> Grids { get; } = [];
+
+        /// <summary>
+        /// 使用坐标获取格子，0号格子的坐标是(0, 0)，如果你还有高度的话，则是(0, 0, 0)
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        /// <returns></returns>
+        public Grid this[float x, float y, float z = 0]
+        {
+            get
+            {
+                return Grids.Values.Where(g => g.X == x && g.Y == y && g.Z == z).FirstOrDefault();
+            }
+        }
+        
+        /// <summary>
+        /// 使用坐标获取格子，从0号开始
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        /// <exception cref="DirectoryNotFoundException"/>
+        public Grid this[int id]
+        {
+            get
+            {
+                if (Grids.TryGetValue(id, out Grid grid))
+                {
+                    return grid;
+                }
+                else throw new DirectoryNotFoundException();
+            }
+        }
 
         /// <summary>
         /// 加载标记
@@ -60,6 +103,17 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             {
                 // 地图加载后，不允许再次加载此地图
                 IsLoaded = true;
+                // 生成格子
+                for (float x = 0; x < Length; x++)
+                {
+                    for (float y = 0; y< Width; y++)
+                    {
+                        for (float z = 0; z < Height; z++)
+                        {
+                            Grids.Add(Grids.Count, new(Grids.Count, x, y, z));
+                        }
+                    }
+                }
                 // 如果加载后需要执行代码，请重写AfterLoad方法
                 AfterLoad();
             }
