@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Reflection;
 using Milimoe.FunGame.Core.Interface.Addons;
 using Milimoe.FunGame.Core.Library.Common.Addon;
@@ -99,15 +99,16 @@ namespace Milimoe.FunGame.Core.Service
         /// 从modules目录加载所有适用于服务器的模组
         /// </summary>
         /// <param name="modules"></param>
+        /// <param name="servers"></param>
         /// <param name="characters"></param>
         /// <param name="skills"></param>
         /// <param name="items"></param>
         /// <param name="delegates"></param>
         /// <param name="otherobjs"></param>
         /// <returns></returns>
-        internal static Dictionary<string, GameModuleServer> LoadGameModulesForServer(Dictionary<string, GameModuleServer> modules, Dictionary<string, CharacterModule> characters, Dictionary<string, SkillModule> skills, Dictionary<string, ItemModule> items, Hashtable delegates, params object[] otherobjs)
+        internal static Dictionary<string, GameModuleServer> LoadGameModulesForServer(Dictionary<string, GameModule> modules, Dictionary<string, GameModuleServer> servers, Dictionary<string, CharacterModule> characters, Dictionary<string, SkillModule> skills, Dictionary<string, ItemModule> items, Hashtable delegates, params object[] otherobjs)
         {
-            if (!Directory.Exists(ReflectionSet.GameModuleFolderPath)) return modules;
+            if (!Directory.Exists(ReflectionSet.GameModuleFolderPath)) return servers;
 
             string[] dlls = Directory.GetFiles(ReflectionSet.GameModuleFolderPath, "*.dll");
 
@@ -117,9 +118,21 @@ namespace Milimoe.FunGame.Core.Service
 
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => typeof(IAddon).IsAssignableFrom(type)))
                 {
-                    if (type.IsSubclassOf(typeof(GameModuleServer)))
+                    if (type.IsSubclassOf(typeof(GameModule)))
                     {
                         AddAddonInstances(type, modules, (instance) =>
+                        {
+                            if (instance.Load(otherobjs))
+                            {
+                                instance.Controller = new(instance, delegates);
+                                return true;
+                            }
+                            return false;
+                        });
+                    }
+                    else if (type.IsSubclassOf(typeof(GameModuleServer)))
+                    {
+                        AddAddonInstances(type, servers, (instance) =>
                         {
                             if (instance.Load(otherobjs))
                             {
@@ -144,7 +157,7 @@ namespace Milimoe.FunGame.Core.Service
                 }
             }
 
-            return modules;
+            return servers;
         }
 
         /// <summary>
