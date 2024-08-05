@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using Milimoe.FunGame.Core.Controller;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Addons;
@@ -10,7 +10,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
     public abstract class GameModuleServer : IGameModuleServer
     {
         /// <summary>
-        /// 模组名称
+        /// 服务器模组的名称<para/>
+        /// 如果服务器模组配合一个相关联的模组使用，那么它们的 <see cref="GameModule.Name"/> 名称必须相同。
         /// </summary>
         public abstract string Name { get; }
 
