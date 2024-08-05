@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Service;
@@ -37,12 +37,17 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         public Dictionary<string, ItemModule> Items { get; } = [];
 
+        /// <summary>
+        /// 客户端模组与服务器模组的关联字典
+        /// </summary>
+        public Dictionary<GameModule, GameModuleServer?> AssociatedServers { get; } = [];
+
         private GameModuleLoader() { }
 
         /// <summary>
         /// 传入 <see cref="FunGameInfo.FunGame"/> 类型来创建指定端的模组读取器
         /// <para>runtime = <see cref="FunGameInfo.FunGame.FunGame_Desktop"/> 时，仅读取 <seealso cref="Modules"/></para>
-        /// <para>runtime = <see cref="FunGameInfo.FunGame.FunGame_Server"/> 时，仅读取 <seealso cref="ServerModules"/></para>
+        /// <para>runtime = <see cref="FunGameInfo.FunGame.FunGame_Server"/> 时，都会读取，并且生成关联字典 <see cref="AssociatedServers"/></para>
         /// <seealso cref="Maps"/> 都会读取
         /// </summary>
         /// <param name="runtime">传入 <see cref="FunGameInfo.FunGame"/> 类型来创建指定端的模组读取器</param>
@@ -59,7 +64,16 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
             else if (runtime == FunGameInfo.FunGame.FunGame_Server)
             {
-                AddonManager.LoadGameModulesForServer(loader.ServerModules, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
+                AddonManager.LoadGameModulesForServer(loader.Modules, loader.ServerModules, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
+                foreach (GameModule module in loader.Modules.Values)
+                {
+                    // AssociatedServerModuleName 已经存包含 IsConnectToOtherServerModule 的判断，因此无需重复判断
+                    if (loader.ServerModules.TryGetValue(module.AssociatedServerModuleName, out GameModuleServer? server) && server != null)
+                    {
+                        loader.AssociatedServers.Add(module, server);
+                    }
+                    else loader.AssociatedServers.Add(module, null); // 服务器获取GameModuleServer时需要判断是否存在模组。
+                }
                 AddonManager.LoadGameMaps(loader.Maps, otherobjs);
             }
             return loader;
