@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
@@ -16,11 +16,16 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
     public class ExampleGameModuleConstant
     {
         public static GameModuleDepend GameModuleDepend => _depends;
+        public const string ExampleGameModule = "fungame.example.gamemodule";
+        public const string ExampleMap = "fungame.example.gamemap";
+        public const string ExampleCharacter = "fungame.example.character";
+        public const string ExampleSkill = "fungame.example.skill";
+        public const string ExampleItem = "fungame.example.item";
 
-        private static readonly string[] Maps = ["Example GameMap"];
-        private static readonly string[] Characters = ["Example CharacterModule"];
-        private static readonly string[] Skills = ["Example SkillModule"];
-        private static readonly string[] Items = ["Example ItemModule"];
+        private static readonly string[] Maps = [ExampleMap];
+        private static readonly string[] Characters = [ExampleCharacter];
+        private static readonly string[] Skills = [ExampleSkill];
+        private static readonly string[] Items = [ExampleItem];
         private static readonly GameModuleDepend _depends = new(Maps, Characters, Skills, Items);
     }
 
@@ -30,7 +35,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
     /// </summary>
     public class ExampleGameModule : GameModule, IGamingUpdateInfoEvent
     {
-        public override string Name => "FunGame Example GameModule";
+        public override string Name => ExampleGameModuleConstant.ExampleGameModule;
 
         public override string Description => "My First GameModule";
 
@@ -43,6 +48,14 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
         public override GameModuleDepend GameModuleDepend => ExampleGameModuleConstant.GameModuleDepend;
 
         public override RoomType RoomType => RoomType.Mix;
+
+        public ExampleGameModule()
+        {
+            // 构造函数中可以指定模组连接到哪个模组服务器。
+            // 如果你使用自己的，保持默认即可：删除下面两行，并将模组服务器的名称设置为与此模组的名称相同
+            IsConnectToOtherServerModule = true;
+            AssociatedServerModuleName = ExampleGameModuleConstant.ExampleGameModule;
+        }
 
         protected Gaming? Instance;
         protected Room room = General.HallInstance;
@@ -97,7 +110,10 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
     /// </summary>
     public class ExampleGameModuleServer : GameModuleServer
     {
-        public override string Name => "FunGame Example GameModule";
+        /// <summary>
+        /// 注意：服务器模组的名称必须和模组名称相同。除非你指定了 <see cref="GameModule.IsConnectToOtherServerModule"/> 和 <see cref="GameModule.AssociatedServerModuleName"/>
+        /// </summary>
+        public override string Name => ExampleGameModuleConstant.ExampleGameModule;
 
         public override string Description => "My First GameModule";
 
@@ -245,7 +261,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
     /// </summary>
     public class ExampleGameMap : GameMap
     {
-        public override string Name => "Example GameMap";
+        public override string Name => ExampleGameModuleConstant.ExampleMap;
 
         public override string Description => "My First GameMap";
 
@@ -253,9 +269,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
 
         public override string Author => "FunGamer";
 
+        public override float Length => 12.0f;
+
         public override float Width => 12.0f;
 
-        public override float Height => 12.0f;
+        public override float Height => 6.0f;
 
         public override float Size => 4.0f;
     }
@@ -265,7 +283,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
     /// </summary>
     public class ExampleCharacterModule : CharacterModule
     {
-        public override string Name => "Example CharacterModule";
+        public override string Name => ExampleGameModuleConstant.ExampleCharacter;
 
         public override string Description => "My First CharacterModule";
 
@@ -301,7 +319,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
     /// </summary>
     public class ExampleSkillModule : SkillModule
     {
-        public override string Name => "Example SkillModule";
+        public override string Name => ExampleGameModuleConstant.ExampleSkill;
 
         public override string Description => "My First SkillModule";
 
@@ -328,7 +346,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
     /// </summary>
     public class ExampleItemModule : ItemModule
     {
-        public override string Name => "Example ItemModule";
+        public override string Name => ExampleGameModuleConstant.ExampleItem;
 
         public override string Description => "My First ItemModule";
 
