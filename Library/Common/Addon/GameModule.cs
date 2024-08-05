@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using Milimoe.FunGame.Core.Controller;
 using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Interface.Addons;
@@ -44,6 +44,20 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// 适用的房间模式
         /// </summary>
         public abstract RoomType RoomType { get; }
+
+        /// <summary>
+        /// 是否连接其他的服务器模组
+        /// </summary>
+        public bool IsConnectToOtherServerModule { get; set; } = false;
+
+        /// <summary>
+        /// 如果将 <see cref="IsConnectToOtherServerModule"/> 设置为true，那么此属性必须指定一个存在的服务器模组的 <see cref="Name"/> 名称。
+        /// </summary>
+        public string AssociatedServerModuleName
+        {
+            get => IsConnectToOtherServerModule ? _AssociatedServerModuleName : Name;
+            set => _AssociatedServerModuleName = value;
+        }
 
         /// <summary>
         /// 包含了一些常用方法的控制器
@@ -151,6 +165,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// Config对象
         /// </summary>
         protected FunGameConfig Config = new();
+
+        /// <summary>
+        /// 关联的服务器模组名称
+        /// </summary>
+        private string _AssociatedServerModuleName = "";
 
         /// <summary>
         /// 绑定事件。在<see cref="BeforeLoad"/>后触发
