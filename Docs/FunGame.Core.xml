@@ -386,11 +386,16 @@
             物品表
             </summary>
         </member>
+        <member name="P:Milimoe.FunGame.Core.Api.Utility.GameModuleLoader.AssociatedServers">
+            <summary>
+            客户端模组与服务器模组的关联字典
+            </summary>
+        </member>
         <member name="M:Milimoe.FunGame.Core.Api.Utility.GameModuleLoader.LoadGameModules(Milimoe.FunGame.Core.Library.Constant.FunGameInfo.FunGame,System.Collections.Hashtable,System.Object[])">
             <summary>
             传入 <see cref="T:Milimoe.FunGame.Core.Library.Constant.FunGameInfo.FunGame"/> 类型来创建指定端的模组读取器
             <para>runtime = <see cref="F:Milimoe.FunGame.Core.Library.Constant.FunGameInfo.FunGame.FunGame_Desktop"/> 时，仅读取 <seealso cref="P:Milimoe.FunGame.Core.Api.Utility.GameModuleLoader.Modules"/></para>
-            <para>runtime = <see cref="F:Milimoe.FunGame.Core.Library.Constant.FunGameInfo.FunGame.FunGame_Server"/> 时，仅读取 <seealso cref="P:Milimoe.FunGame.Core.Api.Utility.GameModuleLoader.ServerModules"/></para>
+            <para>runtime = <see cref="F:Milimoe.FunGame.Core.Library.Constant.FunGameInfo.FunGame.FunGame_Server"/> 时，都会读取，并且生成关联字典 <see cref="P:Milimoe.FunGame.Core.Api.Utility.GameModuleLoader.AssociatedServers"/></para>
             <seealso cref="P:Milimoe.FunGame.Core.Api.Utility.GameModuleLoader.Maps"/> 都会读取
             </summary>
             <param name="runtime">传入 <see cref="T:Milimoe.FunGame.Core.Library.Constant.FunGameInfo.FunGame"/> 类型来创建指定端的模组读取器</param>
@@ -1940,6 +1945,11 @@
             使用switch块分类处理 <see cref="T:Milimoe.FunGame.Core.Library.Constant.GamingType"/>。
             </summary>
         </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.Example.ExampleGameModuleServer.Name">
+            <summary>
+            注意：服务器模组的名称必须和模组名称相同。除非你指定了 <see cref="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModule.IsConnectToOtherServerModule"/> 和 <see cref="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModule.AssociatedServerModuleName"/>
+            </summary>
+        </member>
         <member name="T:Milimoe.FunGame.Core.Library.Common.Addon.Example.ExampleGameMap">
             <summary>
             地图：必须继承基类：<see cref="T:Milimoe.FunGame.Core.Library.Common.Addon.GameMap"/><para/>
@@ -1986,6 +1996,11 @@
             地图作者
             </summary>
         </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameMap.Length">
+            <summary>
+            长度
+            </summary>
+        </member>
         <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameMap.Width">
             <summary>
             宽度
@@ -2000,6 +2015,27 @@
             <summary>
             格子大小
             </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameMap.Grids">
+            <summary>
+            格子集
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameMap.Item(System.Single,System.Single,System.Single)">
+            <summary>
+            使用坐标获取格子，0号格子的坐标是(0, 0)，如果你还有高度的话，则是(0, 0, 0)
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <param name="z"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameMap.Item(System.Int32)">
+            <summary>
+            使用坐标获取格子，从0号开始
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
         </member>
         <member name="F:Milimoe.FunGame.Core.Library.Common.Addon.GameMap.IsLoaded">
             <summary>
@@ -2057,6 +2093,16 @@
         <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModule.RoomType">
             <summary>
             适用的房间模式
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModule.IsConnectToOtherServerModule">
+            <summary>
+            是否连接其他的服务器模组
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModule.AssociatedServerModuleName">
+            <summary>
+            如果将 <see cref="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModule.IsConnectToOtherServerModule"/> 设置为true，那么此属性必须指定一个存在的服务器模组的 <see cref="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModule.Name"/> 名称。
             </summary>
         </member>
         <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModule.Controller">
@@ -2124,6 +2170,11 @@
         <member name="F:Milimoe.FunGame.Core.Library.Common.Addon.GameModule.Config">
             <summary>
             Config对象
+            </summary>
+        </member>
+        <member name="F:Milimoe.FunGame.Core.Library.Common.Addon.GameModule._AssociatedServerModuleName">
+            <summary>
+            关联的服务器模组名称
             </summary>
         </member>
         <member name="M:Milimoe.FunGame.Core.Library.Common.Addon.GameModule.BindEvent">
@@ -2201,7 +2252,8 @@
         </member>
         <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModuleServer.Name">
             <summary>
-            模组名称
+            服务器模组的名称<para/>
+            如果服务器模组配合一个相关联的模组使用，那么它们的 <see cref="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModule.Name"/> 名称必须相同。
             </summary>
         </member>
         <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.GameModuleServer.Description">
@@ -2280,6 +2332,41 @@
             允许返回false来阻止加载此模组
             </summary>
             <returns></returns>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.Grid.Id">
+            <summary>
+            格子编号
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.Grid.X">
+            <summary>
+            格子在地图中的x坐标
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.Grid.Y">
+            <summary>
+            格子在地图中的y坐标
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.Grid.Z">
+            <summary>
+            格子在地图中的z坐标
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.Grid.Characters">
+            <summary>
+            是谁站在这格子上？
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.Grid.Skills">
+            <summary>
+            此格子目前受到了什么影响？或者它有什么技能…
+            </summary>
+        </member>
+        <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.Grid.Color">
+            <summary>
+            此格子呈现的颜色（默认为 <see cref="P:System.Drawing.Color.Gray"/> ）
+            </summary>
         </member>
         <member name="P:Milimoe.FunGame.Core.Library.Common.Addon.ItemModule.Name">
             <summary>
@@ -3011,11 +3098,12 @@
             <param name="otherobjs"></param>
             <returns></returns>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Service.AddonManager.LoadGameModulesForServer(System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.GameModuleServer},System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.CharacterModule},System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.SkillModule},System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.ItemModule},System.Collections.Hashtable,System.Object[])">
+        <member name="M:Milimoe.FunGame.Core.Service.AddonManager.LoadGameModulesForServer(System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.GameModule},System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.GameModuleServer},System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.CharacterModule},System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.SkillModule},System.Collections.Generic.Dictionary{System.String,Milimoe.FunGame.Core.Library.Common.Addon.ItemModule},System.Collections.Hashtable,System.Object[])">
             <summary>
             从modules目录加载所有适用于服务器的模组
             </summary>
             <param name="modules"></param>
+            <param name="servers"></param>
             <param name="characters"></param>
             <param name="skills"></param>
             <param name="items"></param>

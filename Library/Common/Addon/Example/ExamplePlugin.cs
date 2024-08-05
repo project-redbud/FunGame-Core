@@ -9,7 +9,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
     /// </summary>
     public class ExamplePlugin : Plugin, ILoginEvent
     {
-        public override string Name => "FunGame Example Plugin";
+        public override string Name => "fungame.example.plugin";
 
         public override string Description => "My First Plugin";
 

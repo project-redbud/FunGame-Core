@@ -56,31 +56,14 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <param name="y"></param>
         /// <param name="z"></param>
         /// <returns></returns>
-        public Grid this[float x, float y, float z = 0]
-        {
-            get
-            {
-                return Grids.Values.Where(g => g.X == x && g.Y == y && g.Z == z).FirstOrDefault();
-            }
-        }
+        public Grid this[float x, float y, float z = 0] => Grids.Values.Where(g => g.X == x && g.Y == y && g.Z == z).FirstOrDefault();
         
         /// <summary>
         /// 使用坐标获取格子，从0号开始
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        /// <exception cref="DirectoryNotFoundException"/>
-        public Grid this[int id]
-        {
-            get
-            {
-                if (Grids.TryGetValue(id, out Grid grid))
-                {
-                    return grid;
-                }
-                else throw new DirectoryNotFoundException();
-            }
-        }
+        public Grid this[int id] => Grids[id];
 
         /// <summary>
         /// 加载标记
