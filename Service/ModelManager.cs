@@ -1,8 +1,10 @@
-﻿using System.Collections.Concurrent;
+﻿using System.Collections;
+using System.Collections.Concurrent;
+using Milimoe.FunGame.Core.Entity;
 
 namespace Milimoe.FunGame.Core.Service
 {
-    internal class ModelManager<T>
+    internal class ModelManager<T> : IEnumerable<T>
     {
         /// <summary>
         /// 目前的Model数量
@@ -17,7 +19,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 可参与高并发的字典，但添加效率较低
         /// </summary>
-        private ConcurrentDictionary<string, T> Models { get; } = new();
+        private ConcurrentDictionary<string, T> Models { get; } = [];
 
         /// <summary>
         /// Init ModelManager
@@ -103,7 +105,20 @@ namespace Milimoe.FunGame.Core.Service
         /// </summary>
         internal List<T> GetList()
         {
-            return Models.Values.ToList();
+            return [.. Models.Values];
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            foreach (T instance in Models.Values)
+            {
+                yield return instance;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

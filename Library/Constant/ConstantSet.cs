@@ -33,6 +33,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const int MaxConnection_1C2G = 10;
         public const int MaxConnection_2C2G = 20;
         public const int MaxConnection_4C4G = 40;
+        public const string Plugins_Mark = "plugins_mark";
 
         public const string Socket = "Socket";
         public const string Unknown = "Unknown";

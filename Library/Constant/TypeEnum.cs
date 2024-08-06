@@ -144,8 +144,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
     {
         Client,
         Server,
-        Client_Plugin,
-        Server_Plugin
+        Addon
     }
 
     public enum ErrorIPAddressType

@@ -31,45 +31,51 @@
             私有的实现类（这是局内请求的）
             </summary>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Api.Transmittal.DataRequest.#ctor(Milimoe.FunGame.Core.Library.Common.Network.Socket,Milimoe.FunGame.Core.Library.Constant.DataRequestType,System.Boolean)">
+        <member name="M:Milimoe.FunGame.Core.Api.Transmittal.DataRequest.#ctor(Milimoe.FunGame.Core.Library.Common.Network.Socket,Milimoe.FunGame.Core.Library.Constant.DataRequestType,System.Boolean,Milimoe.FunGame.Core.Library.Constant.SocketRuntimeType)">
             <summary>
             基于本地已连接的 <see cref="T:Milimoe.FunGame.Core.Library.Common.Network.Socket"/> 创建新的数据请求<para/>
             使用 <see cref="T:Milimoe.FunGame.Core.Controller.RunTimeController"/> 中的 <see cref="M:Milimoe.FunGame.Core.Controller.RunTimeController.NewDataRequest(Milimoe.FunGame.Core.Library.Constant.DataRequestType)"/> 创建一个新的请求
+            插件则使用 <see cref="T:Milimoe.FunGame.Core.Controller.RunTimeController"/> 中的 <see cref="M:Milimoe.FunGame.Core.Controller.RunTimeController.NewDataRequestForAddon(Milimoe.FunGame.Core.Library.Constant.DataRequestType)"/> 创建一个新的请求<para/>
             </summary>
             <param name="Socket"></param>
             <param name="RequestType"></param>
             <param name="IsLongRunning"></param>
+            <param name="RuntimeType"></param>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Api.Transmittal.DataRequest.#ctor(Milimoe.FunGame.Core.Library.Common.Network.HTTPClient,Milimoe.FunGame.Core.Library.Constant.DataRequestType,System.Boolean)">
+        <member name="M:Milimoe.FunGame.Core.Api.Transmittal.DataRequest.#ctor(Milimoe.FunGame.Core.Library.Common.Network.HTTPClient,Milimoe.FunGame.Core.Library.Constant.DataRequestType,System.Boolean,Milimoe.FunGame.Core.Library.Constant.SocketRuntimeType)">
             <summary>
             基于本地已连接的 <see cref="T:Milimoe.FunGame.Core.Library.Common.Network.HTTPClient"/> 创建新的数据请求<para/>
             使用 <see cref="T:Milimoe.FunGame.Core.Controller.RunTimeController"/> 中的 <see cref="M:Milimoe.FunGame.Core.Controller.RunTimeController.NewDataRequest(Milimoe.FunGame.Core.Library.Constant.DataRequestType)"/> 创建一个新的请求<para/>
+            插件则使用 <see cref="T:Milimoe.FunGame.Core.Controller.RunTimeController"/> 中的 <see cref="M:Milimoe.FunGame.Core.Controller.RunTimeController.NewDataRequestForAddon(Milimoe.FunGame.Core.Library.Constant.DataRequestType)"/> 创建一个新的请求<para/>
             此数据请求只能调用异步方法 <see cref="M:Milimoe.FunGame.Core.Api.Transmittal.DataRequest.SendRequestAsync"/> 请求数据
             </summary>
             <param name="WebSocket"></param>
             <param name="RequestType"></param>
             <param name="IsLongRunning"></param>
+            <param name="RuntimeType"></param>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Api.Transmittal.DataRequest.#ctor(Milimoe.FunGame.Core.Library.Common.Network.Socket,Milimoe.FunGame.Core.Library.Constant.GamingType,System.Boolean)">
+        <member name="M:Milimoe.FunGame.Core.Api.Transmittal.DataRequest.#ctor(Milimoe.FunGame.Core.Library.Common.Network.Socket,Milimoe.FunGame.Core.Library.Constant.GamingType,System.Boolean,Milimoe.FunGame.Core.Library.Constant.SocketRuntimeType)">
             <summary>
             基于本地已连接的 <see cref="T:Milimoe.FunGame.Core.Library.Common.Network.Socket"/> 创建新的局内（<see cref="T:Milimoe.FunGame.Core.Model.Gaming"/>）数据请求<para/>
-            使用 <see cref="T:Milimoe.FunGame.Core.Controller.RunTimeController"/> 中的 <see cref="M:Milimoe.FunGame.Core.Controller.RunTimeController.NewDataRequest(Milimoe.FunGame.Core.Library.Constant.GamingType)"/> 创建一个新的请求<para/>
+            使用 <see cref="T:Milimoe.FunGame.Core.Controller.RunTimeController"/> 中的 <see cref="M:Milimoe.FunGame.Core.Controller.RunTimeController.NewDataRequestForAddon(Milimoe.FunGame.Core.Library.Constant.GamingType)"/> 创建一个新的请求<para/>
             此构造方法是给 <see cref="T:Milimoe.FunGame.Core.Library.Common.Addon.GameModule"/> 提供的
             </summary>
             <param name="Socket"></param>
             <param name="GamingType"></param>
             <param name="IsLongRunning"></param>
+            <param name="RuntimeType"></param>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Api.Transmittal.DataRequest.#ctor(Milimoe.FunGame.Core.Library.Common.Network.HTTPClient,Milimoe.FunGame.Core.Library.Constant.GamingType,System.Boolean)">
+        <member name="M:Milimoe.FunGame.Core.Api.Transmittal.DataRequest.#ctor(Milimoe.FunGame.Core.Library.Common.Network.HTTPClient,Milimoe.FunGame.Core.Library.Constant.GamingType,System.Boolean,Milimoe.FunGame.Core.Library.Constant.SocketRuntimeType)">
             <summary>
             基于本地已连接的 <see cref="T:Milimoe.FunGame.Core.Library.Common.Network.HTTPClient"/> 创建新的局内（<see cref="T:Milimoe.FunGame.Core.Model.Gaming"/>）数据请求<para/>
-            使用 <see cref="T:Milimoe.FunGame.Core.Controller.RunTimeController"/> 中的 <see cref="M:Milimoe.FunGame.Core.Controller.RunTimeController.NewDataRequest(Milimoe.FunGame.Core.Library.Constant.GamingType)"/> 创建一个新的请求<para/>
+            使用 <see cref="T:Milimoe.FunGame.Core.Controller.RunTimeController"/> 中的 <see cref="M:Milimoe.FunGame.Core.Controller.RunTimeController.NewDataRequestForAddon(Milimoe.FunGame.Core.Library.Constant.GamingType)"/> 创建一个新的请求<para/>
             此构造方法是给 <see cref="T:Milimoe.FunGame.Core.Library.Common.Addon.GameModule"/> 提供的<para/>
             此数据请求只能调用异步方法 <see cref="M:Milimoe.FunGame.Core.Api.Transmittal.DataRequest.SendRequestAsync"/> 请求数据
             </summary>
             <param name="WebSocket"></param>
             <param name="GamingType"></param>
             <param name="IsLongRunning"></param>
+            <param name="RuntimeType"></param>
         </member>
         <member name="M:Milimoe.FunGame.Core.Api.Transmittal.DataRequest.AddRequestData(System.String,System.Object)">
             <summary>
@@ -1378,19 +1384,37 @@
             <returns></returns>
             <exception cref="T:Milimoe.FunGame.ConnectFailedException"></exception>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Controller.RunTimeController.NewDataRequest(Milimoe.FunGame.Core.Library.Constant.GamingType)">
+        <member name="M:Milimoe.FunGame.Core.Controller.RunTimeController.NewDataRequestForAddon(Milimoe.FunGame.Core.Library.Constant.DataRequestType)">
+            <summary>
+            基于本地已连接的Socket创建新的数据请求<para/>
+            加载项专用（<see cref="T:Milimoe.FunGame.Core.Library.Common.Addon.Plugin"/> / <see cref="T:Milimoe.FunGame.Core.Library.Common.Addon.GameModule"/>）
+            </summary>
+            <param name="RequestType"></param>
+            <returns></returns>
+            <exception cref="T:Milimoe.FunGame.ConnectFailedException"></exception>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Controller.RunTimeController.NewLongRunningDataRequestForAddon(Milimoe.FunGame.Core.Library.Constant.DataRequestType)">
+            <summary>
+            基于本地已连接的Socket创建长时间运行的数据请求
+            加载项专用（<see cref="T:Milimoe.FunGame.Core.Library.Common.Addon.Plugin"/> / <see cref="T:Milimoe.FunGame.Core.Library.Common.Addon.GameModule"/>）
+            </summary>
+            <param name="RequestType"></param>
+            <returns></returns>
+            <exception cref="T:Milimoe.FunGame.ConnectFailedException"></exception>
+        </member>
+        <member name="M:Milimoe.FunGame.Core.Controller.RunTimeController.NewDataRequestForAddon(Milimoe.FunGame.Core.Library.Constant.GamingType)">
             <summary>
             基于本地已连接的Socket创建新的局内（<see cref="T:Milimoe.FunGame.Core.Model.Gaming"/>）数据请求<para/>
-            此方法是给 <see cref="T:Milimoe.FunGame.Core.Library.Common.Addon.GameModule"/> 提供的
+            加载项专用：此方法是给 <see cref="T:Milimoe.FunGame.Core.Library.Common.Addon.GameModule"/> 提供的
             </summary>
             <param name="GamingType"></param>
             <returns></returns>
             <exception cref="T:Milimoe.FunGame.ConnectFailedException"></exception>
         </member>
-        <member name="M:Milimoe.FunGame.Core.Controller.RunTimeController.NewLongRunningDataRequest(Milimoe.FunGame.Core.Library.Constant.GamingType)">
+        <member name="M:Milimoe.FunGame.Core.Controller.RunTimeController.NewLongRunningDataRequestForAddon(Milimoe.FunGame.Core.Library.Constant.GamingType)">
             <summary>
             基于本地已连接的Socket创建长时间运行的局内（<see cref="T:Milimoe.FunGame.Core.Model.Gaming"/>）数据请求<para/>
-            此方法是给 <see cref="T:Milimoe.FunGame.Core.Library.Common.Addon.GameModule"/> 提供的
+            加载项专用：此方法是给 <see cref="T:Milimoe.FunGame.Core.Library.Common.Addon.GameModule"/> 提供的
             </summary>
             <param name="GamingType"></param>
             <returns></returns>
