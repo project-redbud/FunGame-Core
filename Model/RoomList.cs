@@ -18,9 +18,9 @@ namespace Milimoe.FunGame.Core.Model
 
         public int GetReadyPlayerCount(string roomid) => GetReadyPlayerList(roomid).Count;
 
-        public List<Room> ListRoom => _List.Values.ToList();
+        public List<Room> ListRoom => [.. _List.Values];
 
-        public List<string> ListRoomID => _List.Keys.ToList();
+        public List<string> ListRoomID => [.. _List.Keys];
 
         public List<User> GetPlayerList(string roomid) => _PlayerList.TryGetValue(roomid, out List<User>? user) ? user : [];
 
@@ -112,7 +112,7 @@ namespace Milimoe.FunGame.Core.Model
             }
         }
 
-        public IEnumerator GetEnumerator()
+        public IEnumerator<Room> GetEnumerator()
         {
             foreach (Room room in ListRoom)
             {
@@ -120,12 +120,9 @@ namespace Milimoe.FunGame.Core.Model
             }
         }
 
-        IEnumerator<Room> IEnumerable<Room>.GetEnumerator()
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            foreach (Room room in ListRoom)
-            {
-                yield return room;
-            }
+            return GetEnumerator();
         }
     }
 }

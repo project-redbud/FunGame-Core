@@ -31,8 +31,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             this.ServerPort = ServerPort;
             if (MaxConnection <= 0)
             {
-                OnlineClients = new();
-                OnlineUsers = new();
+                OnlineClients = [];
+                OnlineUsers = [];
             }
             else
             {
