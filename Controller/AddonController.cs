@@ -108,8 +108,8 @@ namespace Milimoe.FunGame.Core.Controller
         {
             if (delegates.ContainsKey("NewDataRequest")) MaskMethod_NewDataRequest = delegates["NewDataRequest"] != null ? (Func<DataRequestType, DataRequest>)delegates["NewDataRequest"]! : new(DefaultNewDataRequest);
             if (delegates.ContainsKey("NewLongRunningDataRequest")) MaskMethod_NewLongRunningDataRequest = delegates["NewLongRunningDataRequest"] != null ? (Func<DataRequestType, DataRequest>)delegates["NewLongRunningDataRequest"]! : new(DefaultNewDataRequest);
-            if (delegates.ContainsKey("NewGamingRequest")) MaskMethod_NewDataRequest = delegates["NewGamingRequest"] != null ? (Func<DataRequestType, DataRequest>)delegates["NewGamingRequest"]! : new(DefaultNewDataRequest);
-            if (delegates.ContainsKey("NewLongRunningGamingRequest")) MaskMethod_NewLongRunningDataRequest = delegates["NewLongRunningGamingRequest"] != null ? (Func<DataRequestType, DataRequest>)delegates["NewLongRunningGamingRequest"]! : new(DefaultNewDataRequest);
+            if (delegates.ContainsKey("NewGamingRequest")) MaskMethod_NewGamingRequest = delegates["NewGamingRequest"] != null ? (Func<GamingType, DataRequest>)delegates["NewGamingRequest"]! : new(DefaultNewDataRequest);
+            if (delegates.ContainsKey("NewLongRunningGamingRequest")) MaskMethod_NewLongRunningGamingRequest = delegates["NewLongRunningGamingRequest"] != null ? (Func<GamingType, DataRequest>)delegates["NewLongRunningGamingRequest"]! : new(DefaultNewDataRequest);
             MaskMethod_NewDataRequest ??= new(DefaultNewDataRequest);
             MaskMethod_NewLongRunningDataRequest ??= new(DefaultNewDataRequest);
             MaskMethod_NewGamingRequest ??= new(DefaultNewDataRequest);
