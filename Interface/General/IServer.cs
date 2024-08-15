@@ -5,7 +5,9 @@
     /// </summary>
     public interface IServer
     {
-        public string[] GameModuleList { get; }
-        public string[] GameMapList { get; }
+        /// <summary>
+        /// 一个服务器标识秘钥
+        /// </summary>
+        public string SecretKey { get; }
     }
 }
