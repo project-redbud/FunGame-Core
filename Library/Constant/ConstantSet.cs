@@ -19,8 +19,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
             public const string RemoteServerIP = "RemoteServerIP";
             public const string DBConnection = "DBConnection";
             public const string GetServerSettings = "GetServerSettings";
-            public const string GameModuleList = "GameModuleList";
-            public const string GameMapList = "GameMapList";
+            public const string SecretKey = "SecretKey";
         }
     }
 

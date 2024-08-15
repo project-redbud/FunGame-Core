@@ -11,7 +11,6 @@ namespace Milimoe.FunGame.Core.Library.Constant
         RemoteServerIP,
         DBConnection,
         GetServerSettings,
-        GameModuleList,
-        GameMapList
+        SecretKey
     }
 }

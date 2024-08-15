@@ -59,8 +59,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 InterfaceMethod.RemoteServerIP => InterfaceSet.Method.RemoteServerIP,
                 InterfaceMethod.DBConnection => InterfaceSet.Method.DBConnection,
                 InterfaceMethod.GetServerSettings => InterfaceSet.Method.GetServerSettings,
-                InterfaceMethod.GameModuleList => InterfaceSet.Method.GameModuleList,
-                InterfaceMethod.GameMapList => InterfaceSet.Method.GameMapList,
+                InterfaceMethod.SecretKey => InterfaceSet.Method.SecretKey,
                 _ => ""
             };
         }
