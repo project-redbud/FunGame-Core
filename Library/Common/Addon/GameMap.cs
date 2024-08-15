@@ -28,7 +28,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// 长度
         /// </summary>
         public abstract float Length { get; }
-        
+
         /// <summary>
         /// 宽度
         /// </summary>
@@ -57,7 +57,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <param name="z"></param>
         /// <returns></returns>
         public Grid this[float x, float y, float z = 0] => Grids.Values.Where(g => g.X == x && g.Y == y && g.Z == z).FirstOrDefault();
-        
+
         /// <summary>
         /// 使用坐标获取格子，从0号开始
         /// </summary>
@@ -89,7 +89,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
                 // 生成格子
                 for (float x = 0; x < Length; x++)
                 {
-                    for (float y = 0; y< Width; y++)
+                    for (float y = 0; y < Width; y++)
                     {
                         for (float z = 0; z < Height; z++)
                         {

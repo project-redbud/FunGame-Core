@@ -19,7 +19,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// 格子在地图中的y坐标
         /// </summary>
         public float Y { get; } = y;
-        
+
         /// <summary>
         /// 格子在地图中的z坐标
         /// </summary>
@@ -29,7 +29,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// 是谁站在这格子上？
         /// </summary>
         public Dictionary<string, Character> Characters { get; set; } = [];
-        
+
         /// <summary>
         /// 此格子目前受到了什么影响？或者它有什么技能…
         /// </summary>

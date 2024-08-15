@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Concurrent;
-using Milimoe.FunGame.Core.Entity;
 
 namespace Milimoe.FunGame.Core.Service
 {

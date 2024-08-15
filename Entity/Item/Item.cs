@@ -1,5 +1,4 @@
-﻿using System;
-using Milimoe.FunGame.Core.Interface.Entity;
+﻿using Milimoe.FunGame.Core.Interface.Entity;
 
 namespace Milimoe.FunGame.Core.Entity
 {

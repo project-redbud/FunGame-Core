@@ -285,7 +285,7 @@ namespace Milimoe.FunGame.Core.Controller
             }
             throw new ConnectFailedException();
         }
-        
+
         /// <summary>
         /// 基于本地已连接的Socket创建新的数据请求<para/>
         /// 加载项专用（<see cref="Library.Common.Addon.Plugin"/> / <see cref="Library.Common.Addon.GameModule"/>）

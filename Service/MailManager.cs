@@ -14,13 +14,13 @@ namespace Milimoe.FunGame.Core.Service
         /// 用于保存Smtp客户端
         /// 一个邮件服务对应一个Smtp客户端
         /// </summary>
-        internal static Dictionary<Guid, SmtpClient> SmtpClients { get; } = new();
+        internal static Dictionary<Guid, SmtpClient> SmtpClients { get; } = [];
 
         /// <summary>
         /// 用于保存邮件服务
         /// 允许服务器同时存在多个服务
         /// </summary>
-        internal static Dictionary<Guid, MailSender> MailSenders { get; } = new();
+        internal static Dictionary<Guid, MailSender> MailSenders { get; } = [];
 
         /// <summary>
         /// 获取某个已经保存过的邮件服务
