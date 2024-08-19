@@ -292,10 +292,10 @@ namespace Milimoe.FunGame.Core.Library.Constant
     public enum RoleType
     {
         Core,
-        Guardian,
         Vanguard,
-        Logistics,
-        Assistant
+        Guardian,
+        Support,
+        Medic
     }
 
     public enum RoleRating

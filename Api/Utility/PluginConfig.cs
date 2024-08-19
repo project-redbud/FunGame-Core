@@ -1,4 +1,3 @@
-using System.Text;
 using System.Text.Json;
 using Milimoe.FunGame.Core.Library.Constant;
 
@@ -137,7 +136,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 Directory.CreateDirectory(dpath);
             }
-            using StreamWriter writer = new(fpath, false, Encoding.Unicode);
+            using StreamWriter writer = new(fpath, false, General.DefaultEncoding);
             writer.WriteLine(json);
             writer.Flush();
         }

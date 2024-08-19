@@ -18,7 +18,8 @@ namespace Milimoe.FunGame.Core.Service
             WriteIndented = true,
             Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
-            Converters = { new DateTimeConverter(), new DataTableConverter(), new DataSetConverter(), new UserConverter(), new RoomConverter() }
+            Converters = { new DateTimeConverter(), new DataTableConverter(), new DataSetConverter(), new UserConverter(), new RoomConverter(),
+                new CharacterConverter() }
         };
 
         /// <summary>

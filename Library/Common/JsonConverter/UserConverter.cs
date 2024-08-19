@@ -1,87 +1,73 @@
 ﻿using System.Text.Json;
-using System.Text.Json.Serialization;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Core.Library.SQLScript.Entity;
 
 namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
 {
-    public class UserConverter : JsonConverter<User>
+    public class UserConverter : BaseEntityConverter<User>
     {
-        public override bool CanConvert(Type objectType)
+        public override User NewInstance()
         {
-            return objectType == typeof(User);
+            return Factory.GetUser();
         }
 
-        public override User Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref User result)
         {
-            User user = Factory.GetUser();
-
-            while (reader.Read())
+            switch (propertyName)
             {
-                if (reader.TokenType == JsonTokenType.EndObject) break;
-
-                if (reader.TokenType == JsonTokenType.PropertyName)
-                {
-                    string propertyName = reader.GetString() ?? "";
-                    reader.Read();
-                    switch (propertyName)
+                case UserQuery.Column_UID:
+                    result.Id = reader.GetInt64();
+                    break;
+                case UserQuery.Column_Username:
+                    result.Username = reader.GetString() ?? "";
+                    break;
+                case UserQuery.Column_RegTime:
+                    string regTime = reader.GetString() ?? "";
+                    if (DateTime.TryParseExact(regTime, General.GeneralDateTimeFormat, null, System.Globalization.DateTimeStyles.None, out DateTime RegTime))
                     {
-                        case UserQuery.Column_UID:
-                            user.Id = reader.GetInt64();
-                            break;
-                        case UserQuery.Column_Username:
-                            user.Username = reader.GetString() ?? "";
-                            break;
-                        case UserQuery.Column_RegTime:
-                            string regTime = reader.GetString() ?? "";
-                            if (DateTime.TryParseExact(regTime, General.GeneralDateTimeFormat, null, System.Globalization.DateTimeStyles.None, out DateTime RegTime))
-                            {
-                                user.RegTime = RegTime;
-                            }
-                            else user.RegTime = General.DefaultTime;
-                            break;
-                        case UserQuery.Column_LastTime:
-                            string lastTime = reader.GetString() ?? "";
-                            if (DateTime.TryParseExact(lastTime, General.GeneralDateTimeFormat, null, System.Globalization.DateTimeStyles.None, out DateTime LastTime))
-                            {
-                                user.LastTime = LastTime;
-                            }
-                            else user.LastTime = General.DefaultTime;
-                            break;
-                        case UserQuery.Column_Email:
-                            user.Email = reader.GetString() ?? "";
-                            break;
-                        case UserQuery.Column_Nickname:
-                            user.NickName = reader.GetString() ?? "";
-                            break;
-                        case UserQuery.Column_IsAdmin:
-                            user.IsAdmin = reader.GetBoolean();
-                            break;
-                        case UserQuery.Column_IsOperator:
-                            user.IsOperator = reader.GetBoolean();
-                            break;
-                        case UserQuery.Column_IsEnable:
-                            user.IsEnable = reader.GetBoolean();
-                            break;
-                        case UserQuery.Column_Credits:
-                            user.Credits = reader.GetDecimal();
-                            break;
-                        case UserQuery.Column_Materials:
-                            user.Materials = reader.GetDecimal();
-                            break;
-                        case UserQuery.Column_GameTime:
-                            user.GameTime = reader.GetDecimal();
-                            break;
-                        case UserQuery.Column_AutoKey:
-                            user.AutoKey = reader.GetString() ?? "";
-                            break;
+                        result.RegTime = RegTime;
                     }
-                }
+                    else result.RegTime = General.DefaultTime;
+                    break;
+                case UserQuery.Column_LastTime:
+                    string lastTime = reader.GetString() ?? "";
+                    if (DateTime.TryParseExact(lastTime, General.GeneralDateTimeFormat, null, System.Globalization.DateTimeStyles.None, out DateTime LastTime))
+                    {
+                        result.LastTime = LastTime;
+                    }
+                    else result.LastTime = General.DefaultTime;
+                    break;
+                case UserQuery.Column_Email:
+                    result.Email = reader.GetString() ?? "";
+                    break;
+                case UserQuery.Column_Nickname:
+                    result.NickName = reader.GetString() ?? "";
+                    break;
+                case UserQuery.Column_IsAdmin:
+                    result.IsAdmin = reader.GetBoolean();
+                    break;
+                case UserQuery.Column_IsOperator:
+                    result.IsOperator = reader.GetBoolean();
+                    break;
+                case UserQuery.Column_IsEnable:
+                    result.IsEnable = reader.GetBoolean();
+                    break;
+                case UserQuery.Column_Credits:
+                    result.Credits = reader.GetDecimal();
+                    break;
+                case UserQuery.Column_Materials:
+                    result.Materials = reader.GetDecimal();
+                    break;
+                case UserQuery.Column_GameTime:
+                    result.GameTime = reader.GetDecimal();
+                    break;
+                case UserQuery.Column_AutoKey:
+                    result.AutoKey = reader.GetString() ?? "";
+                    break;
             }
-
-            return user;
         }
 
         public override void Write(Utf8JsonWriter writer, User value, JsonSerializerOptions options)

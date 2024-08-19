@@ -37,7 +37,14 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        public static bool IsUserName(string str) => Regex.IsMatch(str, @"^[\u4e00-\u9fa5A-Za-z0-9]+$");
+        public static bool IsUserName(string str) => Regex.IsMatch(str, @"^[\u4e00-\u9fffA-Za-z0-9]+$");
+        
+        /// <summary>
+        /// 判断字符串是否是全中文的字符
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static bool IsChineseName(string str) => Regex.IsMatch(str, @"^[\u4e00-\u9fff]+$");
 
         /// <summary>
         /// 获取用户名长度

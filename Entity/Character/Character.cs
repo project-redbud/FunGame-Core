@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Interface.Entity;
+﻿using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Entity
@@ -6,10 +7,15 @@ namespace Milimoe.FunGame.Core.Entity
     public class Character : BaseEntity, ICopyable<Character>
     {
         /// <summary>
+        /// 角色的姓
+        /// </summary>
+        public override string Name { get; set; } = "";
+
+        /// <summary>
         /// 角色的名字
         /// </summary>
         public string FirstName { get; set; } = "";
-
+        
         /// <summary>
         /// 角色的昵称
         /// </summary>
@@ -263,7 +269,8 @@ namespace Milimoe.FunGame.Core.Entity
 
         public override string ToString()
         {
-            string str = (Name + " " + FirstName).Trim();
+            bool isChineseName = NetworkUtility.IsChineseName(Name + FirstName);
+            string str = isChineseName ? (Name + FirstName).Trim() : (Name + " " + FirstName).Trim();
             if (NickName != "")
             {
                 if (str != "") str += ", ";

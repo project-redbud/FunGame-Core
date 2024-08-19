@@ -16,6 +16,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
 
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
+                    result ??= NewInstance();
                     string propertyName = reader.GetString() ?? "";
                     reader.Read();
                     ReadPropertyName(ref reader, propertyName, options, ref result);
@@ -25,6 +26,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
             return result;
         }
 
-        public abstract void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref T? result);
+        public abstract T NewInstance();
+
+        public abstract void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref T result);
     }
 }
