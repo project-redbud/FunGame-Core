@@ -13,6 +13,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         public Dictionary<string, Plugin> Plugins { get; } = [];
 
+        /// <summary>
+        /// 已加载的插件DLL名称对应的路径
+        /// </summary>
+        public static Dictionary<string, string> PluginFilePaths => new(AddonManager.PluginFilePaths);
+
         private PluginLoader()
         {
 

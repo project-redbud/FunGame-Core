@@ -9,6 +9,16 @@ namespace Milimoe.FunGame.Core.Service
     internal class AddonManager
     {
         /// <summary>
+        /// 已加载的插件DLL名称对应的路径
+        /// </summary>
+        internal static Dictionary<string, string> PluginFilePaths { get; } = [];
+
+        /// <summary>
+        /// 已加载的模组DLL名称对应的路径
+        /// </summary>
+        internal static Dictionary<string, string> ModuleFilePaths { get; } = [];
+        
+        /// <summary>
         /// 从plugins目录加载所有插件
         /// </summary>
         /// <param name="plugins"></param>
@@ -28,7 +38,7 @@ namespace Milimoe.FunGame.Core.Service
 
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(Plugin))))
                 {
-                    AddAddonInstances(type, plugins, (instance) =>
+                    if (AddAddonInstances(type, plugins, (instance) =>
                     {
                         if (instance.Load(otherobjs))
                         {
@@ -36,7 +46,10 @@ namespace Milimoe.FunGame.Core.Service
                             return true;
                         }
                         return false;
-                    });
+                    }))
+                    {
+                        AddDictionary(PluginFilePaths, assembly, dll);
+                    }
                 }
             }
 
@@ -65,9 +78,11 @@ namespace Milimoe.FunGame.Core.Service
 
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => typeof(IAddon).IsAssignableFrom(type)))
                 {
+                    bool isAdded = false;
+
                     if (type.IsSubclassOf(typeof(GameModule)))
                     {
-                        AddAddonInstances(type, modules, (instance) =>
+                        isAdded = AddAddonInstances(type, modules, (instance) =>
                         {
                             if (instance.Load(otherobjs))
                             {
@@ -79,15 +94,20 @@ namespace Milimoe.FunGame.Core.Service
                     }
                     else if (type.IsSubclassOf(typeof(CharacterModule)))
                     {
-                        AddAddonInstances(type, characters, (instance) => instance.Load(otherobjs));
+                        isAdded = AddAddonInstances(type, characters, (instance) => instance.Load(otherobjs));
                     }
                     else if (type.IsSubclassOf(typeof(SkillModule)))
                     {
-                        AddAddonInstances(type, skills, (instance) => instance.Load(otherobjs));
+                        isAdded = AddAddonInstances(type, skills, (instance) => instance.Load(otherobjs));
                     }
                     else if (type.IsSubclassOf(typeof(ItemModule)))
                     {
-                        AddAddonInstances(type, items, (instance) => instance.Load(otherobjs));
+                        isAdded = AddAddonInstances(type, items, (instance) => instance.Load(otherobjs));
+                    }
+
+                    if (isAdded)
+                    {
+                        AddDictionary(ModuleFilePaths, assembly, dll);
                     }
                 }
             }
@@ -118,9 +138,11 @@ namespace Milimoe.FunGame.Core.Service
 
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => typeof(IAddon).IsAssignableFrom(type)))
                 {
+                    bool isAdded = false;
+
                     if (type.IsSubclassOf(typeof(GameModule)))
                     {
-                        AddAddonInstances(type, modules, (instance) =>
+                        isAdded = AddAddonInstances(type, modules, (instance) =>
                         {
                             if (instance.Load(otherobjs))
                             {
@@ -132,7 +154,7 @@ namespace Milimoe.FunGame.Core.Service
                     }
                     else if (type.IsSubclassOf(typeof(GameModuleServer)))
                     {
-                        AddAddonInstances(type, servers, (instance) =>
+                        isAdded = AddAddonInstances(type, servers, (instance) =>
                         {
                             if (instance.Load(otherobjs))
                             {
@@ -144,15 +166,20 @@ namespace Milimoe.FunGame.Core.Service
                     }
                     else if (type.IsSubclassOf(typeof(CharacterModule)))
                     {
-                        AddAddonInstances(type, characters, (instance) => instance.Load(otherobjs));
+                        isAdded = AddAddonInstances(type, characters, (instance) => instance.Load(otherobjs));
                     }
                     else if (type.IsSubclassOf(typeof(SkillModule)))
                     {
-                        AddAddonInstances(type, skills, (instance) => instance.Load(otherobjs));
+                        isAdded = AddAddonInstances(type, skills, (instance) => instance.Load(otherobjs));
                     }
                     else if (type.IsSubclassOf(typeof(ItemModule)))
                     {
-                        AddAddonInstances(type, items, (instance) => instance.Load(otherobjs));
+                        isAdded = AddAddonInstances(type, items, (instance) => instance.Load(otherobjs));
+                    }
+
+                    if (isAdded)
+                    {
+                        AddDictionary(ModuleFilePaths, assembly, dll);
                     }
                 }
             }
@@ -178,7 +205,10 @@ namespace Milimoe.FunGame.Core.Service
 
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(GameMap))))
                 {
-                    AddAddonInstances(type, maps, (instance) => instance.Load(objs));
+                    if (AddAddonInstances(type, maps, (instance) => instance.Load(objs)))
+                    {
+                        AddDictionary(ModuleFilePaths, assembly, dll);
+                    }
                 }
             }
 
@@ -192,8 +222,9 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="type">循环程序集的类型</param>
         /// <param name="dictionary">实例的字典</param>
         /// <param name="isadd">加载时触发的检查方法，返回false不添加</param>
-        private static void AddAddonInstances<T>(Type type, Dictionary<string, T> dictionary, Func<T, bool>? isadd = null) where T : IAddon
+        private static bool AddAddonInstances<T>(Type type, Dictionary<string, T> dictionary, Func<T, bool>? isadd = null) where T : IAddon
         {
+            bool isAdded = false;
             T? instance = (T?)Activator.CreateInstance(type);
             if (instance != null)
             {
@@ -201,8 +232,16 @@ namespace Milimoe.FunGame.Core.Service
                 if (!string.IsNullOrWhiteSpace(name) && (isadd == null || isadd(instance)))
                 {
                     dictionary.TryAdd(name.Trim(), instance);
+                    isAdded = true;
                 }
             }
+            return isAdded;
+        }
+
+        private static void AddDictionary(Dictionary<string, string> dict, Assembly assembly, string dllpath)
+        {
+            string filename = assembly.GetName().Name?.Trim() ?? "";
+            if (filename != "") dict.TryAdd(filename, dllpath);
         }
     }
 }

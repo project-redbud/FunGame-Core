@@ -340,50 +340,63 @@ namespace Milimoe.FunGame.Core.Api.Utility
     public class Encryption
     {
         /// <summary>
-        /// 使用HMACSHA512算法加密
+        /// 使用 HMAC-SHA512 算法对文本进行加密
         /// </summary>
-        /// <param name="Message">需要加密的值</param>
-        /// <param name="Key">秘钥</param>
-        /// <returns></returns>
-        internal static string HmacSha512(string Message, string Key)
+        /// <param name="text">需要加密的文本</param>
+        /// <param name="key">用于加密的秘钥</param>
+        /// <returns>加密后的 HMAC-SHA512 哈希值</returns>
+        public static string HmacSha512(string text, string key)
         {
-            byte[] MessageBytes = General.DefaultEncoding.GetBytes(Message);
-            Key = Convert.ToBase64String(General.DefaultEncoding.GetBytes(Key));
-            byte[] KeyBytes = General.DefaultEncoding.GetBytes(Key);
-            HMACSHA512 Hmacsha512 = new(KeyBytes);
-            byte[] Hash = Hmacsha512.ComputeHash(MessageBytes);
-            string Hmac = BitConverter.ToString(Hash).Replace("-", "");
-            return Hmac.ToLower();
+            byte[] text_bytes = General.DefaultEncoding.GetBytes(text);
+            key = Convert.ToBase64String(General.DefaultEncoding.GetBytes(key));
+            byte[] key_bytes = General.DefaultEncoding.GetBytes(key);
+            HMACSHA512 hmacsha512 = new(key_bytes);
+            byte[] hash_bytes = hmacsha512.ComputeHash(text_bytes);
+            string hmac = BitConverter.ToString(hash_bytes).Replace("-", "");
+            return hmac.ToLower();
         }
 
         /// <summary>
-        /// 使用RSA算法加密
+        /// 计算文件的 SHA-256 哈希值
         /// </summary>
-        /// <param name="PlainText">明文</param>
-        /// <param name="PublicKey">公钥</param>
-        /// <returns></returns>
-        public static string RSAEncrypt(string PlainText, string PublicKey)
+        /// <param name="file_path">要计算哈希值的文件路径</param>
+        /// <returns>文件的 SHA-256 哈希值</returns>
+        public static string FileSha512(string file_path)
         {
-            byte[] Plain = Encoding.UTF8.GetBytes(PlainText);
-            using RSACryptoServiceProvider RSA = new();
-            RSA.FromXmlString(PublicKey);
-            byte[] Encrypted = RSA.Encrypt(Plain, false);
-            return Convert.ToBase64String(Encrypted);
+            using SHA256 sha256 = SHA256.Create();
+            using FileStream stream = File.OpenRead(file_path);
+            byte[] hash = sha256.ComputeHash(stream);
+            return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
         }
 
         /// <summary>
-        /// 使用RSA算法解密
+        /// 使用 RSA 算法加密
         /// </summary>
-        /// <param name="SecretText">密文</param>
-        /// <param name="PrivateKey">私钥</param>
+        /// <param name="plain_text">明文</param>
+        /// <param name="plublic_key">公钥</param>
         /// <returns></returns>
-        public static string RSADecrypt(string SecretText, string PrivateKey)
+        public static string RSAEncrypt(string plain_text, string plublic_key)
         {
-            byte[] Encrypted = Convert.FromBase64String(SecretText);
-            using RSACryptoServiceProvider RSA = new();
-            RSA.FromXmlString(PrivateKey);
-            byte[] Decrypted = RSA.Decrypt(Encrypted, false);
-            return Encoding.UTF8.GetString(Decrypted);
+            byte[] plain = Encoding.UTF8.GetBytes(plain_text);
+            using RSACryptoServiceProvider rsa = new();
+            rsa.FromXmlString(plublic_key);
+            byte[] encrypted = rsa.Encrypt(plain, false);
+            return Convert.ToBase64String(encrypted);
+        }
+
+        /// <summary>
+        /// 使用 RSA 算法解密
+        /// </summary>
+        /// <param name="secret_text">密文</param>
+        /// <param name="private_key">私钥</param>
+        /// <returns></returns>
+        public static string RSADecrypt(string secret_text, string private_key)
+        {
+            byte[] secret = Convert.FromBase64String(secret_text);
+            using RSACryptoServiceProvider rsa = new();
+            rsa.FromXmlString(private_key);
+            byte[] decrypted = rsa.Decrypt(secret, false);
+            return Encoding.UTF8.GetString(decrypted);
         }
     }
 
@@ -393,14 +406,15 @@ namespace Milimoe.FunGame.Core.Api.Utility
     public static class StringExtension
     {
         /// <summary>
-        /// 使用HMACSHA512算法加密
+        /// 使用 HMAC-SHA512 算法对文本进行加密<para/>
+        /// 注意：此方法会先将 <paramref name="key" /> 转为小写并计算两次哈希。
         /// </summary>
-        /// <param name="msg">需要加密的值</param>
-        /// <param name="key">秘钥</param>
-        /// <returns></returns>
-        public static string Encrypt(this string msg, string key)
+        /// <param name="text">需要加密的文本</param>
+        /// <param name="key">用于加密的秘钥</param>
+        /// <returns>加密后的 HMAC-SHA512 哈希值</returns>
+        public static string Encrypt(this string text, string key)
         {
-            return Encryption.HmacSha512(msg, Encryption.HmacSha512(msg, key.ToLower()));
+            return Encryption.HmacSha512(text, Encryption.HmacSha512(text, key.ToLower()));
         }
     }
 
