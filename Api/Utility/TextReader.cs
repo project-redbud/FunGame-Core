@@ -130,7 +130,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <summary>
         /// 读取TXT文件内容
         /// </summary>
-        /// <param name="filename">文件名</param>
+        /// <param name="filename">文件名（需要包含扩展名）</param>
         /// <param name="path">相对路径</param>
         /// <returns>内容</returns>
         public static string ReadTXT(string filename, string path = "")
@@ -154,13 +154,14 @@ namespace Milimoe.FunGame.Core.Api.Utility
         }
 
         /// <summary>
-        /// 写入TXT文件内容（如不存在文件会创建，反之新起一行追加）
+        /// 写入TXT文件内容（如不存在文件会创建）<para/>
+        /// <paramref name="overwrite" /> 选项用于覆盖或追加文本
         /// </summary>
-        /// <param name="message"></param>
-        /// <param name="filename">文件名</param>
+        /// <param name="content"></param>
+        /// <param name="filename">文件名（需要包含扩展名）</param>
         /// <param name="path">相对路径</param>
-        /// <returns>内容</returns>
-        public static void WriteTXT(string message, string filename, string path = "")
+        /// <param name="overwrite">是否覆盖</param>
+        public static void WriteTXT(string content, string filename, string path = "", bool overwrite = false)
         {
             if (path.Trim() != "")
             {
@@ -170,10 +171,18 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
             else path = $@"{AppDomain.CurrentDomain.BaseDirectory}{filename}";
             // 写入内容
-            StreamWriter writer = File.Exists(path) ? new(path, true, General.DefaultEncoding) : new(path, false, General.DefaultEncoding);
-            writer.WriteLine(message);
+            StreamWriter writer = File.Exists(path) ? new(path, !overwrite, General.DefaultEncoding) : new(path, false, General.DefaultEncoding);
+            writer.WriteLine(content);
             writer.Close();
         }
+
+        /// <summary>
+        /// 写入并覆盖TXT文件内容
+        /// </summary>
+        /// <param name="content"></param>
+        /// <param name="filename">文件名（需要包含扩展名）</param>
+        /// <param name="path">相对路径</param>
+        public static void OverwriteTXT(string content, string filename, string path = "") => WriteTXT(content, filename, path, true);
 
         /// <summary>
         /// 追加错误日志 默认写入logs文件夹下的当日日期.log文件

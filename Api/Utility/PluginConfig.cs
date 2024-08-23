@@ -9,7 +9,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
     /// <para/>文件会保存为：程序目录/configs/<see cref="PluginName"/>/<see cref="FileName"/>.json
     /// </summary>
     /// <remarks>
-    /// 新建一个配置文件，文件会保存为：程序目录/configs/<see cref="PluginName"/>/<see cref="FileName"/>.json
+    /// 新建一个配置文件，文件会保存为：程序目录/configs/<paramref name="plugin_name"/>/<paramref name="file_name"/>.json
     /// </remarks>
     /// <param name="plugin_name"></param>
     /// <param name="file_name"></param>

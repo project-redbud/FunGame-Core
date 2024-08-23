@@ -42,6 +42,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         public Dictionary<GameModule, GameModuleServer?> AssociatedServers { get; } = [];
 
+        /// <summary>
+        /// 已加载的模组DLL名称对应的路径
+        /// </summary>
+        public static Dictionary<string, string> ModuleFilePaths => new(AddonManager.ModuleFilePaths);
+
         private GameModuleLoader() { }
 
         /// <summary>
