@@ -8,11 +8,11 @@ namespace Milimoe.FunGame.Core.Entity
         public string Description { get; set; } = "";
         public bool IsNeedApproval { get; set; } = false;
         public bool IsPublic { get; set; } = false;
-        public decimal ClubPoins { get; set; } = 0M;
+        public double ClubPoins { get; set; } = 0;
         public User? Master { get; set; }
-        public Dictionary<string, User> Admins { get; set; } = new();
-        public Dictionary<string, User> Members { get; set; } = new();
-        public Dictionary<string, User> Applicants { get; set; } = new();
+        public Dictionary<string, User> Admins { get; set; } = [];
+        public Dictionary<string, User> Members { get; set; } = [];
+        public Dictionary<string, User> Applicants { get; set; } = [];
 
         public bool Equals(Club other)
         {

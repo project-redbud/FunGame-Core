@@ -56,13 +56,13 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.IsEnable = reader.GetBoolean();
                     break;
                 case UserQuery.Column_Credits:
-                    result.Credits = reader.GetDecimal();
+                    result.Credits = reader.GetDouble();
                     break;
                 case UserQuery.Column_Materials:
-                    result.Materials = reader.GetDecimal();
+                    result.Materials = reader.GetDouble();
                     break;
                 case UserQuery.Column_GameTime:
-                    result.GameTime = reader.GetDecimal();
+                    result.GameTime = reader.GetDouble();
                     break;
                 case UserQuery.Column_AutoKey:
                     result.AutoKey = reader.GetString() ?? "";

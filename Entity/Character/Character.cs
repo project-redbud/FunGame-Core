@@ -15,7 +15,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 角色的名字
         /// </summary>
         public string FirstName { get; set; } = "";
-        
+
         /// <summary>
         /// 角色的昵称
         /// </summary>
@@ -69,167 +69,196 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 经验值
         /// </summary>
-        public decimal EXP { get; set; } = 0;
+        public double EXP { get; set; } = 0;
 
         /// <summary>
         /// 基础生命值
         /// </summary>
-        public decimal BaseHP { get; set; } = 0;
+        public double BaseHP { get; set; } = 1;
 
         /// <summary>
         /// 生命值
         /// </summary>
-        public decimal HP { get; set; } = 0;
+        public double HP { get; set; } = 0;
 
         /// <summary>
         /// 基础魔法值
         /// </summary>
-        public decimal BaseMP { get; set; } = 0;
+        public double BaseMP { get; set; } = 0;
 
         /// <summary>
         /// 魔法值
         /// </summary>
-        public decimal MP { get; set; } = 0;
+        public double MP { get; set; } = 0;
 
         /// <summary>
-        /// 能量
+        /// 爆发能量
         /// </summary>
-        public decimal EP { get; set; } = 0;
+        public double EP { get; set; } = 0;
 
         /// <summary>
         /// 基础攻击力
         /// </summary>
-        public decimal BaseATK { get; set; } = 0;
+        public double BaseATK { get; set; } = 1;
 
         /// <summary>
         /// 攻击力
         /// </summary>
-        public decimal ATK { get; set; } = 0;
+        public double ATK { get; set; } = 0;
 
         /// <summary>
         /// 基础物理护甲
         /// </summary>
-        public decimal BaseDEF { get; set; } = 0;
+        public double BaseDEF { get; set; } = 5;
 
         /// <summary>
         /// 物理护甲
         /// </summary>
-        public decimal DEF { get; set; } = 0;
+        public double DEF { get; set; } = 0;
 
         /// <summary>
         /// 物理伤害减免(%)
         /// </summary>
-        public decimal PDR { get; set; } = 0;
+        public double PDR
+        {
+            get
+            {
+                double value = Math.Round((BaseDEF + DEF) / BaseDEF + DEF + 300, 4, MidpointRounding.AwayFromZero) + ExPDR;
+                return value > 1 ? 1 : value;
+            }
+        }
+
+        /// <summary>
+        /// 额外物理伤害减免(%)
+        /// </summary>
+        public double ExPDR { get; set; } = 0;
 
         /// <summary>
         /// 魔法抗性(%)
         /// </summary>
-        public decimal MDF { get; set; } = 0;
+        public double MDF { get; set; } = 0;
 
         /// <summary>
         /// 物理穿透(%)
         /// </summary>
-        public decimal PhysicalPenetration { get; set; } = 0;
+        public double PhysicalPenetration { get; set; } = 0;
 
         /// <summary>
         /// 魔法穿透(%)
         /// </summary>
-        public decimal MagicalPenetration { get; set; } = 0;
+        public double MagicalPenetration { get; set; } = 0;
 
         /// <summary>
         /// 生命回复力
         /// </summary>
-        public decimal HR { get; set; } = 0;
+        public double HR { get; set; } = 0;
 
         /// <summary>
         /// 魔法回复力
         /// </summary>
-        public decimal MR { get; set; } = 0;
+        public double MR { get; set; } = 0;
 
         /// <summary>
         /// 能量回复力
         /// </summary>
-        public decimal ER { get; set; } = 0;
+        public double ER { get; set; } = 0;
 
         /// <summary>
         /// 基础力量
         /// </summary>
-        public decimal BaseSTR { get; set; } = 0;
+        public double BaseSTR { get; set; } = 0;
 
         /// <summary>
         /// 基础敏捷
         /// </summary>
-        public decimal BaseAGI { get; set; } = 0;
+        public double BaseAGI { get; set; } = 0;
 
         /// <summary>
         /// 基础智力
         /// </summary>
-        public decimal BaseINT { get; set; } = 0;
+        public double BaseINT { get; set; } = 0;
 
         /// <summary>
         /// 力量
         /// </summary>
-        public decimal STR { get; set; } = 0;
+        public double STR { get; set; } = 0;
 
         /// <summary>
         /// 敏捷
         /// </summary>
-        public decimal AGI { get; set; } = 0;
+        public double AGI { get; set; } = 0;
 
         /// <summary>
         /// 智力
         /// </summary>
-        public decimal INT { get; set; } = 0;
+        public double INT { get; set; } = 0;
 
         /// <summary>
         /// 力量成长值
         /// </summary>
-        public decimal STRGrowth { get; set; } = 0;
+        public double STRGrowth { get; set; } = 0;
 
         /// <summary>
         /// 敏捷成长值
         /// </summary>
-        public decimal AGIGrowth { get; set; } = 0;
+        public double AGIGrowth { get; set; } = 0;
 
         /// <summary>
         /// 智力成长值
         /// </summary>
-        public decimal INTGrowth { get; set; } = 0;
+        public double INTGrowth { get; set; } = 0;
 
         /// <summary>
-        /// 速度
+        /// 行动速度
         /// </summary>
-        public decimal SPD { get; set; } = 0;
+        public double SPD { get; set; } = 0;
 
         /// <summary>
         /// 行动系数(%)
         /// </summary>
-        public decimal ActionCoefficient { get; set; } = 0;
+        public double ActionCoefficient
+        {
+            get
+            {
+                double value = Math.Round(SPD / 1500.00, 4, MidpointRounding.AwayFromZero) + ExActionCoefficient;
+                return value > 1 ? 1 : value;
+            }
+        }
+
+        /// <summary>
+        /// 额外行动系数(%)
+        /// </summary>
+        public double ExActionCoefficient { get; set; } = 0;
 
         /// <summary>
         /// 加速系数(%)
         /// </summary>
-        public decimal AccelerationCoefficient { get; set; } = 0;
+        public double AccelerationCoefficient { get; set; } = 0;
+        
+        /// <summary>
+        /// 冷却缩减(%)
+        /// </summary>
+        public double CDR { get; set; } = 0;
 
         /// <summary>
         /// 攻击距离
         /// </summary>
-        public decimal ATR { get; set; } = 0;
+        public double ATR { get; set; } = 0;
 
         /// <summary>
         /// 暴击率(%)
         /// </summary>
-        public decimal CritRate { get; set; } = 0.05M;
+        public double CritRate { get; set; } = 0.05;
 
         /// <summary>
-        /// 暴击伤害
+        /// 暴击伤害(%)
         /// </summary>
-        public decimal CritDMG { get; set; } = 1.25M;
+        public double CritDMG { get; set; } = 1.25;
 
         /// <summary>
         /// 闪避率(%)
         /// </summary>
-        public decimal EvadeRate { get; set; } = 0.05M;
+        public double EvadeRate { get; set; } = 0.05;
 
         /// <summary>
         /// 角色的技能组
@@ -251,15 +280,28 @@ namespace Milimoe.FunGame.Core.Entity
             return new();
         }
 
-        public void SetDefaultBase()
+        public void Init()
         {
+            STR = BaseSTR;
+            AGI = BaseAGI;
+            INT = BaseINT;
             HP = BaseHP;
             MP = BaseMP;
             ATK = BaseATK;
             DEF = BaseDEF;
-            STR = BaseSTR;
-            AGI = BaseAGI;
-            INT = BaseINT;
+            // STR
+            HP = Math.Round(HP + STR * 17, 2, MidpointRounding.AwayFromZero);
+            HR = Math.Round(HR + STR * 0.7, 2, MidpointRounding.AwayFromZero);
+            DEF = Math.Round(DEF + STR * 0.75, 2, MidpointRounding.AwayFromZero);
+            CritDMG = Math.Round(CritDMG + STR * 0.00575, 4, MidpointRounding.AwayFromZero);
+            // AGI
+            SPD = Math.Round(SPD + AGI * 0.65, 2, MidpointRounding.AwayFromZero);
+            EvadeRate = Math.Round(EvadeRate + AGI * 0.0025, 4, MidpointRounding.AwayFromZero);
+            CritRate = Math.Round(CritRate + AGI * 0.00235, 4, MidpointRounding.AwayFromZero);
+            // INT
+            MP = Math.Round(MP + INT * 8, 2, MidpointRounding.AwayFromZero);
+            MR = Math.Round(MR + INT * 0.4, 2, MidpointRounding.AwayFromZero);
+            CDR = Math.Round(CDR + INT * 0.0025, 4, MidpointRounding.AwayFromZero);
         }
 
         public override bool Equals(IBaseEntity? other)
@@ -308,7 +350,6 @@ namespace Milimoe.FunGame.Core.Entity
                 ATK = ATK,
                 BaseDEF = BaseDEF,
                 DEF = DEF,
-                PDR = PDR,
                 MDF = MDF,
                 PhysicalPenetration = PhysicalPenetration,
                 MagicalPenetration = MagicalPenetration,
@@ -325,7 +366,6 @@ namespace Milimoe.FunGame.Core.Entity
                 AGIGrowth = AGIGrowth,
                 INTGrowth = INTGrowth,
                 SPD = SPD,
-                ActionCoefficient = ActionCoefficient,
                 AccelerationCoefficient = AccelerationCoefficient,
                 ATR = ATR,
                 CritRate = CritRate,

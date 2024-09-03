@@ -173,7 +173,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="GameTime"></param>
         /// <param name="AutoKey"></param>
         /// <returns></returns>
-        public static User GetUser(long Id = 0, string Username = "", DateTime? RegTime = null, DateTime? LastTime = null, string Email = "", string NickName = "", bool IsAdmin = false, bool IsOperator = false, bool IsEnable = true, decimal Credits = 0, decimal Materials = 0, decimal GameTime = 0, string AutoKey = "")
+        public static User GetUser(long Id = 0, string Username = "", DateTime? RegTime = null, DateTime? LastTime = null, string Email = "", string NickName = "", bool IsAdmin = false, bool IsOperator = false, bool IsEnable = true, double Credits = 0, double Materials = 0, double GameTime = 0, string AutoKey = "")
         {
             return UserFactory.Create(Id, Username, RegTime, LastTime, Email, NickName, IsAdmin, IsOperator, IsEnable, Credits, Materials, GameTime, AutoKey);
         }
@@ -210,9 +210,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 bool IsAdmin = Convert.ToInt32(dr[UserQuery.Column_IsAdmin]) == 1;
                 bool IsOperator = Convert.ToInt32(dr[UserQuery.Column_IsOperator]) == 1;
                 bool IsEnable = Convert.ToInt32(dr[UserQuery.Column_IsEnable]) == 1;
-                decimal Credits = Convert.ToDecimal(dr[UserQuery.Column_Credits]);
-                decimal Materials = Convert.ToDecimal(dr[UserQuery.Column_Materials]);
-                decimal GameTime = Convert.ToDecimal(dr[UserQuery.Column_GameTime]);
+                double Credits = Convert.ToDouble(dr[UserQuery.Column_Credits]);
+                double Materials = Convert.ToDouble(dr[UserQuery.Column_Materials]);
+                double GameTime = Convert.ToDouble(dr[UserQuery.Column_GameTime]);
                 string AutoKey = (string)dr[UserQuery.Column_AutoKey];
                 return UserFactory.Create(Id, Username, RegTime, LastTime, Email, NickName, IsAdmin, IsOperator, IsEnable, Credits, Materials, GameTime, AutoKey);
             }

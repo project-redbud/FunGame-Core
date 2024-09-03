@@ -48,103 +48,100 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.Level = reader.GetInt32();
                     break;
                 case nameof(Character.EXP):
-                    result.EXP = reader.GetDecimal();
+                    result.EXP = reader.GetDouble();
                     break;
                 case nameof(Character.BaseHP):
-                    result.BaseHP = reader.GetDecimal();
+                    result.BaseHP = reader.GetDouble();
                     break;
                 case nameof(Character.HP):
-                    result.HP = reader.GetDecimal();
+                    result.HP = reader.GetDouble();
                     break;
                 case nameof(Character.BaseMP):
-                    result.BaseMP = reader.GetDecimal();
+                    result.BaseMP = reader.GetDouble();
                     break;
                 case nameof(Character.MP):
-                    result.MP = reader.GetDecimal();
+                    result.MP = reader.GetDouble();
                     break;
                 case nameof(Character.EP):
-                    result.EP = reader.GetDecimal();
+                    result.EP = reader.GetDouble();
                     break;
                 case nameof(Character.BaseATK):
-                    result.BaseATK = reader.GetDecimal();
+                    result.BaseATK = reader.GetDouble();
                     break;
                 case nameof(Character.ATK):
-                    result.ATK = reader.GetDecimal();
+                    result.ATK = reader.GetDouble();
                     break;
                 case nameof(Character.BaseDEF):
-                    result.BaseDEF = reader.GetDecimal();
+                    result.BaseDEF = reader.GetDouble();
                     break;
                 case nameof(Character.DEF):
-                    result.DEF = reader.GetDecimal();
-                    break;
-                case nameof(Character.PDR):
-                    result.PDR = reader.GetDecimal();
+                    result.DEF = reader.GetDouble();
                     break;
                 case nameof(Character.MDF):
-                    result.MDF = reader.GetDecimal();
+                    result.MDF = reader.GetDouble();
                     break;
                 case nameof(Character.PhysicalPenetration):
-                    result.PhysicalPenetration = reader.GetDecimal();
+                    result.PhysicalPenetration = reader.GetDouble();
                     break;
                 case nameof(Character.MagicalPenetration):
-                    result.MagicalPenetration = reader.GetDecimal();
+                    result.MagicalPenetration = reader.GetDouble();
                     break;
                 case nameof(Character.HR):
-                    result.HR = reader.GetDecimal();
+                    result.HR = reader.GetDouble();
                     break;
                 case nameof(Character.MR):
-                    result.MR = reader.GetDecimal();
+                    result.MR = reader.GetDouble();
                     break;
                 case nameof(Character.ER):
-                    result.ER = reader.GetDecimal();
+                    result.ER = reader.GetDouble();
                     break;
                 case nameof(Character.BaseSTR):
-                    result.BaseSTR = reader.GetDecimal();
+                    result.BaseSTR = reader.GetDouble();
                     break;
                 case nameof(Character.BaseAGI):
-                    result.BaseAGI = reader.GetDecimal();
+                    result.BaseAGI = reader.GetDouble();
                     break;
                 case nameof(Character.BaseINT):
-                    result.BaseINT = reader.GetDecimal();
+                    result.BaseINT = reader.GetDouble();
                     break;
                 case nameof(Character.STR):
-                    result.STR = reader.GetDecimal();
+                    result.STR = reader.GetDouble();
                     break;
                 case nameof(Character.AGI):
-                    result.AGI = reader.GetDecimal();
+                    result.AGI = reader.GetDouble();
                     break;
                 case nameof(Character.INT):
-                    result.INT = reader.GetDecimal();
+                    result.INT = reader.GetDouble();
                     break;
                 case nameof(Character.STRGrowth):
-                    result.STRGrowth = reader.GetDecimal();
+                    result.STRGrowth = reader.GetDouble();
                     break;
                 case nameof(Character.AGIGrowth):
-                    result.AGIGrowth = reader.GetDecimal();
+                    result.AGIGrowth = reader.GetDouble();
                     break;
                 case nameof(Character.INTGrowth):
-                    result.INTGrowth = reader.GetDecimal();
+                    result.INTGrowth = reader.GetDouble();
                     break;
                 case nameof(Character.SPD):
-                    result.SPD = reader.GetDecimal();
-                    break;
-                case nameof(Character.ActionCoefficient):
-                    result.ActionCoefficient = reader.GetDecimal();
+                    result.SPD = reader.GetDouble();
                     break;
                 case nameof(Character.AccelerationCoefficient):
-                    result.AccelerationCoefficient = reader.GetDecimal();
+                    result.AccelerationCoefficient = reader.GetDouble();
+                    break;
+                case nameof(Character.CDR):
+                    result.CDR = reader.GetDouble();
                     break;
                 case nameof(Character.ATR):
-                    result.ATR = reader.GetDecimal();
+                    result.ATR = reader.GetDouble();
                     break;
                 case nameof(Character.CritRate):
-                    result.CritRate = reader.GetDecimal();
+                    result.CritRate = reader.GetDouble();
                     break;
                 case nameof(Character.CritDMG):
-                    result.CritDMG = reader.GetDecimal();
+                    result.CritDMG = reader.GetDouble();
                     break;
                 case nameof(Character.EvadeRate):
-                    result.EvadeRate = reader.GetDecimal();
+                    result.EvadeRate = reader.GetDouble();
                     break;
             }
         }
@@ -172,7 +169,6 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Character.ATK), value.ATK);
             writer.WriteNumber(nameof(Character.BaseDEF), value.BaseDEF);
             writer.WriteNumber(nameof(Character.DEF), value.DEF);
-            writer.WriteNumber(nameof(Character.PDR), value.PDR);
             writer.WriteNumber(nameof(Character.MDF), value.MDF);
             writer.WriteNumber(nameof(Character.PhysicalPenetration), value.PhysicalPenetration);
             writer.WriteNumber(nameof(Character.MagicalPenetration), value.MagicalPenetration);
@@ -189,8 +185,8 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Character.AGIGrowth), value.AGIGrowth);
             writer.WriteNumber(nameof(Character.INTGrowth), value.INTGrowth);
             writer.WriteNumber(nameof(Character.SPD), value.SPD);
-            writer.WriteNumber(nameof(Character.ActionCoefficient), value.ActionCoefficient);
             writer.WriteNumber(nameof(Character.AccelerationCoefficient), value.AccelerationCoefficient);
+            writer.WriteNumber(nameof(Character.CDR), value.CDR);
             writer.WriteNumber(nameof(Character.ATR), value.ATR);
             writer.WriteNumber(nameof(Character.CritRate), value.CritRate);
             writer.WriteNumber(nameof(Character.CritDMG), value.CritDMG);
