@@ -5,7 +5,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
 {
     /// <summary>
     /// 简易的插件配置文件生成器<para/>
-    /// 仅支持部分基本类型（<see cref="long"/>, <see cref="decimal"/>, <see cref="string"/>, <see cref="bool"/>）及其数组（<see cref="List{T}">List&lt;long&gt;, List&lt;decimal&gt;, List&lt;string&gt;, List&lt;bool&gt;</see>和<see cref="Array">long[], decimal[], string[], bool[]</see>）
+    /// 仅支持部分基本类型（<see cref="long"/>, <see cref="double"/>, <see cref="decimal"/>, <see cref="string"/>, <see cref="bool"/>）及其数组（<see cref="List{T}">List&lt;long&gt;, List&lt;double&gt;, List&lt;decimal&gt;, List&lt;string&gt;, List&lt;bool&gt;</see>和<see cref="Array">long[], double[], decimal[], string[], bool[]</see>）
     /// <para/>文件会保存为：程序目录/configs/<see cref="PluginName"/>/<see cref="FileName"/>.json
     /// </summary>
     /// <remarks>
@@ -158,6 +158,10 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     {
                         base.Add(key, longValue);
                     }
+                    else if (obj.ValueKind == JsonValueKind.Number && obj.TryGetDouble(out double douValue))
+                    {
+                        base.Add(key, douValue);
+                    }
                     else if (obj.ValueKind == JsonValueKind.Number && obj.TryGetDecimal(out decimal decValue))
                     {
                         base.Add(key, decValue);
@@ -184,6 +188,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         private void AddValues(string key, JsonElement.ArrayEnumerator obj)
         {
             List<long> longList = [];
+            List<double> douList = [];
             List<decimal> decList = [];
             List<string> strList = [];
             List<bool> bolList = [];
@@ -192,6 +197,10 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 if (array_e.ValueKind == JsonValueKind.Number && array_e.TryGetInt64(out long longValue))
                 {
                     longList.Add(longValue);
+                }
+                else if (array_e.ValueKind == JsonValueKind.Number && array_e.TryGetDouble(out double douValue))
+                {
+                    douList.Add(douValue);
                 }
                 else if (array_e.ValueKind == JsonValueKind.Number && array_e.TryGetDecimal(out decimal decValue))
                 {
@@ -207,6 +216,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 }
             }
             if (longList.Count > 0) base.Add(key, longList);
+            if (douList.Count > 0) base.Add(key, douList);
             if (decList.Count > 0) base.Add(key, decList);
             if (strList.Count > 0) base.Add(key, strList);
             if (bolList.Count > 0) base.Add(key, bolList);

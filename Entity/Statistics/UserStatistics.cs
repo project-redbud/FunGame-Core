@@ -8,19 +8,19 @@ namespace Milimoe.FunGame.Core.Entity
     {
         public long Id => User.Id;
         public User User { get; }
-        public Dictionary<long, decimal> DamageStats { get; } = new();
-        public Dictionary<long, decimal> PhysicalDamageStats { get; } = new();
-        public Dictionary<long, decimal> MagicDamageStats { get; } = new();
-        public Dictionary<long, decimal> RealDamageStats { get; } = new();
-        public Dictionary<long, decimal> AvgDamageStats
+        public Dictionary<long, double> DamageStats { get; } = new();
+        public Dictionary<long, double> PhysicalDamageStats { get; } = new();
+        public Dictionary<long, double> MagicDamageStats { get; } = new();
+        public Dictionary<long, double> RealDamageStats { get; } = new();
+        public Dictionary<long, double> AvgDamageStats
         {
             get
             {
-                Dictionary<long, decimal> avgdamage = new();
+                Dictionary<long, double> avgdamage = new();
                 foreach (long key in Plays.Keys)
                 {
                     long plays = Plays[key];
-                    decimal total = 0;
+                    double total = 0;
                     if (DamageStats.ContainsKey(key))
                     {
                         total = DamageStats.Values.Sum();
@@ -30,15 +30,15 @@ namespace Milimoe.FunGame.Core.Entity
                 return avgdamage;
             }
         }
-        public Dictionary<long, decimal> AvgPhysicalDamageStats
+        public Dictionary<long, double> AvgPhysicalDamageStats
         {
             get
             {
-                Dictionary<long, decimal> avgdamage = new();
+                Dictionary<long, double> avgdamage = new();
                 foreach (long key in Plays.Keys)
                 {
                     long plays = Plays[key];
-                    decimal total = 0;
+                    double total = 0;
                     if (PhysicalDamageStats.ContainsKey(key))
                     {
                         total = PhysicalDamageStats.Values.Sum();
@@ -48,15 +48,15 @@ namespace Milimoe.FunGame.Core.Entity
                 return avgdamage;
             }
         }
-        public Dictionary<long, decimal> AvgMagicDamageStats
+        public Dictionary<long, double> AvgMagicDamageStats
         {
             get
             {
-                Dictionary<long, decimal> avgdamage = new();
+                Dictionary<long, double> avgdamage = new();
                 foreach (long key in Plays.Keys)
                 {
                     long plays = Plays[key];
-                    decimal total = 0;
+                    double total = 0;
                     if (MagicDamageStats.ContainsKey(key))
                     {
                         total = MagicDamageStats.Values.Sum();
@@ -66,15 +66,15 @@ namespace Milimoe.FunGame.Core.Entity
                 return avgdamage;
             }
         }
-        public Dictionary<long, decimal> AvgRealDamageStats
+        public Dictionary<long, double> AvgRealDamageStats
         {
             get
             {
-                Dictionary<long, decimal> avgdamage = new();
+                Dictionary<long, double> avgdamage = new();
                 foreach (long key in Plays.Keys)
                 {
                     long plays = Plays[key];
-                    decimal total = 0;
+                    double total = 0;
                     if (RealDamageStats.ContainsKey(key))
                     {
                         total = RealDamageStats.Values.Sum();
@@ -90,26 +90,26 @@ namespace Milimoe.FunGame.Core.Entity
         public Dictionary<long, long> Plays { get; } = new();
         public Dictionary<long, long> Wins { get; } = new();
         public Dictionary<long, long> Loses { get; } = new();
-        public Dictionary<long, decimal> Winrates
+        public Dictionary<long, double> Winrates
         {
             get
             {
-                Dictionary<long, decimal> winrates = new();
+                Dictionary<long, double> winrates = new();
                 foreach (long key in Plays.Keys)
                 {
                     long plays = Plays[key];
                     long wins = 0;
-                    if (Wins.ContainsKey(key))
+                    if (Wins.TryGetValue(key, out long value))
                     {
-                        wins = Wins[key];
+                        wins = value;
                     }
-                    winrates.Add(key, Math.Round(wins * 1.0000M / plays * 1.0000M, 4));
+                    winrates.Add(key, Math.Round(wins * 1.0 / plays * 1.0, 4));
                 }
                 return winrates;
             }
         }
-        public Dictionary<long, decimal> RatingStats { get; } = new();
-        public Dictionary<long, decimal> EloStats { get; } = new();
+        public Dictionary<long, double> RatingStats { get; } = new();
+        public Dictionary<long, double> EloStats { get; } = new();
         public Dictionary<long, string> RankStats { get; } = new();
 
         public string GetWinrate(long season)

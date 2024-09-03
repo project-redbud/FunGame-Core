@@ -5,7 +5,7 @@ namespace Milimoe.FunGame.Core.Entity
     public class Item : BaseEntity, IItem
     {
         public string Describe { get; set; } = "";
-        public decimal Price { get; set; }
+        public double Price { get; set; }
         public char Key { get; set; }
         public bool Active { get; set; }
         public bool Enable { get; set; }
