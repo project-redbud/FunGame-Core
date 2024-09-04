@@ -38,7 +38,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="str"></param>
         /// <returns></returns>
         public static bool IsUserName(string str) => Regex.IsMatch(str, @"^[\u4e00-\u9fffA-Za-z0-9]+$");
-        
+
         /// <summary>
         /// 判断字符串是否是全中文的字符
         /// </summary>
@@ -558,6 +558,57 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 await Task.Delay(milliseconds);
             }).OnCompleted(action);
+        }
+    }
+
+    #endregion
+
+    #region 计算服务
+
+    /// <summary>
+    /// 计算服务工具箱
+    /// </summary>
+    public class Calculation
+    {
+        /// <summary>
+        /// 四舍五入计算
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="digits"></param>
+        /// <returns></returns>
+        public static double Round(double value, int digits)
+        {
+            return Math.Round(value, digits, MidpointRounding.AwayFromZero);
+        }
+
+        /// <summary>
+        /// 四舍五入保留2位小数
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static double Round2Digits(double value)
+        {
+            return Round(value, 2);
+        }
+
+        /// <summary>
+        /// 四舍五入保留4位小数
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static double Round4Digits(double value)
+        {
+            return Round(value, 4);
+        }
+
+        /// <summary>
+        /// 此方法检查一个 百分比(%) 数值是否存在于 [0,1] 区间
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns>如果超过0，则返回0；超过1则返回1。</returns>
+        public static double PercentageCheck(double value)
+        {
+            return Math.Max(0, Math.Min(value, 1));
         }
     }
 

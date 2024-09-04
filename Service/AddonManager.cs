@@ -17,7 +17,7 @@ namespace Milimoe.FunGame.Core.Service
         /// 已加载的模组DLL名称对应的路径
         /// </summary>
         internal static Dictionary<string, string> ModuleFilePaths { get; } = [];
-        
+
         /// <summary>
         /// 从plugins目录加载所有插件
         /// </summary>

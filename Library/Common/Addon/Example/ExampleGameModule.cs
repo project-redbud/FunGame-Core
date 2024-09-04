@@ -302,12 +302,12 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
                 c.FirstName = "Shiya";
                 c.NickName = "OSM";
                 c.MagicType = MagicType.PurityNatural;
-                c.BaseHP = 30;
-                c.BaseSTR = 20;
-                c.BaseAGI = 10;
-                c.BaseINT = 5;
-                c.BaseATK = 100;
-                c.BaseDEF = 10;
+                c.InitialHP = 30;
+                c.InitialSTR = 20;
+                c.InitialAGI = 10;
+                c.InitialINT = 5;
+                c.InitialATK = 100;
+                c.InitialDEF = 10;
                 list.Add(c);
                 return list;
             }

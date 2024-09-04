@@ -38,11 +38,11 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Character.ThirdRoleType):
                     result.ThirdRoleType = (RoleType)reader.GetInt32();
                     break;
-                case nameof(Character.RoleRating):
-                    result.RoleRating = (RoleRating)reader.GetInt32();
-                    break;
                 case nameof(Character.Promotion):
                     result.Promotion = reader.GetInt32();
+                    break;
+                case nameof(Character.PrimaryAttribute):
+                    result.PrimaryAttribute = (PrimaryAttribute)reader.GetInt32();
                     break;
                 case nameof(Character.Level):
                     result.Level = reader.GetInt32();
@@ -50,32 +50,32 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Character.EXP):
                     result.EXP = reader.GetDouble();
                     break;
-                case nameof(Character.BaseHP):
-                    result.BaseHP = reader.GetDouble();
+                case nameof(Character.InitialHP):
+                    result.InitialHP = reader.GetDouble();
                     break;
-                case nameof(Character.HP):
-                    result.HP = reader.GetDouble();
+                case nameof(Character.ExHP):
+                    result.ExHP2 = reader.GetDouble();
                     break;
-                case nameof(Character.BaseMP):
-                    result.BaseMP = reader.GetDouble();
+                case nameof(Character.InitialMP):
+                    result.InitialMP = reader.GetDouble();
                     break;
-                case nameof(Character.MP):
-                    result.MP = reader.GetDouble();
+                case nameof(Character.ExMP):
+                    result.ExMP2 = reader.GetDouble();
                     break;
                 case nameof(Character.EP):
                     result.EP = reader.GetDouble();
                     break;
-                case nameof(Character.BaseATK):
-                    result.BaseATK = reader.GetDouble();
+                case nameof(Character.InitialATK):
+                    result.InitialATK = reader.GetDouble();
                     break;
-                case nameof(Character.ATK):
-                    result.ATK = reader.GetDouble();
+                case nameof(Character.ExATK):
+                    result.ExATK2 = reader.GetDouble();
                     break;
-                case nameof(Character.BaseDEF):
-                    result.BaseDEF = reader.GetDouble();
+                case nameof(Character.InitialDEF):
+                    result.InitialDEF = reader.GetDouble();
                     break;
-                case nameof(Character.DEF):
-                    result.DEF = reader.GetDouble();
+                case nameof(Character.ExDEF):
+                    result.ExDEF2 = reader.GetDouble();
                     break;
                 case nameof(Character.MDF):
                     result.MDF = reader.GetDouble();
@@ -86,32 +86,38 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Character.MagicalPenetration):
                     result.MagicalPenetration = reader.GetDouble();
                     break;
-                case nameof(Character.HR):
-                    result.HR = reader.GetDouble();
+                case nameof(Character.InitialHR):
+                    result.InitialHR = reader.GetDouble();
                     break;
-                case nameof(Character.MR):
-                    result.MR = reader.GetDouble();
+                case nameof(Character.ExHR):
+                    result.ExHR = reader.GetDouble();
+                    break;
+                case nameof(Character.InitialMR):
+                    result.InitialMR = reader.GetDouble();
+                    break;
+                case nameof(Character.ExMR):
+                    result.ExMR = reader.GetDouble();
                     break;
                 case nameof(Character.ER):
                     result.ER = reader.GetDouble();
                     break;
-                case nameof(Character.BaseSTR):
-                    result.BaseSTR = reader.GetDouble();
+                case nameof(Character.InitialSTR):
+                    result.InitialSTR = reader.GetDouble();
                     break;
-                case nameof(Character.BaseAGI):
-                    result.BaseAGI = reader.GetDouble();
+                case nameof(Character.InitialAGI):
+                    result.InitialAGI = reader.GetDouble();
                     break;
-                case nameof(Character.BaseINT):
-                    result.BaseINT = reader.GetDouble();
+                case nameof(Character.InitialINT):
+                    result.InitialINT = reader.GetDouble();
                     break;
-                case nameof(Character.STR):
-                    result.STR = reader.GetDouble();
+                case nameof(Character.ExSTR):
+                    result.ExSTR = reader.GetDouble();
                     break;
-                case nameof(Character.AGI):
-                    result.AGI = reader.GetDouble();
+                case nameof(Character.ExAGI):
+                    result.ExAGI = reader.GetDouble();
                     break;
-                case nameof(Character.INT):
-                    result.INT = reader.GetDouble();
+                case nameof(Character.ExINT):
+                    result.ExINT = reader.GetDouble();
                     break;
                 case nameof(Character.STRGrowth):
                     result.STRGrowth = reader.GetDouble();
@@ -122,26 +128,32 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Character.INTGrowth):
                     result.INTGrowth = reader.GetDouble();
                     break;
-                case nameof(Character.SPD):
-                    result.SPD = reader.GetDouble();
+                case nameof(Character.InitialSPD):
+                    result.InitialSPD = reader.GetDouble();
+                    break;
+                case nameof(Character.ExSPD):
+                    result.ExSPD = reader.GetDouble();
+                    break;
+                case nameof(Character.ExActionCoefficient):
+                    result.ExActionCoefficient = reader.GetDouble();
                     break;
                 case nameof(Character.AccelerationCoefficient):
                     result.AccelerationCoefficient = reader.GetDouble();
                     break;
-                case nameof(Character.CDR):
-                    result.CDR = reader.GetDouble();
+                case nameof(Character.ExCDR):
+                    result.ExCDR = reader.GetDouble();
                     break;
                 case nameof(Character.ATR):
                     result.ATR = reader.GetDouble();
                     break;
-                case nameof(Character.CritRate):
-                    result.CritRate = reader.GetDouble();
+                case nameof(Character.ExCritRate):
+                    result.ExCritRate = reader.GetDouble();
                     break;
-                case nameof(Character.CritDMG):
-                    result.CritDMG = reader.GetDouble();
+                case nameof(Character.ExCritDMG):
+                    result.ExCritDMG = reader.GetDouble();
                     break;
-                case nameof(Character.EvadeRate):
-                    result.EvadeRate = reader.GetDouble();
+                case nameof(Character.ExEvadeRate):
+                    result.ExEvadeRate = reader.GetDouble();
                     break;
             }
         }
@@ -156,41 +168,45 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Character.FirstRoleType), (int)value.FirstRoleType);
             writer.WriteNumber(nameof(Character.SecondRoleType), (int)value.SecondRoleType);
             writer.WriteNumber(nameof(Character.ThirdRoleType), (int)value.ThirdRoleType);
-            writer.WriteNumber(nameof(Character.RoleRating), (int)value.RoleRating);
             writer.WriteNumber(nameof(Character.Promotion), value.Promotion);
+            writer.WriteNumber(nameof(Character.PrimaryAttribute), (int)value.PrimaryAttribute);
             writer.WriteNumber(nameof(Character.Level), value.Level);
             writer.WriteNumber(nameof(Character.EXP), value.EXP);
-            writer.WriteNumber(nameof(Character.BaseHP), value.BaseHP);
-            writer.WriteNumber(nameof(Character.HP), value.HP);
-            writer.WriteNumber(nameof(Character.BaseMP), value.BaseMP);
-            writer.WriteNumber(nameof(Character.MP), value.MP);
+            writer.WriteNumber(nameof(Character.InitialHP), value.InitialHP);
+            writer.WriteNumber(nameof(Character.ExHP2), value.ExHP2);
+            writer.WriteNumber(nameof(Character.InitialMP), value.InitialMP);
+            writer.WriteNumber(nameof(Character.ExMP2), value.ExMP2);
             writer.WriteNumber(nameof(Character.EP), value.EP);
-            writer.WriteNumber(nameof(Character.BaseATK), value.BaseATK);
-            writer.WriteNumber(nameof(Character.ATK), value.ATK);
-            writer.WriteNumber(nameof(Character.BaseDEF), value.BaseDEF);
-            writer.WriteNumber(nameof(Character.DEF), value.DEF);
+            writer.WriteNumber(nameof(Character.InitialATK), value.InitialATK);
+            writer.WriteNumber(nameof(Character.ExATK2), value.ExATK2);
+            writer.WriteNumber(nameof(Character.InitialDEF), value.InitialDEF);
+            writer.WriteNumber(nameof(Character.ExDEF2), value.ExDEF2);
             writer.WriteNumber(nameof(Character.MDF), value.MDF);
             writer.WriteNumber(nameof(Character.PhysicalPenetration), value.PhysicalPenetration);
             writer.WriteNumber(nameof(Character.MagicalPenetration), value.MagicalPenetration);
-            writer.WriteNumber(nameof(Character.HR), value.HR);
-            writer.WriteNumber(nameof(Character.MR), value.MR);
+            writer.WriteNumber(nameof(Character.InitialHR), value.InitialHR);
+            writer.WriteNumber(nameof(Character.ExHR), value.ExHR);
+            writer.WriteNumber(nameof(Character.InitialMR), value.InitialMR);
+            writer.WriteNumber(nameof(Character.ExMR), value.ExMR);
             writer.WriteNumber(nameof(Character.ER), value.ER);
-            writer.WriteNumber(nameof(Character.BaseSTR), value.BaseSTR);
-            writer.WriteNumber(nameof(Character.BaseAGI), value.BaseAGI);
-            writer.WriteNumber(nameof(Character.BaseINT), value.BaseINT);
-            writer.WriteNumber(nameof(Character.STR), value.STR);
-            writer.WriteNumber(nameof(Character.AGI), value.AGI);
-            writer.WriteNumber(nameof(Character.INT), value.INT);
+            writer.WriteNumber(nameof(Character.InitialSTR), value.InitialSTR);
+            writer.WriteNumber(nameof(Character.InitialAGI), value.InitialAGI);
+            writer.WriteNumber(nameof(Character.InitialINT), value.InitialINT);
+            writer.WriteNumber(nameof(Character.ExSTR), value.ExSTR);
+            writer.WriteNumber(nameof(Character.ExAGI), value.ExAGI);
+            writer.WriteNumber(nameof(Character.ExINT), value.ExINT);
             writer.WriteNumber(nameof(Character.STRGrowth), value.STRGrowth);
             writer.WriteNumber(nameof(Character.AGIGrowth), value.AGIGrowth);
             writer.WriteNumber(nameof(Character.INTGrowth), value.INTGrowth);
-            writer.WriteNumber(nameof(Character.SPD), value.SPD);
+            writer.WriteNumber(nameof(Character.InitialSPD), value.InitialSPD);
+            writer.WriteNumber(nameof(Character.ExSPD), value.ExSPD);
+            writer.WriteNumber(nameof(Character.ExActionCoefficient), value.ExActionCoefficient);
             writer.WriteNumber(nameof(Character.AccelerationCoefficient), value.AccelerationCoefficient);
-            writer.WriteNumber(nameof(Character.CDR), value.CDR);
+            writer.WriteNumber(nameof(Character.ExCDR), value.ExCDR);
             writer.WriteNumber(nameof(Character.ATR), value.ATR);
-            writer.WriteNumber(nameof(Character.CritRate), value.CritRate);
-            writer.WriteNumber(nameof(Character.CritDMG), value.CritDMG);
-            writer.WriteNumber(nameof(Character.EvadeRate), value.EvadeRate);
+            writer.WriteNumber(nameof(Character.ExCritRate), value.ExCritRate);
+            writer.WriteNumber(nameof(Character.ExCritDMG), value.ExCritDMG);
+            writer.WriteNumber(nameof(Character.ExEvadeRate), value.ExEvadeRate);
             writer.WriteEndObject();
         }
 

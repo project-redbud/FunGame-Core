@@ -251,6 +251,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
 
     public enum MagicType
     {
+        None,
         Starmark,
         PurityNatural,
         PurityContemporary,
@@ -259,6 +260,14 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Element,
         Fleabane,
         Particle
+    }
+
+    public enum PrimaryAttribute
+    {
+        None,
+        STR,
+        AGI,
+        INT
     }
 
     public enum ActionType
@@ -291,6 +300,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
 
     public enum RoleType
     {
+        None,
         Core,
         Vanguard,
         Guardian,
