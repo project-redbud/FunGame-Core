@@ -145,9 +145,14 @@ namespace Milimoe.FunGame.Core.Entity
         public double ExHP2 { get; set; } = 0;
 
         /// <summary>
-        /// 生命值 = 基础生命值 + 额外生命值 + 额外生命值2
+        /// 最大生命值 = 基础生命值 + 额外生命值 + 额外生命值2
         /// </summary>
-        public double HP => BaseHP + ExHP + ExHP2;
+        public double MaxHP => BaseHP + ExHP + ExHP2;
+
+        /// <summary>
+        /// 当前生命值 [ 战斗相关 ]
+        /// </summary>
+        public double HP { get; set; } = 0;
 
         /// <summary>
         /// 初始魔法值 [ 初始设定 ]
@@ -171,12 +176,17 @@ namespace Milimoe.FunGame.Core.Entity
         public double ExMP2 { get; set; } = 0;
 
         /// <summary>
-        /// 魔法值 = 基础魔法值 + 额外魔法值 + 额外魔法值2
+        /// 最大魔法值 = 基础魔法值 + 额外魔法值 + 额外魔法值2
         /// </summary>
-        public double MP => BaseMP + ExMP + ExMP2;
+        public double MaxMP => BaseMP + ExMP + ExMP2;
 
         /// <summary>
-        /// 爆发能量 [ 战斗相关 ]
+        /// 当前魔法值 [ 战斗相关 ]
+        /// </summary>
+        public double MP { get; set; } = 0;
+
+        /// <summary>
+        /// 当前爆发能量 [ 战斗相关 ]
         /// </summary>
         public double EP { get; set; } = 0;
 
@@ -586,6 +596,32 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 回复状态至满
+        /// </summary>
+        /// <param name="EP"></param>
+        public void Recovery(double EP = -1)
+        {
+            HP = MaxHP;
+            MP = MaxMP;
+            if (EP != -1) this.EP = EP;
+        }
+        
+        /// <summary>
+        /// 按时间回复状态
+        /// </summary>
+        /// <param name="time"></param>
+        /// <param name="EP"></param>
+        public void Recovery(int time, double EP = -1)
+        {
+            if (time > 0)
+            {
+                HP = Math.Min(MaxHP, Calculation.Round2Digits(HP + HR * time));
+                MP = Math.Min(MaxMP, Calculation.Round2Digits(MP + MR * time));
+                if (EP != -1) this.EP = EP;
+            }
+        }
+
+        /// <summary>
         /// 比较一个角色（只比较 <see cref="Name"/>）
         /// </summary>
         /// <param name="other"></param>
@@ -674,6 +710,7 @@ namespace Milimoe.FunGame.Core.Entity
                 Skills = new(Skills),
                 Items = new(Items),
             };
+            c.Recovery();
             return c;
         }
     }
