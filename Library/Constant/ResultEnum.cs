@@ -57,4 +57,11 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Fail,
         NotSend
     }
+
+    public enum DamageResult
+    {
+        Normal,
+        Critical,
+        Evaded
+    }
 }

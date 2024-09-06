@@ -285,4 +285,33 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string GuestUserName = "游客用户";
         public const string LocalUserName = "本地用户";
     }
+
+    public class CharacterActionSet
+    {
+        public const string ActionQueue = "ActionQueue";
+        public const string Actor = "Actor";
+        public const string CastSkill = "CastSkill";
+        public const string Enemys = "Enemys";
+        public const string Teammates = "Teammates";
+        public const string GameMap = "GameMap";
+    }
+
+    public class MagicSet
+    {
+        public static string GetMagicName(MagicType type)
+        {
+            return type switch
+            {
+                MagicType.Starmark => "星痕魔法伤害",
+                MagicType.PurityNatural => "现代结晶魔法伤害",
+                MagicType.PurityContemporary => "纯粹结晶魔法伤害",
+                MagicType.Bright => "光魔法伤害",
+                MagicType.Shadow => "影魔法伤害",
+                MagicType.Element => "元素魔法伤害",
+                MagicType.Fleabane => "紫宛魔法伤害",
+                MagicType.Particle => "时空魔法伤害",
+                _ => "魔法伤害",
+            };
+        }
+    }
 }

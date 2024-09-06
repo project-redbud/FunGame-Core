@@ -19,7 +19,7 @@ namespace Milimoe.FunGame.Core.Service
             Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
             Converters = { new DateTimeConverter(), new DataTableConverter(), new DataSetConverter(), new UserConverter(), new RoomConverter(),
-                new CharacterConverter() }
+                new CharacterConverter(), new MagicResistanceConverter(), new MDFConverter() }
         };
 
         /// <summary>
@@ -54,6 +54,18 @@ namespace Milimoe.FunGame.Core.Service
         internal static T? GetObject<T>(string json)
         {
             return JsonSerializer.Deserialize<T>(json, GeneralOptions);
+        }
+
+        /// <summary>
+        /// 反序列化Json对象，使用 <paramref name="reader"/>
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="reader"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        internal static T? GetObject<T>(ref Utf8JsonReader reader, JsonSerializerOptions options)
+        {
+            return JsonSerializer.Deserialize<T>(ref reader, options);
         }
 
         /// <summary>
@@ -203,7 +215,7 @@ namespace Milimoe.FunGame.Core.Service
         internal static List<T> GetObjects<T>(string json)
         {
             json = "[" + json.Replace("}{", "},{") + "]"; // 将Json字符串转换为数组
-            return JsonSerializer.Deserialize<List<T>>(json, GeneralOptions) ?? new List<T>();
+            return JsonSerializer.Deserialize<List<T>>(json, GeneralOptions) ?? [];
         }
 
         /// <summary>
@@ -217,7 +229,7 @@ namespace Milimoe.FunGame.Core.Service
         internal static List<T> GetObjects<T>(string json, JsonSerializerOptions options)
         {
             json = "[" + json.Replace("}{", "},{") + "]"; // 将Json字符串转换为数组
-            return JsonSerializer.Deserialize<List<T>>(json, options) ?? new List<T>();
+            return JsonSerializer.Deserialize<List<T>>(json, options) ?? [];
         }
 
         /// <summary>

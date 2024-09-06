@@ -2,7 +2,7 @@
 {
     public interface IActiveEnable
     {
-        public bool Active { get; set; }
+        public bool IsActive { get; set; }
         public bool Enable { get; set; }
     }
 }

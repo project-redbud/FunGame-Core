@@ -140,11 +140,10 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <summary>
         /// 获取技能实例
         /// </summary>
-        /// <param name="type">Skill类型 主动 或 被动</param>
         /// <returns></returns>
-        public static Skill GetSkill(SkillType type = SkillType.Passive)
+        public static Skill GetSkill()
         {
-            return SkillFactory.Create(type);
+            return SkillFactory.Create();
         }
 
         /// <summary>

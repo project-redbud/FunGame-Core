@@ -191,6 +191,15 @@ namespace Milimoe.FunGame.Core.Api.Utility
         public static T? JsonDeserialize<T>(string json) => Service.JsonManager.GetObject<T>(json);
 
         /// <summary>
+        /// 反序列化Json对象 使用 <paramref name="reader"/> 可指定反序列化选项
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="reader"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static T? JsonDeserialize<T>(ref Utf8JsonReader reader, JsonSerializerOptions options) => Service.JsonManager.GetObject<T>(ref reader, options);
+
+        /// <summary>
         /// 反序列化Json对象 可指定反序列化选项
         /// </summary>
         /// <typeparam name="T"></typeparam>
