@@ -15,7 +15,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 普通攻击说明
         /// </summary>
-        public string Description => $"对目标敌人造成 100%(+5%/Lv) [ {Damage} ] 点{(IsMagic ? MagicSet.GetMagicName(MagicType) : "物理")}伤害。";
+        public string Description => $"对目标敌人造成 100%(+5%/Lv) [ {Damage} ] 点{(IsMagic ? CharacterSet.GetMagicName(MagicType) : "物理")}伤害。";
 
         /// <summary>
         /// 所属的角色
@@ -69,10 +69,10 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 queue.WriteLine("[ " + Character + $" ] 对 [ {enemy} ] 发起了普通攻击！");
                 double expected = Damage;
-                DamageResult result = IsMagic ? queue.CalculateMagicalDamage(attacker, enemy, MagicType, expected, out double damage) : queue.CalculatePhysicalDamage(attacker, enemy, expected, out damage);
+                DamageResult result = IsMagic ? queue.CalculateMagicalDamage(attacker, enemy, true, MagicType, expected, out double damage) : queue.CalculatePhysicalDamage(attacker, enemy, true, expected, out damage);
                 if (result != DamageResult.Evaded)
                 {
-                    queue.DamageToEnemy(attacker, enemy, damage, IsMagic, MagicType);
+                    queue.DamageToEnemy(attacker, enemy, damage, true, IsMagic, MagicType, result == DamageResult.Critical);
                 }
             }
         }

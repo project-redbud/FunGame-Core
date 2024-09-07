@@ -37,10 +37,6 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 int max = IsSuperSkill ? 6 : (IsMagic ? 8 : 6);
                 _Level = Math.Min(Math.Max(0, value), max);
-                foreach (Effect e in Effects.Values)
-                {
-                    e.Level = _Level;
-                }
             }
         }
 
@@ -142,12 +138,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 触发技能效果
         /// </summary>
-        /// <param name="args"></param>
-        public void Trigger(Dictionary<string, object> args)
+        public void Trigger(ActionQueue queue, Character actor, Skill skill, List<Character> enemys, List<Character> teammates)
         {
             foreach (Effect e in Effects.Values)
             {
-                e.Trigger(args.Union(OtherArgs).ToDictionary());
+                e.OnSkillCasted(queue, actor, enemys, teammates, OtherArgs);
             }
         }
 

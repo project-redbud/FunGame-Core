@@ -379,6 +379,72 @@ namespace Milimoe.FunGame.Core.Entity
         public double ER { get; set; } = 0;
 
         /// <summary>
+        /// 核心属性的值 [ 核心属性相关 ]
+        /// </summary>
+        public double PrimaryAttributeValue
+        {
+            get
+            {
+                if (PrimaryAttribute == PrimaryAttribute.AGI)
+                {
+                    return AGI;
+                }
+                else if (PrimaryAttribute == PrimaryAttribute.INT)
+                {
+                    return INT;
+                }
+                else
+                {
+                    return STR;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 基础核心属性的值 [ 核心属性相关 ]
+        /// </summary>
+        public double BasePrimaryAttributeValue
+        {
+            get
+            {
+                if (PrimaryAttribute == PrimaryAttribute.AGI)
+                {
+                    return BaseAGI;
+                }
+                else if (PrimaryAttribute == PrimaryAttribute.INT)
+                {
+                    return BaseINT;
+                }
+                else
+                {
+                    return BaseSTR;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 额外核心属性的值 [ 核心属性相关 ]
+        /// </summary>
+        public double ExPrimaryAttributeValue
+        {
+            get
+            {
+                if (PrimaryAttribute == PrimaryAttribute.AGI)
+                {
+                    return ExAGI;
+                }
+                else if (PrimaryAttribute == PrimaryAttribute.INT)
+                {
+                    return ExINT;
+                }
+                else
+                {
+                    return ExSTR;
+                }
+            }
+        }
+
+        /// <summary>
         /// 初始力量 [ 初始设定 ]
         /// </summary>
         [InitRequired]
@@ -524,7 +590,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                double value = Calculation.Round4Digits(0.05 + INT * 0.0025 + ExCDR);
+                double value = Calculation.Round4Digits(0.05 + AGI * 0.0025 + ExCritRate);
                 return Calculation.PercentageCheck(value);
             }
         }
@@ -576,6 +642,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 角色的技能列表
         /// </summary>
         public Dictionary<string, Skill> Skills { get; } = [];
+        
+        /// <summary>
+        /// 角色的持续性特效列表
+        /// </summary>
+        public Dictionary<string, Effect> Effects { get; } = [];
 
         /// <summary>
         /// 角色携带的物品
@@ -735,12 +806,13 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"魔法值：{MP} / {MaxMP}" + (ExMP + ExMP2 > 0 ? $" [{BaseMP} + {ExMP + ExMP2}]" : ""));
             builder.AppendLine($"能量值：{EP} / 200");
             builder.AppendLine($"攻击力：{ATK}" + (ExATK + ExATK2 > 0 ? $" [{BaseATK} + {ExATK + ExATK2}]" : ""));
-            builder.AppendLine($"物理护甲：{DEF}" + (ExDEF + ExDEF2 > 0 ? $" [{BaseDEF} + {ExDEF + ExDEF2}]" : ""));
+            builder.AppendLine($"物理护甲：{DEF}" + (ExDEF + ExDEF2 > 0 ? $" [{BaseDEF} + {ExDEF + ExDEF2}]" : "") + $" ({PDR * 100:f2}%)");
             double mdf = Calculation.Round4Digits((MDF.None.Value + MDF.Starmark.Value + MDF.PurityNatural.Value + MDF.PurityContemporary.Value +
                 MDF.Bright.Value + MDF.Shadow.Value + MDF.Element.Value + MDF.Fleabane.Value + MDF.Particle.Value) / 9);
             builder.AppendLine($"魔法抗性：{mdf * 100:f2}%（平均）");
             double exSPD = Calculation.Round2Digits(AGI * 0.65 + ExSPD);
             builder.AppendLine($"行动速度：{SPD}" + (exSPD > 0 ? $" [{InitialSPD} + {exSPD}]" : "") + $" ({ActionCoefficient * 100:f2}%)");
+            builder.AppendLine($"核心属性：{CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)}");
             builder.AppendLine($"力量：{STR}" + (ExSTR > 0 ? $" [{BaseSTR} + {ExSTR}]" : ""));
             builder.AppendLine($"敏捷：{AGI}" + (ExAGI > 0 ? $" [{BaseAGI} + {ExAGI}]" : ""));
             builder.AppendLine($"智力：{INT}" + (ExINT > 0 ? $" [{BaseINT} + {ExINT}]" : ""));

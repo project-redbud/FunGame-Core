@@ -1,6 +1,10 @@
-﻿using System.Text;
+﻿using System;
+using System.Numerics;
+using System.Reflection.PortableExecutable;
+using System.Text;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Milimoe.FunGame.Core.Api.Utility
 {
@@ -15,8 +19,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
         public Action<string> WriteLine { get; }
 
         protected readonly List<Character> _queue = [];
+        protected readonly List<Character> _eliminated = [];
         protected readonly Dictionary<Character, double> _hardnessTimes = [];
         protected readonly Dictionary<Character, Skill> _castingSkills = [];
+        protected readonly Dictionary<Character, double> _earnedMoney = [];
+        protected readonly Dictionary<Character, int> _continuousKilling = [];
         protected bool _isGameEnd = false;
 
         /// <summary>
@@ -97,7 +104,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                         if (selectedCharacter != null)
                         {
                             AddCharacter(selectedCharacter, characters.Count + nowTime);
-                            WriteLine("decided: " + selectedCharacter.Name + "\r\n\r\n");
+                            WriteLine("decided: " + selectedCharacter.Name + "\r\n");
                             sortedList.Remove(selectedCharacter);
                         }
                     }
@@ -157,6 +164,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 text.AppendLine("角色 [ " + c + " ]");
                 text.AppendLine($"生命值：{c.HP} / {c.MaxHP}" + (c.ExHP + c.ExHP2 > 0 ? $" [{c.BaseHP} + {c.ExHP + c.ExHP2}]" : ""));
                 text.AppendLine($"魔法值：{c.MP} / {c.MaxMP}" + (c.ExMP + c.ExMP2 > 0 ? $" [{c.BaseMP} + {c.ExMP + c.ExMP2}]" : ""));
+                text.AppendLine($"能量值：{c.EP} / 200");
                 if (c.CharacterState != CharacterState.Actionable)
                 {
                     string state = c.CharacterState switch
@@ -177,22 +185,30 @@ namespace Milimoe.FunGame.Core.Api.Utility
         }
 
         /// <summary>
-        /// 回合开始前触发，在 <see cref="NextCharacter"/> 前触发
+        /// 回合开始前触发
         /// </summary>
         /// <returns></returns>
-        public virtual void BeforeTurn()
+        public virtual bool BeforeTurn(Character character)
         {
-
+            return true;
         }
 
         /// <summary>
         /// 角色 <paramref name="character"/> 的回合进行中
         /// </summary>
         /// <param name="character"></param>
-        /// <returns></returns>
+        /// <returns>是否结束游戏</returns>
         public bool ProcessTurn(Character character)
         {
-            BeforeTurn();
+            if (!BeforeTurn(character))
+            {
+                return false;
+            }
+
+            foreach (Effect effect in character.Effects.Values)
+            {
+                effect.OnTurnStart(character);
+            }
 
             // 假设基础硬直时间
             double baseTime = new Random().Next(10, 30);
@@ -204,7 +220,8 @@ namespace Milimoe.FunGame.Core.Api.Utility
             List<Character> teammates = [];
 
             // 技能列表
-            List<Skill> skills = [.. character.Skills.Values.Where(s => s.Enable && s.CurrentCD == 0 && ((s.IsMagic && s.MPCost <= character.MP) || (!s.IsMagic && s.EPCost <= character.EP)))];
+            List<Skill> skills = [.. character.Skills.Values.Where(s => s.Level > 0 && s.Enable && s.CurrentCD == 0 &&
+                ((s.IsSuperSkill && s.EPCost <= character.EP) || (!s.IsSuperSkill && s.IsMagic && s.MPCost <= character.MP) || (!s.IsSuperSkill && !s.IsMagic && s.EPCost <= character.EP)))];
 
             // 作出了什么行动
             CharacterActionType type = CharacterActionType.None;
@@ -314,6 +331,13 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     character.NormalAttack.Attack(this, character, enemy);
                     // 普通攻击的默认硬直时间为7
                     baseTime = 7;
+                    foreach (Effect effect in character.Effects.Values)
+                    {
+                        if (effect.AlterHardnessTimeAfterNormalAttack(character, baseTime, out double newTime))
+                        {
+                            baseTime = newTime;
+                        }
+                    }
                 }
             }
             else if (type == CharacterActionType.PreCastSkill)
@@ -322,47 +346,49 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 // 注意：FastAuto 模式下，此吟唱逻辑删减了选取目标的逻辑，将选取逻辑放在了实际释放的环节
                 // 在正常交互式模式下，吟唱前需要先选取目标
                 Skill skill = skills[new Random().Next(skills.Count)];
-                character.CharacterState = CharacterState.Casting;
-                _castingSkills.Add(character, skill);
-                baseTime = skill.CastTime;
+                if (skill.IsMagic && !skill.IsSuperSkill)
+                {
+                    character.CharacterState = CharacterState.Casting;
+                    _castingSkills.Add(character, skill);
+                    baseTime = skill.CastTime;
+                    foreach (Effect effect in character.Effects.Values)
+                    {
+                        effect.OnSkillCasting(character);
+                    }
+                }
+                else
+                {
+                    if (CheckCanCast(character, skill, out double cost))
+                    {
+                        character.EP = Calculation.Round2Digits(character.EP - cost);
+                        baseTime = skill.HardnessTime;
+                        skill.CurrentCD = Calculation.Round2Digits(Math.Max(1, skill.CD * (1 - character.CDR)));
+                        skill.Enable = false;
+
+                        WriteLine("[ " + character + $" ] 消耗了 {cost:f2} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} {skill.Name}！");
+                        skill.Trigger(this, character, skill, enemys, teammates);
+                        foreach (Effect effect in character.Effects.Values)
+                        {
+                            if (effect.AlterHardnessTimeAfterCastSkill(character, baseTime, out double newTime))
+                            {
+                                baseTime = newTime;
+                            }
+                        }
+                    }
+                }
             }
             else if (type == CharacterActionType.CastSkill)
             {
                 // 使用技能逻辑，结束吟唱状态
                 character.CharacterState = CharacterState.Actionable;
+                Skill skill = _castingSkills[character];
                 _castingSkills.Remove(character);
 
                 // 敌人数量需大于0
                 bool isCast = false;
                 if (enemys.Count > 0)
                 {
-                    double cost = 0;
-
-                    Skill skill = skills[new Random().Next(skills.Count)];
-                    if (skill.IsMagic)
-                    {
-                        cost = skill.MPCost;
-                        if (cost > 0 && cost <= character.MP)
-                        {
-                            isCast = true;
-                        }
-                        else
-                        {
-                            WriteLine("[ " + character + $" ] 魔法不足！");
-                        }
-                    }
-                    else
-                    {
-                        cost = skill.EPCost;
-                        if (cost > 0 && cost <= character.EP)
-                        {
-                            isCast = true;
-                        }
-                        else
-                        {
-                            WriteLine("[ " + character + $" ] 能量不足！");
-                        }
-                    }
+                    isCast = CheckCanCast(character, skill, out double cost);
 
                     if (isCast)
                     {
@@ -372,14 +398,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                         skill.Enable = false;
 
                         WriteLine("[ " + character + $" ] 消耗了 {cost:f2} 点魔法值，释放了技能 {skill.Name}！");
-
-                        Dictionary<string, object> args = [];
-                        args.TryAdd(CharacterActionSet.ActionQueue, this);
-                        args.TryAdd(CharacterActionSet.Actor, character);
-                        args.TryAdd(CharacterActionSet.CastSkill, skill);
-                        args.TryAdd(CharacterActionSet.Enemys, enemys);
-                        args.TryAdd(CharacterActionSet.Teammates, teammates);
-                        skill.Trigger(args);
+                        skill.Trigger(this, character, skill, enemys, teammates);
                     }
                 }
 
@@ -388,6 +407,14 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     WriteLine("[ " + character + $" ] 放弃释放技能！");
                     // 放弃释放技能会获得3的硬直时间
                     baseTime = 3;
+                }
+
+                foreach (Effect effect in character.Effects.Values)
+                {
+                    if (effect.AlterHardnessTimeAfterCastSkill(character, baseTime, out double newTime))
+                    {
+                        baseTime = newTime;
+                    }
                 }
             }
             else if (type == CharacterActionType.UseItem)
@@ -417,6 +444,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 WriteLine("[ " + character + " ] 进行吟唱，持续时间: " + newHardnessTime + "\r\n");
             }
             AddCharacter(character, newHardnessTime);
+
+            foreach (Effect effect in character.Effects.Values)
+            {
+                effect.OnTurnEnd(character);
+            }
 
             AfterTurn(character);
 
@@ -473,7 +505,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     if (reallyReMP > 0)
                     {
                         character.MP = Calculation.Round2Digits(character.MP + reallyReMP);
-                        WriteLine("角色 " + character.Name + "回蓝：" + recoveryMP);
+                        WriteLine("角色 " + character.Name + " 回蓝：" + recoveryMP);
                     }
                 }
 
@@ -485,6 +517,25 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     {
                         skill.CurrentCD = 0;
                         skill.Enable = true;
+                    }
+                }
+
+                // 移除到时间的特效
+                foreach (string name in character.Effects.Keys.ToList())
+                {
+                    if (!character.Effects[name].Durative)
+                    {
+                        character.Effects.Remove(name);
+                        continue;
+                    }
+                    Effect effect = character.Effects[name];
+                    effect.OnTimeElapsed(character, timeToReduce);
+                    effect.RemainDuration = Calculation.Round2Digits(effect.RemainDuration - timeToReduce);
+                    if (effect.RemainDuration <= 0)
+                    {
+                        effect.RemainDuration = 0;
+                        character.Effects.Remove(name);
+                        effect.OnEffectLost(character);
                     }
                 }
             }
@@ -499,28 +550,61 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="actor"></param>
         /// <param name="enemy"></param>
         /// <param name="damage"></param>
+        /// <param name="isNormalAttack"></param>
         /// <param name="isMagicDamage"></param>
         /// <param name="magicType"></param>
-        /// <returns>输出日志</returns>
-        public void DamageToEnemy(Character actor, Character enemy, double damage, bool isMagicDamage = false, MagicType magicType = MagicType.None)
+        /// <param name="isCritical"></param>
+        public void DamageToEnemy(Character actor, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage = false, MagicType magicType = MagicType.None, bool isCritical = false)
         {
+            foreach (Effect effect in actor.Effects.Values)
+            {
+                if (effect.AlterActualDamageAfterCalculation(actor, enemy, damage, isNormalAttack, isMagicDamage, magicType, isCritical, out double newDamage))
+                {
+                    damage = newDamage;
+                }
+            }
             if (damage < 0) damage = 0;
             if (isMagicDamage)
             {
-                string dmgType = MagicSet.GetMagicName(magicType);
+                string dmgType = CharacterSet.GetMagicName(magicType);
                 WriteLine("[ " + enemy + $" ] 受到了 {damage} 点{dmgType}！");
             }
             else WriteLine("[ " + enemy + $" ] 受到了 {damage} 点物理伤害！");
             enemy.HP = Calculation.Round2Digits(enemy.HP - damage);
+            GetEP(actor, damage, 0.2, 40);
+            GetEP(enemy, damage, 0.1, 20);
+            foreach (Effect effect in actor.Effects.Values)
+            {
+                effect.AfterDamageCalculation(actor, enemy, damage, isMagicDamage, magicType);
+            }
             if (enemy.HP < 0)
             {
-                WriteLine("[ " + actor + " ] 杀死了 [ " + enemy + $" ]，获得 {new Random().Next(200, 400)} 金钱！");
-                if (_queue.Remove(enemy) && (!_queue.Where(c => c != actor).Any()))
+                DeathCalculation(actor, enemy);
+                // 给所有角色的特效广播角色死亡结算
+                foreach (Effect effect in _queue.SelectMany(c => c.Effects.Values))
                 {
-                    WriteLine("[ " + actor + " ] 是胜利者。");
-                    _isGameEnd = true;
+                    effect.AfterDeathCalculation(enemy, actor, _continuousKilling, _earnedMoney);
+                }
+                if (_queue.Remove(enemy) && (!_queue.Where(c => c != actor && c.CharacterState != CharacterState.Neutral).Any()))
+                {
+                    // 没有其他的角色了，游戏结束
+                    EndGameInfo(actor);
                 }
             }
+        }
+
+        /// <summary>
+        /// 获取EP
+        /// </summary>
+        /// <param name="c">角色</param>
+        /// <param name="a">参数1</param>
+        /// <param name="b">参数2</param>
+        /// <param name="max">最大获取量</param>
+        public static void GetEP(Character c, double a, double b, double max)
+        {
+            c.EP = Calculation.Round2Digits(c.EP + Math.Min((a + new Random().Next(30)) * b, max));
+            if (c.EP > 200) c.EP = 200;
+            else if (c.EP < 0) c.EP = 0;
         }
 
         /// <summary>
@@ -528,17 +612,36 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="actor"></param>
         /// <param name="target"></param>
+        /// <param name="isNormalAttack"></param>
         /// <param name="expectedDamage"></param>
         /// <param name="finalDamage"></param>
         /// <returns></returns>
-        public DamageResult CalculatePhysicalDamage(Character actor, Character target, double expectedDamage, out double finalDamage)
+        public DamageResult CalculatePhysicalDamage(Character actor, Character target, bool isNormalAttack, double expectedDamage, out double finalDamage)
         {
+            foreach (Effect effect in actor.Effects.Values)
+            {
+                if (effect.AlterExpectedDamageBeforeCalculation(actor, target, expectedDamage, isNormalAttack, false, MagicType.None, out double newDamage))
+                {
+                    expectedDamage = newDamage;
+                }
+            }
+
+            double dice = new Random().NextDouble();
             // 闪避判定
-            if (new Random().NextDouble() < target.EvadeRate)
+            if (dice < target.EvadeRate)
             {
                 finalDamage = 0;
-                WriteLine("此物理攻击被完美闪避了！");
-                return DamageResult.Evaded;
+                List<Character> characters = [actor, target];
+                bool isAlterEvaded = false;
+                foreach (Effect effect in characters.SelectMany(c => c.Effects.Values))
+                {
+                    isAlterEvaded = effect.OnEvadedTriggered(actor, target, dice);
+                }
+                if (!isAlterEvaded)
+                {
+                    WriteLine("此物理攻击被完美闪避了！");
+                    return DamageResult.Evaded;
+                }
             }
 
             // 物理穿透后的护甲
@@ -551,10 +654,15 @@ namespace Milimoe.FunGame.Core.Api.Utility
             finalDamage = Calculation.Round2Digits(expectedDamage * (1 - physicalDamageReduction));
 
             // 暴击判定
-            if (new Random().NextDouble() < actor.CritRate)
+            dice = new Random().NextDouble();
+            if (dice < actor.CritRate)
             {
                 finalDamage = Calculation.Round2Digits(finalDamage * actor.CritDMG); // 暴击伤害倍率加成
                 WriteLine("暴击生效！！");
+                foreach (Effect effect in actor.Effects.Values)
+                {
+                    effect.OnCriticalDamageTriggered(actor, dice);
+                }
                 return DamageResult.Critical;
             }
 
@@ -567,12 +675,21 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="actor"></param>
         /// <param name="target"></param>
+        /// <param name="isNormalAttack"></param>
         /// <param name="magicType"></param>
         /// <param name="expectedDamage"></param>
         /// <param name="finalDamage"></param>
         /// <returns></returns>
-        public DamageResult CalculateMagicalDamage(Character actor, Character target, MagicType magicType, double expectedDamage, out double finalDamage)
+        public DamageResult CalculateMagicalDamage(Character actor, Character target, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage)
         {
+            foreach (Effect effect in actor.Effects.Values)
+            {
+                if (effect.AlterExpectedDamageBeforeCalculation(actor, target, expectedDamage, isNormalAttack, true, magicType, out double newDamage))
+                {
+                    expectedDamage = newDamage;
+                }
+            }
+
             MagicResistance magicResistance = magicType switch
             {
                 MagicType.Starmark => target.MDF.Starmark,
@@ -593,15 +710,141 @@ namespace Milimoe.FunGame.Core.Api.Utility
             finalDamage = Calculation.Round2Digits(expectedDamage * (1 - MDF));
 
             // 暴击判定
-            if (new Random().NextDouble() < actor.CritRate)
+            double dice = new Random().NextDouble();
+            if (dice < actor.CritRate)
             {
                 finalDamage = Calculation.Round2Digits(finalDamage * actor.CritDMG); // 暴击伤害倍率加成
                 WriteLine("暴击生效！！");
+                foreach (Effect effect in actor.Effects.Values)
+                {
+                    effect.OnCriticalDamageTriggered(actor, dice);
+                }
                 return DamageResult.Critical;
             }
 
             // 是否有效伤害
             return DamageResult.Normal;
+        }
+
+        /// <summary>
+        /// 死亡结算
+        /// </summary>
+        /// <param name="killer"></param>
+        /// <param name="death"></param>
+        public void DeathCalculation(Character killer, Character death)
+        {
+            if (!_continuousKilling.TryAdd(killer, 1)) _continuousKilling[killer] += 1;
+            double money = new Random().Next(200, 400);
+            if (_continuousKilling.TryGetValue(killer, out int coefficient))
+            {
+                money = Calculation.Round(money + ((coefficient + 1) * new Random().Next(100, 200)), 0);
+            }
+
+            if (_continuousKilling.TryGetValue(death, out coefficient) && coefficient > 1)
+            {
+                money = Calculation.Round(money + ((coefficient + 1) * new Random().Next(100, 200)), 0);
+                string termination = CharacterSet.GetContinuousKilling(coefficient);
+                WriteLine("[ " + killer + " ] 终结了 [ " + death + " ]" + (termination != "" ? " 的" + termination : "") + $"，获得 {money} 金钱！");
+            }
+            else
+            {
+                WriteLine("[ " + killer + " ] 杀死了 [ " + death + $" ]，获得 {money} 金钱！");
+            }
+
+            int kills = _continuousKilling[killer];
+            string continuousKilling = CharacterSet.GetContinuousKilling(kills);
+            if (kills == 2 || kills == 3)
+            {
+                WriteLine("[ " + killer + " ] 完成了" + continuousKilling + "！");
+            }
+            else if (kills == 4)
+            {
+                WriteLine("[ " + killer + " ] 正在" + continuousKilling + "！");
+            }
+            else if (kills > 4 && kills < 10)
+            {
+                WriteLine("[ " + killer + " ] 已经" + continuousKilling + "！");
+            }
+            else if (kills >= 10)
+            {
+                WriteLine("[ " + killer + " ] 已经" + continuousKilling + "！拜托谁去杀了他吧！！！");
+            }
+
+            if (!_earnedMoney.TryAdd(killer, money)) _earnedMoney[killer] += money;
+
+            _eliminated.Add(death);
+        }
+
+        /// <summary>
+        /// 游戏结束信息
+        /// </summary>
+        public void EndGameInfo(Character winner)
+        {
+            WriteLine("[ " + winner + " ] 是胜利者。");
+            _queue.Remove(winner);
+            _eliminated.Add(winner);
+            int top = 1;
+            WriteLine("");
+            WriteLine("=== 排名 ===");
+            for (int i = _eliminated.Count - 1; i >= 0; i--)
+            {
+                string topCharacter = _eliminated[i].ToString() + (_earnedMoney.TryGetValue(_eliminated[i], out double earned) ? $" [ 已赚取 {earned} 金钱 ]" : "");
+                if (top == 1)
+                {
+                    WriteLine("冠军：" + topCharacter);
+                }
+                else if (top == 2)
+                {
+                    WriteLine("亚军：" + topCharacter);
+                }
+                else if (top == 3)
+                {
+                    WriteLine("季军：" + topCharacter);
+                }
+                else
+                {
+                    WriteLine($"第 {top} 名：" + topCharacter);
+                }
+                top++;
+            }
+            WriteLine("");
+            _isGameEnd = true;
+        }
+
+        /// <summary>
+        /// 检查是否可以释放技能
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="skill"></param>
+        /// <param name="cost"></param>
+        /// <returns></returns>
+        public bool CheckCanCast(Character caster, Skill skill, out double cost)
+        {
+            if (skill.IsMagic && !skill.IsSuperSkill)
+            {
+                cost = skill.MPCost;
+                if (cost > 0 && cost <= caster.MP)
+                {
+                    return true;
+                }
+                else
+                {
+                    WriteLine("[ " + caster + $" ] 魔法不足！");
+                }
+            }
+            else
+            {
+                cost = skill.EPCost;
+                if (cost > 0 && cost <= caster.EP)
+                {
+                    return true;
+                }
+                else
+                {
+                    WriteLine("[ " + caster + $" ] 能量不足！");
+                }
+            }
+            return false;
         }
     }
 }

@@ -296,8 +296,18 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string GameMap = "GameMap";
     }
 
-    public class MagicSet
+    public class CharacterSet
     {
+        public static string GetPrimaryAttributeName(PrimaryAttribute type)
+        {
+            return type switch
+            {
+                PrimaryAttribute.AGI => "敏捷",
+                PrimaryAttribute.INT => "智力",
+                _ => "力量"
+            };
+        }
+
         public static string GetMagicName(MagicType type)
         {
             return type switch
@@ -311,6 +321,23 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 MagicType.Fleabane => "紫宛魔法伤害",
                 MagicType.Particle => "时空魔法伤害",
                 _ => "魔法伤害",
+            };
+        }
+
+        public static string GetContinuousKilling(int kills)
+        {
+            return kills switch
+            {
+                2 => "双杀",
+                3 => "三杀",
+                4 => "大杀特杀",
+                5 => "杀人如麻",
+                6 => "主宰比赛",
+                7 => "无人能挡",
+                8 => "变态杀戮",
+                9 => "如同神一般",
+                10 => "超越神的杀戮",
+                _ => ""
             };
         }
     }
