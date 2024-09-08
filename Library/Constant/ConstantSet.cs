@@ -285,4 +285,74 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string GuestUserName = "游客用户";
         public const string LocalUserName = "本地用户";
     }
+
+    public class CharacterActionSet
+    {
+        public const string ActionQueue = "ActionQueue";
+        public const string Actor = "Actor";
+        public const string CastSkill = "CastSkill";
+        public const string Enemys = "Enemys";
+        public const string Teammates = "Teammates";
+        public const string GameMap = "GameMap";
+    }
+
+    public class CharacterSet
+    {
+        public static string GetPrimaryAttributeName(PrimaryAttribute type)
+        {
+            return type switch
+            {
+                PrimaryAttribute.AGI => "敏捷",
+                PrimaryAttribute.INT => "智力",
+                _ => "力量"
+            };
+        }
+
+        public static string GetMagicName(MagicType type)
+        {
+            return type switch
+            {
+                MagicType.Starmark => "星痕魔法伤害",
+                MagicType.PurityNatural => "现代结晶魔法伤害",
+                MagicType.PurityContemporary => "纯粹结晶魔法伤害",
+                MagicType.Bright => "光魔法伤害",
+                MagicType.Shadow => "影魔法伤害",
+                MagicType.Element => "元素魔法伤害",
+                MagicType.Fleabane => "紫宛魔法伤害",
+                MagicType.Particle => "时空魔法伤害",
+                _ => "魔法伤害",
+            };
+        }
+
+        public static string GetContinuousKilling(int kills)
+        {
+            return kills switch
+            {
+                2 => "双杀",
+                3 => "三杀",
+                4 => "大杀特杀",
+                5 => "杀人如麻",
+                6 => "主宰比赛",
+                7 => "无人能挡",
+                8 => "变态杀戮",
+                9 => "如同神一般",
+                10 => "超越神的杀戮",
+                _ => ""
+            };
+        }
+
+        public static string GetCharacterState(CharacterState state)
+        {
+            return state switch
+            {
+                CharacterState.Casting => "角色正在吟唱魔法",
+                CharacterState.PreCastSuperSkill => "角色预释放了爆发技",
+                CharacterState.ActionRestricted => "角色现在行动受限",
+                CharacterState.BattleRestricted => "角色现在战斗不能",
+                CharacterState.SkillRestricted => "角色现在技能受限",
+                CharacterState.Neutral => "角色现在是无敌的",
+                _ => "角色现在完全行动不能"
+            };
+        }
+    }
 }

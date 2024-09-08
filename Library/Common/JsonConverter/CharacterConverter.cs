@@ -78,13 +78,16 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.ExDEF2 = reader.GetDouble();
                     break;
                 case nameof(Character.MDF):
-                    result.MDF = reader.GetDouble();
+                    result.MDF = NetworkUtility.JsonDeserialize<MDF>(ref reader, options) ?? new();
                     break;
                 case nameof(Character.PhysicalPenetration):
                     result.PhysicalPenetration = reader.GetDouble();
                     break;
                 case nameof(Character.MagicalPenetration):
                     result.MagicalPenetration = reader.GetDouble();
+                    break;
+                case nameof(Character.CharacterState):
+                    result.CharacterState = (CharacterState)reader.GetInt32();
                     break;
                 case nameof(Character.InitialHR):
                     result.InitialHR = reader.GetDouble();
@@ -172,6 +175,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Character.PrimaryAttribute), (int)value.PrimaryAttribute);
             writer.WriteNumber(nameof(Character.Level), value.Level);
             writer.WriteNumber(nameof(Character.EXP), value.EXP);
+            writer.WriteNumber(nameof(Character.CharacterState), (int)value.CharacterState);
             writer.WriteNumber(nameof(Character.InitialHP), value.InitialHP);
             writer.WriteNumber(nameof(Character.ExHP2), value.ExHP2);
             writer.WriteNumber(nameof(Character.InitialMP), value.InitialMP);
@@ -181,7 +185,8 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Character.ExATK2), value.ExATK2);
             writer.WriteNumber(nameof(Character.InitialDEF), value.InitialDEF);
             writer.WriteNumber(nameof(Character.ExDEF2), value.ExDEF2);
-            writer.WriteNumber(nameof(Character.MDF), value.MDF);
+            writer.WritePropertyName(nameof(Character.MDF));
+            JsonSerializer.Serialize(writer, value.MDF, options);
             writer.WriteNumber(nameof(Character.PhysicalPenetration), value.PhysicalPenetration);
             writer.WriteNumber(nameof(Character.MagicalPenetration), value.MagicalPenetration);
             writer.WriteNumber(nameof(Character.InitialHR), value.InitialHR);

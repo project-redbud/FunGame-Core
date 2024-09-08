@@ -1,9 +1,16 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
+﻿using System.Collections.Generic;
+using System.Text;
+using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Entity
 {
+    /// <summary>
+    /// 角色需要使用 Factory.Get 的方式来构造，并赋值 <see cref="InitRequired"/> 标记的属性<para />
+    /// 在使用时仅需要调用 <see cref="Copy"/> 方法即可获得相同对象<para />
+    /// 不建议继承
+    /// </summary>
     public class Character : BaseEntity, ICopyable<Character>
     {
         /// <summary>
@@ -27,9 +34,9 @@ namespace Milimoe.FunGame.Core.Entity
         public User User { get; set; }
 
         /// <summary>
-        /// 角色统计数据
+        /// 角色的详细资料
         /// </summary>
-        public CharacterStatistics Statistics { get; set; }
+        public CharacterProfile Profile { get; set; }
 
         /// <summary>
         /// 魔法属性
@@ -114,7 +121,8 @@ namespace Milimoe.FunGame.Core.Entity
             }
             set
             {
-                if (_Level > 0) _Level = value;
+                _Level = Math.Min(Math.Max(1, value), 60);
+                Recovery();
             }
         }
 
@@ -122,6 +130,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 经验值
         /// </summary>
         public double EXP { get; set; } = 0;
+
+        /// <summary>
+        /// 角色目前所处的状态 [ 战斗相关 ]
+        /// </summary>
+        public CharacterState CharacterState { get; set; } = CharacterState.Actionable;
 
         /// <summary>
         /// 初始生命值 [ 初始设定 ]
@@ -147,7 +160,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 最大生命值 = 基础生命值 + 额外生命值 + 额外生命值2
         /// </summary>
-        public double MaxHP => BaseHP + ExHP + ExHP2;
+        public double MaxHP => Calculation.Round2Digits(BaseHP + ExHP + ExHP2);
 
         /// <summary>
         /// 当前生命值 [ 战斗相关 ]
@@ -178,7 +191,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 最大魔法值 = 基础魔法值 + 额外魔法值 + 额外魔法值2
         /// </summary>
-        public double MaxMP => BaseMP + ExMP + ExMP2;
+        public double MaxMP => Calculation.Round2Digits(BaseMP + ExMP + ExMP2);
 
         /// <summary>
         /// 当前魔法值 [ 战斗相关 ]
@@ -188,7 +201,19 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 当前爆发能量 [ 战斗相关 ]
         /// </summary>
-        public double EP { get; set; } = 0;
+        public double EP
+        {
+            get
+            {
+                return _EP < 0 ? 0 : (_EP > 200 ? 200 : _EP);
+            }
+            set
+            {
+                _EP = Calculation.Round2Digits(value);
+                if (_EP > 200) _EP = 200;
+                else if (_EP < 0) _EP = 0;
+            }
+        }
 
         /// <summary>
         /// 初始攻击力 [ 初始设定 ]
@@ -206,15 +231,15 @@ namespace Milimoe.FunGame.Core.Entity
                 double atk = Calculation.Round2Digits(InitialATK + (Level - 1) * (0.95 + 0.045 * InitialATK));
                 if (PrimaryAttribute == PrimaryAttribute.AGI)
                 {
-                    return atk + BaseAGI;
+                    return Calculation.Round2Digits(atk + BaseAGI);
                 }
                 else if (PrimaryAttribute == PrimaryAttribute.INT)
                 {
-                    return atk + BaseINT;
+                    return Calculation.Round2Digits(atk + BaseINT);
                 }
                 else // 默认STR
                 {
-                    return atk + BaseSTR;
+                    return Calculation.Round2Digits(atk + BaseSTR);
                 }
             }
         }
@@ -249,7 +274,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 攻击力 = 基础攻击力 + 额外攻击力 + 额外攻击力2
         /// </summary>
-        public double ATK => BaseATK + ExATK + ExATK2;
+        public double ATK => Calculation.Round2Digits(BaseATK + ExATK + ExATK2);
 
         /// <summary>
         /// 初始物理护甲 [ 初始设定 ]
@@ -275,7 +300,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 物理护甲 = 基础物理护甲 + 额外物理护甲 + 额外物理护甲2
         /// </summary>
-        public double DEF => BaseDEF + ExDEF + ExDEF2;
+        public double DEF => Calculation.Round2Digits(BaseDEF + ExDEF + ExDEF2);
 
         /// <summary>
         /// 物理伤害减免(%) = [ 与物理护甲相关 ] + 额外物理伤害减免(%)
@@ -297,7 +322,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 魔法抗性(%) [ 与技能和物品相关 ]
         /// </summary>
-        public double MDF { get; set; } = 0;
+        public MDF MDF { get; set; }
 
         /// <summary>
         /// 物理穿透(%) [ 与技能和物品相关 ]
@@ -365,6 +390,72 @@ namespace Milimoe.FunGame.Core.Entity
         /// 能量回复力 [ 与技能和物品相关 ]
         /// </summary>
         public double ER { get; set; } = 0;
+
+        /// <summary>
+        /// 核心属性的值 [ 核心属性相关 ]
+        /// </summary>
+        public double PrimaryAttributeValue
+        {
+            get
+            {
+                if (PrimaryAttribute == PrimaryAttribute.AGI)
+                {
+                    return AGI;
+                }
+                else if (PrimaryAttribute == PrimaryAttribute.INT)
+                {
+                    return INT;
+                }
+                else
+                {
+                    return STR;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 基础核心属性的值 [ 核心属性相关 ]
+        /// </summary>
+        public double BasePrimaryAttributeValue
+        {
+            get
+            {
+                if (PrimaryAttribute == PrimaryAttribute.AGI)
+                {
+                    return BaseAGI;
+                }
+                else if (PrimaryAttribute == PrimaryAttribute.INT)
+                {
+                    return BaseINT;
+                }
+                else
+                {
+                    return BaseSTR;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 额外核心属性的值 [ 核心属性相关 ]
+        /// </summary>
+        public double ExPrimaryAttributeValue
+        {
+            get
+            {
+                if (PrimaryAttribute == PrimaryAttribute.AGI)
+                {
+                    return ExAGI;
+                }
+                else if (PrimaryAttribute == PrimaryAttribute.INT)
+                {
+                    return ExINT;
+                }
+                else
+                {
+                    return ExSTR;
+                }
+            }
+        }
 
         /// <summary>
         /// 初始力量 [ 初始设定 ]
@@ -512,7 +603,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                double value = Calculation.Round4Digits(0.05 + INT * 0.0025 + ExCDR);
+                double value = Calculation.Round4Digits(0.05 + AGI * 0.0025 + ExCritRate);
                 return Calculation.PercentageCheck(value);
             }
         }
@@ -556,14 +647,24 @@ namespace Milimoe.FunGame.Core.Entity
         public double ExEvadeRate { get; set; } = 0;
 
         /// <summary>
-        /// 角色的技能组
+        /// 普通攻击对象
         /// </summary>
-        public Dictionary<string, Skill> Skills { get; set; } = [];
+        public NormalAttack NormalAttack { get; }
+
+        /// <summary>
+        /// 角色的技能列表
+        /// </summary>
+        public HashSet<Skill> Skills { get; } = [];
+        
+        /// <summary>
+        /// 角色的持续性特效列表
+        /// </summary>
+        public HashSet<Effect> Effects { get; } = [];
 
         /// <summary>
         /// 角色携带的物品
         /// </summary>
-        public Dictionary<string, Item> Items { get; set; } = [];
+        public HashSet<Item> Items { get; } = [];
 
         /**
          * ===== 私有变量 =====
@@ -573,6 +674,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 等级
         /// </summary>
         private int _Level = 1;
+        
+        /// <summary>
+        /// 能量值
+        /// </summary>
+        private double _EP = 0;
 
         /// <summary>
         /// 物理穿透
@@ -587,7 +693,9 @@ namespace Milimoe.FunGame.Core.Entity
         protected Character()
         {
             User = General.UnknownUserInstance;
-            Statistics = new();
+            Profile = new(Name, FirstName, NickName);
+            MDF = new();
+            NormalAttack = new(this);
         }
 
         internal static Character GetInstance()
@@ -605,7 +713,7 @@ namespace Milimoe.FunGame.Core.Entity
             MP = MaxMP;
             if (EP != -1) this.EP = EP;
         }
-        
+
         /// <summary>
         /// 按时间回复状态
         /// </summary>
@@ -619,6 +727,20 @@ namespace Milimoe.FunGame.Core.Entity
                 MP = Math.Min(MaxMP, Calculation.Round2Digits(MP + MR * time));
                 if (EP != -1) this.EP = EP;
             }
+        }
+
+        /// <summary>
+        /// 提升角色的等级
+        /// </summary>
+        /// <param name="up">可为负数</param>
+        /// <returns></returns>
+        public int LevelUp(int up = 1)
+        {
+            if (up != 0)
+            {
+                Level += up;
+            }
+            return Level;
         }
 
         /// <summary>
@@ -637,8 +759,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <returns></returns>
         public override string ToString()
         {
-            bool isChineseName = NetworkUtility.IsChineseName(Name + FirstName);
-            string str = isChineseName ? (Name + FirstName).Trim() : (Name + " " + FirstName).Trim();
+            string str = GetName();
             if (NickName != "")
             {
                 if (str != "") str += ", ";
@@ -649,6 +770,106 @@ namespace Milimoe.FunGame.Core.Entity
                 str += "(" + User.Username + ")";
             }
             return str;
+        }
+
+        /// <summary>
+        /// 获取角色实例的名字、昵称以及所属玩家，包含等级
+        /// </summary>
+        /// <returns></returns>
+        public string ToStringWithLevel()
+        {
+            string str = GetName();
+            if (NickName != "")
+            {
+                if (str != "") str += ", ";
+                str += NickName;
+            }
+            if (User != null && User.Username != "")
+            {
+                str += "(" + User.Username + ")";
+            }
+            str += " - 等级 " + Level;
+            return str;
+        }
+
+        /// <summary>
+        /// 获取角色的名字
+        /// </summary>
+        /// <param name="full"></param>
+        /// <returns>如果 <paramref name="full"/> = false，返回 <see cref="FirstName"/>；反之，返回 <see cref="Name"/> + <see cref="FirstName"/>。</returns>
+        public string GetName(bool full = true)
+        {
+            if (full)
+            {
+                bool isChineseName = NetworkUtility.IsChineseName(Name + FirstName);
+                string str = isChineseName ? (Name + FirstName).Trim() : (Name + " " + FirstName).Trim();
+                return str;
+            }
+            else
+            {
+                return FirstName;
+            }
+        }
+
+        /// <summary>
+        /// 获取角色的详细信息
+        /// </summary>
+        /// <returns></returns>
+        public string GetInfo()
+        {
+            StringBuilder builder = new();
+
+            builder.AppendLine(ToStringWithLevel());
+            builder.AppendLine($"生命值：{HP} / {MaxHP}" + (ExHP + ExHP2 > 0 ? $" [{BaseHP} + {ExHP + ExHP2}]" : ""));
+            builder.AppendLine($"魔法值：{MP} / {MaxMP}" + (ExMP + ExMP2 > 0 ? $" [{BaseMP} + {ExMP + ExMP2}]" : ""));
+            builder.AppendLine($"能量值：{EP} / 200");
+            builder.AppendLine($"攻击力：{ATK}" + (ExATK + ExATK2 > 0 ? $" [{BaseATK} + {ExATK + ExATK2}]" : ""));
+            builder.AppendLine($"物理护甲：{DEF}" + (ExDEF + ExDEF2 > 0 ? $" [{BaseDEF} + {ExDEF + ExDEF2}]" : "") + $" ({PDR * 100:f2}%)");
+            double mdf = Calculation.Round4Digits((MDF.None.Value + MDF.Starmark.Value + MDF.PurityNatural.Value + MDF.PurityContemporary.Value +
+                MDF.Bright.Value + MDF.Shadow.Value + MDF.Element.Value + MDF.Fleabane.Value + MDF.Particle.Value) / 9);
+            builder.AppendLine($"魔法抗性：{mdf * 100:f2}%（平均）");
+            double exSPD = Calculation.Round2Digits(AGI * 0.65 + ExSPD);
+            builder.AppendLine($"行动速度：{SPD}" + (exSPD > 0 ? $" [{InitialSPD} + {exSPD}]" : "") + $" ({ActionCoefficient * 100:f2}%)");
+            builder.AppendLine($"核心属性：{CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)}");
+            builder.AppendLine($"力量：{STR}" + (ExSTR > 0 ? $" [{BaseSTR} + {ExSTR}]" : ""));
+            builder.AppendLine($"敏捷：{AGI}" + (ExAGI > 0 ? $" [{BaseAGI} + {ExAGI}]" : ""));
+            builder.AppendLine($"智力：{INT}" + (ExINT > 0 ? $" [{BaseINT} + {ExINT}]" : ""));
+            builder.AppendLine($"生命回复：{HR}" + (ExHR > 0 ? $" [{Calculation.Round2Digits(InitialHR + STR * 0.25)} + {ExHR}]" : ""));
+            builder.AppendLine($"魔法回复：{MR}" + (ExMR > 0 ? $" [{Calculation.Round2Digits(InitialMR + INT * 0.1)} + {ExMR}]" : ""));
+            builder.AppendLine($"暴击率：{CritRate * 100:f2}%");
+            builder.AppendLine($"暴击伤害：{CritDMG * 100:f2}%");
+            builder.AppendLine($"闪避率：{EvadeRate * 100:f2}%");
+            builder.AppendLine($"冷却缩减：{CDR * 100:f2}%");
+            builder.AppendLine($"物理穿透：{PhysicalPenetration * 100:f2}%");
+            builder.AppendLine($"魔法穿透：{MagicalPenetration * 100:f2}%");
+
+            if (CharacterState != CharacterState.Actionable)
+            {
+                builder.AppendLine(CharacterSet.GetCharacterState(CharacterState));
+            }
+
+            builder.AppendLine("== 普通攻击 ==");
+            builder.Append(NormalAttack.ToString());
+
+            if (Skills.Count > 0)
+            {
+                builder.AppendLine("== 角色技能 ==");
+                foreach (Skill skill in Skills)
+                {
+                    builder.Append(skill.ToString());
+                }
+            }
+
+            if (Items.Count > 0)
+            {
+                builder.AppendLine("== 角色物品 ==");
+                foreach (Item item in Items)
+                {
+                    builder.Append(item.ToString());
+                }
+            }
+
+            return builder.ToString();
         }
 
         /// <summary>
@@ -663,7 +884,7 @@ namespace Milimoe.FunGame.Core.Entity
                 Name = Name,
                 FirstName = FirstName,
                 NickName = NickName,
-                Statistics = Statistics,
+                Profile = Profile,
                 MagicType = MagicType,
                 FirstRoleType = FirstRoleType,
                 SecondRoleType = SecondRoleType,
@@ -672,6 +893,7 @@ namespace Milimoe.FunGame.Core.Entity
                 PrimaryAttribute = PrimaryAttribute,
                 Level = Level,
                 EXP = EXP,
+                CharacterState = CharacterState,
                 InitialHP = InitialHP,
                 ExHP2 = ExHP2,
                 InitialMP = InitialMP,
@@ -706,10 +928,16 @@ namespace Milimoe.FunGame.Core.Entity
                 ATR = ATR,
                 ExCritRate = ExCritRate,
                 ExCritDMG = ExCritDMG,
-                ExEvadeRate = ExEvadeRate,
-                Skills = new(Skills),
-                Items = new(Items),
+                ExEvadeRate = ExEvadeRate
             };
+            foreach (Skill skill in Skills)
+            {
+                c.Skills.Add(skill);
+            }
+            foreach (Item item in Items)
+            {
+                c.Items.Add(item);
+            }
             c.Recovery();
             return c;
         }

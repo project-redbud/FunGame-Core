@@ -334,7 +334,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
                 List<Skill> list = [];
                 Skill s = Factory.GetSkill();
                 s.Name = "Example Skill";
-                s.MagicType = MagicType.PurityNatural;
+                s.Description = "技能应该在GameModule中继承实现，再自行构造。";
                 list.Add(s);
                 return list;
             }
