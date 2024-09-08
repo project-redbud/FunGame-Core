@@ -152,6 +152,32 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 在造成伤害时，修改获得的能量
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="baseEP"></param>
+        /// <param name="newEP"></param>
+        /// <returns>返回 true 表示修改了获得的能量</returns>
+        public virtual bool AlterEPAfterDamage(Character character, double baseEP, out double newEP)
+        {
+            newEP = baseEP;
+            return false;
+        }
+
+        /// <summary>
+        /// 在受到伤害时，修改获得的能量
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="baseEP"></param>
+        /// <param name="newEP"></param>
+        /// <returns>返回 true 表示修改了获得的能量</returns>
+        public virtual bool AlterEPAfterGetDamage(Character character, double baseEP, out double newEP)
+        {
+            newEP = baseEP;
+            return false;
+        }
+
+        /// <summary>
         /// 技能开始吟唱时 [ 爆发技插队可触发此项 ]
         /// </summary>
         /// <param name="caster"></param>

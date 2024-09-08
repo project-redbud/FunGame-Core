@@ -37,6 +37,7 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 int max = IsSuperSkill ? 6 : (IsMagic ? 8 : 6);
                 _Level = Math.Min(Math.Max(0, value), max);
+                OnLevelUp();
             }
         }
 
@@ -113,7 +114,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 效果列表
         /// </summary>
-        public Dictionary<string, Effect> Effects { get; } = [];
+        public HashSet<Effect> Effects { get; } = [];
 
         /// <summary>
         /// 其他参数
@@ -136,14 +137,40 @@ namespace Milimoe.FunGame.Core.Entity
         internal Skill() { }
 
         /// <summary>
+        /// 触发技能升级
+        /// </summary>
+        public void OnLevelUp()
+        {
+            if (!IsActive)
+            {
+                foreach (Effect e in AddInactiveEffectToCharacter())
+                {
+                    if (Character != null && !Character.Effects.Contains(e))
+                    {
+                        Character.Effects.Add(e);
+                    }
+                }
+            }
+        }
+        
+        /// <summary>
         /// 触发技能效果
         /// </summary>
-        public void Trigger(ActionQueue queue, Character actor, Skill skill, List<Character> enemys, List<Character> teammates)
+        public void Trigger(ActionQueue queue, Character actor, List<Character> enemys, List<Character> teammates)
         {
-            foreach (Effect e in Effects.Values)
+            foreach (Effect e in Effects)
             {
                 e.OnSkillCasted(queue, actor, enemys, teammates, OtherArgs);
             }
+        }
+
+        /// <summary>
+        /// 被动技能，需要重写此方法，返回被动特效给角色 [ 此方法会在游戏开始时和技能升级时调用 ]
+        /// </summary>
+        /// <returns></returns>
+        public virtual IEnumerable<Effect> AddInactiveEffectToCharacter()
+        {
+            return [];
         }
 
         public override string ToString()
@@ -153,24 +180,27 @@ namespace Milimoe.FunGame.Core.Entity
             string type = IsSuperSkill ? "【爆发技】" : (IsMagic ? "【魔法】" : (IsActive ? "【主动】" : "【被动】"));
             builder.AppendLine(type + Name + " - " + "等级 " + Level);
             builder.AppendLine("技能描述：" + Description);
-            if (IsSuperSkill)
+            if (IsActive)
             {
-                builder.AppendLine("能量消耗：" + EPCost);
-            }
-            else
-            {
-                if (IsMagic)
-                {
-                    builder.AppendLine("魔法消耗：" + MPCost);
-                    builder.AppendLine("吟唱时间：" + CastTime);
-                }
-                else
+                if (IsSuperSkill)
                 {
                     builder.AppendLine("能量消耗：" + EPCost);
                 }
+                else
+                {
+                    if (IsMagic)
+                    {
+                        builder.AppendLine("魔法消耗：" + MPCost);
+                        builder.AppendLine("吟唱时间：" + CastTime);
+                    }
+                    else
+                    {
+                        builder.AppendLine("能量消耗：" + EPCost);
+                    }
+                }
+                builder.AppendLine("冷却时间：" + CD);
+                builder.AppendLine("硬直时间：" + HardnessTime);
             }
-            builder.AppendLine("冷却时间：" + CD);
-            builder.AppendLine("硬直时间：" + HardnessTime);
 
             return builder.ToString();
         }

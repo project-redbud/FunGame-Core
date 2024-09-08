@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -200,7 +201,19 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 当前爆发能量 [ 战斗相关 ]
         /// </summary>
-        public double EP { get; set; } = 0;
+        public double EP
+        {
+            get
+            {
+                return _EP < 0 ? 0 : (_EP > 200 ? 200 : _EP);
+            }
+            set
+            {
+                _EP = Calculation.Round2Digits(value);
+                if (_EP > 200) _EP = 200;
+                else if (_EP < 0) _EP = 0;
+            }
+        }
 
         /// <summary>
         /// 初始攻击力 [ 初始设定 ]
@@ -641,17 +654,17 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 角色的技能列表
         /// </summary>
-        public Dictionary<string, Skill> Skills { get; } = [];
+        public HashSet<Skill> Skills { get; } = [];
         
         /// <summary>
         /// 角色的持续性特效列表
         /// </summary>
-        public Dictionary<string, Effect> Effects { get; } = [];
+        public HashSet<Effect> Effects { get; } = [];
 
         /// <summary>
         /// 角色携带的物品
         /// </summary>
-        public Dictionary<string, Item> Items { get; } = [];
+        public HashSet<Item> Items { get; } = [];
 
         /**
          * ===== 私有变量 =====
@@ -661,6 +674,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 等级
         /// </summary>
         private int _Level = 1;
+        
+        /// <summary>
+        /// 能量值
+        /// </summary>
+        private double _EP = 0;
 
         /// <summary>
         /// 物理穿透
@@ -830,21 +848,24 @@ namespace Milimoe.FunGame.Core.Entity
                 builder.AppendLine(CharacterSet.GetCharacterState(CharacterState));
             }
 
+            builder.AppendLine("== 普通攻击 ==");
+            builder.Append(NormalAttack.ToString());
+
             if (Skills.Count > 0)
             {
                 builder.AppendLine("== 角色技能 ==");
-                foreach (Skill skill in Skills.Values)
+                foreach (Skill skill in Skills)
                 {
-                    builder.AppendLine(skill.ToString());
+                    builder.Append(skill.ToString());
                 }
             }
 
             if (Items.Count > 0)
             {
                 builder.AppendLine("== 角色物品 ==");
-                foreach (Item item in Items.Values)
+                foreach (Item item in Items)
                 {
-                    builder.AppendLine(item.ToString());
+                    builder.Append(item.ToString());
                 }
             }
 
@@ -909,13 +930,13 @@ namespace Milimoe.FunGame.Core.Entity
                 ExCritDMG = ExCritDMG,
                 ExEvadeRate = ExEvadeRate
             };
-            foreach (string key in Skills.Keys)
+            foreach (Skill skill in Skills)
             {
-                c.Skills.Add(key, Skills[key]);
+                c.Skills.Add(skill);
             }
-            foreach (string key in Items.Keys)
+            foreach (Item item in Items)
             {
-                c.Items.Add(key, Items[key]);
+                c.Items.Add(item);
             }
             c.Recovery();
             return c;
