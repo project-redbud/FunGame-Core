@@ -152,7 +152,7 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 技能开始吟唱时
+        /// 技能开始吟唱时 [ 爆发技插队可触发此项 ]
         /// </summary>
         /// <param name="caster"></param>
         public virtual void OnSkillCasting(Character caster)

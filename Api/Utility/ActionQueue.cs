@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Numerics;
 using System.Reflection.PortableExecutable;
 using System.Text;
@@ -18,12 +19,49 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         public Action<string> WriteLine { get; }
 
+        /// <summary>
+        /// 当前的行动顺序
+        /// </summary>
         protected readonly List<Character> _queue = [];
+
+        /// <summary>
+        /// 当前已死亡的角色顺序(第一个是最早死的)
+        /// </summary>
         protected readonly List<Character> _eliminated = [];
+
+        /// <summary>
+        /// 硬直时间表
+        /// </summary>
         protected readonly Dictionary<Character, double> _hardnessTimes = [];
+
+        /// <summary>
+        /// 角色正在吟唱的魔法
+        /// </summary>
         protected readonly Dictionary<Character, Skill> _castingSkills = [];
+
+        /// <summary>
+        /// 角色预释放的爆发技
+        /// </summary>
+        protected readonly Dictionary<Character, Skill> _castingSuperSkills = [];
+
+        /// <summary>
+        /// 角色目前赚取的金钱
+        /// </summary>
         protected readonly Dictionary<Character, double> _earnedMoney = [];
+
+        /// <summary>
+        /// 角色目前的连杀数
+        /// </summary>
         protected readonly Dictionary<Character, int> _continuousKilling = [];
+
+        /// <summary>
+        /// 角色被插队次数
+        /// </summary>
+        protected readonly Dictionary<Character, int> _cutCount = [];
+
+        /// <summary>
+        /// 游戏是否结束
+        /// </summary>
         protected bool _isGameEnd = false;
 
         /// <summary>
@@ -39,9 +77,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
             WriteLine ??= new Action<string>(Console.WriteLine);
 
-            // 排序时，时间会流逝
-            int nowTime = 1;
-
             // 初始排序：按速度排序
             List<IGrouping<double, Character>> groupedBySpeed = [.. characters
                 .GroupBy(c => c.SPD)
@@ -54,7 +89,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 if (group.Count() == 1)
                 {
                     // 如果只有一个角色，直接加入队列
-                    AddCharacter(group.First(), _queue.Count + nowTime);
+                    AddCharacter(group.First(), Calculation.Round2Digits(_queue.Count * 0.1), false);
                 }
                 else
                 {
@@ -83,8 +118,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
 
                             randomNumbers.ForEach(a => WriteLine(a.Character.Name + ": " + a.FirstRoll + " / " + a.SecondRoll));
 
-                            nowTime++;
-
                             // 找到两次都大于其他角色的角色
                             int maxFirstRoll = randomNumbers.Max(r => r.FirstRoll);
                             int maxSecondRoll = randomNumbers.Max(r => r.SecondRoll);
@@ -103,7 +136,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                         // 将决定好的角色加入顺序表
                         if (selectedCharacter != null)
                         {
-                            AddCharacter(selectedCharacter, characters.Count + nowTime);
+                            AddCharacter(selectedCharacter, Calculation.Round2Digits(_queue.Count * 0.1), false);
                             WriteLine("decided: " + selectedCharacter.Name + "\r\n");
                             sortedList.Remove(selectedCharacter);
                         }
@@ -117,11 +150,38 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="character"></param>
         /// <param name="hardnessTime"></param>
-        public void AddCharacter(Character character, double hardnessTime)
+        /// <param name="isCheckProtected"></param>
+        public void AddCharacter(Character character, double hardnessTime, bool isCheckProtected = true)
         {
             // 插队机制：按硬直时间排序
             int insertIndex = _queue.FindIndex(c => _hardnessTimes[c] > hardnessTime);
-            if (insertIndex == -1)
+
+            if (isCheckProtected)
+            {
+                // 查找保护条件 5人局为3次，9人局为4次
+                int countProtected = _queue.Count >= 9 ? 4 : ((_queue.Count >= 5) ? 3 : 2);
+
+                // 查找队列中是否有满足插队补偿条件的角色（最后一个）
+                var list = _queue
+                    .Select((c, index) => new { Character = c, Index = index })
+                    .Where(x => _cutCount.ContainsKey(x.Character) && _cutCount[x.Character] >= countProtected);
+
+                // 如果没有找到满足条件的角色，返回 -1
+                int protectIndex = list.Select(x => x.Index).LastOrDefault(-1);
+
+                // 判断是否需要插入到受保护角色的后面
+                if (protectIndex != -1 && (insertIndex == -1 || insertIndex <= protectIndex))
+                {
+                    // 如果按硬直时间插入的位置在受保护角色之前或相同，则插入到受保护角色的后面一位
+                    insertIndex = protectIndex + 1;
+                    hardnessTime = _hardnessTimes[list.Select(x => x.Character).Last()];
+                    // 列出受保护角色的名单
+                    WriteLine($"由于 [ {string.Join(" ]，[ ", list.Select(x => x.Character))} ] 受到行动保护，因此角色 [ {character} ] 将插入至顺序表第 {insertIndex + 1} 位。");
+                }
+            }
+
+            // 如果插入索引无效（为-1 或 大于等于队列长度），则添加到队列尾部
+            if (insertIndex == -1 || insertIndex >= _queue.Count)
             {
                 _queue.Add(character);
             }
@@ -130,6 +190,19 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 _queue.Insert(insertIndex, character);
             }
             _hardnessTimes[character] = hardnessTime;
+
+            // 为所有被插队的角色增加 _cutCount
+            if (isCheckProtected && insertIndex != -1 && insertIndex < _queue.Count)
+            {
+                for (int i = insertIndex + 1; i < _queue.Count; i++)
+                {
+                    Character queuedCharacter = _queue[i];
+                    if (!_cutCount.TryAdd(queuedCharacter, 1))
+                    {
+                        _cutCount[queuedCharacter] += 1;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -145,6 +218,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             if (character != null)
             {
                 _queue.Remove(character);
+                _cutCount.Remove(character);
                 return character;
             }
 
@@ -167,16 +241,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 text.AppendLine($"能量值：{c.EP} / 200");
                 if (c.CharacterState != CharacterState.Actionable)
                 {
-                    string state = c.CharacterState switch
-                    {
-                        CharacterState.Casting => "角色正在吟唱魔法",
-                        CharacterState.ActionRestricted => "角色现在行动受限",
-                        CharacterState.BattleRestricted => "角色现在战斗不能",
-                        CharacterState.SkillRestricted => "角色现在技能受限",
-                        CharacterState.Neutral => "角色现在是无敌的",
-                        _ => "角色现在完全行动不能"
-                    };
-                    text.AppendLine(state);
+                    text.AppendLine(CharacterSet.GetCharacterState(c.CharacterState));
                 }
                 text.AppendLine($"硬直时间：{_hardnessTimes[c]}");
             }
@@ -314,6 +379,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 // 如果角色上一次吟唱了魔法，这次的行动则是结算这个魔法
                 type = CharacterActionType.CastSkill;
             }
+            else if (character.CharacterState == CharacterState.PreCastSuperSkill)
+            {
+                // 角色使用回合外爆发技插队
+                type = CharacterActionType.CastSuperSkill;
+            }
             else
             {
                 // 完全行动不能会获得10时间硬直
@@ -384,25 +454,51 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 Skill skill = _castingSkills[character];
                 _castingSkills.Remove(character);
 
-                // 敌人数量需大于0
-                bool isCast = false;
-                if (enemys.Count > 0)
+                // 判断是否能够释放技能
+                if (CheckCanCast(character, skill, out double cost))
                 {
-                    isCast = CheckCanCast(character, skill, out double cost);
+                    character.MP = Calculation.Round2Digits(character.MP - cost);
+                    baseTime = skill.HardnessTime;
+                    skill.CurrentCD = Calculation.Round2Digits(Math.Max(1, skill.CD * (1 - character.CDR)));
+                    skill.Enable = false;
 
-                    if (isCast)
-                    {
-                        character.MP = Calculation.Round2Digits(character.MP - cost);
-                        baseTime = skill.HardnessTime;
-                        skill.CurrentCD = Calculation.Round2Digits(Math.Max(1, skill.CD * (1 - character.CDR)));
-                        skill.Enable = false;
-
-                        WriteLine("[ " + character + $" ] 消耗了 {cost:f2} 点魔法值，释放了技能 {skill.Name}！");
-                        skill.Trigger(this, character, skill, enemys, teammates);
-                    }
+                    WriteLine("[ " + character + $" ] 消耗了 {cost:f2} 点魔法值，释放了技能 {skill.Name}！");
+                    skill.Trigger(this, character, skill, enemys, teammates);
+                }
+                else
+                {
+                    WriteLine("[ " + character + $" ] 放弃释放技能！");
+                    // 放弃释放技能会获得3的硬直时间
+                    baseTime = 3;
                 }
 
-                if (!isCast)
+                foreach (Effect effect in character.Effects.Values)
+                {
+                    if (effect.AlterHardnessTimeAfterCastSkill(character, baseTime, out double newTime))
+                    {
+                        baseTime = newTime;
+                    }
+                }
+            }
+            else if (type == CharacterActionType.CastSuperSkill)
+            {
+                // 结束预释放爆发技的状态
+                character.CharacterState = CharacterState.Actionable;
+                Skill skill = _castingSuperSkills[character];
+                _castingSuperSkills.Remove(character);
+
+                // 判断是否能够释放技能
+                if (CheckCanCast(character, skill, out double cost))
+                {
+                    character.EP = Calculation.Round2Digits(character.EP - cost);
+                    baseTime = skill.HardnessTime;
+                    skill.CurrentCD = Calculation.Round2Digits(Math.Max(1, skill.CD * (1 - character.CDR)));
+                    skill.Enable = false;
+
+                    WriteLine("[ " + character + $" ] 消耗了 {cost:f2} 点能量值，释放了爆发技 {skill.Name}！");
+                    skill.Trigger(this, character, skill, enemys, teammates);
+                }
+                else
                 {
                     WriteLine("[ " + character + $" ] 放弃释放技能！");
                     // 放弃释放技能会获得3的硬直时间
@@ -436,14 +532,17 @@ namespace Milimoe.FunGame.Core.Api.Utility
             if (character.CharacterState != CharacterState.Casting)
             {
                 newHardnessTime = Math.Max(1, Calculation.Round2Digits(baseTime * (1 - character.ActionCoefficient)));
-                WriteLine("[ " + character + " ] 回合结束，获得硬直时间: " + newHardnessTime + "\r\n");
+                WriteLine("[ " + character + " ] 回合结束，获得硬直时间: " + newHardnessTime);
             }
             else
             {
                 newHardnessTime = Math.Max(1, Calculation.Round2Digits(baseTime * (1 - character.AccelerationCoefficient)));
-                WriteLine("[ " + character + " ] 进行吟唱，持续时间: " + newHardnessTime + "\r\n");
+                WriteLine("[ " + character + " ] 进行吟唱，持续时间: " + newHardnessTime);
             }
             AddCharacter(character, newHardnessTime);
+
+            // 有人想要插队吗？
+            WillPreCastSuperSkill(character);
 
             foreach (Effect effect in character.Effects.Values)
             {
@@ -452,6 +551,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
 
             AfterTurn(character);
 
+            WriteLine("");
             return false;
         }
 
@@ -735,12 +835,8 @@ namespace Milimoe.FunGame.Core.Api.Utility
         {
             if (!_continuousKilling.TryAdd(killer, 1)) _continuousKilling[killer] += 1;
             double money = new Random().Next(200, 400);
-            if (_continuousKilling.TryGetValue(killer, out int coefficient))
-            {
-                money = Calculation.Round(money + ((coefficient + 1) * new Random().Next(100, 200)), 0);
-            }
 
-            if (_continuousKilling.TryGetValue(death, out coefficient) && coefficient > 1)
+            if (_continuousKilling.TryGetValue(death, out int coefficient) && coefficient > 1)
             {
                 money = Calculation.Round(money + ((coefficient + 1) * new Random().Next(100, 200)), 0);
                 string termination = CharacterSet.GetContinuousKilling(coefficient);
@@ -845,6 +941,38 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 }
             }
             return false;
+        }
+
+        /// <summary>
+        /// 是否在回合外释放爆发技插队
+        /// </summary>
+        /// <param name="character">当前正在行动的角色</param>
+        /// <returns></returns>
+        public void WillPreCastSuperSkill(Character character)
+        {
+            CharacterState[] checkStates = [CharacterState.Actionable, CharacterState.Neutral];
+            // 选取在顺序表一半之后的角色
+            foreach (Character other in _queue.Where(c => c != character && checkStates.Contains(c.CharacterState) && _queue.IndexOf(c) >= _queue.Count / 2).ToList())
+            {
+                // 有 65% 欲望插队
+                if (new Random().NextDouble() < 0.65)
+                {
+                    List<Skill> skills = other.Skills.Values.Where(s => s.IsSuperSkill && other.EP >= s.EPCost).ToList();
+                    if (skills.Count > 0)
+                    {
+                        Skill skill = skills[new Random().Next(skills.Count)];
+                        _castingSuperSkills.Add(other, skill);
+                        other.CharacterState = CharacterState.PreCastSuperSkill;
+                        _queue.Remove(other);
+                        AddCharacter(other, 0, false);
+                        WriteLine("[ " + other + " ] 预释放了爆发技！！");
+                        foreach (Effect effect in character.Effects.Values)
+                        {
+                            effect.OnSkillCasting(character);
+                        }
+                    }
+                }
+            }
         }
     }
 }

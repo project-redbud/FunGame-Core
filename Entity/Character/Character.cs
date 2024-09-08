@@ -827,16 +827,7 @@ namespace Milimoe.FunGame.Core.Entity
 
             if (CharacterState != CharacterState.Actionable)
             {
-                string state = CharacterState switch
-                {
-                    CharacterState.Casting => "角色正在吟唱魔法",
-                    CharacterState.ActionRestricted => "角色现在行动受限",
-                    CharacterState.BattleRestricted => "角色现在战斗不能",
-                    CharacterState.SkillRestricted => "角色现在技能受限",
-                    CharacterState.Neutral => "角色现在是无敌的",
-                    _ => "角色现在完全行动不能"
-                };
-                builder.AppendLine(state);
+                builder.AppendLine(CharacterSet.GetCharacterState(CharacterState));
             }
 
             if (Skills.Count > 0)
