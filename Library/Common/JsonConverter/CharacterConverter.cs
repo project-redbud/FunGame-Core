@@ -50,6 +50,12 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Character.EXP):
                     result.EXP = reader.GetDouble();
                     break;
+                case nameof(Character.IsNeutral):
+                    result.IsNeutral = reader.GetBoolean();
+                    break;
+                case nameof(Character.IsUnselectable):
+                    result.IsUnselectable = reader.GetBoolean();
+                    break;
                 case nameof(Character.InitialHP):
                     result.InitialHP = reader.GetDouble();
                     break;
@@ -175,6 +181,8 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Character.PrimaryAttribute), (int)value.PrimaryAttribute);
             writer.WriteNumber(nameof(Character.Level), value.Level);
             writer.WriteNumber(nameof(Character.EXP), value.EXP);
+            writer.WriteBoolean(nameof(Character.IsNeutral), value.IsNeutral);
+            writer.WriteBoolean(nameof(Character.IsUnselectable), value.IsUnselectable);
             writer.WriteNumber(nameof(Character.CharacterState), (int)value.CharacterState);
             writer.WriteNumber(nameof(Character.InitialHP), value.InitialHP);
             writer.WriteNumber(nameof(Character.ExHP2), value.ExHP2);

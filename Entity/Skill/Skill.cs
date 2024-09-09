@@ -42,24 +42,29 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 是否是主动技能
+        /// 是否是主动技能 [ 此项为最高优先级 ]
         /// </summary>
         [InitRequired]
         public bool IsActive { get; set; } = true;
 
         /// <summary>
-        /// 是否可用
+        /// 是否可用 [ 此项为最高优先级 ]
         /// </summary>
         public bool Enable { get; set; } = true;
 
         /// <summary>
-        /// 是否是爆发技 [ 此项为最高优先级 ]
+        /// 效果持续生效中 [ 此项设置为true后不允许再次释放，防止重复释放 ]
+        /// </summary>
+        public bool IsInEffect { get; set; } = false;
+
+        /// <summary>
+        /// 是否是爆发技 [ 此项为高优先级 ]
         /// </summary>
         [InitRequired]
         public bool IsSuperSkill { get; set; } = false;
 
         /// <summary>
-        /// 是否属于魔法 [ <see cref="IsActive"/> 会失效 ]，反之为战技
+        /// 是否属于魔法 [ <see cref="IsActive"/> 必须为 true ]，反之为战技
         /// </summary>
         [InitRequired]
         public bool IsMagic { get; set; } = true;
@@ -152,7 +157,7 @@ namespace Milimoe.FunGame.Core.Entity
                 }
             }
         }
-        
+
         /// <summary>
         /// 触发技能效果
         /// </summary>
@@ -178,8 +183,21 @@ namespace Milimoe.FunGame.Core.Entity
             StringBuilder builder = new();
 
             string type = IsSuperSkill ? "【爆发技】" : (IsMagic ? "【魔法】" : (IsActive ? "【主动】" : "【被动】"));
-            builder.AppendLine(type + Name + " - " + "等级 " + Level);
+            string level = Level > 0 ? " - 等级 " + Level : " - 尚未学习";
+            builder.AppendLine(type + Name + level);
             builder.AppendLine("技能描述：" + Description);
+            if (CurrentCD > 0)
+            {
+                builder.AppendLine("正在冷却：剩余 " + CurrentCD + " 秒");
+            }
+            if (!Enable)
+            {
+                builder.AppendLine("技能当前不可用");
+            }
+            if (IsInEffect)
+            {
+                builder.AppendLine("效果结束前不可用");
+            }
             if (IsActive)
             {
                 if (IsSuperSkill)

@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
+﻿using System.Text;
+using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
@@ -28,7 +29,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 作用范围
         /// </summary>
         public virtual double TargetRange { get; } = 0;
-        
+
         /// <summary>
         /// 持续性的<para/>
         /// 配合 <see cref="Duration"/> 使用，而不是 <see cref="DurationTurn"/>。
@@ -40,17 +41,22 @@ namespace Milimoe.FunGame.Core.Entity
         /// 配合 <see cref="Durative"/> 使用。
         /// </summary>
         public virtual double Duration { get; } = 0;
-        
+
         /// <summary>
         /// 持续时间（回合）<para/>
         /// 使用此属性需要将 <see cref="Durative"/> 设置为 false。
         /// </summary>
         public virtual double DurationTurn { get; } = 0;
-        
+
         /// <summary>
         /// 剩余持续时间
         /// </summary>
         public double RemainDuration { get; set; } = 0;
+
+        /// <summary>
+        /// 剩余持续时间（回合）
+        /// </summary>
+        public double RemainDurationTurn { get; set; } = 0;
 
         /// <summary>
         /// 魔法类型
@@ -137,7 +143,7 @@ namespace Milimoe.FunGame.Core.Entity
             newHardnessTime = baseHardnessTime;
             return false;
         }
-        
+
         /// <summary>
         /// 在完成释放技能动作之后修改硬直时间
         /// </summary>
@@ -240,7 +246,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
 
         }
-        
+
         /// <summary>
         /// 在特效持有者的回合开始后
         /// </summary>
@@ -277,7 +283,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="killer"></param>
         /// <param name="continuousKilling"></param>
         /// <param name="earnedMoney"></param>
-        public virtual void AfterDeathCalculation(Character death, Character? killer, Dictionary<Character, int> continuousKilling, Dictionary<Character, double> earnedMoney)
+        public virtual void AfterDeathCalculation(Character death, Character? killer, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney)
         {
 
         }
@@ -302,6 +308,24 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual void OnCriticalDamageTriggered(Character character, double dice)
         {
 
+        }
+
+        public override string ToString()
+        {
+            StringBuilder builder = new();
+
+            string isDurative = "";
+            if (Durative)
+            {
+                isDurative = "（剩余：" + RemainDuration + " 时间）";
+            }
+            else if (DurationTurn > 0)
+            {
+                isDurative = "（剩余：" + RemainDurationTurn + " 回合）";
+            }
+            builder.AppendLine("【" + Name + " - 等级 " + Level + "】" + Description + isDurative);
+
+            return builder.ToString();
         }
 
         public override bool Equals(IBaseEntity? other)

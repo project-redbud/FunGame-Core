@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -135,6 +134,16 @@ namespace Milimoe.FunGame.Core.Entity
         /// 角色目前所处的状态 [ 战斗相关 ]
         /// </summary>
         public CharacterState CharacterState { get; set; } = CharacterState.Actionable;
+
+        /// <summary>
+        /// 角色是否是中立的/无敌的 [ 战斗相关 ]
+        /// </summary>
+        public bool IsNeutral { get; set; } = false;
+
+        /// <summary>
+        /// 角色是否是不可选中的 [ 战斗相关 ]
+        /// </summary>
+        public bool IsUnselectable { get; set; } = false;
 
         /// <summary>
         /// 初始生命值 [ 初始设定 ]
@@ -655,7 +664,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 角色的技能列表
         /// </summary>
         public HashSet<Skill> Skills { get; } = [];
-        
+
         /// <summary>
         /// 角色的持续性特效列表
         /// </summary>
@@ -674,7 +683,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 等级
         /// </summary>
         private int _Level = 1;
-        
+
         /// <summary>
         /// 能量值
         /// </summary>
@@ -840,12 +849,23 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"暴击伤害：{CritDMG * 100:f2}%");
             builder.AppendLine($"闪避率：{EvadeRate * 100:f2}%");
             builder.AppendLine($"冷却缩减：{CDR * 100:f2}%");
+            builder.AppendLine($"加速系数：{AccelerationCoefficient * 100:f2}%");
             builder.AppendLine($"物理穿透：{PhysicalPenetration * 100:f2}%");
             builder.AppendLine($"魔法穿透：{MagicalPenetration * 100:f2}%");
 
             if (CharacterState != CharacterState.Actionable)
             {
                 builder.AppendLine(CharacterSet.GetCharacterState(CharacterState));
+            }
+
+            if (IsNeutral)
+            {
+                builder.AppendLine("角色是无敌的");
+            }
+
+            if (IsUnselectable)
+            {
+                builder.AppendLine("角色是不可选中的");
             }
 
             builder.AppendLine("== 普通攻击 ==");
@@ -866,6 +886,44 @@ namespace Milimoe.FunGame.Core.Entity
                 foreach (Item item in Items)
                 {
                     builder.Append(item.ToString());
+                }
+            }
+
+            return builder.ToString();
+        }
+
+        public string GetInBattleInfo(double hardnessTimes)
+        {
+            StringBuilder builder = new();
+
+            builder.AppendLine(ToStringWithLevel());
+            builder.AppendLine($"生命值：{HP} / {MaxHP}" + (ExHP + ExHP2 > 0 ? $" [{BaseHP} + {ExHP + ExHP2}]" : ""));
+            builder.AppendLine($"魔法值：{MP} / {MaxMP}" + (ExMP + ExMP2 > 0 ? $" [{BaseMP} + {ExMP + ExMP2}]" : ""));
+            builder.AppendLine($"能量值：{EP} / 200");
+
+            if (CharacterState != CharacterState.Actionable)
+            {
+                builder.AppendLine(CharacterSet.GetCharacterState(CharacterState));
+            }
+
+            if (IsNeutral)
+            {
+                builder.AppendLine("角色是无敌的");
+            }
+
+            if (IsUnselectable)
+            {
+                builder.AppendLine("角色是不可选中的");
+            }
+
+            builder.AppendLine($"硬直时间：{hardnessTimes}");
+
+            if (Effects.Count > 0)
+            {
+                builder.AppendLine("== 状态栏 ==");
+                foreach (Effect effect in Effects)
+                {
+                    builder.Append(effect.ToString());
                 }
             }
 

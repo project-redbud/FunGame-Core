@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Api.Utility
@@ -42,7 +41,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <summary>
         /// 角色目前赚取的金钱
         /// </summary>
-        protected readonly Dictionary<Character, double> _earnedMoney = [];
+        protected readonly Dictionary<Character, int> _earnedMoney = [];
 
         /// <summary>
         /// 角色目前的连杀数
@@ -53,6 +52,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// 角色被插队次数
         /// </summary>
         protected readonly Dictionary<Character, int> _cutCount = [];
+        
+        /// <summary>
+        /// 助攻伤害
+        /// </summary>
+        protected readonly Dictionary<Character, AssistDetail> _assistDamage = [];
 
         /// <summary>
         /// 游戏是否结束
@@ -84,7 +88,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 if (group.Count() == 1)
                 {
                     // 如果只有一个角色，直接加入队列
-                    AddCharacter(group.First(), Calculation.Round2Digits(_queue.Count * 0.1), false);
+                    Character character = group.First();
+                    AddCharacter(character, Calculation.Round2Digits(_queue.Count * 0.1), false);
+                    _assistDamage.Add(character, new AssistDetail(character, characters.Where(c => c != character)));
                 }
                 else
                 {
@@ -132,6 +138,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                         if (selectedCharacter != null)
                         {
                             AddCharacter(selectedCharacter, Calculation.Round2Digits(_queue.Count * 0.1), false);
+                            _assistDamage.Add(selectedCharacter, new AssistDetail(selectedCharacter, characters.Where(c => c != selectedCharacter)));
                             WriteLine("decided: " + selectedCharacter.Name + "\r\n");
                             sortedList.Remove(selectedCharacter);
                         }
@@ -164,14 +171,33 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 // 如果没有找到满足条件的角色，返回 -1
                 int protectIndex = list.Select(x => x.Index).LastOrDefault(-1);
 
-                // 判断是否需要插入到受保护角色的后面
-                if (protectIndex != -1 && (insertIndex != -1 && insertIndex <= protectIndex))
+                if (protectIndex != -1)
                 {
-                    // 如果按硬直时间插入的位置在受保护角色之前或相同，则插入到受保护角色的后面一位
-                    insertIndex = protectIndex + 1;
-                    hardnessTime = _hardnessTimes[list.Select(x => x.Character).Last()];
-                    // 列出受保护角色的名单
-                    WriteLine($"由于 [ {string.Join(" ]，[ ", list.Select(x => x.Character))} ] 受到行动保护，因此角色 [ {character} ] 将插入至顺序表第 {insertIndex + 1} 位。");
+                    // 获取最后一个符合条件的角色
+                    Character lastProtectedCharacter = list.Last().Character;
+                    double lastProtectedHardnessTime = _hardnessTimes[lastProtectedCharacter];
+
+                    // 查找与最后一个受保护角色相同硬直时间的其他角色
+                    var sameHardnessList = _queue
+                        .Select((c, index) => new { Character = c, Index = index })
+                        .Where(x => _hardnessTimes[x.Character] == lastProtectedHardnessTime && x.Index > protectIndex);
+
+                    // 如果找到了相同硬直时间的角色，更新 protectIndex 为它们中最后一个的索引
+                    if (sameHardnessList.Any())
+                    {
+                        protectIndex = sameHardnessList.Select(x => x.Index).Last();
+                    }
+
+                    // 判断是否需要插入到受保护角色的后面
+                    if (insertIndex != -1 && insertIndex <= protectIndex)
+                    {
+                        // 如果按硬直时间插入的位置在受保护角色之前或相同，则插入到受保护角色的后面一位
+                        insertIndex = protectIndex + 1;
+                        hardnessTime = lastProtectedHardnessTime;
+
+                        // 列出受保护角色的名单
+                        WriteLine($"由于 [ {string.Join(" ]，[ ", list.Select(x => x.Character))} ] 受到行动保护，因此角色 [ {character} ] 将插入至顺序表第 {insertIndex + 1} 位。");
+                    }
                 }
             }
 
@@ -225,23 +251,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         public void DisplayQueue()
         {
-            StringBuilder text = new();
-
-            text.AppendLine("==== 角色状态 ====");
+            WriteLine("==== 角色状态 ====");
             foreach (Character c in _queue)
             {
-                text.AppendLine("角色 [ " + c + " ]");
-                text.AppendLine($"生命值：{c.HP} / {c.MaxHP}" + (c.ExHP + c.ExHP2 > 0 ? $" [{c.BaseHP} + {c.ExHP + c.ExHP2}]" : ""));
-                text.AppendLine($"魔法值：{c.MP} / {c.MaxMP}" + (c.ExMP + c.ExMP2 > 0 ? $" [{c.BaseMP} + {c.ExMP + c.ExMP2}]" : ""));
-                text.AppendLine($"能量值：{c.EP} / 200");
-                if (c.CharacterState != CharacterState.Actionable)
-                {
-                    text.AppendLine(CharacterSet.GetCharacterState(c.CharacterState));
-                }
-                text.AppendLine($"硬直时间：{_hardnessTimes[c]}");
+                WriteLine(c.GetInBattleInfo(_hardnessTimes[c]));
             }
-
-            WriteLine(text.ToString());
         }
 
         /// <summary>
@@ -274,13 +288,13 @@ namespace Milimoe.FunGame.Core.Api.Utility
             double baseTime = new Random().Next(10, 30);
 
             // 敌人列表
-            List<Character> enemys = [.. _queue.Where(c => c != character && c.CharacterState != CharacterState.Neutral)];
+            List<Character> enemys = [.. _queue.Where(c => c != character && !c.IsUnselectable)];
 
             // 队友列表
             List<Character> teammates = [];
 
             // 技能列表
-            List<Skill> skills = [.. character.Skills.Where(s => s.Level > 0 && s.IsActive && s.Enable && s.CurrentCD == 0 &&
+            List<Skill> skills = [.. character.Skills.Where(s => s.Level > 0 && s.IsActive && s.Enable && !s.IsInEffect && s.CurrentCD == 0 &&
                 ((s.IsSuperSkill && s.EPCost <= character.EP) || (!s.IsSuperSkill && s.IsMagic && s.MPCost <= character.MP) || (!s.IsSuperSkill && !s.IsMagic && s.EPCost <= character.EP)))];
 
             // 作出了什么行动
@@ -394,8 +408,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 {
                     Character enemy = enemys[new Random().Next(enemys.Count)];
                     character.NormalAttack.Attack(this, character, enemy);
-                    // 普通攻击的默认硬直时间为7
-                    baseTime = 7;
+                    baseTime = character.NormalAttack.HardnessTime;
                     foreach (Effect effect in character.Effects.Where(e => e.Level > 0))
                     {
                         if (effect.AlterHardnessTimeAfterNormalAttack(character, baseTime, out double newTime))
@@ -618,6 +631,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 // 移除到时间的特效
                 foreach (Effect effect in character.Effects.ToList())
                 {
+                    if (!effect.Skill.IsActive) continue;
                     if (!effect.Durative || effect.Level == 0)
                     {
                         character.Effects.Remove(effect);
@@ -666,6 +680,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
             else WriteLine("[ " + enemy + $" ] 受到了 {damage} 点物理伤害！");
             enemy.HP = Calculation.Round2Digits(enemy.HP - damage);
 
+            // 计算助攻
+            _assistDamage[actor][enemy] += damage;
+
             // 造成伤害和受伤都可以获得能量
             double ep = GetEP(damage, 0.2, 40);
             foreach (Effect effect in actor.Effects)
@@ -677,7 +694,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
             actor.EP += ep;
             ep = GetEP(damage, 0.1, 20);
-            foreach (Effect effect in actor.Effects.Where(e => e.Level > 0))
+            foreach (Effect effect in enemy.Effects.Where(e => e.Level > 0))
             {
                 if (effect.AlterEPAfterGetDamage(enemy, ep, out double newep))
                 {
@@ -698,7 +715,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 {
                     effect.AfterDeathCalculation(enemy, actor, _continuousKilling, _earnedMoney);
                 }
-                if (_queue.Remove(enemy) && (!_queue.Where(c => c != actor && c.CharacterState != CharacterState.Neutral).Any()))
+                if (_queue.Remove(enemy) && (!_queue.Where(c => c != actor).Any()))
                 {
                     // 没有其他的角色了，游戏结束
                     EndGameInfo(actor);
@@ -844,17 +861,46 @@ namespace Milimoe.FunGame.Core.Api.Utility
         public void DeathCalculation(Character killer, Character death)
         {
             if (!_continuousKilling.TryAdd(killer, 1)) _continuousKilling[killer] += 1;
-            double money = new Random().Next(200, 400);
+            int money = new Random().Next(250, 350);
 
+            Character[] assists = _assistDamage.Keys.Where(c => c != death && _assistDamage[c].GetPercentage(death) > 0.10).ToArray();
+            double totalDamagePercentage = Calculation.Round4Digits(_assistDamage.Keys.Where(assists.Contains).Select(c => _assistDamage[c].GetPercentage(death)).Sum());
+            int totalMoney = Math.Min(Convert.ToInt32(money * totalDamagePercentage), 425); // 防止刷伤害设置金钱上限
+
+            // 按伤害比分配金钱 只有造成10%伤害以上才能参与
+            foreach (Character assist in assists)
+            {
+                int cmoney = Convert.ToInt32(_assistDamage[assist].GetPercentage(death) / totalDamagePercentage * totalMoney);
+                if (assist != killer)
+                {
+                    if (!_earnedMoney.TryAdd(assist, cmoney)) _earnedMoney[assist] += cmoney;
+                }
+                else
+                {
+                    money = cmoney;
+                }
+            }
+
+            // 终结击杀的奖励仍然是全额的
             if (_continuousKilling.TryGetValue(death, out int coefficient) && coefficient > 1)
             {
-                money = Calculation.Round(money + ((coefficient + 1) * new Random().Next(100, 200)), 0);
+                money += (coefficient + 1) * new Random().Next(100, 200);
                 string termination = CharacterSet.GetContinuousKilling(coefficient);
-                WriteLine("[ " + killer + " ] 终结了 [ " + death + " ]" + (termination != "" ? " 的" + termination : "") + $"，获得 {money} 金钱！");
+                string msg = $"[ {killer} ] 终结了 [ {death} ] {(termination != "" ? " 的" + termination : "")}，获得 {money} 金钱！";
+                if (assists.Length > 1)
+                {
+                    msg += "助攻：[ " + string.Join(" ] / [ ", assists.Where(c => c != killer)) + " ]";
+                }
+                WriteLine(msg);
             }
             else
             {
-                WriteLine("[ " + killer + " ] 杀死了 [ " + death + $" ]，获得 {money} 金钱！");
+                string msg = $"[ {killer} ] 杀死了 [ {death} ]，获得 {money} 金钱！";
+                if (assists.Length > 1)
+                {
+                    msg += "助攻：[ " + string.Join(" ] / [ ", assists.Where(c => c != killer)) + " ]";
+                }
+                WriteLine(msg);
             }
 
             int kills = _continuousKilling[killer];
@@ -875,7 +921,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 WriteLine("[ " + killer + " ] 已经" + continuousKilling + "！拜托谁去杀了他吧！！！");
             }
-
+             
             if (!_earnedMoney.TryAdd(killer, money)) _earnedMoney[killer] += money;
 
             _eliminated.Add(death);
@@ -894,7 +940,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             WriteLine("=== 排名 ===");
             for (int i = _eliminated.Count - 1; i >= 0; i--)
             {
-                string topCharacter = _eliminated[i].ToString() + (_earnedMoney.TryGetValue(_eliminated[i], out double earned) ? $" [ 已赚取 {earned} 金钱 ]" : "");
+                string topCharacter = _eliminated[i].ToString() + (_continuousKilling.TryGetValue(_eliminated[i], out int kills) && kills > 1 ? $" [ {CharacterSet.GetContinuousKilling(kills)} ]" : "") + (_earnedMoney.TryGetValue(_eliminated[i], out int earned) ? $" [ 已赚取 {earned} 金钱 ]" : "");
                 if (top == 1)
                 {
                     WriteLine("冠军：" + topCharacter);
@@ -960,14 +1006,14 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns></returns>
         public void WillPreCastSuperSkill(Character character)
         {
-            CharacterState[] checkStates = [CharacterState.Actionable, CharacterState.Neutral];
+            CharacterState[] checkStates = [CharacterState.Actionable];
             // 选取在顺序表一半之后的角色
             foreach (Character other in _queue.Where(c => c != character && checkStates.Contains(c.CharacterState) && _queue.IndexOf(c) >= _queue.Count / 2).ToList())
             {
                 // 有 65% 欲望插队
                 if (new Random().NextDouble() < 0.65)
                 {
-                    List<Skill> skills = other.Skills.Where(s => s.IsSuperSkill && s.Level > 0 && s.IsActive && s.Enable && s.CurrentCD == 0 && other.EP >= s.EPCost).ToList();
+                    List<Skill> skills = other.Skills.Where(s => s.IsSuperSkill && s.Level > 0 && s.IsActive && s.Enable && !s.IsInEffect && s.CurrentCD == 0 && other.EP >= s.EPCost).ToList();
                     if (skills.Count > 0)
                     {
                         Skill skill = skills[new Random().Next(skills.Count)];
@@ -979,9 +1025,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
                         WriteLine("[ " + other + " ] 预释放了爆发技！！");
                         foreach (Character c in _hardnessTimes.Keys)
                         {
-                            if (c != other)
+                            if (_hardnessTimes[c] != 0)
                             {
-                                _hardnessTimes[c] += 0.01;
+                                _hardnessTimes[c] = Calculation.Round2Digits(_hardnessTimes[c] + 0.01);
                             }
                         }
                         foreach (Effect effect in character.Effects.Where(e => e.Level > 0))

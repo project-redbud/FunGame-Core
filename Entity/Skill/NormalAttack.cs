@@ -55,7 +55,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 硬直时间
         /// </summary>
-        public double HardnessTime { get; } = 7;
+        public double HardnessTime { get; } = 10;
 
         /// <summary>
         /// 对目标（或多个目标）发起普通攻击
@@ -86,7 +86,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             StringBuilder builder = new();
 
-            builder.AppendLine(Name + " - " + "等级：" + Level);
+            builder.AppendLine(Name + " - 等级 " + Level);
             builder.AppendLine("技能描述：" + Description);
             builder.AppendLine("硬直时间：" + HardnessTime);
 

@@ -296,16 +296,11 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// 处于吟唱中 [ 战斗相关 ] [ 技能相关 ]
         /// </summary>
         Casting,
-        
+
         /// <summary>
         /// 预释放爆发技(插队) [ 战斗相关 ] [ 技能相关 ]
         /// </summary>
-        PreCastSuperSkill,
-
-        /// <summary>
-        /// 是中立单位(无敌的) [ 战斗相关 ]
-        /// </summary>
-        Neutral
+        PreCastSuperSkill
     }
 
     public enum PrimaryAttribute
