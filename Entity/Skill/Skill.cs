@@ -213,7 +213,7 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine("技能描述：" + Description);
             if (CurrentCD > 0)
             {
-                builder.AppendLine("正在冷却：剩余 " + CurrentCD + " 秒");
+                builder.AppendLine("正在冷却：剩余 " + CurrentCD + " 时间");
             }
             if (!Enable)
             {
