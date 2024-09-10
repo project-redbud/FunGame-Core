@@ -16,6 +16,12 @@ namespace Milimoe.FunGame.Core.Entity
         public Skill Skill { get; } = skill;
 
         /// <summary>
+        /// 特殊效果类型<para/>
+        /// 注意：如果技能特效没有原生施加控制效果，请始终保持此属性为 <see cref="EffectControlType.None"/>。
+        /// </summary>
+        public virtual EffectControlType ControlType { get; } = EffectControlType.None;
+
+        /// <summary>
         /// 作用于自身
         /// </summary>
         public virtual bool TargetSelf { get; } = false;
@@ -46,7 +52,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 持续时间（回合）<para/>
         /// 使用此属性需要将 <see cref="Durative"/> 设置为 false。
         /// </summary>
-        public virtual double DurationTurn { get; } = 0;
+        public virtual int DurationTurn { get; } = 0;
 
         /// <summary>
         /// 剩余持续时间
@@ -56,7 +62,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 剩余持续时间（回合）
         /// </summary>
-        public double RemainDurationTurn { get; set; } = 0;
+        public int RemainDurationTurn { get; set; } = 0;
 
         /// <summary>
         /// 魔法类型
@@ -76,7 +82,24 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 此特效的施加者，用于溯源
         /// </summary>
-        public Character? Source { get; set; } = null;
+        public virtual Character? Source { get; } = null;
+
+        /// <summary>
+        /// 游戏中的行动顺序表实例，在技能效果被触发时，此实例会获得赋值，使用时需要判断其是否存在
+        /// </summary>
+        public ActionQueue? ActionQueue { get; set; } = null;
+
+        /// <summary>
+        /// 输出文本或日志
+        /// </summary>
+        public Action<string> WriteLine
+        {
+            get
+            {
+                if (ActionQueue is null) return Console.WriteLine;
+                else return ActionQueue.WriteLine;
+            }
+        }
 
         /// <summary>
         /// 获得此特效时
@@ -105,12 +128,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="isNormalAttack"></param>
         /// <param name="isMagicDamage"></param>
         /// <param name="magicType"></param>
-        /// <param name="newDamage"></param>
-        /// <returns>返回 true 表示修改了伤害</returns>
-        public virtual bool AlterExpectedDamageBeforeCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, out double newDamage)
+        public virtual void AlterExpectedDamageBeforeCalculation(Character character, Character enemy, ref double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType)
         {
-            newDamage = damage;
-            return false;
+
         }
 
         /// <summary>
@@ -123,12 +143,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="isMagicDamage"></param>
         /// <param name="magicType"></param>
         /// <param name="isCritical"></param>
-        /// <param name="newDamage"></param>
-        /// <returns>返回 true 表示修改了伤害</returns>
-        public virtual bool AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, bool isCritical, out double newDamage)
+        public virtual void AlterActualDamageAfterCalculation(Character character, Character enemy, ref double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, bool isCritical)
         {
-            newDamage = damage;
-            return false;
+
         }
 
         /// <summary>
@@ -136,12 +153,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="character"></param>
         /// <param name="baseHardnessTime"></param>
-        /// <param name="newHardnessTime"></param>
-        /// <returns>返回 true 表示修改了硬直时间</returns>
-        public virtual bool AlterHardnessTimeAfterNormalAttack(Character character, double baseHardnessTime, out double newHardnessTime)
+        public virtual void AlterHardnessTimeAfterNormalAttack(Character character, ref double baseHardnessTime)
         {
-            newHardnessTime = baseHardnessTime;
-            return false;
+
         }
 
         /// <summary>
@@ -149,12 +163,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="character"></param>
         /// <param name="baseHardnessTime"></param>
-        /// <param name="newHardnessTime"></param>
-        /// <returns>返回 true 表示修改了硬直时间</returns>
-        public virtual bool AlterHardnessTimeAfterCastSkill(Character character, double baseHardnessTime, out double newHardnessTime)
+        public virtual void AlterHardnessTimeAfterCastSkill(Character character, ref double baseHardnessTime)
         {
-            newHardnessTime = baseHardnessTime;
-            return false;
+
         }
 
         /// <summary>
@@ -162,12 +173,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="character"></param>
         /// <param name="baseEP"></param>
-        /// <param name="newEP"></param>
-        /// <returns>返回 true 表示修改了获得的能量</returns>
-        public virtual bool AlterEPAfterDamage(Character character, double baseEP, out double newEP)
+        public virtual void AlterEPAfterDamage(Character character, ref double baseEP)
         {
-            newEP = baseEP;
-            return false;
+
         }
 
         /// <summary>
@@ -175,12 +183,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="character"></param>
         /// <param name="baseEP"></param>
-        /// <param name="newEP"></param>
-        /// <returns>返回 true 表示修改了获得的能量</returns>
-        public virtual bool AlterEPAfterGetDamage(Character character, double baseEP, out double newEP)
+        public virtual void AlterEPAfterGetDamage(Character character, ref double baseEP)
         {
-            newEP = baseEP;
-            return false;
+
         }
 
         /// <summary>
@@ -205,12 +210,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 吟唱结束后释放技能（魔法）/ 直接释放技能（战技/爆发技）
         /// </summary>
-        /// <param name="queue"></param>
         /// <param name="caster"></param>
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
         /// <param name="others"></param>
-        public virtual void OnSkillCasted(ActionQueue queue, Character caster, List<Character> enemys, List<Character> teammates, Dictionary<string, object> others)
+        public virtual void OnSkillCasted(Character caster, List<Character> enemys, List<Character> teammates, Dictionary<string, object> others)
         {
 
         }
@@ -231,9 +235,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="character"></param>
         /// <param name="enemy"></param>
         /// <param name="damage"></param>
+        /// <param name="isNormalAttack"></param>
         /// <param name="isMagicDamage"></param>
         /// <param name="magicType"></param>
-        public virtual void AfterDamageCalculation(Character character, Character enemy, double damage, bool isMagicDamage, MagicType magicType)
+        /// <param name="isCritical"></param>
+        public virtual void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, bool isCritical)
         {
 
         }
@@ -248,7 +254,7 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 在特效持有者的回合开始后
+        /// 在特效持有者的回合结束后
         /// </summary>
         /// <param name="character"></param>
         public virtual void OnTurnEnd(Character character)
@@ -308,6 +314,45 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual void OnCriticalDamageTriggered(Character character, double dice)
         {
 
+        }
+
+        /// <summary>
+        /// 角色属性发生变化
+        /// </summary>
+        public virtual void OnAttributeChanged(Character character)
+        {
+
+        }
+
+        /// <summary>
+        /// 对敌人造成技能伤害 [ 强烈建议使用此方法造成伤害而不是自行调用 <see cref="ActionQueue.DamageToEnemy"/> ]
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="enemy"></param>
+        /// <param name="isMagic"></param>
+        /// <param name="magicType"></param>
+        /// <param name="expectedDamage"></param>
+        /// <returns></returns>
+        public DamageResult DamageToEnemy(Character actor, Character enemy, bool isMagic, MagicType magicType, double expectedDamage)
+        {
+            if (ActionQueue is null) return DamageResult.Evaded;
+            DamageResult result = !isMagic ? ActionQueue.CalculatePhysicalDamage(actor, enemy, false, expectedDamage, out double damage) : ActionQueue.CalculateMagicalDamage(actor, enemy, false, MagicType, expectedDamage, out damage);
+            if (result != DamageResult.Evaded)
+            {
+                ActionQueue.DamageToEnemy(actor, enemy, damage, false, isMagic, magicType, result == DamageResult.Critical);
+                return result;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 打断施法 [ 尽可能的调用此方法而不是直接调用 <see cref="ActionQueue.InterruptCasting"/>，以防止中断性变更 ]
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="interrupter"></param>
+        public void InterruptCasting(Character caster, Character interrupter)
+        {
+            ActionQueue?.InterruptCasting(caster, interrupter);
         }
 
         public override string ToString()

@@ -326,19 +326,23 @@ namespace Milimoe.FunGame.Core.Library.Constant
 
         public static string GetContinuousKilling(int kills)
         {
-            return kills switch
+            if (kills > 10) return "超越神的杀戮";
+            else
             {
-                2 => "双杀",
-                3 => "三杀",
-                4 => "大杀特杀",
-                5 => "杀人如麻",
-                6 => "主宰比赛",
-                7 => "无人能挡",
-                8 => "变态杀戮",
-                9 => "如同神一般",
-                10 => "超越神的杀戮",
-                _ => ""
-            };
+                return kills switch
+                {
+                    2 => "双杀",
+                    3 => "三杀",
+                    4 => "大杀特杀",
+                    5 => "杀人如麻",
+                    6 => "主宰比赛",
+                    7 => "无人能挡",
+                    8 => "变态杀戮",
+                    9 => "如同神一般",
+                    10 => "超越神的杀戮",
+                    _ => ""
+                };
+            }
         }
 
         public static string GetCharacterState(CharacterState state)

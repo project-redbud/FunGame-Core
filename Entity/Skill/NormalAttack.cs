@@ -15,7 +15,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 普通攻击说明
         /// </summary>
-        public string Description => $"对目标敌人造成 {Calculation.Round4Digits((1.0 + 0.05 * (Level - 1)) * 100)}% [ {Damage} ] 点{(IsMagic ? CharacterSet.GetMagicName(MagicType) : "物理")}伤害。";
+        public string Description => $"对目标敌人造成 {Calculation.Round4Digits((1.0 + 0.05 * (Level - 1)) * 100)}% [ {Damage} ] 点{(IsMagic ? CharacterSet.GetMagicName(MagicType) : "物理伤害")}。";
 
         /// <summary>
         /// 所属的角色
@@ -45,12 +45,12 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 是否是魔法伤害
         /// </summary>
-        public bool IsMagic { get; } = isMagic;
+        public bool IsMagic => _IsMagic;
 
         /// <summary>
         /// 魔法伤害需要指定魔法类型
         /// </summary>
-        public MagicType MagicType { get; } = magicType;
+        public MagicType MagicType => _MagicType;
 
         /// <summary>
         /// 硬直时间
@@ -77,6 +77,17 @@ namespace Milimoe.FunGame.Core.Entity
             }
         }
 
+        /// <summary>
+        /// 修改伤害类型
+        /// </summary>
+        /// <param name="isMagic"></param>
+        /// <param name="magicType"></param>
+        public void SetMagicType(bool isMagic, MagicType magicType)
+        {
+            _IsMagic = isMagic;
+            _MagicType = magicType;
+        }
+
         public override bool Equals(IBaseEntity? other)
         {
             return other is NormalAttack c && c.Name == Name;
@@ -97,5 +108,15 @@ namespace Milimoe.FunGame.Core.Entity
         /// 等级
         /// </summary>
         private int _Level = 0;
+
+        /// <summary>
+        /// 是否是魔法伤害
+        /// </summary>
+        private bool _IsMagic = isMagic;
+
+        /// <summary>
+        /// 魔法类型
+        /// </summary>
+        private MagicType _MagicType = magicType;
     }
 }

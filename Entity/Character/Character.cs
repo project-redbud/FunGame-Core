@@ -121,6 +121,7 @@ namespace Milimoe.FunGame.Core.Entity
             set
             {
                 _Level = Math.Min(Math.Max(1, value), 60);
+                OnAttributeChanged();
                 Recovery();
             }
         }
@@ -134,6 +135,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 角色目前所处的状态 [ 战斗相关 ]
         /// </summary>
         public CharacterState CharacterState { get; set; } = CharacterState.Actionable;
+
+        /// <summary>
+        /// 角色目前被特效施加的状态
+        /// </summary>
+        public Dictionary<Effect, CharacterState> CharacterEffectStates { get; } = [];
 
         /// <summary>
         /// 角色是否是中立的/无敌的 [ 战斗相关 ]
@@ -739,17 +745,14 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 提升角色的等级
+        /// 角色的属性发生变化，会影响特殊效果的计算
         /// </summary>
-        /// <param name="up">可为负数</param>
-        /// <returns></returns>
-        public int LevelUp(int up = 1)
+        public void OnAttributeChanged()
         {
-            if (up != 0)
+            foreach (Effect effect in Effects)
             {
-                Level += up;
+                effect.OnAttributeChanged(this);
             }
-            return Level;
         }
 
         /// <summary>
@@ -892,6 +895,11 @@ namespace Milimoe.FunGame.Core.Entity
             return builder.ToString();
         }
 
+        /// <summary>
+        /// 获取战斗状态的信息
+        /// </summary>
+        /// <param name="hardnessTimes"></param>
+        /// <returns></returns>
         public string GetInBattleInfo(double hardnessTimes)
         {
             StringBuilder builder = new();
@@ -900,6 +908,8 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"生命值：{HP} / {MaxHP}" + (ExHP + ExHP2 > 0 ? $" [{BaseHP} + {ExHP + ExHP2}]" : ""));
             builder.AppendLine($"魔法值：{MP} / {MaxMP}" + (ExMP + ExMP2 > 0 ? $" [{BaseMP} + {ExMP + ExMP2}]" : ""));
             builder.AppendLine($"能量值：{EP} / 200");
+            builder.AppendLine($"攻击力：{ATK}" + (ExATK + ExATK2 > 0 ? $" [{BaseATK} + {ExATK + ExATK2}]" : ""));
+            builder.AppendLine($"核心属性：{PrimaryAttributeValue}" + (ExPrimaryAttributeValue > 0 ? $" [{BasePrimaryAttributeValue} + {ExPrimaryAttributeValue}]" : ""));
 
             if (CharacterState != CharacterState.Actionable)
             {
@@ -928,6 +938,66 @@ namespace Milimoe.FunGame.Core.Entity
             }
 
             return builder.ToString();
+        }
+
+        /// <summary>
+        /// 更新角色的状态
+        /// </summary>
+        /// <returns></returns>
+        public CharacterState UpdateCharacterState()
+        {
+            bool isNotActionable = false;
+            bool isActionRestricted = false;
+            bool isBattleRestricted = false;
+            bool isSkillRestricted = false;
+
+            foreach (CharacterState state in CharacterEffectStates.Values)
+            {
+                if (state == CharacterState.NotActionable)
+                {
+                    isNotActionable = true;
+                }
+                else if (state == CharacterState.ActionRestricted)
+                {
+                    isActionRestricted = true;
+                }
+                else if (state == CharacterState.BattleRestricted)
+                {
+                    isBattleRestricted = true;
+                }
+                else if (state == CharacterState.SkillRestricted)
+                {
+                    isSkillRestricted = true;
+                }
+            }
+
+            bool isControl = isNotActionable || isActionRestricted || isBattleRestricted || isSkillRestricted;
+            bool isCasting = CharacterState == CharacterState.Casting;
+            bool isPreCastSuperSkill = CharacterState == CharacterState.PreCastSuperSkill;
+
+            if (isNotActionable)
+            {
+                CharacterState = CharacterState.NotActionable;
+            }
+            else if (isActionRestricted)
+            {
+                CharacterState = CharacterState.ActionRestricted;
+            }
+            else if (isBattleRestricted)
+            {
+                CharacterState = CharacterState.BattleRestricted;
+            }
+            else if (isSkillRestricted)
+            {
+                CharacterState = CharacterState.SkillRestricted;
+            }
+
+            if (!isControl && !isCasting && !isPreCastSuperSkill)
+            {
+                CharacterState = CharacterState.Actionable;
+            }
+
+            return CharacterState;
         }
 
         /// <summary>

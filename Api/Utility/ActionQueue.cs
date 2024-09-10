@@ -91,6 +91,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     Character character = group.First();
                     AddCharacter(character, Calculation.Round2Digits(_queue.Count * 0.1), false);
                     _assistDamage.Add(character, new AssistDetail(character, characters.Where(c => c != character)));
+                    // 初始化技能
+                    foreach (Skill skill in character.Skills)
+                    {
+                        skill.OnSkillGained(this);
+                    }
                 }
                 else
                 {
@@ -139,6 +144,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
                         {
                             AddCharacter(selectedCharacter, Calculation.Round2Digits(_queue.Count * 0.1), false);
                             _assistDamage.Add(selectedCharacter, new AssistDetail(selectedCharacter, characters.Where(c => c != selectedCharacter)));
+                            // 初始化技能
+                            foreach (Skill skill in selectedCharacter.Skills)
+                            {
+                                skill.OnSkillGained(this);
+                            }
                             WriteLine("decided: " + selectedCharacter.Name + "\r\n");
                             sortedList.Remove(selectedCharacter);
                         }
@@ -276,16 +286,16 @@ namespace Milimoe.FunGame.Core.Api.Utility
         {
             if (!BeforeTurn(character))
             {
-                return false;
+                return _isGameEnd;
             }
 
-            foreach (Effect effect in character.Effects.Where(e => e.Level > 0))
+            foreach (Effect effect in character.Effects.Where(e => e.Level > 0).ToList())
             {
                 effect.OnTurnStart(character);
             }
 
-            // 假设基础硬直时间
-            double baseTime = new Random().Next(10, 30);
+            // 基础硬直时间
+            double baseTime = 10;
 
             // 敌人列表
             List<Character> enemys = [.. _queue.Where(c => c != character && !c.IsUnselectable)];
@@ -294,8 +304,8 @@ namespace Milimoe.FunGame.Core.Api.Utility
             List<Character> teammates = [];
 
             // 技能列表
-            List<Skill> skills = [.. character.Skills.Where(s => s.Level > 0 && s.IsActive && s.Enable && !s.IsInEffect && s.CurrentCD == 0 &&
-                ((s.IsSuperSkill && s.EPCost <= character.EP) || (!s.IsSuperSkill && s.IsMagic && s.MPCost <= character.MP) || (!s.IsSuperSkill && !s.IsMagic && s.EPCost <= character.EP)))];
+            List<Skill> skills = [.. character.Skills.Where(s => s.Level > 0 && s.SkillType != SkillType.Passive && s.Enable && !s.IsInEffect && s.CurrentCD == 0 &&
+                (((s.SkillType == SkillType.SuperSkill || s.SkillType == SkillType.Skill) && s.EPCost <= character.EP) || (s.SkillType == SkillType.Magic && s.MPCost <= character.MP)))];
 
             // 作出了什么行动
             CharacterActionType type = CharacterActionType.None;
@@ -395,8 +405,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
             else
             {
-                // 完全行动不能会获得10时间硬直
-                baseTime = 10;
                 WriteLine("[ " + character + $" ] 完全行动不能！");
             }
 
@@ -409,12 +417,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     Character enemy = enemys[new Random().Next(enemys.Count)];
                     character.NormalAttack.Attack(this, character, enemy);
                     baseTime = character.NormalAttack.HardnessTime;
-                    foreach (Effect effect in character.Effects.Where(e => e.Level > 0))
+                    foreach (Effect effect in character.Effects.Where(e => e.Level > 0).ToList())
                     {
-                        if (effect.AlterHardnessTimeAfterNormalAttack(character, baseTime, out double newTime))
-                        {
-                            baseTime = newTime;
-                        }
+                        effect.AlterHardnessTimeAfterNormalAttack(character, ref baseTime);
                     }
                 }
             }
@@ -424,12 +429,12 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 // 注意：FastAuto 模式下，此吟唱逻辑删减了选取目标的逻辑，将选取逻辑放在了实际释放的环节
                 // 在正常交互式模式下，吟唱前需要先选取目标
                 Skill skill = skills[new Random().Next(skills.Count)];
-                if (skill.IsMagic && !skill.IsSuperSkill)
+                if (skill.SkillType == SkillType.Magic)
                 {
                     character.CharacterState = CharacterState.Casting;
                     _castingSkills.Add(character, skill);
                     baseTime = skill.CastTime;
-                    foreach (Effect effect in character.Effects.Where(e => e.Level > 0))
+                    foreach (Effect effect in character.Effects.Where(e => e.Level > 0).ToList())
                     {
                         effect.OnSkillCasting(character);
                     }
@@ -445,12 +450,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
 
                         WriteLine("[ " + character + $" ] 消耗了 {cost:f2} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} {skill.Name}！");
                         skill.Trigger(this, character, enemys, teammates);
-                        foreach (Effect effect in character.Effects)
+                        foreach (Effect effect in character.Effects.Where(e => e.Level > 0).ToList())
                         {
-                            if (effect.AlterHardnessTimeAfterCastSkill(character, baseTime, out double newTime))
-                            {
-                                baseTime = newTime;
-                            }
+                            effect.AlterHardnessTimeAfterCastSkill(character, ref baseTime);
                         }
                     }
                 }
@@ -480,12 +482,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     baseTime = 3;
                 }
 
-                foreach (Effect effect in character.Effects.Where(e => e.Level > 0))
+                foreach (Effect effect in character.Effects.Where(e => e.Level > 0).ToList())
                 {
-                    if (effect.AlterHardnessTimeAfterCastSkill(character, baseTime, out double newTime))
-                    {
-                        baseTime = newTime;
-                    }
+                    effect.AlterHardnessTimeAfterCastSkill(character, ref baseTime);
                 }
             }
             else if (type == CharacterActionType.CastSuperSkill)
@@ -513,12 +512,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     baseTime = 3;
                 }
 
-                foreach (Effect effect in character.Effects.Where(e => e.Level > 0))
+                foreach (Effect effect in character.Effects.Where(e => e.Level > 0).ToList())
                 {
-                    if (effect.AlterHardnessTimeAfterCastSkill(character, baseTime, out double newTime))
-                    {
-                        baseTime = newTime;
-                    }
+                    effect.AlterHardnessTimeAfterCastSkill(character, ref baseTime);
                 }
             }
             else if (type == CharacterActionType.UseItem)
@@ -532,7 +528,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
 
             if (_isGameEnd)
             {
-                return true;
+                return _isGameEnd;
             }
 
             // 减少硬直时间
@@ -552,15 +548,34 @@ namespace Milimoe.FunGame.Core.Api.Utility
             // 有人想要插队吗？
             WillPreCastSuperSkill(character);
 
-            foreach (Effect effect in character.Effects.Where(e => e.Level > 0))
+            foreach (Effect effect in character.Effects.Where(e => e.Level > 0).ToList())
             {
                 effect.OnTurnEnd(character);
+
+                // 自身被动不会考虑
+                if (effect.ControlType == EffectControlType.None && effect.Skill.SkillType == SkillType.Passive)
+                {
+                    continue;
+                }
+
+                // 在回合结束时移除技能持续回合，而不是等时间流逝
+                if (!effect.Durative && effect.DurationTurn > 0)
+                {
+                    // 按回合移除特效
+                    effect.RemainDurationTurn--;
+                    if (effect.RemainDurationTurn <= 0)
+                    {
+                        effect.RemainDurationTurn = 0;
+                        character.Effects.Remove(effect);
+                        effect.OnEffectLost(character);
+                    }
+                }
             }
 
             AfterTurn(character);
 
             WriteLine("");
-            return false;
+            return _isGameEnd;
         }
 
         /// <summary>
@@ -631,19 +646,29 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 // 移除到时间的特效
                 foreach (Effect effect in character.Effects.ToList())
                 {
-                    if (!effect.Skill.IsActive) continue;
-                    if (!effect.Durative || effect.Level == 0)
+                    if (effect.Level == 0)
                     {
                         character.Effects.Remove(effect);
                         continue;
                     }
+
                     effect.OnTimeElapsed(character, timeToReduce);
-                    effect.RemainDuration = Calculation.Round2Digits(effect.RemainDuration - timeToReduce);
-                    if (effect.RemainDuration <= 0)
+
+                    // 自身被动不会考虑
+                    if (effect.ControlType == EffectControlType.None && effect.Skill.SkillType == SkillType.Passive)
                     {
-                        effect.RemainDuration = 0;
-                        character.Effects.Remove(effect);
-                        effect.OnEffectLost(character);
+                        continue;
+                    }
+
+                    if (effect.Durative)
+                    {
+                        effect.RemainDuration = Calculation.Round2Digits(effect.RemainDuration - timeToReduce);
+                        if (effect.RemainDuration <= 0)
+                        {
+                            effect.RemainDuration = 0;
+                            character.Effects.Remove(effect);
+                            effect.OnEffectLost(character);
+                        }
                     }
                 }
             }
@@ -664,12 +689,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="isCritical"></param>
         public void DamageToEnemy(Character actor, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage = false, MagicType magicType = MagicType.None, bool isCritical = false)
         {
-            foreach (Effect effect in actor.Effects.Where(e => e.Level > 0))
+            foreach (Effect effect in actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList())
             {
-                if (effect.AlterActualDamageAfterCalculation(actor, enemy, damage, isNormalAttack, isMagicDamage, magicType, isCritical, out double newDamage))
-                {
-                    damage = newDamage;
-                }
+                effect.AlterActualDamageAfterCalculation(actor, enemy, ref damage, isNormalAttack, isMagicDamage, magicType, isCritical);
             }
             if (damage < 0) damage = 0;
             if (isMagicDamage)
@@ -687,31 +709,25 @@ namespace Milimoe.FunGame.Core.Api.Utility
             double ep = GetEP(damage, 0.2, 40);
             foreach (Effect effect in actor.Effects)
             {
-                if (effect.AlterEPAfterDamage(actor, ep, out double newep))
-                {
-                    ep = newep;
-                }
+                effect.AlterEPAfterDamage(actor, ref ep);
             }
             actor.EP += ep;
             ep = GetEP(damage, 0.1, 20);
-            foreach (Effect effect in enemy.Effects.Where(e => e.Level > 0))
+            foreach (Effect effect in enemy.Effects.Where(e => e.Level > 0).ToList())
             {
-                if (effect.AlterEPAfterGetDamage(enemy, ep, out double newep))
-                {
-                    ep = newep;
-                }
+                effect.AlterEPAfterGetDamage(enemy, ref ep);
             }
             enemy.EP += ep;
 
-            foreach (Effect effect in actor.Effects.Where(e => e.Level > 0))
+            foreach (Effect effect in actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList())
             {
-                effect.AfterDamageCalculation(actor, enemy, damage, isMagicDamage, magicType);
+                effect.AfterDamageCalculation(actor, enemy, damage, isNormalAttack, isMagicDamage, magicType, isCritical);
             }
             if (enemy.HP < 0)
             {
                 DeathCalculation(actor, enemy);
                 // 给所有角色的特效广播角色死亡结算
-                foreach (Effect effect in _queue.SelectMany(c => c.Effects.Where(e => e.Level > 0)))
+                foreach (Effect effect in _queue.SelectMany(c => c.Effects.Where(e => e.Level > 0).ToList()))
                 {
                     effect.AfterDeathCalculation(enemy, actor, _continuousKilling, _earnedMoney);
                 }
@@ -738,31 +754,28 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// 计算物理伤害
         /// </summary>
         /// <param name="actor"></param>
-        /// <param name="target"></param>
+        /// <param name="enemy"></param>
         /// <param name="isNormalAttack"></param>
         /// <param name="expectedDamage"></param>
         /// <param name="finalDamage"></param>
         /// <returns></returns>
-        public DamageResult CalculatePhysicalDamage(Character actor, Character target, bool isNormalAttack, double expectedDamage, out double finalDamage)
+        public DamageResult CalculatePhysicalDamage(Character actor, Character enemy, bool isNormalAttack, double expectedDamage, out double finalDamage)
         {
-            foreach (Effect effect in actor.Effects.Where(e => e.Level > 0))
+            foreach (Effect effect in actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList())
             {
-                if (effect.AlterExpectedDamageBeforeCalculation(actor, target, expectedDamage, isNormalAttack, false, MagicType.None, out double newDamage))
-                {
-                    expectedDamage = newDamage;
-                }
+                effect.AlterExpectedDamageBeforeCalculation(actor, enemy, ref expectedDamage, isNormalAttack, false, MagicType.None);
             }
 
             double dice = new Random().NextDouble();
             // 闪避判定
-            if (dice < target.EvadeRate)
+            if (dice < enemy.EvadeRate)
             {
                 finalDamage = 0;
-                List<Character> characters = [actor, target];
+                List<Character> characters = [actor, enemy];
                 bool isAlterEvaded = false;
-                foreach (Effect effect in characters.SelectMany(c => c.Effects.Where(e => e.Level > 0)))
+                foreach (Effect effect in characters.SelectMany(c => c.Effects.Where(e => e.Level > 0).ToList()))
                 {
-                    isAlterEvaded = effect.OnEvadedTriggered(actor, target, dice);
+                    isAlterEvaded = effect.OnEvadedTriggered(actor, enemy, dice);
                 }
                 if (!isAlterEvaded)
                 {
@@ -772,7 +785,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
 
             // 物理穿透后的护甲
-            double penetratedDEF = Calculation.Round2Digits((1 - actor.PhysicalPenetration) * target.DEF);
+            double penetratedDEF = Calculation.Round2Digits((1 - actor.PhysicalPenetration) * enemy.DEF);
 
             // 物理伤害减免
             double physicalDamageReduction = Calculation.Round4Digits(penetratedDEF / (penetratedDEF + 120));
@@ -786,7 +799,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 finalDamage = Calculation.Round2Digits(finalDamage * actor.CritDMG); // 暴击伤害倍率加成
                 WriteLine("暴击生效！！");
-                foreach (Effect effect in actor.Effects.Where(e => e.Level > 0))
+                foreach (Effect effect in actor.Effects.Where(e => e.Level > 0).ToList())
                 {
                     effect.OnCriticalDamageTriggered(actor, dice);
                 }
@@ -801,33 +814,30 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// 计算魔法伤害
         /// </summary>
         /// <param name="actor"></param>
-        /// <param name="target"></param>
+        /// <param name="enemy"></param>
         /// <param name="isNormalAttack"></param>
         /// <param name="magicType"></param>
         /// <param name="expectedDamage"></param>
         /// <param name="finalDamage"></param>
         /// <returns></returns>
-        public DamageResult CalculateMagicalDamage(Character actor, Character target, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage)
+        public DamageResult CalculateMagicalDamage(Character actor, Character enemy, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage)
         {
-            foreach (Effect effect in actor.Effects.Where(e => e.Level > 0))
+            foreach (Effect effect in actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList())
             {
-                if (effect.AlterExpectedDamageBeforeCalculation(actor, target, expectedDamage, isNormalAttack, true, magicType, out double newDamage))
-                {
-                    expectedDamage = newDamage;
-                }
+                effect.AlterExpectedDamageBeforeCalculation(actor, enemy, ref expectedDamage, isNormalAttack, true, magicType);
             }
 
             MagicResistance magicResistance = magicType switch
             {
-                MagicType.Starmark => target.MDF.Starmark,
-                MagicType.PurityNatural => target.MDF.PurityNatural,
-                MagicType.PurityContemporary => target.MDF.PurityContemporary,
-                MagicType.Bright => target.MDF.Bright,
-                MagicType.Shadow => target.MDF.Shadow,
-                MagicType.Element => target.MDF.Element,
-                MagicType.Fleabane => target.MDF.Fleabane,
-                MagicType.Particle => target.MDF.Particle,
-                _ => target.MDF.None
+                MagicType.Starmark => enemy.MDF.Starmark,
+                MagicType.PurityNatural => enemy.MDF.PurityNatural,
+                MagicType.PurityContemporary => enemy.MDF.PurityContemporary,
+                MagicType.Bright => enemy.MDF.Bright,
+                MagicType.Shadow => enemy.MDF.Shadow,
+                MagicType.Element => enemy.MDF.Element,
+                MagicType.Fleabane => enemy.MDF.Fleabane,
+                MagicType.Particle => enemy.MDF.Particle,
+                _ => enemy.MDF.None
             };
 
             // 魔法穿透后的魔法抗性
@@ -842,7 +852,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 finalDamage = Calculation.Round2Digits(finalDamage * actor.CritDMG); // 暴击伤害倍率加成
                 WriteLine("暴击生效！！");
-                foreach (Effect effect in actor.Effects.Where(e => e.Level > 0))
+                foreach (Effect effect in actor.Effects.Where(e => e.Level > 0).ToList())
                 {
                     effect.OnCriticalDamageTriggered(actor, dice);
                 }
@@ -972,7 +982,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns></returns>
         public bool CheckCanCast(Character caster, Skill skill, out double cost)
         {
-            if (skill.IsMagic && !skill.IsSuperSkill)
+            if (skill.SkillType == SkillType.Magic)
             {
                 cost = skill.MPCost;
                 if (cost > 0 && cost <= caster.MP)
@@ -1006,14 +1016,13 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns></returns>
         public void WillPreCastSuperSkill(Character character)
         {
-            CharacterState[] checkStates = [CharacterState.Actionable];
             // 选取在顺序表一半之后的角色
-            foreach (Character other in _queue.Where(c => c != character && checkStates.Contains(c.CharacterState) && _queue.IndexOf(c) >= _queue.Count / 2).ToList())
+            foreach (Character other in _queue.Where(c => c != character && c.CharacterState == CharacterState.Actionable && _queue.IndexOf(c) >= _queue.Count / 2).ToList())
             {
                 // 有 65% 欲望插队
                 if (new Random().NextDouble() < 0.65)
                 {
-                    List<Skill> skills = other.Skills.Where(s => s.IsSuperSkill && s.Level > 0 && s.IsActive && s.Enable && !s.IsInEffect && s.CurrentCD == 0 && other.EP >= s.EPCost).ToList();
+                    List<Skill> skills = other.Skills.Where(s => s.Level > 0 && s.SkillType == SkillType.SuperSkill && s.Enable && !s.IsInEffect && s.CurrentCD == 0 && other.EP >= s.EPCost).ToList();
                     if (skills.Count > 0)
                     {
                         Skill skill = skills[new Random().Next(skills.Count)];
@@ -1030,11 +1039,36 @@ namespace Milimoe.FunGame.Core.Api.Utility
                                 _hardnessTimes[c] = Calculation.Round2Digits(_hardnessTimes[c] + 0.01);
                             }
                         }
-                        foreach (Effect effect in character.Effects.Where(e => e.Level > 0))
+                        foreach (Effect effect in character.Effects.Where(e => e.Level > 0).ToList())
                         {
                             effect.OnSkillCasting(character);
                         }
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 打断施法
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="interrupter"></param>
+        public void InterruptCasting(Character caster, Character interrupter)
+        {
+            if (_castingSkills.TryGetValue(caster, out Skill? cast))
+            {
+                _castingSkills.Remove(caster);
+            }
+            else if (_castingSuperSkills.TryGetValue(caster, out cast))
+            {
+                _castingSuperSkills.Remove(caster);
+            }
+            if (cast != null)
+            {
+                WriteLine($"[ {caster} ] 的施法被 [ {interrupter} ] 打断了！！");
+                foreach (Effect e in cast.Effects.Where(e => e.Level > 0).ToList())
+                {
+                    e.OnSkillCastInterrupted(caster, interrupter);
                 }
             }
         }

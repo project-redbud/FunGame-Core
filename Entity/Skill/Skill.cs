@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Entity;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Entity
 {
@@ -42,18 +43,24 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 是否是主动技能 [ 此项为最高优先级 ]
+        /// 技能 [ 此项为最高优先级 ]
         /// </summary>
         [InitRequired]
-        public bool IsActive { get; set; } = true;
+        public SkillType SkillType { get; set; }
+        
+        /// <summary>
+        /// 是否是主动技能 [ 此项为高优先级 ]
+        /// </summary>
+        [InitRequired]
+        public bool IsActive => SkillType != SkillType.Passive;
 
         /// <summary>
-        /// 是否可用 [ 此项为最高优先级 ]
+        /// 是否可用 [ 此项为高优先级 ]
         /// </summary>
         public bool Enable { get; set; } = true;
 
         /// <summary>
-        /// 效果持续生效中 [ 此项设置为true后不允许再次释放，防止重复释放 ]
+        /// 效果持续生效中 [ 此项为高优先级 ] [ 此项设置为true后不允许再次释放，防止重复释放 ]
         /// </summary>
         public bool IsInEffect { get; set; } = false;
 
@@ -61,13 +68,13 @@ namespace Milimoe.FunGame.Core.Entity
         /// 是否是爆发技 [ 此项为高优先级 ]
         /// </summary>
         [InitRequired]
-        public bool IsSuperSkill { get; set; } = false;
+        public bool IsSuperSkill => SkillType == SkillType.SuperSkill;
 
         /// <summary>
         /// 是否属于魔法 [ <see cref="IsActive"/> 必须为 true ]，反之为战技
         /// </summary>
         [InitRequired]
-        public bool IsMagic { get; set; } = true;
+        public bool IsMagic => SkillType == SkillType.Magic;
 
         /// <summary>
         /// 魔法消耗 [ 魔法 ]
@@ -126,36 +133,48 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         public Dictionary<string, object> OtherArgs { get; } = [];
 
-        protected Skill(bool active = true, bool magic = true, Character? character = null)
+        /// <summary>
+        /// 游戏中的行动顺序表实例，在技能效果被触发时，此实例会获得赋值，使用时需要判断其是否存在
+        /// </summary>
+        public ActionQueue? ActionQueue { get; set; } = null;
+
+        protected Skill(SkillType type, Character? character = null)
         {
-            IsActive = active;
-            IsMagic = magic;
+            SkillType = type;
             Character = character;
         }
 
-        protected Skill(bool super = false, Character? character = null)
+        internal Skill()
         {
-            IsSuperSkill = super;
-            Character = character;
+            SkillType = SkillType.Passive;
         }
-
-        internal Skill() { }
 
         /// <summary>
         /// 触发技能升级
         /// </summary>
         public void OnLevelUp()
         {
-            if (!IsActive)
+            if (!IsActive && Level > 0)
             {
                 foreach (Effect e in AddInactiveEffectToCharacter())
                 {
                     if (Character != null && !Character.Effects.Contains(e))
                     {
                         Character.Effects.Add(e);
+                        e.OnEffectGained(Character);
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// 当获得技能时
+        /// </summary>
+        /// <param name="queue"></param>
+        public void OnSkillGained(ActionQueue queue)
+        {
+            ActionQueue = queue;
+            OnLevelUp();
         }
 
         /// <summary>
@@ -163,14 +182,16 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         public void Trigger(ActionQueue queue, Character actor, List<Character> enemys, List<Character> teammates)
         {
+            ActionQueue = queue;
             foreach (Effect e in Effects)
             {
-                e.OnSkillCasted(queue, actor, enemys, teammates, OtherArgs);
+                e.ActionQueue = ActionQueue;
+                e.OnSkillCasted(actor, enemys, teammates, OtherArgs);
             }
         }
 
         /// <summary>
-        /// 被动技能，需要重写此方法，返回被动特效给角色 [ 此方法会在游戏开始时和技能升级时调用 ]
+        /// 被动技能，需要重写此方法，返回被动特效给角色 [ 此方法会在技能学习时触发 ]
         /// </summary>
         /// <returns></returns>
         public virtual IEnumerable<Effect> AddInactiveEffectToCharacter()
@@ -178,6 +199,10 @@ namespace Milimoe.FunGame.Core.Entity
             return [];
         }
 
+        /// <summary>
+        /// 返回技能的详细说明
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             StringBuilder builder = new();

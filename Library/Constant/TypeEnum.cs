@@ -182,8 +182,216 @@ namespace Milimoe.FunGame.Core.Library.Constant
 
     public enum SkillType
     {
-        Active,
+        /// <summary>
+        /// 魔法，编号 1xxx
+        /// </summary>
+        Magic,
+
+        /// <summary>
+        /// 战技，编号 2xxx
+        /// </summary>
+        Skill,
+
+        /// <summary>
+        /// 爆发技，编号 3xxx
+        /// </summary>
+        SuperSkill,
+
+        /// <summary>
+        /// 被动，编号 4xxx
+        /// </summary>
         Passive
+    }
+
+    /// <summary>
+    /// 注意：具有控制效果的特效，应该和技能本身的特效(一般此项为None)区分开来。此效果被赋值会改变一些判断的结果。
+    /// </summary>
+    public enum EffectControlType
+    {
+        /// <summary>
+        /// 无特殊效果
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// 眩晕，目标无法行动
+        /// </summary>
+        Stun,
+
+        /// <summary>
+        /// 冰冻，目标无法行动
+        /// </summary>
+        Freeze,
+
+        /// <summary>
+        /// 沉默，目标无法使用技能
+        /// </summary>
+        Silence,
+
+        /// <summary>
+        /// 定身
+        /// </summary>
+        Root,
+
+        /// <summary>
+        /// 恐惧
+        /// </summary>
+        Fear,
+
+        /// <summary>
+        /// 睡眠，目标暂时无法行动，受到伤害后会苏醒
+        /// </summary>
+        Sleep,
+
+        /// <summary>
+        /// 击退
+        /// </summary>
+        Knockback,
+
+        /// <summary>
+        /// 击倒，目标被击倒在地，暂时无法行动
+        /// </summary>
+        Knockdown,
+
+        /// <summary>
+        /// 嘲讽，目标被迫攻击施法者
+        /// </summary>
+        Taunt,
+
+        /// <summary>
+        /// 减速，目标行动速度和攻击频率降低
+        /// </summary>
+        Slow,
+
+        /// <summary>
+        /// 衰弱，目标的攻击和防御降低
+        /// </summary>
+        Weaken,
+
+        /// <summary>
+        /// 中毒，目标在一段时间内持续受到伤害
+        /// </summary>
+        Poison,
+
+        /// <summary>
+        /// 燃烧，目标受到火焰伤害，持续一段时间
+        /// </summary>
+        Burn,
+
+        /// <summary>
+        /// 流血，目标持续受到物理伤害
+        /// </summary>
+        Bleed,
+
+        /// <summary>
+        /// 致盲，目标无法准确攻击，命中率降低
+        /// </summary>
+        Blind,
+
+        /// <summary>
+        /// 致残，减少目标的行动或攻击能力
+        /// </summary>
+        Cripple,
+
+        /// <summary>
+        /// 护盾，减少受到的伤害或抵消部分伤害
+        /// </summary>
+        Shield,
+
+        /// <summary>
+        /// 持续治疗，逐步恢复生命值
+        /// </summary>
+        HealOverTime,
+
+        /// <summary>
+        /// 加速，提升行动速度和攻击频率
+        /// </summary>
+        Haste,
+
+        /// <summary>
+        /// 无敌，暂时不会受到任何伤害
+        /// </summary>
+        Invulnerable,
+
+        /// <summary>
+        /// 伤害提升，增加攻击输出
+        /// </summary>
+        DamageBoost,
+
+        /// <summary>
+        /// 防御提升，减少所受伤害
+        /// </summary>
+        DefenseBoost,
+
+        /// <summary>
+        /// 暴击提升，增加暴击率或暴击伤害
+        /// </summary>
+        CritBoost,
+
+        /// <summary>
+        /// 魔法恢复，增加魔法值回复速度
+        /// </summary>
+        ManaRegen,
+
+        /// <summary>
+        /// 破甲，降低目标的防御值
+        /// </summary>
+        ArmorBreak,
+
+        /// <summary>
+        /// 降低魔法抗性，目标更容易受到魔法伤害
+        /// </summary>
+        MagicResistBreak,
+
+        /// <summary>
+        /// 诅咒，降低目标的属性或给予负面效果
+        /// </summary>
+        Curse,
+
+        /// <summary>
+        /// 疲劳，减少目标的攻击或技能效果
+        /// </summary>
+        Exhaustion,
+
+        /// <summary>
+        /// 魔力燃烧，消耗目标的魔法值
+        /// </summary>
+        ManaBurn,
+
+        /// <summary>
+        /// 魅惑，控制目标替施法者作战
+        /// </summary>
+        Charm,
+
+        /// <summary>
+        /// 缴械，目标无法进行普通攻击
+        /// </summary>
+        Disarm,
+
+        /// <summary>
+        /// 混乱，目标的行动变得随机化
+        /// </summary>
+        Confusion,
+
+        /// <summary>
+        /// 石化，目标无法行动，并大幅增加受到的伤害
+        /// </summary>
+        Petrify,
+
+        /// <summary>
+        /// 法术沉默，目标无法施放魔法技能
+        /// </summary>
+        SilenceMagic,
+
+        /// <summary>
+        /// 放逐，目标暂时无法被攻击，也无法行动
+        /// </summary>
+        Banish,
+
+        /// <summary>
+        /// 毁灭，目标在倒计时结束后受到大量伤害或死亡
+        /// </summary>
+        Doom
     }
 
     public enum ItemType
