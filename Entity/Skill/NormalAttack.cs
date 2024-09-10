@@ -70,10 +70,7 @@ namespace Milimoe.FunGame.Core.Entity
                 queue.WriteLine("[ " + Character + $" ] 对 [ {enemy} ] 发起了普通攻击！");
                 double expected = Damage;
                 DamageResult result = IsMagic ? queue.CalculateMagicalDamage(attacker, enemy, true, MagicType, expected, out double damage) : queue.CalculatePhysicalDamage(attacker, enemy, true, expected, out damage);
-                if (result != DamageResult.Evaded)
-                {
-                    queue.DamageToEnemy(attacker, enemy, damage, true, IsMagic, MagicType, result == DamageResult.Critical);
-                }
+                queue.DamageToEnemy(attacker, enemy, damage, true, IsMagic, MagicType, result);
             }
         }
 

@@ -535,12 +535,12 @@ namespace Milimoe.FunGame.Core.Api.Utility
             double newHardnessTime = baseTime;
             if (character.CharacterState != CharacterState.Casting)
             {
-                newHardnessTime = Math.Max(1, Calculation.Round2Digits(baseTime * (1 - character.ActionCoefficient)));
+                newHardnessTime = Math.Max(0, Calculation.Round2Digits(baseTime * (1 - character.ActionCoefficient)));
                 WriteLine("[ " + character + " ] 回合结束，获得硬直时间: " + newHardnessTime);
             }
             else
             {
-                newHardnessTime = Math.Max(1, Calculation.Round2Digits(baseTime * (1 - character.AccelerationCoefficient)));
+                newHardnessTime = Math.Max(0, Calculation.Round2Digits(baseTime * (1 - character.AccelerationCoefficient)));
                 WriteLine("[ " + character + " ] 进行吟唱，持续时间: " + newHardnessTime);
             }
             AddCharacter(character, newHardnessTime);
@@ -686,44 +686,49 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="isNormalAttack"></param>
         /// <param name="isMagicDamage"></param>
         /// <param name="magicType"></param>
-        /// <param name="isCritical"></param>
-        public void DamageToEnemy(Character actor, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage = false, MagicType magicType = MagicType.None, bool isCritical = false)
+        /// <param name="damageResult"></param>
+        public void DamageToEnemy(Character actor, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage = false, MagicType magicType = MagicType.None, DamageResult damageResult = DamageResult.Normal)
         {
             foreach (Effect effect in actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList())
             {
-                effect.AlterActualDamageAfterCalculation(actor, enemy, ref damage, isNormalAttack, isMagicDamage, magicType, isCritical);
+                effect.AlterActualDamageAfterCalculation(actor, enemy, ref damage, isNormalAttack, isMagicDamage, magicType, damageResult);
             }
-            if (damage < 0) damage = 0;
-            if (isMagicDamage)
-            {
-                string dmgType = CharacterSet.GetMagicName(magicType);
-                WriteLine("[ " + enemy + $" ] 受到了 {damage} 点{dmgType}！");
-            }
-            else WriteLine("[ " + enemy + $" ] 受到了 {damage} 点物理伤害！");
-            enemy.HP = Calculation.Round2Digits(enemy.HP - damage);
 
-            // 计算助攻
-            _assistDamage[actor][enemy] += damage;
+            // 闪避了就没伤害了
+            if (damageResult != DamageResult.Evaded)
+            {
+                if (damage < 0) damage = 0;
+                if (isMagicDamage)
+                {
+                    string dmgType = CharacterSet.GetMagicName(magicType);
+                    WriteLine("[ " + enemy + $" ] 受到了 {damage} 点{dmgType}！");
+                }
+                else WriteLine("[ " + enemy + $" ] 受到了 {damage} 点物理伤害！");
+                enemy.HP = Calculation.Round2Digits(enemy.HP - damage);
 
-            // 造成伤害和受伤都可以获得能量
-            double ep = GetEP(damage, 0.2, 40);
-            foreach (Effect effect in actor.Effects)
-            {
-                effect.AlterEPAfterDamage(actor, ref ep);
+                // 计算助攻
+                _assistDamage[actor][enemy] += damage;
+
+                // 造成伤害和受伤都可以获得能量
+                double ep = GetEP(damage, 0.2, 40);
+                foreach (Effect effect in actor.Effects)
+                {
+                    effect.AlterEPAfterDamage(actor, ref ep);
+                }
+                actor.EP += ep;
+                ep = GetEP(damage, 0.1, 20);
+                foreach (Effect effect in enemy.Effects.Where(e => e.Level > 0).ToList())
+                {
+                    effect.AlterEPAfterGetDamage(enemy, ref ep);
+                }
+                enemy.EP += ep;
             }
-            actor.EP += ep;
-            ep = GetEP(damage, 0.1, 20);
-            foreach (Effect effect in enemy.Effects.Where(e => e.Level > 0).ToList())
-            {
-                effect.AlterEPAfterGetDamage(enemy, ref ep);
-            }
-            enemy.EP += ep;
 
             foreach (Effect effect in actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList())
             {
-                effect.AfterDamageCalculation(actor, enemy, damage, isNormalAttack, isMagicDamage, magicType, isCritical);
+                effect.AfterDamageCalculation(actor, enemy, damage, isNormalAttack, isMagicDamage, magicType, damageResult);
             }
-            if (enemy.HP < 0)
+            if (enemy.HP <= 0)
             {
                 DeathCalculation(actor, enemy);
                 // 给所有角色的特效广播角色死亡结算
@@ -767,20 +772,23 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
 
             double dice = new Random().NextDouble();
-            // 闪避判定
-            if (dice < enemy.EvadeRate)
+            if (isNormalAttack)
             {
-                finalDamage = 0;
-                List<Character> characters = [actor, enemy];
-                bool isAlterEvaded = false;
-                foreach (Effect effect in characters.SelectMany(c => c.Effects.Where(e => e.Level > 0).ToList()))
+                // 闪避判定
+                if (dice < enemy.EvadeRate)
                 {
-                    isAlterEvaded = effect.OnEvadedTriggered(actor, enemy, dice);
-                }
-                if (!isAlterEvaded)
-                {
-                    WriteLine("此物理攻击被完美闪避了！");
-                    return DamageResult.Evaded;
+                    finalDamage = 0;
+                    List<Character> characters = [actor, enemy];
+                    bool isAlterEvaded = false;
+                    foreach (Effect effect in characters.SelectMany(c => c.Effects.Where(e => e.Level > 0).ToList()))
+                    {
+                        isAlterEvaded = effect.OnEvadedTriggered(actor, enemy, dice);
+                    }
+                    if (!isAlterEvaded)
+                    {
+                        WriteLine("此物理攻击被完美闪避了！");
+                        return DamageResult.Evaded;
+                    }
                 }
             }
 
@@ -827,6 +835,27 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 effect.AlterExpectedDamageBeforeCalculation(actor, enemy, ref expectedDamage, isNormalAttack, true, magicType);
             }
 
+            double dice = new Random().NextDouble();
+            if (isNormalAttack)
+            {
+                // 闪避判定
+                if (dice < enemy.EvadeRate)
+                {
+                    finalDamage = 0;
+                    List<Character> characters = [actor, enemy];
+                    bool isAlterEvaded = false;
+                    foreach (Effect effect in characters.SelectMany(c => c.Effects.Where(e => e.Level > 0).ToList()))
+                    {
+                        isAlterEvaded = effect.OnEvadedTriggered(actor, enemy, dice);
+                    }
+                    if (!isAlterEvaded)
+                    {
+                        WriteLine("此魔法攻击被完美闪避了！");
+                        return DamageResult.Evaded;
+                    }
+                }
+            }
+
             MagicResistance magicResistance = magicType switch
             {
                 MagicType.Starmark => enemy.MDF.Starmark,
@@ -847,7 +876,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             finalDamage = Calculation.Round2Digits(expectedDamage * (1 - MDF));
 
             // 暴击判定
-            double dice = new Random().NextDouble();
+            dice = new Random().NextDouble();
             if (dice < actor.CritRate)
             {
                 finalDamage = Calculation.Round2Digits(finalDamage * actor.CritDMG); // 暴击伤害倍率加成

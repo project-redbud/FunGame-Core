@@ -142,8 +142,8 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="isNormalAttack"></param>
         /// <param name="isMagicDamage"></param>
         /// <param name="magicType"></param>
-        /// <param name="isCritical"></param>
-        public virtual void AlterActualDamageAfterCalculation(Character character, Character enemy, ref double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, bool isCritical)
+        /// <param name="damageResult"></param>
+        public virtual void AlterActualDamageAfterCalculation(Character character, Character enemy, ref double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
         {
 
         }
@@ -238,8 +238,8 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="isNormalAttack"></param>
         /// <param name="isMagicDamage"></param>
         /// <param name="magicType"></param>
-        /// <param name="isCritical"></param>
-        public virtual void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, bool isCritical)
+        /// <param name="damageResult"></param>
+        public virtual void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
         {
 
         }
@@ -337,11 +337,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             if (ActionQueue is null) return DamageResult.Evaded;
             DamageResult result = !isMagic ? ActionQueue.CalculatePhysicalDamage(actor, enemy, false, expectedDamage, out double damage) : ActionQueue.CalculateMagicalDamage(actor, enemy, false, MagicType, expectedDamage, out damage);
-            if (result != DamageResult.Evaded)
-            {
-                ActionQueue.DamageToEnemy(actor, enemy, damage, false, isMagic, magicType, result == DamageResult.Critical);
-                return result;
-            }
+            ActionQueue.DamageToEnemy(actor, enemy, damage, false, isMagic, magicType, result);
             return result;
         }
 

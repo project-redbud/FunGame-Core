@@ -180,7 +180,19 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 当前生命值 [ 战斗相关 ]
         /// </summary>
-        public double HP { get; set; } = 0;
+        public double HP
+        {
+            get
+            {
+                return _HP < 0 ? 0 : (_HP > MaxHP ? MaxHP : _HP);
+            }
+            set
+            {
+                _HP = Calculation.Round2Digits(value);
+                if (_HP > MaxHP) _HP = MaxHP;
+                else if (_HP < 0) _HP = 0;
+            }
+        }
 
         /// <summary>
         /// 初始魔法值 [ 初始设定 ]
@@ -211,7 +223,19 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 当前魔法值 [ 战斗相关 ]
         /// </summary>
-        public double MP { get; set; } = 0;
+        public double MP
+        {
+            get
+            {
+                return _MP < 0 ? 0 : (_MP > MaxMP ? MaxMP : _MP);
+            }
+            set
+            {
+                _MP = Calculation.Round2Digits(value);
+                if (_MP > MaxMP) _MP = MaxMP;
+                else if (_MP < 0) _MP = 0;
+            }
+        }
 
         /// <summary>
         /// 当前爆发能量 [ 战斗相关 ]
@@ -691,6 +715,16 @@ namespace Milimoe.FunGame.Core.Entity
         private int _Level = 1;
 
         /// <summary>
+        /// 生命值
+        /// </summary>
+        private double _HP = 0;
+        
+        /// <summary>
+        /// 魔法值
+        /// </summary>
+        private double _MP = 0;
+        
+        /// <summary>
         /// 能量值
         /// </summary>
         private double _EP = 0;
@@ -728,7 +762,7 @@ namespace Milimoe.FunGame.Core.Entity
             MP = MaxMP;
             if (EP != -1) this.EP = EP;
         }
-
+        
         /// <summary>
         /// 按时间回复状态
         /// </summary>
@@ -742,6 +776,21 @@ namespace Milimoe.FunGame.Core.Entity
                 MP = Math.Min(MaxMP, Calculation.Round2Digits(MP + MR * time));
                 if (EP != -1) this.EP = EP;
             }
+        }
+
+        /// <summary>
+        /// 按当前百分比回复状态（一般在属性变化时调用）
+        /// </summary>
+        /// <param name="pastHP"></param>
+        /// <param name="pastMP"></param>
+        /// <param name="pastMaxHP"></param>
+        /// <param name="pastMaxMP"></param>
+        public void Recovery(double pastHP, double pastMP, double pastMaxHP, double pastMaxMP)
+        {
+            double pHP = Calculation.Round4Digits(pastHP / pastMaxHP);
+            double pMP = Calculation.Round4Digits(pastMP / pastMaxMP);
+            HP = Calculation.Round2Digits(MaxHP * pHP);
+            MP = Calculation.Round2Digits(MaxMP * pMP);
         }
 
         /// <summary>
