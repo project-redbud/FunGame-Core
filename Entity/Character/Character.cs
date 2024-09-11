@@ -137,12 +137,17 @@ namespace Milimoe.FunGame.Core.Entity
         public CharacterState CharacterState { get; set; } = CharacterState.Actionable;
 
         /// <summary>
-        /// 角色目前被特效施加的状态
+        /// 角色目前被特效施加的状态 [ 用于设置角色是否被控制的状态 ]
         /// </summary>
-        public Dictionary<Effect, CharacterState> CharacterEffectStates { get; } = [];
+        public Dictionary<Effect, List<CharacterState>> CharacterEffectStates { get; } = [];
+        
+        /// <summary>
+        /// 角色目前被特效施加的控制效果 [ 用于特效判断是否需要在移除特效时更改角色状态 ]
+        /// </summary>
+        public Dictionary<Effect, List<EffectControlType>> CharacterEffectControlTypes { get; } = [];
 
         /// <summary>
-        /// 角色是否是中立的/无敌的 [ 战斗相关 ]
+        /// 角色是否是中立的 [ 战斗相关 ]
         /// </summary>
         public bool IsNeutral { get; set; } = false;
 
@@ -976,7 +981,7 @@ namespace Milimoe.FunGame.Core.Entity
 
             if (IsNeutral)
             {
-                builder.AppendLine("角色是无敌的");
+                builder.AppendLine("角色是中立单位，处于无敌状态");
             }
 
             if (IsUnselectable)
@@ -1009,25 +1014,16 @@ namespace Milimoe.FunGame.Core.Entity
             bool isBattleRestricted = false;
             bool isSkillRestricted = false;
 
-            foreach (CharacterState state in CharacterEffectStates.Values)
-            {
-                if (state == CharacterState.NotActionable)
-                {
-                    isNotActionable = true;
-                }
-                else if (state == CharacterState.ActionRestricted)
-                {
-                    isActionRestricted = true;
-                }
-                else if (state == CharacterState.BattleRestricted)
-                {
-                    isBattleRestricted = true;
-                }
-                else if (state == CharacterState.SkillRestricted)
-                {
-                    isSkillRestricted = true;
-                }
-            }
+            IEnumerable<CharacterState> states = CharacterEffectStates.Values.SelectMany(list => list);
+            // 根据持有的特效判断角色所处的状态
+            isNotActionable = states.Any(state => state == CharacterState.NotActionable);
+            isActionRestricted = states.Any(state => state == CharacterState.ActionRestricted);
+            isBattleRestricted = states.Any(state => state == CharacterState.BattleRestricted);
+            isSkillRestricted = states.Any(state => state == CharacterState.SkillRestricted);
+
+            IEnumerable<EffectControlType> types = CharacterEffectControlTypes.Values.SelectMany(list => list);
+            // 判断角色的控制效果
+            IsUnselectable = types.Any(type => type == EffectControlType.Unselectable);
 
             bool isControl = isNotActionable || isActionRestricted || isBattleRestricted || isSkillRestricted;
             bool isCasting = CharacterState == CharacterState.Casting;

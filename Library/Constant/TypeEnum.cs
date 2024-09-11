@@ -214,6 +214,11 @@ namespace Milimoe.FunGame.Core.Library.Constant
         None,
 
         /// <summary>
+        /// 标记，目标受到某些技能的标记
+        /// </summary>
+        Mark,
+        
+        /// <summary>
         /// 眩晕，目标无法行动
         /// </summary>
         Stun,
@@ -312,6 +317,11 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// 无敌，暂时不会受到任何伤害
         /// </summary>
         Invulnerable,
+
+        /// <summary>
+        /// 不可选中，无法成为普攻和技能的目标
+        /// </summary>
+        Unselectable,
 
         /// <summary>
         /// 伤害提升，增加攻击输出

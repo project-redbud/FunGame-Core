@@ -958,7 +958,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 money += (coefficient + 1) * new Random().Next(100, 200);
                 string termination = CharacterSet.GetContinuousKilling(coefficient);
-                string msg = $"[ {killer} ] 终结了 [ {death} ] {(termination != "" ? " 的" + termination : "")}，获得 {money} 金钱！";
+                string msg = $"[ {killer} ] 终结了 [ {death} ]{(termination != "" ? " 的" + termination : "")}，获得 {money} 金钱！";
                 if (assists.Length > 1)
                 {
                     msg += "助攻：[ " + string.Join(" ] / [ ", assists.Where(c => c != killer)) + " ]";
