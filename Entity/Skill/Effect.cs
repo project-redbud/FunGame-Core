@@ -120,6 +120,19 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 在伤害计算前修改伤害类型
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="enemy"></param>
+        /// <param name="isNormalAttack"></param>
+        /// <param name="isMagicDamage"></param>
+        /// <param name="magicType"></param>
+        public virtual void AlterDamageTypeBeforeCalculation(Character character, Character enemy, ref bool isNormalAttack, ref bool isMagicDamage, ref MagicType magicType)
+        {
+
+        }
+        
+        /// <summary>
         /// 在伤害计算前修改预期伤害
         /// </summary>
         /// <param name="character"></param>
@@ -134,7 +147,7 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 在伤害计算完成后修改实际伤害
+        /// 在伤害计算完成后修改实际伤害 [ 允许取消伤害 ]
         /// </summary>
         /// <param name="character"></param>
         /// <param name="enemy"></param>
@@ -143,9 +156,10 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="isMagicDamage"></param>
         /// <param name="magicType"></param>
         /// <param name="damageResult"></param>
-        public virtual void AlterActualDamageAfterCalculation(Character character, Character enemy, ref double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        /// <returns>返回 true 表示取消此伤害，等同于闪避</returns>
+        public virtual bool AlterActualDamageAfterCalculation(Character character, Character enemy, ref double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
         {
-
+            return false;
         }
 
         /// <summary>
@@ -153,7 +167,8 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="character"></param>
         /// <param name="baseHardnessTime"></param>
-        public virtual void AlterHardnessTimeAfterNormalAttack(Character character, ref double baseHardnessTime)
+        /// <param name="isCheckProtected"></param>
+        public virtual void AlterHardnessTimeAfterNormalAttack(Character character, ref double baseHardnessTime, ref bool isCheckProtected)
         {
 
         }
@@ -163,7 +178,8 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="character"></param>
         /// <param name="baseHardnessTime"></param>
-        public virtual void AlterHardnessTimeAfterCastSkill(Character character, ref double baseHardnessTime)
+        /// <param name="isCheckProtected"></param>
+        public virtual void AlterHardnessTimeAfterCastSkill(Character character, ref double baseHardnessTime, ref bool isCheckProtected)
         {
 
         }
@@ -201,8 +217,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// 技能吟唱被打断时
         /// </summary>
         /// <param name="caster"></param>
+        /// <param name="skill"></param>
         /// <param name="interrupter"></param>
-        public virtual void OnSkillCastInterrupted(Character caster, Character interrupter)
+        public virtual void OnSkillCastInterrupted(Character caster, Skill skill, Character interrupter)
         {
 
         }

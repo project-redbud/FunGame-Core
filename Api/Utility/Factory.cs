@@ -12,7 +12,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
         private readonly static InventoryFactory InventoryFactory = new();
         private readonly static ItemFactory ItemFactory = new();
         private readonly static RoomFactory RoomFactory = new();
-        private readonly static SkillFactory SkillFactory = new();
         private readonly static UserFactory UserFactory = new();
 
         /// <summary>
@@ -135,15 +134,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
         internal static Room GetHall()
         {
             return RoomFactory.Create();
-        }
-
-        /// <summary>
-        /// 获取技能实例
-        /// </summary>
-        /// <returns></returns>
-        public static Skill GetSkill()
-        {
-            return SkillFactory.Create();
         }
 
         /// <summary>

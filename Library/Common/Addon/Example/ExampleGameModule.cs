@@ -332,10 +332,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             get
             {
                 List<Skill> list = [];
-                Skill s = Factory.GetSkill();
-                s.Name = "Example Skill";
-                s.Description = "技能应该在GameModule中继承实现，再自行构造。";
-                list.Add(s);
+                // 技能应该在GameModule中新建类继承Skill实现，再自行构造。
                 return list;
             }
         }

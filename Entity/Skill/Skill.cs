@@ -144,11 +144,6 @@ namespace Milimoe.FunGame.Core.Entity
             Character = character;
         }
 
-        internal Skill()
-        {
-            SkillType = SkillType.Passive;
-        }
-
         /// <summary>
         /// 触发技能升级
         /// </summary>
@@ -158,6 +153,7 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 foreach (Effect e in AddInactiveEffectToCharacter())
                 {
+                    e.ActionQueue = ActionQueue;
                     if (Character != null && !Character.Effects.Contains(e))
                     {
                         Character.Effects.Add(e);
@@ -178,9 +174,22 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 技能开始吟唱时 [ 吟唱魔法、释放战技和爆发技、预释放爆发技均可触发 ]
+        /// </summary>
+        public void OnSkillCasting(ActionQueue queue, Character actor)
+        {
+            ActionQueue = queue;
+            foreach (Effect e in Effects)
+            {
+                e.ActionQueue = ActionQueue;
+                e.OnSkillCasting(actor);
+            }
+        }
+        
+        /// <summary>
         /// 触发技能效果
         /// </summary>
-        public void Trigger(ActionQueue queue, Character actor, List<Character> enemys, List<Character> teammates)
+        public void OnSkillCasted(ActionQueue queue, Character actor, List<Character> enemys, List<Character> teammates)
         {
             ActionQueue = queue;
             foreach (Effect e in Effects)

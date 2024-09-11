@@ -547,17 +547,17 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 力量 = 基础力量 + 额外力量
         /// </summary>
-        public double STR => BaseSTR + ExSTR;
+        public double STR => Calculation.Round2Digits(BaseSTR + ExSTR);
 
         /// <summary>
         /// 敏捷 = 基础敏捷 + 额外敏捷
         /// </summary>
-        public double AGI => BaseAGI + ExAGI;
+        public double AGI => Calculation.Round2Digits(BaseAGI + ExAGI);
 
         /// <summary>
         /// 智力 = 基础智力 + 额外智力
         /// </summary>
-        public double INT => BaseINT + ExINT;
+        public double INT => Calculation.Round2Digits(BaseINT + ExINT);
 
         /// <summary>
         /// 力量成长值(+BaseSTR/Lv)
@@ -938,6 +938,15 @@ namespace Milimoe.FunGame.Core.Entity
                 foreach (Item item in Items)
                 {
                     builder.Append(item.ToString());
+                }
+            }
+            
+            if (Effects.Count > 0)
+            {
+                builder.AppendLine("== 状态栏 ==");
+                foreach (Effect effect in Effects)
+                {
+                    builder.Append(effect.ToString());
                 }
             }
 
