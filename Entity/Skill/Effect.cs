@@ -177,9 +177,10 @@ namespace Milimoe.FunGame.Core.Entity
         /// 在完成释放技能动作之后修改硬直时间
         /// </summary>
         /// <param name="character"></param>
+        /// <param name="skill"></param>
         /// <param name="baseHardnessTime"></param>
         /// <param name="isCheckProtected"></param>
-        public virtual void AlterHardnessTimeAfterCastSkill(Character character, ref double baseHardnessTime, ref bool isCheckProtected)
+        public virtual void AlterHardnessTimeAfterCastSkill(Character character, Skill skill, ref double baseHardnessTime, ref bool isCheckProtected)
         {
 
         }
@@ -336,9 +337,26 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 角色属性发生变化
         /// </summary>
+        /// <param name="character"></param>
         public virtual void OnAttributeChanged(Character character)
         {
 
+        }
+
+        /// <summary>
+        /// 行动开始前，修改可选择的 <paramref name="enemys"/>, <paramref name="teammates"/>, <paramref name="skills"/> 列表<para/>
+        /// 注意 <paramref name="continuousKilling"/> 和 <paramref name="earnedMoney"/> 是副本，修改无效
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <param name="skills"></param>
+        /// <param name="continuousKilling"></param>
+        /// <param name="earnedMoney"></param>
+        /// <returns>返回 true 表示更改生效</returns>
+        public virtual bool AlterEnemyListBeforeAction(Character character, List<Character> enemys, List<Character> teammates, List<Skill> skills, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney)
+        {
+            return false;
         }
 
         /// <summary>
@@ -368,6 +386,10 @@ namespace Milimoe.FunGame.Core.Entity
             ActionQueue?.InterruptCasting(caster, interrupter);
         }
 
+        /// <summary>
+        /// 返回特效详情
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             StringBuilder builder = new();
@@ -386,6 +408,11 @@ namespace Milimoe.FunGame.Core.Entity
             return builder.ToString();
         }
 
+        /// <summary>
+        /// 比较两个特效
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public override bool Equals(IBaseEntity? other)
         {
             return other is Effect c && c.Name == Name;

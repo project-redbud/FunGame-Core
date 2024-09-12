@@ -176,26 +176,26 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 技能开始吟唱时 [ 吟唱魔法、释放战技和爆发技、预释放爆发技均可触发 ]
         /// </summary>
-        public void OnSkillCasting(ActionQueue queue, Character actor)
+        public void OnSkillCasting(ActionQueue queue, Character caster)
         {
             ActionQueue = queue;
             foreach (Effect e in Effects)
             {
                 e.ActionQueue = ActionQueue;
-                e.OnSkillCasting(actor);
+                e.OnSkillCasting(caster);
             }
         }
         
         /// <summary>
         /// 触发技能效果
         /// </summary>
-        public void OnSkillCasted(ActionQueue queue, Character actor, List<Character> enemys, List<Character> teammates)
+        public void OnSkillCasted(ActionQueue queue, Character caster, List<Character> enemys, List<Character> teammates)
         {
             ActionQueue = queue;
             foreach (Effect e in Effects)
             {
                 e.ActionQueue = ActionQueue;
-                e.OnSkillCasted(actor, enemys, teammates, OtherArgs);
+                e.OnSkillCasted(caster, enemys, teammates, OtherArgs);
             }
         }
 

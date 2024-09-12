@@ -170,8 +170,8 @@ namespace Milimoe.FunGame.Core.Api.Utility
 
             if (isCheckProtected)
             {
-                // 查找保护条件 5人局为3次，9人局为4次
-                int countProtected = _queue.Count >= 9 ? 4 : ((_queue.Count >= 5) ? 3 : 2);
+                // 查找保护条件 被插队超过此次数便能获得插队补偿 即行动保护
+                int countProtected = _queue.Count;
 
                 // 查找队列中是否有满足插队补偿条件的角色（最后一个）
                 var list = _queue
@@ -409,6 +409,21 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 WriteLine("[ " + character + $" ] 完全行动不能！");
             }
 
+            List<Character> enemysTemp = new(enemys);
+            List<Character> teammatesTemp = new(teammates);
+            List<Skill> skillsTemp = new(skills);
+            Dictionary<Character, int> continuousKillingTemp = new(_continuousKilling);
+            Dictionary<Character, int> earnedMoneyTemp = new(_earnedMoney);
+            foreach (Effect e in character.Effects.Where(e => e.Level > 0).ToList())
+            {
+                if (e.AlterEnemyListBeforeAction(character, enemysTemp, teammatesTemp, skillsTemp, continuousKillingTemp, earnedMoneyTemp))
+                {
+                    enemys = enemysTemp.Distinct().ToList();
+                    teammates = teammatesTemp.Distinct().ToList();
+                    skills = skillsTemp.Distinct().ToList();
+                }
+            }
+
             if (type == CharacterActionType.NormalAttack)
             {
                 // 使用普通攻击逻辑
@@ -453,7 +468,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
 
                         foreach (Effect effect in character.Effects.Where(e => e.Level > 0).ToList())
                         {
-                            effect.AlterHardnessTimeAfterCastSkill(character, ref baseTime, ref isCheckProtected);
+                            effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
                         }
                     }
                 }
@@ -485,7 +500,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
 
                 foreach (Effect effect in character.Effects.Where(e => e.Level > 0).ToList())
                 {
-                    effect.AlterHardnessTimeAfterCastSkill(character, ref baseTime, ref isCheckProtected);
+                    effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
                 }
             }
             else if (type == CharacterActionType.CastSuperSkill)
@@ -515,7 +530,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
 
                 foreach (Effect effect in character.Effects.Where(e => e.Level > 0).ToList())
                 {
-                    effect.AlterHardnessTimeAfterCastSkill(character, ref baseTime, ref isCheckProtected);
+                    effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
                 }
             }
             else if (type == CharacterActionType.UseItem)
