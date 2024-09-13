@@ -2,6 +2,12 @@
 
 namespace Milimoe.FunGame.Core.Entity
 {
+    /// <summary>
+    /// 角色的一些个人信息
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="firstname"></param>
+    /// <param name="nickname"></param>
     public class CharacterProfile(string name, string firstname, string nickname)
     {
         /// <summary>

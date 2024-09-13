@@ -52,7 +52,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// 角色被插队次数
         /// </summary>
         protected readonly Dictionary<Character, int> _cutCount = [];
-        
+
         /// <summary>
         /// 助攻伤害
         /// </summary>
@@ -463,7 +463,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                         skill.CurrentCD = Calculation.Round2Digits(Math.Max(1, skill.CD * (1 - character.CDR)));
                         skill.Enable = false;
 
-                        WriteLine("[ " + character + $" ] 消耗了 {cost:f2} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} {skill.Name}！");
+                        WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} {skill.Name}！");
                         skill.OnSkillCasted(this, character, enemys, teammates);
 
                         foreach (Effect effect in character.Effects.Where(e => e.Level > 0).ToList())
@@ -488,7 +488,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     skill.CurrentCD = Calculation.Round2Digits(Math.Max(1, skill.CD * (1 - character.CDR)));
                     skill.Enable = false;
 
-                    WriteLine("[ " + character + $" ] 消耗了 {cost:f2} 点魔法值，释放了技能 {skill.Name}！");
+                    WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点魔法值，释放了技能 {skill.Name}！");
                     skill.OnSkillCasted(this, character, enemys, teammates);
                 }
                 else
@@ -518,7 +518,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     skill.CurrentCD = Calculation.Round2Digits(Math.Max(1, skill.CD * (1 - character.CDR)));
                     skill.Enable = false;
 
-                    WriteLine("[ " + character + $" ] 消耗了 {cost:f2} 点能量值，释放了爆发技 {skill.Name}！");
+                    WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量值，释放了爆发技 {skill.Name}！");
                     skill.OnSkillCasted(this, character, enemys, teammates);
                 }
                 else
@@ -789,7 +789,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         {
             bool isMagic = false;
             MagicType magicType = MagicType.None;
-            foreach(Effect effect in actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList())
+            foreach (Effect effect in actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList())
             {
                 effect.AlterDamageTypeBeforeCalculation(actor, enemy, ref isNormalAttack, ref isMagic, ref magicType);
             }
@@ -904,7 +904,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 }
             }
 
-            MagicResistance magicResistance = magicType switch
+            double MDF = magicType switch
             {
                 MagicType.Starmark => enemy.MDF.Starmark,
                 MagicType.PurityNatural => enemy.MDF.PurityNatural,
@@ -918,7 +918,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             };
 
             // 魔法穿透后的魔法抗性
-            double MDF = Calculation.Round2Digits((1 - actor.MagicalPenetration) * magicResistance.Value);
+            MDF = Calculation.Round2Digits((1 - actor.MagicalPenetration) * MDF);
 
             // 最终的魔法伤害
             finalDamage = Calculation.Round2Digits(expectedDamage * (1 - MDF));
@@ -1008,7 +1008,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 WriteLine("[ " + killer + " ] 已经" + continuousKilling + "！拜托谁去杀了他吧！！！");
             }
-             
+
             if (!_earnedMoney.TryAdd(killer, money)) _earnedMoney[killer] += money;
 
             _eliminated.Add(death);

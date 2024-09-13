@@ -1,23 +1,18 @@
-﻿using Milimoe.FunGame.Core.Library.Constant;
-
-namespace Milimoe.FunGame.Core.Entity
+﻿namespace Milimoe.FunGame.Core.Entity
 {
-    public class MDF()
+    /// <summary>
+    /// 角色的魔法抗性，对不同的魔法类型有不同抗性
+    /// </summary>
+    public class MagicResistance()
     {
-        public MagicResistance None { get; } = new(MagicType.None);
-        public MagicResistance Starmark { get; } = new(MagicType.Starmark);
-        public MagicResistance PurityNatural { get; } = new(MagicType.PurityNatural);
-        public MagicResistance PurityContemporary { get; } = new(MagicType.PurityContemporary);
-        public MagicResistance Bright { get; } = new(MagicType.Bright);
-        public MagicResistance Shadow { get; } = new(MagicType.Shadow);
-        public MagicResistance Element { get; } = new(MagicType.Element);
-        public MagicResistance Fleabane { get; } = new(MagicType.Fleabane);
-        public MagicResistance Particle { get; } = new(MagicType.Particle);
-    }
-
-    public class MagicResistance(MagicType type = MagicType.None, double value = 0)
-    {
-        public MagicType MagicType { get; } = type;
-        public double Value { get; set; } = value;
+        public double None { get; set; } = 0;
+        public double Starmark { get; set; } = 0;
+        public double PurityNatural { get; set; } = 0;
+        public double PurityContemporary { get; set; } = 0;
+        public double Bright { get; set; } = 0;
+        public double Shadow { get; set; } = 0;
+        public double Element { get; set; } = 0;
+        public double Fleabane { get; set; } = 0;
+        public double Particle { get; set; } = 0;
     }
 }

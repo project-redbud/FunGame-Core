@@ -19,7 +19,7 @@ namespace Milimoe.FunGame.Core.Service
             Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
             Converters = { new DateTimeConverter(), new DataTableConverter(), new DataSetConverter(), new UserConverter(), new RoomConverter(),
-                new CharacterConverter(), new MagicResistanceConverter(), new MDFConverter() }
+                new CharacterConverter(), new MagicResistanceConverter(), new EquipSlotConverter(), new SkillConverter(), new EffectConverter(), new ItemConverter() }
         };
 
         /// <summary>

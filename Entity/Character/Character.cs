@@ -38,6 +38,11 @@ namespace Milimoe.FunGame.Core.Entity
         public CharacterProfile Profile { get; set; }
 
         /// <summary>
+        /// 角色的详细资料
+        /// </summary>
+        public EquipSlot EquipSlot { get; set; }
+
+        /// <summary>
         /// 魔法属性
         /// </summary>
         public MagicType MagicType { get; set; } = MagicType.None;
@@ -140,7 +145,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 角色目前被特效施加的状态 [ 用于设置角色是否被控制的状态 ]
         /// </summary>
         public Dictionary<Effect, List<CharacterState>> CharacterEffectStates { get; } = [];
-        
+
         /// <summary>
         /// 角色目前被特效施加的控制效果 [ 用于特效判断是否需要在移除特效时更改角色状态 ]
         /// </summary>
@@ -366,7 +371,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 魔法抗性(%) [ 与技能和物品相关 ]
         /// </summary>
-        public MDF MDF { get; set; }
+        public MagicResistance MDF { get; set; }
 
         /// <summary>
         /// 物理穿透(%) [ 与技能和物品相关 ]
@@ -723,12 +728,12 @@ namespace Milimoe.FunGame.Core.Entity
         /// 生命值
         /// </summary>
         private double _HP = 0;
-        
+
         /// <summary>
         /// 魔法值
         /// </summary>
         private double _MP = 0;
-        
+
         /// <summary>
         /// 能量值
         /// </summary>
@@ -748,6 +753,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             User = General.UnknownUserInstance;
             Profile = new(Name, FirstName, NickName);
+            EquipSlot = new();
             MDF = new();
             NormalAttack = new(this);
         }
@@ -767,7 +773,7 @@ namespace Milimoe.FunGame.Core.Entity
             MP = MaxMP;
             if (EP != -1) this.EP = EP;
         }
-        
+
         /// <summary>
         /// 按时间回复状态
         /// </summary>
@@ -810,13 +816,13 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 比较一个角色（只比较 <see cref="Name"/>）
+        /// 比较一个角色（只比较 <see cref="ToString"/>）
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
         public override bool Equals(IBaseEntity? other)
         {
-            return other is Character c && c.Name == Name;
+            return other is Character c && c.ToString() == ToString();
         }
 
         /// <summary>
@@ -891,8 +897,8 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"能量值：{EP} / 200");
             builder.AppendLine($"攻击力：{ATK}" + (ExATK + ExATK2 > 0 ? $" [{BaseATK} + {ExATK + ExATK2}]" : ""));
             builder.AppendLine($"物理护甲：{DEF}" + (ExDEF + ExDEF2 > 0 ? $" [{BaseDEF} + {ExDEF + ExDEF2}]" : "") + $" ({PDR * 100:f2}%)");
-            double mdf = Calculation.Round4Digits((MDF.None.Value + MDF.Starmark.Value + MDF.PurityNatural.Value + MDF.PurityContemporary.Value +
-                MDF.Bright.Value + MDF.Shadow.Value + MDF.Element.Value + MDF.Fleabane.Value + MDF.Particle.Value) / 9);
+            double mdf = Calculation.Round4Digits((MDF.None + MDF.Starmark + MDF.PurityNatural + MDF.PurityContemporary +
+                MDF.Bright + MDF.Shadow + MDF.Element + MDF.Fleabane + MDF.Particle) / 9);
             builder.AppendLine($"魔法抗性：{mdf * 100:f2}%（平均）");
             double exSPD = Calculation.Round2Digits(AGI * 0.65 + ExSPD);
             builder.AppendLine($"行动速度：{SPD}" + (exSPD > 0 ? $" [{InitialSPD} + {exSPD}]" : "") + $" ({ActionCoefficient * 100:f2}%)");
@@ -945,7 +951,7 @@ namespace Milimoe.FunGame.Core.Entity
                     builder.Append(item.ToString());
                 }
             }
-            
+
             if (Effects.Count > 0)
             {
                 builder.AppendLine("== 状态栏 ==");

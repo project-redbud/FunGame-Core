@@ -217,7 +217,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// 标记，目标受到某些技能的标记
         /// </summary>
         Mark,
-        
+
         /// <summary>
         /// 眩晕，目标无法行动
         /// </summary>
@@ -406,8 +406,28 @@ namespace Milimoe.FunGame.Core.Library.Constant
 
     public enum ItemType
     {
-        Active,
-        Passive
+        MagicCardPack,
+        Weapon,
+        Armor,
+        Shoes,
+        Accessory,
+        Consumable,
+        Collectible,
+        SpecialItem,
+        QuestItem,
+        GiftBox,
+        Others
+    }
+
+    public enum EquipSlotType
+    {
+        None,
+        MagicCardPack,
+        Weapon,
+        Armor,
+        Shoes,
+        Accessory1,
+        Accessory2
     }
 
     public enum EntityType

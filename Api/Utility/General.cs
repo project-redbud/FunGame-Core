@@ -245,6 +245,42 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="options"></param>
         /// <returns></returns>
         public static T? JsonDeserializeFromHashtable<T>(Hashtable hashtable, string key, JsonSerializerOptions options) => Service.JsonManager.GetObject<T>(hashtable, key, options);
+
+        // 创建一个静态 HttpClient 实例，供整个应用程序生命周期使用
+        private static readonly HttpClient client = new();
+
+        /// <summary>
+        /// 发送 GET 请求
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        public static async Task<T?> HttpGet<T>(string url)
+        {
+            HttpResponseMessage response = await client.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            string content = await response.Content.ReadAsStringAsync();
+            T? result = JsonDeserialize<T>(content);
+            return result;
+        }
+
+        /// <summary>
+        /// 发送 POST 请求
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="url"></param>
+        /// <param name="json"></param>
+        /// <returns></returns>
+        public static async Task<T?> HttpPost<T>(string url, string json)
+        {
+            HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await client.PostAsync(url, content);
+            response.EnsureSuccessStatusCode();
+
+            string read = await response.Content.ReadAsStringAsync();
+            T? result = JsonDeserialize<T>(read);
+            return result;
+        }
     }
 
     #endregion

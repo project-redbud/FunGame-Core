@@ -8,12 +8,12 @@ namespace Milimoe.FunGame.Core.Entity
     /// <summary>
     /// 特殊效果类，需要继承
     /// </summary>
-    public abstract class Effect(Skill skill) : BaseEntity
+    public class Effect : BaseEntity
     {
         /// <summary>
         /// 所属的技能
         /// </summary>
-        public Skill Skill { get; } = skill;
+        public Skill Skill { get; }
 
         /// <summary>
         /// 特殊效果类型<para/>
@@ -101,6 +101,16 @@ namespace Milimoe.FunGame.Core.Entity
             }
         }
 
+        protected Effect(Skill skill)
+        {
+            Skill = skill;
+        }
+
+        internal Effect()
+        {
+            Skill = Factory.GetSkill();
+        }
+
         /// <summary>
         /// 获得此特效时
         /// </summary>
@@ -131,7 +141,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
 
         }
-        
+
         /// <summary>
         /// 在伤害计算前修改预期伤害
         /// </summary>
@@ -415,7 +425,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <returns></returns>
         public override bool Equals(IBaseEntity? other)
         {
-            return other is Effect c && c.Name == Name;
+            return other is Effect c && c.Id + "." + Name == Id + "." + Name;
         }
     }
 }

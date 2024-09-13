@@ -10,6 +10,8 @@ namespace Milimoe.FunGame.Core.Api.Utility
     {
         private readonly static CharacterFactory CharacterFactory = new();
         private readonly static InventoryFactory InventoryFactory = new();
+        private readonly static SkillFactory SkillFactory = new();
+        private readonly static EffectFactory EffectFactory = new();
         private readonly static ItemFactory ItemFactory = new();
         private readonly static RoomFactory RoomFactory = new();
         private readonly static UserFactory UserFactory = new();
@@ -33,13 +35,30 @@ namespace Milimoe.FunGame.Core.Api.Utility
         }
 
         /// <summary>
+        /// 获取技能实例
+        /// </summary>
+        /// <returns></returns>
+        public static Skill GetSkill()
+        {
+            return SkillFactory.Create();
+        }
+
+        /// <summary>
+        /// 获取技能特效实例
+        /// </summary>
+        /// <returns></returns>
+        public static Effect GetEffect()
+        {
+            return EffectFactory.Create();
+        }
+
+        /// <summary>
         /// 获取物品实例
         /// </summary>
-        /// <param name="type">Item类型 主动 或 被动</param>
         /// <returns></returns>
-        public static Item GetItem(ItemType type = ItemType.Passive)
+        public static Item GetItem()
         {
-            return ItemFactory.Create(type);
+            return ItemFactory.Create();
         }
 
         /// <summary>
