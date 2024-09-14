@@ -21,11 +21,6 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual string Description { get; set; } = "";
 
         /// <summary>
-        /// 快捷键
-        /// </summary>
-        public char Key { get; set; } = '/';
-
-        /// <summary>
         /// 技能等级，等于 0 时可以称之为尚未学习
         /// </summary>
         public int Level
@@ -43,11 +38,11 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 技能 [ 此项为最高优先级 ]
+        /// 技能类型 [ 此项为最高优先级 ]
         /// </summary>
         [InitRequired]
         public SkillType SkillType { get; set; }
-        
+
         /// <summary>
         /// 是否是主动技能 [ 此项为高优先级 ]
         /// </summary>
@@ -138,11 +133,21 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         public ActionQueue? ActionQueue { get; set; } = null;
 
+        /// <summary>
+        /// 继承此类实现时，调用基类的构造函数
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="character"></param>
         protected Skill(SkillType type, Character? character = null)
         {
             SkillType = type;
             Character = character;
         }
+
+        /// <summary>
+        /// 用于构造 JSON
+        /// </summary>
+        internal Skill() { }
 
         /// <summary>
         /// 触发技能升级
@@ -185,7 +190,7 @@ namespace Milimoe.FunGame.Core.Entity
                 e.OnSkillCasting(caster);
             }
         }
-        
+
         /// <summary>
         /// 触发技能效果
         /// </summary>
@@ -257,9 +262,14 @@ namespace Milimoe.FunGame.Core.Entity
             return builder.ToString();
         }
 
+        /// <summary>
+        /// 判断两个技能是否相同 检查Id.Name
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public override bool Equals(IBaseEntity? other)
         {
-            return other is Skill c && c.Name == Name;
+            return other is Skill c && c.Id + "." + c.Name == Id + "." + Name;
         }
 
         /// <summary>

@@ -2,8 +2,7 @@
 {
     public interface IItem : IActiveEnable, IRelateCharacter
     {
-        public string Describe { get; set; }
+        public string Description { get; }
         public double Price { get; set; }
-        public char Key { get; set; }
     }
 }

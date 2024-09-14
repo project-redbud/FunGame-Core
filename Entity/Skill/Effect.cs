@@ -8,12 +8,12 @@ namespace Milimoe.FunGame.Core.Entity
     /// <summary>
     /// 特殊效果类，需要继承
     /// </summary>
-    public abstract class Effect(Skill skill) : BaseEntity
+    public class Effect : BaseEntity
     {
         /// <summary>
         /// 所属的技能
         /// </summary>
-        public Skill Skill { get; } = skill;
+        public Skill Skill { get; }
 
         /// <summary>
         /// 特殊效果类型<para/>
@@ -101,6 +101,16 @@ namespace Milimoe.FunGame.Core.Entity
             }
         }
 
+        protected Effect(Skill skill)
+        {
+            Skill = skill;
+        }
+
+        internal Effect()
+        {
+            Skill = Factory.GetSkill();
+        }
+
         /// <summary>
         /// 获得此特效时
         /// </summary>
@@ -131,7 +141,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
 
         }
-        
+
         /// <summary>
         /// 在伤害计算前修改预期伤害
         /// </summary>
@@ -360,6 +370,22 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 行动开始前，指定角色的行动，而不是使用顺序表自带的逻辑；或者修改对应的操作触发概率
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="state"></param>
+        /// <param name="canUseItem"></param>
+        /// <param name="canCastSkill"></param>
+        /// <param name="pUseItem"></param>
+        /// <param name="pCastSkill"></param>
+        /// <param name="pNormalAttack"></param>
+        /// <returns></returns>
+        public virtual CharacterActionType AlterActionTypeBeforeAction(Character character, CharacterState state, ref bool canUseItem, ref bool canCastSkill, ref double pUseItem, ref double pCastSkill, ref double pNormalAttack)
+        {
+            return CharacterActionType.None;
+        }
+
+        /// <summary>
         /// 对敌人造成技能伤害 [ 强烈建议使用此方法造成伤害而不是自行调用 <see cref="ActionQueue.DamageToEnemy"/> ]
         /// </summary>
         /// <param name="actor"></param>
@@ -415,7 +441,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <returns></returns>
         public override bool Equals(IBaseEntity? other)
         {
-            return other is Effect c && c.Name == Name;
+            return other is Effect c && c.Id + "." + Name == Id + "." + Name;
         }
     }
 }

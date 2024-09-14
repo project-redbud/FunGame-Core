@@ -3,11 +3,11 @@ using Milimoe.FunGame.Core.Interface.Base;
 
 namespace Milimoe.FunGame.Core.Api.Factory
 {
-    internal class ItemFactory : IFactory<Item>
+    internal class EffectFactory : IFactory<Effect>
     {
-        public Type EntityType => typeof(Item);
+        public Type EntityType => typeof(Effect);
 
-        public Item Create()
+        public Effect Create()
         {
             return new();
         }

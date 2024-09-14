@@ -26,6 +26,12 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Character.NickName):
                     result.NickName = reader.GetString() ?? "";
                     break;
+                case nameof(Character.Profile):
+                    result.Profile = NetworkUtility.JsonDeserialize<CharacterProfile>(ref reader, options) ?? new(result.Name, result.FirstName, result.NickName);
+                    break;
+                case nameof(Character.EquipSlot):
+                    result.EquipSlot = NetworkUtility.JsonDeserialize<EquipSlot>(ref reader, options) ?? new();
+                    break;
                 case nameof(Character.MagicType):
                     result.MagicType = (MagicType)reader.GetInt32();
                     break;
@@ -84,7 +90,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.ExDEF2 = reader.GetDouble();
                     break;
                 case nameof(Character.MDF):
-                    result.MDF = NetworkUtility.JsonDeserialize<MDF>(ref reader, options) ?? new();
+                    result.MDF = NetworkUtility.JsonDeserialize<MagicResistance>(ref reader, options) ?? new();
                     break;
                 case nameof(Character.PhysicalPenetration):
                     result.PhysicalPenetration = reader.GetDouble();
@@ -173,6 +179,10 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteString(nameof(Character.Name), value.Name);
             writer.WriteString(nameof(Character.FirstName), value.FirstName);
             writer.WriteString(nameof(Character.NickName), value.NickName);
+            writer.WritePropertyName(nameof(Character.Profile));
+            JsonSerializer.Serialize(writer, value.Profile, options);
+            writer.WritePropertyName(nameof(Character.EquipSlot));
+            JsonSerializer.Serialize(writer, value.EquipSlot, options);
             writer.WriteNumber(nameof(Character.MagicType), (int)value.MagicType);
             writer.WriteNumber(nameof(Character.FirstRoleType), (int)value.FirstRoleType);
             writer.WriteNumber(nameof(Character.SecondRoleType), (int)value.SecondRoleType);
