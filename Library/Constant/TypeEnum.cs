@@ -200,7 +200,12 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// <summary>
         /// 被动，编号 4xxx
         /// </summary>
-        Passive
+        Passive,
+
+        /// <summary>
+        /// 物品的主动技能，编号 5xxx
+        /// </summary>
+        Item
     }
 
     /// <summary>
@@ -406,16 +411,59 @@ namespace Milimoe.FunGame.Core.Library.Constant
 
     public enum ItemType
     {
+        /// <summary>
+        /// 魔法卡包 编号 10xxx
+        /// </summary>
         MagicCardPack,
+
+        /// <summary>
+        /// 武器 编号 11xxx
+        /// </summary>
         Weapon,
+
+        /// <summary>
+        /// 防具 编号 12xxx
+        /// </summary>
         Armor,
+
+        /// <summary>
+        /// 鞋子 编号 13xxx
+        /// </summary>
         Shoes,
+
+        /// <summary>
+        /// 饰品 编号 14xxx
+        /// </summary>
         Accessory,
+
+        /// <summary>
+        /// 消耗品 编号 15xxx
+        /// </summary>
         Consumable,
+
+        /// <summary>
+        /// 收藏品 编号 16xxx
+        /// </summary>
         Collectible,
+
+        /// <summary>
+        /// 特殊物品 编号 17xxx
+        /// </summary>
         SpecialItem,
+
+        /// <summary>
+        /// 任务物品 编号 18xxx
+        /// </summary>
         QuestItem,
+
+        /// <summary>
+        /// 礼包 编号 19xxx
+        /// </summary>
         GiftBox,
+
+        /// <summary>
+        /// 其他 编号 20xxx
+        /// </summary>
         Others
     }
 

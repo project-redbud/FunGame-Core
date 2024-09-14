@@ -1,24 +1,32 @@
-﻿using System.Collections;
-
-namespace Milimoe.FunGame.Core.Entity
+﻿namespace Milimoe.FunGame.Core.Entity
 {
     public class CharacterStatistics
     {
-        public int Id { get; set; }
-        public Character? Character { get; set; } = null;
-        public Hashtable? DamageStats { get; set; } = new Hashtable();
-        public Hashtable? PhysicalDamageStats { get; set; } = new Hashtable();
-        public Hashtable? MagicDamageStats { get; set; } = new Hashtable();
-        public Hashtable? RealDamageStats { get; set; } = new Hashtable();
-        public Hashtable? AvgDamageStats { get; set; } = new Hashtable();
-        public Hashtable? AvgLiveRoundStats { get; set; } = new Hashtable();
-        public Hashtable? AvgDamageRoundStats { get; set; } = new Hashtable();
-        public Hashtable? KillStats { get; set; } = new Hashtable();
-        public Hashtable? DeathStats { get; set; } = new Hashtable();
-        public Hashtable? AssistStats { get; set; } = new Hashtable();
-        public Hashtable? Plays { get; set; } = new Hashtable();
-        public Hashtable? Wins { get; set; } = new Hashtable();
-        public Hashtable? Loses { get; set; } = new Hashtable();
-        public Hashtable? Winrates { get; set; } = new Hashtable();
+        public double TotalDamage { get; set; } = 0;
+        public double TotalPhysicalDamage { get; set; } = 0;
+        public double TotalMagicDamage { get; set; } = 0;
+        public double TotalRealDamage { get; set; } = 0;
+        public double AvgDamage { get; set; } = 0;
+        public double AvgPhysicalDamage { get; set; } = 0;
+        public double AvgMagicDamage { get; set; } = 0;
+        public double AvgRealDamage { get; set; } = 0;
+        public int LiveRound { get; set; } = 0;
+        public int AvgLiveRound { get; set; } = 0;
+        public int ActionTurn { get; set; } = 0;
+        public int AvgActionTurn { get; set; } = 0;
+        public double LiveTime { get; set; } = 0;
+        public double AvgLiveTime { get; set; } = 0;
+        public double DamagePerRound { get; set; } = 0;
+        public double DamagePerTurn { get; set; } = 0;
+        public double DamagePerSecond { get; set; } = 0;
+        public double TotalEarnedMoney { get; set; } = 0;
+        public double AvgEarnedMoney { get; set; } = 0;
+        public double Kills { get; set; } = 0;
+        public double Deaths { get; set; } = 0;
+        public double Assists { get; set; } = 0;
+        public double Plays { get; set; } = 0;
+        public double Wins { get; set; } = 0;
+        public double Loses { get; set; } = 0;
+        public double Winrates { get; set; } = 0;
     }
 }

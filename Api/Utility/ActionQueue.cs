@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Api.Utility
@@ -12,6 +13,27 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// 用于文本输出
         /// </summary>
         public Action<string> WriteLine { get; }
+
+        /// <summary>
+        /// 当前已死亡的角色顺序(第一个是最早死的)
+        /// </summary>
+        public List<Character> Eliminated => _eliminated;
+
+        /// <summary>
+        /// 角色数据
+        /// </summary>
+        public Dictionary<Character, CharacterStatistics> CharacterStatistics => _stats;
+
+        /// <summary>
+        /// 游戏运行的时间
+        /// </summary>
+        public double TotalTime { get; set; } = 0;
+
+        /// <summary>
+        /// 游戏运行的回合
+        /// 对于某角色而言，在其行动的回合叫 Turn，而所有角色行动的回合，都称之为 Round。
+        /// </summary>
+        public int TotalRound { get; set; } = 0;
 
         /// <summary>
         /// 当前的行动顺序
@@ -59,6 +81,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
         protected readonly Dictionary<Character, AssistDetail> _assistDamage = [];
 
         /// <summary>
+        /// 角色数据
+        /// </summary>
+        protected readonly Dictionary<Character, CharacterStatistics> _stats = [];
+
+        /// <summary>
         /// 游戏是否结束
         /// </summary>
         protected bool _isGameEnd = false;
@@ -91,6 +118,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     Character character = group.First();
                     AddCharacter(character, Calculation.Round2Digits(_queue.Count * 0.1), false);
                     _assistDamage.Add(character, new AssistDetail(character, characters.Where(c => c != character)));
+                    _stats.Add(character, new());
                     // 初始化技能
                     foreach (Skill skill in character.Skills)
                     {
@@ -144,6 +172,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                         {
                             AddCharacter(selectedCharacter, Calculation.Round2Digits(_queue.Count * 0.1), false);
                             _assistDamage.Add(selectedCharacter, new AssistDetail(selectedCharacter, characters.Where(c => c != selectedCharacter)));
+                            _stats.Add(selectedCharacter, new());
                             // 初始化技能
                             foreach (Skill skill in selectedCharacter.Skills)
                             {
@@ -284,6 +313,8 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns>是否结束游戏</returns>
         public bool ProcessTurn(Character character)
         {
+            TotalRound++;
+
             if (!BeforeTurn(character))
             {
                 return _isGameEnd;
@@ -307,106 +338,123 @@ namespace Milimoe.FunGame.Core.Api.Utility
             // 技能列表
             List<Skill> skills = [.. character.Skills.Where(s => s.Level > 0 && s.SkillType != SkillType.Passive && s.Enable && !s.IsInEffect && s.CurrentCD == 0 &&
                 (((s.SkillType == SkillType.SuperSkill || s.SkillType == SkillType.Skill) && s.EPCost <= character.EP) || (s.SkillType == SkillType.Magic && s.MPCost <= character.MP)))];
+            
+            // 物品列表
+            List<Item> items = [.. character.Items.Where(i => i.IsActive && i.Skills.Active != null && i.Enable &&
+                i.Skills.Active.SkillType == SkillType.Item && i.Skills.Active.Enable && !i.Skills.Active.IsInEffect && i.Skills.Active.CurrentCD == 0 && i.Skills.Active.MPCost <= character.MP && i.Skills.Active.EPCost <= character.EP)];
 
             // 作出了什么行动
             CharacterActionType type = CharacterActionType.None;
 
-            if (character.CharacterState == CharacterState.Actionable)
+            // 是否能使用物品和释放技能
+            bool canUseItem = items.Count > 0;
+            bool canCastSkill = skills.Count > 0;
+
+            // 使用物品和释放技能、使用普通攻击的概率
+            double pUseItem = 0.33;
+            double pCastSkill = 0.33;
+            double pNormalAttack = 0.34;
+
+            // 不允许在吟唱和预释放状态下，修改角色的行动
+            if (character.CharacterState != CharacterState.Casting && character.CharacterState != CharacterState.PreCastSuperSkill)
             {
-                if (character.CharacterState == CharacterState.ActionRestricted)
+                CharacterActionType actionTypeTemp = CharacterActionType.None;
+                foreach (Effect e in character.Effects.Where(e => e.Level > 0).ToList())
                 {
-                    // 行动受限，只能使用特殊物品
-                    if (character.Items.Count > 0)
-                    {
-                        type = CharacterActionType.UseItem;
-                    }
+                    actionTypeTemp = e.AlterActionTypeBeforeAction(character, character.CharacterState, ref canUseItem, ref canCastSkill, ref pUseItem, ref pCastSkill, ref pNormalAttack);
                 }
-                else if (character.CharacterState == CharacterState.BattleRestricted)
+                if (actionTypeTemp != CharacterActionType.None && actionTypeTemp != CharacterActionType.CastSkill && actionTypeTemp != CharacterActionType.CastSuperSkill)
                 {
-                    // 战斗不能，只能使用物品
-                    if (character.Items.Count > 0)
-                    {
-                        type = CharacterActionType.UseItem;
-                    }
+                    type = actionTypeTemp;
                 }
-                else if (character.CharacterState == CharacterState.SkillRestricted)
+            }
+
+            if (type == CharacterActionType.None)
+            {
+                if (character.CharacterState != CharacterState.NotActionable && character.CharacterState != CharacterState.Casting && character.CharacterState != CharacterState.PreCastSuperSkill)
                 {
-                    // 技能受限，无法使用技能，可以使用物品
-                    if (character.Items.Count > 0)
+                    if (character.CharacterState == CharacterState.Actionable)
                     {
-                        if (new Random().NextDouble() > 0.5)
+                        // 可以任意行动
+                        if (canUseItem && canCastSkill)
                         {
-                            type = CharacterActionType.UseItem;
+                            // 不做任何处理
+                        }
+                        else if (canUseItem && !canCastSkill)
+                        {
+                            pCastSkill = 0;
+                        }
+                        else if (!canUseItem && canCastSkill)
+                        {
+                            pUseItem = 0;
                         }
                         else
                         {
-                            type = CharacterActionType.NormalAttack;
+                            pUseItem = 0;
+                            pCastSkill = 0;
                         }
                     }
-                    else
+                    else if (character.CharacterState == CharacterState.ActionRestricted)
                     {
-                        type = CharacterActionType.NormalAttack;
+                        // 行动受限，只能使用特殊物品
+                        if (canUseItem)
+                        {
+                            pCastSkill = 0;
+                            pNormalAttack = 0;
+                        }
+                        else
+                        {
+                            pUseItem = 0;
+                            pCastSkill = 0;
+                            pNormalAttack = 0;
+                        }
                     }
+                    else if (character.CharacterState == CharacterState.BattleRestricted)
+                    {
+                        // 战斗不能，只能使用物品
+                        if (canUseItem)
+                        {
+                            pCastSkill = 0;
+                            pNormalAttack = 0;
+                        }
+                        else
+                        {
+                            pUseItem = 0;
+                            pCastSkill = 0;
+                            pNormalAttack = 0;
+                        }
+                    }
+                    else if (character.CharacterState == CharacterState.SkillRestricted)
+                    {
+                        // 技能受限，无法使用技能，可以使用物品
+                        if (canUseItem)
+                        {
+                            pCastSkill = 0;
+                        }
+                        else
+                        {
+                            pUseItem = 0;
+                            pCastSkill = 0;
+                        }
+                    }
+                    type = GetActionType(pUseItem, pCastSkill, pNormalAttack);
+                    _stats[character].ActionTurn += 1;
+                }
+                else if (character.CharacterState == CharacterState.Casting)
+                {
+                    // 如果角色上一次吟唱了魔法，这次的行动则是结算这个魔法
+                    type = CharacterActionType.CastSkill;
+                }
+                else if (character.CharacterState == CharacterState.PreCastSuperSkill)
+                {
+                    // 角色使用回合外爆发技插队
+                    type = CharacterActionType.CastSuperSkill;
                 }
                 else
                 {
-                    // 可以任意行动
-                    bool canUseItem = character.Items.Count > 0;
-                    bool canCastSkill = skills.Count > 0;
-                    if (canUseItem && canCastSkill)
-                    {
-                        double dowhat = new Random().NextDouble();
-                        if (dowhat < 0.33)
-                        {
-                            type = CharacterActionType.UseItem;
-                        }
-                        else if (dowhat < 0.66)
-                        {
-                            type = CharacterActionType.PreCastSkill;
-                        }
-                        else
-                        {
-                            type = CharacterActionType.NormalAttack;
-                        }
-                    }
-                    else if (canUseItem && !canCastSkill)
-                    {
-                        if (new Random().NextDouble() > 0.5)
-                        {
-                            type = CharacterActionType.UseItem;
-                        }
-                        else
-                        {
-                            type = CharacterActionType.NormalAttack;
-                        }
-                    }
-                    else if (!canUseItem && canCastSkill)
-                    {
-                        if (new Random().NextDouble() > 0.5)
-                        {
-                            type = CharacterActionType.PreCastSkill;
-                        }
-                        else
-                        {
-                            type = CharacterActionType.NormalAttack;
-                        }
-                    }
-                    else type = CharacterActionType.NormalAttack;
+                    WriteLine("[ " + character + $" ] 完全行动不能！");
+                    type = CharacterActionType.None;
                 }
-            }
-            else if (character.CharacterState == CharacterState.Casting)
-            {
-                // 如果角色上一次吟唱了魔法，这次的行动则是结算这个魔法
-                type = CharacterActionType.CastSkill;
-            }
-            else if (character.CharacterState == CharacterState.PreCastSuperSkill)
-            {
-                // 角色使用回合外爆发技插队
-                type = CharacterActionType.CastSuperSkill;
-            }
-            else
-            {
-                WriteLine("[ " + character + $" ] 完全行动不能！");
             }
 
             List<Character> enemysTemp = new(enemys);
@@ -613,13 +661,21 @@ namespace Milimoe.FunGame.Core.Api.Utility
 
             // 获取第一个角色的硬直时间
             double timeToReduce = _hardnessTimes[_queue[0]];
+            TotalTime = Calculation.Round2Digits(TotalTime + timeToReduce);
 
             WriteLine("时间流逝：" + timeToReduce);
 
-            // 减少所有角色的硬直时间
             foreach (Character character in _queue)
             {
+                // 减少所有角色的硬直时间
                 _hardnessTimes[character] = Calculation.Round2Digits(_hardnessTimes[character] - timeToReduce);
+
+                // 统计
+                _stats[character].LiveRound += 1;
+                _stats[character].LiveTime = Calculation.Round2Digits(_stats[character].LiveTime + timeToReduce);
+                _stats[character].DamagePerRound = Calculation.Round2Digits(_stats[character].TotalDamage / TotalRound);
+                _stats[character].DamagePerTurn = Calculation.Round2Digits(_stats[character].TotalDamage / _stats[character].LiveRound);
+                _stats[character].DamagePerSecond = Calculation.Round2Digits(_stats[character].TotalDamage / _stats[character].LiveTime);
 
                 // 回血回蓝
                 double recoveryHP = Calculation.Round2Digits(character.HR * timeToReduce);
@@ -726,6 +782,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 }
                 else WriteLine("[ " + enemy + $" ] 受到了 {damage} 点物理伤害！");
                 enemy.HP = Calculation.Round2Digits(enemy.HP - damage);
+
+                // 统计伤害
+                CalculateCharacterDamageStatistics(actor, damage, isMagicDamage);
 
                 // 计算助攻
                 _assistDamage[actor][enemy] += damage;
@@ -1144,6 +1203,70 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 {
                     e.OnSkillCastInterrupted(caster, cast, interrupter);
                 }
+            }
+        }
+
+        /// <summary>
+        /// 通过概率计算角色要干嘛
+        /// </summary>
+        /// <param name="pUseItem"></param>
+        /// <param name="pCastSkill"></param>
+        /// <param name="pNormalAttack"></param>
+        /// <returns></returns>
+        public static CharacterActionType GetActionType(double pUseItem, double pCastSkill, double pNormalAttack)
+        {
+            if (pUseItem == 0 && pCastSkill == 0 && pNormalAttack == 0)
+            {
+                return CharacterActionType.None;
+            }
+
+            double total = pUseItem + pCastSkill + pNormalAttack;
+
+            // 浮点数比较时处理误差
+            if (Math.Abs(total - 1) > 1e-6)
+            {
+                pUseItem /= total;
+                pCastSkill /= total;
+                pNormalAttack /= total;
+            }
+
+            double rand = new Random().NextDouble();
+
+            // 按概率进行检查
+            if (rand < pUseItem)
+            {
+                return CharacterActionType.UseItem;
+            }
+
+            if (rand < pUseItem + pCastSkill)
+            {
+                return CharacterActionType.PreCastSkill;
+            }
+            
+            if (rand < pUseItem + pCastSkill + pNormalAttack)
+            {
+                return CharacterActionType.NormalAttack;
+            }
+
+            return CharacterActionType.None;
+        }
+
+        /// <summary>
+        /// 计算角色的数据
+        /// </summary>
+        public void CalculateCharacterDamageStatistics(Character character, double damage, bool isMagic)
+        {
+            if (_stats.TryGetValue(character, out CharacterStatistics? stats) && stats != null)
+            {
+                if (isMagic)
+                {
+                    stats.TotalMagicDamage = Calculation.Round2Digits(stats.TotalMagicDamage + damage);
+                }
+                else
+                {
+                    stats.TotalPhysicalDamage = Calculation.Round2Digits(stats.TotalPhysicalDamage + damage);
+                }
+                stats.TotalDamage = Calculation.Round2Digits(stats.TotalDamage + damage);
             }
         }
     }
