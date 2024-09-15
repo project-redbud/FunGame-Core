@@ -15,7 +15,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 普通攻击说明
         /// </summary>
-        public string Description => $"对目标敌人造成 {Calculation.Round4Digits((1.0 + 0.05 * (Level - 1)) * 100)}% [ {Damage} ] 点{(IsMagic ? CharacterSet.GetMagicName(MagicType) : "物理伤害")}。";
+        public string Description => $"对目标敌人造成 {Calculation.Round4Digits((1.0 + 0.05 * (Level - 1)) * 100)}% [ {Damage} ] 点{(IsMagic ? CharacterSet.GetMagicDamageName(MagicType) : "物理伤害")}。";
 
         /// <summary>
         /// 所属的角色

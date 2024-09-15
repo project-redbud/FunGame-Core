@@ -2,6 +2,7 @@
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Architecture;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
 {
@@ -19,42 +20,42 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             {
                 case nameof(EquipSlot.MagicCardPack):
                     temp = NetworkUtility.JsonDeserialize<Item>(ref reader, options) ?? new();
-                    if (temp.EquipSlotType == Constant.EquipSlotType.MagicCardPack)
+                    if (temp.EquipSlotType == EquipSlotType.MagicCardPack)
                     {
                         result.MagicCardPack = temp;
                     }
                     break;
                 case nameof(EquipSlot.Weapon):
                     temp = NetworkUtility.JsonDeserialize<Item>(ref reader, options) ?? new();
-                    if (temp.EquipSlotType == Constant.EquipSlotType.Weapon)
+                    if (temp.EquipSlotType == EquipSlotType.Weapon)
                     {
                         result.Weapon = temp;
                     }
                     break;
                 case nameof(EquipSlot.Armor):
                     temp = NetworkUtility.JsonDeserialize<Item>(ref reader, options) ?? new();
-                    if (temp.EquipSlotType == Constant.EquipSlotType.Armor)
+                    if (temp.EquipSlotType == EquipSlotType.Armor)
                     {
                         result.Armor = temp;
                     }
                     break;
                 case nameof(EquipSlot.Shoes):
                     temp = NetworkUtility.JsonDeserialize<Item>(ref reader, options) ?? new();
-                    if (temp.EquipSlotType == Constant.EquipSlotType.Shoes)
+                    if (temp.EquipSlotType == EquipSlotType.Shoes)
                     {
                         result.Shoes = temp;
                     }
                     break;
                 case nameof(EquipSlot.Accessory1):
                     temp = NetworkUtility.JsonDeserialize<Item>(ref reader, options) ?? new();
-                    if (temp.EquipSlotType == Constant.EquipSlotType.Accessory1)
+                    if (temp.EquipSlotType == EquipSlotType.Accessory)
                     {
                         result.Accessory1 = temp;
                     }
                     break;
                 case nameof(EquipSlot.Accessory2):
                     temp = NetworkUtility.JsonDeserialize<Item>(ref reader, options) ?? new();
-                    if (temp.EquipSlotType == Constant.EquipSlotType.Accessory2)
+                    if (temp.EquipSlotType == EquipSlotType.Accessory)
                     {
                         result.Accessory2 = temp;
                     }

@@ -1,5 +1,4 @@
 ﻿using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Api.Utility
@@ -14,6 +13,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         public Action<string> WriteLine { get; }
 
+        /// <summary>
+        /// 当前的行动顺序
+        /// </summary>
+        public List<Character> Queue => _queue;
+        
         /// <summary>
         /// 当前已死亡的角色顺序(第一个是最早死的)
         /// </summary>
@@ -340,7 +344,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 (((s.SkillType == SkillType.SuperSkill || s.SkillType == SkillType.Skill) && s.EPCost <= character.EP) || (s.SkillType == SkillType.Magic && s.MPCost <= character.MP)))];
             
             // 物品列表
-            List<Item> items = [.. character.Items.Where(i => i.IsActive && i.Skills.Active != null && i.Enable &&
+            List<Item> items = [.. character.Items.Where(i => i.IsActive && i.Skills.Active != null && i.Enable && i.IsInGameItem &&
                 i.Skills.Active.SkillType == SkillType.Item && i.Skills.Active.Enable && !i.Skills.Active.IsInEffect && i.Skills.Active.CurrentCD == 0 && i.Skills.Active.MPCost <= character.MP && i.Skills.Active.EPCost <= character.EP)];
 
             // 作出了什么行动
@@ -617,7 +621,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 effect.OnTurnEnd(character);
 
                 // 自身被动不会考虑
-                if (effect.ControlType == EffectControlType.None && effect.Skill.SkillType == SkillType.Passive)
+                if (effect.EffectType == EffectType.None && effect.Skill.SkillType == SkillType.Passive)
                 {
                     continue;
                 }
@@ -727,7 +731,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     effect.OnTimeElapsed(character, timeToReduce);
 
                     // 自身被动不会考虑
-                    if (effect.ControlType == EffectControlType.None && effect.Skill.SkillType == SkillType.Passive)
+                    if (effect.EffectType == EffectType.None && effect.Skill.SkillType == SkillType.Passive)
                     {
                         continue;
                     }
@@ -777,7 +781,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 if (damage < 0) damage = 0;
                 if (isMagicDamage)
                 {
-                    string dmgType = CharacterSet.GetMagicName(magicType);
+                    string dmgType = CharacterSet.GetMagicDamageName(magicType);
                     WriteLine("[ " + enemy + $" ] 受到了 {damage} 点{dmgType}！");
                 }
                 else WriteLine("[ " + enemy + $" ] 受到了 {damage} 点物理伤害！");
@@ -1267,6 +1271,18 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     stats.TotalPhysicalDamage = Calculation.Round2Digits(stats.TotalPhysicalDamage + damage);
                 }
                 stats.TotalDamage = Calculation.Round2Digits(stats.TotalDamage + damage);
+            }
+        }
+
+        public void Equip(Character character, EquipItemToSlot type, Item item)
+        {
+            if (character.Equip(item, type))
+            {
+                WriteLine($"[ {character} ] 装备了 [ {item.Name} ]。（{ItemSet.GetEquipSlotTypeName(type)} 栏位）");
+            }
+            else
+            {
+                WriteLine($"[ {character} ] 取消装备了 [ {item.Name} ]。（{ItemSet.GetEquipSlotTypeName(type)} 栏位）");
             }
         }
     }

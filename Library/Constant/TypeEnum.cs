@@ -211,12 +211,17 @@ namespace Milimoe.FunGame.Core.Library.Constant
     /// <summary>
     /// 注意：具有控制效果的特效，应该和技能本身的特效(一般此项为None)区分开来。此效果被赋值会改变一些判断的结果。
     /// </summary>
-    public enum EffectControlType
+    public enum EffectType
     {
         /// <summary>
         /// 无特殊效果
         /// </summary>
         None,
+        
+        /// <summary>
+        /// 这是来自装备的特效
+        /// </summary>
+        Item,
 
         /// <summary>
         /// 标记，目标受到某些技能的标记
@@ -467,7 +472,23 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Others
     }
 
+    /// <summary>
+    /// 区别于 <see cref="EquipItemToSlot"/>，这个是定义物品所属的栏位
+    /// </summary>
     public enum EquipSlotType
+    {
+        None,
+        MagicCardPack,
+        Weapon,
+        Armor,
+        Shoes,
+        Accessory
+    }
+
+    /// <summary>
+    /// 区别于 <see cref="EquipSlotType"/>，这个是指示物品具体在哪个栏位上
+    /// </summary>
+    public enum EquipItemToSlot
     {
         None,
         MagicCardPack,

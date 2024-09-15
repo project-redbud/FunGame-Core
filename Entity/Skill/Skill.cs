@@ -19,6 +19,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 技能描述
         /// </summary>
         public virtual string Description { get; set; } = "";
+        
+        /// <summary>
+        /// 技能的通用描述
+        /// </summary>
+        public virtual string GeneralDescription { get; set; } = "";
 
         /// <summary>
         /// 技能等级，等于 0 时可以称之为尚未学习

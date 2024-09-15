@@ -149,7 +149,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 角色目前被特效施加的控制效果 [ 用于特效判断是否需要在移除特效时更改角色状态 ]
         /// </summary>
-        public Dictionary<Effect, List<EffectControlType>> CharacterEffectControlTypes { get; } = [];
+        public Dictionary<Effect, List<EffectType>> CharacterEffectTypes { get; } = [];
 
         /// <summary>
         /// 角色是否是中立的 [ 战斗相关 ]
@@ -805,11 +805,112 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 为角色穿戴装备（必须使用此方法而不是自己去给EquipSlot里的物品赋值）
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="slot"></param>
+        public bool Equip(Item item, EquipItemToSlot slot)
+        {
+            bool result = false;
+            double pastHP = HP;
+            double pastMaxHP = MaxHP;
+            double pastMP = MP;
+            double pastMaxMP = MaxMP;
+            switch (slot)
+            {
+                case EquipItemToSlot.MagicCardPack:
+                    if (item.ItemType == ItemType.MagicCardPack)
+                    {
+                        UnEquip(EquipItemToSlot.MagicCardPack);
+                        EquipSlot.MagicCardPack = item;
+                        result = true;
+                    }
+                    break;
+                case EquipItemToSlot.Weapon:
+                    if (item.ItemType == ItemType.Weapon)
+                    {
+                        UnEquip(EquipItemToSlot.Weapon);
+                        EquipSlot.Weapon = item;
+                        item.OnItemEquip(this);
+                        result = true;
+                    }
+                    break;
+                case EquipItemToSlot.Armor:
+                    if (item.ItemType == ItemType.Armor)
+                    {
+                        UnEquip(EquipItemToSlot.Armor);
+                        EquipSlot.Armor = item;
+                        item.OnItemEquip(this);
+                        result = true;
+                    }
+                    break;
+                case EquipItemToSlot.Shoes:
+                    if (item.ItemType == ItemType.Shoes)
+                    {
+                        UnEquip(EquipItemToSlot.Shoes);
+                        EquipSlot.Shoes = item;
+                        item.OnItemEquip(this);
+                        result = true;
+                    }
+                    break;
+                case EquipItemToSlot.Accessory1:
+                    if (item.ItemType == ItemType.Accessory)
+                    {
+                        UnEquip(EquipItemToSlot.Accessory1);
+                        EquipSlot.Accessory1 = item;
+                        item.OnItemEquip(this);
+                        result = true;
+                    }
+                    break;
+                case EquipItemToSlot.Accessory2:
+                    if (item.ItemType == ItemType.Accessory)
+                    {
+                        UnEquip(EquipItemToSlot.Accessory2);
+                        EquipSlot.Accessory2 = item;
+                        item.OnItemEquip(this);
+                        result = true;
+                    }
+                    break;
+            }
+            if (result)
+            {
+                OnAttributeChanged();
+                Recovery(pastHP, pastMP, pastMaxHP, pastMaxMP);
+            }
+            return result;
+        }
+
+        public void UnEquip(EquipItemToSlot type)
+        {
+            switch (type)
+            {
+                case EquipItemToSlot.MagicCardPack:
+                    EquipSlot.MagicCardPack?.OnItemUnequip();
+                    break;
+                case EquipItemToSlot.Weapon:
+                    EquipSlot.Weapon?.OnItemUnequip();
+                    break;
+                case EquipItemToSlot.Armor:
+                    EquipSlot.Armor?.OnItemUnequip();
+                    break;
+                case EquipItemToSlot.Shoes:
+                    EquipSlot.Shoes?.OnItemUnequip();
+                    break;
+                case EquipItemToSlot.Accessory1:
+                    EquipSlot.Accessory1?.OnItemUnequip();
+                    break;
+                case EquipItemToSlot.Accessory2:
+                    EquipSlot.Accessory2?.OnItemUnequip();
+                    break;
+            }
+        }
+
+        /// <summary>
         /// 角色的属性发生变化，会影响特殊效果的计算
         /// </summary>
         public void OnAttributeChanged()
         {
-            foreach (Effect effect in Effects)
+            foreach (Effect effect in Effects.Where(e => e.Level > 0).ToList())
             {
                 effect.OnAttributeChanged(this);
             }
@@ -945,10 +1046,36 @@ namespace Milimoe.FunGame.Core.Entity
 
             if (Items.Count > 0)
             {
-                builder.AppendLine("== 角色物品 ==");
-                foreach (Item item in Items)
+                builder.AppendLine("== 装备栏 ==");
+                if (EquipSlot.MagicCardPack != null)
                 {
-                    builder.Append(item.ToString());
+                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipItemToSlot.MagicCardPack) + "：" + EquipSlot.MagicCardPack.Name);
+                    builder.AppendLine(EquipSlot.MagicCardPack.Description);
+                }
+                if (EquipSlot.Weapon != null)
+                {
+                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipItemToSlot.Weapon) + "：" + EquipSlot.Weapon.Name);
+                    builder.AppendLine(EquipSlot.Weapon.Description);
+                }
+                if (EquipSlot.Armor != null)
+                {
+                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipItemToSlot.Armor) + "：" + EquipSlot.Armor.Name);
+                    builder.AppendLine(EquipSlot.Armor.Description);
+                }
+                if (EquipSlot.Shoes != null)
+                {
+                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipItemToSlot.Shoes) + "：" + EquipSlot.Shoes.Name);
+                    builder.AppendLine(EquipSlot.Shoes.Description);
+                }
+                if (EquipSlot.Accessory1 != null)
+                {
+                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipItemToSlot.Accessory1) + "：" + EquipSlot.Accessory1.Name);
+                    builder.AppendLine(EquipSlot.Accessory1.Description);
+                }
+                if (EquipSlot.Accessory2 != null)
+                {
+                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipItemToSlot.Accessory2) + "：" + EquipSlot.Accessory2.Name);
+                    builder.AppendLine(EquipSlot.Accessory2.Description);
                 }
             }
 
@@ -1027,9 +1154,9 @@ namespace Milimoe.FunGame.Core.Entity
             isBattleRestricted = states.Any(state => state == CharacterState.BattleRestricted);
             isSkillRestricted = states.Any(state => state == CharacterState.SkillRestricted);
 
-            IEnumerable<EffectControlType> types = CharacterEffectControlTypes.Values.SelectMany(list => list);
+            IEnumerable<EffectType> types = CharacterEffectTypes.Values.SelectMany(list => list);
             // 判断角色的控制效果
-            IsUnselectable = types.Any(type => type == EffectControlType.Unselectable);
+            IsUnselectable = types.Any(type => type == EffectType.Unselectable);
 
             bool isControl = isNotActionable || isActionRestricted || isBattleRestricted || isSkillRestricted;
             bool isCasting = CharacterState == CharacterState.Casting;
