@@ -320,7 +320,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 MagicType.Element => "元素魔法伤害",
                 MagicType.Fleabane => "紫宛魔法伤害",
                 MagicType.Particle => "时空魔法伤害",
-                _ => "魔法",
+                _ => "魔法伤害",
             };
         }
 
