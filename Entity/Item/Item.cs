@@ -29,6 +29,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 物品槽位
         /// </summary>
         public virtual EquipSlotType EquipSlotType { get; set; } = EquipSlotType.None;
+        
+        /// <summary>
+        /// 武器类型（如果是武器）
+        /// </summary>
+        public virtual WeaponType WeaponType { get; set; } = WeaponType.None;
 
         /// <summary>
         /// 快捷键

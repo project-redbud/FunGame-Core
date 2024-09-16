@@ -198,12 +198,12 @@ namespace Milimoe.FunGame.Core.Library.Constant
         SuperSkill,
 
         /// <summary>
-        /// 被动，编号 4xxx
+        /// 被动，编号 4xxx（物品被动从5xxx开始）
         /// </summary>
         Passive,
 
         /// <summary>
-        /// 物品的主动技能，编号 5xxx
+        /// 物品的主动技能，编号 6xxx
         /// </summary>
         Item
     }
@@ -616,6 +616,69 @@ namespace Milimoe.FunGame.Core.Library.Constant
         STR,
         AGI,
         INT
+    }
+
+    public enum WeaponType
+    {
+        /// <summary>
+        /// 不是武器
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// 单手剑
+        /// </summary>
+        OneHandedSword,
+
+        /// <summary>
+        /// 双手重剑
+        /// </summary>
+        TwoHandedSword,
+
+        /// <summary>
+        /// 弓
+        /// </summary>
+        Bow,
+
+        /// <summary>
+        /// 手枪
+        /// </summary>
+        Pistol,
+
+        /// <summary>
+        /// 步枪
+        /// </summary>
+        Rifle,
+
+        /// <summary>
+        /// 双持短刀
+        /// </summary>
+        DualDaggers,
+
+        /// <summary>
+        /// 法器
+        /// </summary>
+        Talisman,
+
+        /// <summary>
+        /// 法杖
+        /// </summary>
+        Staff,
+
+        /// <summary>
+        /// 长柄
+        /// </summary>
+        Polearm,
+
+        /// <summary>
+        /// 拳套
+        /// </summary>
+        Gauntlet,
+
+        /// <summary>
+        /// 暗器
+        /// </summary>
+        HiddenWeapon
     }
 
     public enum ActionType

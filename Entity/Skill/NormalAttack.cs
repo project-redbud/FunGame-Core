@@ -55,7 +55,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 硬直时间
         /// </summary>
-        public double HardnessTime { get; } = 10;
+        public double HardnessTime { get; set; } = 10;
 
         /// <summary>
         /// 对目标（或多个目标）发起普通攻击

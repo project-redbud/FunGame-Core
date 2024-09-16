@@ -997,25 +997,27 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"魔法值：{MP} / {MaxMP}" + (ExMP + ExMP2 > 0 ? $" [{BaseMP} + {ExMP + ExMP2}]" : ""));
             builder.AppendLine($"能量值：{EP} / 200");
             builder.AppendLine($"攻击力：{ATK}" + (ExATK + ExATK2 > 0 ? $" [{BaseATK} + {ExATK + ExATK2}]" : ""));
-            builder.AppendLine($"物理护甲：{DEF}" + (ExDEF + ExDEF2 > 0 ? $" [{BaseDEF} + {ExDEF + ExDEF2}]" : "") + $" ({PDR * 100:f2}%)");
+            builder.AppendLine($"物理护甲：{DEF}" + (ExDEF + ExDEF2 > 0 ? $" [{BaseDEF} + {ExDEF + ExDEF2}]" : "") + $" ({PDR * 100:0.##}%)");
             double mdf = Calculation.Round4Digits((MDF.None + MDF.Starmark + MDF.PurityNatural + MDF.PurityContemporary +
                 MDF.Bright + MDF.Shadow + MDF.Element + MDF.Fleabane + MDF.Particle) / 9);
-            builder.AppendLine($"魔法抗性：{mdf * 100:f2}%（平均）");
+            builder.AppendLine($"魔法抗性：{mdf * 100:0.##}%（平均）");
             double exSPD = Calculation.Round2Digits(AGI * 0.65 + ExSPD);
-            builder.AppendLine($"行动速度：{SPD}" + (exSPD > 0 ? $" [{InitialSPD} + {exSPD}]" : "") + $" ({ActionCoefficient * 100:f2}%)");
+            builder.AppendLine($"行动速度：{SPD}" + (exSPD > 0 ? $" [{InitialSPD} + {exSPD}]" : "") + $" ({ActionCoefficient * 100:0.##}%)");
             builder.AppendLine($"核心属性：{CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)}");
             builder.AppendLine($"力量：{STR}" + (ExSTR > 0 ? $" [{BaseSTR} + {ExSTR}]" : ""));
             builder.AppendLine($"敏捷：{AGI}" + (ExAGI > 0 ? $" [{BaseAGI} + {ExAGI}]" : ""));
             builder.AppendLine($"智力：{INT}" + (ExINT > 0 ? $" [{BaseINT} + {ExINT}]" : ""));
             builder.AppendLine($"生命回复：{HR}" + (ExHR > 0 ? $" [{Calculation.Round2Digits(InitialHR + STR * 0.25)} + {ExHR}]" : ""));
             builder.AppendLine($"魔法回复：{MR}" + (ExMR > 0 ? $" [{Calculation.Round2Digits(InitialMR + INT * 0.1)} + {ExMR}]" : ""));
-            builder.AppendLine($"暴击率：{CritRate * 100:f2}%");
-            builder.AppendLine($"暴击伤害：{CritDMG * 100:f2}%");
-            builder.AppendLine($"闪避率：{EvadeRate * 100:f2}%");
-            builder.AppendLine($"冷却缩减：{CDR * 100:f2}%");
-            builder.AppendLine($"加速系数：{AccelerationCoefficient * 100:f2}%");
-            builder.AppendLine($"物理穿透：{PhysicalPenetration * 100:f2}%");
-            builder.AppendLine($"魔法穿透：{MagicalPenetration * 100:f2}%");
+            builder.AppendLine($"暴击率：{CritRate * 100:0.##}%");
+            builder.AppendLine($"暴击伤害：{CritDMG * 100:0.##}%");
+            builder.AppendLine($"闪避率：{EvadeRate * 100:0.##}%");
+            builder.AppendLine($"冷却缩减：{CDR * 100:0.##}%");
+            builder.AppendLine($"加速系数：{AccelerationCoefficient * 100:0.##}%");
+            builder.AppendLine($"物理穿透：{PhysicalPenetration * 100:0.##}%");
+            builder.AppendLine($"魔法穿透：{MagicalPenetration * 100:0.##}%");
+            builder.AppendLine($"魔法消耗减少：{INT * 0.00125 * 100:0.##}%");
+            builder.AppendLine($"能量消耗减少：{INT * 0.00075 * 100:0.##}%");
 
             if (CharacterState != CharacterState.Actionable)
             {
@@ -1082,7 +1084,7 @@ namespace Milimoe.FunGame.Core.Entity
             if (Effects.Count > 0)
             {
                 builder.AppendLine("== 状态栏 ==");
-                foreach (Effect effect in Effects)
+                foreach (Effect effect in Effects.Where(e => e.EffectType != EffectType.Item))
                 {
                     builder.Append(effect.ToString());
                 }
@@ -1127,7 +1129,7 @@ namespace Milimoe.FunGame.Core.Entity
             if (Effects.Count > 0)
             {
                 builder.AppendLine("== 状态栏 ==");
-                foreach (Effect effect in Effects)
+                foreach (Effect effect in Effects.Where(e => e.EffectType != EffectType.Item))
                 {
                     builder.Append(effect.ToString());
                 }
