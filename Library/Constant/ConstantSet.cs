@@ -308,7 +308,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
             };
         }
 
-        public static string GetMagicName(MagicType type)
+        public static string GetMagicDamageName(MagicType type)
         {
             return type switch
             {
@@ -355,6 +355,42 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 CharacterState.BattleRestricted => "角色现在战斗不能",
                 CharacterState.SkillRestricted => "角色现在技能受限",
                 _ => "角色现在完全行动不能"
+            };
+        }
+    }
+
+    public class ItemSet
+    {
+        public static string GetItemTypeName(ItemType type)
+        {
+            return type switch
+            {
+                ItemType.MagicCardPack => "魔法卡包",
+                ItemType.Weapon => "武器",
+                ItemType.Armor => "防具",
+                ItemType.Shoes => "鞋子",
+                ItemType.Accessory => "饰品",
+                ItemType.Consumable => "消耗品",
+                ItemType.Collectible => "收藏品",
+                ItemType.SpecialItem => "特殊物品",
+                ItemType.QuestItem => "任务物品",
+                ItemType.GiftBox => "礼包",
+                ItemType.Others => "其他",
+                _ => ""
+            };
+        }
+
+        public static string GetEquipSlotTypeName(EquipItemToSlot type)
+        {
+            return type switch
+            {
+                EquipItemToSlot.MagicCardPack => "魔法卡包",
+                EquipItemToSlot.Weapon => "武器",
+                EquipItemToSlot.Armor => "防具",
+                EquipItemToSlot.Shoes => "鞋子",
+                EquipItemToSlot.Accessory1 => "饰品1",
+                EquipItemToSlot.Accessory2 => "饰品",
+                _ => ""
             };
         }
     }

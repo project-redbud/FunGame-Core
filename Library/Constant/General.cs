@@ -41,9 +41,14 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public static Encoding DefaultEncoding => Encoding.Unicode;
 
         /// <summary>
-        /// 默认的时间格式
+        /// 默认的时间格式 yyyy-MM-dd HH:mm:ss.fff
         /// </summary>
         public static string GeneralDateTimeFormat => "yyyy-MM-dd HH:mm:ss.fff";
+        
+        /// <summary>
+        /// yyyy年MM月dd日 HH:mm:ss
+        /// </summary>
+        public static string GeneralDateTimeFormatChinese => "yyyy年MM月dd日 HH:mm:ss";
 
         /// <summary>
         /// 默认的时间值（1970年8月1日8点0分0秒）

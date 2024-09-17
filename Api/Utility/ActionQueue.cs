@@ -1,5 +1,4 @@
 ﻿using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Api.Utility
@@ -14,6 +13,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         public Action<string> WriteLine { get; }
 
+        /// <summary>
+        /// 当前的行动顺序
+        /// </summary>
+        public List<Character> Queue => _queue;
+        
         /// <summary>
         /// 当前已死亡的角色顺序(第一个是最早死的)
         /// </summary>
@@ -337,11 +341,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
 
             // 技能列表
             List<Skill> skills = [.. character.Skills.Where(s => s.Level > 0 && s.SkillType != SkillType.Passive && s.Enable && !s.IsInEffect && s.CurrentCD == 0 &&
-                (((s.SkillType == SkillType.SuperSkill || s.SkillType == SkillType.Skill) && s.EPCost <= character.EP) || (s.SkillType == SkillType.Magic && s.MPCost <= character.MP)))];
+                (((s.SkillType == SkillType.SuperSkill || s.SkillType == SkillType.Skill) && s.RealEPCost <= character.EP) || (s.SkillType == SkillType.Magic && s.RealMPCost <= character.MP)))];
             
             // 物品列表
-            List<Item> items = [.. character.Items.Where(i => i.IsActive && i.Skills.Active != null && i.Enable &&
-                i.Skills.Active.SkillType == SkillType.Item && i.Skills.Active.Enable && !i.Skills.Active.IsInEffect && i.Skills.Active.CurrentCD == 0 && i.Skills.Active.MPCost <= character.MP && i.Skills.Active.EPCost <= character.EP)];
+            List<Item> items = [.. character.Items.Where(i => i.IsActive && i.Skills.Active != null && i.Enable && i.IsInGameItem &&
+                i.Skills.Active.SkillType == SkillType.Item && i.Skills.Active.Enable && !i.Skills.Active.IsInEffect && i.Skills.Active.CurrentCD == 0 && i.Skills.Active.RealMPCost <= character.MP && i.Skills.Active.RealEPCost <= character.EP)];
 
             // 作出了什么行动
             CharacterActionType type = CharacterActionType.None;
@@ -508,7 +512,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
 
                         character.EP = Calculation.Round2Digits(character.EP - cost);
                         baseTime = skill.HardnessTime;
-                        skill.CurrentCD = Calculation.Round2Digits(Math.Max(1, skill.CD * (1 - character.CDR)));
+                        skill.CurrentCD = skill.RealCD;
                         skill.Enable = false;
 
                         WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} {skill.Name}！");
@@ -533,7 +537,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 {
                     character.MP = Calculation.Round2Digits(character.MP - cost);
                     baseTime = skill.HardnessTime;
-                    skill.CurrentCD = Calculation.Round2Digits(Math.Max(1, skill.CD * (1 - character.CDR)));
+                    skill.CurrentCD = skill.RealCD;
                     skill.Enable = false;
 
                     WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点魔法值，释放了技能 {skill.Name}！");
@@ -563,7 +567,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 {
                     character.EP = Calculation.Round2Digits(character.EP - cost);
                     baseTime = skill.HardnessTime;
-                    skill.CurrentCD = Calculation.Round2Digits(Math.Max(1, skill.CD * (1 - character.CDR)));
+                    skill.CurrentCD = skill.RealCD;
                     skill.Enable = false;
 
                     WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量值，释放了爆发技 {skill.Name}！");
@@ -617,7 +621,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 effect.OnTurnEnd(character);
 
                 // 自身被动不会考虑
-                if (effect.ControlType == EffectControlType.None && effect.Skill.SkillType == SkillType.Passive)
+                if (effect.EffectType == EffectType.None && effect.Skill.SkillType == SkillType.Passive)
                 {
                     continue;
                 }
@@ -727,7 +731,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     effect.OnTimeElapsed(character, timeToReduce);
 
                     // 自身被动不会考虑
-                    if (effect.ControlType == EffectControlType.None && effect.Skill.SkillType == SkillType.Passive)
+                    if (effect.EffectType == EffectType.None && effect.Skill.SkillType == SkillType.Passive)
                     {
                         continue;
                     }
@@ -777,14 +781,14 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 if (damage < 0) damage = 0;
                 if (isMagicDamage)
                 {
-                    string dmgType = CharacterSet.GetMagicName(magicType);
+                    string dmgType = CharacterSet.GetMagicDamageName(magicType);
                     WriteLine("[ " + enemy + $" ] 受到了 {damage} 点{dmgType}！");
                 }
                 else WriteLine("[ " + enemy + $" ] 受到了 {damage} 点物理伤害！");
                 enemy.HP = Calculation.Round2Digits(enemy.HP - damage);
 
                 // 统计伤害
-                CalculateCharacterDamageStatistics(actor, damage, isMagicDamage);
+                CalculateCharacterDamageStatistics(actor, enemy, damage, isMagicDamage);
 
                 // 计算助攻
                 _assistDamage[actor][enemy] += damage;
@@ -1007,6 +1011,8 @@ namespace Milimoe.FunGame.Core.Api.Utility
         public void DeathCalculation(Character killer, Character death)
         {
             if (!_continuousKilling.TryAdd(killer, 1)) _continuousKilling[killer] += 1;
+            _stats[killer].Kills += 1;
+            _stats[death].Deaths += 1;
             int money = new Random().Next(250, 350);
 
             Character[] assists = _assistDamage.Keys.Where(c => c != death && _assistDamage[c].GetPercentage(death) > 0.10).ToArray();
@@ -1020,6 +1026,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 if (assist != killer)
                 {
                     if (!_earnedMoney.TryAdd(assist, cmoney)) _earnedMoney[assist] += cmoney;
+                    _stats[assist].Assists += 1;
                 }
                 else
                 {
@@ -1030,7 +1037,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             // 终结击杀的奖励仍然是全额的
             if (_continuousKilling.TryGetValue(death, out int coefficient) && coefficient > 1)
             {
-                money += (coefficient + 1) * new Random().Next(100, 200);
+                money += (coefficient + 1) * new Random().Next(50, 100);
                 string termination = CharacterSet.GetContinuousKilling(coefficient);
                 string msg = $"[ {killer} ] 终结了 [ {death} ]{(termination != "" ? " 的" + termination : "")}，获得 {money} 金钱！";
                 if (assists.Length > 1)
@@ -1120,7 +1127,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         {
             if (skill.SkillType == SkillType.Magic)
             {
-                cost = skill.MPCost;
+                cost = skill.RealMPCost;
                 if (cost > 0 && cost <= caster.MP)
                 {
                     return true;
@@ -1132,7 +1139,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
             else
             {
-                cost = skill.EPCost;
+                cost = skill.RealEPCost;
                 if (cost > 0 && cost <= caster.EP)
                 {
                     return true;
@@ -1158,7 +1165,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 // 有 65% 欲望插队
                 if (new Random().NextDouble() < 0.65)
                 {
-                    List<Skill> skills = other.Skills.Where(s => s.Level > 0 && s.SkillType == SkillType.SuperSkill && s.Enable && !s.IsInEffect && s.CurrentCD == 0 && other.EP >= s.EPCost).ToList();
+                    List<Skill> skills = other.Skills.Where(s => s.Level > 0 && s.SkillType == SkillType.SuperSkill && s.Enable && !s.IsInEffect && s.CurrentCD == 0 && other.EP >= s.RealEPCost).ToList();
                     if (skills.Count > 0)
                     {
                         Skill skill = skills[new Random().Next(skills.Count)];
@@ -1254,7 +1261,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <summary>
         /// 计算角色的数据
         /// </summary>
-        public void CalculateCharacterDamageStatistics(Character character, double damage, bool isMagic)
+        public void CalculateCharacterDamageStatistics(Character character, Character characterTaken, double damage, bool isMagic)
         {
             if (_stats.TryGetValue(character, out CharacterStatistics? stats) && stats != null)
             {
@@ -1267,6 +1274,30 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     stats.TotalPhysicalDamage = Calculation.Round2Digits(stats.TotalPhysicalDamage + damage);
                 }
                 stats.TotalDamage = Calculation.Round2Digits(stats.TotalDamage + damage);
+            }
+            if (_stats.TryGetValue(characterTaken, out CharacterStatistics? statsTaken) && statsTaken != null)
+            {
+                if (isMagic)
+                {
+                    statsTaken.TotalTakenMagicDamage = Calculation.Round2Digits(statsTaken.TotalTakenMagicDamage + damage);
+                }
+                else
+                {
+                    statsTaken.TotalTakenPhysicalDamage = Calculation.Round2Digits(statsTaken.TotalTakenPhysicalDamage + damage);
+                }
+                statsTaken.TotalTakenDamage = Calculation.Round2Digits(statsTaken.TotalTakenDamage + damage);
+            }
+        }
+
+        public void Equip(Character character, EquipItemToSlot type, Item item)
+        {
+            if (character.Equip(item, type))
+            {
+                WriteLine($"[ {character} ] 装备了 [ {item.Name} ]。（{ItemSet.GetEquipSlotTypeName(type)} 栏位）");
+            }
+            else
+            {
+                WriteLine($"[ {character} ] 取消装备了 [ {item.Name} ]。（{ItemSet.GetEquipSlotTypeName(type)} 栏位）");
             }
         }
     }

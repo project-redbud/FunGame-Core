@@ -17,9 +17,9 @@ namespace Milimoe.FunGame.Core.Entity
 
         /// <summary>
         /// 特殊效果类型<para/>
-        /// 注意：如果技能特效没有原生施加控制效果，请始终保持此属性为 <see cref="EffectControlType.None"/>。
+        /// 注意：如果技能特效没有原生施加控制效果，请始终保持此属性为 <see cref="EffectType.None"/>。
         /// </summary>
-        public virtual EffectControlType ControlType { get; } = EffectControlType.None;
+        public virtual EffectType EffectType { get; } = EffectType.None;
 
         /// <summary>
         /// 作用于自身
@@ -82,7 +82,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 此特效的施加者，用于溯源
         /// </summary>
-        public virtual Character? Source { get; } = null;
+        public virtual Character? Source { get; set; } = null;
 
         /// <summary>
         /// 游戏中的行动顺序表实例，在技能效果被触发时，此实例会获得赋值，使用时需要判断其是否存在

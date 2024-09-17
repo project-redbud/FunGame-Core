@@ -19,6 +19,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 技能描述
         /// </summary>
         public virtual string Description { get; set; } = "";
+        
+        /// <summary>
+        /// 技能的通用描述
+        /// </summary>
+        public virtual string GeneralDescription { get; set; } = "";
 
         /// <summary>
         /// 技能等级，等于 0 时可以称之为尚未学习
@@ -72,34 +77,42 @@ namespace Milimoe.FunGame.Core.Entity
         public bool IsMagic => SkillType == SkillType.Magic;
 
         /// <summary>
+        /// 实际魔法消耗 [ 魔法 ]
+        /// </summary>
+        public double RealMPCost => Calculation.Round2Digits(Math.Max(0, MPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * 0.00125))));
+
+        /// <summary>
         /// 魔法消耗 [ 魔法 ]
         /// </summary>
         [InitOptional]
-        public virtual double MPCost { get; } = 0;
+        public virtual double MPCost { get; set; } = 0;
 
         /// <summary>
-        /// 基础魔法消耗 [ 魔法 ]
+        /// 实际吟唱时间 [ 魔法 ]
         /// </summary>
-        [InitOptional]
-        protected virtual double BaseMPCost { get; } = 0;
+        public double RealCastTime => Calculation.Round2Digits(Math.Max(0, CastTime * (1 - Calculation.PercentageCheck(Character?.AccelerationCoefficient ?? 0))));
 
         /// <summary>
         /// 吟唱时间 [ 魔法 ]
         /// </summary>
         [InitOptional]
-        public virtual double CastTime { get; } = 0;
+        public virtual double CastTime { get; set; } = 0;
+
+        /// <summary>
+        /// 实际能量消耗 [ 战技 ]
+        /// </summary>
+        public double RealEPCost => IsSuperSkill ? EPCost : Calculation.Round2Digits(Math.Max(0, EPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * 0.00075))));
 
         /// <summary>
         /// 能量消耗 [ 战技 ]
         /// </summary>
         [InitOptional]
-        public virtual double EPCost { get; } = 0;
+        public virtual double EPCost { get; set; } = 0;
 
         /// <summary>
-        /// 基础能量消耗 [ 战技 ]
+        /// 实际冷却时间
         /// </summary>
-        [InitOptional]
-        protected virtual double BaseEPCost { get; } = 0;
+        public double RealCD => Calculation.Round2Digits(Math.Max(0, CD * (1 - Character?.CDR ?? 0)));
 
         /// <summary>
         /// 冷却时间
@@ -116,7 +129,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 硬直时间
         /// </summary>
         [InitRequired]
-        public virtual double HardnessTime { get; } = 0;
+        public virtual double HardnessTime { get; set; } = 0;
 
         /// <summary>
         /// 效果列表
@@ -239,23 +252,37 @@ namespace Milimoe.FunGame.Core.Entity
             }
             if (IsActive)
             {
-                if (IsSuperSkill)
+                if (SkillType == SkillType.Item)
                 {
-                    builder.AppendLine("能量消耗：" + EPCost);
+                    if (RealMPCost > 0)
+                    {
+                        builder.AppendLine("魔法消耗：" + RealMPCost);
+                    }
+                    if (RealEPCost > 0)
+                    {
+                        builder.AppendLine("能量消耗：" + RealEPCost);
+                    }
                 }
                 else
                 {
-                    if (IsMagic)
+                    if (IsSuperSkill)
                     {
-                        builder.AppendLine("魔法消耗：" + MPCost);
-                        builder.AppendLine("吟唱时间：" + CastTime);
+                        builder.AppendLine("能量消耗：" + RealEPCost);
                     }
                     else
                     {
-                        builder.AppendLine("能量消耗：" + EPCost);
+                        if (IsMagic)
+                        {
+                            builder.AppendLine("魔法消耗：" + RealMPCost);
+                            builder.AppendLine("吟唱时间：" + RealCastTime);
+                        }
+                        else
+                        {
+                            builder.AppendLine("能量消耗：" + RealEPCost);
+                        }
                     }
                 }
-                builder.AppendLine("冷却时间：" + CD);
+                builder.AppendLine("冷却时间：" + RealCD);
                 builder.AppendLine("硬直时间：" + HardnessTime);
             }
 

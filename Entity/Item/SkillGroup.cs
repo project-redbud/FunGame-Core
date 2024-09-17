@@ -13,6 +13,6 @@
         /// <summary>
         /// 被动技能组
         /// </summary>
-        public HashSet<Skill> Passive { get; set; } = [];
+        public HashSet<Skill> Passives { get; set; } = [];
     }
 }

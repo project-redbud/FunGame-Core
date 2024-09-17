@@ -198,12 +198,12 @@ namespace Milimoe.FunGame.Core.Library.Constant
         SuperSkill,
 
         /// <summary>
-        /// 被动，编号 4xxx
+        /// 被动，编号 4xxx（物品被动从5xxx开始）
         /// </summary>
         Passive,
 
         /// <summary>
-        /// 物品的主动技能，编号 5xxx
+        /// 物品的主动技能，编号 6xxx
         /// </summary>
         Item
     }
@@ -211,12 +211,17 @@ namespace Milimoe.FunGame.Core.Library.Constant
     /// <summary>
     /// 注意：具有控制效果的特效，应该和技能本身的特效(一般此项为None)区分开来。此效果被赋值会改变一些判断的结果。
     /// </summary>
-    public enum EffectControlType
+    public enum EffectType
     {
         /// <summary>
         /// 无特殊效果
         /// </summary>
         None,
+        
+        /// <summary>
+        /// 这是来自装备的特效
+        /// </summary>
+        Item,
 
         /// <summary>
         /// 标记，目标受到某些技能的标记
@@ -467,7 +472,23 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Others
     }
 
+    /// <summary>
+    /// 区别于 <see cref="EquipItemToSlot"/>，这个是定义物品所属的栏位
+    /// </summary>
     public enum EquipSlotType
+    {
+        None,
+        MagicCardPack,
+        Weapon,
+        Armor,
+        Shoes,
+        Accessory
+    }
+
+    /// <summary>
+    /// 区别于 <see cref="EquipSlotType"/>，这个是指示物品具体在哪个栏位上
+    /// </summary>
+    public enum EquipItemToSlot
     {
         None,
         MagicCardPack,
@@ -595,6 +616,69 @@ namespace Milimoe.FunGame.Core.Library.Constant
         STR,
         AGI,
         INT
+    }
+
+    public enum WeaponType
+    {
+        /// <summary>
+        /// 不是武器
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// 单手剑
+        /// </summary>
+        OneHandedSword,
+
+        /// <summary>
+        /// 双手重剑
+        /// </summary>
+        TwoHandedSword,
+
+        /// <summary>
+        /// 弓
+        /// </summary>
+        Bow,
+
+        /// <summary>
+        /// 手枪
+        /// </summary>
+        Pistol,
+
+        /// <summary>
+        /// 步枪
+        /// </summary>
+        Rifle,
+
+        /// <summary>
+        /// 双持短刀
+        /// </summary>
+        DualDaggers,
+
+        /// <summary>
+        /// 法器
+        /// </summary>
+        Talisman,
+
+        /// <summary>
+        /// 法杖
+        /// </summary>
+        Staff,
+
+        /// <summary>
+        /// 长柄
+        /// </summary>
+        Polearm,
+
+        /// <summary>
+        /// 拳套
+        /// </summary>
+        Gauntlet,
+
+        /// <summary>
+        /// 暗器
+        /// </summary>
+        HiddenWeapon
     }
 
     public enum ActionType

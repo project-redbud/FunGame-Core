@@ -149,7 +149,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 角色目前被特效施加的控制效果 [ 用于特效判断是否需要在移除特效时更改角色状态 ]
         /// </summary>
-        public Dictionary<Effect, List<EffectControlType>> CharacterEffectControlTypes { get; } = [];
+        public Dictionary<Effect, List<EffectType>> CharacterEffectTypes { get; } = [];
 
         /// <summary>
         /// 角色是否是中立的 [ 战斗相关 ]
@@ -805,11 +805,112 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 为角色穿戴装备（必须使用此方法而不是自己去给EquipSlot里的物品赋值）
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="slot"></param>
+        public bool Equip(Item item, EquipItemToSlot slot)
+        {
+            bool result = false;
+            double pastHP = HP;
+            double pastMaxHP = MaxHP;
+            double pastMP = MP;
+            double pastMaxMP = MaxMP;
+            switch (slot)
+            {
+                case EquipItemToSlot.MagicCardPack:
+                    if (item.ItemType == ItemType.MagicCardPack)
+                    {
+                        UnEquip(EquipItemToSlot.MagicCardPack);
+                        EquipSlot.MagicCardPack = item;
+                        result = true;
+                    }
+                    break;
+                case EquipItemToSlot.Weapon:
+                    if (item.ItemType == ItemType.Weapon)
+                    {
+                        UnEquip(EquipItemToSlot.Weapon);
+                        EquipSlot.Weapon = item;
+                        item.OnItemEquip(this);
+                        result = true;
+                    }
+                    break;
+                case EquipItemToSlot.Armor:
+                    if (item.ItemType == ItemType.Armor)
+                    {
+                        UnEquip(EquipItemToSlot.Armor);
+                        EquipSlot.Armor = item;
+                        item.OnItemEquip(this);
+                        result = true;
+                    }
+                    break;
+                case EquipItemToSlot.Shoes:
+                    if (item.ItemType == ItemType.Shoes)
+                    {
+                        UnEquip(EquipItemToSlot.Shoes);
+                        EquipSlot.Shoes = item;
+                        item.OnItemEquip(this);
+                        result = true;
+                    }
+                    break;
+                case EquipItemToSlot.Accessory1:
+                    if (item.ItemType == ItemType.Accessory)
+                    {
+                        UnEquip(EquipItemToSlot.Accessory1);
+                        EquipSlot.Accessory1 = item;
+                        item.OnItemEquip(this);
+                        result = true;
+                    }
+                    break;
+                case EquipItemToSlot.Accessory2:
+                    if (item.ItemType == ItemType.Accessory)
+                    {
+                        UnEquip(EquipItemToSlot.Accessory2);
+                        EquipSlot.Accessory2 = item;
+                        item.OnItemEquip(this);
+                        result = true;
+                    }
+                    break;
+            }
+            if (result)
+            {
+                OnAttributeChanged();
+                Recovery(pastHP, pastMP, pastMaxHP, pastMaxMP);
+            }
+            return result;
+        }
+
+        public void UnEquip(EquipItemToSlot type)
+        {
+            switch (type)
+            {
+                case EquipItemToSlot.MagicCardPack:
+                    EquipSlot.MagicCardPack?.OnItemUnequip();
+                    break;
+                case EquipItemToSlot.Weapon:
+                    EquipSlot.Weapon?.OnItemUnequip();
+                    break;
+                case EquipItemToSlot.Armor:
+                    EquipSlot.Armor?.OnItemUnequip();
+                    break;
+                case EquipItemToSlot.Shoes:
+                    EquipSlot.Shoes?.OnItemUnequip();
+                    break;
+                case EquipItemToSlot.Accessory1:
+                    EquipSlot.Accessory1?.OnItemUnequip();
+                    break;
+                case EquipItemToSlot.Accessory2:
+                    EquipSlot.Accessory2?.OnItemUnequip();
+                    break;
+            }
+        }
+
+        /// <summary>
         /// 角色的属性发生变化，会影响特殊效果的计算
         /// </summary>
         public void OnAttributeChanged()
         {
-            foreach (Effect effect in Effects)
+            foreach (Effect effect in Effects.Where(e => e.Level > 0).ToList())
             {
                 effect.OnAttributeChanged(this);
             }
@@ -896,25 +997,27 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"魔法值：{MP} / {MaxMP}" + (ExMP + ExMP2 > 0 ? $" [{BaseMP} + {ExMP + ExMP2}]" : ""));
             builder.AppendLine($"能量值：{EP} / 200");
             builder.AppendLine($"攻击力：{ATK}" + (ExATK + ExATK2 > 0 ? $" [{BaseATK} + {ExATK + ExATK2}]" : ""));
-            builder.AppendLine($"物理护甲：{DEF}" + (ExDEF + ExDEF2 > 0 ? $" [{BaseDEF} + {ExDEF + ExDEF2}]" : "") + $" ({PDR * 100:f2}%)");
+            builder.AppendLine($"物理护甲：{DEF}" + (ExDEF + ExDEF2 > 0 ? $" [{BaseDEF} + {ExDEF + ExDEF2}]" : "") + $" ({PDR * 100:0.##}%)");
             double mdf = Calculation.Round4Digits((MDF.None + MDF.Starmark + MDF.PurityNatural + MDF.PurityContemporary +
                 MDF.Bright + MDF.Shadow + MDF.Element + MDF.Fleabane + MDF.Particle) / 9);
-            builder.AppendLine($"魔法抗性：{mdf * 100:f2}%（平均）");
+            builder.AppendLine($"魔法抗性：{mdf * 100:0.##}%（平均）");
             double exSPD = Calculation.Round2Digits(AGI * 0.65 + ExSPD);
-            builder.AppendLine($"行动速度：{SPD}" + (exSPD > 0 ? $" [{InitialSPD} + {exSPD}]" : "") + $" ({ActionCoefficient * 100:f2}%)");
+            builder.AppendLine($"行动速度：{SPD}" + (exSPD > 0 ? $" [{InitialSPD} + {exSPD}]" : "") + $" ({ActionCoefficient * 100:0.##}%)");
             builder.AppendLine($"核心属性：{CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)}");
             builder.AppendLine($"力量：{STR}" + (ExSTR > 0 ? $" [{BaseSTR} + {ExSTR}]" : ""));
             builder.AppendLine($"敏捷：{AGI}" + (ExAGI > 0 ? $" [{BaseAGI} + {ExAGI}]" : ""));
             builder.AppendLine($"智力：{INT}" + (ExINT > 0 ? $" [{BaseINT} + {ExINT}]" : ""));
             builder.AppendLine($"生命回复：{HR}" + (ExHR > 0 ? $" [{Calculation.Round2Digits(InitialHR + STR * 0.25)} + {ExHR}]" : ""));
             builder.AppendLine($"魔法回复：{MR}" + (ExMR > 0 ? $" [{Calculation.Round2Digits(InitialMR + INT * 0.1)} + {ExMR}]" : ""));
-            builder.AppendLine($"暴击率：{CritRate * 100:f2}%");
-            builder.AppendLine($"暴击伤害：{CritDMG * 100:f2}%");
-            builder.AppendLine($"闪避率：{EvadeRate * 100:f2}%");
-            builder.AppendLine($"冷却缩减：{CDR * 100:f2}%");
-            builder.AppendLine($"加速系数：{AccelerationCoefficient * 100:f2}%");
-            builder.AppendLine($"物理穿透：{PhysicalPenetration * 100:f2}%");
-            builder.AppendLine($"魔法穿透：{MagicalPenetration * 100:f2}%");
+            builder.AppendLine($"暴击率：{CritRate * 100:0.##}%");
+            builder.AppendLine($"暴击伤害：{CritDMG * 100:0.##}%");
+            builder.AppendLine($"闪避率：{EvadeRate * 100:0.##}%");
+            builder.AppendLine($"冷却缩减：{CDR * 100:0.##}%");
+            builder.AppendLine($"加速系数：{AccelerationCoefficient * 100:0.##}%");
+            builder.AppendLine($"物理穿透：{PhysicalPenetration * 100:0.##}%");
+            builder.AppendLine($"魔法穿透：{MagicalPenetration * 100:0.##}%");
+            builder.AppendLine($"魔法消耗减少：{INT * 0.00125 * 100:0.##}%");
+            builder.AppendLine($"能量消耗减少：{INT * 0.00075 * 100:0.##}%");
 
             if (CharacterState != CharacterState.Actionable)
             {
@@ -945,17 +1048,43 @@ namespace Milimoe.FunGame.Core.Entity
 
             if (Items.Count > 0)
             {
-                builder.AppendLine("== 角色物品 ==");
-                foreach (Item item in Items)
+                builder.AppendLine("== 装备栏 ==");
+                if (EquipSlot.MagicCardPack != null)
                 {
-                    builder.Append(item.ToString());
+                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipItemToSlot.MagicCardPack) + "：" + EquipSlot.MagicCardPack.Name);
+                    builder.AppendLine(EquipSlot.MagicCardPack.Description);
+                }
+                if (EquipSlot.Weapon != null)
+                {
+                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipItemToSlot.Weapon) + "：" + EquipSlot.Weapon.Name);
+                    builder.AppendLine(EquipSlot.Weapon.Description);
+                }
+                if (EquipSlot.Armor != null)
+                {
+                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipItemToSlot.Armor) + "：" + EquipSlot.Armor.Name);
+                    builder.AppendLine(EquipSlot.Armor.Description);
+                }
+                if (EquipSlot.Shoes != null)
+                {
+                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipItemToSlot.Shoes) + "：" + EquipSlot.Shoes.Name);
+                    builder.AppendLine(EquipSlot.Shoes.Description);
+                }
+                if (EquipSlot.Accessory1 != null)
+                {
+                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipItemToSlot.Accessory1) + "：" + EquipSlot.Accessory1.Name);
+                    builder.AppendLine(EquipSlot.Accessory1.Description);
+                }
+                if (EquipSlot.Accessory2 != null)
+                {
+                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipItemToSlot.Accessory2) + "：" + EquipSlot.Accessory2.Name);
+                    builder.AppendLine(EquipSlot.Accessory2.Description);
                 }
             }
 
             if (Effects.Count > 0)
             {
                 builder.AppendLine("== 状态栏 ==");
-                foreach (Effect effect in Effects)
+                foreach (Effect effect in Effects.Where(e => e.EffectType != EffectType.Item))
                 {
                     builder.Append(effect.ToString());
                 }
@@ -1000,7 +1129,7 @@ namespace Milimoe.FunGame.Core.Entity
             if (Effects.Count > 0)
             {
                 builder.AppendLine("== 状态栏 ==");
-                foreach (Effect effect in Effects)
+                foreach (Effect effect in Effects.Where(e => e.EffectType != EffectType.Item))
                 {
                     builder.Append(effect.ToString());
                 }
@@ -1027,9 +1156,9 @@ namespace Milimoe.FunGame.Core.Entity
             isBattleRestricted = states.Any(state => state == CharacterState.BattleRestricted);
             isSkillRestricted = states.Any(state => state == CharacterState.SkillRestricted);
 
-            IEnumerable<EffectControlType> types = CharacterEffectControlTypes.Values.SelectMany(list => list);
+            IEnumerable<EffectType> types = CharacterEffectTypes.Values.SelectMany(list => list);
             // 判断角色的控制效果
-            IsUnselectable = types.Any(type => type == EffectControlType.Unselectable);
+            IsUnselectable = types.Any(type => type == EffectType.Unselectable);
 
             bool isControl = isNotActionable || isActionRestricted || isBattleRestricted || isSkillRestricted;
             bool isCasting = CharacterState == CharacterState.Casting;
