@@ -447,27 +447,32 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Consumable,
 
         /// <summary>
-        /// 收藏品 编号 16xxx
+        /// 魔法卡 编号 16xxx
+        /// </summary>
+        MagicCard,
+
+        /// <summary>
+        /// 收藏品 编号 17xxx
         /// </summary>
         Collectible,
 
         /// <summary>
-        /// 特殊物品 编号 17xxx
+        /// 特殊物品 编号 18xxx
         /// </summary>
         SpecialItem,
 
         /// <summary>
-        /// 任务物品 编号 18xxx
+        /// 任务物品 编号 19xxx
         /// </summary>
         QuestItem,
 
         /// <summary>
-        /// 礼包 编号 19xxx
+        /// 礼包 编号 20xxx
         /// </summary>
         GiftBox,
 
         /// <summary>
-        /// 其他 编号 20xxx
+        /// 其他 编号 21xxx
         /// </summary>
         Others
     }
