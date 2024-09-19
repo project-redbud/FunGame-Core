@@ -336,6 +336,12 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
                 return list;
             }
         }
+
+        public override Skill? GetSkill(long id, string name)
+        {
+            // 此方法将根据id和name，返回一个你继承实现了的类对象。
+            return Factory.GetSkill();
+        }
     }
 
     /// <summary>
@@ -356,12 +362,15 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             get
             {
                 List<Item> list = [];
-                Item i = Factory.GetItem();
-                i.Name = "Example Item";
-                i.Price = 20;
-                list.Add(i);
+                // 物品应该在GameModule中新建类继承Item实现，再自行构造。
                 return list;
             }
+        }
+
+        public override Item? GetItem(long id, string name)
+        {
+            // 此方法将根据id和name，返回一个你继承实现了的类对象。
+            return Factory.GetItem();
         }
     }
 }

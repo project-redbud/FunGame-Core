@@ -36,6 +36,14 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         private bool IsLoaded = false;
 
         /// <summary>
+        /// 必须重写此方法，用于还原技能后获取还原详细信息
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public abstract Skill? GetSkill(long id, string name);
+
+        /// <summary>
         /// 加载模组
         /// </summary>
         public bool Load(params object[] objs)
