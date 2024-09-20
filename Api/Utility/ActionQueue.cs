@@ -1,5 +1,4 @@
 ﻿using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Api.Utility
@@ -678,8 +677,8 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 // 统计
                 _stats[character].LiveRound += 1;
                 _stats[character].LiveTime = Calculation.Round2Digits(_stats[character].LiveTime + timeToReduce);
-                _stats[character].DamagePerRound = Calculation.Round2Digits(_stats[character].TotalDamage / TotalRound);
-                _stats[character].DamagePerTurn = Calculation.Round2Digits(_stats[character].TotalDamage / _stats[character].LiveRound);
+                _stats[character].DamagePerRound = Calculation.Round2Digits(_stats[character].TotalDamage / _stats[character].LiveRound);
+                _stats[character].DamagePerTurn = Calculation.Round2Digits(_stats[character].TotalDamage / _stats[character].ActionTurn);
                 _stats[character].DamagePerSecond = Calculation.Round2Digits(_stats[character].TotalDamage / _stats[character].LiveTime);
 
                 // 回血回蓝
@@ -1098,18 +1097,30 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 if (top == 1)
                 {
                     WriteLine("冠军：" + topCharacter);
+                    _stats[_eliminated[i]].Wins += 1;
+                    _stats[_eliminated[i]].Top3s += 1;
                 }
                 else if (top == 2)
                 {
                     WriteLine("亚军：" + topCharacter);
+                    _stats[_eliminated[i]].Loses += 1;
+                    _stats[_eliminated[i]].Top3s += 1;
                 }
                 else if (top == 3)
                 {
                     WriteLine("季军：" + topCharacter);
+                    _stats[_eliminated[i]].Loses += 1;
+                    _stats[_eliminated[i]].Top3s += 1;
                 }
                 else
                 {
                     WriteLine($"第 {top} 名：" + topCharacter);
+                    _stats[_eliminated[i]].Loses += 1;
+                }
+                _stats[_eliminated[i]].Plays += 1;
+                if (_earnedMoney.TryGetValue(_eliminated[i], out int money))
+                {
+                    _stats[Eliminated[i]].TotalEarnedMoney += money;
                 }
                 top++;
             }

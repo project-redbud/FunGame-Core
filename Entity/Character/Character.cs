@@ -1006,6 +1006,21 @@ namespace Milimoe.FunGame.Core.Entity
             }
             return str;
         }
+        
+        /// <summary>
+        /// 获取角色实例的名字、昵称
+        /// </summary>
+        /// <returns></returns>
+        public string ToStringWithOutUser()
+        {
+            string str = GetName();
+            if (NickName != "")
+            {
+                if (str != "") str += ", ";
+                str += NickName;
+            }
+            return str;
+        }
 
         /// <summary>
         /// 获取角色实例的名字、昵称以及所属玩家，包含等级
