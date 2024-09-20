@@ -1295,7 +1295,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             if (character.Equip(item))
             {
                 EquipItemToSlot type = character.EquipSlot.GetEquipItemToSlot(item);
-                WriteLine($"[ {character} ] 装备了 [ {item.Name} ]。" + (type != EquipItemToSlot.None ? $"（{ItemSet.GetEquipSlotTypeName(type)} 栏位）" : ""));
+                WriteLine($"[ {character} ] 装备了 [ {item.Name} ]。" + (type != EquipItemToSlot.None ? $"（{ItemSet.GetEquipItemToSlotTypeName(type)} 栏位）" : ""));
             }
         }
 
@@ -1303,7 +1303,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         {
             if (character.Equip(item, type))
             {
-                WriteLine($"[ {character} ] 装备了 [ {item.Name} ]。（{ItemSet.GetEquipSlotTypeName(type)} 栏位）");
+                WriteLine($"[ {character} ] 装备了 [ {item.Name} ]。（{ItemSet.GetEquipItemToSlotTypeName(type)} 栏位）");
             }
         }
 
@@ -1312,7 +1312,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             Item? item = character.UnEquip(type);
             if (item != null)
             {
-                WriteLine($"[ {character} ] 取消装备了 [ {item.Name} ]。（{ItemSet.GetEquipSlotTypeName(type)} 栏位）");
+                WriteLine($"[ {character} ] 取消装备了 [ {item.Name} ]。（{ItemSet.GetEquipItemToSlotTypeName(type)} 栏位）");
             }
         }
     }

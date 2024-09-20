@@ -371,6 +371,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 ItemType.Shoes => "鞋子",
                 ItemType.Accessory => "饰品",
                 ItemType.Consumable => "消耗品",
+                ItemType.MagicCard => "魔法卡",
                 ItemType.Collectible => "收藏品",
                 ItemType.SpecialItem => "特殊物品",
                 ItemType.QuestItem => "任务物品",
@@ -380,7 +381,90 @@ namespace Milimoe.FunGame.Core.Library.Constant
             };
         }
 
-        public static string GetEquipSlotTypeName(EquipItemToSlot type)
+        public static ItemType GetItemTypeFromName(string name)
+        {
+            return name switch
+            {
+                "魔法卡包" => ItemType.MagicCardPack,
+                "武器" => ItemType.Weapon,
+                "防具" => ItemType.Armor,
+                "鞋子" => ItemType.Shoes,
+                "饰品" => ItemType.Accessory,
+                "消耗品" => ItemType.Consumable,
+                "魔法卡" => ItemType.MagicCard,
+                "收藏品" => ItemType.Collectible,
+                "特殊物品" => ItemType.SpecialItem,
+                "任务物品" => ItemType.QuestItem,
+                "礼包" => ItemType.GiftBox,
+                _ => ItemType.Others,
+            };
+        }
+
+        public static string GetWeaponTypeName(WeaponType type)
+        {
+            return type switch
+            {
+                WeaponType.OneHandedSword => "单手剑",
+                WeaponType.TwoHandedSword => "双手重剑",
+                WeaponType.Bow => "弓",
+                WeaponType.Pistol => "手枪",
+                WeaponType.Rifle => "步枪",
+                WeaponType.DualDaggers => "双持短刀",
+                WeaponType.Talisman => "法器",
+                WeaponType.Staff => "法杖",
+                WeaponType.Polearm => "长柄",
+                WeaponType.Gauntlet => "拳套",
+                WeaponType.HiddenWeapon => "暗器",
+                _ => ""
+            };
+        }
+
+        public static WeaponType GetWeaponTypeFromName(string name)
+        {
+            return name switch
+            {
+                "单手剑" => WeaponType.OneHandedSword,
+                "双手重剑" => WeaponType.TwoHandedSword,
+                "弓" => WeaponType.Bow,
+                "手枪" => WeaponType.Pistol,
+                "步枪" => WeaponType.Rifle,
+                "双持短刀" => WeaponType.DualDaggers,
+                "法器" => WeaponType.Talisman,
+                "法杖" => WeaponType.Staff,
+                "长柄" => WeaponType.Polearm,
+                "拳套" => WeaponType.Gauntlet,
+                "暗器" => WeaponType.HiddenWeapon,
+                _ => WeaponType.None
+            };
+        }
+
+        public static string GetEquipSlotTypeName(EquipSlotType type)
+        {
+            return type switch
+            {
+                EquipSlotType.MagicCardPack => "魔法卡包",
+                EquipSlotType.Weapon => "武器",
+                EquipSlotType.Armor => "防具",
+                EquipSlotType.Shoes => "鞋子",
+                EquipSlotType.Accessory => "饰品",
+                _ => ""
+            };
+        }
+
+        public static EquipSlotType GetEquipSlotTypeFromName(string name)
+        {
+            return name switch
+            {
+                "魔法卡包" => EquipSlotType.MagicCardPack,
+                "武器" => EquipSlotType.Weapon,
+                "防具" => EquipSlotType.Armor,
+                "鞋子" => EquipSlotType.Shoes,
+                "饰品" => EquipSlotType.Accessory,
+                _ => EquipSlotType.None
+            };
+        }
+
+        public static string GetEquipItemToSlotTypeName(EquipItemToSlot type)
         {
             return type switch
             {
@@ -391,6 +475,47 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EquipItemToSlot.Accessory1 => "饰品1",
                 EquipItemToSlot.Accessory2 => "饰品2",
                 _ => ""
+            };
+        }
+
+        public static EquipItemToSlot GetEquipItemToSlotTypeFromName(string name)
+        {
+            return name switch
+            {
+                "魔法卡包" => EquipItemToSlot.MagicCardPack,
+                "武器" => EquipItemToSlot.Weapon,
+                "防具" => EquipItemToSlot.Armor,
+                "鞋子" => EquipItemToSlot.Shoes,
+                "饰品1" => EquipItemToSlot.Accessory1,
+                "饰品2" => EquipItemToSlot.Accessory2,
+                _ => EquipItemToSlot.None
+            };
+        }
+    }
+
+    public class SkillSet
+    {
+        public static string GetSkillTypeName(SkillType type)
+        {
+            return type switch
+            {
+                SkillType.Magic => "魔法",
+                SkillType.Skill => "战技",
+                SkillType.SuperSkill => "爆发技",
+                SkillType.Item => "物品",
+                _ => "被动"
+            };
+        }
+
+        public static SkillType GetSkillTypeFromName(string name)
+        {
+            return name switch
+            {
+                "魔法" => SkillType.Magic,
+                "战技" => SkillType.Skill,
+                "爆发技" => SkillType.SuperSkill,
+                "物品" => SkillType.Item,
+                _ => SkillType.Passive,
             };
         }
     }

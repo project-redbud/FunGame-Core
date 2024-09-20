@@ -1113,32 +1113,32 @@ namespace Milimoe.FunGame.Core.Entity
                 builder.AppendLine("== 装备栏 ==");
                 if (EquipSlot.MagicCardPack != null)
                 {
-                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipItemToSlot.MagicCardPack) + "：" + EquipSlot.MagicCardPack.Name);
+                    builder.AppendLine(ItemSet.GetEquipItemToSlotTypeName(EquipItemToSlot.MagicCardPack) + "：" + EquipSlot.MagicCardPack.Name);
                     builder.AppendLine(EquipSlot.MagicCardPack.Description);
                 }
                 if (EquipSlot.Weapon != null)
                 {
-                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipItemToSlot.Weapon) + "：" + EquipSlot.Weapon.Name);
+                    builder.AppendLine(ItemSet.GetEquipItemToSlotTypeName(EquipItemToSlot.Weapon) + "：" + EquipSlot.Weapon.Name);
                     builder.AppendLine(EquipSlot.Weapon.Description);
                 }
                 if (EquipSlot.Armor != null)
                 {
-                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipItemToSlot.Armor) + "：" + EquipSlot.Armor.Name);
+                    builder.AppendLine(ItemSet.GetEquipItemToSlotTypeName(EquipItemToSlot.Armor) + "：" + EquipSlot.Armor.Name);
                     builder.AppendLine(EquipSlot.Armor.Description);
                 }
                 if (EquipSlot.Shoes != null)
                 {
-                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipItemToSlot.Shoes) + "：" + EquipSlot.Shoes.Name);
+                    builder.AppendLine(ItemSet.GetEquipItemToSlotTypeName(EquipItemToSlot.Shoes) + "：" + EquipSlot.Shoes.Name);
                     builder.AppendLine(EquipSlot.Shoes.Description);
                 }
                 if (EquipSlot.Accessory1 != null)
                 {
-                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipItemToSlot.Accessory1) + "：" + EquipSlot.Accessory1.Name);
+                    builder.AppendLine(ItemSet.GetEquipItemToSlotTypeName(EquipItemToSlot.Accessory1) + "：" + EquipSlot.Accessory1.Name);
                     builder.AppendLine(EquipSlot.Accessory1.Description);
                 }
                 if (EquipSlot.Accessory2 != null)
                 {
-                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipItemToSlot.Accessory2) + "：" + EquipSlot.Accessory2.Name);
+                    builder.AppendLine(ItemSet.GetEquipItemToSlotTypeName(EquipItemToSlot.Accessory2) + "：" + EquipSlot.Accessory2.Name);
                     builder.AppendLine(EquipSlot.Accessory2.Description);
                 }
             }
