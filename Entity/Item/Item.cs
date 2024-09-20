@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Entity;
+using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Entity
@@ -19,6 +20,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 物品的通用描述
         /// </summary>
         public virtual string GeneralDescription { get; } = "";
+        
+        /// <summary>
+        /// 物品的背景故事
+        /// </summary>
+        public virtual string BackgroundStory { get; } = "";
 
         /// <summary>
         /// 物品类型
@@ -134,7 +140,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 当装备物品时
         /// </summary>
-        public void OnItemEquip(Character character)
+        public void OnItemEquip(Character character, EquipItemToSlot type)
         {
             Character = character;
             Character.Items.Add(this);
@@ -153,12 +159,13 @@ namespace Milimoe.FunGame.Core.Entity
                     }
                 }
             }
+            if (Character != null) OnItemEquipped(Character, this, type);
         }
         
         /// <summary>
         /// 当取消装备物品时
         /// </summary>
-        public void OnItemUnequip()
+        public void OnItemUnEquip(EquipItemToSlot type)
         {
             if (Character != null)
             {
@@ -178,7 +185,29 @@ namespace Milimoe.FunGame.Core.Entity
                         e.OnEffectLost(Character);
                     }
                 }
+                switch (type)
+                {
+                    case EquipItemToSlot.MagicCardPack:
+                        Character.EquipSlot.MagicCardPack = null;
+                        break;
+                    case EquipItemToSlot.Weapon:
+                        Character.EquipSlot.Weapon = null;
+                        break;
+                    case EquipItemToSlot.Armor:
+                        Character.EquipSlot.Armor = null;
+                        break;
+                    case EquipItemToSlot.Shoes:
+                        Character.EquipSlot.Shoes = null;
+                        break;
+                    case EquipItemToSlot.Accessory1:
+                        Character.EquipSlot.Accessory1 = null;
+                        break;
+                    case EquipItemToSlot.Accessory2:
+                        Character.EquipSlot.Accessory2 = null;
+                        break;
+                }
                 Character.Items.Remove(this);
+                OnItemUnEquipped(Character, this, type);
             }
             Character = null;
         }
@@ -188,11 +217,8 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         public void UseItem(ActionQueue queue, Character character, List<Character> enemys, List<Character> teammates)
         {
-            if (Skills.Active != null)
-            {
-                Skills.Active.OnSkillCasted(queue, character, enemys, teammates);
-            }
-            OnItemUsed();
+            OnItemUsed(character, this);
+            Skills.Active?.OnSkillCasted(queue, character, enemys, teammates);
         }
 
         /// <summary>
@@ -200,17 +226,51 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         public void UseItem(/*Inventory inventory*/)
         {
-
-            OnItemUsed();
+            if (User != null) OnItemUsed(User, this);
         }
 
         /// <summary>
-        /// 当物品被使用时
+        /// 当物品被角色使用时
         /// </summary>
-        public virtual void OnItemUsed()
+        /// <param name="character"></param>
+        /// <param name="item"></param>
+        public virtual void OnItemUsed(Character character, Item item)
         {
 
         }
+        
+        /// <summary>
+        /// 当物品被玩家使用时
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="item"></param>
+        public virtual void OnItemUsed(User user, Item item)
+        {
+
+        }
+
+        /// <summary>
+        /// 当物品被装备时
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="item"></param>
+        /// <param name="type"></param>
+        public virtual void OnItemEquipped(Character character, Item item, EquipItemToSlot type)
+        {
+
+        }
+
+        /// <summary>
+        /// 当物品被取消装备时
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="item"></param>
+        /// <param name="type"></param>
+        public virtual void OnItemUnEquipped(Character character, Item item, EquipItemToSlot type)
+        {
+
+        }
+
 
         protected Item(ItemType type, bool isInGame = true, EquipSlotType slot = EquipSlotType.None)
         {
@@ -235,6 +295,16 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <returns></returns>
         public override string ToString()
+        {
+            return ToString(false);
+        }
+
+        /// <summary>
+        /// 显示物品的详细信息
+        /// </summary>
+        /// <param name="isShowGeneralDescription">是否显示通用描述，而不是描述</param>
+        /// <returns></returns>
+        public string ToString(bool isShowGeneralDescription)
         {
             StringBuilder builder = new();
 
@@ -261,16 +331,30 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 builder.AppendLine($"此物品将在 {NextSellableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可出售");
             }
-            
+
             if (!IsTradable && NextTradableTime != DateTime.MinValue)
             {
                 builder.AppendLine($"此物品将在 {NextTradableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可交易");
+            }
+
+            if (isShowGeneralDescription && GeneralDescription != "")
+            {
+                builder.AppendLine("物品描述：" + GeneralDescription);
+            }
+            else if (Description != "")
+            {
+                builder.AppendLine("物品描述：" + Description);
             }
 
             if (Skills.Active != null) builder.AppendLine($"{Skills.Active.ToString()}");
             foreach (Skill skill in Skills.Passives)
             {
                 builder.AppendLine($"{skill.ToString()}");
+            }
+
+            if (BackgroundStory != "")
+            {
+                builder.AppendLine("\r\n" + BackgroundStory);
             }
 
             return builder.ToString();
@@ -284,6 +368,24 @@ namespace Milimoe.FunGame.Core.Entity
         public override bool Equals(IBaseEntity? other)
         {
             return other is Item c && c.Id + "." + c.Name == Id + "." + Name;
+        }
+
+        /// <summary>
+        /// 设置一些属性给从 <see cref="ItemModule"/> 新建来的 <paramref name="item"/><para/>
+        /// 通常，在使用 JSON 反序列化 Item，且从 <see cref="ItemModule.GetItem(long, string, ItemType)"/> 中获取了实例后，需要使用此方法复制给新实例
+        /// </summary>
+        /// <param name="item"></param>
+        public void SetPropertyToItemModuleNew(Item item)
+        {
+            item.WeaponType = WeaponType;
+            item.EquipSlotType = EquipSlotType;
+            item.Equipable = Equipable;
+            item.IsPurchasable = IsPurchasable;
+            item.Price = Price;
+            item.IsSellable = IsSellable;
+            item.NextSellableTime = NextSellableTime;
+            item.IsTradable = IsTradable;
+            item.NextTradableTime = NextTradableTime;
         }
 
         /// <summary>

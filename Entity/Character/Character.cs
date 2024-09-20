@@ -170,12 +170,12 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 基础生命值 [ 与初始设定和等级相关 ] [ 与基础力量相关 ]
         /// </summary>
-        public double BaseHP => Calculation.Round2Digits(InitialHP + (Level - 1) * (17 + 0.68 * InitialHP) + BaseSTR * 17);
+        public double BaseHP => Calculation.Round2Digits(InitialHP + (Level - 1) * (17 + 0.68 * InitialHP) + BaseSTR * 9);
 
         /// <summary>
         /// 额外生命值 [ 与额外力量相关 ]
         /// </summary>
-        public double ExHP => Calculation.Round2Digits(ExSTR * 17);
+        public double ExHP => Calculation.Round2Digits(ExSTR * 9);
 
         /// <summary>
         /// 额外生命值2 [ 与技能和物品相关 ]
@@ -805,7 +805,7 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 为角色穿戴装备（必须使用此方法而不是自己去给EquipSlot里的物品赋值）
+        /// 为角色装备物品（必须使用此方法而不是自己去给EquipSlot里的物品赋值）
         /// </summary>
         /// <param name="item"></param>
         /// <param name="slot"></param>
@@ -823,6 +823,7 @@ namespace Milimoe.FunGame.Core.Entity
                     {
                         UnEquip(EquipItemToSlot.MagicCardPack);
                         EquipSlot.MagicCardPack = item;
+                        item.OnItemEquip(this, EquipItemToSlot.MagicCardPack);
                         result = true;
                     }
                     break;
@@ -831,7 +832,7 @@ namespace Milimoe.FunGame.Core.Entity
                     {
                         UnEquip(EquipItemToSlot.Weapon);
                         EquipSlot.Weapon = item;
-                        item.OnItemEquip(this);
+                        item.OnItemEquip(this, EquipItemToSlot.Weapon);
                         result = true;
                     }
                     break;
@@ -840,7 +841,7 @@ namespace Milimoe.FunGame.Core.Entity
                     {
                         UnEquip(EquipItemToSlot.Armor);
                         EquipSlot.Armor = item;
-                        item.OnItemEquip(this);
+                        item.OnItemEquip(this, EquipItemToSlot.Armor);
                         result = true;
                     }
                     break;
@@ -849,7 +850,7 @@ namespace Milimoe.FunGame.Core.Entity
                     {
                         UnEquip(EquipItemToSlot.Shoes);
                         EquipSlot.Shoes = item;
-                        item.OnItemEquip(this);
+                        item.OnItemEquip(this, EquipItemToSlot.Shoes);
                         result = true;
                     }
                     break;
@@ -858,7 +859,7 @@ namespace Milimoe.FunGame.Core.Entity
                     {
                         UnEquip(EquipItemToSlot.Accessory1);
                         EquipSlot.Accessory1 = item;
-                        item.OnItemEquip(this);
+                        item.OnItemEquip(this, EquipItemToSlot.Accessory1);
                         result = true;
                     }
                     break;
@@ -867,7 +868,7 @@ namespace Milimoe.FunGame.Core.Entity
                     {
                         UnEquip(EquipItemToSlot.Accessory2);
                         EquipSlot.Accessory2 = item;
-                        item.OnItemEquip(this);
+                        item.OnItemEquip(this, EquipItemToSlot.Accessory2);
                         result = true;
                     }
                     break;
@@ -880,29 +881,90 @@ namespace Milimoe.FunGame.Core.Entity
             return result;
         }
 
-        public void UnEquip(EquipItemToSlot type)
+        /// <summary>
+        /// 为角色装备物品（必须使用此方法而不是自己去给EquipSlot里的物品赋值）<para/>
+        /// 此方法为根据物品类型，优先空位自动装备
+        /// </summary>
+        /// <param name="item"></param>
+        public bool Equip(Item item)
         {
+            switch (item.ItemType)
+            {
+                case ItemType.MagicCardPack:
+                    return Equip(item, EquipItemToSlot.MagicCardPack);
+                case ItemType.Weapon:
+                    return Equip(item, EquipItemToSlot.Weapon);
+                case ItemType.Armor:
+                    return Equip(item, EquipItemToSlot.Armor);
+                case ItemType.Shoes:
+                    return Equip(item, EquipItemToSlot.Shoes);
+                case ItemType.Accessory:
+                    if (EquipSlot.Accessory1 != null && EquipSlot.Accessory2 is null)
+                    {
+                        return Equip(item, EquipItemToSlot.Accessory2);
+                    }
+                    else
+                    {
+                        return Equip(item, EquipItemToSlot.Accessory1);
+                    }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 取消装备，返回被取消的物品对象
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public Item? UnEquip(EquipItemToSlot type)
+        {
+            Item? result = null;
             switch (type)
             {
                 case EquipItemToSlot.MagicCardPack:
-                    EquipSlot.MagicCardPack?.OnItemUnequip();
+                    if (EquipSlot.MagicCardPack != null)
+                    {
+                        result = EquipSlot.MagicCardPack;
+                        EquipSlot.MagicCardPack.OnItemUnEquip(EquipItemToSlot.MagicCardPack);
+                    }
                     break;
                 case EquipItemToSlot.Weapon:
-                    EquipSlot.Weapon?.OnItemUnequip();
+                    if (EquipSlot.Weapon != null)
+                    {
+                        result = EquipSlot.Weapon;
+                        EquipSlot.Weapon.OnItemUnEquip(EquipItemToSlot.Weapon);
+                    }
                     break;
                 case EquipItemToSlot.Armor:
-                    EquipSlot.Armor?.OnItemUnequip();
+                    if (EquipSlot.Armor != null)
+                    {
+                        result = EquipSlot.Armor;
+                        EquipSlot.Armor.OnItemUnEquip(EquipItemToSlot.Armor);
+                    }
                     break;
                 case EquipItemToSlot.Shoes:
-                    EquipSlot.Shoes?.OnItemUnequip();
+                    if (EquipSlot.Shoes != null)
+                    {
+                        result = EquipSlot.Shoes;
+                        EquipSlot.Shoes.OnItemUnEquip(EquipItemToSlot.Shoes);
+                    }
                     break;
                 case EquipItemToSlot.Accessory1:
-                    EquipSlot.Accessory1?.OnItemUnequip();
+                    if (EquipSlot.Accessory1 != null)
+                    {
+                        result = EquipSlot.Accessory1;
+                        EquipSlot.Accessory1.OnItemUnEquip(EquipItemToSlot.Accessory1);
+                    }
                     break;
                 case EquipItemToSlot.Accessory2:
-                    EquipSlot.Accessory2?.OnItemUnequip();
+                    if (EquipSlot.Accessory2 != null)
+                    {
+                        result = EquipSlot.Accessory2;
+                        EquipSlot.Accessory2.OnItemUnEquip(EquipItemToSlot.Accessory2);
+                    }
                     break;
             }
+            return result;
         }
 
         /// <summary>
@@ -1046,7 +1108,7 @@ namespace Milimoe.FunGame.Core.Entity
                 }
             }
 
-            if (Items.Count > 0)
+            if (EquipSlot.Any())
             {
                 builder.AppendLine("== 装备栏 ==");
                 if (EquipSlot.MagicCardPack != null)
@@ -1081,7 +1143,7 @@ namespace Milimoe.FunGame.Core.Entity
                 }
             }
 
-            if (Effects.Count > 0)
+            if (Effects.Where(e => e.EffectType != EffectType.Item).Any())
             {
                 builder.AppendLine("== 状态栏 ==");
                 foreach (Effect effect in Effects.Where(e => e.EffectType != EffectType.Item))

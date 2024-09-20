@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Api.Utility
@@ -482,7 +483,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 // 获取随机敌人
                 if (enemys.Count > 0)
                 {
-                    Character enemy = enemys[new Random().Next(enemys.Count)];
+                    Character enemy = enemys[Random.Shared.Next(enemys.Count)];
                     character.NormalAttack.Attack(this, character, enemy);
                     baseTime = character.NormalAttack.HardnessTime;
                     foreach (Effect effect in character.Effects.Where(e => e.Level > 0).ToList())
@@ -496,7 +497,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 // 预使用技能，即开始吟唱逻辑
                 // 注意：FastAuto 模式下，此吟唱逻辑删减了选取目标的逻辑，将选取逻辑放在了实际释放的环节
                 // 在正常交互式模式下，吟唱前需要先选取目标
-                Skill skill = skills[new Random().Next(skills.Count)];
+                Skill skill = skills[Random.Shared.Next(skills.Count)];
                 if (skill.SkillType == SkillType.Magic)
                 {
                     character.CharacterState = CharacterState.Casting;
@@ -836,7 +837,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="max">最大获取量</param>
         public static double GetEP(double a, double b, double max)
         {
-            return Calculation.Round2Digits(Math.Min((a + new Random().Next(30)) * b, max));
+            return Calculation.Round2Digits(Math.Min((a + Random.Shared.Next(30)) * b, max));
         }
 
         /// <summary>
@@ -866,7 +867,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 effect.AlterExpectedDamageBeforeCalculation(actor, enemy, ref expectedDamage, isNormalAttack, false, MagicType.None);
             }
 
-            double dice = new Random().NextDouble();
+            double dice = Random.Shared.NextDouble();
             if (isNormalAttack)
             {
                 // 闪避判定
@@ -900,7 +901,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             finalDamage = Calculation.Round2Digits(expectedDamage * (1 - physicalDamageReduction));
 
             // 暴击判定
-            dice = new Random().NextDouble();
+            dice = Random.Shared.NextDouble();
             if (dice < actor.CritRate)
             {
                 finalDamage = Calculation.Round2Digits(finalDamage * actor.CritDMG); // 暴击伤害倍率加成
@@ -943,7 +944,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 effect.AlterExpectedDamageBeforeCalculation(actor, enemy, ref expectedDamage, isNormalAttack, true, magicType);
             }
 
-            double dice = new Random().NextDouble();
+            double dice = Random.Shared.NextDouble();
             if (isNormalAttack)
             {
                 // 闪避判定
@@ -987,7 +988,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             finalDamage = Calculation.Round2Digits(expectedDamage * (1 - MDF));
 
             // 暴击判定
-            dice = new Random().NextDouble();
+            dice = Random.Shared.NextDouble();
             if (dice < actor.CritRate)
             {
                 finalDamage = Calculation.Round2Digits(finalDamage * actor.CritDMG); // 暴击伤害倍率加成
@@ -1013,7 +1014,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             if (!_continuousKilling.TryAdd(killer, 1)) _continuousKilling[killer] += 1;
             _stats[killer].Kills += 1;
             _stats[death].Deaths += 1;
-            int money = new Random().Next(250, 350);
+            int money = Random.Shared.Next(250, 350);
 
             Character[] assists = _assistDamage.Keys.Where(c => c != death && _assistDamage[c].GetPercentage(death) > 0.10).ToArray();
             double totalDamagePercentage = Calculation.Round4Digits(_assistDamage.Keys.Where(assists.Contains).Select(c => _assistDamage[c].GetPercentage(death)).Sum());
@@ -1037,7 +1038,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             // 终结击杀的奖励仍然是全额的
             if (_continuousKilling.TryGetValue(death, out int coefficient) && coefficient > 1)
             {
-                money += (coefficient + 1) * new Random().Next(50, 100);
+                money += (coefficient + 1) * Random.Shared.Next(50, 100);
                 string termination = CharacterSet.GetContinuousKilling(coefficient);
                 string msg = $"[ {killer} ] 终结了 [ {death} ]{(termination != "" ? " 的" + termination : "")}，获得 {money} 金钱！";
                 if (assists.Length > 1)
@@ -1163,12 +1164,12 @@ namespace Milimoe.FunGame.Core.Api.Utility
             foreach (Character other in _queue.Where(c => c != character && c.CharacterState == CharacterState.Actionable && _queue.IndexOf(c) >= _queue.Count / 2).ToList())
             {
                 // 有 65% 欲望插队
-                if (new Random().NextDouble() < 0.65)
+                if (Random.Shared.NextDouble() < 0.65)
                 {
                     List<Skill> skills = other.Skills.Where(s => s.Level > 0 && s.SkillType == SkillType.SuperSkill && s.Enable && !s.IsInEffect && s.CurrentCD == 0 && other.EP >= s.RealEPCost).ToList();
                     if (skills.Count > 0)
                     {
-                        Skill skill = skills[new Random().Next(skills.Count)];
+                        Skill skill = skills[Random.Shared.Next(skills.Count)];
                         _castingSuperSkills.Add(other, skill);
                         other.CharacterState = CharacterState.PreCastSuperSkill;
                         _queue.Remove(other);
@@ -1237,7 +1238,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 pNormalAttack /= total;
             }
 
-            double rand = new Random().NextDouble();
+            double rand = Random.Shared.NextDouble();
 
             // 按概率进行检查
             if (rand < pUseItem)
@@ -1289,13 +1290,27 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
         }
 
+        public void Equip(Character character, Item item)
+        {
+            if (character.Equip(item))
+            {
+                EquipItemToSlot type = character.EquipSlot.GetEquipItemToSlot(item);
+                WriteLine($"[ {character} ] 装备了 [ {item.Name} ]。" + (type != EquipItemToSlot.None ? $"（{ItemSet.GetEquipSlotTypeName(type)} 栏位）" : ""));
+            }
+        }
+
         public void Equip(Character character, EquipItemToSlot type, Item item)
         {
             if (character.Equip(item, type))
             {
                 WriteLine($"[ {character} ] 装备了 [ {item.Name} ]。（{ItemSet.GetEquipSlotTypeName(type)} 栏位）");
             }
-            else
+        }
+
+        public void UnEquip(Character character, EquipItemToSlot type)
+        {
+            Item? item = character.UnEquip(type);
+            if (item != null)
             {
                 WriteLine($"[ {character} ] 取消装备了 [ {item.Name} ]。（{ItemSet.GetEquipSlotTypeName(type)} 栏位）");
             }

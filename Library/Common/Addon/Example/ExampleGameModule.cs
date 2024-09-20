@@ -337,7 +337,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             }
         }
 
-        public override Skill? GetSkill(long id, string name)
+        public override Skill? GetSkill(long id, string name, SkillType type)
         {
             // 此方法将根据id和name，返回一个你继承实现了的类对象。
             return Factory.GetSkill();
@@ -367,7 +367,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             }
         }
 
-        public override Item? GetItem(long id, string name)
+        public override Item? GetItem(long id, string name, ItemType type)
         {
             // 此方法将根据id和name，返回一个你继承实现了的类对象。
             return Factory.GetItem();

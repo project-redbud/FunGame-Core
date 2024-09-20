@@ -1,5 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Addons;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Library.Common.Addon
 {
@@ -40,8 +41,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// </summary>
         /// <param name="id"></param>
         /// <param name="name"></param>
+        /// <param name="type"></param>
         /// <returns></returns>
-        public abstract Item? GetItem(long id, string name);
+        public abstract Item? GetItem(long id, string name, ItemType type);
 
         /// <summary>
         /// 加载模组

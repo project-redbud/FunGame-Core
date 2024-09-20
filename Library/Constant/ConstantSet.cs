@@ -389,7 +389,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EquipItemToSlot.Armor => "防具",
                 EquipItemToSlot.Shoes => "鞋子",
                 EquipItemToSlot.Accessory1 => "饰品1",
-                EquipItemToSlot.Accessory2 => "饰品",
+                EquipItemToSlot.Accessory2 => "饰品2",
                 _ => ""
             };
         }
