@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.Json;
+using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -63,6 +64,11 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     }
                     else result.NextTradableTime = DateTime.MinValue;
                     break;
+                case nameof(Character.Skills):
+                    SkillGroup skills = NetworkUtility.JsonDeserialize<SkillGroup>(ref reader, options) ?? new();
+                    result.Skills.Active = skills.Active;
+                    result.Skills.Passives = skills.Passives;
+                    break;
             }
         }
 
@@ -82,6 +88,8 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteString(nameof(Item.NextSellableTime), value.NextSellableTime.ToString(General.GeneralDateTimeFormat));
             writer.WriteBoolean(nameof(Item.IsTradable), value.IsTradable);
             writer.WriteString(nameof(Item.NextTradableTime), value.NextTradableTime.ToString(General.GeneralDateTimeFormat));
+            writer.WritePropertyName(nameof(Item.Skills));
+            JsonSerializer.Serialize(writer, value.Skills, options);
 
             writer.WriteEndObject();
         }
