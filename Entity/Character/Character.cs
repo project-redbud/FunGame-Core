@@ -38,7 +38,7 @@ namespace Milimoe.FunGame.Core.Entity
         public CharacterProfile Profile { get; set; }
 
         /// <summary>
-        /// 角色的详细资料
+        /// 角色的装备
         /// </summary>
         public EquipSlot EquipSlot { get; set; }
 
@@ -1122,7 +1122,7 @@ namespace Milimoe.FunGame.Core.Entity
                     builder.Append(skill.ToString());
                 }
             }
-
+            
             if (EquipSlot.Any())
             {
                 builder.AppendLine("== 装备栏 ==");
@@ -1155,6 +1155,15 @@ namespace Milimoe.FunGame.Core.Entity
                 {
                     builder.AppendLine(ItemSet.GetEquipItemToSlotTypeName(EquipItemToSlot.Accessory2) + "：" + EquipSlot.Accessory2.Name);
                     builder.AppendLine(EquipSlot.Accessory2.Description);
+                }
+            }
+
+            if (Items.Count > 0)
+            {
+                builder.AppendLine("== 角色背包 ==");
+                foreach (Item item in Items)
+                {
+                    builder.Append(item.ToString());
                 }
             }
 
@@ -1275,6 +1284,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             Character c = new()
             {
+                Id = Id,
                 Name = Name,
                 FirstName = FirstName,
                 NickName = NickName,
@@ -1326,11 +1336,15 @@ namespace Milimoe.FunGame.Core.Entity
             };
             foreach (Skill skill in Skills)
             {
-                c.Skills.Add(skill);
+                Skill newskill = skill.Copy();
+                newskill.Character = c;
+                c.Skills.Add(newskill);
             }
             foreach (Item item in Items)
             {
-                c.Items.Add(item);
+                Item newitem = item.Copy();
+                newitem.Character = c;
+                c.Items.Add(newitem);
             }
             c.Recovery();
             return c;

@@ -170,6 +170,20 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Character.ExEvadeRate):
                     result.ExEvadeRate = reader.GetDouble();
                     break;
+                case nameof(Character.Skills):
+                    HashSet<Skill> skills = NetworkUtility.JsonDeserialize<HashSet<Skill>>(ref reader, options) ?? [];
+                    foreach (Skill skill in skills)
+                    {
+                        result.Skills.Add(skill);
+                    }
+                    break;
+                case nameof(Character.Items):
+                    HashSet<Item> items = NetworkUtility.JsonDeserialize<HashSet<Item>>(ref reader, options) ?? [];
+                    foreach (Item item in items)
+                    {
+                        result.Items.Add(item);
+                    }
+                    break;
             }
         }
 
@@ -230,6 +244,10 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Character.ExCritRate), value.ExCritRate);
             writer.WriteNumber(nameof(Character.ExCritDMG), value.ExCritDMG);
             writer.WriteNumber(nameof(Character.ExEvadeRate), value.ExEvadeRate);
+            writer.WritePropertyName(nameof(Character.Skills));
+            JsonSerializer.Serialize(writer, value.Skills, options);
+            writer.WritePropertyName(nameof(Character.Items));
+            JsonSerializer.Serialize(writer, value.Items, options);
             writer.WriteEndObject();
         }
 

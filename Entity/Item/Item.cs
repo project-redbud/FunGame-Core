@@ -14,17 +14,17 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 物品的描述
         /// </summary>
-        public virtual string Description { get; } = "";
+        public virtual string Description { get; set; } = "";
 
         /// <summary>
         /// 物品的通用描述
         /// </summary>
-        public virtual string GeneralDescription { get; } = "";
+        public virtual string GeneralDescription { get; set; } = "";
         
         /// <summary>
         /// 物品的背景故事
         /// </summary>
-        public virtual string BackgroundStory { get; } = "";
+        public virtual string BackgroundStory { get; set; } = "";
 
         /// <summary>
         /// 物品类型
@@ -32,7 +32,17 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual ItemType ItemType { get; set; } = ItemType.Others;
 
         /// <summary>
-        /// 物品槽位
+        /// 是否允许装备
+        /// </summary>
+        public bool Equipable { get; set; } = true;
+
+        /// <summary>
+        /// 是否允许取消装备
+        /// </summary>
+        public bool Unequipable { get; set; } = true;
+
+        /// <summary>
+        /// 装备槽位
         /// </summary>
         public virtual EquipSlotType EquipSlotType { get; set; } = EquipSlotType.None;
         
@@ -56,16 +66,6 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         public bool Enable { get; set; } = true;
         
-        /// <summary>
-        /// 是否允许装备
-        /// </summary>
-        public bool Equipable { get; set; } = true;
-        
-        /// <summary>
-        /// 是否允许取消装备
-        /// </summary>
-        public bool Unequipable { get; set; } = true;
-
         /// <summary>
         /// 是否是局内使用的物品（局内是指对角色生效的物品）
         /// </summary>
@@ -143,7 +143,6 @@ namespace Milimoe.FunGame.Core.Entity
         public void OnItemEquip(Character character, EquipItemToSlot type)
         {
             Character = character;
-            Character.Items.Add(this);
             foreach (Skill skill in Skills.Passives)
             {
                 if (!skill.IsActive && skill.Level > 0)
@@ -206,7 +205,6 @@ namespace Milimoe.FunGame.Core.Entity
                         Character.EquipSlot.Accessory2 = null;
                         break;
                 }
-                Character.Items.Remove(this);
                 OnItemUnEquipped(Character, this, type);
             }
             Character = null;
@@ -386,6 +384,44 @@ namespace Milimoe.FunGame.Core.Entity
             item.NextSellableTime = NextSellableTime;
             item.IsTradable = IsTradable;
             item.NextTradableTime = NextTradableTime;
+        }
+
+        /// <summary>
+        /// 复制一个物品
+        /// </summary>
+        /// <returns></returns>
+        public Item Copy()
+        {
+            Item item = new()
+            {
+                Id = Id,
+                Name = Name,
+                Description = Description,
+                GeneralDescription = GeneralDescription,
+                ItemType = ItemType,
+                Equipable = Equipable,
+                Unequipable = Unequipable,
+                EquipSlotType = EquipSlotType,
+                WeaponType = WeaponType,
+                Key = Key,
+                Enable = Enable,
+                IsInGameItem = IsInGameItem,
+                IsPurchasable = IsPurchasable,
+                Price = Price,
+                IsSellable = IsSellable,
+                NextSellableTime = NextSellableTime,
+                IsTradable = IsTradable,
+                NextTradableTime = NextTradableTime,
+                RemainUseTimes = RemainUseTimes,
+            };
+            item.Skills.Active = Skills.Active?.Copy();
+            foreach (Skill skill in Skills.Passives)
+            {
+                Skill newskill = skill.Copy();
+                newskill.Item = item;
+                item.Skills.Passives.Add(newskill);
+            }
+            return item;
         }
 
         /// <summary>

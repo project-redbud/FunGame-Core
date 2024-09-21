@@ -118,7 +118,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 冷却时间
         /// </summary>
         [InitRequired]
-        public virtual double CD { get; } = 0;
+        public virtual double CD { get; set; } = 0;
 
         /// <summary>
         /// 剩余冷却时间 [ 建议配合 <see cref="Enable"/>  属性使用 ]
@@ -145,6 +145,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 游戏中的行动顺序表实例，在技能效果被触发时，此实例会获得赋值，使用时需要判断其是否存在
         /// </summary>
         public ActionQueue? ActionQueue { get; set; } = null;
+        
+        /// <summary>
+        /// 技能是否属于某个物品
+        /// </summary>
+        public Item? Item { get; set; } = null;
 
         /// <summary>
         /// 继承此类实现时，调用基类的构造函数
@@ -306,6 +311,35 @@ namespace Milimoe.FunGame.Core.Entity
         public override bool Equals(IBaseEntity? other)
         {
             return other is Skill c && c.Id + "." + c.Name == Id + "." + Name;
+        }
+
+        /// <summary>
+        /// 复制一个技能
+        /// </summary>
+        /// <returns></returns>
+        public Skill Copy()
+        {
+            Skill s = new()
+            {
+                Id = Id,
+                Name = Name,
+                Description = Description,
+                GeneralDescription = GeneralDescription,
+                SkillType = SkillType,
+                MPCost = MPCost,
+                CastTime = CastTime,
+                EPCost = EPCost,
+                CD = CD,
+                CurrentCD = CurrentCD,
+                HardnessTime = HardnessTime,
+                ActionQueue = ActionQueue
+            };
+            foreach (Effect e in Effects)
+            {
+                Effect neweffect = e.Copy(s);
+                s.Effects.Add(neweffect);
+            }
+            return s;
         }
 
         /// <summary>

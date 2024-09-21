@@ -19,40 +19,40 @@ namespace Milimoe.FunGame.Core.Entity
         /// 特殊效果类型<para/>
         /// 注意：如果技能特效没有原生施加控制效果，请始终保持此属性为 <see cref="EffectType.None"/>。
         /// </summary>
-        public virtual EffectType EffectType { get; } = EffectType.None;
+        public virtual EffectType EffectType { get; set; } = EffectType.None;
 
         /// <summary>
         /// 作用于自身
         /// </summary>
-        public virtual bool TargetSelf { get; } = false;
+        public virtual bool TargetSelf { get; set; } = false;
 
         /// <summary>
         /// 作用目标数量
         /// </summary>
-        public virtual int TargetCount { get; } = 0;
+        public virtual int TargetCount { get; set; } = 0;
 
         /// <summary>
         /// 作用范围
         /// </summary>
-        public virtual double TargetRange { get; } = 0;
+        public virtual double TargetRange { get; set; } = 0;
 
         /// <summary>
         /// 持续性的<para/>
         /// 配合 <see cref="Duration"/> 使用，而不是 <see cref="DurationTurn"/>。
         /// </summary>
-        public virtual bool Durative { get; } = false;
+        public virtual bool Durative { get; set; } = false;
 
         /// <summary>
         /// 持续时间<para/>
         /// 配合 <see cref="Durative"/> 使用。
         /// </summary>
-        public virtual double Duration { get; } = 0;
+        public virtual double Duration { get; set; } = 0;
 
         /// <summary>
         /// 持续时间（回合）<para/>
         /// 使用此属性需要将 <see cref="Durative"/> 设置为 false。
         /// </summary>
-        public virtual int DurationTurn { get; } = 0;
+        public virtual int DurationTurn { get; set; } = 0;
 
         /// <summary>
         /// 剩余持续时间
@@ -67,12 +67,12 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 魔法类型
         /// </summary>
-        public virtual MagicType MagicType { get; } = MagicType.None;
+        public virtual MagicType MagicType { get; set; } = MagicType.None;
 
         /// <summary>
         /// 效果描述
         /// </summary>
-        public virtual string Description { get; } = "";
+        public virtual string Description { get; set; } = "";
 
         /// <summary>
         /// 等级，跟随技能的等级
@@ -432,6 +432,29 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine("【" + Name + " - 等级 " + Level + "】" + Description + isDurative);
 
             return builder.ToString();
+        }
+
+        /// <summary>
+        /// 复制一个特效
+        /// </summary>
+        /// <returns></returns>
+        public Effect Copy(Skill skill)
+        {
+            Effect copy = new(skill)
+            {
+                EffectType = EffectType,
+                TargetSelf = TargetSelf,
+                TargetCount = TargetCount,
+                TargetRange = TargetRange,
+                Durative = Durative,
+                Duration = Duration,
+                DurationTurn = DurationTurn,
+                MagicType = MagicType,
+                Description = Description,
+                ActionQueue = ActionQueue
+            };
+
+            return copy;
         }
 
         /// <summary>
