@@ -1093,35 +1093,34 @@ namespace Milimoe.FunGame.Core.Api.Utility
             WriteLine("=== 排名 ===");
             for (int i = _eliminated.Count - 1; i >= 0; i--)
             {
-                string topCharacter = _eliminated[i].ToString() + (_continuousKilling.TryGetValue(_eliminated[i], out int kills) && kills > 1 ? $" [ {CharacterSet.GetContinuousKilling(kills)} ]" : "") + (_earnedMoney.TryGetValue(_eliminated[i], out int earned) ? $" [ 已赚取 {earned} 金钱 ]" : "");
+                Character ec = _eliminated[i];
+                string topCharacter = ec.ToString() + (_continuousKilling.TryGetValue(ec, out int kills) && kills > 1 ? $" [ {CharacterSet.GetContinuousKilling(kills)} ]" : "") + (_earnedMoney.TryGetValue(ec, out int earned) ? $" [ 已赚取 {earned} 金钱 ]" : "");
                 if (top == 1)
                 {
                     WriteLine("冠军：" + topCharacter);
-                    _stats[_eliminated[i]].Wins += 1;
-                    _stats[_eliminated[i]].Top3s += 1;
+                    _stats[ec].Wins += 1;
+                    _stats[ec].Top3s += 1;
                 }
                 else if (top == 2)
                 {
                     WriteLine("亚军：" + topCharacter);
-                    _stats[_eliminated[i]].Loses += 1;
-                    _stats[_eliminated[i]].Top3s += 1;
+                    _stats[ec].Loses += 1;
+                    _stats[ec].Top3s += 1;
                 }
                 else if (top == 3)
                 {
                     WriteLine("季军：" + topCharacter);
-                    _stats[_eliminated[i]].Loses += 1;
-                    _stats[_eliminated[i]].Top3s += 1;
+                    _stats[ec].Loses += 1;
+                    _stats[ec].Top3s += 1;
                 }
                 else
                 {
                     WriteLine($"第 {top} 名：" + topCharacter);
-                    _stats[_eliminated[i]].Loses += 1;
+                    _stats[ec].Loses += 1;
                 }
-                _stats[_eliminated[i]].Plays += 1;
-                if (_earnedMoney.TryGetValue(_eliminated[i], out int money))
-                {
-                    _stats[Eliminated[i]].TotalEarnedMoney += money;
-                }
+                _stats[ec].Plays += 1;
+                _stats[ec].TotalEarnedMoney += earned;
+                _stats[ec].LastRank = top;
                 top++;
             }
             WriteLine("");
