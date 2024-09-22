@@ -66,6 +66,13 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 AddonManager.LoadGameModules(loader.Modules, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
                 AddonManager.LoadGameMaps(loader.Maps, otherobjs);
+                foreach (GameModule module in loader.Modules.Values)
+                {
+                    // 读取模组的依赖集合
+                    module.GameModuleDepend.GetDependencies(loader);
+                    // 如果模组加载后需要执行代码，请重写AfterLoad方法
+                    module.AfterLoad(runtime, loader);
+                }
             }
             else if (runtime == FunGameInfo.FunGame.FunGame_Server)
             {
@@ -80,6 +87,16 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     else loader.AssociatedServers.Add(module, null); // 服务器获取GameModuleServer时需要判断是否存在模组。
                 }
                 AddonManager.LoadGameMaps(loader.Maps, otherobjs);
+                foreach (GameModule module in loader.Modules.Values)
+                {
+                    module.GameModuleDepend.GetDependencies(loader);
+                    module.AfterLoad(loader);
+                }
+                foreach (GameModuleServer server in loader.ServerModules.Values)
+                {
+                    server.GameModuleDepend.GetDependencies(loader);
+                    server.AfterLoad(loader);
+                }
             }
             return loader;
         }

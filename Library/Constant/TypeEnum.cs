@@ -66,6 +66,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
     {
         Unknown,
         DataRequest,
+        GamingRequest,
         Connect,
         Disconnect,
         System,
@@ -217,7 +218,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// 无特殊效果
         /// </summary>
         None,
-        
+
         /// <summary>
         /// 这是来自装备的特效
         /// </summary>
@@ -843,5 +844,12 @@ namespace Milimoe.FunGame.Core.Library.Constant
         DataRequest,
         Plugin,
         GameModule
+    }
+
+    public enum SQLMode
+    {
+        None,
+        MySQL,
+        SQLite
     }
 }

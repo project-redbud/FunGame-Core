@@ -17,7 +17,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// 当前的行动顺序
         /// </summary>
         public List<Character> Queue => _queue;
-        
+
         /// <summary>
         /// 当前已死亡的角色顺序(第一个是最早死的)
         /// </summary>
@@ -342,7 +342,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             // 技能列表
             List<Skill> skills = [.. character.Skills.Where(s => s.Level > 0 && s.SkillType != SkillType.Passive && s.Enable && !s.IsInEffect && s.CurrentCD == 0 &&
                 (((s.SkillType == SkillType.SuperSkill || s.SkillType == SkillType.Skill) && s.RealEPCost <= character.EP) || (s.SkillType == SkillType.Magic && s.RealMPCost <= character.MP)))];
-            
+
             // 物品列表
             List<Item> items = [.. character.Items.Where(i => i.IsActive && i.Skills.Active != null && i.Enable && i.IsInGameItem &&
                 i.Skills.Active.SkillType == SkillType.Item && i.Skills.Active.Enable && !i.Skills.Active.IsInEffect && i.Skills.Active.CurrentCD == 0 && i.Skills.Active.RealMPCost <= character.MP && i.Skills.Active.RealEPCost <= character.EP)];
@@ -1260,7 +1260,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 return CharacterActionType.PreCastSkill;
             }
-            
+
             if (rand < pUseItem + pCastSkill + pNormalAttack)
             {
                 return CharacterActionType.NormalAttack;

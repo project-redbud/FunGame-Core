@@ -105,11 +105,17 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     /**
                      * MySQL
                      */
+                    WriteINI("SQLite", "UseMySQL", "false");
                     WriteINI("MySQL", "DBServer", "localhost");
                     WriteINI("MySQL", "DBPort", "3306");
                     WriteINI("MySQL", "DBName", "fungame");
                     WriteINI("MySQL", "DBUser", "root");
                     WriteINI("MySQL", "DBPassword", "pass");
+                    /**
+                     * SQLite
+                     */
+                    WriteINI("SQLite", "UseSQLite", "true");
+                    WriteINI("SQLite", "DataSource", "FunGameDB");
                     /**
                      * Mailer
                      */

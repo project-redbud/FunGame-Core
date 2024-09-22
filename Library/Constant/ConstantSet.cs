@@ -37,6 +37,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string Socket = "Socket";
         public const string Unknown = "Unknown";
         public const string DataRequest = "DataRequest";
+        public const string GamingRequest = "GamingRequest";
         public const string Connect = "Connect";
         public const string Disconnect = "Disconnect";
         public const string System = "System";

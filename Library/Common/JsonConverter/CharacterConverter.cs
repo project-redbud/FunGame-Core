@@ -17,6 +17,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
         {
             switch (propertyName)
             {
+                case nameof(Character.Id):
+                    result.Id = reader.GetInt64();
+                    break;
                 case nameof(Character.Name):
                     result.Name = reader.GetString() ?? "";
                     break;
@@ -190,6 +193,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
         public override void Write(Utf8JsonWriter writer, Character value, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
+            writer.WriteNumber(nameof(Character.Id), value.Id);
             writer.WriteString(nameof(Character.Name), value.Name);
             writer.WriteString(nameof(Character.FirstName), value.FirstName);
             writer.WriteString(nameof(Character.NickName), value.NickName);

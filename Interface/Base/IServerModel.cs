@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
 
@@ -30,6 +31,11 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// 客户端是否启动了开发者模式
         /// </summary>
         public bool IsDebugMode { get; }
+
+        /// <summary>
+        /// 客户端的游戏模组服务器
+        /// </summary>
+        public GameModuleServer? NowGamingServer { get; set; }
 
         /// <summary>
         /// 向客户端发送消息
