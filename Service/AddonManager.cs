@@ -118,7 +118,6 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 从modules目录加载所有适用于服务器的模组
         /// </summary>
-        /// <param name="modules"></param>
         /// <param name="servers"></param>
         /// <param name="characters"></param>
         /// <param name="skills"></param>
@@ -126,7 +125,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="delegates"></param>
         /// <param name="otherobjs"></param>
         /// <returns></returns>
-        internal static Dictionary<string, GameModuleServer> LoadGameModulesForServer(Dictionary<string, GameModule> modules, Dictionary<string, GameModuleServer> servers, Dictionary<string, CharacterModule> characters, Dictionary<string, SkillModule> skills, Dictionary<string, ItemModule> items, Hashtable delegates, params object[] otherobjs)
+        internal static Dictionary<string, GameModuleServer> LoadGameModulesForServer(Dictionary<string, GameModuleServer> servers, Dictionary<string, CharacterModule> characters, Dictionary<string, SkillModule> skills, Dictionary<string, ItemModule> items, Hashtable delegates, params object[] otherobjs)
         {
             if (!Directory.Exists(ReflectionSet.GameModuleFolderPath)) return servers;
 
@@ -140,19 +139,7 @@ namespace Milimoe.FunGame.Core.Service
                 {
                     bool isAdded = false;
 
-                    if (type.IsSubclassOf(typeof(GameModule)))
-                    {
-                        isAdded = AddAddonInstances(type, modules, (instance) =>
-                        {
-                            if (instance.Load(otherobjs))
-                            {
-                                instance.Controller = new(instance, delegates);
-                                return true;
-                            }
-                            return false;
-                        });
-                    }
-                    else if (type.IsSubclassOf(typeof(GameModuleServer)))
+                    if (type.IsSubclassOf(typeof(GameModuleServer)))
                     {
                         isAdded = AddAddonInstances(type, servers, (instance) =>
                         {
