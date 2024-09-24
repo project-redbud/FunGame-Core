@@ -22,19 +22,19 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         private readonly HeartBeat HeartBeat;
         private bool _Receiving = false;
 
-        private Socket(System.Net.Sockets.Socket Instance, string ServerAddress, int ServerPort)
+        private Socket(System.Net.Sockets.Socket instance, string serverAddress, int serverPort)
         {
-            this.Instance = Instance;
-            this.ServerAddress = ServerAddress;
-            this.ServerPort = ServerPort;
+            this.Instance = instance;
+            this.ServerAddress = serverAddress;
+            this.ServerPort = serverPort;
             HeartBeat = new(this);
             HeartBeat.StartSendingHeartBeat();
         }
 
-        public static Socket Connect(string Address, int Port = 22222)
+        public static Socket Connect(string address, int port = 22222)
         {
-            System.Net.Sockets.Socket? socket = SocketManager.Connect(Address, Port);
-            if (socket != null) return new Socket(socket, Address, Port);
+            System.Net.Sockets.Socket? socket = SocketManager.Connect(address, port);
+            if (socket != null) return new Socket(socket, address, port);
             else throw new ConnectFailedException();
         }
 

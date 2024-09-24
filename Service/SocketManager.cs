@@ -148,6 +148,25 @@ namespace Milimoe.FunGame.Core.Service
         }
 
         /// <summary>
+        /// 用于服务器端向客户端Socket发送信息 [ 异步版 ]
+        /// </summary>
+        /// <param name="ClientSocket">客户端Socket</param>
+        /// <param name="SocketObject">Socket信息容器</param>
+        /// <returns>通信结果</returns>
+        internal static async Task<SocketResult> SendAsync(Socket ClientSocket, Library.Common.Network.SocketObject SocketObject)
+        {
+            if (ClientSocket != null)
+            {
+                if (await ClientSocket.SendAsync(General.DefaultEncoding.GetBytes(JsonManager.GetString(SocketObject))) > 0)
+                {
+                    return SocketResult.Success;
+                }
+                else return SocketResult.Fail;
+            }
+            return SocketResult.NotSent;
+        }
+
+        /// <summary>
         /// 用于客户端向服务器Socket发送信息
         /// </summary>
         /// <param name="SocketObject">Socket信息容器</param>
@@ -157,6 +176,24 @@ namespace Milimoe.FunGame.Core.Service
             if (Socket != null)
             {
                 if (Socket.Send(General.DefaultEncoding.GetBytes(JsonManager.GetString(SocketObject))) > 0)
+                {
+                    return SocketResult.Success;
+                }
+                else return SocketResult.Fail;
+            }
+            return SocketResult.NotSent;
+        }
+
+        /// <summary>
+        /// 用于客户端向服务器Socket发送信息 [ 异步版 ]
+        /// </summary>
+        /// <param name="SocketObject">Socket信息容器</param>
+        /// <returns>通信结果</returns>
+        internal static async Task<SocketResult> SendAsync(Library.Common.Network.SocketObject SocketObject)
+        {
+            if (Socket != null)
+            {
+                if (await Socket.SendAsync(General.DefaultEncoding.GetBytes(JsonManager.GetString(SocketObject))) > 0)
                 {
                     return SocketResult.Success;
                 }

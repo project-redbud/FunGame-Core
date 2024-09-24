@@ -113,5 +113,41 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         {
             return true;
         }
+
+        /// <summary>
+        /// 给客户端发送局内消息
+        /// </summary>
+        /// <param name="clients"></param>
+        /// <param name="type"></param>
+        /// <param name="data"></param>
+        protected virtual void SendGamingMessage(IEnumerable<IServerModel> clients, GamingType type, Dictionary<string, object> data)
+        {
+            // 发送局内消息
+            foreach (IServerModel s in clients)
+            {
+                if (s != null && s.Socket != null)
+                {
+                    s.Send(s.Socket, SocketMessageType.Gaming, type, data);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 给客户端发送消息
+        /// </summary>
+        /// <param name="clients"></param>
+        /// <param name="type"></param>
+        /// <param name="args"></param>
+        protected virtual void Send(IEnumerable<IServerModel> clients, SocketMessageType type, params object[] args)
+        {
+            // 发送消息
+            foreach (IServerModel s in clients)
+            {
+                if (s != null && s.Socket != null)
+                {
+                    s.Send(s.Socket, type, args);
+                }
+            }
+        }
     }
 }

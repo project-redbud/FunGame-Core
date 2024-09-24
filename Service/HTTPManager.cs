@@ -13,17 +13,17 @@ namespace Milimoe.FunGame.Core.Service
         internal static HttpListener? ServerSocket => _ServerSocket;
         private static HttpListener? _ServerSocket = null;
 
-        internal static HttpListener StartListening(int Port = 22227, bool SSL = false)
+        internal static HttpListener StartListening(int port = 22227, bool ssl = false)
         {
             HttpListener listener = new();
-            listener.Prefixes.Add((SSL ? "https://" : "http://") + "localhost:" + Port + "/");
+            listener.Prefixes.Add((ssl ? "https://" : "http://") + "localhost:" + port + "/ws");
             listener.Start();
             return listener;
         }
 
-        internal static async Task<ClientWebSocket?> Connect(Uri uri)
+        internal static async Task<System.Net.WebSockets.ClientWebSocket?> Connect(Uri uri)
         {
-            ClientWebSocket socket = new();
+            System.Net.WebSockets.ClientWebSocket socket = new();
             await socket.ConnectAsync(uri, CancellationToken.None);
             if (socket.State == WebSocketState.Open)
             {
@@ -32,7 +32,7 @@ namespace Milimoe.FunGame.Core.Service
             return null;
         }
 
-        internal static async Task<SocketResult> Send(ClientWebSocket socket, SocketObject obj)
+        internal static async Task<SocketResult> Send(System.Net.WebSockets.ClientWebSocket socket, SocketObject obj)
         {
             if (socket != null)
             {
@@ -79,7 +79,7 @@ namespace Milimoe.FunGame.Core.Service
                         HttpListenerContext context = await ServerSocket.GetContextAsync();
                         if (context.Request.IsWebSocketRequest)
                         {
-                            await AddClientWebSocket(listener, context);
+                            TaskUtility.NewTask(async () => await AddClientWebSocket(listener, context));
                         }
                         else
                         {
@@ -154,12 +154,19 @@ namespace Milimoe.FunGame.Core.Service
                 listener.ClientSockets.TryAdd(token, socket);
                 await Send(socket, sendobject);
 
-                while (!result.CloseStatus.HasValue)
+                while (socket.State == WebSocketState.Open)
                 {
                     try
                     {
                         buffer = new byte[General.SocketByteSize];
                         result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+
+                        if (result.CloseStatus.HasValue)
+                        {
+                            await socket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+                            return;
+                        }
+
                         msg = Encoding.UTF8.GetString(buffer).Replace("\0", "").Trim();
                         objs = await GetSocketObjects(socket, result, msg);
                         foreach (SocketObject obj in objs)
@@ -167,7 +174,7 @@ namespace Milimoe.FunGame.Core.Service
                             sendobject = listener.SocketObject_Handler(obj);
                             if (obj.SocketType == SocketMessageType.Disconnect)
                             {
-                                await socket.CloseAsync(result.CloseStatus ?? WebSocketCloseStatus.NormalClosure, result.CloseStatusDescription, CancellationToken.None);
+                                await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Disconnect received", CancellationToken.None);
                                 return;
                             }
                             await Send(socket, sendobject);
@@ -175,8 +182,10 @@ namespace Milimoe.FunGame.Core.Service
                     }
                     catch (Exception e)
                     {
+                        // 处理其他异常
                         TXTHelper.AppendErrorLog(e.GetErrorInfo());
-                        await socket.CloseAsync(WebSocketCloseStatus.InternalServerError, result.CloseStatusDescription, CancellationToken.None);
+                        await socket.CloseAsync(WebSocketCloseStatus.InternalServerError, "Server Error", CancellationToken.None);
+                        return;
                     }
                 }
             }

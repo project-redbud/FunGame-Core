@@ -139,7 +139,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// <para/>警告：<see cref="HTTPClient"/> 调用此方法将抛出异常。请调用并等待 <see cref="SendRequestAsync"/>
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="AsyncRequestException"></exception>
+        /// <exception cref="AsyncSendException"></exception>
         public RequestResult SendRequest()
         {
             Worker?.SendRequest();
@@ -238,7 +238,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                     }
                     else if (WebSocket != null)
                     {
-                        throw new AsyncRequestException();
+                        throw new AsyncSendException();
                     }
                     else throw new ConnectFailedException();
                 }
@@ -361,7 +361,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                     }
                     else if (WebSocket != null)
                     {
-                        throw new AsyncRequestException();
+                        throw new AsyncSendException();
                     }
                     else throw new ConnectFailedException();
                 }

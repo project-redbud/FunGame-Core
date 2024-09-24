@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.WebSockets;
+using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.HTTP;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Service;
@@ -11,24 +12,20 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public HttpListener Instance { get; }
         public SocketRuntimeType Runtime => SocketRuntimeType.Server;
         public Guid Token { get; } = Guid.Empty;
-        public string ServerAddress { get; } = "";
-        public int ServerPort { get; } = 0;
-        public string ServerName { get; } = "";
-        public string ServerNotice { get; } = "";
         public Dictionary<Guid, WebSocket> ClientSockets { get; } = [];
 
-        private HTTPListener(HttpListener Instance, int ServerPort)
+        private HTTPListener(HttpListener instance)
         {
-            this.Instance = Instance;
-            this.ServerPort = ServerPort;
+            Instance = instance;
+            Token = Guid.NewGuid();
         }
 
-        public static HTTPListener StartListening(int Port, bool SSL = false)
+        public static HTTPListener StartListening(int port, bool ssl = false)
         {
-            HttpListener? socket = HTTPManager.StartListening(Port, SSL);
+            HttpListener? socket = HTTPManager.StartListening(port, ssl);
             if (socket != null)
             {
-                HTTPListener instance = new(socket, Port);
+                HTTPListener instance = new(socket);
                 Task t = Task.Run(async () => await HTTPManager.Receiving(instance));
                 return instance;
             }
@@ -55,7 +52,27 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
 
         public void Close()
         {
-            Instance?.Close();
+            bool closing = true;
+            TaskUtility.NewTask(async () =>
+            {
+                // 关闭所有 WebSocket 连接
+                foreach (WebSocket socket in ClientSockets.Values)
+                {
+                    if (socket.State == WebSocketState.Open)
+                    {
+                        // 安全关闭 WebSocket 连接
+                        await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "服务器正在关闭，断开连接！", CancellationToken.None);
+                    }
+                }
+                ClientSockets.Clear();
+                Instance?.Close();
+                closing = true;
+            });
+            while (closing)
+            {
+                if (!closing) break;
+                Thread.Sleep(100);
+            }
         }
     }
 }
