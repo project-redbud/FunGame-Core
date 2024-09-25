@@ -6,7 +6,8 @@ namespace Milimoe.FunGame.Core.Interface.Addons
         IGamingRandomEventHandler, IGamingRoundEventHandler, IGamingLevelUpEventHandler, IGamingMoveEventHandler, IGamingAttackEventHandler, IGamingSkillEventHandler, IGamingItemEventHandler, IGamingMagicEventHandler,
         IGamingBuyEventHandler, IGamingSuperSkillEventHandler, IGamingPauseEventHandler, IGamingUnpauseEventHandler, IGamingSurrenderEventHandler, IGamingUpdateInfoEventHandler, IGamingPunishEventHandler, IGameModuleDepend
     {
-        public abstract void StartGame(Gaming instance, params object[] args);
-        public abstract void StartUI(params object[] args);
+        public bool HideMain { get; }
+        public void StartGame(Gaming instance, params object[] args);
+        public void StartUI(params object[] args);
     }
 }

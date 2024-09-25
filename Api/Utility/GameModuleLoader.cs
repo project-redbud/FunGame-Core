@@ -15,7 +15,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <summary>
         /// 适用于服务器的模组集
         /// </summary>
-        public Dictionary<string, GameModuleServer> ServerModules { get; } = [];
+        public Dictionary<string, GameModuleServer> ModuleServers { get; } = [];
 
         /// <summary>
         /// 游戏地图集
@@ -38,11 +38,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
         public Dictionary<string, ItemModule> Items { get; } = [];
 
         /// <summary>
-        /// 客户端模组与服务器模组的关联字典
-        /// </summary>
-        public Dictionary<GameModule, GameModuleServer?> AssociatedServers { get; } = [];
-
-        /// <summary>
         /// 已加载的模组DLL名称对应的路径
         /// </summary>
         public static Dictionary<string, string> ModuleFilePaths => new(AddonManager.ModuleFilePaths);
@@ -52,7 +47,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <summary>
         /// 传入 <see cref="FunGameInfo.FunGame"/> 类型来创建指定端的模组读取器
         /// <para>runtime = <see cref="FunGameInfo.FunGame.FunGame_Desktop"/> 时，仅读取 <seealso cref="Modules"/></para>
-        /// <para>runtime = <see cref="FunGameInfo.FunGame.FunGame_Server"/> 时，都会读取，并且生成关联字典 <see cref="AssociatedServers"/></para>
+        /// <para>runtime = <see cref="FunGameInfo.FunGame.FunGame_Server"/> 时，仅读取 <seealso cref="ModuleServers"/></para>
         /// <seealso cref="Maps"/> 都会读取
         /// </summary>
         /// <param name="runtime">传入 <see cref="FunGameInfo.FunGame"/> 类型来创建指定端的模组读取器</param>
@@ -66,20 +61,23 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 AddonManager.LoadGameModules(loader.Modules, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
                 AddonManager.LoadGameMaps(loader.Maps, otherobjs);
+                foreach (GameModule module in loader.Modules.Values)
+                {
+                    // 读取模组的依赖集合
+                    module.GameModuleDepend.GetDependencies(loader);
+                    // 如果模组加载后需要执行代码，请重写AfterLoad方法
+                    module.AfterLoad(runtime, loader);
+                }
             }
             else if (runtime == FunGameInfo.FunGame.FunGame_Server)
             {
-                AddonManager.LoadGameModulesForServer(loader.Modules, loader.ServerModules, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
-                foreach (GameModule module in loader.Modules.Values)
-                {
-                    // AssociatedServerModuleName 已经存包含 IsConnectToOtherServerModule 的判断，因此无需重复判断
-                    if (loader.ServerModules.TryGetValue(module.AssociatedServerModuleName, out GameModuleServer? server) && server != null)
-                    {
-                        loader.AssociatedServers.Add(module, server);
-                    }
-                    else loader.AssociatedServers.Add(module, null); // 服务器获取GameModuleServer时需要判断是否存在模组。
-                }
+                AddonManager.LoadGameModulesForServer(loader.ModuleServers, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
                 AddonManager.LoadGameMaps(loader.Maps, otherobjs);
+                foreach (GameModuleServer server in loader.ModuleServers.Values)
+                {
+                    server.GameModuleDepend.GetDependencies(loader);
+                    server.AfterLoad(loader);
+                }
             }
             return loader;
         }
@@ -109,7 +107,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns></returns>
         public GameModuleServer GetServerMode(string name)
         {
-            return ServerModules[name];
+            return ModuleServers[name];
         }
 
         /// <summary>

@@ -139,6 +139,27 @@ namespace Milimoe.FunGame.Core.Service
         }
 
         /// <summary>
+        /// 反序列化Dictionary中Key对应的Json对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="dict"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        internal static T? GetObject<T>(Dictionary<string, object> dict, string key)
+        {
+            if (dict.TryGetValue(key, out object? value))
+            {
+                JsonElement? element = (JsonElement?)value;
+                if (element != null)
+                {
+                    T? result = ((JsonElement)element).Deserialize<T>(GeneralOptions);
+                    return result;
+                }
+            }
+            return default;
+        }
+
+        /// <summary>
         /// 反序列化IEnumerable中的Json对象
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -196,6 +217,28 @@ namespace Milimoe.FunGame.Core.Service
             if (table.ContainsKey(key))
             {
                 JsonElement? element = (JsonElement?)table[key];
+                if (element != null)
+                {
+                    T? result = ((JsonElement)element).Deserialize<T>(options);
+                    return result;
+                }
+            }
+            return default;
+        }
+
+        /// <summary>
+        /// 反序列化Dictionary中Key对应的Json对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="dict"></param>
+        /// <param name="key"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        internal static T? GetObject<T>(Dictionary<string, object> dict, string key, JsonSerializerOptions options)
+        {
+            if (dict.TryGetValue(key, out object? value))
+            {
+                JsonElement? element = (JsonElement?)value;
                 if (element != null)
                 {
                     T? result = ((JsonElement)element).Deserialize<T>(options);

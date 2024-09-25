@@ -1006,7 +1006,7 @@ namespace Milimoe.FunGame.Core.Entity
             }
             return str;
         }
-        
+
         /// <summary>
         /// 获取角色实例的名字、昵称
         /// </summary>
@@ -1122,7 +1122,7 @@ namespace Milimoe.FunGame.Core.Entity
                     builder.Append(skill.ToString());
                 }
             }
-            
+
             if (EquipSlot.Any())
             {
                 builder.AppendLine("== 装备栏 ==");

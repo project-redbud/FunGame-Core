@@ -218,6 +218,15 @@ namespace Milimoe.FunGame.Core.Api.Utility
         public static T? JsonDeserializeFromHashtable<T>(Hashtable hashtable, string key) => Service.JsonManager.GetObject<T>(hashtable, key);
 
         /// <summary>
+        /// 反序列化Dictionary中的Json对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="dict"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public static T? JsonDeserializeFromDictionary<T>(Dictionary<string, object> dict, string key) => Service.JsonManager.GetObject<T>(dict, key);
+
+        /// <summary>
         /// 反序列化IEnumerable中的Json对象
         /// </summary>
         /// <typeparam name="T"></typeparam>

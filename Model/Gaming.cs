@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using Milimoe.FunGame.Core.Api.Utility;
+﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Common.Event;
@@ -51,10 +50,7 @@ namespace Milimoe.FunGame.Core.Model
             // 读取模组的依赖集合
             module.GameModuleDepend.GetDependencies(loader);
             // 新建线程来启动模组的界面
-            TaskUtility.NewTask(() =>
-            {
-                module.StartUI();
-            });
+            TaskUtility.NewTask(() => module.StartUI());
             // 启动模组主线程
             module.StartGame(instance, args);
             return instance;
@@ -67,7 +63,7 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         /// <param name="type">消息类型</param>
         /// <param name="data">接收到的数据</param>
-        public void GamingHandler(GamingType type, Hashtable data)
+        public void GamingHandler(GamingType type, Dictionary<string, object> data)
         {
             switch (type)
             {
@@ -137,102 +133,102 @@ namespace Milimoe.FunGame.Core.Model
             }
         }
 
-        private void Connect(Hashtable data)
+        private void Connect(Dictionary<string, object> data)
         {
             GameModule.OnGamingConnectEvent(this, EventArgs, data);
         }
 
-        private void Disconnect(Hashtable data)
+        private void Disconnect(Dictionary<string, object> data)
         {
             GameModule.OnGamingDisconnectEvent(this, EventArgs, data);
         }
 
-        private void Reconnect(Hashtable data)
+        private void Reconnect(Dictionary<string, object> data)
         {
             GameModule.OnGamingReconnectEvent(this, EventArgs, data);
         }
 
-        private void BanCharacter(Hashtable data)
+        private void BanCharacter(Dictionary<string, object> data)
         {
             GameModule.OnGamingBanCharacterEvent(this, EventArgs, data);
         }
 
-        private void PickCharacter(Hashtable data)
+        private void PickCharacter(Dictionary<string, object> data)
         {
             GameModule.OnGamingPickCharacterEvent(this, EventArgs, data);
         }
 
-        private void Random(Hashtable data)
+        private void Random(Dictionary<string, object> data)
         {
             GameModule.OnGamingRandomEvent(this, EventArgs, data);
         }
 
-        private void Round(Hashtable data)
+        private void Round(Dictionary<string, object> data)
         {
             GameModule.OnGamingRoundEvent(this, EventArgs, data);
         }
 
-        private void LevelUp(Hashtable data)
+        private void LevelUp(Dictionary<string, object> data)
         {
             GameModule.OnGamingLevelUpEvent(this, EventArgs, data);
         }
 
-        private void Move(Hashtable data)
+        private void Move(Dictionary<string, object> data)
         {
             GameModule.OnGamingMoveEvent(this, EventArgs, data);
         }
 
-        private void Attack(Hashtable data)
+        private void Attack(Dictionary<string, object> data)
         {
             GameModule.OnGamingAttackEvent(this, EventArgs, data);
         }
 
-        private void Skill(Hashtable data)
+        private void Skill(Dictionary<string, object> data)
         {
             GameModule.OnGamingSkillEvent(this, EventArgs, data);
         }
 
-        private void Item(Hashtable data)
+        private void Item(Dictionary<string, object> data)
         {
             GameModule.OnGamingItemEvent(this, EventArgs, data);
         }
 
-        private void Magic(Hashtable data)
+        private void Magic(Dictionary<string, object> data)
         {
             GameModule.OnGamingMagicEvent(this, EventArgs, data);
         }
 
-        private void Buy(Hashtable data)
+        private void Buy(Dictionary<string, object> data)
         {
             GameModule.OnGamingBuyEvent(this, EventArgs, data);
         }
 
-        private void SuperSkill(Hashtable data)
+        private void SuperSkill(Dictionary<string, object> data)
         {
             GameModule.OnGamingSuperSkillEvent(this, EventArgs, data);
         }
 
-        private void Pause(Hashtable data)
+        private void Pause(Dictionary<string, object> data)
         {
             GameModule.OnGamingPauseEvent(this, EventArgs, data);
         }
 
-        private void Unpause(Hashtable data)
+        private void Unpause(Dictionary<string, object> data)
         {
             GameModule.OnGamingUnpauseEvent(this, EventArgs, data);
         }
 
-        private void Surrender(Hashtable data)
+        private void Surrender(Dictionary<string, object> data)
         {
             GameModule.OnGamingSurrenderEvent(this, EventArgs, data);
         }
 
-        private void UpdateInfo(Hashtable data)
+        private void UpdateInfo(Dictionary<string, object> data)
         {
             GameModule.OnGamingUpdateInfoEvent(this, EventArgs, data);
         }
 
-        private void Punish(Hashtable data)
+        private void Punish(Dictionary<string, object> data)
         {
             GameModule.OnGamingPunishEvent(this, EventArgs, data);
         }

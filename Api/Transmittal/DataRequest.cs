@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using Milimoe.FunGame.Core.Controller;
+﻿using Milimoe.FunGame.Core.Controller;
 using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
@@ -37,7 +36,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             }
             set
             {
-                AddRequestData(key, value);
+                if (value != null) AddRequestData(key, value);
             }
         }
 
@@ -114,17 +113,15 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        public void AddRequestData(string key, object? value)
+        public void AddRequestData(string key, object value)
         {
             if (Worker != null)
             {
-                if (Worker.RequestData.ContainsKey(key)) Worker.RequestData[key] = value;
-                else Worker.RequestData.Add(key, value);
+                if (!Worker.RequestData.TryAdd(key, value)) Worker.RequestData[key] = value;
             }
             else if (GamingWorker != null)
             {
-                if (GamingWorker.RequestData.ContainsKey(key)) GamingWorker.RequestData[key] = value;
-                else GamingWorker.RequestData.Add(key, value);
+                if (!GamingWorker.RequestData.TryAdd(key, value)) GamingWorker.RequestData[key] = value;
             }
         }
 
@@ -142,7 +139,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// <para/>警告：<see cref="HTTPClient"/> 调用此方法将抛出异常。请调用并等待 <see cref="SendRequestAsync"/>
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="AsyncRequestException"></exception>
+        /// <exception cref="AsyncSendException"></exception>
         public RequestResult SendRequest()
         {
             Worker?.SendRequest();
@@ -177,11 +174,11 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         {
             if (Worker != null)
             {
-                return GetHashtableJsonObject<T>(Worker.ResultData, key);
+                return GetDictionaryJsonObject<T>(Worker.ResultData, key);
             }
             else if (GamingWorker != null)
             {
-                return GetHashtableJsonObject<T>(GamingWorker.ResultData, key);
+                return GetDictionaryJsonObject<T>(GamingWorker.ResultData, key);
             }
             return default;
         }
@@ -191,8 +188,8 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// </summary>
         private class SocketRequest : SocketHandlerController
         {
-            public Hashtable RequestData { get; } = [];
-            public Hashtable ResultData => _ResultData;
+            public Dictionary<string, object> RequestData { get; } = [];
+            public Dictionary<string, object> ResultData => _ResultData;
             public RequestResult Result => _Result;
             public string Error => _Error;
 
@@ -202,7 +199,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             private readonly Guid RequestID = Guid.Empty;
             private readonly bool IsLongRunning = false;
             private readonly SocketRuntimeType RuntimeType = SocketRuntimeType.Client;
-            private Hashtable _ResultData = [];
+            private Dictionary<string, object> _ResultData = [];
             private RequestResult _Result = RequestResult.Missing;
             private string _Error = "";
 
@@ -229,7 +226,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 try
                 {
                     SetWorking();
-                    if (RuntimeType == SocketRuntimeType.Addon || RuntimeType == SocketRuntimeType.Addon)
+                    if (RuntimeType == SocketRuntimeType.Addon)
                     {
                         if (RequestData.ContainsKey(SocketSet.Plugins_Mark)) RequestData[SocketSet.Plugins_Mark] = "true";
                         else RequestData.Add(SocketSet.Plugins_Mark, true);
@@ -241,7 +238,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                     }
                     else if (WebSocket != null)
                     {
-                        throw new AsyncRequestException();
+                        throw new AsyncSendException();
                     }
                     else throw new ConnectFailedException();
                 }
@@ -258,7 +255,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 try
                 {
                     SetWorking();
-                    if (RuntimeType == SocketRuntimeType.Addon || RuntimeType == SocketRuntimeType.Addon)
+                    if (RuntimeType == SocketRuntimeType.Addon)
                     {
                         if (RequestData.ContainsKey(SocketSet.Plugins_Mark)) RequestData[SocketSet.Plugins_Mark] = "true";
                         else RequestData.Add(SocketSet.Plugins_Mark, true);
@@ -295,7 +292,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                             if (!IsLongRunning) Dispose();
                             Work = SocketObject;
                             Working = false;
-                            _ResultData = SocketObject.GetParam<Hashtable>(2) ?? [];
+                            _ResultData = SocketObject.GetParam<Dictionary<string, object>>(2) ?? [];
                             _Result = RequestResult.Success;
                         }
                     }
@@ -314,8 +311,8 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// </summary>
         private class GamingRequest : SocketHandlerController
         {
-            public Hashtable RequestData { get; } = [];
-            public Hashtable ResultData => _ResultData;
+            public Dictionary<string, object> RequestData { get; } = [];
+            public Dictionary<string, object> ResultData => _ResultData;
             public RequestResult Result => _Result;
             public string Error => _Error;
 
@@ -325,7 +322,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             private readonly Guid RequestID = Guid.Empty;
             private readonly bool IsLongRunning = false;
             private readonly SocketRuntimeType RuntimeType = SocketRuntimeType.Client;
-            private Hashtable _ResultData = [];
+            private Dictionary<string, object> _ResultData = [];
             private RequestResult _Result = RequestResult.Missing;
             private string _Error = "";
 
@@ -352,19 +349,19 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 try
                 {
                     SetWorking();
-                    if (RuntimeType == SocketRuntimeType.Addon || RuntimeType == SocketRuntimeType.Addon)
+                    if (RuntimeType == SocketRuntimeType.Addon)
                     {
                         if (RequestData.ContainsKey(SocketSet.Plugins_Mark)) RequestData[SocketSet.Plugins_Mark] = "true";
                         else RequestData.Add(SocketSet.Plugins_Mark, true);
                     }
                     else RequestData.Remove(SocketSet.Plugins_Mark);
-                    if (Socket != null && Socket.Send(SocketMessageType.DataRequest, GamingType, RequestID, RequestData) == SocketResult.Success)
+                    if (Socket != null && Socket.Send(SocketMessageType.GamingRequest, GamingType, RequestID, RequestData) == SocketResult.Success)
                     {
                         WaitForWorkDone();
                     }
                     else if (WebSocket != null)
                     {
-                        throw new AsyncRequestException();
+                        throw new AsyncSendException();
                     }
                     else throw new ConnectFailedException();
                 }
@@ -381,17 +378,17 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 try
                 {
                     SetWorking();
-                    if (RuntimeType == SocketRuntimeType.Addon || RuntimeType == SocketRuntimeType.Addon)
+                    if (RuntimeType == SocketRuntimeType.Addon)
                     {
                         if (RequestData.ContainsKey(SocketSet.Plugins_Mark)) RequestData[SocketSet.Plugins_Mark] = "true";
                         else RequestData.Add(SocketSet.Plugins_Mark, true);
                     }
                     else RequestData.Remove(SocketSet.Plugins_Mark);
-                    if (Socket != null && Socket.Send(SocketMessageType.DataRequest, GamingType, RequestID, RequestData) == SocketResult.Success)
+                    if (Socket != null && Socket.Send(SocketMessageType.GamingRequest, GamingType, RequestID, RequestData) == SocketResult.Success)
                     {
                         await WaitForWorkDoneAsync();
                     }
-                    else if (WebSocket != null && await WebSocket.Send(SocketMessageType.DataRequest, GamingType, RequestID, RequestData) == SocketResult.Success)
+                    else if (WebSocket != null && await WebSocket.Send(SocketMessageType.GamingRequest, GamingType, RequestID, RequestData) == SocketResult.Success)
                     {
                         await WaitForWorkDoneAsync();
                     }
@@ -409,7 +406,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             {
                 try
                 {
-                    if (SocketObject.SocketType == SocketMessageType.DataRequest)
+                    if (SocketObject.SocketType == SocketMessageType.GamingRequest)
                     {
                         GamingType type = SocketObject.GetParam<GamingType>(0);
                         Guid id = SocketObject.GetParam<Guid>(1);
@@ -418,7 +415,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                             if (!IsLongRunning) Dispose();
                             Work = SocketObject;
                             Working = false;
-                            _ResultData = SocketObject.GetParam<Hashtable>(2) ?? [];
+                            _ResultData = SocketObject.GetParam<Dictionary<string, object>>(2) ?? [];
                             _Result = RequestResult.Success;
                         }
                     }
@@ -433,15 +430,15 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         }
 
         /// <summary>
-        /// 反序列化Hashtable中的Json对象
+        /// 反序列化Dictionary中的Json对象
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="hashtable"></param>
+        /// <param name="dict"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        public static T? GetHashtableJsonObject<T>(Hashtable hashtable, string key)
+        public static T? GetDictionaryJsonObject<T>(Dictionary<string, object> dict, string key)
         {
-            return Service.JsonManager.GetObject<T>(hashtable, key);
+            return Service.JsonManager.GetObject<T>(dict, key);
         }
     }
 }

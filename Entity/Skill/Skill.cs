@@ -19,7 +19,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 技能描述
         /// </summary>
         public virtual string Description { get; set; } = "";
-        
+
         /// <summary>
         /// 技能的通用描述
         /// </summary>
@@ -145,7 +145,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 游戏中的行动顺序表实例，在技能效果被触发时，此实例会获得赋值，使用时需要判断其是否存在
         /// </summary>
         public ActionQueue? ActionQueue { get; set; } = null;
-        
+
         /// <summary>
         /// 技能是否属于某个物品
         /// </summary>
@@ -302,7 +302,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             return Id + "." + Name;
         }
-        
+
         /// <summary>
         /// 判断两个技能是否相同 检查Id.Name
         /// </summary>

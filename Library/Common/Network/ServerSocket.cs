@@ -10,10 +10,6 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public System.Net.Sockets.Socket Instance { get; }
         public SocketRuntimeType Runtime => SocketRuntimeType.Server;
         public Guid Token { get; } = Guid.Empty;
-        public string ServerAddress { get; } = "";
-        public int ServerPort { get; } = 0;
-        public string ServerName { get; } = "";
-        public string ServerNotice { get; } = "";
         public bool Connected => Instance != null && Instance.Connected;
         public List<IServerModel> ClientList => OnlineClients.GetList();
         public List<IServerModel> UserList => OnlineUsers.GetList();
@@ -25,38 +21,38 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         private readonly ModelManager<IServerModel> OnlineClients;
         private readonly ModelManager<IServerModel> OnlineUsers;
 
-        private ServerSocket(System.Net.Sockets.Socket Instance, int ServerPort, int MaxConnection = 0)
+        private ServerSocket(System.Net.Sockets.Socket instance, int maxConnection = 0)
         {
-            this.Instance = Instance;
-            this.ServerPort = ServerPort;
-            if (MaxConnection <= 0)
+            Token = Guid.NewGuid();
+            Instance = instance;
+            if (maxConnection <= 0)
             {
                 OnlineClients = [];
                 OnlineUsers = [];
             }
             else
             {
-                OnlineClients = new(MaxConnection);
-                OnlineUsers = new(MaxConnection);
+                OnlineClients = new(maxConnection);
+                OnlineUsers = new(maxConnection);
             }
         }
 
-        public static ServerSocket StartListening(int Port = 22222, int MaxConnection = 0)
+        public static ServerSocket StartListening(int port = 22222, int maxConnection = 0)
         {
-            if (MaxConnection <= 0) MaxConnection = SocketSet.MaxConnection_2C2G;
-            System.Net.Sockets.Socket? socket = SocketManager.StartListening(Port, MaxConnection);
-            if (socket != null) return new ServerSocket(socket, Port);
+            if (maxConnection <= 0) maxConnection = SocketSet.MaxConnection_2C2G;
+            System.Net.Sockets.Socket? socket = SocketManager.StartListening(port, maxConnection);
+            if (socket != null) return new ServerSocket(socket, port);
             else throw new SocketCreateListenException();
         }
 
-        public ClientSocket Accept(Guid Token)
+        public static ClientSocket Accept(Guid token)
         {
             object[] result = SocketManager.Accept();
             if (result != null && result.Length == 2)
             {
-                string ClientIP = (string)result[0];
-                System.Net.Sockets.Socket Client = (System.Net.Sockets.Socket)result[1];
-                return new ClientSocket(Client, ServerPort, ClientIP, ClientIP, Token);
+                string clientIP = (string)result[0];
+                System.Net.Sockets.Socket client = (System.Net.Sockets.Socket)result[1];
+                return new ClientSocket(client, clientIP, clientIP, token);
             }
             throw new SocketGetClientException();
         }

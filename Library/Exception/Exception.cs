@@ -165,8 +165,13 @@
         public override string Message => "试图在不支持的类中创建数据请求 (#10033)";
     }
 
-    public class AsyncRequestException : Exception
+    public class AsyncSendException : Exception
     {
-        public override string Message => "数据请求必须以异步方式发送 (#10034)";
+        public override string Message => "必须以异步方式发送数据 (#10034)";
+    }
+
+    public class SQLServiceException : Exception
+    {
+        public override string Message => "SQL服务遇到错误，请检查SQL配置 (#10035)";
     }
 }

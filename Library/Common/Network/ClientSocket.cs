@@ -1,27 +1,25 @@
-﻿using Milimoe.FunGame.Core.Interface.Sockets;
+﻿using Milimoe.FunGame.Core.Interface.Base;
+using Milimoe.FunGame.Core.Interface.Sockets;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
 {
-    public class ClientSocket(System.Net.Sockets.Socket Instance, int ServerPort, string ClientIP, string ClientName, Guid Token) : IClientSocket
+    public class ClientSocket(System.Net.Sockets.Socket instance, string clientIP, string clientName, Guid token) : IClientSocket, ISocketMessageProcessor
     {
-        public System.Net.Sockets.Socket Instance { get; } = Instance;
+        public System.Net.Sockets.Socket Instance { get; } = instance;
         public SocketRuntimeType Runtime => SocketRuntimeType.Server;
-        public Guid Token { get; } = Token;
-        public string ServerAddress { get; } = "";
-        public int ServerPort { get; } = ServerPort;
-        public string ServerName { get; } = "";
-        public string ServerNotice { get; } = "";
-        public string ClientIP { get; } = ClientIP;
+        public Guid Token { get; } = token;
+        public string ClientIP { get; } = clientIP;
         public string ClientName => _ClientName;
         public bool Connected => Instance != null && Instance.Connected;
         public bool Receiving => _Receiving;
+        public Type InstanceType => typeof(ClientSocket);
 
         private Task? ReceivingTask;
 
         private bool _Receiving;
-        private readonly string _ClientName = ClientName;
+        private readonly string _ClientName = clientName;
 
         public void Close()
         {
@@ -46,6 +44,19 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             if (Instance != null)
             {
                 if (SocketManager.Send(Instance, new(type, Token, objs)) == SocketResult.Success)
+                {
+                    return SocketResult.Success;
+                }
+                else return SocketResult.Fail;
+            }
+            return SocketResult.NotSent;
+        }
+
+        public async Task<SocketResult> SendAsync(SocketMessageType type, params object[] objs)
+        {
+            if (Instance != null)
+            {
+                if (await SocketManager.SendAsync(Instance, new(type, Token, objs)) == SocketResult.Success)
                 {
                     return SocketResult.Success;
                 }

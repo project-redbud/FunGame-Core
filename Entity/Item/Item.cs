@@ -20,7 +20,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 物品的通用描述
         /// </summary>
         public virtual string GeneralDescription { get; set; } = "";
-        
+
         /// <summary>
         /// 物品的背景故事
         /// </summary>
@@ -45,7 +45,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 装备槽位
         /// </summary>
         public virtual EquipSlotType EquipSlotType { get; set; } = EquipSlotType.None;
-        
+
         /// <summary>
         /// 武器类型（如果是武器）
         /// </summary>
@@ -65,7 +65,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 是否可用（涉及冷却和禁用等）
         /// </summary>
         public bool Enable { get; set; } = true;
-        
+
         /// <summary>
         /// 是否是局内使用的物品（局内是指对角色生效的物品）
         /// </summary>
@@ -95,7 +95,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 是否允许交易
         /// </summary>
         public bool IsTradable { get; set; } = true;
-        
+
         /// <summary>
         /// 下次可交易的时间
         /// </summary>
@@ -160,7 +160,7 @@ namespace Milimoe.FunGame.Core.Entity
             }
             if (Character != null) OnItemEquipped(Character, this, type);
         }
-        
+
         /// <summary>
         /// 当取消装备物品时
         /// </summary>
@@ -236,7 +236,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
 
         }
-        
+
         /// <summary>
         /// 当物品被玩家使用时
         /// </summary>

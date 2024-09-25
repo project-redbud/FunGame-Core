@@ -1,4 +1,3 @@
-using System.Collections;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
@@ -49,6 +48,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
 
         public override RoomType RoomType => RoomType.Mix;
 
+        public override bool HideMain => false;
+
         public ExampleGameModule()
         {
             // 构造函数中可以指定模组连接到哪个模组服务器。
@@ -78,16 +79,16 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             // 如果没有，则不需要重写此方法
         }
 
-        public void GamingUpdateInfoEvent(object sender, GamingEventArgs e, Hashtable data)
+        public void GamingUpdateInfoEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
         {
             // 在下方的Server示例中，服务器发来的data中，包含check字符串，因此客户端要主动发起确认连接的请求。
             if (data.ContainsKey("info_type"))
             {
                 // 反序列化得到指定key的值
-                string info_type = DataRequest.GetHashtableJsonObject<string>(data, "info_type") ?? "";
+                string info_type = DataRequest.GetDictionaryJsonObject<string>(data, "info_type") ?? "";
                 if (info_type == "check")
                 {
-                    Guid token = DataRequest.GetHashtableJsonObject<Guid>(data, "connect_token");
+                    Guid token = DataRequest.GetDictionaryJsonObject<Guid>(data, "connect_token");
                     // 发起连接确认请求
                     DataRequest request = Controller.NewDataRequest(GamingType.Connect);
                     // 传递参数
@@ -143,7 +144,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
         }
 
         private readonly List<User> ConnectedUser = [];
-        private readonly Dictionary<string, Hashtable> UserData = [];
+        private readonly Dictionary<string, Dictionary<string, object>> UserData = [];
 
         private async Task Test()
         {
@@ -154,7 +155,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             // 在FunGame项目中，建议永远使用客户端主动发起请求，因为服务器主动发起的实现难度较高
             // 下面的演示基于综合的两种情况：服务器主动发送通知，客户端收到后，发起确认
             // UpdateInfo是一个灵活的类型。如果发送check字符串，意味着服务器要求客户端发送确认
-            Hashtable data = [];
+            Dictionary<string, object> data = [];
             data.Add("info_type", "check");
 
             // 进阶示例：传递一个token，让客户端返回
@@ -164,7 +165,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             // 我们保存到字典UserData中，这样可以方便跨方法检查变量
             foreach (string username in Users.Select(u => u.Username).Distinct())
             {
-                if (UserData.TryGetValue(username, out Hashtable? value))
+                if (UserData.TryGetValue(username, out Dictionary<string, object>? value))
                 {
                     value.Add("connect_token", token);
                 }
@@ -174,7 +175,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
                     UserData[username].Add("connect_token", token);
                 }
             }
-            SendAllGamingMessage(GamingType.UpdateInfo, data);
+            SendGamingMessage(All.Values, GamingType.UpdateInfo, data);
 
             // 新建一个线程等待所有玩家确认
             while (true)
@@ -186,18 +187,18 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             Controller.WriteLine("所有玩家都已经连接。");
         }
 
-        public override Hashtable GamingMessageHandler(string username, GamingType type, Hashtable data)
+        public override Dictionary<string, object> GamingMessageHandler(string username, GamingType type, Dictionary<string, object> data)
         {
-            Hashtable result = [];
+            Dictionary<string, object> result = [];
 
             switch (type)
             {
                 case GamingType.Connect:
                     // 编写处理“连接”命令的逻辑
                     // 如果需要处理客户端传递的参数：获取与客户端约定好的参数key对应的值
-                    string un = NetworkUtility.JsonDeserializeFromHashtable<string>(data, "username") ?? "";
-                    Guid token = NetworkUtility.JsonDeserializeFromHashtable<Guid>(data, "connect_token");
-                    if (un == username && UserData.TryGetValue(username, out Hashtable? value) && value != null && (value["connect_token"]?.Equals(token) ?? false))
+                    string un = NetworkUtility.JsonDeserializeFromDictionary<string>(data, "username") ?? "";
+                    Guid token = NetworkUtility.JsonDeserializeFromDictionary<Guid>(data, "connect_token");
+                    if (un == username && UserData.TryGetValue(username, out Dictionary<string, object>? value) && value != null && (value["connect_token"]?.Equals(token) ?? false))
                     {
                         ConnectedUser.Add(Users.Where(u => u.Username == username).First());
                         Controller.WriteLine(username + " 已经连接。");
@@ -207,52 +208,6 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             }
 
             return result;
-        }
-
-        // === 下面是一些常用的工具方法，用于服务器给客户端发送消息，可以直接添加到你的项目中 === //
-
-        protected void SendAllGamingMessage(GamingType type, Hashtable data)
-        {
-            // 循环服务线程，向所有玩家发送局内消息
-            foreach (IServerModel s in All.Values)
-            {
-                if (s != null && s.Socket != null)
-                {
-                    s.Send(s.Socket, SocketMessageType.Gaming, type, data);
-                }
-            }
-        }
-
-        protected void SendGamingMessage(string username, GamingType type, Hashtable data)
-        {
-            // 向指定玩家发送局内消息
-            IServerModel s = All[username];
-            if (s != null && s.Socket != null)
-            {
-                s.Send(s.Socket, SocketMessageType.Gaming, type, data);
-            }
-        }
-
-        protected void SendAll(SocketMessageType type, params object[] args)
-        {
-            // 循环服务线程，向所有玩家发送消息
-            foreach (IServerModel s in All.Values)
-            {
-                if (s != null && s.Socket != null)
-                {
-                    s.Send(s.Socket, type, args);
-                }
-            }
-        }
-
-        protected void Send(string username, SocketMessageType type, params object[] args)
-        {
-            // 向指定玩家发送消息
-            IServerModel s = All[username];
-            if (s != null && s.Socket != null)
-            {
-                s.Send(s.Socket, type, args);
-            }
         }
     }
 

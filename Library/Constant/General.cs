@@ -44,7 +44,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// 默认的时间格式 yyyy-MM-dd HH:mm:ss.fff
         /// </summary>
         public static string GeneralDateTimeFormat => "yyyy-MM-dd HH:mm:ss.fff";
-        
+
         /// <summary>
         /// yyyy年MM月dd日 HH:mm:ss
         /// </summary>

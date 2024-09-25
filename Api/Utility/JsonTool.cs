@@ -76,6 +76,15 @@ namespace Milimoe.FunGame.Core.Api.Utility
         public T? GetObject<T>(Hashtable table, string key) => JsonManager.GetObject<T>(table, key, options);
 
         /// <summary>
+        /// 反序列化Dictionary中Key对应的Json对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="dict"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public T? GetObject<T>(Dictionary<string, object> dict, string key) => JsonManager.GetObject<T>(dict, key, options);
+
+        /// <summary>
         /// 反序列化IEnumerable中的Json对象 可指定反序列化选项
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -100,7 +109,8 @@ namespace Milimoe.FunGame.Core.Api.Utility
         {
             WriteIndented = true,
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
-            Converters = { new DateTimeConverter(), new DataTableConverter(), new DataSetConverter(), new UserConverter(), new RoomConverter() }
+            Converters = { new DateTimeConverter(), new DataTableConverter(), new DataSetConverter(), new UserConverter(), new RoomConverter(),
+                new CharacterConverter(), new MagicResistanceConverter(), new EquipSlotConverter(), new SkillConverter(), new EffectConverter(), new ItemConverter() }
         };
     }
 }

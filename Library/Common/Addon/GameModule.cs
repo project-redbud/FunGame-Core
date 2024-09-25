@@ -1,4 +1,3 @@
-using System.Collections;
 using Milimoe.FunGame.Core.Controller;
 using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Interface.Addons;
@@ -44,6 +43,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// 适用的房间模式
         /// </summary>
         public abstract RoomType RoomType { get; }
+
+        /// <summary>
+        /// 是否隐藏主界面
+        /// </summary>
+        public abstract bool HideMain { get; }
 
         /// <summary>
         /// 是否连接其他的服务器模组
@@ -116,7 +120,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
                 return false;
             }
             // BeforeLoad可以阻止加载此模组
-            if (BeforeLoad())
+            if (BeforeLoad(objs))
             {
                 // 模组加载后，不允许再次加载此模组
                 IsLoaded = true;
@@ -124,16 +128,14 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
                 Init(objs);
                 // 触发绑定事件
                 BindEvent();
-                // 如果加载后需要执行代码，请重写AfterLoad方法
-                AfterLoad();
             }
             return IsLoaded;
         }
 
         /// <summary>
-        /// 模组加载后需要做的事
+        /// 模组完全加载后需要做的事
         /// </summary>
-        protected virtual void AfterLoad()
+        public virtual void AfterLoad(params object[] args)
         {
             // override
         }
@@ -142,7 +144,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// 允许返回false来阻止加载此模组
         /// </summary>
         /// <returns></returns>
-        protected virtual bool BeforeLoad()
+        protected virtual bool BeforeLoad(params object[] objs)
         {
             return true;
         }
@@ -318,102 +320,102 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         public event IGamingEventHandler.GamingEventHandler? GamingUpdateInfo;
         public event IGamingEventHandler.GamingEventHandler? GamingPunish;
 
-        public void OnGamingConnectEvent(object sender, GamingEventArgs e, Hashtable data)
+        public void OnGamingConnectEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
         {
             GamingConnect?.Invoke(sender, e, data);
         }
 
-        public void OnGamingDisconnectEvent(object sender, GamingEventArgs e, Hashtable data)
+        public void OnGamingDisconnectEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
         {
             GamingDisconnect?.Invoke(sender, e, data);
         }
 
-        public void OnGamingReconnectEvent(object sender, GamingEventArgs e, Hashtable data)
+        public void OnGamingReconnectEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
         {
             GamingReconnect?.Invoke(sender, e, data);
         }
 
-        public void OnGamingBanCharacterEvent(object sender, GamingEventArgs e, Hashtable data)
+        public void OnGamingBanCharacterEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
         {
             GamingBanCharacter?.Invoke(sender, e, data);
         }
 
-        public void OnGamingPickCharacterEvent(object sender, GamingEventArgs e, Hashtable data)
+        public void OnGamingPickCharacterEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
         {
             GamingPickCharacter?.Invoke(sender, e, data);
         }
 
-        public void OnGamingRandomEvent(object sender, GamingEventArgs e, Hashtable data)
+        public void OnGamingRandomEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
         {
             GamingRandom?.Invoke(sender, e, data);
         }
 
-        public void OnGamingRoundEvent(object sender, GamingEventArgs e, Hashtable data)
+        public void OnGamingRoundEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
         {
             GamingRound?.Invoke(sender, e, data);
         }
 
-        public void OnGamingLevelUpEvent(object sender, GamingEventArgs e, Hashtable data)
+        public void OnGamingLevelUpEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
         {
             GamingLevelUp?.Invoke(sender, e, data);
         }
 
-        public void OnGamingMoveEvent(object sender, GamingEventArgs e, Hashtable data)
+        public void OnGamingMoveEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
         {
             GamingMove?.Invoke(sender, e, data);
         }
 
-        public void OnGamingAttackEvent(object sender, GamingEventArgs e, Hashtable data)
+        public void OnGamingAttackEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
         {
             GamingAttack?.Invoke(sender, e, data);
         }
 
-        public void OnGamingSkillEvent(object sender, GamingEventArgs e, Hashtable data)
+        public void OnGamingSkillEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
         {
             GamingSkill?.Invoke(sender, e, data);
         }
 
-        public void OnGamingItemEvent(object sender, GamingEventArgs e, Hashtable data)
+        public void OnGamingItemEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
         {
             GamingItem?.Invoke(sender, e, data);
         }
 
-        public void OnGamingMagicEvent(object sender, GamingEventArgs e, Hashtable data)
+        public void OnGamingMagicEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
         {
             GamingMagic?.Invoke(sender, e, data);
         }
 
-        public void OnGamingBuyEvent(object sender, GamingEventArgs e, Hashtable data)
+        public void OnGamingBuyEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
         {
             GamingBuy?.Invoke(sender, e, data);
         }
 
-        public void OnGamingSuperSkillEvent(object sender, GamingEventArgs e, Hashtable data)
+        public void OnGamingSuperSkillEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
         {
             GamingSuperSkill?.Invoke(sender, e, data);
         }
 
-        public void OnGamingPauseEvent(object sender, GamingEventArgs e, Hashtable data)
+        public void OnGamingPauseEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
         {
             GamingPause?.Invoke(sender, e, data);
         }
 
-        public void OnGamingUnpauseEvent(object sender, GamingEventArgs e, Hashtable data)
+        public void OnGamingUnpauseEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
         {
             GamingUnpause?.Invoke(sender, e, data);
         }
 
-        public void OnGamingSurrenderEvent(object sender, GamingEventArgs e, Hashtable data)
+        public void OnGamingSurrenderEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
         {
             GamingSurrender?.Invoke(sender, e, data);
         }
 
-        public void OnGamingUpdateInfoEvent(object sender, GamingEventArgs e, Hashtable data)
+        public void OnGamingUpdateInfoEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
         {
             GamingUpdateInfo?.Invoke(sender, e, data);
         }
 
-        public void OnGamingPunishEvent(object sender, GamingEventArgs e, Hashtable data)
+        public void OnGamingPunishEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
         {
             GamingPunish?.Invoke(sender, e, data);
         }

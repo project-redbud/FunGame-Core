@@ -9,7 +9,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
 {
     public class HTTPClient : IHTTPClient
     {
-        public ClientWebSocket? Instance { get; } = null;
+        public System.Net.WebSockets.ClientWebSocket? Instance { get; } = null;
         public SocketRuntimeType Runtime => SocketRuntimeType.Client;
         public Guid Token { get; } = Guid.Empty;
         public string ServerAddress { get; } = "";
@@ -20,7 +20,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         private bool _Listening = false;
         private readonly HeartBeat HeartBeat;
 
-        private HTTPClient(ClientWebSocket Instance, string ServerAddress, int ServerPort, params object[] args)
+        private HTTPClient(System.Net.WebSockets.ClientWebSocket Instance, string ServerAddress, int ServerPort, params object[] args)
         {
             this.Instance = Instance;
             this.ServerAddress = ServerAddress;
@@ -34,7 +34,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         {
             string ServerIP = Api.Utility.NetworkUtility.GetIPAddress(ServerAddress);
             Uri uri = new((SSL ? "wss://" : "ws://") + ServerIP + ":" + ServerPort + "/" + SubDirectory);
-            ClientWebSocket? socket = await HTTPManager.Connect(uri);
+            System.Net.WebSockets.ClientWebSocket? socket = await HTTPManager.Connect(uri);
             if (socket != null && socket.State == WebSocketState.Open)
             {
                 HTTPClient client = new(socket, ServerAddress, ServerPort, args);

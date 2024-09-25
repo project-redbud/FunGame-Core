@@ -1,4 +1,3 @@
-using System.Collections;
 using Milimoe.FunGame.Core.Controller;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Addons;
@@ -72,8 +71,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <param name="username">发送此消息的账号</param>
         /// <param name="type">消息类型</param>
         /// <param name="data">消息参数</param>
-        /// <returns>底层会将哈希表中的数据发送给客户端</returns>
-        public abstract Hashtable GamingMessageHandler(string username, GamingType type, Hashtable data);
+        /// <returns>底层会将字典中的数据发送给客户端</returns>
+        public abstract Dictionary<string, object> GamingMessageHandler(string username, GamingType type, Dictionary<string, object> data);
 
         /// <summary>
         /// 加载标记
@@ -94,16 +93,14 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             {
                 // 模组加载后，不允许再次加载此模组
                 IsLoaded = true;
-                // 如果加载后需要执行代码，请重写AfterLoad方法
-                AfterLoad();
             }
             return IsLoaded;
         }
 
         /// <summary>
-        /// 模组加载后需要做的事
+        /// 模组完全加载后需要做的事
         /// </summary>
-        protected virtual void AfterLoad()
+        public virtual void AfterLoad(params object[] args)
         {
             // override
         }
@@ -115,6 +112,42 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         protected virtual bool BeforeLoad()
         {
             return true;
+        }
+
+        /// <summary>
+        /// 给客户端发送局内消息
+        /// </summary>
+        /// <param name="clients"></param>
+        /// <param name="type"></param>
+        /// <param name="data"></param>
+        protected virtual void SendGamingMessage(IEnumerable<IServerModel> clients, GamingType type, Dictionary<string, object> data)
+        {
+            // 发送局内消息
+            foreach (IServerModel s in clients)
+            {
+                if (s != null && s.Socket != null)
+                {
+                    s.Send(s.Socket, SocketMessageType.Gaming, type, data);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 给客户端发送消息
+        /// </summary>
+        /// <param name="clients"></param>
+        /// <param name="type"></param>
+        /// <param name="args"></param>
+        protected virtual void Send(IEnumerable<IServerModel> clients, SocketMessageType type, params object[] args)
+        {
+            // 发送消息
+            foreach (IServerModel s in clients)
+            {
+                if (s != null && s.Socket != null)
+                {
+                    s.Send(s.Socket, type, args);
+                }
+            }
         }
     }
 }
