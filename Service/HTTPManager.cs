@@ -10,15 +10,15 @@ namespace Milimoe.FunGame.Core.Service
 {
     internal class HTTPManager
     {
-        internal static HttpListener? ServerSocket => _ServerSocket;
-        private static HttpListener? _ServerSocket = null;
+        internal static HttpListener? HttpListener => _HttpListener;
+        private static HttpListener? _HttpListener = null;
 
-        internal static HttpListener StartListening(int port = 22227, bool ssl = false)
+        internal static HttpListener StartListening(string address = "*", int port = 22223, string subUrl = "ws", bool ssl = false)
         {
-            HttpListener listener = new();
-            listener.Prefixes.Add((ssl ? "https://" : "http://") + "localhost:" + port + "/ws");
-            listener.Start();
-            return listener;
+            _HttpListener = new();
+            _HttpListener.Prefixes.Add((ssl ? "https://" : "http://") + address + ":" + port + "/" + subUrl.Trim('/') + "/");
+            _HttpListener.Start();
+            return _HttpListener;
         }
 
         internal static async Task<System.Net.WebSockets.ClientWebSocket?> Connect(Uri uri)
@@ -68,30 +68,66 @@ namespace Milimoe.FunGame.Core.Service
             return SocketResult.NotSent;
         }
 
-        internal static async Task Receiving(HTTPListener listener)
+        internal static async Task<object[]> Accept()
         {
-            if (ServerSocket != null)
+            if (HttpListener is null) return [];
+            try
             {
-                try
+                HttpListenerContext context = await HttpListener.GetContextAsync();
+                if (context.Request.IsWebSocketRequest)
                 {
-                    while (true)
+                    HttpListenerWebSocketContext socketContext = await context.AcceptWebSocketAsync(null);
+                    WebSocket socket = socketContext.WebSocket;
+                    string ip = context.Request.UserHostAddress;
+                    return [ip, socket];
+                }
+                else
+                {
+                    context.Response.StatusCode = 400;
+                    context.Response.Close();
+                }
+            }
+            catch
+            {
+                HttpListener?.Close();
+            }
+            return [];
+        }
+
+        internal static async Task<SocketObject[]> Receive(WebSocket socket)
+        {
+            try
+            {
+                List<SocketObject> objs = [];
+                if (socket != null)
+                {
+                    byte[] buffer = new byte[General.SocketByteSize];
+                    WebSocketReceiveResult result;
+                    StringBuilder builder = new();
+
+                    do
                     {
-                        HttpListenerContext context = await ServerSocket.GetContextAsync();
-                        if (context.Request.IsWebSocketRequest)
+                        result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                        builder.Append(General.DefaultEncoding.GetString(buffer, 0, result.Count).Replace("\0", "").Trim());
+                    }
+                    while (!result.EndOfMessage);
+
+                    string msg = builder.ToString();
+
+                    if (JsonManager.IsCompleteJson<SocketObject>(msg))
+                    {
+                        foreach (SocketObject obj in JsonManager.GetObjects<SocketObject>(msg))
                         {
-                            TaskUtility.NewTask(async () => await AddClientWebSocket(listener, context));
-                        }
-                        else
-                        {
-                            context.Response.StatusCode = 400;
-                            context.Response.Close();
+                            objs.Add(obj);
                         }
                     }
                 }
-                catch
-                {
-                    _ServerSocket = null;
-                }
+                return [.. objs];
+            }
+            catch (Exception e)
+            {
+                TXTHelper.AppendErrorLog(e.GetErrorInfo());
+                return [];
             }
         }
 
@@ -101,12 +137,13 @@ namespace Milimoe.FunGame.Core.Service
 
             byte[] buffer = new byte[General.SocketByteSize];
             WebSocketReceiveResult result = await client.Instance.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            string msg = Encoding.UTF8.GetString(buffer).Replace("\0", "").Trim();
+            string msg = General.DefaultEncoding.GetString(buffer).Replace("\0", "").Trim();
             SocketObject[] objs = await GetSocketObjects(client.Instance, result, msg);
 
             foreach (SocketObject obj in objs)
             {
                 SocketObject sendobject = client.SocketObject_Handler(obj);
+                SocketManager.OnSocketReceive(obj);
                 if (obj.SocketType == SocketMessageType.Connect)
                 {
                     return true;
@@ -120,75 +157,6 @@ namespace Milimoe.FunGame.Core.Service
             }
 
             return true;
-        }
-
-        private static async Task AddClientWebSocket(HTTPListener listener, HttpListenerContext context)
-        {
-            HttpListenerWebSocketContext socketContext = await context.AcceptWebSocketAsync(null);
-            WebSocket socket = socketContext.WebSocket;
-
-            byte[] buffer = new byte[General.SocketByteSize];
-            WebSocketReceiveResult result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            string msg = Encoding.UTF8.GetString(buffer).Replace("\0", "").Trim();
-
-            SocketObject sendobject = new(SocketMessageType.Unknown, Guid.Empty);
-            SocketObject[] objs = await GetSocketObjects(socket, result, msg);
-            bool isConnect = false;
-
-            foreach (SocketObject obj in objs)
-            {
-                if (obj.SocketType == SocketMessageType.Connect)
-                {
-                    isConnect = listener.CheckClientConnection(obj);
-                }
-                else if (listener.ClientSockets.ContainsKey(obj.Token))
-                {
-                    sendobject = listener.SocketObject_Handler(obj);
-                    isConnect = true;
-                }
-            }
-
-            if (isConnect)
-            {
-                Guid token = Guid.NewGuid();
-                listener.ClientSockets.TryAdd(token, socket);
-                await Send(socket, sendobject);
-
-                while (socket.State == WebSocketState.Open)
-                {
-                    try
-                    {
-                        buffer = new byte[General.SocketByteSize];
-                        result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-
-                        if (result.CloseStatus.HasValue)
-                        {
-                            await socket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
-                            return;
-                        }
-
-                        msg = Encoding.UTF8.GetString(buffer).Replace("\0", "").Trim();
-                        objs = await GetSocketObjects(socket, result, msg);
-                        foreach (SocketObject obj in objs)
-                        {
-                            sendobject = listener.SocketObject_Handler(obj);
-                            if (obj.SocketType == SocketMessageType.Disconnect)
-                            {
-                                await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Disconnect received", CancellationToken.None);
-                                return;
-                            }
-                            await Send(socket, sendobject);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        // 处理其他异常
-                        TXTHelper.AppendErrorLog(e.GetErrorInfo());
-                        await socket.CloseAsync(WebSocketCloseStatus.InternalServerError, "Server Error", CancellationToken.None);
-                        return;
-                    }
-                }
-            }
         }
 
         private static async Task<SocketObject[]> GetSocketObjects(WebSocket socket, WebSocketReceiveResult result, string msg)

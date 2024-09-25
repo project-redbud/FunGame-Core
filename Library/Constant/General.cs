@@ -38,7 +38,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// <summary>
         /// 默认的字符编码
         /// </summary>
-        public static Encoding DefaultEncoding => Encoding.Unicode;
+        public static Encoding DefaultEncoding => Encoding.UTF8;
 
         /// <summary>
         /// 默认的时间格式 yyyy-MM-dd HH:mm:ss.fff

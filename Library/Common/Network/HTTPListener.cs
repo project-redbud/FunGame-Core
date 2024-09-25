@@ -1,18 +1,22 @@
 ﻿using System.Net;
 using System.Net.WebSockets;
 using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.HTTP;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
 {
-    public class HTTPListener : IHTTPListener
+    public class HTTPListener : IHTTPListener, ISocketListener<ClientWebSocket>
     {
         public HttpListener Instance { get; }
         public SocketRuntimeType Runtime => SocketRuntimeType.Server;
         public Guid Token { get; } = Guid.Empty;
         public Dictionary<Guid, WebSocket> ClientSockets { get; } = [];
+        public ConcurrentModelList<IServerModel> ClientList { get; } = [];
+        public ConcurrentModelList<IServerModel> UserList { get; } = [];
+        public List<string> BannedList { get; } = [];
 
         private HTTPListener(HttpListener instance)
         {
@@ -20,16 +24,27 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             Token = Guid.NewGuid();
         }
 
-        public static HTTPListener StartListening(int port, bool ssl = false)
+        public static HTTPListener StartListening(string address = "localhost", int port = 22223, string subUrl = "ws", bool ssl = false)
         {
-            HttpListener? socket = HTTPManager.StartListening(port, ssl);
+            HttpListener? socket = HTTPManager.StartListening(address, port, subUrl, ssl);
             if (socket != null)
             {
                 HTTPListener instance = new(socket);
-                Task t = Task.Run(async () => await HTTPManager.Receiving(instance));
                 return instance;
             }
             else throw new SocketCreateListenException();
+        }
+
+        public async Task<ClientWebSocket> Accept(Guid token)
+        {
+            object[] result = await HTTPManager.Accept();
+            if (result != null && result.Length == 2)
+            {
+                string clientIP = (string)result[0];
+                WebSocket client = (WebSocket)result[1];
+                return new ClientWebSocket(this, client, clientIP, clientIP, token);
+            }
+            throw new SocketGetClientException();
         }
 
         public async Task SendMessage(Guid token, SocketObject obj)

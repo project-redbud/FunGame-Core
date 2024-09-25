@@ -20,24 +20,24 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         private bool _Listening = false;
         private readonly HeartBeat HeartBeat;
 
-        private HTTPClient(System.Net.WebSockets.ClientWebSocket Instance, string ServerAddress, int ServerPort, params object[] args)
+        private HTTPClient(System.Net.WebSockets.ClientWebSocket instance, string serverAddress, int serverPort, params object[] args)
         {
-            this.Instance = Instance;
-            this.ServerAddress = ServerAddress;
-            this.ServerPort = ServerPort;
+            this.Instance = instance;
+            this.ServerAddress = serverAddress;
+            this.ServerPort = serverPort;
             HeartBeat = new(this);
             HeartBeat.StartSendingHeartBeat();
             Task.Factory.StartNew(async () => await StartListening(args));
         }
 
-        public static async Task<HTTPClient> Connect(string ServerAddress, int ServerPort, bool SSL, string SubDirectory = "", params object[] args)
+        public static async Task<HTTPClient> Connect(string serverAddress, int serverPort, bool ssl, string subUrl = "", params object[] args)
         {
-            string ServerIP = Api.Utility.NetworkUtility.GetIPAddress(ServerAddress);
-            Uri uri = new((SSL ? "wss://" : "ws://") + ServerIP + ":" + ServerPort + "/" + SubDirectory);
+            string ServerIP = Api.Utility.NetworkUtility.GetIPAddress(serverAddress);
+            Uri uri = new((ssl ? "wss://" : "ws://") + ServerIP + ":" + serverPort + "/" + subUrl.Trim('/') + "/");
             System.Net.WebSockets.ClientWebSocket? socket = await HTTPManager.Connect(uri);
             if (socket != null && socket.State == WebSocketState.Open)
             {
-                HTTPClient client = new(socket, ServerAddress, ServerPort, args);
+                HTTPClient client = new(socket, serverAddress, serverPort, args);
                 return client;
             }
             throw new CanNotConnectException();

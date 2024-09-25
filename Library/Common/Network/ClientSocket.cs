@@ -5,21 +5,20 @@ using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
 {
-    public class ClientSocket(System.Net.Sockets.Socket instance, string clientIP, string clientName, Guid token) : IClientSocket, ISocketMessageProcessor
+    public class ClientSocket(ServerSocket listener, System.Net.Sockets.Socket instance, string clientIP, string clientName, Guid token) : IClientSocket, ISocketMessageProcessor
     {
+        public ServerSocket Listener { get; } = listener;
         public System.Net.Sockets.Socket Instance { get; } = instance;
         public SocketRuntimeType Runtime => SocketRuntimeType.Server;
         public Guid Token { get; } = token;
         public string ClientIP { get; } = clientIP;
-        public string ClientName => _ClientName;
+        public string ClientName => clientName;
         public bool Connected => Instance != null && Instance.Connected;
-        public bool Receiving => _Receiving;
+        public bool Receiving => _receiving;
         public Type InstanceType => typeof(ClientSocket);
 
-        private Task? ReceivingTask;
-
-        private bool _Receiving;
-        private readonly string _ClientName = clientName;
+        private Task? _receivingTask;
+        private bool _receiving;
 
         public void Close()
         {
@@ -79,15 +78,15 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
 
         public void StartReceiving(Task t)
         {
-            _Receiving = true;
-            ReceivingTask = t;
+            _receiving = true;
+            _receivingTask = t;
         }
 
         public void StopReceiving()
         {
-            _Receiving = false;
-            ReceivingTask?.Wait(1);
-            ReceivingTask = null;
+            _receiving = false;
+            _receivingTask?.Wait(1);
+            _receivingTask = null;
         }
     }
 }

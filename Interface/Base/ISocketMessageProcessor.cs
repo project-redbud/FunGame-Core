@@ -5,6 +5,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
     public interface ISocketMessageProcessor
     {
         public Type InstanceType { get; }
+        public Guid Token { get; }
         public string ClientIP { get; }
         public string ClientName { get; }
 

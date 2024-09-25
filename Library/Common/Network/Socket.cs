@@ -16,11 +16,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public string ServerName { get; } = "";
         public string ServerNotice { get; } = "";
         public bool Connected => Instance != null && Instance.Connected;
-        public bool Receiving => _Receiving;
+        public bool Receiving => _receiving;
 
-        private Task? ReceivingTask;
+        private Task? _receivingTask;
         private readonly HeartBeat HeartBeat;
-        private bool _Receiving = false;
+        private bool _receiving = false;
 
         private Socket(System.Net.Sockets.Socket instance, string serverAddress, int serverPort)
         {
@@ -86,15 +86,15 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
 
         public void StartReceiving(Task t)
         {
-            _Receiving = true;
-            ReceivingTask = t;
+            _receiving = true;
+            _receivingTask = t;
         }
 
-        private void StopReceiving()
+        public void StopReceiving()
         {
-            _Receiving = false;
-            ReceivingTask?.Wait(1);
-            ReceivingTask = null;
+            _receiving = false;
+            _receivingTask?.Wait(1);
+            _receivingTask = null;
         }
     }
 }

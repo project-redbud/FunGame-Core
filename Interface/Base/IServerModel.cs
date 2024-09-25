@@ -1,6 +1,7 @@
-﻿using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Api.Transmittal;
+using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
-using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Interface.Base
@@ -10,28 +11,43 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <summary>
         /// 服务器实例是否在运行
         /// </summary>
-        public abstract bool Running { get; }
+        public bool Running { get; }
 
         /// <summary>
         /// 客户端的套接字实例
         /// </summary>
-        public abstract ISocketMessageProcessor? Socket { get; }
+        public ISocketMessageProcessor? Socket { get; }
+        
+        /// <summary>
+        /// 客户端的数据库连接实例
+        /// </summary>
+        public SQLHelper? SQLHelper { get; }
+        
+        /// <summary>
+        /// 客户端的邮件服务实例
+        /// </summary>
+        public MailSender? MailSender { get; }
 
         /// <summary>
         /// 客户端的用户实例，在用户登录后有效
         /// </summary>
-        public abstract User User { get; }
+        public User User { get; }
 
         /// <summary>
         /// 客户端的名称，默认是客户端的IP地址
         /// </summary>
-        public abstract string ClientName { get; }
+        public string ClientName { get; }
 
         /// <summary>
         /// 客户端是否启动了开发者模式
         /// </summary>
         public bool IsDebugMode { get; }
 
+        /// <summary>
+        /// 客户端所在的房间
+        /// </summary>
+        public Room InRoom { get; set; }
+        
         /// <summary>
         /// 客户端的游戏模组服务器
         /// </summary>
@@ -61,14 +77,6 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// </summary>
         /// <returns></returns>
         public string GetClientName();
-
-        /// <summary>
-        /// 开始接收客户端消息
-        /// <para>请勿在 <see cref="GameModuleServer"/> 中调用此方法</para>
-        /// </summary>
-        /// <param name="socket"></param>
-        /// <returns></returns>
-        public bool Read(ISocketMessageProcessor socket);
 
         /// <summary>
         /// 启动对客户端的监听

@@ -30,18 +30,18 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 创建服务器监听Socket
         /// </summary>
-        /// <param name="Port">监听端口号</param>
-        /// <param name="MaxConnection">最大连接数量</param>
+        /// <param name="port">监听端口号</param>
+        /// <param name="maxConnection">最大连接数量</param>
         /// <returns>服务器端专用Socket</returns>
-        internal static Socket? StartListening(int Port = 22222, int MaxConnection = 0)
+        internal static Socket? StartListening(int port = 22222, int maxConnection = 0)
         {
-            if (MaxConnection <= 0) MaxConnection = SocketSet.MaxConnection_2C2G;
+            if (maxConnection <= 0) maxConnection = SocketSet.MaxConnection_2C2G;
             try
             {
                 _ServerSocket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                IPEndPoint ServerEndPoint = new(IPAddress.Any, Port);
+                IPEndPoint ServerEndPoint = new(IPAddress.Any, port);
                 _ServerSocket.Bind(ServerEndPoint);
-                _ServerSocket.Listen(MaxConnection);
+                _ServerSocket.Listen(maxConnection);
                 _ServerSocket.NoDelay = true;
                 return _ServerSocket;
             }
@@ -79,17 +79,17 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 创建客户端Socket
         /// </summary>
-        /// <param name="Address">服务器IP地址</param>
-        /// <param name="Port">服务器监听端口</param>
+        /// <param name="address">服务器IP地址</param>
+        /// <param name="port">服务器监听端口</param>
         /// <returns>客户端专用Socket</returns>
-        internal static Socket? Connect(string Address, int Port = 22222)
+        internal static Socket? Connect(string address, int port = 22222)
         {
             Socket? ClientSocket;
             EndPoint ServerEndPoint;
             try
             {
-                string IP = Api.Utility.NetworkUtility.GetIPAddress(Address);
-                ServerEndPoint = new IPEndPoint(IPAddress.Parse(IP), Port);
+                string IP = Api.Utility.NetworkUtility.GetIPAddress(address);
+                ServerEndPoint = new IPEndPoint(IPAddress.Parse(IP), port);
                 if (ServerEndPoint != null)
                 {
                     ClientSocket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -131,14 +131,14 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 用于服务器端向客户端Socket发送信息
         /// </summary>
-        /// <param name="ClientSocket">客户端Socket</param>
-        /// <param name="SocketObject">Socket信息容器</param>
+        /// <param name="clientSocket">客户端Socket</param>
+        /// <param name="obj">Socket信息容器</param>
         /// <returns>通信结果</returns>
-        internal static SocketResult Send(Socket ClientSocket, Library.Common.Network.SocketObject SocketObject)
+        internal static SocketResult Send(Socket clientSocket, Library.Common.Network.SocketObject obj)
         {
-            if (ClientSocket != null)
+            if (clientSocket != null)
             {
-                if (ClientSocket.Send(General.DefaultEncoding.GetBytes(JsonManager.GetString(SocketObject))) > 0)
+                if (clientSocket.Send(General.DefaultEncoding.GetBytes(JsonManager.GetString(obj))) > 0)
                 {
                     return SocketResult.Success;
                 }
@@ -150,14 +150,14 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 用于服务器端向客户端Socket发送信息 [ 异步版 ]
         /// </summary>
-        /// <param name="ClientSocket">客户端Socket</param>
-        /// <param name="SocketObject">Socket信息容器</param>
+        /// <param name="clientSocket">客户端Socket</param>
+        /// <param name="obj">Socket信息容器</param>
         /// <returns>通信结果</returns>
-        internal static async Task<SocketResult> SendAsync(Socket ClientSocket, Library.Common.Network.SocketObject SocketObject)
+        internal static async Task<SocketResult> SendAsync(Socket clientSocket, Library.Common.Network.SocketObject obj)
         {
-            if (ClientSocket != null)
+            if (clientSocket != null)
             {
-                if (await ClientSocket.SendAsync(General.DefaultEncoding.GetBytes(JsonManager.GetString(SocketObject))) > 0)
+                if (await clientSocket.SendAsync(General.DefaultEncoding.GetBytes(JsonManager.GetString(obj))) > 0)
                 {
                     return SocketResult.Success;
                 }
@@ -169,13 +169,13 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 用于客户端向服务器Socket发送信息
         /// </summary>
-        /// <param name="SocketObject">Socket信息容器</param>
+        /// <param name="obj">Socket信息容器</param>
         /// <returns>通信结果</returns>
-        internal static SocketResult Send(Library.Common.Network.SocketObject SocketObject)
+        internal static SocketResult Send(Library.Common.Network.SocketObject obj)
         {
             if (Socket != null)
             {
-                if (Socket.Send(General.DefaultEncoding.GetBytes(JsonManager.GetString(SocketObject))) > 0)
+                if (Socket.Send(General.DefaultEncoding.GetBytes(JsonManager.GetString(obj))) > 0)
                 {
                     return SocketResult.Success;
                 }
@@ -187,13 +187,13 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 用于客户端向服务器Socket发送信息 [ 异步版 ]
         /// </summary>
-        /// <param name="SocketObject">Socket信息容器</param>
+        /// <param name="obj">Socket信息容器</param>
         /// <returns>通信结果</returns>
-        internal static async Task<SocketResult> SendAsync(Library.Common.Network.SocketObject SocketObject)
+        internal static async Task<SocketResult> SendAsync(Library.Common.Network.SocketObject obj)
         {
             if (Socket != null)
             {
-                if (await Socket.SendAsync(General.DefaultEncoding.GetBytes(JsonManager.GetString(SocketObject))) > 0)
+                if (await Socket.SendAsync(General.DefaultEncoding.GetBytes(JsonManager.GetString(obj))) > 0)
                 {
                     return SocketResult.Success;
                 }
@@ -204,16 +204,16 @@ namespace Milimoe.FunGame.Core.Service
 
         /// <summary>
         /// 接收数据流中的信息
-        /// <para/>如果是服务器接收信息需要传入客户端Socket <paramref name="ClientSocket"/>
+        /// <para/>如果是服务器接收信息需要传入客户端Socket <paramref name="clientSocket"/>
         /// </summary>
-        /// <param name="ClientSocket">如果是服务器接收信息需要传入客户端Socket</param>
+        /// <param name="clientSocket">如果是服务器接收信息需要传入客户端Socket</param>
         /// <returns>SocketObjects</returns>
-        internal static Library.Common.Network.SocketObject[] Receive(Socket? ClientSocket = null)
+        internal static Library.Common.Network.SocketObject[] Receive(Socket? clientSocket = null)
         {
             try
             {
                 List<Library.Common.Network.SocketObject> result = [];
-                Socket? tempSocket = ClientSocket is null ? Socket : ClientSocket;
+                Socket? tempSocket = clientSocket is null ? Socket : clientSocket;
                 if (tempSocket != null)
                 {
                     // 从服务器接收消息
@@ -229,7 +229,7 @@ namespace Milimoe.FunGame.Core.Service
                             {
                                 result.Add(obj);
                                 // 客户端接收消息，广播ScoketObject到每个UIModel
-                                if (ClientSocket is null) OnSocketReceive(obj);
+                                if (clientSocket is null) OnSocketReceive(obj);
                             }
                             return [.. result];
                         }
@@ -256,7 +256,7 @@ namespace Milimoe.FunGame.Core.Service
                     {
                         result.Add(obj);
                         // 客户端接收消息，广播ScoketObject到每个UIModel
-                        if (ClientSocket is null) OnSocketReceive(obj);
+                        if (clientSocket is null) OnSocketReceive(obj);
                     }
                 }
                 return [.. result];
@@ -275,8 +275,8 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 监听事件的委托
         /// </summary>
-        /// <param name="SocketObject">SocketObject</param>
-        internal delegate void SocketReceiveHandler(Library.Common.Network.SocketObject SocketObject);
+        /// <param name="obj">SocketObject</param>
+        internal delegate void SocketReceiveHandler(Library.Common.Network.SocketObject obj);
 
         /// <summary>
         /// 监听事件
@@ -286,10 +286,10 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 触发异步监听事件
         /// </summary>
-        /// <param name="SocketObject">SocketObject</param>
-        internal static void OnSocketReceive(Library.Common.Network.SocketObject SocketObject)
+        /// <param name="obj">SocketObject</param>
+        internal static void OnSocketReceive(Library.Common.Network.SocketObject obj)
         {
-            SocketReceive?.Invoke(SocketObject);
+            SocketReceive?.Invoke(obj);
         }
 
         #endregion

@@ -100,6 +100,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
                      * Socket
                      */
                     WriteINI("Socket", "Port", "22222");
+                    WriteINI("Socket", "UseWebSocket", "false");
+                    WriteINI("Socket", "WebSocketAddress", "*");
+                    WriteINI("Socket", "WebSocketPort", "22223");
+                    WriteINI("Socket", "WebSocketSubUrl", "ws");
+                    WriteINI("Socket", "WebSocketSSL", "false");
                     WriteINI("Socket", "MaxPlayer", "20");
                     WriteINI("Socket", "MaxConnectFailed", "0");
                     /**

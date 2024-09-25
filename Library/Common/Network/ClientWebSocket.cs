@@ -7,7 +7,7 @@ using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
 {
-    public class ClientWebSocket(HTTPListener listener, WebSocket instance, string clientIP, string clientName, Guid token) : IWebSocket, ISocketMessageProcessor
+    public class ClientWebSocket(HTTPListener listener, WebSocket instance, string clientIP, string clientName, Guid token) : IClientWebSocket, ISocketMessageProcessor
     {
         public HTTPListener Listener => listener;
         public WebSocket Instance => instance;
@@ -16,6 +16,10 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public string ClientIP => clientIP;
         public string ClientName => clientName;
         public Type InstanceType => typeof(ClientWebSocket);
+        public bool Receiving => _receiving;
+
+        private Task? _receivingTask;
+        private bool _receiving = false;
 
         public void Close()
         {
@@ -30,6 +34,18 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             });
         }
 
+        public async Task<SocketObject[]> ReceiveAsync()
+        {
+            try
+            {
+                return await HTTPManager.Receive(Instance);
+            }
+            catch
+            {
+                throw new SocketWrongInfoException();
+            }
+        }
+
         public SocketResult Send(SocketMessageType type, params object[] objs)
         {
             throw new AsyncSendException();
@@ -38,6 +54,19 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public async Task<SocketResult> SendAsync(SocketMessageType type, params object[] objs)
         {
             return await HTTPManager.Send(Instance, new(type, token, objs));
+        }
+
+        public void StartReceiving(Task t)
+        {
+            _receiving = true;
+            _receivingTask = t;
+        }
+
+        public void StopReceiving()
+        {
+            _receiving = false;
+            _receivingTask?.Wait(1);
+            _receivingTask = null;
         }
     }
 }
