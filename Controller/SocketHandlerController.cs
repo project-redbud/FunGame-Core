@@ -1,7 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Interface.Sockets;
 using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Core.Library.Common.Network;
-using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Controller
 {
@@ -37,7 +36,7 @@ namespace Milimoe.FunGame.Core.Controller
             if (socket != null)
             {
                 _Socket = socket;
-                socket.BindEvent(new SocketManager.SocketReceiveHandler(SocketHandler));
+                socket.AddSocketObjectHandler(SocketHandler);
             }
             else throw new SocketCreateReceivingException();
         }
@@ -51,7 +50,7 @@ namespace Milimoe.FunGame.Core.Controller
             if (websocket != null)
             {
                 _WebSocket = websocket;
-                websocket.BindEvent(new SocketManager.SocketReceiveHandler(SocketHandler));
+                websocket.AddSocketObjectHandler(SocketHandler);
             }
             else throw new SocketCreateReceivingException();
         }
@@ -90,8 +89,8 @@ namespace Milimoe.FunGame.Core.Controller
             {
                 if (Disposing)
                 {
-                    _Socket?.BindEvent(new SocketManager.SocketReceiveHandler(SocketHandler), true);
-                    _WebSocket?.BindEvent(new SocketManager.SocketReceiveHandler(SocketHandler), true);
+                    _Socket?.RemoveSocketObjectHandler(SocketHandler);
+                    _WebSocket?.RemoveSocketObjectHandler(SocketHandler);
                 }
             }
             IsDisposed = true;

@@ -57,15 +57,12 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         public static void Init(FunGameInfo.FunGame FunGameType)
         {
-            StreamWriter writer = new(DefaultFileName, false, General.DefaultEncoding);
             switch (FunGameType)
             {
                 case FunGameInfo.FunGame.FunGame_Core:
                 case FunGameInfo.FunGame.FunGame_Core_Api:
                 case FunGameInfo.FunGame.FunGame_Console:
                 case FunGameInfo.FunGame.FunGame_Desktop:
-                    writer.Write("[Config]");
-                    writer.Close();
                     /**
                      * Config
                      */
@@ -79,8 +76,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     WriteINI("Account", "AutoKey", "");
                     break;
                 case FunGameInfo.FunGame.FunGame_Server:
-                    writer.Write("[Server]");
-                    writer.Close();
                     /**
                      * Server
                      */

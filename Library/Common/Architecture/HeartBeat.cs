@@ -20,13 +20,13 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
         public HeartBeat(Socket socket)
         {
             _Socket = socket;
-            this.TransmittalType = TransmittalType.Socket;
+            TransmittalType = TransmittalType.Socket;
         }
 
         public HeartBeat(HTTPClient client)
         {
             _HTTPClient = client;
-            this.TransmittalType = TransmittalType.WebSocket;
+            TransmittalType = TransmittalType.WebSocket;
         }
 
         public void StartSendingHeartBeat()
@@ -34,6 +34,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
             if (!FunGameInfo.FunGame_DebugMode)
             {
                 _SendingHeartBeat = true;
+                _Socket?.AddSocketObjectHandler(SocketObject_Handler);
+                _HTTPClient?.AddSocketObjectHandler(SocketObject_Handler);
                 SendingHeartBeatTask = Task.Factory.StartNew(SendHeartBeat);
             }
         }
@@ -43,6 +45,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
             _SendingHeartBeat = false;
             SendingHeartBeatTask?.Wait(1);
             SendingHeartBeatTask = null;
+            _Socket?.RemoveSocketObjectHandler(SocketObject_Handler);
+            _HTTPClient?.RemoveSocketObjectHandler(SocketObject_Handler);
         }
 
         private async Task SendHeartBeat()
@@ -56,11 +60,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
                     // 发送心跳包
                     if (_Socket.Send(SocketMessageType.HeartBeat) == SocketResult.Success)
                     {
-                        await Task.Delay(4 * 000);
+                        await Task.Delay(4 * 1000);
                         AddHeartBeatFaileds();
                     }
                     else AddHeartBeatFaileds();
-                    await Task.Delay(20 * 000);
+                    await Task.Delay(20 * 1000);
                 }
             }
             else if (_HTTPClient != null)
@@ -71,11 +75,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
                     // 发送心跳包
                     if (await _HTTPClient.Send(SocketMessageType.HeartBeat) == SocketResult.Success)
                     {
-                        await Task.Delay(4 * 000);
+                        await Task.Delay(4 * 1000);
                         AddHeartBeatFaileds();
                     }
                     else AddHeartBeatFaileds();
-                    await Task.Delay(20 * 000);
+                    await Task.Delay(20 * 1000);
                 }
             }
             _SendingHeartBeat = false;
@@ -85,7 +89,19 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
         {
             // 超过三次没回应心跳，服务器连接失败。
             if (_HeartBeatFaileds++ >= 3)
+            {
+                _Socket?.Close();
+                _HTTPClient?.Close();
                 throw new LostConnectException();
+            }
+        }
+
+        private void SocketObject_Handler(SocketObject obj)
+        {
+            if (obj.SocketType == SocketMessageType.HeartBeat)
+            {
+                _HeartBeatFaileds = 0;
+            }
         }
     }
 }

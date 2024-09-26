@@ -65,8 +65,7 @@ namespace Milimoe.FunGame.Core.Service
             {
                 Client = ServerSocket.Accept();
                 Client.NoDelay = true;
-                IPEndPoint? ClientIPEndPoint = (IPEndPoint?)Client.RemoteEndPoint;
-                ClientIP = (ClientIPEndPoint != null) ? ClientIPEndPoint.ToString() : "Unknown";
+                ClientIP = Client.RemoteEndPoint?.ToString() ?? "Unknown";
                 return [ClientIP, Client];
             }
             catch
@@ -88,7 +87,7 @@ namespace Milimoe.FunGame.Core.Service
             EndPoint ServerEndPoint;
             try
             {
-                string IP = Api.Utility.NetworkUtility.GetIPAddress(address);
+                string IP = NetworkUtility.GetIPAddress(address);
                 ServerEndPoint = new IPEndPoint(IPAddress.Parse(IP), port);
                 if (ServerEndPoint != null)
                 {

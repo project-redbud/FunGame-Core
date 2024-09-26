@@ -17,10 +17,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public string ServerNotice { get; } = "";
         public bool Connected => Instance != null && Instance.Connected;
         public bool Receiving => _receiving;
+        private HeartBeat HeartBeat { get; }
 
         private Task? _receivingTask;
-        private readonly HeartBeat HeartBeat;
         private bool _receiving = false;
+        private readonly HashSet<Action<SocketObject>> _boundEvents = [];
 
         private Socket(System.Net.Sockets.Socket instance, string serverAddress, int serverPort)
         {
@@ -65,16 +66,18 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             }
         }
 
-        public void BindEvent(Delegate method, bool remove = false)
+        public void AddSocketObjectHandler(Action<SocketObject> method)
         {
-            if (!remove)
+            if (_boundEvents.Add(method))
             {
-                SocketManager.SocketReceive += (SocketManager.SocketReceiveHandler)method;
+                SocketManager.SocketReceive += new SocketManager.SocketReceiveHandler(method);
             }
-            else
-            {
-                SocketManager.SocketReceive -= (SocketManager.SocketReceiveHandler)method;
-            }
+        }
+
+        public void RemoveSocketObjectHandler(Action<SocketObject> method)
+        {
+            _boundEvents.Remove(method);
+            SocketManager.SocketReceive -= new SocketManager.SocketReceiveHandler(method);
         }
 
         public void Close()
@@ -82,6 +85,10 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             HeartBeat.StopSendingHeartBeat();
             StopReceiving();
             Instance?.Close();
+            foreach (Action<SocketObject> method in _boundEvents.ToList())
+            {
+                RemoveSocketObjectHandler(method);
+            }
         }
 
         public void StartReceiving(Task t)

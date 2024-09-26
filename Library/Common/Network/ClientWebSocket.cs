@@ -7,9 +7,9 @@ using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
 {
-    public class ClientWebSocket(HTTPListener listener, WebSocket instance, string clientIP, string clientName, Guid token) : IClientWebSocket, ISocketMessageProcessor
+    public class ClientWebSocket(ISocketListener<ClientWebSocket> listener, WebSocket instance, string clientIP, string clientName, Guid token) : IClientWebSocket, ISocketMessageProcessor
     {
-        public HTTPListener Listener => listener;
+        public ISocketListener<ClientWebSocket> Listener => listener;
         public WebSocket Instance => instance;
         public SocketRuntimeType Runtime => SocketRuntimeType.Server;
         public Guid Token => token;
@@ -23,15 +23,16 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
 
         public void Close()
         {
-            TaskUtility.NewTask(async () =>
+            throw new AsyncSendException();
+        }
+        
+        public async Task CloseAsync()
+        {
+            if (Instance.State == WebSocketState.Open)
             {
-                if (Instance.State == WebSocketState.Open)
-                {
-                    // 安全关闭 WebSocket 连接
-                    await Instance.CloseAsync(WebSocketCloseStatus.NormalClosure, "服务器正在关闭，断开连接！", CancellationToken.None);
-                    Listener.ClientSockets.Remove(Token);
-                }
-            });
+                // 安全关闭 WebSocket 连接
+                await Instance.CloseAsync(WebSocketCloseStatus.NormalClosure, "服务器正在关闭，断开连接！", CancellationToken.None);
+            }
         }
 
         public async Task<SocketObject[]> ReceiveAsync()

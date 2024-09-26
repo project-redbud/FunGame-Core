@@ -1,5 +1,4 @@
 ﻿using Milimoe.FunGame.Core.Api.Transmittal;
-using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -17,12 +16,12 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// 客户端的套接字实例
         /// </summary>
         public ISocketMessageProcessor? Socket { get; }
-        
+
         /// <summary>
         /// 客户端的数据库连接实例
         /// </summary>
         public SQLHelper? SQLHelper { get; }
-        
+
         /// <summary>
         /// 客户端的邮件服务实例
         /// </summary>
@@ -47,7 +46,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// 客户端所在的房间
         /// </summary>
         public Room InRoom { get; set; }
-        
+
         /// <summary>
         /// 客户端的游戏模组服务器
         /// </summary>
@@ -60,7 +59,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="type"></param>
         /// <param name="objs"></param>
         /// <returns></returns>
-        public bool Send(ISocketMessageProcessor socket, SocketMessageType type, params object[] objs);
+        public Task<bool> Send(ISocketMessageProcessor socket, SocketMessageType type, params object[] objs);
 
         /// <summary>
         /// 向客户端发送系统消息
@@ -77,11 +76,5 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// </summary>
         /// <returns></returns>
         public string GetClientName();
-
-        /// <summary>
-        /// 启动对客户端的监听
-        /// <para>请勿在 <see cref="GameModuleServer"/> 中调用此方法</para>
-        /// </summary>
-        public void Start();
     }
 }

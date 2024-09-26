@@ -10,9 +10,21 @@ namespace Milimoe.FunGame.Core.Service
 {
     internal class HTTPManager
     {
+        /// <summary>
+        /// 实际的 <see cref="System.Net.HttpListener"/> 监听实例 [ 单例 ]
+        /// </summary>
         internal static HttpListener? HttpListener => _HttpListener;
         private static HttpListener? _HttpListener = null;
 
+        /// <summary>
+        /// 开始监听
+        /// 当 <paramref name="address"/> = "*" 时，需要管理员权限
+        /// </summary>
+        /// <param name="address"></param>
+        /// <param name="port"></param>
+        /// <param name="subUrl"></param>
+        /// <param name="ssl"></param>
+        /// <returns></returns>
         internal static HttpListener StartListening(string address = "*", int port = 22223, string subUrl = "ws", bool ssl = false)
         {
             _HttpListener = new();
@@ -21,6 +33,11 @@ namespace Milimoe.FunGame.Core.Service
             return _HttpListener;
         }
 
+        /// <summary>
+        /// 客户端连接远程 WebSocket 服务器
+        /// </summary>
+        /// <param name="uri"></param>
+        /// <returns></returns>
         internal static async Task<System.Net.WebSockets.ClientWebSocket?> Connect(Uri uri)
         {
             System.Net.WebSockets.ClientWebSocket socket = new();
@@ -32,6 +49,12 @@ namespace Milimoe.FunGame.Core.Service
             return null;
         }
 
+        /// <summary>
+        /// 客户端向服务器发送消息
+        /// </summary>
+        /// <param name="socket"></param>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         internal static async Task<SocketResult> Send(System.Net.WebSockets.ClientWebSocket socket, SocketObject obj)
         {
             if (socket != null)
@@ -50,6 +73,12 @@ namespace Milimoe.FunGame.Core.Service
             return SocketResult.NotSent;
         }
 
+        /// <summary>
+        /// 服务器向客户端发送消息
+        /// </summary>
+        /// <param name="socket"></param>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         internal static async Task<SocketResult> Send(WebSocket socket, SocketObject obj)
         {
             if (socket != null)
@@ -68,6 +97,10 @@ namespace Milimoe.FunGame.Core.Service
             return SocketResult.NotSent;
         }
 
+        /// <summary>
+        /// 服务器接受一个 HTTP 的 WebSocket 升级请求
+        /// </summary>
+        /// <returns>[0]客户端IP地址；[1]客户端的WebSocket实例</returns>
         internal static async Task<object[]> Accept()
         {
             if (HttpListener is null) return [];
@@ -78,7 +111,7 @@ namespace Milimoe.FunGame.Core.Service
                 {
                     HttpListenerWebSocketContext socketContext = await context.AcceptWebSocketAsync(null);
                     WebSocket socket = socketContext.WebSocket;
-                    string ip = context.Request.UserHostAddress;
+                    string ip = context.Request.RemoteEndPoint.ToString();
                     return [ip, socket];
                 }
                 else
@@ -94,6 +127,11 @@ namespace Milimoe.FunGame.Core.Service
             return [];
         }
 
+        /// <summary>
+        /// 服务器接收客户端消息
+        /// </summary>
+        /// <param name="socket"></param>
+        /// <returns></returns>
         internal static async Task<SocketObject[]> Receive(WebSocket socket)
         {
             try
@@ -131,6 +169,11 @@ namespace Milimoe.FunGame.Core.Service
             }
         }
 
+        /// <summary>
+        /// 客户端接收服务器消息
+        /// </summary>
+        /// <param name="client"></param>
+        /// <returns></returns>
         internal static async Task<bool> ReceiveMessage(HTTPClient client)
         {
             if (client.Instance is null) return false;
@@ -142,7 +185,6 @@ namespace Milimoe.FunGame.Core.Service
 
             foreach (SocketObject obj in objs)
             {
-                SocketObject sendobject = client.SocketObject_Handler(obj);
                 SocketManager.OnSocketReceive(obj);
                 if (obj.SocketType == SocketMessageType.Connect)
                 {
@@ -153,12 +195,18 @@ namespace Milimoe.FunGame.Core.Service
                     await client.Instance.CloseAsync(result.CloseStatus ?? WebSocketCloseStatus.NormalClosure, result.CloseStatusDescription, CancellationToken.None);
                     return true;
                 }
-                await Send(client.Instance, sendobject);
             }
 
             return true;
         }
 
+        /// <summary>
+        /// 将收到的消息反序列为 <see cref="SocketObject"/>
+        /// </summary>
+        /// <param name="socket"></param>
+        /// <param name="result"></param>
+        /// <param name="msg"></param>
+        /// <returns></returns>
         private static async Task<SocketObject[]> GetSocketObjects(WebSocket socket, WebSocketReceiveResult result, string msg)
         {
             List<SocketObject> objs = [];

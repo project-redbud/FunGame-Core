@@ -11,20 +11,23 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
     {
         public System.Net.WebSockets.ClientWebSocket? Instance { get; } = null;
         public SocketRuntimeType Runtime => SocketRuntimeType.Client;
-        public Guid Token { get; } = Guid.Empty;
+        public Guid Token { get; set; } = Guid.Empty;
         public string ServerAddress { get; } = "";
         public int ServerPort { get; } = 0;
         public string ServerName { get; } = "";
         public string ServerNotice { get; } = "";
+        public bool Connected => Instance != null && Instance.State == WebSocketState.Open;
+        public bool Receiving => _receiving;
+        private HeartBeat HeartBeat { get; }
 
-        private bool _Listening = false;
-        private readonly HeartBeat HeartBeat;
+        private bool _receiving = false;
+        private readonly HashSet<Action<SocketObject>> _boundEvents = [];
 
         private HTTPClient(System.Net.WebSockets.ClientWebSocket instance, string serverAddress, int serverPort, params object[] args)
         {
-            this.Instance = instance;
-            this.ServerAddress = serverAddress;
-            this.ServerPort = serverPort;
+            Instance = instance;
+            ServerAddress = serverAddress;
+            ServerPort = serverPort;
             HeartBeat = new(this);
             HeartBeat.StartSendingHeartBeat();
             Task.Factory.StartNew(async () => await StartListening(args));
@@ -43,21 +46,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             throw new CanNotConnectException();
         }
 
-        private async Task StartListening(params object[] args)
-        {
-            if (Instance != null && Instance.State == WebSocketState.Open)
-            {
-                if (await HTTPManager.Send(Instance, new(SocketMessageType.Connect, Guid.Empty, args)) == SocketResult.Success && await HTTPManager.ReceiveMessage(this))
-                {
-                    _Listening = true;
-                    await Receive();
-                }
-            }
-        }
-
         public async Task Receive()
         {
-            while (_Listening)
+            while (_receiving)
             {
                 try
                 {
@@ -81,29 +72,42 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             return SocketResult.NotSent;
         }
 
-        public virtual SocketObject SocketObject_Handler(SocketObject objs)
+        public void AddSocketObjectHandler(Action<SocketObject> method)
         {
-            return new(SocketMessageType.Unknown, Guid.Empty);
+            if (_boundEvents.Add(method))
+            {
+                SocketManager.SocketReceive += new SocketManager.SocketReceiveHandler(method);
+            }
         }
-
-        public void BindEvent(Delegate method, bool remove = false)
+        
+        public void RemoveSocketObjectHandler(Action<SocketObject> method)
         {
-            if (!remove)
-            {
-                SocketManager.SocketReceive += (SocketManager.SocketReceiveHandler)method;
-            }
-            else
-            {
-                SocketManager.SocketReceive -= (SocketManager.SocketReceiveHandler)method;
-            }
+            _boundEvents.Remove(method);
+            SocketManager.SocketReceive -= new SocketManager.SocketReceiveHandler(method);
         }
 
         public void Close()
         {
-            _Listening = false;
+            _receiving = false;
             HeartBeat.StopSendingHeartBeat();
             Instance?.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
             Instance?.Dispose();
+            foreach (Action<SocketObject> method in _boundEvents.ToList())
+            {
+                RemoveSocketObjectHandler(method);
+            }
+        }
+
+        private async Task StartListening(params object[] args)
+        {
+            if (Instance != null && Instance.State == WebSocketState.Open)
+            {
+                if (await HTTPManager.Send(Instance, new(SocketMessageType.Connect, Guid.Empty, args)) == SocketResult.Success && await HTTPManager.ReceiveMessage(this))
+                {
+                    _receiving = true;
+                    await Receive();
+                }
+            }
         }
     }
 }

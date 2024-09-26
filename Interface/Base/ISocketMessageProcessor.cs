@@ -12,5 +12,6 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public SocketResult Send(SocketMessageType type, params object[] objs);
         public Task<SocketResult> SendAsync(SocketMessageType type, params object[] objs);
         public void Close();
+        public Task CloseAsync();
     }
 }
