@@ -1,5 +1,4 @@
 ﻿using System.Net.WebSockets;
-using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Sockets;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -7,15 +6,15 @@ using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
 {
-    public class ClientWebSocket(ISocketListener<ClientWebSocket> listener, WebSocket instance, string clientIP, string clientName, Guid token) : IClientWebSocket, ISocketMessageProcessor
+    public class ServerWebSocket(ISocketListener<ServerWebSocket> listener, WebSocket instance, string clientIP, string clientName, Guid token) : IClientWebSocket, ISocketMessageProcessor
     {
-        public ISocketListener<ClientWebSocket> Listener => listener;
+        public ISocketListener<ServerWebSocket> Listener => listener;
         public WebSocket Instance => instance;
         public SocketRuntimeType Runtime => SocketRuntimeType.Server;
         public Guid Token => token;
         public string ClientIP => clientIP;
         public string ClientName => clientName;
-        public Type InstanceType => typeof(ClientWebSocket);
+        public Type InstanceType => typeof(ServerWebSocket);
         public bool Receiving => _receiving;
 
         private Task? _receivingTask;
@@ -35,6 +34,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             }
         }
 
+        public SocketObject[] Receive()
+        {
+            throw new AsyncReadException();
+        }
+        
         public async Task<SocketObject[]> ReceiveAsync()
         {
             try

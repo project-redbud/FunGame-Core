@@ -12,6 +12,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
 
         private Task? SendingHeartBeatTask;
         private bool _SendingHeartBeat = false;
+        private bool _LastHeartbeatReceived = false;
         private int _HeartBeatFaileds = 0;
 
         private readonly Socket? _Socket = null;
@@ -58,10 +59,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
                 {
                     if (!SendingHeartBeat) _SendingHeartBeat = true;
                     // 发送心跳包
+                    _LastHeartbeatReceived = false;
                     if (_Socket.Send(SocketMessageType.HeartBeat) == SocketResult.Success)
                     {
                         await Task.Delay(4 * 1000);
-                        AddHeartBeatFaileds();
+                        if (!_LastHeartbeatReceived) AddHeartBeatFaileds();
                     }
                     else AddHeartBeatFaileds();
                     await Task.Delay(20 * 1000);
@@ -100,6 +102,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
         {
             if (obj.SocketType == SocketMessageType.HeartBeat)
             {
+                _LastHeartbeatReceived = true;
                 _HeartBeatFaileds = 0;
             }
         }

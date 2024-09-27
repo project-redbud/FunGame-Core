@@ -8,7 +8,7 @@ using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
 {
-    public class HTTPListener : IHTTPListener, ISocketListener<ClientWebSocket>
+    public class HTTPListener : IHTTPListener, ISocketListener<ServerWebSocket>
     {
         public HttpListener Instance { get; }
         public SocketRuntimeType Runtime => SocketRuntimeType.Server;
@@ -34,14 +34,14 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             else throw new SocketCreateListenException();
         }
 
-        public async Task<ClientWebSocket> Accept(Guid token)
+        public async Task<ServerWebSocket> Accept(Guid token)
         {
             object[] result = await HTTPManager.Accept();
             if (result != null && result.Length == 2)
             {
                 string clientIP = (string)result[0];
                 WebSocket client = (WebSocket)result[1];
-                return new ClientWebSocket(this, client, clientIP, clientIP, token);
+                return new ServerWebSocket(this, client, clientIP, clientIP, token);
             }
             throw new SocketGetClientException();
         }

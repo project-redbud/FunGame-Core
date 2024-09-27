@@ -55,11 +55,10 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <summary>
         /// 向客户端发送消息
         /// </summary>
-        /// <param name="socket"></param>
         /// <param name="type"></param>
         /// <param name="objs"></param>
         /// <returns></returns>
-        public Task<bool> Send(ISocketMessageProcessor socket, SocketMessageType type, params object[] objs);
+        public Task<bool> Send(SocketMessageType type, params object[] objs);
 
         /// <summary>
         /// 向客户端发送系统消息

@@ -1,50 +1,113 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Interface.Base;
+﻿using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Sockets;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
 {
-    public class ServerSocket : ISocket, ISocketListener<ClientSocket>
+    public class ServerSocket(SocketListener listener, System.Net.Sockets.Socket instance, string clientIP, string clientName, Guid token) : IClientSocket, ISocketMessageProcessor
     {
-        public System.Net.Sockets.Socket Instance { get; }
+        public SocketListener Listener { get; } = listener;
+        public System.Net.Sockets.Socket Instance { get; } = instance;
         public SocketRuntimeType Runtime => SocketRuntimeType.Server;
-        public Guid Token { get; } = Guid.Empty;
+        public Guid Token { get; } = token;
+        public string ClientIP { get; } = clientIP;
+        public string ClientName => clientName;
         public bool Connected => Instance != null && Instance.Connected;
-        public ConcurrentModelList<IServerModel> ClientList { get; } = [];
-        public ConcurrentModelList<IServerModel> UserList { get; } = [];
-        public List<string> BannedList { get; } = [];
+        public bool Receiving => _receiving;
+        public Type InstanceType => typeof(ServerSocket);
 
-        private ServerSocket(System.Net.Sockets.Socket instance)
-        {
-            Token = Guid.NewGuid();
-            Instance = instance;
-        }
-
-        public static ServerSocket StartListening(int port = 22222, int maxConnection = 0)
-        {
-            if (maxConnection <= 0) maxConnection = SocketSet.MaxConnection_2C2G;
-            System.Net.Sockets.Socket? socket = SocketManager.StartListening(port, maxConnection);
-            if (socket != null) return new ServerSocket(socket);
-            else throw new SocketCreateListenException();
-        }
-
-        public ClientSocket Accept(Guid token)
-        {
-            object[] result = SocketManager.Accept();
-            if (result != null && result.Length == 2)
-            {
-                string clientIP = (string)result[0];
-                System.Net.Sockets.Socket client = (System.Net.Sockets.Socket)result[1];
-                return new ClientSocket(this, client, clientIP, clientIP, token);
-            }
-            throw new SocketGetClientException();
-        }
+        private Task? _receivingTask;
+        private bool _receiving;
+        private readonly HashSet<Action<SocketObject>> _boundEvents = [];
 
         public void Close()
         {
-            Instance?.Close();
+            StopReceiving();
+            Instance.Close();
+        }
+        
+        public async Task CloseAsync()
+        {
+            StopReceiving();
+            await Task.Run(() => Instance?.Close());
+        }
+
+        public SocketObject[] Receive()
+        {
+            try
+            {
+                return SocketManager.Receive(Instance);
+            }
+            catch
+            {
+                throw new SocketWrongInfoException();
+            }
+        }
+        
+        public async Task<SocketObject[]> ReceiveAsync()
+        {
+            try
+            {
+                return await SocketManager.ReceiveAsync(Instance);
+            }
+            catch
+            {
+                throw new SocketWrongInfoException();
+            }
+        }
+
+        public SocketResult Send(SocketMessageType type, params object[] objs)
+        {
+            if (Instance != null)
+            {
+                if (SocketManager.Send(Instance, new(type, Token, objs)) == SocketResult.Success)
+                {
+                    return SocketResult.Success;
+                }
+                else return SocketResult.Fail;
+            }
+            return SocketResult.NotSent;
+        }
+
+        public async Task<SocketResult> SendAsync(SocketMessageType type, params object[] objs)
+        {
+            if (Instance != null)
+            {
+                if (await SocketManager.SendAsync(Instance, new(type, Token, objs)) == SocketResult.Success)
+                {
+                    return SocketResult.Success;
+                }
+                else return SocketResult.Fail;
+            }
+            return SocketResult.NotSent;
+        }
+
+        public void AddSocketObjectHandler(Action<SocketObject> method)
+        {
+            if (_boundEvents.Add(method))
+            {
+                SocketManager.SocketReceive += new SocketManager.SocketReceiveHandler(method);
+            }
+        }
+
+        public void RemoveSocketObjectHandler(Action<SocketObject> method)
+        {
+            _boundEvents.Remove(method);
+            SocketManager.SocketReceive -= new SocketManager.SocketReceiveHandler(method);
+        }
+
+        public void StartReceiving(Task t)
+        {
+            _receiving = true;
+            _receivingTask = t;
+        }
+
+        public void StopReceiving()
+        {
+            _receiving = false;
+            _receivingTask?.Wait(1);
+            _receivingTask = null;
         }
     }
 }

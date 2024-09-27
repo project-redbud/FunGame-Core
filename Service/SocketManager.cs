@@ -266,6 +266,72 @@ namespace Milimoe.FunGame.Core.Service
                 return [];
             }
         }
+        
+        /// <summary>
+        /// 接收数据流中的信息 [ 异步版 ]
+        /// <para/>如果是服务器接收信息需要传入客户端Socket <paramref name="clientSocket"/>
+        /// </summary>
+        /// <param name="clientSocket">如果是服务器接收信息需要传入客户端Socket</param>
+        /// <returns>SocketObjects</returns>
+        internal static async Task<Library.Common.Network.SocketObject[]> ReceiveAsync(Socket? clientSocket = null)
+        {
+            try
+            {
+                List<Library.Common.Network.SocketObject> result = [];
+                Socket? tempSocket = clientSocket is null ? Socket : clientSocket;
+                if (tempSocket != null)
+                {
+                    // 从服务器接收消息
+                    byte[] buffer = new byte[General.SocketByteSize];
+                    int length = await tempSocket.ReceiveAsync(new ArraySegment<byte>(buffer), SocketFlags.None);
+                    string msg = "";
+                    if (length > 0)
+                    {
+                        msg = General.DefaultEncoding.GetString(buffer, 0, length);
+                        if (JsonManager.IsCompleteJson<Library.Common.Network.SocketObject>(msg))
+                        {
+                            foreach (Library.Common.Network.SocketObject obj in JsonManager.GetObjects<Library.Common.Network.SocketObject>(msg))
+                            {
+                                result.Add(obj);
+                                // 客户端接收消息，广播ScoketObject到每个UIModel
+                                if (clientSocket is null) OnSocketReceive(obj);
+                            }
+                            return [.. result];
+                        }
+                        else
+                        {
+                            Thread.Sleep(20);
+                            while (true)
+                            {
+                                if (tempSocket.Available > 0)
+                                {
+                                    length = tempSocket.Receive(buffer, buffer.Length, SocketFlags.None);
+                                    msg += General.DefaultEncoding.GetString(buffer, 0, length);
+                                    if (JsonManager.IsCompleteJson<Library.Common.Network.SocketObject>(msg))
+                                    {
+                                        break;
+                                    }
+                                    Thread.Sleep(20);
+                                }
+                                else break;
+                            }
+                        }
+                    }
+                    foreach (Library.Common.Network.SocketObject obj in JsonManager.GetObjects<Library.Common.Network.SocketObject>(msg))
+                    {
+                        result.Add(obj);
+                        // 客户端接收消息，广播ScoketObject到每个UIModel
+                        if (clientSocket is null) OnSocketReceive(obj);
+                    }
+                }
+                return [.. result];
+            }
+            catch (Exception e)
+            {
+                TXTHelper.AppendErrorLog(e.GetErrorInfo());
+                return [];
+            }
+        }
 
         #endregion
 

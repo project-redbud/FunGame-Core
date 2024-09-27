@@ -8,15 +8,15 @@ namespace Milimoe.FunGame.Core.Entity
     {
         public long Id => User.Id;
         public User User { get; }
-        public Dictionary<long, double> DamageStats { get; } = new();
-        public Dictionary<long, double> PhysicalDamageStats { get; } = new();
-        public Dictionary<long, double> MagicDamageStats { get; } = new();
-        public Dictionary<long, double> RealDamageStats { get; } = new();
+        public Dictionary<long, double> DamageStats { get; } = [];
+        public Dictionary<long, double> PhysicalDamageStats { get; } = [];
+        public Dictionary<long, double> MagicDamageStats { get; } = [];
+        public Dictionary<long, double> RealDamageStats { get; } = [];
         public Dictionary<long, double> AvgDamageStats
         {
             get
             {
-                Dictionary<long, double> avgdamage = new();
+                Dictionary<long, double> avgdamage = [];
                 foreach (long key in Plays.Keys)
                 {
                     long plays = Plays[key];
@@ -34,7 +34,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                Dictionary<long, double> avgdamage = new();
+                Dictionary<long, double> avgdamage = [];
                 foreach (long key in Plays.Keys)
                 {
                     long plays = Plays[key];
@@ -52,7 +52,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                Dictionary<long, double> avgdamage = new();
+                Dictionary<long, double> avgdamage = [];
                 foreach (long key in Plays.Keys)
                 {
                     long plays = Plays[key];
@@ -70,7 +70,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                Dictionary<long, double> avgdamage = new();
+                Dictionary<long, double> avgdamage = [];
                 foreach (long key in Plays.Keys)
                 {
                     long plays = Plays[key];
@@ -84,17 +84,17 @@ namespace Milimoe.FunGame.Core.Entity
                 return avgdamage;
             }
         }
-        public Dictionary<long, long> Kills { get; } = new();
-        public Dictionary<long, long> Deaths { get; } = new();
-        public Dictionary<long, long> Assists { get; } = new();
-        public Dictionary<long, long> Plays { get; } = new();
-        public Dictionary<long, long> Wins { get; } = new();
-        public Dictionary<long, long> Loses { get; } = new();
+        public Dictionary<long, long> Kills { get; } = [];
+        public Dictionary<long, long> Deaths { get; } = [];
+        public Dictionary<long, long> Assists { get; } = [];
+        public Dictionary<long, long> Plays { get; } = [];
+        public Dictionary<long, long> Wins { get; } = [];
+        public Dictionary<long, long> Loses { get; } = [];
         public Dictionary<long, double> Winrates
         {
             get
             {
-                Dictionary<long, double> winrates = new();
+                Dictionary<long, double> winrates = [];
                 foreach (long key in Plays.Keys)
                 {
                     long plays = Plays[key];
@@ -108,15 +108,15 @@ namespace Milimoe.FunGame.Core.Entity
                 return winrates;
             }
         }
-        public Dictionary<long, double> RatingStats { get; } = new();
-        public Dictionary<long, double> EloStats { get; } = new();
-        public Dictionary<long, string> RankStats { get; } = new();
+        public Dictionary<long, double> RatingStats { get; } = [];
+        public Dictionary<long, double> EloStats { get; } = [];
+        public Dictionary<long, string> RankStats { get; } = [];
 
         public string GetWinrate(long season)
         {
-            if (Winrates.ContainsKey(season))
+            if (Winrates.TryGetValue(season, out double value))
             {
-                return Winrates[season].ToString("0.##%");
+                return value.ToString("0.##%");
             }
             return "0%";
         }

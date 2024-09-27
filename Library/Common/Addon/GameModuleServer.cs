@@ -72,7 +72,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <param name="type">消息类型</param>
         /// <param name="data">消息参数</param>
         /// <returns>底层会将字典中的数据发送给客户端</returns>
-        public abstract Dictionary<string, object> GamingMessageHandler(string username, GamingType type, Dictionary<string, object> data);
+        public abstract Task<Dictionary<string, object>> GamingMessageHandler(string username, GamingType type, Dictionary<string, object> data);
 
         /// <summary>
         /// 加载标记
@@ -120,15 +120,12 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <param name="clients"></param>
         /// <param name="type"></param>
         /// <param name="data"></param>
-        protected virtual void SendGamingMessage(IEnumerable<IServerModel> clients, GamingType type, Dictionary<string, object> data)
+        protected virtual async Task SendGamingMessage(IEnumerable<IServerModel> clients, GamingType type, Dictionary<string, object> data)
         {
             // 发送局内消息
             foreach (IServerModel s in clients)
             {
-                if (s != null && s.Socket != null)
-                {
-                    s.Send(s.Socket, SocketMessageType.Gaming, type, data);
-                }
+                await s.Send(SocketMessageType.Gaming, type, data);
             }
         }
 
@@ -138,15 +135,12 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <param name="clients"></param>
         /// <param name="type"></param>
         /// <param name="args"></param>
-        protected virtual void Send(IEnumerable<IServerModel> clients, SocketMessageType type, params object[] args)
+        protected virtual async Task Send(IEnumerable<IServerModel> clients, SocketMessageType type, params object[] args)
         {
             // 发送消息
             foreach (IServerModel s in clients)
             {
-                if (s != null && s.Socket != null)
-                {
-                    s.Send(s.Socket, type, args);
-                }
+                await s.Send(type, args);
             }
         }
     }

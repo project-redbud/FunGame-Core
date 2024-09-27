@@ -17,6 +17,8 @@ namespace Milimoe.FunGame.Core.Entity
         public bool IsRank { get; set; } = false;
         public bool HasPass => Password.Trim() != "";
         public string Password { get; set; } = "";
+        public int MaxUsers { get; set; } = 0;
+        public Dictionary<User, bool> UserAndIsReady { get; } = [];
         public GameStatistics Statistics { get; set; }
 
         internal Room()
@@ -24,18 +26,19 @@ namespace Milimoe.FunGame.Core.Entity
             Statistics = new(this);
         }
 
-        internal Room(long Id = 0, string Roomid = "-1", DateTime? CreateTime = null, User? RoomMaster = null, RoomType RoomType = RoomType.All, string GameModule = "", string GameMap = "", RoomState RoomState = RoomState.Created, bool IsRank = false, string Password = "")
+        internal Room(long id = 0, string roomid = "-1", DateTime? createTime = null, User? roomMaster = null, RoomType roomType = RoomType.All, string gameModule = "", string gameMap = "", RoomState roomState = RoomState.Created, bool isRank = false, string password = "", int maxUsers = 4)
         {
-            this.Id = Id;
-            this.Roomid = Roomid;
-            this.CreateTime = CreateTime ?? General.DefaultTime;
-            this.RoomMaster = RoomMaster ?? General.UnknownUserInstance;
-            this.RoomType = RoomType;
-            this.GameModule = GameModule;
-            this.GameMap = GameMap;
-            this.RoomState = RoomState;
-            this.IsRank = IsRank;
-            this.Password = Password;
+            Id = id;
+            Roomid = roomid;
+            CreateTime = createTime ?? General.DefaultTime;
+            RoomMaster = roomMaster ?? General.UnknownUserInstance;
+            RoomType = roomType;
+            GameModule = gameModule;
+            GameMap = gameMap;
+            RoomState = roomState;
+            IsRank = isRank;
+            Password = password;
+            MaxUsers = maxUsers;
             Statistics = new(this);
         }
 

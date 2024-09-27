@@ -48,6 +48,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
 
         public override RoomType RoomType => RoomType.Mix;
 
+        public override int MaxUsers => 8;
+
         public override bool HideMain => false;
 
         public ExampleGameModule()
@@ -175,7 +177,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
                     UserData[username].Add("connect_token", token);
                 }
             }
-            SendGamingMessage(All.Values, GamingType.UpdateInfo, data);
+            await SendGamingMessage(All.Values, GamingType.UpdateInfo, data);
 
             // 新建一个线程等待所有玩家确认
             while (true)
@@ -187,7 +189,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             Controller.WriteLine("所有玩家都已经连接。");
         }
 
-        public override Dictionary<string, object> GamingMessageHandler(string username, GamingType type, Dictionary<string, object> data)
+        public override async Task<Dictionary<string, object>> GamingMessageHandler(string username, GamingType type, Dictionary<string, object> data)
         {
             Dictionary<string, object> result = [];
 
@@ -204,6 +206,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
                         Controller.WriteLine(username + " 已经连接。");
                     }
                     else Controller.WriteLine(username + " 确认连接失败！");
+                    break;
+                default:
+                    await Task.Delay(1);
                     break;
             }
 
