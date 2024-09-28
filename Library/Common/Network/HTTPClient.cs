@@ -79,7 +79,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
                 SocketManager.SocketReceive += new SocketManager.SocketReceiveHandler(method);
             }
         }
-        
+
         public void RemoveSocketObjectHandler(Action<SocketObject> method)
         {
             _boundEvents.Remove(method);

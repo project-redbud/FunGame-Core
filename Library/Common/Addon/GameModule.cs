@@ -43,7 +43,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// 适用的房间模式
         /// </summary>
         public abstract RoomType RoomType { get; }
-        
+
         /// <summary>
         /// 模组的容纳人数
         /// </summary>

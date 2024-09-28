@@ -42,7 +42,7 @@
 
         public static string Select_Users_Where(string Where)
         {
-            return $"{Select_Users} {Command_Where} {Where}'";
+            return $"{Select_Users} {Command_Where} {Where}";
         }
 
         public static string Select_CheckAutoKey(string Username, string AutoKey)

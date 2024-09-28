@@ -26,7 +26,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             StopReceiving();
             Instance.Close();
         }
-        
+
         public async Task CloseAsync()
         {
             StopReceiving();
@@ -44,7 +44,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
                 throw new SocketWrongInfoException();
             }
         }
-        
+
         public async Task<SocketObject[]> ReceiveAsync()
         {
             try

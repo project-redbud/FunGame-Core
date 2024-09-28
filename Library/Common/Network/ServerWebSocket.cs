@@ -24,7 +24,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         {
             throw new AsyncSendException();
         }
-        
+
         public async Task CloseAsync()
         {
             if (Instance.State == WebSocketState.Open)
@@ -38,7 +38,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         {
             throw new AsyncReadException();
         }
-        
+
         public async Task<SocketObject[]> ReceiveAsync()
         {
             try

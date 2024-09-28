@@ -266,7 +266,7 @@ namespace Milimoe.FunGame.Core.Service
                 return [];
             }
         }
-        
+
         /// <summary>
         /// 接收数据流中的信息 [ 异步版 ]
         /// <para/>如果是服务器接收信息需要传入客户端Socket <paramref name="clientSocket"/>
