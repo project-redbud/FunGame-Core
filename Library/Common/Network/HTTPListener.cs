@@ -11,6 +11,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
     public class HTTPListener : IHTTPListener, ISocketListener<ServerWebSocket>
     {
         public HttpListener Instance { get; }
+        public string Name => "HTTPListener";
         public SocketRuntimeType Runtime => SocketRuntimeType.Server;
         public Guid Token { get; } = Guid.Empty;
         public ConcurrentModelList<IServerModel> ClientList { get; } = [];

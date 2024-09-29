@@ -9,6 +9,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
     public class SocketListener : ISocket, ISocketListener<ServerSocket>
     {
         public System.Net.Sockets.Socket Instance { get; }
+        public string Name => "SocketListener";
         public SocketRuntimeType Runtime => SocketRuntimeType.Server;
         public Guid Token { get; } = Guid.Empty;
         public bool Connected => Instance != null && Instance.Connected;
