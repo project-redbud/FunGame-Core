@@ -102,7 +102,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /**
          * Register
          */
-        public const string Reg_GetRegVerifyCode = "Reg::GetRegVerifyCode";
+        public const string Reg_Reg = "Reg::Reg";
         /**
          * Login
          */
@@ -140,7 +140,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 DataRequestType.Main_Ready => Main_Ready,
                 DataRequestType.Main_CancelReady => Main_CancelReady,
                 DataRequestType.Main_StartGame => Main_StartGame,
-                DataRequestType.Reg_GetRegVerifyCode => Reg_GetRegVerifyCode,
+                DataRequestType.Reg_Reg => Reg_Reg,
                 DataRequestType.Login_Login => Login_Login,
                 DataRequestType.Login_GetFindPasswordVerifyCode => Login_GetFindPasswordVerifyCode,
                 DataRequestType.Login_UpdatePassword => Login_UpdatePassword,
