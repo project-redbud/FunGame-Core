@@ -7,39 +7,41 @@ namespace Milimoe.FunGame.Core.Model
     public class RoomList : IEnumerable<Room>
     {
         private readonly Dictionary<string, Room> _List = [];
-        private readonly Dictionary<string, List<User>> _PlayerList = [];
-        private readonly Dictionary<string, List<User>> _ReadyPlayerList = [];
+        private readonly Dictionary<string, List<User>> _UserList = [];
+        private readonly Dictionary<string, List<User>> _ReadyUserList = [];
 
         public Room this[string roomid] => GetRoom(roomid);
 
         public int Count => _List.Count;
 
-        public int GetPlayerCount(string roomid) => GetPlayerList(roomid).Count;
+        public int GetUserCount(string roomid) => this[roomid].UserAndIsReady.Count;
 
-        public int GetReadyPlayerCount(string roomid) => GetReadyPlayerList(roomid).Count;
+        public int GetReadyUserCount(string roomid) => GetReadyUserList(roomid).Count;
 
         public List<Room> ListRoom => [.. _List.Values];
 
         public List<string> ListRoomID => [.. _List.Keys];
 
-        public List<User> GetPlayerList(string roomid) => _PlayerList.TryGetValue(roomid, out List<User>? user) ? user : [];
+        public User GetRoomMaster(string roomid) => this[roomid].RoomMaster;
 
-        public List<User> GetReadyPlayerList(string roomid) => _ReadyPlayerList.TryGetValue(roomid, out List<User>? user) ? user : [];
+        public List<User> GetUsers(string roomid) => [.. this[roomid].UserAndIsReady.Keys];
 
-        public List<User> GetNotReadyPlayerList(string roomid) => _PlayerList.TryGetValue(roomid, out List<User>? user) ? user.Except(GetReadyPlayerList(roomid)).Except([this[roomid].RoomMaster]).ToList() : [];
+        public List<User> GetReadyUserList(string roomid) => this[roomid].UserAndIsReady.Where(kv => kv.Value && kv.Key.Id != GetRoomMaster(roomid).Id).Select(kv => kv.Key).ToList();
+
+        public List<User> GetNotReadyUserList(string roomid) => this[roomid].UserAndIsReady.Where(kv => !kv.Value && kv.Key.Id != GetRoomMaster(roomid).Id).Select(kv => kv.Key).ToList();
 
         public void Clear()
         {
             _List.Clear();
-            _PlayerList.Clear();
-            _ReadyPlayerList.Clear();
+            _UserList.Clear();
+            _ReadyUserList.Clear();
         }
 
         public void AddRoom(Room room)
         {
             _List.Add(room.Roomid, room);
-            _PlayerList.Add(room.Roomid, []);
-            _ReadyPlayerList.Add(room.Roomid, []);
+            _UserList.Add(room.Roomid, []);
+            _ReadyUserList.Add(room.Roomid, []);
         }
 
         public void AddRooms(List<Room> rooms)
@@ -53,8 +55,8 @@ namespace Milimoe.FunGame.Core.Model
         public void RemoveRoom(string roomid)
         {
             _List.Remove(roomid);
-            _PlayerList.Remove(roomid);
-            _ReadyPlayerList.Remove(roomid);
+            _UserList.Remove(roomid);
+            _ReadyUserList.Remove(roomid);
         }
 
         public void RemoveRoom(Room room) => RemoveRoom(room.Roomid);
@@ -63,7 +65,10 @@ namespace Milimoe.FunGame.Core.Model
         {
             if (roomid != "-1" && user.Id != 0)
             {
-                GetPlayerList(roomid).Add(user);
+                if (!this[roomid].UserAndIsReady.TryAdd(user, false))
+                {
+                    this[roomid].UserAndIsReady[user] = false;
+                }
             }
         }
 
@@ -71,38 +76,29 @@ namespace Milimoe.FunGame.Core.Model
         {
             if (roomid != "-1" && user.Id != 0)
             {
-                GetPlayerList(roomid).Remove(user);
+                this[roomid].UserAndIsReady.Remove(user);
             }
         }
 
         public void SetReady(string roomid, User user)
         {
-            if (roomid != "-1" && user.Id != 0)
+            if (roomid != "-1" && user.Id != 0 && this[roomid].UserAndIsReady.ContainsKey(user))
             {
-                GetReadyPlayerList(roomid).Add(user);
+                this[roomid].UserAndIsReady[user] = true;
             }
         }
 
         public void CancelReady(string roomid, User user)
         {
-            if (roomid != "-1" && user.Id != 0)
+            if (roomid != "-1" && user.Id != 0 && this[roomid].UserAndIsReady.ContainsKey(user))
             {
-                GetReadyPlayerList(roomid).Remove(user);
+                this[roomid].UserAndIsReady[user] = false;
             }
         }
 
         public Room GetRoom(string roomid) => _List.TryGetValue(roomid, out Room? room) ? room : General.HallInstance;
 
         public bool IsExist(string roomid) => _List.ContainsKey(roomid);
-
-        public User GetRoomMaster(string roomid)
-        {
-            foreach (Room room in ListRoom.Where(r => r.Roomid == roomid && r.RoomMaster != null))
-            {
-                return room.RoomMaster;
-            }
-            return General.UnknownUserInstance;
-        }
 
         public void SetRoomMaster(string roomid, User user)
         {

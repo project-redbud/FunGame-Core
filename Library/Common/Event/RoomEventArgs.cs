@@ -22,7 +22,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Event
             RoomType = type;
             RoomTypeString = RoomSet.GetTypeString(type);
             Password = password;
-            Room = Factory.GetRoom(RoomType: RoomType, Password: Password);
+            Room = Factory.GetRoom(roomType: RoomType, password: Password);
         }
 
         public RoomEventArgs(Room room)

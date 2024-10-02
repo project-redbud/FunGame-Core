@@ -1,18 +1,22 @@
 ﻿using System.Net;
 using System.Net.WebSockets;
 using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.HTTP;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Library.Common.Network
 {
-    public class HTTPListener : IHTTPListener
+    public class HTTPListener : IHTTPListener, ISocketListener<ServerWebSocket>
     {
         public HttpListener Instance { get; }
+        public string Name => "HTTPListener";
         public SocketRuntimeType Runtime => SocketRuntimeType.Server;
         public Guid Token { get; } = Guid.Empty;
-        public Dictionary<Guid, WebSocket> ClientSockets { get; } = [];
+        public ConcurrentModelList<IServerModel> ClientList { get; } = [];
+        public ConcurrentModelList<IServerModel> UserList { get; } = [];
+        public List<string> BannedList { get; } = [];
 
         private HTTPListener(HttpListener instance)
         {
@@ -20,24 +24,27 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             Token = Guid.NewGuid();
         }
 
-        public static HTTPListener StartListening(int port, bool ssl = false)
+        public static HTTPListener StartListening(string address = "*", int port = 22223, string subUrl = "ws", bool ssl = false)
         {
-            HttpListener? socket = HTTPManager.StartListening(port, ssl);
+            HttpListener? socket = HTTPManager.StartListening(address, port, subUrl, ssl);
             if (socket != null)
             {
                 HTTPListener instance = new(socket);
-                Task t = Task.Run(async () => await HTTPManager.Receiving(instance));
                 return instance;
             }
             else throw new SocketCreateListenException();
         }
 
-        public async Task SendMessage(Guid token, SocketObject obj)
+        public async Task<ServerWebSocket> Accept(Guid token)
         {
-            if (ClientSockets.TryGetValue(token, out WebSocket? socket) && socket != null)
+            object[] result = await HTTPManager.Accept();
+            if (result != null && result.Length == 2)
             {
-                await HTTPManager.Send(socket, obj);
+                string clientIP = (string)result[0];
+                WebSocket client = (WebSocket)result[1];
+                return new ServerWebSocket(this, client, clientIP, clientIP, token);
             }
+            throw new SocketGetClientException();
         }
 
         public virtual bool CheckClientConnection(SocketObject objs)
@@ -52,27 +59,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
 
         public void Close()
         {
-            bool closing = true;
-            TaskUtility.NewTask(async () =>
-            {
-                // 关闭所有 WebSocket 连接
-                foreach (WebSocket socket in ClientSockets.Values)
-                {
-                    if (socket.State == WebSocketState.Open)
-                    {
-                        // 安全关闭 WebSocket 连接
-                        await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "服务器正在关闭，断开连接！", CancellationToken.None);
-                    }
-                }
-                ClientSockets.Clear();
-                Instance?.Close();
-                closing = true;
-            });
-            while (closing)
-            {
-                if (!closing) break;
-                Thread.Sleep(100);
-            }
+            Instance?.Close();
         }
     }
 }

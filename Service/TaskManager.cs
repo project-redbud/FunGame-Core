@@ -34,9 +34,9 @@ namespace Milimoe.FunGame.Core.Service
             private bool _IsCompleted = false;
             private Exception _Exception = new();
 
-            internal TaskAwaiter(Action action) => _ = Worker(action);
+            internal TaskAwaiter(Action action) => Worker(action);
 
-            internal TaskAwaiter(Func<Task> function) => _ = Worker(function);
+            internal TaskAwaiter(Func<Task> function) => Worker(function);
 
             /// <summary>
             /// 返回ITaskAwaiter可以进一步调用方法<para/>
@@ -63,34 +63,40 @@ namespace Milimoe.FunGame.Core.Service
                 return this;
             }
 
-            private async Task Worker(Action action)
+            private void Worker(Action action)
             {
-                try
+                Task.Run(async () =>
                 {
-                    await Task.Run(action);
-                    _IsCompleted = true;
-                    Completed?.Invoke();
-                }
-                catch (Exception e)
-                {
-                    _Exception = e;
-                    Error?.Invoke(e);
-                }
+                    try
+                    {
+                        await Task.Run(action);
+                        _IsCompleted = true;
+                        Completed?.Invoke();
+                    }
+                    catch (Exception e)
+                    {
+                        _Exception = e;
+                        Error?.Invoke(e);
+                    }
+                });
             }
 
-            private async Task Worker(Func<Task> function)
+            private void Worker(Func<Task> function)
             {
-                try
+                Task.Run(async () =>
                 {
-                    await function();
-                    _IsCompleted = true;
-                    Completed?.Invoke();
-                }
-                catch (Exception e)
-                {
-                    _Exception = e;
-                    Error?.Invoke(e);
-                }
+                    try
+                    {
+                        await function();
+                        _IsCompleted = true;
+                        Completed?.Invoke();
+                    }
+                    catch (Exception e)
+                    {
+                        _Exception = e;
+                        Error?.Invoke(e);
+                    }
+                });
             }
         }
     }

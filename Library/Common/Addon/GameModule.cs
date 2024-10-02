@@ -45,6 +45,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         public abstract RoomType RoomType { get; }
 
         /// <summary>
+        /// 模组的容纳人数
+        /// </summary>
+        public abstract int MaxUsers { get; }
+
+        /// <summary>
         /// 是否隐藏主界面
         /// </summary>
         public abstract bool HideMain { get; }

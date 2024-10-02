@@ -64,44 +64,46 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <summary>
         /// 获取房间实例
         /// </summary>
-        /// <param name="Id">房间内部序列号</param>
-        /// <param name="Roomid">房间号</param>
-        /// <param name="CreateTime">创建时间</param>
-        /// <param name="RoomMaster">房主</param>
-        /// <param name="RoomType">房间类型</param>
-        /// <param name="GameModule">游戏模组</param>
-        /// <param name="GameMap"></param>
-        /// <param name="RoomState">房间状态</param>
-        /// <param name="IsRank"></param>
-        /// <param name="Password">房间密码</param>
+        /// <param name="id">房间内部序列号</param>
+        /// <param name="roomid">房间号</param>
+        /// <param name="createTime">创建时间</param>
+        /// <param name="roomMaster">房主</param>
+        /// <param name="roomType">房间类型</param>
+        /// <param name="gameModule">游戏模组</param>
+        /// <param name="gameMap"></param>
+        /// <param name="roomState">房间状态</param>
+        /// <param name="isRank"></param>
+        /// <param name="password">房间密码</param>
+        /// <param name="maxUsers">人数上限</param>
         /// <returns></returns>
-        public static Room GetRoom(long Id = 0, string Roomid = "-1", DateTime? CreateTime = null, User? RoomMaster = null, RoomType RoomType = RoomType.All, string GameModule = "", string GameMap = "", RoomState RoomState = RoomState.Created, bool IsRank = false, string Password = "")
+        public static Room GetRoom(long id = 0, string roomid = "-1", DateTime? createTime = null, User? roomMaster = null, RoomType roomType = RoomType.All, string gameModule = "", string gameMap = "", RoomState roomState = RoomState.Created, bool isRank = false, string password = "", int maxUsers = 4)
         {
-            return RoomFactory.Create(Id, Roomid, CreateTime, RoomMaster, RoomType, GameModule, GameMap, RoomState, IsRank, Password);
+            return RoomFactory.Create(id, roomid, createTime, roomMaster, roomType, gameModule, gameMap, roomState, isRank, password, maxUsers);
         }
 
         /// <summary>
         /// 通过DataSet获取房间实例
         /// </summary>
-        /// <param name="DrRoom"></param>
-        /// <param name="User"></param>
+        /// <param name="drRoom"></param>
+        /// <param name="user"></param>
         /// <returns></returns>
-        public static Room GetRoom(DataRow DrRoom, User User)
+        public static Room GetRoom(DataRow drRoom, User user)
         {
             Room room = General.HallInstance;
-            if (DrRoom != null)
+            if (drRoom != null)
             {
-                long Id = (long)DrRoom[RoomQuery.Column_ID];
-                string Roomid = (string)DrRoom[RoomQuery.Column_RoomID];
-                DateTime CreateTime = (DateTime)DrRoom[RoomQuery.Column_CreateTime];
-                User RoomMaster = User;
-                RoomType RoomType = (RoomType)Convert.ToInt32(DrRoom[RoomQuery.Column_RoomType]);
-                string GameModule = (string)DrRoom[RoomQuery.Column_GameModule];
-                string GameMap = (string)DrRoom[RoomQuery.Column_GameMap];
-                RoomState RoomState = (RoomState)Convert.ToInt32(DrRoom[RoomQuery.Column_RoomState]);
-                bool IsRank = Convert.ToInt32(DrRoom[RoomQuery.Column_IsRank]) == 1;
-                string Password = (string)DrRoom[RoomQuery.Column_Password];
-                room = GetRoom(Id, Roomid, CreateTime, RoomMaster, RoomType, GameModule, GameMap, RoomState, IsRank, Password);
+                long id = (long)drRoom[RoomQuery.Column_ID];
+                string roomid = (string)drRoom[RoomQuery.Column_RoomID];
+                DateTime createTime = (DateTime)drRoom[RoomQuery.Column_CreateTime];
+                User roomMaster = user;
+                RoomType roomType = (RoomType)Convert.ToInt32(drRoom[RoomQuery.Column_RoomType]);
+                string gameModule = (string)drRoom[RoomQuery.Column_GameModule];
+                string gameMap = (string)drRoom[RoomQuery.Column_GameMap];
+                RoomState roomState = (RoomState)Convert.ToInt32(drRoom[RoomQuery.Column_RoomState]);
+                bool isRank = Convert.ToInt32(drRoom[RoomQuery.Column_IsRank]) == 1;
+                string password = (string)drRoom[RoomQuery.Column_Password];
+                int maxUsers = (int)drRoom[RoomQuery.Column_MaxUsers];
+                room = GetRoom(id, roomid, createTime, roomMaster, roomType, gameModule, gameMap, roomState, isRank, password, maxUsers);
             }
             return room;
         }
@@ -109,38 +111,38 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <summary>
         /// 通过DataSet获取房间列表
         /// </summary>
-        /// <param name="DsRoom"></param>
-        /// <param name="DsUser"></param>
+        /// <param name="dsRoom"></param>
+        /// <param name="dsUser"></param>
         /// <returns></returns>
-        public static List<Room> GetRooms(DataSet DsRoom, DataSet DsUser)
+        public static List<Room> GetRooms(DataSet dsRoom, DataSet dsUser)
         {
             List<Room> list =
             [
                 General.HallInstance
             ];
-            if (DsRoom != null && DsRoom.Tables[0].Rows.Count > 0)
+            if (dsRoom != null && dsRoom.Tables[0].Rows.Count > 0)
             {
-                foreach (DataRow DrRoom in DsRoom.Tables[0].Rows)
+                foreach (DataRow drRoom in dsRoom.Tables[0].Rows)
                 {
-                    long Id = (long)DrRoom[RoomQuery.Column_ID];
-                    string Roomid = (string)DrRoom[RoomQuery.Column_RoomID];
-                    DateTime CreateTime = (DateTime)DrRoom[RoomQuery.Column_CreateTime];
-                    User RoomMaster = General.UnknownUserInstance;
-                    if (DsUser != null && DsUser.Tables.Count > 0)
+                    long Id = (long)drRoom[RoomQuery.Column_ID];
+                    string Roomid = (string)drRoom[RoomQuery.Column_RoomID];
+                    DateTime createTime = (DateTime)drRoom[RoomQuery.Column_CreateTime];
+                    User roomMaster = General.UnknownUserInstance;
+                    if (dsUser != null && dsUser.Tables.Count > 0)
                     {
-                        DataRow[] rows = DsUser.Tables[0].Select($"{UserQuery.Column_UID} = {(long)DrRoom[RoomQuery.Column_RoomMaster]}");
+                        DataRow[] rows = dsUser.Tables[0].Select($"{UserQuery.Column_UID} = {(long)drRoom[RoomQuery.Column_RoomMaster]}");
                         if (rows.Length > 0)
                         {
-                            RoomMaster = GetUser(rows[0]);
+                            roomMaster = GetUser(rows[0]);
                         }
                     }
-                    RoomType RoomType = (RoomType)Convert.ToInt32(DrRoom[RoomQuery.Column_RoomType]);
-                    string GameModule = (string)DrRoom[RoomQuery.Column_GameModule];
-                    string GameMap = (string)DrRoom[RoomQuery.Column_GameMap];
-                    RoomState RoomState = (RoomState)Convert.ToInt32(DrRoom[RoomQuery.Column_RoomState]);
-                    bool IsRank = Convert.ToInt32(DrRoom[RoomQuery.Column_IsRank]) == 1;
-                    string Password = (string)DrRoom[RoomQuery.Column_Password];
-                    list.Add(GetRoom(Id, Roomid, CreateTime, RoomMaster, RoomType, GameModule, GameMap, RoomState, IsRank, Password));
+                    RoomType roomType = (RoomType)Convert.ToInt32(drRoom[RoomQuery.Column_RoomType]);
+                    string gameModule = (string)drRoom[RoomQuery.Column_GameModule];
+                    string gameMap = (string)drRoom[RoomQuery.Column_GameMap];
+                    RoomState roomState = (RoomState)Convert.ToInt32(drRoom[RoomQuery.Column_RoomState]);
+                    bool isRank = Convert.ToInt32(drRoom[RoomQuery.Column_IsRank]) == 1;
+                    string password = (string)drRoom[RoomQuery.Column_Password];
+                    list.Add(GetRoom(Id, Roomid, createTime, roomMaster, roomType, gameModule, gameMap, roomState, isRank, password));
                 }
             }
             return list;

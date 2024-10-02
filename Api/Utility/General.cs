@@ -2,7 +2,6 @@
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Milimoe.FunGame.Core.Library.Common.Architecture;
@@ -282,7 +281,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns></returns>
         public static async Task<T?> HttpPost<T>(string url, string json)
         {
-            HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
+            HttpContent content = new StringContent(json, General.DefaultEncoding, "application/json");
             HttpResponseMessage response = await client.PostAsync(url, content);
             response.EnsureSuccessStatusCode();
 
@@ -431,7 +430,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns></returns>
         public static string RSAEncrypt(string plain_text, string plublic_key)
         {
-            byte[] plain = Encoding.UTF8.GetBytes(plain_text);
+            byte[] plain = General.DefaultEncoding.GetBytes(plain_text);
             using RSACryptoServiceProvider rsa = new();
             rsa.FromXmlString(plublic_key);
             byte[] encrypted = rsa.Encrypt(plain, false);
@@ -450,7 +449,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             using RSACryptoServiceProvider rsa = new();
             rsa.FromXmlString(private_key);
             byte[] decrypted = rsa.Decrypt(secret, false);
-            return Encoding.UTF8.GetString(decrypted);
+            return General.DefaultEncoding.GetString(decrypted);
         }
     }
 

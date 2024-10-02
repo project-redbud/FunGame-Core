@@ -67,10 +67,10 @@ namespace Milimoe.FunGame.Core.Service
                 MailMessage Msg = new()
                 {
                     Subject = Mail.Subject,
-                    SubjectEncoding = System.Text.Encoding.UTF8,
+                    SubjectEncoding = General.DefaultEncoding,
                     Body = Mail.Body,
-                    BodyEncoding = System.Text.Encoding.UTF8,
-                    From = new MailAddress(Mail.Sender, Mail.SenderName, System.Text.Encoding.UTF8),
+                    BodyEncoding = General.DefaultEncoding,
+                    From = new MailAddress(Mail.Sender, Mail.SenderName, General.DefaultEncoding),
                     IsBodyHtml = Mail.HTML,
                     Priority = Mail.Priority
                 };

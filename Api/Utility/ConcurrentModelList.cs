@@ -1,14 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Concurrent;
 
-namespace Milimoe.FunGame.Core.Service
+namespace Milimoe.FunGame.Core.Api.Utility
 {
-    internal class ModelManager<T> : IEnumerable<T>
+    public class ConcurrentModelList<T> : IEnumerable<T>
     {
         /// <summary>
         /// 目前的Model数量
         /// </summary>
-        internal int Count => Models.Count;
+        public int Count => Models.Count;
 
         /// <summary>
         /// 最大接受的Model数量
@@ -24,7 +24,7 @@ namespace Milimoe.FunGame.Core.Service
         /// Init ModelManager
         /// </summary>
         /// <param name="MaxModel">MaxModel</param>
-        internal ModelManager(int MaxModel = 0)
+        public ConcurrentModelList(int MaxModel = 0)
         {
             if (MaxModel <= 0)
                 this.MaxModel = Library.Constant.General.MaxTask_2C2G;
@@ -39,7 +39,7 @@ namespace Milimoe.FunGame.Core.Service
         /// </summary>
         /// <param name="name">Model的Key</param>
         /// <returns>Model对象</returns>
-        internal T this[string name] => Models[name];
+        public T this[string name] => Models[name];
 
         /// <summary>
         /// 向Model管理器中添加Model
@@ -47,7 +47,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="name">Model的Key</param>
         /// <param name="t">Model对象</param>
         /// <returns>True：操作成功</returns>
-        internal bool Add(string name, T t)
+        public bool Add(string name, T t)
         {
             if (Models.Count + 1 > MaxModel) return false;
             return Models.TryAdd(name, t);
@@ -58,7 +58,7 @@ namespace Milimoe.FunGame.Core.Service
         /// </summary>
         /// <param name="name">Model的Key</param>
         /// <returns>True：操作成功</returns>
-        internal bool Remove(string name)
+        public bool Remove(string name)
         {
             return Models.TryRemove(name, out _);
         }
@@ -69,7 +69,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="name">Model的Key</param>
         /// <param name="t">Model对象</param>
         /// <returns>被移除的Model</returns>
-        internal bool Remove(string name, ref T? t)
+        public bool Remove(string name, ref T? t)
         {
             return Models.TryRemove(name, out t);
         }
@@ -79,13 +79,13 @@ namespace Milimoe.FunGame.Core.Service
         /// </summary>
         /// <param name="name">Model的Key</param>
         /// <returns>被移除的Model</returns>
-        internal T? RemoveAndGet(string name)
+        public T? RemoveAndGet(string name)
         {
             Models.TryRemove(name, out T? result);
             return result;
         }
 
-        internal bool ContainsKey(string name)
+        public bool ContainsKey(string name)
         {
             return Models.ContainsKey(name);
         }
@@ -93,7 +93,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 清空Model管理器
         /// </summary>
-        internal void Clear()
+        public void Clear()
         {
             Models.Clear();
         }
@@ -102,7 +102,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 获取Model对象的列表
         /// </summary>
-        internal List<T> GetList()
+        public List<T> GetList()
         {
             return [.. Models.Values];
         }

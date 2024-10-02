@@ -27,11 +27,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         }
 
         [JsonConstructor]
-        public SocketObject(SocketMessageType SocketType, Guid Token, params object[] Parameters)
+        public SocketObject(SocketMessageType type, Guid token, params object[] args)
         {
-            this.SocketType = SocketType;
-            this.Token = Token;
-            if (Parameters != null && Parameters.Length > 0) this.Parameters = Parameters;
+            SocketType = type;
+            Token = token;
+            if (args != null && args.Length > 0) Parameters = args;
         }
 
         /// <summary>

@@ -97,7 +97,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Main_Ready,
         Main_CancelReady,
         Main_StartGame,
-        Reg_GetRegVerifyCode,
+        Reg_Reg,
         Login_Login,
         Login_GetFindPasswordVerifyCode,
         Login_UpdatePassword,
@@ -843,7 +843,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Interface,
         DataRequest,
         Plugin,
-        GameModule
+        GameModule,
+        Warning
     }
 
     public enum SQLMode
