@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Globalization;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography;
@@ -380,6 +381,22 @@ namespace Milimoe.FunGame.Core.Api.Utility
         {
             DateTime now = DateTime.Now;
             return now.AddMilliseconds(-now.Millisecond).ToString();
+        }
+
+        /// <summary>
+        /// 获取 DLL 编译时间
+        /// </summary>
+        /// <param name="dll"></param>
+        /// <returns></returns>
+        public static string GetBuiltTime(string dll)
+        {
+            DateTime lastWriteTime = File.GetLastWriteTime(dll);
+
+            string month = lastWriteTime.ToString("MMM", CultureInfo.InvariantCulture);
+            int day = lastWriteTime.Day;
+            string time = lastWriteTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
+
+            return $"{month}. {day}, {lastWriteTime.Year} {time}";
         }
     }
 
