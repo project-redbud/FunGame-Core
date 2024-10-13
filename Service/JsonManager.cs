@@ -16,6 +16,7 @@ namespace Milimoe.FunGame.Core.Service
         private readonly static JsonSerializerOptions GeneralOptions = new()
         {
             WriteIndented = true,
+            PropertyNameCaseInsensitive = true,
             Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
             Converters = { new DateTimeConverter(), new DataTableConverter(), new DataSetConverter(), new UserConverter(), new RoomConverter(),

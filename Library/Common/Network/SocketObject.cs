@@ -10,6 +10,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public SocketMessageType SocketType { get; } = SocketMessageType.Unknown;
         public Guid Token { get; } = Guid.Empty;
         public object[] Parameters { get; } = [];
+
+        [JsonIgnore]
         public int Length => Parameters.Length;
 
         // 从参数列表中获取指定索引的参数的Json字符串
@@ -27,11 +29,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         }
 
         [JsonConstructor]
-        public SocketObject(SocketMessageType type, Guid token, params object[] args)
+        public SocketObject(SocketMessageType socketType, Guid token, params object[] parameters)
         {
-            SocketType = type;
+            SocketType = socketType;
             Token = token;
-            if (args != null && args.Length > 0) Parameters = args;
+            if (parameters != null && parameters.Length > 0) Parameters = parameters;
         }
 
         /// <summary>

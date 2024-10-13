@@ -108,6 +108,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         private readonly JsonSerializerOptions options = new()
         {
             WriteIndented = true,
+            PropertyNameCaseInsensitive = true,
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
             Converters = { new DateTimeConverter(), new DataTableConverter(), new DataSetConverter(), new UserConverter(), new RoomConverter(),
                 new CharacterConverter(), new MagicResistanceConverter(), new EquipSlotConverter(), new SkillConverter(), new EffectConverter(), new ItemConverter() }
