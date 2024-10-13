@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using Milimoe.FunGame.Core.Interface.Addons;
+﻿using Milimoe.FunGame.Core.Interface.Addons;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 
 namespace Milimoe.FunGame.Core.Controller
@@ -7,7 +6,7 @@ namespace Milimoe.FunGame.Core.Controller
     /// <summary>
     /// 这是通用的控制器，仅提供基本功能
     /// </summary>
-    /// <typeparam name="T">Addon的类型，如<see cref="GameModule"/>或者<see cref="Plugin"/></typeparam>
+    /// <typeparam name="T">Addon的类型，如 <see cref="GameModule"/> 或者 <see cref="Plugin"/> / <see cref="ServerPlugin"/> / <see cref="WebAPIPlugin"/></typeparam>
     public class BaseAddonController<T> where T : IAddon
     {
         /// <summary>
@@ -47,8 +46,8 @@ namespace Milimoe.FunGame.Core.Controller
         public BaseAddonController(IAddon addon, Dictionary<string, object> delegates)
         {
             Addon = (T)addon;
-            if (delegates.ContainsKey("WriteLine")) MaskMethod_WriteLine = delegates["WriteLine"] != null ? (Action<string>)delegates["WriteLine"]! : new(DefaultPrint);
-            if (delegates.ContainsKey("Error")) MaskMethod_Error = delegates["Error"] != null ? (Action<Exception>)delegates["Error"]! : new(DefaultPrint);
+            if (delegates.TryGetValue("WriteLine", out object? value)) MaskMethod_WriteLine = value != null ? (Action<string>)value : new(DefaultPrint);
+            if (delegates.TryGetValue("Error", out value)) MaskMethod_Error = value != null ? (Action<Exception>)value : new(DefaultPrint);
             MaskMethod_WriteLine ??= new(DefaultPrint);
             MaskMethod_Error ??= new(DefaultPrint);
         }

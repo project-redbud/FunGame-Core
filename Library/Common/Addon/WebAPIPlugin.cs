@@ -1,8 +1,9 @@
-﻿using Milimoe.FunGame.Core.Interface.Addons;
+﻿using Milimoe.FunGame.Core.Controller;
+using Milimoe.FunGame.Core.Interface.Addons;
 
 namespace Milimoe.FunGame.Core.Library.Common.Addon
 {
-    public abstract class WebAPIPlugin : IAddon
+    public abstract class WebAPIPlugin : IAddon, IAddonController<IAddon>
     {
         /// <summary>
         /// 插件名称
@@ -23,6 +24,20 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// 插件作者
         /// </summary>
         public abstract string Author { get; }
+
+        /// <summary>
+        /// 包含了一些常用方法的控制器
+        /// </summary>
+        public BaseAddonController<IAddon> Controller
+        {
+            get => _Controller ?? throw new NotImplementedException();
+            set => _Controller = value;
+        }
+
+        /// <summary>
+        /// 控制器内部变量
+        /// </summary>
+        private BaseAddonController<IAddon>? _Controller;
 
         /// <summary>
         /// 加载标记
