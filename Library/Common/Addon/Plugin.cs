@@ -66,7 +66,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
                 return false;
             }
             // BeforeLoad可以阻止加载此插件
-            if (BeforeLoad())
+            if (BeforeLoad(objs))
             {
                 // 插件加载后，不允许再次加载此插件
                 IsLoaded = true;
@@ -74,16 +74,14 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
                 Init(objs);
                 // 触发绑定事件
                 BindEvent();
-                // 如果加载后需要执行代码，请重写AfterLoad方法
-                AfterLoad();
             }
             return IsLoaded;
         }
 
         /// <summary>
-        /// 插件加载后需要做的事
+        /// 插件完全加载后需要做的事
         /// </summary>
-        protected virtual void AfterLoad()
+        public virtual void AfterLoad(params object[] objs)
         {
             // override
         }
@@ -92,7 +90,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// 允许返回false来阻止加载此插件
         /// </summary>
         /// <returns></returns>
-        protected virtual bool BeforeLoad()
+        protected virtual bool BeforeLoad(params object[] objs)
         {
             return true;
         }

@@ -44,7 +44,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// </summary>
         /// <param name="addon"></param>
         /// <param name="delegates"></param>
-        public BaseAddonController(IAddon addon, Hashtable delegates)
+        public BaseAddonController(IAddon addon, Dictionary<string, object> delegates)
         {
             Addon = (T)addon;
             if (delegates.ContainsKey("WriteLine")) MaskMethod_WriteLine = delegates["WriteLine"] != null ? (Action<string>)delegates["WriteLine"]! : new(DefaultPrint);

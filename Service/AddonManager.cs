@@ -25,7 +25,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="delegates"></param>
         /// <param name="otherobjs"></param>
         /// <returns></returns>
-        internal static Dictionary<string, Plugin> LoadPlugins(Dictionary<string, Plugin> plugins, Hashtable delegates, params object[] otherobjs)
+        internal static Dictionary<string, Plugin> LoadPlugins(Dictionary<string, Plugin> plugins, Dictionary<string, object> delegates, params object[] otherobjs)
         {
             if (!Directory.Exists(ReflectionSet.PluginFolderPath)) return plugins;
 
@@ -33,6 +33,11 @@ namespace Milimoe.FunGame.Core.Service
 
             foreach (string dll in dlls)
             {
+                if (AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == dll))
+                {
+                    continue;
+                }
+
                 // 加载目录下所有的DLL
                 Assembly assembly = Assembly.LoadFrom(dll);
 
@@ -55,6 +60,40 @@ namespace Milimoe.FunGame.Core.Service
 
             return plugins;
         }
+        
+        /// <summary>
+        /// 从plugins目录加载所有WebAPI插件
+        /// </summary>
+        /// <param name="plugins"></param>
+        /// <param name="otherobjs"></param>
+        /// <returns></returns>
+        internal static Dictionary<string, WebAPIPlugin> LoadWebAPIPlugins(Dictionary<string, WebAPIPlugin> plugins, params object[] otherobjs)
+        {
+            if (!Directory.Exists(ReflectionSet.PluginFolderPath)) return plugins;
+
+            string[] dlls = Directory.GetFiles(ReflectionSet.PluginFolderPath, "*.dll");
+
+            foreach (string dll in dlls)
+            {
+                if (AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == dll))
+                {
+                    continue;
+                }
+
+                // 加载目录下所有的DLL
+                Assembly assembly = Assembly.LoadFrom(dll);
+
+                foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(WebAPIPlugin))))
+                {
+                    if (AddAddonInstances(type, plugins, (instance) => instance.Load(otherobjs)))
+                    {
+                        AddDictionary(PluginFilePaths, assembly, dll);
+                    }
+                }
+            }
+
+            return plugins;
+        }
 
         /// <summary>
         /// 从modules目录加载所有模组
@@ -66,7 +105,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="delegates"></param>
         /// <param name="otherobjs"></param>
         /// <returns></returns>
-        internal static Dictionary<string, GameModule> LoadGameModules(Dictionary<string, GameModule> modules, Dictionary<string, CharacterModule> characters, Dictionary<string, SkillModule> skills, Dictionary<string, ItemModule> items, Hashtable delegates, params object[] otherobjs)
+        internal static Dictionary<string, GameModule> LoadGameModules(Dictionary<string, GameModule> modules, Dictionary<string, CharacterModule> characters, Dictionary<string, SkillModule> skills, Dictionary<string, ItemModule> items, Dictionary<string, object> delegates, params object[] otherobjs)
         {
             if (!Directory.Exists(ReflectionSet.GameModuleFolderPath)) return modules;
 
@@ -74,6 +113,11 @@ namespace Milimoe.FunGame.Core.Service
 
             foreach (string dll in dlls)
             {
+                if (AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == dll))
+                {
+                    continue;
+                }
+
                 Assembly assembly = Assembly.LoadFrom(dll);
 
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => typeof(IAddon).IsAssignableFrom(type)))
@@ -125,7 +169,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="delegates"></param>
         /// <param name="otherobjs"></param>
         /// <returns></returns>
-        internal static Dictionary<string, GameModuleServer> LoadGameModulesForServer(Dictionary<string, GameModuleServer> servers, Dictionary<string, CharacterModule> characters, Dictionary<string, SkillModule> skills, Dictionary<string, ItemModule> items, Hashtable delegates, params object[] otherobjs)
+        internal static Dictionary<string, GameModuleServer> LoadGameModulesForServer(Dictionary<string, GameModuleServer> servers, Dictionary<string, CharacterModule> characters, Dictionary<string, SkillModule> skills, Dictionary<string, ItemModule> items, Dictionary<string, object> delegates, params object[] otherobjs)
         {
             if (!Directory.Exists(ReflectionSet.GameModuleFolderPath)) return servers;
 
@@ -133,6 +177,11 @@ namespace Milimoe.FunGame.Core.Service
 
             foreach (string dll in dlls)
             {
+                if (AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == dll))
+                {
+                    continue;
+                }
+
                 Assembly assembly = Assembly.LoadFrom(dll);
 
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => typeof(IAddon).IsAssignableFrom(type)))
@@ -188,6 +237,11 @@ namespace Milimoe.FunGame.Core.Service
 
             foreach (string dll in dlls)
             {
+                if (AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == dll))
+                {
+                    continue;
+                }
+
                 Assembly assembly = Assembly.LoadFrom(dll);
 
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(GameMap))))
