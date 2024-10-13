@@ -48,6 +48,12 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         }
 
         /// <summary>
+        /// 接收服务器控制台的输入
+        /// </summary>
+        /// <param name="input"></param>
+        public abstract void ProcessInput(string input);
+
+        /// <summary>
         /// 插件完全加载后需要做的事
         /// </summary>
         public virtual void AfterLoad(params object[] objs)
