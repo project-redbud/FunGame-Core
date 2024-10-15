@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using Milimoe.FunGame.Core.Library.Common.Addon;
+﻿using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Service;
 
@@ -29,10 +28,15 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="delegates">用于构建 <see cref="Controller.AddonController{T}"/></param>
         /// <param name="otherobjs">其他需要传入给插件初始化的对象</param>
         /// <returns></returns>
-        public static PluginLoader LoadPlugins(Hashtable delegates, params object[] otherobjs)
+        public static PluginLoader LoadPlugins(Dictionary<string, object> delegates, params object[] otherobjs)
         {
             PluginLoader loader = new();
             AddonManager.LoadPlugins(loader.Plugins, delegates, otherobjs);
+            foreach (Plugin plugin in loader.Plugins.Values.ToList())
+            {
+                // 如果插件加载后需要执行代码，请重写AfterLoad方法
+                plugin.AfterLoad(loader);
+            }
             return loader;
         }
 

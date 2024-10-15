@@ -54,26 +54,26 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="delegates">用于构建 <see cref="Controller.AddonController{T}"/></param>
         /// <param name="otherobjs">其他需要传入给插件初始化的对象</param>
         /// <returns></returns>
-        public static GameModuleLoader LoadGameModules(FunGameInfo.FunGame runtime, Hashtable delegates, params object[] otherobjs)
+        public static GameModuleLoader LoadGameModules(FunGameInfo.FunGame runtime, Dictionary<string, object> delegates, params object[] otherobjs)
         {
             GameModuleLoader loader = new();
             if (runtime == FunGameInfo.FunGame.FunGame_Desktop)
             {
                 AddonManager.LoadGameModules(loader.Modules, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
                 AddonManager.LoadGameMaps(loader.Maps, otherobjs);
-                foreach (GameModule module in loader.Modules.Values)
+                foreach (GameModule module in loader.Modules.Values.ToList())
                 {
                     // 读取模组的依赖集合
                     module.GameModuleDepend.GetDependencies(loader);
                     // 如果模组加载后需要执行代码，请重写AfterLoad方法
-                    module.AfterLoad(runtime, loader);
+                    module.AfterLoad(loader);
                 }
             }
             else if (runtime == FunGameInfo.FunGame.FunGame_Server)
             {
                 AddonManager.LoadGameModulesForServer(loader.ModuleServers, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
                 AddonManager.LoadGameMaps(loader.Maps, otherobjs);
-                foreach (GameModuleServer server in loader.ModuleServers.Values)
+                foreach (GameModuleServer server in loader.ModuleServers.Values.ToList())
                 {
                     server.GameModuleDepend.GetDependencies(loader);
                     server.AfterLoad(loader);

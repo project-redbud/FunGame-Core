@@ -104,7 +104,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// </summary>
         /// <param name="addon"></param>
         /// <param name="delegates"></param>
-        public AddonController(IAddon addon, Hashtable delegates) : base(addon, delegates)
+        public AddonController(IAddon addon, Dictionary<string, object> delegates) : base(addon, delegates)
         {
             if (delegates.ContainsKey("NewDataRequest")) MaskMethod_NewDataRequest = delegates["NewDataRequest"] != null ? (Func<DataRequestType, DataRequest>)delegates["NewDataRequest"]! : new(DefaultNewDataRequest);
             if (delegates.ContainsKey("NewLongRunningDataRequest")) MaskMethod_NewLongRunningDataRequest = delegates["NewLongRunningDataRequest"] != null ? (Func<DataRequestType, DataRequest>)delegates["NewLongRunningDataRequest"]! : new(DefaultNewDataRequest);

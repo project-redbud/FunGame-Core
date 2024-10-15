@@ -2,11 +2,10 @@
 using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Interface.Addons;
 using Milimoe.FunGame.Core.Library.Common.Event;
-using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Library.Common.Addon
 {
-    public abstract class Plugin : IPlugin
+    public abstract class ServerPlugin : IPlugin
     {
         /// <summary>
         /// 插件名称
@@ -31,25 +30,16 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 包含了一些常用方法的控制器
         /// </summary>
-        public AddonController<IPlugin> Controller
+        public BaseAddonController<IPlugin> Controller
         {
             get => _Controller ?? throw new NotImplementedException();
-            internal set => _Controller = value;
-        }
-
-        /// <summary>
-        /// base控制器，没有DataRequest
-        /// </summary>
-        BaseAddonController<IPlugin> IAddonController<IPlugin>.Controller
-        {
-            get => Controller;
-            set => _Controller = (AddonController<IPlugin>?)value;
+            set => _Controller = value;
         }
 
         /// <summary>
         /// 控制器内部变量
         /// </summary>
-        private AddonController<IPlugin>? _Controller;
+        private BaseAddonController<IPlugin>? _Controller;
 
         /// <summary>
         /// 加载标记
@@ -70,13 +60,17 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             {
                 // 插件加载后，不允许再次加载此插件
                 IsLoaded = true;
-                // 初始化此插件（传入委托或者Model）
-                Init(objs);
                 // 触发绑定事件
                 BindEvent();
             }
             return IsLoaded;
         }
+
+        /// <summary>
+        /// 接收服务器控制台的输入
+        /// </summary>
+        /// <param name="input"></param>
+        public abstract void ProcessInput(string input);
 
         /// <summary>
         /// 插件完全加载后需要做的事
@@ -94,25 +88,6 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         {
             return true;
         }
-
-        /// <summary>
-        /// 传递一些插件可以用参数
-        /// </summary>
-        private void Init(params object[] objs)
-        {
-            if (objs.Length > 0) Session = (Session)objs[0];
-            if (objs.Length > 1) Config = (FunGameConfig)objs[1];
-        }
-
-        /// <summary>
-        /// Session对象
-        /// </summary>
-        protected Session Session = new();
-
-        /// <summary>
-        /// Config对象
-        /// </summary>
-        protected FunGameConfig Config = new();
 
         /// <summary>
         /// 绑定事件。在<see cref="BeforeLoad"/>后触发
