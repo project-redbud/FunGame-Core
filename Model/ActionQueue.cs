@@ -1,12 +1,14 @@
-﻿using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Api.Utility
+namespace Milimoe.FunGame.Core.Model
 {
     /// <summary>
     /// 行动顺序表
     /// </summary>
-    public class ActionQueue
+    public class ActionQueue : IGamingQueue
     {
         /// <summary>
         /// 用于文本输出
@@ -341,7 +343,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
 
             // 技能列表
             List<Skill> skills = [.. character.Skills.Where(s => s.Level > 0 && s.SkillType != SkillType.Passive && s.Enable && !s.IsInEffect && s.CurrentCD == 0 &&
-                (((s.SkillType == SkillType.SuperSkill || s.SkillType == SkillType.Skill) && s.RealEPCost <= character.EP) || (s.SkillType == SkillType.Magic && s.RealMPCost <= character.MP)))];
+                ((s.SkillType == SkillType.SuperSkill || s.SkillType == SkillType.Skill) && s.RealEPCost <= character.EP || s.SkillType == SkillType.Magic && s.RealMPCost <= character.MP))];
 
             // 物品列表
             List<Item> items = [.. character.Items.Where(i => i.IsActive && i.Skills.Active != null && i.Enable && i.IsInGameItem &&
@@ -682,36 +684,36 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 _stats[character].DamagePerSecond = Calculation.Round2Digits(_stats[character].TotalDamage / _stats[character].LiveTime);
 
                 // 回血回蓝
-                double recoveryHP = Calculation.Round2Digits(character.HR * timeToReduce);
-                double recoveryMP = Calculation.Round2Digits(character.MR * timeToReduce);
-                double needHP = Calculation.Round2Digits(character.MaxHP - character.HP);
-                double needMP = Calculation.Round2Digits(character.MaxMP - character.MP);
+                double recoveryHP = character.HR * timeToReduce;
+                double recoveryMP = character.MR * timeToReduce;
+                double needHP = character.MaxHP - character.HP;
+                double needMP = character.MaxMP - character.MP;
                 double reallyReHP = needHP >= recoveryHP ? recoveryHP : needHP;
                 double reallyReMP = needMP >= recoveryMP ? recoveryMP : needMP;
                 if (reallyReHP > 0 && reallyReMP > 0)
                 {
-                    character.HP = Calculation.Round2Digits(character.HP + reallyReHP);
-                    character.MP = Calculation.Round2Digits(character.MP + reallyReMP);
-                    WriteLine("角色 " + character.NickName + " 回血：" + recoveryHP + " / " + "回蓝：" + recoveryMP);
+                    character.HP += reallyReHP;
+                    character.MP += reallyReMP;
+                    WriteLine($"角色 {character.NickName} 回血：{recoveryHP:0.##} / 回蓝：{recoveryMP:0.##}");
                 }
                 else
                 {
                     if (reallyReHP > 0)
                     {
-                        character.HP = Calculation.Round2Digits(character.HP + reallyReHP);
-                        WriteLine("角色 " + character.NickName + " 回血：" + recoveryHP);
+                        character.HP += reallyReHP;
+                        WriteLine($"角色 {character.NickName} 回血：{recoveryHP:0.##}");
                     }
                     if (reallyReMP > 0)
                     {
-                        character.MP = Calculation.Round2Digits(character.MP + reallyReMP);
-                        WriteLine("角色 " + character.NickName + " 回蓝：" + recoveryMP);
+                        character.MP += reallyReMP;
+                        WriteLine($"角色 {character.NickName} 回蓝：{recoveryMP:0.##}");
                     }
                 }
 
                 // 减少所有技能的冷却时间
                 foreach (Skill skill in character.Skills)
                 {
-                    skill.CurrentCD = Calculation.Round2Digits(skill.CurrentCD - timeToReduce);
+                    skill.CurrentCD -= timeToReduce;
                     if (skill.CurrentCD <= 0)
                     {
                         skill.CurrentCD = 0;
@@ -785,7 +787,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     WriteLine("[ " + enemy + $" ] 受到了 {damage} 点{dmgType}！");
                 }
                 else WriteLine("[ " + enemy + $" ] 受到了 {damage} 点物理伤害！");
-                enemy.HP = Calculation.Round2Digits(enemy.HP - damage);
+                enemy.HP -= damage;
 
                 // 统计伤害
                 CalculateCharacterDamageStatistics(actor, enemy, damage, isMagicDamage);
@@ -820,7 +822,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 {
                     effect.AfterDeathCalculation(enemy, actor, _continuousKilling, _earnedMoney);
                 }
-                if (_queue.Remove(enemy) && (!_queue.Where(c => c != actor).Any()))
+                if (_queue.Remove(enemy) && !_queue.Where(c => c != actor).Any())
                 {
                     // 没有其他的角色了，游戏结束
                     EndGameInfo(actor);
@@ -836,7 +838,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="max">最大获取量</param>
         public static double GetEP(double a, double b, double max)
         {
-            return Calculation.Round2Digits(Math.Min((a + Random.Shared.Next(30)) * b, max));
+            return Math.Min((a + Random.Shared.Next(30)) * b, max);
         }
 
         /// <summary>
@@ -891,19 +893,19 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
 
             // 物理穿透后的护甲
-            double penetratedDEF = Calculation.Round2Digits((1 - actor.PhysicalPenetration) * enemy.DEF);
+            double penetratedDEF = (1 - actor.PhysicalPenetration) * enemy.DEF;
 
             // 物理伤害减免
             double physicalDamageReduction = Calculation.Round4Digits(penetratedDEF / (penetratedDEF + 120));
 
             // 最终的物理伤害
-            finalDamage = Calculation.Round2Digits(expectedDamage * (1 - physicalDamageReduction));
+            finalDamage = expectedDamage * (1 - physicalDamageReduction);
 
             // 暴击判定
             dice = Random.Shared.NextDouble();
             if (dice < actor.CritRate)
             {
-                finalDamage = Calculation.Round2Digits(finalDamage * actor.CritDMG); // 暴击伤害倍率加成
+                finalDamage = finalDamage * actor.CritDMG; // 暴击伤害倍率加成
                 WriteLine("暴击生效！！");
                 foreach (Effect effect in actor.Effects.Where(e => e.Level > 0).ToList())
                 {
@@ -981,16 +983,16 @@ namespace Milimoe.FunGame.Core.Api.Utility
             };
 
             // 魔法穿透后的魔法抗性
-            MDF = Calculation.Round2Digits((1 - actor.MagicalPenetration) * MDF);
+            MDF = (1 - actor.MagicalPenetration) * MDF;
 
             // 最终的魔法伤害
-            finalDamage = Calculation.Round2Digits(expectedDamage * (1 - MDF));
+            finalDamage = expectedDamage * (1 - MDF);
 
             // 暴击判定
             dice = Random.Shared.NextDouble();
             if (dice < actor.CritRate)
             {
-                finalDamage = Calculation.Round2Digits(finalDamage * actor.CritDMG); // 暴击伤害倍率加成
+                finalDamage = finalDamage * actor.CritDMG; // 暴击伤害倍率加成
                 WriteLine("暴击生效！！");
                 foreach (Effect effect in actor.Effects.Where(e => e.Level > 0).ToList())
                 {
@@ -1300,6 +1302,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
         }
 
+        /// <summary>
+        /// 装备物品
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="item"></param>
         public void Equip(Character character, Item item)
         {
             if (character.Equip(item))
@@ -1309,6 +1316,12 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
         }
 
+        /// <summary>
+        /// 装备物品到指定栏位
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="type"></param>
+        /// <param name="item"></param>
         public void Equip(Character character, EquipItemToSlot type, Item item)
         {
             if (character.Equip(item, type))
@@ -1317,6 +1330,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
         }
 
+        /// <summary>
+        /// 取消装备
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="type"></param>
         public void UnEquip(Character character, EquipItemToSlot type)
         {
             Item? item = character.UnEquip(type);
