@@ -512,7 +512,7 @@ namespace Milimoe.FunGame.Core.Model
                     {
                         skill.OnSkillCasting(this, character);
 
-                        character.EP = Calculation.Round2Digits(character.EP - cost);
+                        character.EP -= cost;
                         baseTime = skill.HardnessTime;
                         skill.CurrentCD = skill.RealCD;
                         skill.Enable = false;
@@ -537,7 +537,7 @@ namespace Milimoe.FunGame.Core.Model
                 // 判断是否能够释放技能
                 if (CheckCanCast(character, skill, out double cost))
                 {
-                    character.MP = Calculation.Round2Digits(character.MP - cost);
+                    character.MP -= cost;
                     baseTime = skill.HardnessTime;
                     skill.CurrentCD = skill.RealCD;
                     skill.Enable = false;
@@ -567,7 +567,7 @@ namespace Milimoe.FunGame.Core.Model
                 // 判断是否能够释放技能
                 if (CheckCanCast(character, skill, out double cost))
                 {
-                    character.EP = Calculation.Round2Digits(character.EP - cost);
+                    character.EP -= cost;
                     baseTime = skill.HardnessTime;
                     skill.CurrentCD = skill.RealCD;
                     skill.Enable = false;
@@ -740,7 +740,7 @@ namespace Milimoe.FunGame.Core.Model
 
                     if (effect.Durative)
                     {
-                        effect.RemainDuration = Calculation.Round2Digits(effect.RemainDuration - timeToReduce);
+                        effect.RemainDuration -= timeToReduce;
                         if (effect.RemainDuration <= 0)
                         {
                             effect.RemainDuration = 0;
@@ -784,9 +784,9 @@ namespace Milimoe.FunGame.Core.Model
                 if (isMagicDamage)
                 {
                     string dmgType = CharacterSet.GetMagicDamageName(magicType);
-                    WriteLine("[ " + enemy + $" ] 受到了 {damage} 点{dmgType}！");
+                    WriteLine("[ " + enemy + $" ] 受到了 {damage:0.##} 点{dmgType}！");
                 }
-                else WriteLine("[ " + enemy + $" ] 受到了 {damage} 点物理伤害！");
+                else WriteLine("[ " + enemy + $" ] 受到了 {damage:0.##} 点物理伤害！");
                 enemy.HP -= damage;
 
                 // 统计伤害
@@ -896,7 +896,7 @@ namespace Milimoe.FunGame.Core.Model
             double penetratedDEF = (1 - actor.PhysicalPenetration) * enemy.DEF;
 
             // 物理伤害减免
-            double physicalDamageReduction = Calculation.Round4Digits(penetratedDEF / (penetratedDEF + 120));
+            double physicalDamageReduction = penetratedDEF / (penetratedDEF + 120);
 
             // 最终的物理伤害
             finalDamage = expectedDamage * (1 - physicalDamageReduction);
@@ -905,7 +905,7 @@ namespace Milimoe.FunGame.Core.Model
             dice = Random.Shared.NextDouble();
             if (dice < actor.CritRate)
             {
-                finalDamage = finalDamage * actor.CritDMG; // 暴击伤害倍率加成
+                finalDamage *= actor.CritDMG; // 暴击伤害倍率加成
                 WriteLine("暴击生效！！");
                 foreach (Effect effect in actor.Effects.Where(e => e.Level > 0).ToList())
                 {
@@ -992,7 +992,7 @@ namespace Milimoe.FunGame.Core.Model
             dice = Random.Shared.NextDouble();
             if (dice < actor.CritRate)
             {
-                finalDamage = finalDamage * actor.CritDMG; // 暴击伤害倍率加成
+                finalDamage *= actor.CritDMG; // 暴击伤害倍率加成
                 WriteLine("暴击生效！！");
                 foreach (Effect effect in actor.Effects.Where(e => e.Level > 0).ToList())
                 {
@@ -1018,7 +1018,7 @@ namespace Milimoe.FunGame.Core.Model
             int money = Random.Shared.Next(250, 350);
 
             Character[] assists = _assistDamage.Keys.Where(c => c != death && _assistDamage[c].GetPercentage(death) > 0.10).ToArray();
-            double totalDamagePercentage = Calculation.Round4Digits(_assistDamage.Keys.Where(assists.Contains).Select(c => _assistDamage[c].GetPercentage(death)).Sum());
+            double totalDamagePercentage = _assistDamage.Keys.Where(assists.Contains).Select(c => _assistDamage[c].GetPercentage(death)).Sum();
             int totalMoney = Math.Min(Convert.ToInt32(money * totalDamagePercentage), 425); // 防止刷伤害设置金钱上限
 
             // 按伤害比分配金钱 只有造成10%伤害以上才能参与
@@ -1041,7 +1041,7 @@ namespace Milimoe.FunGame.Core.Model
             {
                 money += (coefficient + 1) * Random.Shared.Next(50, 100);
                 string termination = CharacterSet.GetContinuousKilling(coefficient);
-                string msg = $"[ {killer} ] 终结了 [ {death} ]{(termination != "" ? " 的" + termination : "")}，获得 {money} 金钱！";
+                string msg = $"[ {killer} ] 终结了 [ {death} ]{(termination != "" ? " 的" + termination : "")}，获得 {money} {General.GameplayEquilibriumConstant.InGameCurrency}！";
                 if (assists.Length > 1)
                 {
                     msg += "助攻：[ " + string.Join(" ] / [ ", assists.Where(c => c != killer)) + " ]";
@@ -1050,7 +1050,7 @@ namespace Milimoe.FunGame.Core.Model
             }
             else
             {
-                string msg = $"[ {killer} ] 杀死了 [ {death} ]，获得 {money} 金钱！";
+                string msg = $"[ {killer} ] 杀死了 [ {death} ]，获得 {money} {General.GameplayEquilibriumConstant.InGameCurrency}！";
                 if (assists.Length > 1)
                 {
                     msg += "助攻：[ " + string.Join(" ] / [ ", assists.Where(c => c != killer)) + " ]";
@@ -1096,7 +1096,7 @@ namespace Milimoe.FunGame.Core.Model
             for (int i = _eliminated.Count - 1; i >= 0; i--)
             {
                 Character ec = _eliminated[i];
-                string topCharacter = ec.ToString() + (_continuousKilling.TryGetValue(ec, out int kills) && kills > 1 ? $" [ {CharacterSet.GetContinuousKilling(kills)} ]" : "") + (_earnedMoney.TryGetValue(ec, out int earned) ? $" [ 已赚取 {earned} 金钱 ]" : "");
+                string topCharacter = ec.ToString() + (_continuousKilling.TryGetValue(ec, out int kills) && kills > 1 ? $" [ {CharacterSet.GetContinuousKilling(kills)} ]" : "") + (_earnedMoney.TryGetValue(ec, out int earned) ? $" [ 已赚取 {earned} {General.GameplayEquilibriumConstant.InGameCurrency} ]" : "");
                 if (top == 1)
                 {
                     WriteLine("冠军：" + topCharacter);

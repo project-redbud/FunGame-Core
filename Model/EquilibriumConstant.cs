@@ -6,6 +6,11 @@
     public class EquilibriumConstant
     {
         /// <summary>
+        /// 游戏货币名称
+        /// </summary>
+        public string InGameCurrency { get; set; } = "金币";
+
+        /// <summary>
         /// 晋升点数上限
         /// </summary>
         public int PromotionThresholdXUpperLimit { get; set; } = 999;
