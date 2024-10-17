@@ -1,9 +1,11 @@
-﻿using Milimoe.FunGame.Core.Controller;
+﻿using Milimoe.FunGame.Core.Api.Transmittal;
+using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Controller;
 using Milimoe.FunGame.Core.Interface.Addons;
 
 namespace Milimoe.FunGame.Core.Library.Common.Addon
 {
-    public abstract class WebAPIPlugin : IAddon, IAddonController<IAddon>
+    public abstract class WebAPIPlugin : IAddon, IServerAddon, IAddonController<IAddon>
     {
         /// <summary>
         /// 插件名称
@@ -38,6 +40,16 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// 控制器内部变量
         /// </summary>
         private BaseAddonController<IAddon>? _Controller;
+
+        /// <summary>
+        /// 全局数据库连接器
+        /// </summary>
+        public SQLHelper? SQLHelper => Singleton.Get<SQLHelper>();
+
+        /// <summary>
+        /// 全局邮件发送器
+        /// </summary>
+        public MailSender? MailSender => Singleton.Get<MailSender>();
 
         /// <summary>
         /// 加载标记
