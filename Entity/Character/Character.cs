@@ -1210,7 +1210,7 @@ namespace Milimoe.FunGame.Core.Entity
                 builder.AppendLine("角色是不可选中的");
             }
 
-            builder.AppendLine($"硬直时间：{hardnessTimes}");
+            builder.AppendLine($"硬直时间：{hardnessTimes:0.##}");
 
             if (Effects.Count > 0)
             {
