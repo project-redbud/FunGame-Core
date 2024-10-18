@@ -121,11 +121,11 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                return _Level >= General.GameplayEquilibriumConstant.MinLevel ? _Level : General.GameplayEquilibriumConstant.MinLevel;
+                return _Level >= 1 ? _Level : 1;
             }
             set
             {
-                _Level = Math.Min(Math.Max(General.GameplayEquilibriumConstant.MinLevel, value), General.GameplayEquilibriumConstant.MaxLevel);
+                _Level = Math.Min(Math.Max(1, value), General.GameplayEquilibriumConstant.MaxLevel);
                 OnAttributeChanged();
                 Recovery();
             }

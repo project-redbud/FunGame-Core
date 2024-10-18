@@ -39,7 +39,7 @@ namespace Milimoe.FunGame.Core.Entity
             }
             set
             {
-                _Level = Math.Min(Math.Max(1, value), 8);
+                _Level = Math.Min(Math.Max(1, value), General.GameplayEquilibriumConstant.MaxNormalAttackLevel);
             }
         }
 

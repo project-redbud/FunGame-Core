@@ -61,14 +61,34 @@
         public double InitialMP { get; set; } = 10;
 
         /// <summary>
-        /// 最低等级
-        /// </summary>
-        public int MinLevel { get; set; } = 1;
-
-        /// <summary>
-        /// 最高等级
+        /// 角色最高等级
         /// </summary>
         public int MaxLevel { get; set; } = 60;
+        
+        /// <summary>
+        /// 魔法最高等级
+        /// </summary>
+        public int MaxMagicLevel { get; set; } = 8;
+
+        /// <summary>
+        /// 战技最高等级
+        /// </summary>
+        public int MaxSkillLevel { get; set; } = 6;
+        
+        /// <summary>
+        /// 爆发技最高等级
+        /// </summary>
+        public int MaxSuperSkillLevel { get; set; } = 6;
+        
+        /// <summary>
+        /// 被动最高等级
+        /// </summary>
+        public int MaxPassiveSkillLevel { get; set; } = 6;
+        
+        /// <summary>
+        /// 普通攻击最高等级
+        /// </summary>
+        public int MaxNormalAttackLevel { get; set; } = 8;
 
         /// <summary>
         /// 最大能量值

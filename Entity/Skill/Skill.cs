@@ -37,7 +37,7 @@ namespace Milimoe.FunGame.Core.Entity
             }
             set
             {
-                int max = IsSuperSkill ? 6 : (IsMagic ? 8 : 6);
+                int max = SkillSet.GetSkillMaxLevel(SkillType);
                 _Level = Math.Min(Math.Max(0, value), max);
                 OnLevelUp();
             }
@@ -80,7 +80,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 实际魔法消耗 [ 魔法 ]
         /// </summary>
-        public double RealMPCost => Calculation.Round2Digits(Math.Max(0, MPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * 0.00125))));
+        public double RealMPCost => Math.Max(0, MPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * 0.00125)));
 
         /// <summary>
         /// 魔法消耗 [ 魔法 ]
@@ -91,7 +91,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 实际吟唱时间 [ 魔法 ]
         /// </summary>
-        public double RealCastTime => Calculation.Round2Digits(Math.Max(0, CastTime * (1 - Calculation.PercentageCheck(Character?.AccelerationCoefficient ?? 0))));
+        public double RealCastTime => Math.Max(0, CastTime * (1 - Calculation.PercentageCheck(Character?.AccelerationCoefficient ?? 0)));
 
         /// <summary>
         /// 吟唱时间 [ 魔法 ]
@@ -102,7 +102,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 实际能量消耗 [ 战技 ]
         /// </summary>
-        public double RealEPCost => IsSuperSkill ? EPCost : Calculation.Round2Digits(Math.Max(0, EPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * 0.00075))));
+        public double RealEPCost => IsSuperSkill ? EPCost : Math.Max(0, EPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * 0.00075)));
 
         /// <summary>
         /// 能量消耗 [ 战技 ]
@@ -113,7 +113,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 实际冷却时间
         /// </summary>
-        public double RealCD => Calculation.Round2Digits(Math.Max(0, CD * (1 - Character?.CDR ?? 0)));
+        public double RealCD => Math.Max(0, CD * (1 - Character?.CDR ?? 0));
 
         /// <summary>
         /// 冷却时间
@@ -246,7 +246,7 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine("技能描述：" + Description);
             if (CurrentCD > 0)
             {
-                builder.AppendLine("正在冷却：剩余 " + CurrentCD + " 时间");
+                builder.AppendLine($"正在冷却：剩余 {CurrentCD:0.##} 时间");
             }
             if (!Enable)
             {
@@ -262,34 +262,34 @@ namespace Milimoe.FunGame.Core.Entity
                 {
                     if (RealMPCost > 0)
                     {
-                        builder.AppendLine("魔法消耗：" + RealMPCost);
+                        builder.AppendLine($"魔法消耗：{RealMPCost:0.##}");
                     }
                     if (RealEPCost > 0)
                     {
-                        builder.AppendLine("能量消耗：" + RealEPCost);
+                        builder.AppendLine($"能量消耗：{RealEPCost:0.##}");
                     }
                 }
                 else
                 {
                     if (IsSuperSkill)
                     {
-                        builder.AppendLine("能量消耗：" + RealEPCost);
+                        builder.AppendLine($"能量消耗：{RealEPCost:0.##}");
                     }
                     else
                     {
                         if (IsMagic)
                         {
-                            builder.AppendLine("魔法消耗：" + RealMPCost);
-                            builder.AppendLine("吟唱时间：" + RealCastTime);
+                            builder.AppendLine($"魔法消耗：{RealMPCost:0.##}");
+                            builder.AppendLine($"吟唱时间：{RealCastTime:0.##}");
                         }
                         else
                         {
-                            builder.AppendLine("能量消耗：" + RealEPCost);
+                            builder.AppendLine($"能量消耗：{RealEPCost::0.##}");
                         }
                     }
                 }
-                builder.AppendLine("冷却时间：" + RealCD);
-                builder.AppendLine("硬直时间：" + HardnessTime);
+                builder.AppendLine($"冷却时间：{RealCD:0.##}");
+                builder.AppendLine($"硬直时间：{HardnessTime:0.##}");
             }
 
             return builder.ToString();
