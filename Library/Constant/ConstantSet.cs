@@ -519,5 +519,17 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 _ => SkillType.Passive,
             };
         }
+
+        public static int GetSkillMaxLevel(SkillType type)
+        {
+            return type switch
+            {
+                SkillType.Magic => General.GameplayEquilibriumConstant.MaxMagicLevel,
+                SkillType.Skill => General.GameplayEquilibriumConstant.MaxSkillLevel,
+                SkillType.SuperSkill => General.GameplayEquilibriumConstant.MaxSuperSkillLevel,
+                SkillType.Item => General.GameplayEquilibriumConstant.MaxSkillLevel,
+                _ => General.GameplayEquilibriumConstant.MaxPassiveSkillLevel
+            };
+        }
     }
 }

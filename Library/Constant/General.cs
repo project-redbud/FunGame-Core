@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Library.Constant
 {
@@ -54,6 +55,11 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// 默认的时间值（1970年8月1日8点0分0秒）
         /// </summary>
         public static DateTime DefaultTime => new(1970, 1, 1, 8, 0, 0);
+
+        /// <summary>
+        /// 游戏平衡常数
+        /// </summary>
+        public static EquilibriumConstant GameplayEquilibriumConstant { get; set; } = new();
 
         #endregion
 

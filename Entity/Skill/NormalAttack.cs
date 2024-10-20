@@ -2,6 +2,7 @@
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Entity
 {
@@ -15,7 +16,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 普通攻击说明
         /// </summary>
-        public string Description => $"对目标敌人造成 {Calculation.Round4Digits((1.0 + 0.05 * (Level - 1)) * 100)}% [ {Damage} ] 点{(IsMagic ? CharacterSet.GetMagicDamageName(MagicType) : "物理伤害")}。";
+        public string Description => $"对目标敌人造成 {(1.0 + 0.05 * (Level - 1)) * 100:0.##}% [ {Damage:0.##} ] 点{(IsMagic ? CharacterSet.GetMagicDamageName(MagicType) : "物理伤害")}。";
 
         /// <summary>
         /// 所属的角色
@@ -25,7 +26,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 普通攻击的伤害
         /// </summary>
-        public double Damage => Calculation.Round2Digits(Character.ATK * (1.0 + 0.05 * (Level - 1)));
+        public double Damage => Character.ATK * (1.0 + 0.05 * (Level - 1));
 
         /// <summary>
         /// 普通攻击等级
@@ -38,7 +39,7 @@ namespace Milimoe.FunGame.Core.Entity
             }
             set
             {
-                _Level = Math.Min(Math.Max(1, value), 8);
+                _Level = Math.Min(Math.Max(1, value), General.GameplayEquilibriumConstant.MaxNormalAttackLevel);
             }
         }
 

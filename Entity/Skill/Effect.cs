@@ -2,6 +2,7 @@
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Entity
 {
@@ -423,7 +424,7 @@ namespace Milimoe.FunGame.Core.Entity
             string isDurative = "";
             if (Durative)
             {
-                isDurative = "（剩余：" + RemainDuration + " 时间）";
+                isDurative = $"（剩余：{RemainDuration:0.##} 时间）";
             }
             else if (DurationTurn > 0)
             {
