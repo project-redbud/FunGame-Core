@@ -284,7 +284,7 @@ namespace Milimoe.FunGame.Core.Entity
                         }
                         else
                         {
-                            builder.AppendLine($"能量消耗：{RealEPCost::0.##}");
+                            builder.AppendLine($"能量消耗：{RealEPCost:0.##}");
                         }
                     }
                 }
