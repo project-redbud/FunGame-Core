@@ -1,8 +1,7 @@
 ﻿using System.Text;
-using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Entity
 {
@@ -64,7 +63,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="queue"></param>
         /// <param name="attacker"></param>
         /// <param name="enemys"></param>
-        public void Attack(ActionQueue queue, Character attacker, params Character[] enemys)
+        public void Attack(IGamingQueue queue, Character attacker, params Character[] enemys)
         {
             foreach (Character enemy in enemys)
             {

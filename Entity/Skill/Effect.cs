@@ -1,8 +1,8 @@
 ﻿using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Entity
 {
@@ -88,7 +88,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 游戏中的行动顺序表实例，在技能效果被触发时，此实例会获得赋值，使用时需要判断其是否存在
         /// </summary>
-        public ActionQueue? ActionQueue { get; set; } = null;
+        public IGamingQueue? GamingQueue { get; set; } = null;
 
         /// <summary>
         /// 输出文本或日志
@@ -97,8 +97,8 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                if (ActionQueue is null) return Console.WriteLine;
-                else return ActionQueue.WriteLine;
+                if (GamingQueue is null) return Console.WriteLine;
+                else return GamingQueue.WriteLine;
             }
         }
 
@@ -387,7 +387,7 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 对敌人造成技能伤害 [ 强烈建议使用此方法造成伤害而不是自行调用 <see cref="ActionQueue.DamageToEnemy"/> ]
+        /// 对敌人造成技能伤害 [ 强烈建议使用此方法造成伤害而不是自行调用 <see cref="IGamingQueue.DamageToEnemy"/> ]
         /// </summary>
         /// <param name="actor"></param>
         /// <param name="enemy"></param>
@@ -397,20 +397,20 @@ namespace Milimoe.FunGame.Core.Entity
         /// <returns></returns>
         public DamageResult DamageToEnemy(Character actor, Character enemy, bool isMagic, MagicType magicType, double expectedDamage)
         {
-            if (ActionQueue is null) return DamageResult.Evaded;
-            DamageResult result = !isMagic ? ActionQueue.CalculatePhysicalDamage(actor, enemy, false, expectedDamage, out double damage) : ActionQueue.CalculateMagicalDamage(actor, enemy, false, MagicType, expectedDamage, out damage);
-            ActionQueue.DamageToEnemy(actor, enemy, damage, false, isMagic, magicType, result);
+            if (GamingQueue is null) return DamageResult.Evaded;
+            DamageResult result = !isMagic ? GamingQueue.CalculatePhysicalDamage(actor, enemy, false, expectedDamage, out double damage) : GamingQueue.CalculateMagicalDamage(actor, enemy, false, MagicType, expectedDamage, out damage);
+            GamingQueue.DamageToEnemy(actor, enemy, damage, false, isMagic, magicType, result);
             return result;
         }
 
         /// <summary>
-        /// 打断施法 [ 尽可能的调用此方法而不是直接调用 <see cref="ActionQueue.InterruptCasting"/>，以防止中断性变更 ]
+        /// 打断施法 [ 尽可能的调用此方法而不是直接调用 <see cref="IGamingQueue.InterruptCasting"/>，以防止中断性变更 ]
         /// </summary>
         /// <param name="caster"></param>
         /// <param name="interrupter"></param>
         public void InterruptCasting(Character caster, Character interrupter)
         {
-            ActionQueue?.InterruptCasting(caster, interrupter);
+            GamingQueue?.InterruptCasting(caster, interrupter);
         }
 
         /// <summary>
@@ -452,7 +452,7 @@ namespace Milimoe.FunGame.Core.Entity
                 DurationTurn = DurationTurn,
                 MagicType = MagicType,
                 Description = Description,
-                ActionQueue = ActionQueue
+                GamingQueue = GamingQueue
             };
 
             return copy;

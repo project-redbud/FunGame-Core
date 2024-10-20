@@ -1,8 +1,8 @@
 ﻿using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Entity
 {
@@ -145,7 +145,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 游戏中的行动顺序表实例，在技能效果被触发时，此实例会获得赋值，使用时需要判断其是否存在
         /// </summary>
-        public ActionQueue? ActionQueue { get; set; } = null;
+        public IGamingQueue? GamingQueue { get; set; } = null;
 
         /// <summary>
         /// 技能是否属于某个物品
@@ -177,7 +177,7 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 foreach (Effect e in AddInactiveEffectToCharacter())
                 {
-                    e.ActionQueue = ActionQueue;
+                    e.GamingQueue = GamingQueue;
                     if (Character != null && !Character.Effects.Contains(e))
                     {
                         Character.Effects.Add(e);
@@ -191,21 +191,21 @@ namespace Milimoe.FunGame.Core.Entity
         /// 当获得技能时
         /// </summary>
         /// <param name="queue"></param>
-        public void OnSkillGained(ActionQueue queue)
+        public void OnSkillGained(IGamingQueue queue)
         {
-            ActionQueue = queue;
+            GamingQueue = queue;
             OnLevelUp();
         }
 
         /// <summary>
         /// 技能开始吟唱时 [ 吟唱魔法、释放战技和爆发技、预释放爆发技均可触发 ]
         /// </summary>
-        public void OnSkillCasting(ActionQueue queue, Character caster)
+        public void OnSkillCasting(IGamingQueue queue, Character caster)
         {
-            ActionQueue = queue;
+            GamingQueue = queue;
             foreach (Effect e in Effects)
             {
-                e.ActionQueue = ActionQueue;
+                e.GamingQueue = GamingQueue;
                 e.OnSkillCasting(caster);
             }
         }
@@ -213,12 +213,12 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 触发技能效果
         /// </summary>
-        public void OnSkillCasted(ActionQueue queue, Character caster, List<Character> enemys, List<Character> teammates)
+        public void OnSkillCasted(IGamingQueue queue, Character caster, List<Character> enemys, List<Character> teammates)
         {
-            ActionQueue = queue;
+            GamingQueue = queue;
             foreach (Effect e in Effects)
             {
-                e.ActionQueue = ActionQueue;
+                e.GamingQueue = GamingQueue;
                 e.OnSkillCasted(caster, enemys, teammates, OtherArgs);
             }
         }
@@ -333,7 +333,7 @@ namespace Milimoe.FunGame.Core.Entity
                 CD = CD,
                 CurrentCD = CurrentCD,
                 HardnessTime = HardnessTime,
-                ActionQueue = ActionQueue
+                GamingQueue = GamingQueue
             };
             foreach (Effect e in Effects)
             {
