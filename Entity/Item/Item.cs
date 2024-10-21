@@ -1,8 +1,8 @@
 ﻿using System.Text;
+using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Entity
 {
@@ -149,7 +149,7 @@ namespace Milimoe.FunGame.Core.Entity
                 {
                     foreach (Effect e in skill.AddInactiveEffectToCharacter())
                     {
-                        e.ActionQueue = skill.ActionQueue;
+                        e.GamingQueue = skill.GamingQueue;
                         if (Character != null && !Character.Effects.Contains(e))
                         {
                             Character.Effects.Add(e);
@@ -213,7 +213,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 局内使用物品触发 对某个角色使用
         /// </summary>
-        public void UseItem(ActionQueue queue, Character character, List<Character> enemys, List<Character> teammates)
+        public void UseItem(IGamingQueue queue, Character character, List<Character> enemys, List<Character> teammates)
         {
             OnItemUsed(character, this);
             Skills.Active?.OnSkillCasted(queue, character, enemys, teammates);
@@ -307,7 +307,7 @@ namespace Milimoe.FunGame.Core.Entity
             StringBuilder builder = new();
 
             builder.AppendLine($"【{Name}】");
-            builder.AppendLine($"{ItemSet.GetItemTypeName(ItemType)}" + (IsPurchasable && Price > 0 ? $"    售价：{Price:0.##}" : ""));
+            builder.AppendLine($"{ItemSet.GetItemTypeName(ItemType)}" + (IsPurchasable && Price > 0 ? $"    售价：{Price}" : ""));
 
             if (RemainUseTimes > 0)
             {
