@@ -40,5 +40,10 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Common
         {
             return $"{Command_Insert} {Command_Into} {TableName} ({Column_ServerName}, {Column_ServerKey}, {Column_LoginTime}) {Command_Values} ('{ServerName}', '{ServerKey}', '{DateTime.Now}')";
         }
+
+        public static string Select_GetLastLoginTime()
+        {
+            return $"{Command_Select} Max({Column_LoginTime}) {Command_From} {TableName}";
+        }
     }
 }

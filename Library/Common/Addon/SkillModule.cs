@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Addons;
 using Milimoe.FunGame.Core.Library.Constant;
 
@@ -37,13 +38,16 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         private bool IsLoaded = false;
 
         /// <summary>
-        /// 必须重写此方法，用于还原技能后获取还原详细信息
+        /// [可选实现] 在使用 <see cref="EntityModuleConfig{Skill}"/> 后，可以按 id + name + type 来匹配已编码的技能
         /// </summary>
         /// <param name="id"></param>
         /// <param name="name"></param>
         /// <param name="type"></param>
         /// <returns></returns>
-        public abstract Skill? GetSkill(long id, string name, SkillType type);
+        public virtual Skill? GetSkill(long id, string name, SkillType type)
+        {
+            return null;
+        }
 
         /// <summary>
         /// 加载模组

@@ -347,12 +347,12 @@ namespace Milimoe.FunGame.Core.Entity
             if (Skills.Active != null) builder.AppendLine($"{Skills.Active.ToString()}");
             foreach (Skill skill in Skills.Passives)
             {
-                builder.AppendLine($"{skill.ToString()}");
+                builder.Append($"{skill.ToString()}");
             }
 
             if (BackgroundStory != "")
             {
-                builder.AppendLine("\r\n" + BackgroundStory);
+                builder.AppendLine($"\"{BackgroundStory}\"");
             }
 
             return builder.ToString();
@@ -369,21 +369,21 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 设置一些属性给从 <see cref="ItemModule"/> 新建来的 <paramref name="item"/><para/>
-        /// 通常，在使用 JSON 反序列化 Item，且从 <see cref="ItemModule.GetItem(long, string, ItemType)"/> 中获取了实例后，需要使用此方法复制给新实例
+        /// 设置一些属性给从 <see cref="ItemModule"/> 新建来的 <paramref name="newbyItemModule"/><para/>
+        /// 对于还原存档而言，在使用 JSON 反序列化 Item，且从 <see cref="ItemModule.GetItem"/> 中获取了实例后，需要使用此方法复制给新实例
         /// </summary>
-        /// <param name="item"></param>
-        public void SetPropertyToItemModuleNew(Item item)
+        /// <param name="newbyItemModule"></param>
+        public void SetPropertyToItemModuleNew(Item newbyItemModule)
         {
-            item.WeaponType = WeaponType;
-            item.EquipSlotType = EquipSlotType;
-            item.Equipable = Equipable;
-            item.IsPurchasable = IsPurchasable;
-            item.Price = Price;
-            item.IsSellable = IsSellable;
-            item.NextSellableTime = NextSellableTime;
-            item.IsTradable = IsTradable;
-            item.NextTradableTime = NextTradableTime;
+            newbyItemModule.WeaponType = WeaponType;
+            newbyItemModule.EquipSlotType = EquipSlotType;
+            newbyItemModule.Equipable = Equipable;
+            newbyItemModule.IsPurchasable = IsPurchasable;
+            newbyItemModule.Price = Price;
+            newbyItemModule.IsSellable = IsSellable;
+            newbyItemModule.NextSellableTime = NextSellableTime;
+            newbyItemModule.IsTradable = IsTradable;
+            newbyItemModule.NextTradableTime = NextTradableTime;
         }
 
         /// <summary>

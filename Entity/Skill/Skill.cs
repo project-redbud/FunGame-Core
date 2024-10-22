@@ -2,6 +2,7 @@
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
+using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Entity
@@ -47,7 +48,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 技能类型 [ 此项为最高优先级 ]
         /// </summary>
         [InitRequired]
-        public SkillType SkillType { get; set; }
+        public SkillType SkillType { get; set; } = SkillType.Passive;
 
         /// <summary>
         /// 是否是主动技能 [ 此项为高优先级 ]
@@ -169,6 +170,18 @@ namespace Milimoe.FunGame.Core.Entity
         internal Skill() { }
 
         /// <summary>
+        /// 设置一些属性给从 <see cref="SkillModule"/> 新建来的 <paramref name="newbySkillModule"/><para/>
+        /// 对于还原存档而言，在使用 JSON 反序列化 Skill，且从 <see cref="SkillModule.GetSkill"/> 中获取了实例后，需要使用此方法复制给新实例
+        /// </summary>
+        /// <param name="newbySkillModule"></param>
+        public void SetPropertyToItemModuleNew(Skill newbySkillModule)
+        {
+            newbySkillModule.Enable = Enable;
+            newbySkillModule.IsInEffect = IsInEffect;
+            newbySkillModule.CurrentCD = CurrentCD;
+        }
+
+        /// <summary>
         /// 触发技能升级
         /// </summary>
         public void OnLevelUp()
@@ -243,7 +256,7 @@ namespace Milimoe.FunGame.Core.Entity
             string type = IsSuperSkill ? "【爆发技】" : (IsMagic ? "【魔法】" : (IsActive ? "【主动】" : "【被动】"));
             string level = Level > 0 ? " - 等级 " + Level : " - 尚未学习";
             builder.AppendLine(type + Name + level);
-            builder.AppendLine("技能描述：" + Description);
+            builder.AppendLine("技能描述：" + (Level == 0 && GeneralDescription.Trim() != "" ? GeneralDescription : Description));
             if (CurrentCD > 0)
             {
                 builder.AppendLine($"正在冷却：剩余 {CurrentCD:0.##} 时间");
