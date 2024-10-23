@@ -324,6 +324,22 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 _ => "魔法伤害",
             };
         }
+        
+        public static string GetMagicResistanceName(MagicType type)
+        {
+            return type switch
+            {
+                MagicType.Starmark => "星痕抗性",
+                MagicType.PurityNatural => "现代结晶抗性",
+                MagicType.PurityContemporary => "纯粹结晶抗性",
+                MagicType.Bright => "光抗性",
+                MagicType.Shadow => "影抗性",
+                MagicType.Element => "元素抗性",
+                MagicType.Fleabane => "紫宛抗性",
+                MagicType.Particle => "时空抗性",
+                _ => "魔法抗性",
+            };
+        }
 
         public static string GetContinuousKilling(int kills)
         {

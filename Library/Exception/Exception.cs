@@ -179,4 +179,9 @@
     {
         public override string Message => "必须以异步方式读取数据 (#10036)";
     }
+
+    public class NotSupportedInstanceClassException : Exception
+    {
+        public override string Message => "试图构造一个不支持的类的实例 (#10037)";
+    }
 }

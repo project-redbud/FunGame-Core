@@ -443,6 +443,9 @@ namespace Milimoe.FunGame.Core.Entity
         {
             Effect copy = new(skill)
             {
+                Id = Id,
+                Name = Name,
+                Description = Description,
                 EffectType = EffectType,
                 TargetSelf = TargetSelf,
                 TargetCount = TargetCount,
@@ -451,7 +454,6 @@ namespace Milimoe.FunGame.Core.Entity
                 Duration = Duration,
                 DurationTurn = DurationTurn,
                 MagicType = MagicType,
-                Description = Description,
                 GamingQueue = GamingQueue
             };
 

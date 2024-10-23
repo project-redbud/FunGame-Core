@@ -170,7 +170,8 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 if (Skills.Active != null)
                 {
-                    foreach (Effect e in Character.Effects.Where(e => e.Skill == Skills.Active && e.Level > 0).ToList())
+                    List<Effect> effects = Character.Effects.Where(e => e.Skill == Skills.Active && e.Level > 0).ToList();
+                    foreach (Effect e in effects)
                     {
                         Character.Effects.Remove(e);
                         e.OnEffectLost(Character);
@@ -178,7 +179,8 @@ namespace Milimoe.FunGame.Core.Entity
                 }
                 foreach (Skill skill in Skills.Passives)
                 {
-                    foreach (Effect e in Character.Effects.Where(e => e.Skill == skill && e.Level > 0).ToList())
+                    List<Effect> effects = Character.Effects.Where(e => e.Skill == skill && e.Level > 0).ToList();
+                    foreach (Effect e in effects)
                     {
                         Character.Effects.Remove(e);
                         e.OnEffectLost(Character);
@@ -307,7 +309,7 @@ namespace Milimoe.FunGame.Core.Entity
             StringBuilder builder = new();
 
             builder.AppendLine($"【{Name}】");
-            builder.AppendLine($"{ItemSet.GetItemTypeName(ItemType)}" + (IsPurchasable && Price > 0 ? $"    售价：{Price}" : ""));
+            builder.AppendLine($"{ItemSet.GetItemTypeName(ItemType) + (ItemType == ItemType.Weapon && WeaponType != WeaponType.None ? "-" + ItemSet.GetWeaponTypeName(WeaponType) : "")}" + (IsPurchasable && Price > 0 ? $"  售价：{Price}" : ""));
 
             if (RemainUseTimes > 0)
             {
@@ -390,7 +392,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 复制一个物品
         /// </summary>
         /// <returns></returns>
-        public Item Copy()
+        public Item Copy(int level = 0)
         {
             Item item = new()
             {
@@ -398,6 +400,7 @@ namespace Milimoe.FunGame.Core.Entity
                 Name = Name,
                 Description = Description,
                 GeneralDescription = GeneralDescription,
+                BackgroundStory = BackgroundStory,
                 ItemType = ItemType,
                 Equipable = Equipable,
                 Unequipable = Unequipable,
@@ -419,6 +422,7 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 Skill newskill = skill.Copy();
                 newskill.Item = item;
+                newskill.Level = level;
                 item.Skills.Passives.Add(newskill);
             }
             return item;

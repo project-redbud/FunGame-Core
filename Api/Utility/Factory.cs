@@ -8,6 +8,145 @@ namespace Milimoe.FunGame.Core.Api.Utility
 {
     public class Factory
     {
+        /// <summary>
+        /// 支持动态扩展的工厂实例
+        /// </summary>
+        public static Factory OpenFactory { get; } = new();
+
+        private Factory()
+        {
+
+        }
+
+        internal HashSet<EntityFactoryDelegate<Character>> CharacterFactories { get; } = [];
+        internal HashSet<EntityFactoryDelegate<Inventory>> InventoryFactories { get; } = [];
+        internal HashSet<EntityFactoryDelegate<Skill>> SkillFactories { get; } = [];
+        internal HashSet<EntityFactoryDelegate<Effect>> EffectFactories { get; } = [];
+        internal HashSet<EntityFactoryDelegate<Item>> ItemFactories { get; } = [];
+        internal HashSet<EntityFactoryDelegate<Room>> RoomFactories { get; } = [];
+        internal HashSet<EntityFactoryDelegate<User>> UserFactories { get; } = [];
+
+        public delegate T? EntityFactoryDelegate<T>(Dictionary<string, object> args);
+
+        /// <summary>
+        /// 注册工厂方法
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="factoryDelegate"></param>
+        public void RegisterFactory<T>(EntityFactoryDelegate<T> factoryDelegate)
+        {
+            if (typeof(T) == typeof(Character) && factoryDelegate is EntityFactoryDelegate<Character> character)
+            {
+                CharacterFactories.Add(character);
+            }
+            if (typeof(T) == typeof(Inventory) && factoryDelegate is EntityFactoryDelegate<Inventory> inventory)
+            {
+                InventoryFactories.Add(inventory);
+            }
+            if (typeof(T) == typeof(Skill) && factoryDelegate is EntityFactoryDelegate<Skill> skill)
+            {
+                SkillFactories.Add(skill);
+            }
+            if (typeof(T) == typeof(Effect) && factoryDelegate is EntityFactoryDelegate<Effect> effect)
+            {
+                EffectFactories.Add(effect);
+            }
+            if (typeof(T) == typeof(Item) && factoryDelegate is EntityFactoryDelegate<Item> item)
+            {
+                ItemFactories.Add(item);
+            }
+            if (typeof(T) == typeof(Room) && factoryDelegate is EntityFactoryDelegate<Room> room)
+            {
+                RoomFactories.Add(room);
+            }
+            if (typeof(T) == typeof(User) && factoryDelegate is EntityFactoryDelegate<User> user)
+            {
+                UserFactories.Add(user);
+            }
+        }
+
+        /// <summary>
+        /// 构造一个实体实例
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        /// <exception cref="NotSupportedInstanceClassException"></exception>
+        public T GetInstance<T>(Dictionary<string, object> args)
+        {
+            if (typeof(T) == typeof(Character))
+            {
+                foreach (EntityFactoryDelegate<Character> d in CharacterFactories)
+                {
+                    if (d.Invoke(args) is T character)
+                    {
+                        return character;
+                    }
+                }
+            }
+            if (typeof(T) == typeof(Inventory))
+            {
+                foreach (EntityFactoryDelegate<Inventory> d in InventoryFactories)
+                {
+                    if (d.Invoke(args) is T inventory)
+                    {
+                        return inventory;
+                    }
+                }
+            }
+            if (typeof(T) == typeof(Skill))
+            {
+                foreach (EntityFactoryDelegate<Skill> d in SkillFactories)
+                {
+                    if (d.Invoke(args) is T skill)
+                    {
+                        return skill;
+                    }
+                }
+            }
+            if (typeof(T) == typeof(Effect))
+            {
+                foreach (EntityFactoryDelegate<Effect> d in EffectFactories)
+                {
+                    if (d.Invoke(args) is T effect)
+                    {
+                        return effect;
+                    }
+                }
+            }
+            if (typeof(T) == typeof(Item))
+            {
+                foreach (EntityFactoryDelegate<Item> d in ItemFactories)
+                {
+                    if (d.Invoke(args) is T item)
+                    {
+                        return item;
+                    }
+                }
+            }
+            if (typeof(T) == typeof(Room))
+            {
+                foreach (EntityFactoryDelegate<Room> d in RoomFactories)
+                {
+                    if (d.Invoke(args) is T room)
+                    {
+                        return room;
+                    }
+                }
+            }
+            if (typeof(T) == typeof(User))
+            {
+                foreach (EntityFactoryDelegate<User> d in UserFactories)
+                {
+                    if (d.Invoke(args) is T user)
+                    {
+                        return user;
+                    }
+                }
+            }
+            throw new NotSupportedInstanceClassException();
+        }
+
         private readonly static CharacterFactory CharacterFactory = new();
         private readonly static InventoryFactory InventoryFactory = new();
         private readonly static SkillFactory SkillFactory = new();
