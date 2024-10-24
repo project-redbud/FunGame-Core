@@ -35,6 +35,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Common
         public const string Column_ServerName = "ServerName";
         public const string Column_ServerKey = "ServerKey";
         public const string Column_LoginTime = "LoginTime";
+        public const string Column_LastTime = "LastTime";
 
         public static string Insert_ServerLoginLogs(string ServerName, string ServerKey)
         {
@@ -43,7 +44,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Common
 
         public static string Select_GetLastLoginTime()
         {
-            return $"{Command_Select} Max({Column_LoginTime}) {Command_From} {TableName}";
+            return $"{Command_Select} Max({Column_LoginTime}) {Column_LastTime} {Command_From} {TableName}";
         }
     }
 }
