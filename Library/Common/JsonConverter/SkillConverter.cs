@@ -10,7 +10,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
     {
         public override Skill NewInstance()
         {
-            return new();
+            return new OpenSkill(0, "");
         }
 
         public override void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref Skill result)

@@ -2,7 +2,7 @@ using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Api.Factory
+namespace Milimoe.FunGame.Core.Api.EntityFactory
 {
     internal class UserFactory : IFactory<User>
     {

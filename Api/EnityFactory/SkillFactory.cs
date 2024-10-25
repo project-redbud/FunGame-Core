@@ -1,7 +1,7 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Base;
 
-namespace Milimoe.FunGame.Core.Api.Factory
+namespace Milimoe.FunGame.Core.Api.EntityFactory
 {
     internal class SkillFactory : IFactory<Skill>
     {

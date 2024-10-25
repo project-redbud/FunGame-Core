@@ -441,22 +441,23 @@ namespace Milimoe.FunGame.Core.Entity
         /// <returns></returns>
         public Effect Copy(Skill skill)
         {
-            Effect copy = new(skill)
+            Dictionary<string, object> args = new()
             {
-                Id = Id,
-                Name = Name,
-                Description = Description,
-                EffectType = EffectType,
-                TargetSelf = TargetSelf,
-                TargetCount = TargetCount,
-                TargetRange = TargetRange,
-                Durative = Durative,
-                Duration = Duration,
-                DurationTurn = DurationTurn,
-                MagicType = MagicType,
-                GamingQueue = GamingQueue
+                { "skill", skill }
             };
-
+            Effect copy = Factory.OpenFactory.GetInstance<Effect>(Id, Name, args);
+            copy.Id = Id;
+            copy.Name = Name;
+            copy.Description = Description;
+            copy.EffectType = EffectType;
+            copy.TargetSelf = TargetSelf;
+            copy.TargetCount = TargetCount;
+            copy.TargetRange = TargetRange;
+            copy.Durative = Durative;
+            copy.Duration = Duration;
+            copy.DurationTurn = DurationTurn;
+            copy.MagicType = MagicType;
+            copy.GamingQueue = GamingQueue;
             return copy;
         }
 

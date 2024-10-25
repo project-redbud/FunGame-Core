@@ -4,7 +4,7 @@ using Milimoe.FunGame.Core.Library.Constant;
 namespace Milimoe.FunGame.Core.Api.Utility
 {
     /// <summary>
-    /// 简易的实体模组配置文件生成器<para/>
+    /// 简易的实体模组配置文件生成器，适用范围：动态扩展技能和物品、保存玩家的存档<para/>
     /// 仅支持继承了 <see cref="BaseEntity"/> 的实体类型，每个 <see cref="EntityModuleConfig{T}"/> 仅保存一种实体类型的数据
     /// <para/>文件会保存为：程序目录/configs/<see cref="ModuleName"/>/<see cref="FileName"/>.json
     /// </summary>

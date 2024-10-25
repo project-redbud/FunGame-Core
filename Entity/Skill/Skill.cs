@@ -2,7 +2,6 @@
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
-using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Entity
@@ -170,15 +169,14 @@ namespace Milimoe.FunGame.Core.Entity
         internal Skill() { }
 
         /// <summary>
-        /// 设置一些属性给从 <see cref="SkillModule"/> 新建来的 <paramref name="newbySkillModule"/><para/>
-        /// 对于还原存档而言，在使用 JSON 反序列化 Skill，且从 <see cref="SkillModule.GetSkill"/> 中获取了实例后，需要使用此方法复制给新实例
+        /// 设置一些属性给从工厂构造出来的 <paramref name="newbyFactory"/> 对象
         /// </summary>
-        /// <param name="newbySkillModule"></param>
-        public void SetPropertyToItemModuleNew(Skill newbySkillModule)
+        /// <param name="newbyFactory"></param>
+        public void SetPropertyToItemModuleNew(Skill newbyFactory)
         {
-            newbySkillModule.Enable = Enable;
-            newbySkillModule.IsInEffect = IsInEffect;
-            newbySkillModule.CurrentCD = CurrentCD;
+            newbyFactory.Enable = Enable;
+            newbyFactory.IsInEffect = IsInEffect;
+            newbyFactory.CurrentCD = CurrentCD;
         }
 
         /// <summary>
@@ -333,27 +331,30 @@ namespace Milimoe.FunGame.Core.Entity
         /// <returns></returns>
         public Skill Copy()
         {
-            Skill s = new()
+            Dictionary<string, object> dict = new()
             {
-                Id = Id,
-                Name = Name,
-                Description = Description,
-                GeneralDescription = GeneralDescription,
-                SkillType = SkillType,
-                MPCost = MPCost,
-                CastTime = CastTime,
-                EPCost = EPCost,
-                CD = CD,
-                CurrentCD = CurrentCD,
-                HardnessTime = HardnessTime,
-                GamingQueue = GamingQueue
+                { "others", OtherArgs }
             };
+            Skill skill = Factory.OpenFactory.GetInstance<Skill>(Id, Name, dict);
+            SetPropertyToItemModuleNew(skill);
+            skill.Id = Id;
+            skill.Name = Name;
+            skill.Description = Description;
+            skill.GeneralDescription = GeneralDescription;
+            skill.SkillType = SkillType;
+            skill.MPCost = MPCost;
+            skill.CastTime = CastTime;
+            skill.EPCost = EPCost;
+            skill.CD = CD;
+            skill.CurrentCD = CurrentCD;
+            skill.HardnessTime = HardnessTime;
+            skill.GamingQueue = GamingQueue;
             foreach (Effect e in Effects)
             {
-                Effect neweffect = e.Copy(s);
-                s.Effects.Add(neweffect);
+                Effect neweffect = e.Copy(skill);
+                skill.Effects.Add(neweffect);
             }
-            return s;
+            return skill;
         }
 
         /// <summary>

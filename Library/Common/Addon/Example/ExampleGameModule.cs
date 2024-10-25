@@ -251,11 +251,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
 
         public override string Author => "FunGamer";
 
-        public override List<Character> Characters
+        public override Dictionary<string, Character> Characters
         {
             get
             {
-                List<Character> list = [];
+                Dictionary<string, Character> dict = [];
                 // 构建一个你想要的角色
                 Character c = Factory.GetCharacter();
                 c.Name = "Oshima";
@@ -268,8 +268,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
                 c.InitialINT = 5;
                 c.InitialATK = 100;
                 c.InitialDEF = 10;
-                list.Add(c);
-                return list;
+                dict.Add(c.Name, c);
+                return dict;
             }
         }
     }
@@ -287,20 +287,31 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
 
         public override string Author => "FunGamer";
 
-        public override List<Skill> Skills
+        public override Dictionary<string, Skill> Skills
         {
             get
             {
-                List<Skill> list = [];
+                Dictionary<string, Skill> dict = [];
                 // 技能应该在GameModule中新建类继承Skill实现，再自行构造。
-                return list;
+                return dict;
             }
         }
 
-        public override Skill? GetSkill(long id, string name, SkillType type)
+        protected override Factory.EntityFactoryDelegate<Skill> SkillFactory()
         {
-            // 此方法将根据id和name，返回一个你继承实现了的类对象。
-            return Factory.GetSkill();
+            // 注册一个工厂，根据id和name，返回一个你继承实现了的类对象。
+            return (id, name, args) =>
+            {
+                return null;
+            };
+        }
+
+        protected override Factory.EntityFactoryDelegate<Effect> EffectFactory()
+        {
+            return (id, name, args) =>
+            {
+                return null;
+            };
         }
     }
 
@@ -317,20 +328,23 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
 
         public override string Author => "FunGamer";
 
-        public override List<Item> Items
+        public override Dictionary<string, Item> Items
         {
             get
             {
-                List<Item> list = [];
+                Dictionary<string, Item> dict = [];
                 // 物品应该在GameModule中新建类继承Item实现，再自行构造。
-                return list;
+                return dict;
             }
         }
 
-        public override Item? GetItem(long id, string name, ItemType type)
+        protected override Factory.EntityFactoryDelegate<Item> ItemFactory()
         {
-            // 此方法将根据id和name，返回一个你继承实现了的类对象。
-            return Factory.GetItem();
+            // 注册一个工厂，根据id和name，返回一个你继承实现了的类对象。
+            return (id, name, args) =>
+            {
+                return null;
+            };
         }
     }
 }

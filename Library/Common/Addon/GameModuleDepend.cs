@@ -42,19 +42,19 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// 实际使用的角色组对象<para/>
         /// 请使用 <see cref="GetDependencies"/> 自动填充，不要自己添加
         /// </summary>
-        public List<Character> Characters { get; } = [];
+        public Dictionary<string, Character> Characters { get; } = [];
 
         /// <summary>
         /// 实际使用的技能组对象<para/>
         /// 请使用 <see cref="GetDependencies"/> 自动填充，不要自己添加
         /// </summary>
-        public List<Skill> Skills { get; } = [];
+        public Dictionary<string, Skill> Skills { get; } = [];
 
         /// <summary>
         /// 实际使用的物品组对象<para/>
         /// 请使用 <see cref="GetDependencies"/> 自动填充，不要自己添加
         /// </summary>
-        public List<Item> Items { get; } = [];
+        public Dictionary<string, Item> Items { get; } = [];
 
         /// <summary>
         /// 获得所有的依赖项<para/>
@@ -69,15 +69,24 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             Maps.AddRange(loader.Maps.Keys.Where(MapsDepend.Contains).Select(str => loader.Maps[str]));
             foreach (CharacterModule modules in loader.Characters.Keys.Where(CharactersDepend.Contains).Select(str => loader.Characters[str]))
             {
-                Characters.AddRange(modules.Characters);
+                foreach (string key in modules.Characters.Keys)
+                {
+                    Characters[key] = modules.Characters[key];
+                }
             }
             foreach (SkillModule modules in loader.Skills.Keys.Where(SkillsDepend.Contains).Select(str => loader.Skills[str]))
             {
-                Skills.AddRange(modules.Skills);
+                foreach (string key in modules.Skills.Keys)
+                {
+                    Skills[key] = modules.Skills[key];
+                }
             }
             foreach (ItemModule modules in loader.Items.Keys.Where(ItemsDepend.Contains).Select(str => loader.Items[str]))
             {
-                Items.AddRange(modules.Items);
+                foreach (string key in modules.Items.Keys)
+                {
+                    Items[key] = modules.Items[key];
+                }
             }
         }
     }

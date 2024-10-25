@@ -10,8 +10,8 @@ namespace Milimoe.FunGame.Core.Entity
     /// <param name="character"></param>
     public class OpenSkill(long id, string name, Character? character = null) : Skill(SkillType.Passive, character)
     {
-        public override long Id => id;
-        public override string Name => name;
+        public override long Id { get; set; } = id;
+        public override string Name { get; set; } = name;
         public override string Description => string.Join("\r\n", Effects);
 
         public override IEnumerable<Effect> AddInactiveEffectToCharacter()

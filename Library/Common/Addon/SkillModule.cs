@@ -1,7 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Addons;
-using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Library.Common.Addon
 {
@@ -30,24 +29,12 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 此模组中包含的技能
         /// </summary>
-        public abstract List<Skill> Skills { get; }
+        public abstract Dictionary<string, Skill> Skills { get; }
 
         /// <summary>
         /// 加载标记
         /// </summary>
         private bool IsLoaded = false;
-
-        /// <summary>
-        /// [可选实现] 在使用 <see cref="EntityModuleConfig{Skill}"/> 后，可以按 id + name + type 来匹配已编码的技能
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="name"></param>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public virtual Skill? GetSkill(long id, string name, SkillType type)
-        {
-            return null;
-        }
 
         /// <summary>
         /// 加载模组
@@ -63,11 +50,24 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             {
                 // 模组加载后，不允许再次加载此模组
                 IsLoaded = true;
+                // 注册工厂
+                Factory.OpenFactory.RegisterFactory(SkillFactory());
+                Factory.OpenFactory.RegisterFactory(EffectFactory());
                 // 如果加载后需要执行代码，请重写AfterLoad方法
                 AfterLoad();
             }
             return IsLoaded;
         }
+
+        /// <summary>
+        /// 注册工厂
+        /// </summary>
+        protected abstract Factory.EntityFactoryDelegate<Skill> SkillFactory();
+        
+        /// <summary>
+        /// 注册工厂（特效类）
+        /// </summary>
+        protected abstract Factory.EntityFactoryDelegate<Effect> EffectFactory();
 
         /// <summary>
         /// 模组加载后需要做的事

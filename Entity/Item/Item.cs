@@ -1,7 +1,7 @@
 ﻿using System.Text;
+using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
-using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Entity
@@ -213,6 +213,19 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 设置游戏内的行动顺序表实例
+        /// </summary>
+        /// <param name="queue"></param>
+        public void SetGamingQueue(IGamingQueue queue)
+        {
+            if (Skills.Active != null) Skills.Active.GamingQueue = queue;
+            foreach (Skill skill in Skills.Passives)
+            {
+                skill.GamingQueue = queue;
+            }
+        }
+
+        /// <summary>
         /// 局内使用物品触发 对某个角色使用
         /// </summary>
         public void UseItem(IGamingQueue queue, Character character, List<Character> enemys, List<Character> teammates)
@@ -371,21 +384,20 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 设置一些属性给从 <see cref="ItemModule"/> 新建来的 <paramref name="newbyItemModule"/><para/>
-        /// 对于还原存档而言，在使用 JSON 反序列化 Item，且从 <see cref="ItemModule.GetItem"/> 中获取了实例后，需要使用此方法复制给新实例
+        /// 设置一些属性给从工厂构造出来的 <paramref name="newbyFactory"/> 对象
         /// </summary>
-        /// <param name="newbyItemModule"></param>
-        public void SetPropertyToItemModuleNew(Item newbyItemModule)
+        /// <param name="newbyFactory"></param>
+        public void SetPropertyToItemModuleNew(Item newbyFactory)
         {
-            newbyItemModule.WeaponType = WeaponType;
-            newbyItemModule.EquipSlotType = EquipSlotType;
-            newbyItemModule.Equipable = Equipable;
-            newbyItemModule.IsPurchasable = IsPurchasable;
-            newbyItemModule.Price = Price;
-            newbyItemModule.IsSellable = IsSellable;
-            newbyItemModule.NextSellableTime = NextSellableTime;
-            newbyItemModule.IsTradable = IsTradable;
-            newbyItemModule.NextTradableTime = NextTradableTime;
+            newbyFactory.WeaponType = WeaponType;
+            newbyFactory.EquipSlotType = EquipSlotType;
+            newbyFactory.Equipable = Equipable;
+            newbyFactory.IsPurchasable = IsPurchasable;
+            newbyFactory.Price = Price;
+            newbyFactory.IsSellable = IsSellable;
+            newbyFactory.NextSellableTime = NextSellableTime;
+            newbyFactory.IsTradable = IsTradable;
+            newbyFactory.NextTradableTime = NextTradableTime;
         }
 
         /// <summary>
@@ -394,30 +406,30 @@ namespace Milimoe.FunGame.Core.Entity
         /// <returns></returns>
         public Item Copy(int level = 0)
         {
-            Item item = new()
-            {
-                Id = Id,
-                Name = Name,
-                Description = Description,
-                GeneralDescription = GeneralDescription,
-                BackgroundStory = BackgroundStory,
-                ItemType = ItemType,
-                Equipable = Equipable,
-                Unequipable = Unequipable,
-                EquipSlotType = EquipSlotType,
-                WeaponType = WeaponType,
-                Key = Key,
-                Enable = Enable,
-                IsInGameItem = IsInGameItem,
-                IsPurchasable = IsPurchasable,
-                Price = Price,
-                IsSellable = IsSellable,
-                NextSellableTime = NextSellableTime,
-                IsTradable = IsTradable,
-                NextTradableTime = NextTradableTime,
-                RemainUseTimes = RemainUseTimes,
-            };
+            Item item = Factory.OpenFactory.GetInstance<Item>(Id, Name, []);
+            SetPropertyToItemModuleNew(item);
+            item.Id = Id;
+            item.Name = Name;
+            item.Description = Description;
+            item.GeneralDescription = GeneralDescription;
+            item.BackgroundStory = BackgroundStory;
+            item.ItemType = ItemType;
+            item.Equipable = Equipable;
+            item.Unequipable = Unequipable;
+            item.EquipSlotType = EquipSlotType;
+            item.WeaponType = WeaponType;
+            item.Key = Key;
+            item.Enable = Enable;
+            item.IsInGameItem = IsInGameItem;
+            item.IsPurchasable = IsPurchasable;
+            item.Price = Price;
+            item.IsSellable = IsSellable;
+            item.NextSellableTime = NextSellableTime;
+            item.IsTradable = IsTradable;
+            item.NextTradableTime = NextTradableTime;
+            item.RemainUseTimes = RemainUseTimes;
             item.Skills.Active = Skills.Active?.Copy();
+            if (item.Skills.Active != null) item.Skills.Active.Level = level;
             foreach (Skill skill in Skills.Passives)
             {
                 Skill newskill = skill.Copy();

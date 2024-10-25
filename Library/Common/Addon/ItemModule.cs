@@ -1,7 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Addons;
-using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Library.Common.Addon
 {
@@ -30,24 +29,12 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 此模组中包含的物品
         /// </summary>
-        public abstract List<Item> Items { get; }
+        public abstract Dictionary<string, Item> Items { get; }
 
         /// <summary>
         /// 加载标记
         /// </summary>
         private bool IsLoaded = false;
-
-        /// <summary>
-        /// [可选实现] 在使用 <see cref="EntityModuleConfig{Item}"/> 后，可以按 id + name + type 来匹配已编码的物品
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="name"></param>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public virtual Item? GetItem(long id, string name, ItemType type)
-        {
-            return null;
-        }
 
         /// <summary>
         /// 加载模组
@@ -63,12 +50,19 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             {
                 // 模组加载后，不允许再次加载此模组
                 IsLoaded = true;
+                // 注册工厂
+                Factory.OpenFactory.RegisterFactory(ItemFactory());
                 // 如果加载后需要执行代码，请重写AfterLoad方法
                 AfterLoad();
             }
             return IsLoaded;
         }
 
+        /// <summary>
+        /// 注册工厂
+        /// </summary>
+        protected abstract Factory.EntityFactoryDelegate<Item> ItemFactory();
+        
         /// <summary>
         /// 模组加载后需要做的事
         /// </summary>
