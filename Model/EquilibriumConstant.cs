@@ -168,7 +168,7 @@
         /// <summary>
         /// 魔法值增长因子
         /// </summary>
-        public double MPGrowthFactor { get; set; } = 1.5;
+        public double MPGrowthFactor { get; set; } = 0.14;
         
         /// <summary>
         /// 每级增加基础攻击力

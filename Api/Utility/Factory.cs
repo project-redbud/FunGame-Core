@@ -108,7 +108,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                         return skill;
                     }
                 }
-                return (T)(object)new OpenSkill(id, name);
+                return (T)(object)new OpenSkill(id, name, args);
             }
             if (typeof(T) == typeof(Effect))
             {

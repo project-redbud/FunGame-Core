@@ -91,6 +91,11 @@ namespace Milimoe.FunGame.Core.Entity
         public IGamingQueue? GamingQueue { get; set; } = null;
 
         /// <summary>
+        /// 用于动态扩展特效的参数
+        /// </summary>
+        public Dictionary<string, object> Values { get; } = [];
+
+        /// <summary>
         /// 输出文本或日志
         /// </summary>
         public Action<string> WriteLine
@@ -102,9 +107,16 @@ namespace Milimoe.FunGame.Core.Entity
             }
         }
 
-        protected Effect(Skill skill)
+        protected Effect(Skill skill, Dictionary<string, object>? args = null)
         {
             Skill = skill;
+            if (args != null)
+            {
+                foreach (string key in args.Keys)
+                {
+                    Values[key] = args[key];
+                }
+            }
         }
 
         internal Effect()
@@ -324,6 +336,17 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 闪避检定前触发
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="throwingBonus"></param>
+        /// <returns>返回 false 表示不进行闪避检定</returns>
+        public virtual bool BeforeEvadeCheck(Character character, ref double throwingBonus)
+        {
+            return true;
+        }
+
+        /// <summary>
         /// 在触发闪避时
         /// </summary>
         /// <param name="attacker"></param>
@@ -333,6 +356,17 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual bool OnEvadedTriggered(Character attacker, Character evader, double dice)
         {
             return false;
+        }
+
+        /// <summary>
+        /// 暴击检定前触发
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="throwingBonus"></param>
+        /// <returns>返回 false 表示不进行暴击检定</returns>
+        public virtual bool BeforeCriticalCheck(Character character, ref double throwingBonus)
+        {
+            return true;
         }
 
         /// <summary>
@@ -443,7 +477,8 @@ namespace Milimoe.FunGame.Core.Entity
         {
             Dictionary<string, object> args = new()
             {
-                { "skill", skill }
+                { "skill", skill },
+                { "values", Values }
             };
             Effect copy = Factory.OpenFactory.GetInstance<Effect>(Id, Name, args);
             copy.Id = Id;

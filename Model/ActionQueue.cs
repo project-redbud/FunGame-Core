@@ -521,7 +521,7 @@ namespace Milimoe.FunGame.Core.Model
                         skill.CurrentCD = skill.RealCD;
                         skill.Enable = false;
 
-                        WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} {skill.Name}！");
+                        WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} {skill.Name}！{(skill.Slogan != "" ? skill.Slogan : "")}");
                         skill.OnSkillCasted(this, character, enemys, teammates);
                         effects = character.Effects.Where(e => e.Level > 0).ToList();
                         foreach (Effect effect in effects)
@@ -546,7 +546,7 @@ namespace Milimoe.FunGame.Core.Model
                     skill.CurrentCD = skill.RealCD;
                     skill.Enable = false;
 
-                    WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点魔法值，释放了技能 {skill.Name}！");
+                    WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点魔法值，释放了魔法 {skill.Name}！{(skill.Slogan != "" ? skill.Slogan : "")}");
                     skill.OnSkillCasted(this, character, enemys, teammates);
                 }
                 else
@@ -577,7 +577,7 @@ namespace Milimoe.FunGame.Core.Model
                     skill.CurrentCD = skill.RealCD;
                     skill.Enable = false;
 
-                    WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量值，释放了爆发技 {skill.Name}！");
+                    WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量值，释放了爆发技 {skill.Name}！{(skill.Slogan != "" ? skill.Slogan : "")}");
                     skill.OnSkillCasted(this, character, enemys, teammates);
                 }
                 else
@@ -805,14 +805,14 @@ namespace Milimoe.FunGame.Core.Model
                 _assistDamage[actor][enemy] += damage;
 
                 // 造成伤害和受伤都可以获得能量
-                double ep = GetEP(damage, 0.2, 40);
+                double ep = GetEP(damage, 0.02, 16);
                 effects = [.. actor.Effects];
                 foreach (Effect effect in effects)
                 {
                     effect.AlterEPAfterDamage(actor, ref ep);
                 }
                 actor.EP += ep;
-                ep = GetEP(damage, 0.1, 20);
+                ep = GetEP(damage, 0.01, 8);
                 effects = enemy.Effects.Where(e => e.Level > 0).ToList();
                 foreach (Effect effect in effects)
                 {
@@ -884,26 +884,38 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             double dice = Random.Shared.NextDouble();
+            double throwingBonus = 0;
+            bool checkEvade = true;
+            bool checkCritical = true;
             if (isNormalAttack)
             {
-                // 闪避判定
-                if (dice < enemy.EvadeRate)
+                effects = actor.Effects.Where(e => e.Level > 0).ToList();
+                foreach (Effect effect in effects)
                 {
-                    finalDamage = 0;
-                    List<Character> characters = [actor, enemy];
-                    bool isAlterEvaded = false;
-                    effects = characters.SelectMany(c => c.Effects.Where(e => e.Level > 0)).ToList();
-                    foreach (Effect effect in effects)
+                    checkEvade = effect.BeforeEvadeCheck(actor, ref throwingBonus);
+                }
+
+                if (checkEvade)
+                {
+                    // 闪避判定
+                    if (dice < (enemy.EvadeRate + throwingBonus))
                     {
-                        if (effect.OnEvadedTriggered(actor, enemy, dice))
+                        finalDamage = 0;
+                        List<Character> characters = [actor, enemy];
+                        bool isAlterEvaded = false;
+                        effects = characters.SelectMany(c => c.Effects.Where(e => e.Level > 0)).ToList();
+                        foreach (Effect effect in effects)
                         {
-                            isAlterEvaded = true;
+                            if (effect.OnEvadedTriggered(actor, enemy, dice))
+                            {
+                                isAlterEvaded = true;
+                            }
                         }
-                    }
-                    if (!isAlterEvaded)
-                    {
-                        WriteLine("此物理攻击被完美闪避了！");
-                        return DamageResult.Evaded;
+                        if (!isAlterEvaded)
+                        {
+                            WriteLine("此物理攻击被完美闪避了！");
+                            return DamageResult.Evaded;
+                        }
                     }
                 }
             }
@@ -918,17 +930,26 @@ namespace Milimoe.FunGame.Core.Model
             finalDamage = expectedDamage * (1 - physicalDamageReduction);
 
             // 暴击判定
-            dice = Random.Shared.NextDouble();
-            if (dice < actor.CritRate)
+            effects = actor.Effects.Where(e => e.Level > 0).ToList();
+            foreach (Effect effect in effects)
             {
-                finalDamage *= actor.CritDMG; // 暴击伤害倍率加成
-                WriteLine("暴击生效！！");
-                effects = actor.Effects.Where(e => e.Level > 0).ToList();
-                foreach (Effect effect in effects)
+                checkCritical = effect.BeforeCriticalCheck(actor, ref throwingBonus);
+            }
+
+            if (checkCritical)
+            {
+                dice = Random.Shared.NextDouble();
+                if (dice < (actor.CritRate + throwingBonus))
                 {
-                    effect.OnCriticalDamageTriggered(actor, dice);
+                    finalDamage *= actor.CritDMG; // 暴击伤害倍率加成
+                    WriteLine("暴击生效！！");
+                    effects = actor.Effects.Where(e => e.Level > 0).ToList();
+                    foreach (Effect effect in effects)
+                    {
+                        effect.OnCriticalDamageTriggered(actor, dice);
+                    }
+                    return DamageResult.Critical;
                 }
-                return DamageResult.Critical;
             }
 
             // 是否有效伤害

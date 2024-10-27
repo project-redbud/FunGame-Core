@@ -25,6 +25,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 技能的通用描述
         /// </summary>
         public virtual string GeneralDescription { get; set; } = "";
+        
+        /// <summary>
+        /// 释放技能时的口号
+        /// </summary>
+        public virtual string Slogan { get; set; } = "";
 
         /// <summary>
         /// 技能等级，等于 0 时可以称之为尚未学习
@@ -102,13 +107,23 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 实际能量消耗 [ 战技 ]
         /// </summary>
-        public double RealEPCost => IsSuperSkill ? EPCost : Math.Max(0, EPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * 0.00075)));
+        public double RealEPCost => CostAllEP ? Math.Max(MinCostEP, Character?.EP ?? MinCostEP) : (IsSuperSkill ? EPCost : Math.Max(0, EPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * 0.00075))));
 
         /// <summary>
         /// 能量消耗 [ 战技 ]
         /// </summary>
         [InitOptional]
         public virtual double EPCost { get; set; } = 0;
+
+        /// <summary>
+        /// 消耗所有能量 [ 战技 ]
+        /// </summary>
+        public virtual bool CostAllEP { get; set; } = false;
+        
+        /// <summary>
+        /// 消耗所有能量的最小能量限制 [ 战技 ] 默认值：100
+        /// </summary>
+        public virtual double MinCostEP { get; set; } = 100;
 
         /// <summary>
         /// 实际冷却时间
@@ -138,9 +153,9 @@ namespace Milimoe.FunGame.Core.Entity
         public HashSet<Effect> Effects { get; } = [];
 
         /// <summary>
-        /// 其他参数
+        /// 用于动态扩展技能的参数
         /// </summary>
-        public Dictionary<string, object> OtherArgs { get; } = [];
+        public Dictionary<string, object> Values { get; } = [];
 
         /// <summary>
         /// 游戏中的行动顺序表实例，在技能效果被触发时，此实例会获得赋值，使用时需要判断其是否存在
@@ -230,7 +245,7 @@ namespace Milimoe.FunGame.Core.Entity
             foreach (Effect e in Effects)
             {
                 e.GamingQueue = GamingQueue;
-                e.OnSkillCasted(caster, enemys, teammates, OtherArgs);
+                e.OnSkillCasted(caster, enemys, teammates, Values);
             }
         }
 
@@ -331,11 +346,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// <returns></returns>
         public Skill Copy()
         {
-            Dictionary<string, object> dict = new()
+            Dictionary<string, object> args = new()
             {
-                { "others", OtherArgs }
+                { "values", Values }
             };
-            Skill skill = Factory.OpenFactory.GetInstance<Skill>(Id, Name, dict);
+            Skill skill = Factory.OpenFactory.GetInstance<Skill>(Id, Name, args);
             SetPropertyToItemModuleNew(skill);
             skill.Id = Id;
             skill.Name = Name;

@@ -21,6 +21,20 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Effect.Name):
                     result.Name = reader.GetString() ?? "";
                     break;
+                default:
+                    if (reader.TokenType == JsonTokenType.Number)
+                    {
+                        result.Values[propertyName] = reader.GetDouble();
+                    }
+                    else if (reader.TokenType == JsonTokenType.String)
+                    {
+                        result.Values[propertyName] = reader.GetString() ?? "";
+                    }
+                    else if (reader.TokenType == JsonTokenType.True || reader.TokenType == JsonTokenType.False)
+                    {
+                        result.Values[propertyName] = reader.GetBoolean();
+                    }
+                    break;
             }
         }
 
@@ -30,6 +44,28 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
 
             writer.WriteNumber(nameof(Effect.Id), (int)value.Id);
             writer.WriteString(nameof(Effect.Name), value.Name);
+
+            foreach (var kvp in value.Values)
+            {
+                switch (kvp.Value)
+                {
+                    case int intValue:
+                        writer.WriteNumber(kvp.Key, intValue);
+                        break;
+                    case double doubleValue:
+                        writer.WriteNumber(kvp.Key, doubleValue);
+                        break;
+                    case bool boolValue:
+                        writer.WriteBoolean(kvp.Key, boolValue);
+                        break;
+                    case string strValue:
+                        writer.WriteString(kvp.Key, strValue);
+                        break;
+                    default:
+                        JsonSerializer.Serialize(writer, kvp.Value, options);
+                        break;
+                }
+            }
 
             writer.WriteEndObject();
         }
