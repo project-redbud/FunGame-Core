@@ -729,7 +729,7 @@ namespace Milimoe.FunGame.Core.Model
                 }
 
                 // 移除到时间的特效
-                List<Effect> effects = character.Effects.ToList();
+                List<Effect> effects = character.Effects.Where(e => e.Level > 0).ToList();
                 foreach (Effect effect in effects)
                 {
                     if (effect.Level == 0)
@@ -986,26 +986,38 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             double dice = Random.Shared.NextDouble();
+            double throwingBonus = 0;
+            bool checkEvade = true;
+            bool checkCritical = true;
             if (isNormalAttack)
             {
-                // 闪避判定
-                if (dice < enemy.EvadeRate)
+                effects = actor.Effects.Where(e => e.Level > 0).ToList();
+                foreach (Effect effect in effects)
                 {
-                    finalDamage = 0;
-                    List<Character> characters = [actor, enemy];
-                    bool isAlterEvaded = false;
-                    effects = characters.SelectMany(c => c.Effects.Where(e => e.Level > 0)).ToList();
-                    foreach (Effect effect in effects)
+                    checkEvade = effect.BeforeEvadeCheck(actor, ref throwingBonus);
+                }
+
+                if (checkEvade)
+                {
+                    // 闪避判定
+                    if (dice < (enemy.EvadeRate + throwingBonus))
                     {
-                        if (effect.OnEvadedTriggered(actor, enemy, dice))
+                        finalDamage = 0;
+                        List<Character> characters = [actor, enemy];
+                        bool isAlterEvaded = false;
+                        effects = characters.SelectMany(c => c.Effects.Where(e => e.Level > 0)).ToList();
+                        foreach (Effect effect in effects)
                         {
-                            isAlterEvaded = true;
+                            if (effect.OnEvadedTriggered(actor, enemy, dice))
+                            {
+                                isAlterEvaded = true;
+                            }
                         }
-                    }
-                    if (!isAlterEvaded)
-                    {
-                        WriteLine("此魔法攻击被完美闪避了！");
-                        return DamageResult.Evaded;
+                        if (!isAlterEvaded)
+                        {
+                            WriteLine("此魔法攻击被完美闪避了！");
+                            return DamageResult.Evaded;
+                        }
                     }
                 }
             }
@@ -1030,17 +1042,26 @@ namespace Milimoe.FunGame.Core.Model
             finalDamage = expectedDamage * (1 - MDF);
 
             // 暴击判定
-            dice = Random.Shared.NextDouble();
-            if (dice < actor.CritRate)
+            effects = actor.Effects.Where(e => e.Level > 0).ToList();
+            foreach (Effect effect in effects)
             {
-                finalDamage *= actor.CritDMG; // 暴击伤害倍率加成
-                WriteLine("暴击生效！！");
-                effects = actor.Effects.Where(e => e.Level > 0).ToList();
-                foreach (Effect effect in effects)
+                checkCritical = effect.BeforeCriticalCheck(actor, ref throwingBonus);
+            }
+
+            if (checkCritical)
+            {
+                dice = Random.Shared.NextDouble();
+                if (dice < (actor.CritRate + throwingBonus))
                 {
-                    effect.OnCriticalDamageTriggered(actor, dice);
+                    finalDamage *= actor.CritDMG; // 暴击伤害倍率加成
+                    WriteLine("暴击生效！！");
+                    effects = actor.Effects.Where(e => e.Level > 0).ToList();
+                    foreach (Effect effect in effects)
+                    {
+                        effect.OnCriticalDamageTriggered(actor, dice);
+                    }
+                    return DamageResult.Critical;
                 }
-                return DamageResult.Critical;
             }
 
             // 是否有效伤害
