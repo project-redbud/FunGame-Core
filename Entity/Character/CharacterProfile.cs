@@ -64,5 +64,24 @@ namespace Milimoe.FunGame.Core.Entity
         /// 角色的故事
         /// </summary>
         public Dictionary<string, string> Stories { get; set; } = [];
+
+        /// <summary>
+        /// 复制一个角色资料
+        /// </summary>
+        /// <returns></returns>
+        public CharacterProfile Copy()
+        {
+            return new(Name, FirstName, NickName)
+            {
+                Birthplace = Birthplace,
+                Birthday = Birthday,
+                Status = Status,
+                Affiliation = Affiliation,
+                Sex = Sex,
+                Height = Height,
+                Weight = Weight,
+                Stories = new(Stories)
+            };
+        }
     }
 }

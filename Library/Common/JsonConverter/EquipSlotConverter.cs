@@ -48,14 +48,14 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     break;
                 case nameof(EquipSlot.Accessory1):
                     temp = NetworkUtility.JsonDeserialize<Item>(ref reader, options) ?? new();
-                    if (temp.EquipSlotType == EquipSlotType.Accessory)
+                    if (temp.EquipSlotType == EquipSlotType.Accessory1)
                     {
                         result.Accessory1 = temp;
                     }
                     break;
                 case nameof(EquipSlot.Accessory2):
                     temp = NetworkUtility.JsonDeserialize<Item>(ref reader, options) ?? new();
-                    if (temp.EquipSlotType == EquipSlotType.Accessory)
+                    if (temp.EquipSlotType == EquipSlotType.Accessory2)
                     {
                         result.Accessory2 = temp;
                     }

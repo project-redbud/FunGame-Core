@@ -805,14 +805,14 @@ namespace Milimoe.FunGame.Core.Model
                 _assistDamage[actor][enemy] += damage;
 
                 // 造成伤害和受伤都可以获得能量
-                double ep = GetEP(damage, 0.02, 16);
+                double ep = GetEP(damage, 0.03, 30);
                 effects = [.. actor.Effects];
                 foreach (Effect effect in effects)
                 {
                     effect.AlterEPAfterDamage(actor, ref ep);
                 }
                 actor.EP += ep;
-                ep = GetEP(damage, 0.01, 8);
+                ep = GetEP(damage, 0.015, 15);
                 effects = enemy.Effects.Where(e => e.Level > 0).ToList();
                 foreach (Effect effect in effects)
                 {
@@ -1121,6 +1121,12 @@ namespace Milimoe.FunGame.Core.Model
                 WriteLine(msg);
             }
 
+            if (_queue.Count > 3 && _eliminated.Count == 0)
+            {
+                money += 200;
+                WriteLine($"[ {killer} ] 拿下了第一滴血！额外奖励 200 {General.GameplayEquilibriumConstant.InGameCurrency}！！");
+            }
+
             int kills = _continuousKilling[killer];
             string continuousKilling = CharacterSet.GetContinuousKilling(kills);
             if (kills == 2 || kills == 3)
@@ -1375,8 +1381,8 @@ namespace Milimoe.FunGame.Core.Model
         {
             if (character.Equip(item))
             {
-                EquipItemToSlot type = character.EquipSlot.GetEquipItemToSlot(item);
-                WriteLine($"[ {character} ] 装备了 [ {item.Name} ]。" + (type != EquipItemToSlot.None ? $"（{ItemSet.GetEquipItemToSlotTypeName(type)} 栏位）" : ""));
+                EquipSlotType type = item.EquipSlotType;
+                WriteLine($"[ {character} ] 装备了 [ {item.Name} ]。" + (type != EquipSlotType.None ? $"（{ItemSet.GetEquipSlotTypeName(type)} 栏位）" : ""));
             }
         }
 
@@ -1386,11 +1392,11 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="character"></param>
         /// <param name="type"></param>
         /// <param name="item"></param>
-        public void Equip(Character character, EquipItemToSlot type, Item item)
+        public void Equip(Character character, EquipSlotType type, Item item)
         {
             if (character.Equip(item, type))
             {
-                WriteLine($"[ {character} ] 装备了 [ {item.Name} ]。（{ItemSet.GetEquipItemToSlotTypeName(type)} 栏位）");
+                WriteLine($"[ {character} ] 装备了 [ {item.Name} ]。（{ItemSet.GetEquipSlotTypeName(type)} 栏位）");
             }
         }
 
@@ -1399,12 +1405,12 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         /// <param name="character"></param>
         /// <param name="type"></param>
-        public void UnEquip(Character character, EquipItemToSlot type)
+        public void UnEquip(Character character, EquipSlotType type)
         {
             Item? item = character.UnEquip(type);
             if (item != null)
             {
-                WriteLine($"[ {character} ] 取消装备了 [ {item.Name} ]。（{ItemSet.GetEquipItemToSlotTypeName(type)} 栏位）");
+                WriteLine($"[ {character} ] 取消装备了 [ {item.Name} ]。（{ItemSet.GetEquipSlotTypeName(type)} 栏位）");
             }
         }
     }

@@ -42,7 +42,7 @@ namespace Milimoe.FunGame.Core.Entity
         public bool Unequipable { get; set; } = true;
 
         /// <summary>
-        /// 装备槽位
+        /// 当前装备的槽位
         /// </summary>
         public virtual EquipSlotType EquipSlotType { get; set; } = EquipSlotType.None;
 
@@ -140,9 +140,10 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 当装备物品时
         /// </summary>
-        public void OnItemEquip(Character character, EquipItemToSlot type)
+        public void OnItemEquip(Character character, EquipSlotType type)
         {
             Character = character;
+            EquipSlotType = type;
             foreach (Skill skill in Skills.Passives)
             {
                 if (!skill.IsActive && skill.Level > 0)
@@ -164,7 +165,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 当取消装备物品时
         /// </summary>
-        public void OnItemUnEquip(EquipItemToSlot type)
+        public void OnItemUnEquip(EquipSlotType type)
         {
             if (Character != null)
             {
@@ -188,28 +189,29 @@ namespace Milimoe.FunGame.Core.Entity
                 }
                 switch (type)
                 {
-                    case EquipItemToSlot.MagicCardPack:
+                    case EquipSlotType.MagicCardPack:
                         Character.EquipSlot.MagicCardPack = null;
                         break;
-                    case EquipItemToSlot.Weapon:
+                    case EquipSlotType.Weapon:
                         Character.EquipSlot.Weapon = null;
                         break;
-                    case EquipItemToSlot.Armor:
+                    case EquipSlotType.Armor:
                         Character.EquipSlot.Armor = null;
                         break;
-                    case EquipItemToSlot.Shoes:
+                    case EquipSlotType.Shoes:
                         Character.EquipSlot.Shoes = null;
                         break;
-                    case EquipItemToSlot.Accessory1:
+                    case EquipSlotType.Accessory1:
                         Character.EquipSlot.Accessory1 = null;
                         break;
-                    case EquipItemToSlot.Accessory2:
+                    case EquipSlotType.Accessory2:
                         Character.EquipSlot.Accessory2 = null;
                         break;
                 }
                 OnItemUnEquipped(Character, this, type);
             }
             Character = null;
+            EquipSlotType = EquipSlotType.None;
         }
 
         /// <summary>
@@ -268,7 +270,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="character"></param>
         /// <param name="item"></param>
         /// <param name="type"></param>
-        public virtual void OnItemEquipped(Character character, Item item, EquipItemToSlot type)
+        public virtual void OnItemEquipped(Character character, Item item, EquipSlotType type)
         {
 
         }
@@ -279,17 +281,16 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="character"></param>
         /// <param name="item"></param>
         /// <param name="type"></param>
-        public virtual void OnItemUnEquipped(Character character, Item item, EquipItemToSlot type)
+        public virtual void OnItemUnEquipped(Character character, Item item, EquipSlotType type)
         {
 
         }
 
 
-        protected Item(ItemType type, bool isInGame = true, EquipSlotType slot = EquipSlotType.None)
+        protected Item(ItemType type, bool isInGame = true)
         {
             ItemType = type;
             IsInGameItem = isInGame;
-            EquipSlotType = slot;
         }
 
         internal Item() { }
@@ -416,7 +417,6 @@ namespace Milimoe.FunGame.Core.Entity
             item.ItemType = ItemType;
             item.Equipable = Equipable;
             item.Unequipable = Unequipable;
-            item.EquipSlotType = EquipSlotType;
             item.WeaponType = WeaponType;
             item.Key = Key;
             item.Enable = Enable;

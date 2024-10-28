@@ -809,7 +809,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="item"></param>
         /// <param name="slot"></param>
-        public bool Equip(Item item, EquipItemToSlot slot)
+        public bool Equip(Item item, EquipSlotType slot)
         {
             bool result = false;
             double pastHP = HP;
@@ -818,57 +818,57 @@ namespace Milimoe.FunGame.Core.Entity
             double pastMaxMP = MaxMP;
             switch (slot)
             {
-                case EquipItemToSlot.MagicCardPack:
+                case EquipSlotType.MagicCardPack:
                     if (item.ItemType == ItemType.MagicCardPack)
                     {
-                        UnEquip(EquipItemToSlot.MagicCardPack);
+                        UnEquip(EquipSlotType.MagicCardPack);
                         EquipSlot.MagicCardPack = item;
-                        item.OnItemEquip(this, EquipItemToSlot.MagicCardPack);
+                        item.OnItemEquip(this, EquipSlotType.MagicCardPack);
                         result = true;
                     }
                     break;
-                case EquipItemToSlot.Weapon:
+                case EquipSlotType.Weapon:
                     if (item.ItemType == ItemType.Weapon)
                     {
-                        UnEquip(EquipItemToSlot.Weapon);
+                        UnEquip(EquipSlotType.Weapon);
                         EquipSlot.Weapon = item;
-                        item.OnItemEquip(this, EquipItemToSlot.Weapon);
+                        item.OnItemEquip(this, EquipSlotType.Weapon);
                         result = true;
                     }
                     break;
-                case EquipItemToSlot.Armor:
+                case EquipSlotType.Armor:
                     if (item.ItemType == ItemType.Armor)
                     {
-                        UnEquip(EquipItemToSlot.Armor);
+                        UnEquip(EquipSlotType.Armor);
                         EquipSlot.Armor = item;
-                        item.OnItemEquip(this, EquipItemToSlot.Armor);
+                        item.OnItemEquip(this, EquipSlotType.Armor);
                         result = true;
                     }
                     break;
-                case EquipItemToSlot.Shoes:
+                case EquipSlotType.Shoes:
                     if (item.ItemType == ItemType.Shoes)
                     {
-                        UnEquip(EquipItemToSlot.Shoes);
+                        UnEquip(EquipSlotType.Shoes);
                         EquipSlot.Shoes = item;
-                        item.OnItemEquip(this, EquipItemToSlot.Shoes);
+                        item.OnItemEquip(this, EquipSlotType.Shoes);
                         result = true;
                     }
                     break;
-                case EquipItemToSlot.Accessory1:
+                case EquipSlotType.Accessory1:
                     if (item.ItemType == ItemType.Accessory)
                     {
-                        UnEquip(EquipItemToSlot.Accessory1);
+                        UnEquip(EquipSlotType.Accessory1);
                         EquipSlot.Accessory1 = item;
-                        item.OnItemEquip(this, EquipItemToSlot.Accessory1);
+                        item.OnItemEquip(this, EquipSlotType.Accessory1);
                         result = true;
                     }
                     break;
-                case EquipItemToSlot.Accessory2:
+                case EquipSlotType.Accessory2:
                     if (item.ItemType == ItemType.Accessory)
                     {
-                        UnEquip(EquipItemToSlot.Accessory2);
+                        UnEquip(EquipSlotType.Accessory2);
                         EquipSlot.Accessory2 = item;
-                        item.OnItemEquip(this, EquipItemToSlot.Accessory2);
+                        item.OnItemEquip(this, EquipSlotType.Accessory2);
                         result = true;
                     }
                     break;
@@ -891,21 +891,21 @@ namespace Milimoe.FunGame.Core.Entity
             switch (item.ItemType)
             {
                 case ItemType.MagicCardPack:
-                    return Equip(item, EquipItemToSlot.MagicCardPack);
+                    return Equip(item, EquipSlotType.MagicCardPack);
                 case ItemType.Weapon:
-                    return Equip(item, EquipItemToSlot.Weapon);
+                    return Equip(item, EquipSlotType.Weapon);
                 case ItemType.Armor:
-                    return Equip(item, EquipItemToSlot.Armor);
+                    return Equip(item, EquipSlotType.Armor);
                 case ItemType.Shoes:
-                    return Equip(item, EquipItemToSlot.Shoes);
+                    return Equip(item, EquipSlotType.Shoes);
                 case ItemType.Accessory:
                     if (EquipSlot.Accessory1 != null && EquipSlot.Accessory2 is null)
                     {
-                        return Equip(item, EquipItemToSlot.Accessory2);
+                        return Equip(item, EquipSlotType.Accessory2);
                     }
                     else
                     {
-                        return Equip(item, EquipItemToSlot.Accessory1);
+                        return Equip(item, EquipSlotType.Accessory1);
                     }
             }
             return false;
@@ -916,51 +916,51 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public Item? UnEquip(EquipItemToSlot type)
+        public Item? UnEquip(EquipSlotType type)
         {
             Item? result = null;
             switch (type)
             {
-                case EquipItemToSlot.MagicCardPack:
+                case EquipSlotType.MagicCardPack:
                     if (EquipSlot.MagicCardPack != null)
                     {
                         result = EquipSlot.MagicCardPack;
-                        EquipSlot.MagicCardPack.OnItemUnEquip(EquipItemToSlot.MagicCardPack);
+                        EquipSlot.MagicCardPack.OnItemUnEquip(EquipSlotType.MagicCardPack);
                     }
                     break;
-                case EquipItemToSlot.Weapon:
+                case EquipSlotType.Weapon:
                     if (EquipSlot.Weapon != null)
                     {
                         result = EquipSlot.Weapon;
-                        EquipSlot.Weapon.OnItemUnEquip(EquipItemToSlot.Weapon);
+                        EquipSlot.Weapon.OnItemUnEquip(EquipSlotType.Weapon);
                     }
                     break;
-                case EquipItemToSlot.Armor:
+                case EquipSlotType.Armor:
                     if (EquipSlot.Armor != null)
                     {
                         result = EquipSlot.Armor;
-                        EquipSlot.Armor.OnItemUnEquip(EquipItemToSlot.Armor);
+                        EquipSlot.Armor.OnItemUnEquip(EquipSlotType.Armor);
                     }
                     break;
-                case EquipItemToSlot.Shoes:
+                case EquipSlotType.Shoes:
                     if (EquipSlot.Shoes != null)
                     {
                         result = EquipSlot.Shoes;
-                        EquipSlot.Shoes.OnItemUnEquip(EquipItemToSlot.Shoes);
+                        EquipSlot.Shoes.OnItemUnEquip(EquipSlotType.Shoes);
                     }
                     break;
-                case EquipItemToSlot.Accessory1:
+                case EquipSlotType.Accessory1:
                     if (EquipSlot.Accessory1 != null)
                     {
                         result = EquipSlot.Accessory1;
-                        EquipSlot.Accessory1.OnItemUnEquip(EquipItemToSlot.Accessory1);
+                        EquipSlot.Accessory1.OnItemUnEquip(EquipSlotType.Accessory1);
                     }
                     break;
-                case EquipItemToSlot.Accessory2:
+                case EquipSlotType.Accessory2:
                     if (EquipSlot.Accessory2 != null)
                     {
                         result = EquipSlot.Accessory2;
-                        EquipSlot.Accessory2.OnItemUnEquip(EquipItemToSlot.Accessory2);
+                        EquipSlot.Accessory2.OnItemUnEquip(EquipSlotType.Accessory2);
                     }
                     break;
             }
@@ -1128,32 +1128,32 @@ namespace Milimoe.FunGame.Core.Entity
                 builder.AppendLine("== 装备栏 ==");
                 if (EquipSlot.MagicCardPack != null)
                 {
-                    builder.AppendLine(ItemSet.GetEquipItemToSlotTypeName(EquipItemToSlot.MagicCardPack) + "：" + EquipSlot.MagicCardPack.Name);
+                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipSlotType.MagicCardPack) + "：" + EquipSlot.MagicCardPack.Name);
                     builder.AppendLine(EquipSlot.MagicCardPack.Description);
                 }
                 if (EquipSlot.Weapon != null)
                 {
-                    builder.AppendLine(ItemSet.GetEquipItemToSlotTypeName(EquipItemToSlot.Weapon) + "：" + EquipSlot.Weapon.Name);
+                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipSlotType.Weapon) + "：" + EquipSlot.Weapon.Name);
                     builder.AppendLine(EquipSlot.Weapon.Description);
                 }
                 if (EquipSlot.Armor != null)
                 {
-                    builder.AppendLine(ItemSet.GetEquipItemToSlotTypeName(EquipItemToSlot.Armor) + "：" + EquipSlot.Armor.Name);
+                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipSlotType.Armor) + "：" + EquipSlot.Armor.Name);
                     builder.AppendLine(EquipSlot.Armor.Description);
                 }
                 if (EquipSlot.Shoes != null)
                 {
-                    builder.AppendLine(ItemSet.GetEquipItemToSlotTypeName(EquipItemToSlot.Shoes) + "：" + EquipSlot.Shoes.Name);
+                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipSlotType.Shoes) + "：" + EquipSlot.Shoes.Name);
                     builder.AppendLine(EquipSlot.Shoes.Description);
                 }
                 if (EquipSlot.Accessory1 != null)
                 {
-                    builder.AppendLine(ItemSet.GetEquipItemToSlotTypeName(EquipItemToSlot.Accessory1) + "：" + EquipSlot.Accessory1.Name);
+                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipSlotType.Accessory1) + "：" + EquipSlot.Accessory1.Name);
                     builder.AppendLine(EquipSlot.Accessory1.Description);
                 }
                 if (EquipSlot.Accessory2 != null)
                 {
-                    builder.AppendLine(ItemSet.GetEquipItemToSlotTypeName(EquipItemToSlot.Accessory2) + "：" + EquipSlot.Accessory2.Name);
+                    builder.AppendLine(ItemSet.GetEquipSlotTypeName(EquipSlotType.Accessory2) + "：" + EquipSlot.Accessory2.Name);
                     builder.AppendLine(EquipSlot.Accessory2.Description);
                 }
             }
@@ -1288,7 +1288,7 @@ namespace Milimoe.FunGame.Core.Entity
                 Name = Name,
                 FirstName = FirstName,
                 NickName = NickName,
-                Profile = Profile,
+                Profile = Profile.Copy(),
                 MagicType = MagicType,
                 FirstRoleType = FirstRoleType,
                 SecondRoleType = SecondRoleType,
@@ -1307,7 +1307,7 @@ namespace Milimoe.FunGame.Core.Entity
                 ExATK2 = ExATK2,
                 InitialDEF = InitialDEF,
                 ExDEF2 = ExDEF2,
-                MDF = MDF,
+                MDF = MDF.Copy(),
                 PhysicalPenetration = PhysicalPenetration,
                 MagicalPenetration = MagicalPenetration,
                 InitialHR = InitialHR,

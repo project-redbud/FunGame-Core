@@ -463,7 +463,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EquipSlotType.Weapon => "武器",
                 EquipSlotType.Armor => "防具",
                 EquipSlotType.Shoes => "鞋子",
-                EquipSlotType.Accessory => "饰品",
+                EquipSlotType.Accessory1 => "饰品1",
+                EquipSlotType.Accessory2 => "饰品2",
                 _ => ""
             };
         }
@@ -476,36 +477,9 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 "武器" => EquipSlotType.Weapon,
                 "防具" => EquipSlotType.Armor,
                 "鞋子" => EquipSlotType.Shoes,
-                "饰品" => EquipSlotType.Accessory,
+                "饰品1" => EquipSlotType.Accessory1,
+                "饰品2" => EquipSlotType.Accessory2,
                 _ => EquipSlotType.None
-            };
-        }
-
-        public static string GetEquipItemToSlotTypeName(EquipItemToSlot type)
-        {
-            return type switch
-            {
-                EquipItemToSlot.MagicCardPack => "魔法卡包",
-                EquipItemToSlot.Weapon => "武器",
-                EquipItemToSlot.Armor => "防具",
-                EquipItemToSlot.Shoes => "鞋子",
-                EquipItemToSlot.Accessory1 => "饰品1",
-                EquipItemToSlot.Accessory2 => "饰品2",
-                _ => ""
-            };
-        }
-
-        public static EquipItemToSlot GetEquipItemToSlotTypeFromName(string name)
-        {
-            return name switch
-            {
-                "魔法卡包" => EquipItemToSlot.MagicCardPack,
-                "武器" => EquipItemToSlot.Weapon,
-                "防具" => EquipItemToSlot.Armor,
-                "鞋子" => EquipItemToSlot.Shoes,
-                "饰品1" => EquipItemToSlot.Accessory1,
-                "饰品2" => EquipItemToSlot.Accessory2,
-                _ => EquipItemToSlot.None
             };
         }
     }
