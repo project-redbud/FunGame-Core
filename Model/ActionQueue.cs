@@ -955,17 +955,20 @@ namespace Milimoe.FunGame.Core.Model
                 if (_isTeamMode)
                 {
                     string teamName = GetTeamName(enemy);
-                    if (!_teams.Where(kv => kv.Key == teamName).Select(kv => kv.Value).Any(team => team.Any(character => _queue.Contains(character))))
+                    if (teamName != "")
                     {
-                        // 团灭了
-                        _eliminatedTeams.Add(_teams[teamName]);
-                        _teams.Remove(teamName);
-                    }
+                        if (!_teams.Where(kv => kv.Key == teamName).Select(kv => kv.Value).Any(team => team.Any(character => _queue.Contains(character))))
+                        {
+                            // 团灭了
+                            _eliminatedTeams.Add(_teams[teamName]);
+                            _teams.Remove(teamName);
+                        }
 
-                    if (!_teams.Keys.Where(str => str != teamName).Any())
-                    {
-                        // 没有其他的团队了，游戏结束
-                        EndGameInfo(GetTeamName(actor));
+                        if (!_teams.Keys.Where(str => str != teamName).Any())
+                        {
+                            // 没有其他的团队了，游戏结束
+                            EndGameInfo(GetTeamName(actor));
+                        }
                     }
                 }
                 else
