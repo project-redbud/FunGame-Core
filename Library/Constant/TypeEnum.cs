@@ -746,7 +746,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         D
     }
 
-    public enum ItemQualityType
+    public enum QualityType
     {
         White,
         Green,
@@ -756,7 +756,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Red
     }
 
-    public enum ItemRarityType
+    public enum RarityType
     {
         OneStar,
         TwoStar,

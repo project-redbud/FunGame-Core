@@ -33,6 +33,11 @@ namespace Milimoe.FunGame.Core.Entity
         public Item? Accessory2 { get; internal set; } = null;
 
         /// <summary>
+        /// 上一次装备的饰品槽
+        /// </summary>
+        public EquipSlotType LastEquipSlotType { get; internal set; } = EquipSlotType.Accessory1;
+
+        /// <summary>
         /// 是否有任意装备
         /// </summary>
         /// <returns></returns>

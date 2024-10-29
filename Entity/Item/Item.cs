@@ -52,6 +52,21 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual WeaponType WeaponType { get; set; } = WeaponType.None;
 
         /// <summary>
+        /// 品质类型
+        /// </summary>
+        public virtual QualityType QualityType { get; set; } = QualityType.White;
+        
+        /// <summary>
+        /// 稀有度类型
+        /// </summary>
+        public virtual RarityType RarityType { get; set; } = RarityType.OneStar;
+        
+        /// <summary>
+        /// 物品评级
+        /// </summary>
+        public virtual ItemRankType RankType { get; set; } = ItemRankType.D;
+
+        /// <summary>
         /// 快捷键
         /// </summary>
         public char Key { get; set; } = '/';
@@ -418,6 +433,9 @@ namespace Milimoe.FunGame.Core.Entity
             item.Equipable = Equipable;
             item.Unequipable = Unequipable;
             item.WeaponType = WeaponType;
+            item.QualityType = QualityType;
+            item.RarityType = RarityType;
+            item.RankType = RankType;
             item.Key = Key;
             item.Enable = Enable;
             item.IsInGameItem = IsInGameItem;

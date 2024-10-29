@@ -859,6 +859,7 @@ namespace Milimoe.FunGame.Core.Entity
                     {
                         UnEquip(EquipSlotType.Accessory1);
                         EquipSlot.Accessory1 = item;
+                        EquipSlot.LastEquipSlotType = EquipSlotType.Accessory1;
                         item.OnItemEquip(this, EquipSlotType.Accessory1);
                         result = true;
                     }
@@ -868,6 +869,7 @@ namespace Milimoe.FunGame.Core.Entity
                     {
                         UnEquip(EquipSlotType.Accessory2);
                         EquipSlot.Accessory2 = item;
+                        EquipSlot.LastEquipSlotType = EquipSlotType.Accessory2;
                         item.OnItemEquip(this, EquipSlotType.Accessory2);
                         result = true;
                     }
@@ -899,7 +901,15 @@ namespace Milimoe.FunGame.Core.Entity
                 case ItemType.Shoes:
                     return Equip(item, EquipSlotType.Shoes);
                 case ItemType.Accessory:
-                    if (EquipSlot.Accessory1 != null && EquipSlot.Accessory2 is null)
+                    if (EquipSlot.Accessory1 is null)
+                    {
+                        return Equip(item, EquipSlotType.Accessory1);
+                    }
+                    else if (EquipSlot.Accessory1 != null && EquipSlot.Accessory2 is null)
+                    {
+                        return Equip(item, EquipSlotType.Accessory2);
+                    }
+                    else if (EquipSlot.Accessory1 != null && EquipSlot.Accessory2 != null && EquipSlot.LastEquipSlotType == EquipSlotType.Accessory1)
                     {
                         return Equip(item, EquipSlotType.Accessory2);
                     }

@@ -1,6 +1,7 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Base;
+using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Model
@@ -24,11 +25,21 @@ namespace Milimoe.FunGame.Core.Model
         /// 当前已死亡的角色顺序(第一个是最早死的)
         /// </summary>
         public List<Character> Eliminated => _eliminated;
+        
+        /// <summary>
+        /// 当前团灭的团队顺序(第一个是最早死的)
+        /// </summary>
+        public List<List<Character>> EliminatedTeams => _eliminatedTeams;
 
         /// <summary>
         /// 角色数据
         /// </summary>
         public Dictionary<Character, CharacterStatistics> CharacterStatistics => _stats;
+        
+        /// <summary>
+        /// 团队及其成员
+        /// </summary>
+        public Dictionary<string, List<Character>> Teams => _teams;
 
         /// <summary>
         /// 游戏运行的时间
@@ -50,6 +61,11 @@ namespace Milimoe.FunGame.Core.Model
         /// 当前已死亡的角色顺序(第一个是最早死的)
         /// </summary>
         protected readonly List<Character> _eliminated = [];
+
+        /// <summary>
+        /// 当前团灭的团队顺序(第一个是最早死的)
+        /// </summary>
+        protected readonly List<List<Character>> _eliminatedTeams = [];
 
         /// <summary>
         /// 硬直时间表
@@ -92,6 +108,16 @@ namespace Milimoe.FunGame.Core.Model
         protected readonly Dictionary<Character, CharacterStatistics> _stats = [];
 
         /// <summary>
+        /// 团队及其成员
+        /// </summary>
+        protected readonly Dictionary<string, List<Character>> _teams = [];
+
+        /// <summary>
+        /// 是否是团队模式
+        /// </summary>
+        protected bool _isTeamMode = false;
+        
+        /// <summary>
         /// 游戏是否结束
         /// </summary>
         protected bool _isGameEnd = false;
@@ -99,16 +125,41 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 新建一个行动顺序表
         /// </summary>
-        /// <param name="characters">参与本次游戏的角色列表</param>
+        /// <param name="isTeamMdoe">是否是团队模式</param>
         /// <param name="writer">用于文本输出</param>
-        public ActionQueue(List<Character> characters, Action<string>? writer = null)
+        public ActionQueue(bool isTeamMdoe = false, Action<string>? writer = null)
         {
+            _isTeamMode = isTeamMdoe;
             if (writer != null)
             {
                 WriteLine = writer;
             }
             WriteLine ??= new Action<string>(Console.WriteLine);
+        }
 
+        /// <summary>
+        /// 新建一个行动顺序表并初始化
+        /// </summary>
+        /// <param name="characters">参与本次游戏的角色列表</param>
+        /// <param name="isTeamMdoe">是否是团队模式</param>
+        /// <param name="writer">用于文本输出</param>
+        public ActionQueue(List<Character> characters, bool isTeamMdoe = false, Action<string>? writer = null)
+        {
+            _isTeamMode = isTeamMdoe;
+            if (writer != null)
+            {
+                WriteLine = writer;
+            }
+            WriteLine ??= new Action<string>(Console.WriteLine);
+            InitCharacterQueue(characters);
+        }
+
+        /// <summary>
+        /// 初始化行动顺序表
+        /// </summary>
+        /// <param name="characters"></param>
+        public void InitCharacterQueue(List<Character> characters)
+        {
             // 初始排序：按速度排序
             List<IGrouping<double, Character>> groupedBySpeed = [.. characters
                 .GroupBy(c => c.SPD)
@@ -190,6 +241,70 @@ namespace Milimoe.FunGame.Core.Model
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// 清空行动队列
+        /// </summary>
+        public void ClearQueue()
+        {
+            _queue.Clear();
+            _hardnessTimes.Clear();
+            _assistDamage.Clear();
+            _stats.Clear();
+            _cutCount.Clear();
+            _castingSkills.Clear();
+            _castingSuperSkills.Clear();
+            _continuousKilling.Clear();
+            _earnedMoney.Clear();
+            _eliminated.Clear();
+        }
+
+        /// <summary>
+        /// 添加一个团队
+        /// </summary>
+        /// <param name="teamName"></param>
+        /// <param name="characters"></param>
+        public void AddTeam(string teamName, params Character[] characters)
+        {
+            if (teamName != "" && characters.Length > 0)
+            {
+                _teams.Add(teamName, new(characters));
+            }
+        }
+        
+        /// <summary>
+        /// 获取角色的团队名
+        /// </summary>
+        /// <param name="character"></param>
+        public string GetTeamName(Character character)
+        {
+            foreach (string team in _teams.Keys)
+            {
+                IEnumerable<Character> characters = _teams[team];
+                if (characters.Contains(character))
+                {
+                    return team;
+                }
+            }
+            return "";
+        }
+        
+        /// <summary>
+        /// 获取某角色的团队成员
+        /// </summary>
+        /// <param name="character"></param>
+        public List<Character> GetTeammates(Character character)
+        {
+            foreach (string team in _teams.Keys)
+            {
+                IEnumerable<Character> characters = _teams[team];
+                if (characters.Contains(character))
+                {
+                    return characters.Where(c => c != character).ToList();
+                }
+            }
+            return [];
         }
 
         /// <summary>
@@ -336,11 +451,11 @@ namespace Milimoe.FunGame.Core.Model
             double baseTime = 10;
             bool isCheckProtected = true;
 
-            // 敌人列表
-            List<Character> enemys = [.. _queue.Where(c => c != character && !c.IsUnselectable)];
-
             // 队友列表
-            List<Character> teammates = [];
+            List<Character> teammates = GetTeammates(character);
+
+            // 敌人列表
+            List<Character> enemys = [.. _queue.Where(c => c != character && !c.IsUnselectable && !teammates.Contains(c))];
 
             // 技能列表
             List<Skill> skills = [.. character.Skills.Where(s => s.Level > 0 && s.SkillType != SkillType.Passive && s.Enable && !s.IsInEffect && s.CurrentCD == 0 &&
@@ -835,10 +950,31 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     effect.AfterDeathCalculation(enemy, actor, _continuousKilling, _earnedMoney);
                 }
-                if (_queue.Remove(enemy) && !_queue.Where(c => c != actor).Any())
+                // 将死者移出队列
+                _queue.Remove(enemy);
+                if (_isTeamMode)
                 {
-                    // 没有其他的角色了，游戏结束
-                    EndGameInfo(actor);
+                    string teamName = GetTeamName(enemy);
+                    if (!_teams.Where(kv => kv.Key == teamName).Select(kv => kv.Value).Any(team => team.Any(character => _queue.Contains(character))))
+                    {
+                        // 团灭了
+                        _eliminatedTeams.Add(_teams[teamName]);
+                        _teams.Remove(teamName);
+                    }
+
+                    if (!_teams.Keys.Where(str => str != teamName).Any())
+                    {
+                        // 没有其他的团队了，游戏结束
+                        EndGameInfo(GetTeamName(actor));
+                    }
+                }
+                else
+                {
+                    if (!_queue.Where(c => c != actor).Any())
+                    {
+                        // 没有其他的角色了，游戏结束
+                        EndGameInfo(actor);
+                    }
                 }
             }
         }
@@ -1121,8 +1257,10 @@ namespace Milimoe.FunGame.Core.Model
                 WriteLine(msg);
             }
 
-            if (_queue.Count > 3 && _eliminated.Count == 0)
+            if (_eliminated.Count == 0)
             {
+                _stats[killer].FirstKills += 1;
+                _stats[death].FirstDeaths += 1;
                 money += 200;
                 WriteLine($"[ {killer} ] 拿下了第一滴血！额外奖励 200 {General.GameplayEquilibriumConstant.InGameCurrency}！！");
             }
@@ -1192,6 +1330,58 @@ namespace Milimoe.FunGame.Core.Model
                 _stats[ec].Plays += 1;
                 _stats[ec].TotalEarnedMoney += earned;
                 _stats[ec].LastRank = top;
+                top++;
+            }
+            WriteLine("");
+            _isGameEnd = true;
+        }
+        
+        /// <summary>
+        /// 游戏结束信息 [ 团队版 ] 
+        /// </summary>
+        public void EndGameInfo(string winner)
+        {
+            WriteLine("[ " + winner + " ] 是胜利者。");
+
+            int top = 1;
+            WriteLine("");
+            WriteLine("=== 排名 ===");
+
+            _eliminatedTeams.Add(_teams[winner]);
+            _teams.Remove(winner);
+
+            for (int i = _eliminatedTeams.Count - 1; i >= 0; i--)
+            {
+                List<Character> team = _eliminatedTeams[i];
+                foreach (Character ec in team)
+                {
+                    string topCharacter = ec.ToString() + (_continuousKilling.TryGetValue(ec, out int kills) && kills > 1 ? $" [ {CharacterSet.GetContinuousKilling(kills)} ]" : "") + (_earnedMoney.TryGetValue(ec, out int earned) ? $" [ 已赚取 {earned} {General.GameplayEquilibriumConstant.InGameCurrency} ]" : "");
+                    if (i == 1)
+                    {
+                        WriteLine("冠军：" + topCharacter);
+                        _stats[ec].Wins += 1;
+                        _stats[ec].Top3s += 1;
+                    }
+                    else if (i == 2)
+                    {
+                        WriteLine("亚军：" + topCharacter);
+                        _stats[ec].Loses += 1;
+                        _stats[ec].Top3s += 1;
+                    }
+                    else if (i == 3)
+                    {
+                        WriteLine("季军：" + topCharacter);
+                        _stats[ec].Loses += 1;
+                        _stats[ec].Top3s += 1;
+                    }
+                    else if (i > 3)
+                    {
+                        _stats[ec].Loses += 1;
+                    }
+                    _stats[ec].Plays += 1;
+                    _stats[ec].TotalEarnedMoney += earned;
+                    _stats[ec].LastRank = top;
+                }
                 top++;
             }
             WriteLine("");
