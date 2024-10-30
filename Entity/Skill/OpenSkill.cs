@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Interface.Entity;
-using Milimoe.FunGame.Core.Library.Constant;
+﻿using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Entity
 {
@@ -11,7 +10,7 @@ namespace Milimoe.FunGame.Core.Entity
         public override long Id { get; set; }
         public override string Name { get; set; }
         public override string Description => string.Join("\r\n", Effects);
-        
+
         public OpenSkill(long id, string name, Dictionary<string, object> args, Character? character = null) : base(SkillType.Passive, character)
         {
             Id = id;

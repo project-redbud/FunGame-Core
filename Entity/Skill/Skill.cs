@@ -25,7 +25,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 技能的通用描述
         /// </summary>
         public virtual string GeneralDescription { get; set; } = "";
-        
+
         /// <summary>
         /// 释放技能时的口号
         /// </summary>
@@ -119,7 +119,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 消耗所有能量 [ 战技 ]
         /// </summary>
         public virtual bool CostAllEP { get; set; } = false;
-        
+
         /// <summary>
         /// 消耗所有能量的最小能量限制 [ 战技 ] 默认值：100
         /// </summary>

@@ -324,7 +324,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 _ => "魔法伤害",
             };
         }
-        
+
         public static string GetMagicResistanceName(MagicType type)
         {
             return type switch

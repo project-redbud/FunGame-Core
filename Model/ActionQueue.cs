@@ -1,7 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Base;
-using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Model
@@ -25,21 +24,21 @@ namespace Milimoe.FunGame.Core.Model
         /// 当前已死亡的角色顺序(第一个是最早死的)
         /// </summary>
         public List<Character> Eliminated => _eliminated;
-        
+
         /// <summary>
         /// 当前团灭的团队顺序(第一个是最早死的)
         /// </summary>
-        public List<List<Character>> EliminatedTeams => _eliminatedTeams;
+        public List<Team> EliminatedTeams => _eliminatedTeams;
 
         /// <summary>
         /// 角色数据
         /// </summary>
         public Dictionary<Character, CharacterStatistics> CharacterStatistics => _stats;
-        
+
         /// <summary>
         /// 团队及其成员
         /// </summary>
-        public Dictionary<string, List<Character>> Teams => _teams;
+        public Dictionary<string, Team> Teams => _teams;
 
         /// <summary>
         /// 游戏运行的时间
@@ -65,7 +64,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 当前团灭的团队顺序(第一个是最早死的)
         /// </summary>
-        protected readonly List<List<Character>> _eliminatedTeams = [];
+        protected readonly List<Team> _eliminatedTeams = [];
 
         /// <summary>
         /// 硬直时间表
@@ -110,13 +109,13 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 团队及其成员
         /// </summary>
-        protected readonly Dictionary<string, List<Character>> _teams = [];
+        protected readonly Dictionary<string, Team> _teams = [];
 
         /// <summary>
         /// 是否是团队模式
         /// </summary>
         protected bool _isTeamMode = false;
-        
+
         /// <summary>
         /// 游戏是否结束
         /// </summary>
@@ -265,31 +264,46 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         /// <param name="teamName"></param>
         /// <param name="characters"></param>
-        public void AddTeam(string teamName, params Character[] characters)
+        public void AddTeam(string teamName, IEnumerable<Character> characters)
         {
-            if (teamName != "" && characters.Length > 0)
+            if (teamName != "" && characters.Any())
             {
-                _teams.Add(teamName, new(characters));
+                _teams.Add(teamName, new(teamName, characters));
             }
         }
-        
+
         /// <summary>
-        /// 获取角色的团队名
+        /// 获取角色的团队
         /// </summary>
         /// <param name="character"></param>
-        public string GetTeamName(Character character)
+        public Team? GetTeam(Character character)
         {
-            foreach (string team in _teams.Keys)
+            foreach (Team team in _teams.Values)
             {
-                IEnumerable<Character> characters = _teams[team];
-                if (characters.Contains(character))
+                if (team.IsOnThisTeam(character))
                 {
                     return team;
                 }
             }
-            return "";
+            return null;
         }
-        
+
+        /// <summary>
+        /// 从已淘汰的团队中获取角色的团队
+        /// </summary>
+        /// <param name="character"></param>
+        public Team? GetTeamFromEliminated(Character character)
+        {
+            foreach (Team team in _eliminatedTeams)
+            {
+                if (team.IsOnThisTeam(character))
+                {
+                    return team;
+                }
+            }
+            return null;
+        }
+
         /// <summary>
         /// 获取某角色的团队成员
         /// </summary>
@@ -298,10 +312,9 @@ namespace Milimoe.FunGame.Core.Model
         {
             foreach (string team in _teams.Keys)
             {
-                IEnumerable<Character> characters = _teams[team];
-                if (characters.Contains(character))
+                if (_teams[team].IsOnThisTeam(character))
                 {
-                    return characters.Where(c => c != character).ToList();
+                    return _teams[team].GetTeammates(character);
                 }
             }
             return [];
@@ -452,7 +465,7 @@ namespace Milimoe.FunGame.Core.Model
             bool isCheckProtected = true;
 
             // 队友列表
-            List<Character> teammates = GetTeammates(character);
+            List<Character> teammates = [.. GetTeammates(character).Where(_queue.Contains)];
 
             // 敌人列表
             List<Character> enemys = [.. _queue.Where(c => c != character && !c.IsUnselectable && !teammates.Contains(c))];
@@ -954,21 +967,37 @@ namespace Milimoe.FunGame.Core.Model
                 _queue.Remove(enemy);
                 if (_isTeamMode)
                 {
-                    string teamName = GetTeamName(enemy);
-                    if (teamName != "")
+                    Team? deathTeam = GetTeam(enemy);
+                    if (deathTeam != null)
                     {
-                        if (!_teams.TryGetValue(teamName, out List<Character>? team) || team is null || !team.Any(_queue.Contains))
+                        if (deathTeam.GetActiveCharacters(this).Count == 0)
                         {
                             // 团灭了
-                            _eliminatedTeams.Add(_teams[teamName]);
-                            _teams.Remove(teamName);
+                            _eliminatedTeams.Add(deathTeam);
+                            _teams.Remove(deathTeam.Name);
+                        }
+                        else
+                        {
+                            List<Character> remain = deathTeam.GetActiveTeammates(this, enemy);
+                            int remainCount = remain.Count;
+                            if (remainCount > 0) WriteLine($"[ {deathTeam} ] 剩余成员：[ {string.Join(" ] / [ ", remain)} ]（{remainCount} 人）");
                         }
 
-                        teamName = GetTeamName(actor);
-                        if (!_teams.Keys.Where(str => str != teamName).Any())
+                        Team? killTeam = GetTeam(actor);
+                        if (killTeam != null)
                         {
-                            // 没有其他的团队了，游戏结束
-                            EndGameInfo(GetTeamName(actor));
+                            if (!_teams.Keys.Where(str => str != killTeam.Name).Any())
+                            {
+                                // 没有其他的团队了，游戏结束
+                                EndGameInfo(killTeam);
+                            }
+                            else if (killTeam != null)
+                            {
+                                List<Character> actives = killTeam.GetActiveCharacters(this);
+                                actives.Add(actor);
+                                int remainCount = actives.Count;
+                                if (remainCount > 0) WriteLine($"[ {killTeam} ] 剩余成员：[ {string.Join(" ] / [ ", actives)} ]（{remainCount} 人）");
+                            }
                         }
                     }
                 }
@@ -1307,7 +1336,11 @@ namespace Milimoe.FunGame.Core.Model
             for (int i = _eliminated.Count - 1; i >= 0; i--)
             {
                 Character ec = _eliminated[i];
-                string topCharacter = ec.ToString() + (_continuousKilling.TryGetValue(ec, out int kills) && kills > 1 ? $" [ {CharacterSet.GetContinuousKilling(kills)} ]" : "") + (_earnedMoney.TryGetValue(ec, out int earned) ? $" [ 已赚取 {earned} {General.GameplayEquilibriumConstant.InGameCurrency} ]" : "");
+                CharacterStatistics statistics = CharacterStatistics[ec];
+                string topCharacter = ec.ToString() +
+                    (statistics.FirstKills > 0 ? " [ 第一滴血 ]" : "") +
+                    (_continuousKilling.TryGetValue(ec, out int kills) && kills > 1 ? $" [ {CharacterSet.GetContinuousKilling(kills)} ]" : "") +
+                    (_earnedMoney.TryGetValue(ec, out int earned) ? $" [ 已赚取 {earned} {General.GameplayEquilibriumConstant.InGameCurrency} ]" : "");
                 if (top == 1)
                 {
                     WriteLine("冠军：" + topCharacter);
@@ -1339,54 +1372,76 @@ namespace Milimoe.FunGame.Core.Model
             WriteLine("");
             _isGameEnd = true;
         }
-        
+
         /// <summary>
         /// 游戏结束信息 [ 团队版 ] 
         /// </summary>
-        public void EndGameInfo(string winner)
+        public void EndGameInfo(Team winner)
         {
             WriteLine("[ " + winner + " ] 是胜利者。");
 
             int top = 1;
             WriteLine("");
             WriteLine("=== 排名 ===");
+            WriteLine("");
 
-            _eliminatedTeams.Add(_teams[winner]);
-            _teams.Remove(winner);
+            _eliminatedTeams.Add(winner);
+            _teams.Remove(winner.Name);
 
             for (int i = _eliminatedTeams.Count - 1; i >= 0; i--)
             {
-                List<Character> team = _eliminatedTeams[i];
-                foreach (Character ec in team)
+                Team team = _eliminatedTeams[i];
+                string topTeam = "";
+                if (top == 1)
                 {
-                    string topCharacter = ec.ToString() + (_continuousKilling.TryGetValue(ec, out int kills) && kills > 1 ? $" [ {CharacterSet.GetContinuousKilling(kills)} ]" : "") + (_earnedMoney.TryGetValue(ec, out int earned) ? $" [ 已赚取 {earned} {General.GameplayEquilibriumConstant.InGameCurrency} ]" : "");
+                    topTeam = "冠军";
+                }
+                if (top == 2)
+                {
+                    topTeam = "亚军";
+                }
+                if (top == 3)
+                {
+                    topTeam = "季军";
+                }
+                if (top > 3)
+                {
+                    topTeam = $"第 {top} 名";
+                }
+                topTeam = $"☆--- {topTeam}团队：" + team.Name + " ---☆" + $"（得分：{team.Members.Sum(c => CharacterStatistics[c].Kills)}）\r\n";
+                foreach (Character ec in team.Members)
+                {
+                    CharacterStatistics statistics = CharacterStatistics[ec];
+                    string topCharacter = (ec.HP <= 0 ? "[ 阵亡 ] " : "") + ec.ToString() +
+                        (statistics.FirstKills > 0 ? " [ 第一滴血 ]" : "") +
+                        (_continuousKilling.TryGetValue(ec, out int kills) && kills > 1 ? $" [ {CharacterSet.GetContinuousKilling(kills)} ]" : "") +
+                        (_earnedMoney.TryGetValue(ec, out int earned) ? $" [ 已赚取 {earned} {General.GameplayEquilibriumConstant.InGameCurrency} ]" : "") +
+                        $"（{statistics.Kills} / {statistics.Assists}）";
+                    topTeam += topCharacter + "\r\n";
                     if (top == 1)
                     {
-                        WriteLine("冠军：" + topCharacter);
                         _stats[ec].Wins += 1;
                         _stats[ec].Top3s += 1;
                     }
                     else if (top == 2)
                     {
-                        WriteLine("亚军：" + topCharacter);
                         _stats[ec].Loses += 1;
                         _stats[ec].Top3s += 1;
                     }
                     else if (top == 3)
                     {
-                        WriteLine("季军：" + topCharacter);
                         _stats[ec].Loses += 1;
                         _stats[ec].Top3s += 1;
                     }
                     else
                     {
-                        WriteLine($"第 {top} 名：" + topCharacter);
                         _stats[ec].Loses += 1;
                     }
                     _stats[ec].Plays += 1;
                     _stats[ec].TotalEarnedMoney += earned;
                     _stats[ec].LastRank = top;
                 }
+                WriteLine(topTeam);
                 top++;
             }
             WriteLine("");

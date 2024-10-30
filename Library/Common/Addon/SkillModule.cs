@@ -63,7 +63,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// 注册工厂
         /// </summary>
         protected abstract Factory.EntityFactoryDelegate<Skill> SkillFactory();
-        
+
         /// <summary>
         /// 注册工厂（特效类）
         /// </summary>

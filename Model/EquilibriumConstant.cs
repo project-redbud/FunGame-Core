@@ -64,7 +64,7 @@
         /// 角色最高等级
         /// </summary>
         public int MaxLevel { get; set; } = 60;
-        
+
         /// <summary>
         /// 魔法最高等级
         /// </summary>
@@ -74,17 +74,17 @@
         /// 战技最高等级
         /// </summary>
         public int MaxSkillLevel { get; set; } = 6;
-        
+
         /// <summary>
         /// 爆发技最高等级
         /// </summary>
         public int MaxSuperSkillLevel { get; set; } = 6;
-        
+
         /// <summary>
         /// 被动最高等级
         /// </summary>
         public int MaxPassiveSkillLevel { get; set; } = 6;
-        
+
         /// <summary>
         /// 普通攻击最高等级
         /// </summary>
@@ -119,7 +119,7 @@
         /// 初始智力
         /// </summary>
         public double InitialINT { get; set; } = 0;
-        
+
         /// <summary>
         /// 力量成长
         /// </summary>
@@ -154,7 +154,7 @@
         /// 每级增加基础生命值
         /// </summary>
         public double LevelToHPFactor { get; set; } = 17;
-        
+
         /// <summary>
         /// 生命值增长因子
         /// </summary>
@@ -164,27 +164,27 @@
         /// 每级增加基础魔法值
         /// </summary>
         public double LevelToMPFactor { get; set; } = 1.5;
-        
+
         /// <summary>
         /// 魔法值增长因子
         /// </summary>
         public double MPGrowthFactor { get; set; } = 0.14;
-        
+
         /// <summary>
         /// 每级增加基础攻击力
         /// </summary>
         public double LevelToATKFactor { get; set; } = 0.95;
-        
+
         /// <summary>
         /// 攻击力增长因子
         /// </summary>
         public double ATKGrowthFactor { get; set; } = 0.045;
-        
+
         /// <summary>
         /// 物理伤害减免因子
         /// </summary>
         public double DEFReductionFactor { get; set; } = 120;
-        
+
         /// <summary>
         /// 行动速度上限
         /// </summary>
@@ -194,7 +194,7 @@
         /// 每 1 点力量增加生命值
         /// </summary>
         public double STRtoHPFactor { get; set; } = 9;
-        
+
         /// <summary>
         /// 每 1 点力量增加生命回复力
         /// </summary>

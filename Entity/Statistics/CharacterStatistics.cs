@@ -42,5 +42,6 @@
         public double Top3rates { get; set; } = 0;
         public int LastRank { get; set; } = 0;
         public double AvgRank { get; set; } = 0;
+        public double Rating { get; set; } = 0;
     }
 }

@@ -55,12 +55,12 @@ namespace Milimoe.FunGame.Core.Entity
         /// 品质类型
         /// </summary>
         public virtual QualityType QualityType { get; set; } = QualityType.White;
-        
+
         /// <summary>
         /// 稀有度类型
         /// </summary>
         public virtual RarityType RarityType { get; set; } = RarityType.OneStar;
-        
+
         /// <summary>
         /// 物品评级
         /// </summary>
