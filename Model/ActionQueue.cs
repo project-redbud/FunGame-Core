@@ -478,25 +478,27 @@ namespace Milimoe.FunGame.Core.Model
             List<Item> items = [.. character.Items.Where(i => i.IsActive && i.Skills.Active != null && i.Enable && i.IsInGameItem &&
                 i.Skills.Active.SkillType == SkillType.Item && i.Skills.Active.Enable && !i.Skills.Active.IsInEffect && i.Skills.Active.CurrentCD == 0 && i.Skills.Active.RealMPCost <= character.MP && i.Skills.Active.RealEPCost <= character.EP)];
 
-            // 作出了什么行动
-            CharacterActionType type = CharacterActionType.None;
-
-            // 是否能使用物品和释放技能
-            bool canUseItem = items.Count > 0;
-            bool canCastSkill = skills.Count > 0;
-
-            // 使用物品和释放技能、使用普通攻击的概率
-            double pUseItem = 0.33;
-            double pCastSkill = 0.33;
-            double pNormalAttack = 0.34;
-
             // 此变量用于在取消选择时，能够重新行动
             bool decided = false;
             // 最大取消次数
             int cancelTimes = 3;
 
-            while (!decided || cancelTimes < 0)
+            // 作出了什么行动
+            CharacterActionType type = CharacterActionType.None;
+
+            while (!decided && cancelTimes > 0)
             {
+                type = CharacterActionType.None;
+
+                // 是否能使用物品和释放技能
+                bool canUseItem = items.Count > 0;
+                bool canCastSkill = skills.Count > 0;
+
+                // 使用物品和释放技能、使用普通攻击的概率
+                double pUseItem = 0.33;
+                double pCastSkill = 0.33;
+                double pNormalAttack = 0.34;
+
                 cancelTimes--;
                 // 不允许在吟唱和预释放状态下，修改角色的行动
                 if (character.CharacterState != CharacterState.Casting && character.CharacterState != CharacterState.PreCastSuperSkill)
