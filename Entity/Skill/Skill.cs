@@ -438,10 +438,13 @@ namespace Milimoe.FunGame.Core.Entity
             skill.CurrentCD = CurrentCD;
             skill.HardnessTime = HardnessTime;
             skill.GamingQueue = GamingQueue;
-            foreach (Effect e in Effects)
+            if (skill is OpenSkill)
             {
-                Effect neweffect = e.Copy(skill);
-                skill.Effects.Add(neweffect);
+                foreach (Effect e in Effects)
+                {
+                    Effect neweffect = e.Copy(skill);
+                    skill.Effects.Add(neweffect);
+                }
             }
             return skill;
         }
