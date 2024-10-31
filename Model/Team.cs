@@ -8,6 +8,8 @@ namespace Milimoe.FunGame.Core.Model
         public Guid Id { get; set; } = Guid.Empty;
         public string Name { get; set; } = name;
         public List<Character> Members { get; } = new(charaters);
+        public int Score { get; set; } = 0;
+        public bool IsWinner { get; set; } = false;
         public int Count => Members.Count;
 
         public List<Character> GetActiveCharacters(IGamingQueue queue)

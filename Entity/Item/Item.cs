@@ -247,8 +247,20 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         public void UseItem(IGamingQueue queue, Character character, List<Character> enemys, List<Character> teammates)
         {
-            OnItemUsed(character, this);
-            Skills.Active?.OnSkillCasted(queue, character, enemys, teammates);
+            bool cancel = false;
+            bool used = false;
+            if (Skills.Active != null)
+            {
+                Skill skill = Skills.Active;
+
+                List<Character> targets = skill.SelectTargets(character, enemys, teammates, out cancel);
+                if (!cancel)
+                {
+                    skill.OnSkillCasted(queue, character, targets);
+                    used = true;
+                }
+            }
+            OnItemUsed(character, this, cancel, used);
         }
 
         /// <summary>
@@ -264,7 +276,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="character"></param>
         /// <param name="item"></param>
-        public virtual void OnItemUsed(Character character, Item item)
+        /// <param name="cancel"></param>
+        /// <param name="used"></param>
+        public virtual void OnItemUsed(Character character, Item item, bool cancel, bool used)
         {
 
         }

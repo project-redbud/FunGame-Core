@@ -74,7 +74,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 角色正在吟唱的魔法
         /// </summary>
-        protected readonly Dictionary<Character, Skill> _castingSkills = [];
+        protected readonly Dictionary<Character, SkillTarget> _castingSkills = [];
 
         /// <summary>
         /// 角色预释放的爆发技
@@ -490,242 +490,268 @@ namespace Milimoe.FunGame.Core.Model
             double pCastSkill = 0.33;
             double pNormalAttack = 0.34;
 
-            // 不允许在吟唱和预释放状态下，修改角色的行动
-            if (character.CharacterState != CharacterState.Casting && character.CharacterState != CharacterState.PreCastSuperSkill)
+            // 此变量用于在取消选择时，能够重新行动
+            bool decided = false;
+            // 最大取消次数
+            int cancelTimes = 3;
+
+            while (!decided || cancelTimes < 0)
             {
-                CharacterActionType actionTypeTemp = CharacterActionType.None;
+                cancelTimes--;
+                // 不允许在吟唱和预释放状态下，修改角色的行动
+                if (character.CharacterState != CharacterState.Casting && character.CharacterState != CharacterState.PreCastSuperSkill)
+                {
+                    CharacterActionType actionTypeTemp = CharacterActionType.None;
+                    effects = character.Effects.Where(e => e.Level > 0).ToList();
+                    foreach (Effect e in effects)
+                    {
+                        actionTypeTemp = e.AlterActionTypeBeforeAction(character, character.CharacterState, ref canUseItem, ref canCastSkill, ref pUseItem, ref pCastSkill, ref pNormalAttack);
+                    }
+                    if (actionTypeTemp != CharacterActionType.None && actionTypeTemp != CharacterActionType.CastSkill && actionTypeTemp != CharacterActionType.CastSuperSkill)
+                    {
+                        type = actionTypeTemp;
+                    }
+                }
+
+                if (type == CharacterActionType.None)
+                {
+                    if (character.CharacterState != CharacterState.NotActionable && character.CharacterState != CharacterState.Casting && character.CharacterState != CharacterState.PreCastSuperSkill)
+                    {
+                        if (character.CharacterState == CharacterState.Actionable)
+                        {
+                            // 可以任意行动
+                            if (canUseItem && canCastSkill)
+                            {
+                                // 不做任何处理
+                            }
+                            else if (canUseItem && !canCastSkill)
+                            {
+                                pCastSkill = 0;
+                            }
+                            else if (!canUseItem && canCastSkill)
+                            {
+                                pUseItem = 0;
+                            }
+                            else
+                            {
+                                pUseItem = 0;
+                                pCastSkill = 0;
+                            }
+                        }
+                        else if (character.CharacterState == CharacterState.ActionRestricted)
+                        {
+                            // 行动受限，只能使用特殊物品
+                            if (canUseItem)
+                            {
+                                pCastSkill = 0;
+                                pNormalAttack = 0;
+                            }
+                            else
+                            {
+                                pUseItem = 0;
+                                pCastSkill = 0;
+                                pNormalAttack = 0;
+                            }
+                        }
+                        else if (character.CharacterState == CharacterState.BattleRestricted)
+                        {
+                            // 战斗不能，只能使用物品
+                            if (canUseItem)
+                            {
+                                pCastSkill = 0;
+                                pNormalAttack = 0;
+                            }
+                            else
+                            {
+                                pUseItem = 0;
+                                pCastSkill = 0;
+                                pNormalAttack = 0;
+                            }
+                        }
+                        else if (character.CharacterState == CharacterState.SkillRestricted)
+                        {
+                            // 技能受限，无法使用技能，可以使用物品
+                            if (canUseItem)
+                            {
+                                pCastSkill = 0;
+                            }
+                            else
+                            {
+                                pUseItem = 0;
+                                pCastSkill = 0;
+                            }
+                        }
+                        type = GetActionType(pUseItem, pCastSkill, pNormalAttack);
+                        _stats[character].ActionTurn += 1;
+                    }
+                    else if (character.CharacterState == CharacterState.Casting)
+                    {
+                        // 如果角色上一次吟唱了魔法，这次的行动则是结算这个魔法
+                        type = CharacterActionType.CastSkill;
+                    }
+                    else if (character.CharacterState == CharacterState.PreCastSuperSkill)
+                    {
+                        // 角色使用回合外爆发技插队
+                        type = CharacterActionType.CastSuperSkill;
+                    }
+                    else
+                    {
+                        WriteLine("[ " + character + $" ] 完全行动不能！");
+                        type = CharacterActionType.None;
+                    }
+                }
+
+                List<Character> enemysTemp = new(enemys);
+                List<Character> teammatesTemp = new(teammates);
+                List<Skill> skillsTemp = new(skills);
+                Dictionary<Character, int> continuousKillingTemp = new(_continuousKilling);
+                Dictionary<Character, int> earnedMoneyTemp = new(_earnedMoney);
                 effects = character.Effects.Where(e => e.Level > 0).ToList();
                 foreach (Effect e in effects)
                 {
-                    actionTypeTemp = e.AlterActionTypeBeforeAction(character, character.CharacterState, ref canUseItem, ref canCastSkill, ref pUseItem, ref pCastSkill, ref pNormalAttack);
+                    if (e.AlterEnemyListBeforeAction(character, enemysTemp, teammatesTemp, skillsTemp, continuousKillingTemp, earnedMoneyTemp))
+                    {
+                        enemys = enemysTemp.Distinct().ToList();
+                        teammates = teammatesTemp.Distinct().ToList();
+                        skills = skillsTemp.Distinct().ToList();
+                    }
                 }
-                if (actionTypeTemp != CharacterActionType.None && actionTypeTemp != CharacterActionType.CastSkill && actionTypeTemp != CharacterActionType.CastSuperSkill)
-                {
-                    type = actionTypeTemp;
-                }
-            }
 
-            if (type == CharacterActionType.None)
-            {
-                if (character.CharacterState != CharacterState.NotActionable && character.CharacterState != CharacterState.Casting && character.CharacterState != CharacterState.PreCastSuperSkill)
+                if (type == CharacterActionType.NormalAttack)
                 {
-                    if (character.CharacterState == CharacterState.Actionable)
+                    // 使用普通攻击逻辑
+                    // 获取随机敌人
+                    if (enemys.Count > 0)
                     {
-                        // 可以任意行动
-                        if (canUseItem && canCastSkill)
+                        decided = true;
+                        Character enemy = enemys[Random.Shared.Next(enemys.Count)];
+                        character.NormalAttack.Attack(this, character, enemy);
+                        baseTime = character.NormalAttack.HardnessTime;
+                        effects = character.Effects.Where(e => e.Level > 0).ToList();
+                        foreach (Effect effect in effects)
                         {
-                            // 不做任何处理
-                        }
-                        else if (canUseItem && !canCastSkill)
-                        {
-                            pCastSkill = 0;
-                        }
-                        else if (!canUseItem && canCastSkill)
-                        {
-                            pUseItem = 0;
-                        }
-                        else
-                        {
-                            pUseItem = 0;
-                            pCastSkill = 0;
+                            effect.AlterHardnessTimeAfterNormalAttack(character, ref baseTime, ref isCheckProtected);
                         }
                     }
-                    else if (character.CharacterState == CharacterState.ActionRestricted)
+                }
+                else if (type == CharacterActionType.PreCastSkill)
+                {
+                    // 预使用技能，即开始吟唱逻辑
+                    // 吟唱前需要先选取目标
+                    Skill skill = skills[Random.Shared.Next(skills.Count)];
+                    if (skill.SkillType == SkillType.Magic)
                     {
-                        // 行动受限，只能使用特殊物品
-                        if (canUseItem)
+                        List<Character> targets = skill.SelectTargets(character, enemys, teammates, out bool cancel);
+                        if (!cancel)
                         {
-                            pCastSkill = 0;
-                            pNormalAttack = 0;
-                        }
-                        else
-                        {
-                            pUseItem = 0;
-                            pCastSkill = 0;
-                            pNormalAttack = 0;
+                            decided = true;
+                            character.CharacterState = CharacterState.Casting;
+                            _castingSkills.Add(character, new(skill, targets));
+                            baseTime = skill.CastTime;
+                            skill.OnSkillCasting(this, character);
                         }
                     }
-                    else if (character.CharacterState == CharacterState.BattleRestricted)
+                    else
                     {
-                        // 战斗不能，只能使用物品
-                        if (canUseItem)
+                        if (CheckCanCast(character, skill, out double cost))
                         {
-                            pCastSkill = 0;
-                            pNormalAttack = 0;
-                        }
-                        else
-                        {
-                            pUseItem = 0;
-                            pCastSkill = 0;
-                            pNormalAttack = 0;
-                        }
-                    }
-                    else if (character.CharacterState == CharacterState.SkillRestricted)
-                    {
-                        // 技能受限，无法使用技能，可以使用物品
-                        if (canUseItem)
-                        {
-                            pCastSkill = 0;
-                        }
-                        else
-                        {
-                            pUseItem = 0;
-                            pCastSkill = 0;
-                        }
-                    }
-                    type = GetActionType(pUseItem, pCastSkill, pNormalAttack);
-                    _stats[character].ActionTurn += 1;
-                }
-                else if (character.CharacterState == CharacterState.Casting)
-                {
-                    // 如果角色上一次吟唱了魔法，这次的行动则是结算这个魔法
-                    type = CharacterActionType.CastSkill;
-                }
-                else if (character.CharacterState == CharacterState.PreCastSuperSkill)
-                {
-                    // 角色使用回合外爆发技插队
-                    type = CharacterActionType.CastSuperSkill;
-                }
-                else
-                {
-                    WriteLine("[ " + character + $" ] 完全行动不能！");
-                    type = CharacterActionType.None;
-                }
-            }
+                            List<Character> targets = skill.SelectTargets(character, enemys, teammates, out bool cancel);
+                            if (!cancel)
+                            {
+                                decided = true;
+                                skill.OnSkillCasting(this, character);
 
-            List<Character> enemysTemp = new(enemys);
-            List<Character> teammatesTemp = new(teammates);
-            List<Skill> skillsTemp = new(skills);
-            Dictionary<Character, int> continuousKillingTemp = new(_continuousKilling);
-            Dictionary<Character, int> earnedMoneyTemp = new(_earnedMoney);
-            effects = character.Effects.Where(e => e.Level > 0).ToList();
-            foreach (Effect e in effects)
-            {
-                if (e.AlterEnemyListBeforeAction(character, enemysTemp, teammatesTemp, skillsTemp, continuousKillingTemp, earnedMoneyTemp))
-                {
-                    enemys = enemysTemp.Distinct().ToList();
-                    teammates = teammatesTemp.Distinct().ToList();
-                    skills = skillsTemp.Distinct().ToList();
-                }
-            }
+                                character.EP -= cost;
+                                baseTime = skill.HardnessTime;
+                                skill.CurrentCD = skill.RealCD;
+                                skill.Enable = false;
 
-            if (type == CharacterActionType.NormalAttack)
-            {
-                // 使用普通攻击逻辑
-                // 获取随机敌人
-                if (enemys.Count > 0)
+                                WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} {skill.Name}！{(skill.Slogan != "" ? skill.Slogan : "")}");
+                                skill.OnSkillCasted(this, character, targets);
+                                effects = character.Effects.Where(e => e.Level > 0).ToList();
+                                foreach (Effect effect in effects)
+                                {
+                                    effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (type == CharacterActionType.CastSkill)
                 {
-                    Character enemy = enemys[Random.Shared.Next(enemys.Count)];
-                    character.NormalAttack.Attack(this, character, enemy);
-                    baseTime = character.NormalAttack.HardnessTime;
+                    decided = true;
+                    // 使用技能逻辑，结束吟唱状态
+                    character.CharacterState = CharacterState.Actionable;
+                    SkillTarget skillTarget = _castingSkills[character];
+                    Skill skill = skillTarget.Skill;
+                    List<Character> targets = skillTarget.Targets;
+                    _castingSkills.Remove(character);
+
+                    // 判断是否能够释放技能
+                    if (CheckCanCast(character, skill, out double cost))
+                    {
+                        character.MP -= cost;
+                        baseTime = skill.HardnessTime;
+                        skill.CurrentCD = skill.RealCD;
+                        skill.Enable = false;
+
+                        WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点魔法值，释放了魔法 {skill.Name}！{(skill.Slogan != "" ? skill.Slogan : "")}");
+                        skill.OnSkillCasted(this, character, targets);
+                    }
+                    else
+                    {
+                        WriteLine("[ " + character + $" ] 放弃释放技能！");
+                        // 放弃释放技能会获得3的硬直时间
+                        baseTime = 3;
+                    }
+
                     effects = character.Effects.Where(e => e.Level > 0).ToList();
                     foreach (Effect effect in effects)
                     {
-                        effect.AlterHardnessTimeAfterNormalAttack(character, ref baseTime, ref isCheckProtected);
+                        effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
                     }
                 }
-            }
-            else if (type == CharacterActionType.PreCastSkill)
-            {
-                // 预使用技能，即开始吟唱逻辑
-                // 注意：FastAuto 模式下，此吟唱逻辑删减了选取目标的逻辑，将选取逻辑放在了实际释放的环节
-                // 在正常交互式模式下，吟唱前需要先选取目标
-                Skill skill = skills[Random.Shared.Next(skills.Count)];
-                if (skill.SkillType == SkillType.Magic)
+                else if (type == CharacterActionType.CastSuperSkill)
                 {
-                    character.CharacterState = CharacterState.Casting;
-                    _castingSkills.Add(character, skill);
-                    baseTime = skill.CastTime;
-                    skill.OnSkillCasting(this, character);
-                }
-                else
-                {
+                    decided = true;
+                    // 结束预释放爆发技的状态
+                    character.CharacterState = CharacterState.Actionable;
+                    Skill skill = _castingSuperSkills[character];
+                    _castingSuperSkills.Remove(character);
+
+                    // 判断是否能够释放技能
                     if (CheckCanCast(character, skill, out double cost))
                     {
-                        skill.OnSkillCasting(this, character);
+                        List<Character> targets = skill.SelectTargetsPreSuperSkill(character, enemys, teammates);
 
                         character.EP -= cost;
                         baseTime = skill.HardnessTime;
                         skill.CurrentCD = skill.RealCD;
                         skill.Enable = false;
 
-                        WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} {skill.Name}！{(skill.Slogan != "" ? skill.Slogan : "")}");
-                        skill.OnSkillCasted(this, character, enemys, teammates);
-                        effects = character.Effects.Where(e => e.Level > 0).ToList();
-                        foreach (Effect effect in effects)
-                        {
-                            effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
-                        }
+                        WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量值，释放了爆发技 {skill.Name}！{(skill.Slogan != "" ? skill.Slogan : "")}");
+                        skill.OnSkillCasted(this, character, targets);
+                    }
+                    else
+                    {
+                        WriteLine("[ " + character + $" ] 因能量不足放弃释放爆发技！");
+                        // 放弃释放技能会获得3的硬直时间
+                        baseTime = 3;
+                    }
+
+                    effects = character.Effects.Where(e => e.Level > 0).ToList();
+                    foreach (Effect effect in effects)
+                    {
+                        effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
                     }
                 }
-            }
-            else if (type == CharacterActionType.CastSkill)
-            {
-                // 使用技能逻辑，结束吟唱状态
-                character.CharacterState = CharacterState.Actionable;
-                Skill skill = _castingSkills[character];
-                _castingSkills.Remove(character);
-
-                // 判断是否能够释放技能
-                if (CheckCanCast(character, skill, out double cost))
+                else if (type == CharacterActionType.UseItem)
                 {
-                    character.MP -= cost;
-                    baseTime = skill.HardnessTime;
-                    skill.CurrentCD = skill.RealCD;
-                    skill.Enable = false;
-
-                    WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点魔法值，释放了魔法 {skill.Name}！{(skill.Slogan != "" ? skill.Slogan : "")}");
-                    skill.OnSkillCasted(this, character, enemys, teammates);
-                }
-                else
-                {
-                    WriteLine("[ " + character + $" ] 放弃释放技能！");
-                    // 放弃释放技能会获得3的硬直时间
-                    baseTime = 3;
-                }
-
-                effects = character.Effects.Where(e => e.Level > 0).ToList();
-                foreach (Effect effect in effects)
-                {
-                    effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
+                    // 使用物品逻辑
                 }
             }
-            else if (type == CharacterActionType.CastSuperSkill)
-            {
-                // 结束预释放爆发技的状态
-                character.CharacterState = CharacterState.Actionable;
-                Skill skill = _castingSuperSkills[character];
-                _castingSuperSkills.Remove(character);
 
-                // 判断是否能够释放技能
-                if (CheckCanCast(character, skill, out double cost))
-                {
-                    character.EP -= cost;
-                    baseTime = skill.HardnessTime;
-                    skill.CurrentCD = skill.RealCD;
-                    skill.Enable = false;
-
-                    WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量值，释放了爆发技 {skill.Name}！{(skill.Slogan != "" ? skill.Slogan : "")}");
-                    skill.OnSkillCasted(this, character, enemys, teammates);
-                }
-                else
-                {
-                    WriteLine("[ " + character + $" ] 放弃释放技能！");
-                    // 放弃释放技能会获得3的硬直时间
-                    baseTime = 3;
-                }
-
-                effects = character.Effects.Where(e => e.Level > 0).ToList();
-                foreach (Effect effect in effects)
-                {
-                    effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
-                }
-            }
-            else if (type == CharacterActionType.UseItem)
-            {
-                // 使用物品逻辑
-            }
-            else
+            if (!decided || type == CharacterActionType.None)
             {
                 WriteLine("[ " + character + $" ] 放弃了行动！");
             }
@@ -1319,6 +1345,15 @@ namespace Milimoe.FunGame.Core.Model
 
             if (!_earnedMoney.TryAdd(killer, money)) _earnedMoney[killer] += money;
 
+            if (_isTeamMode)
+            {
+                Team? team = GetTeam(killer);
+                if (team != null)
+                {
+                    team.Score++;
+                }
+            }
+
             _eliminated.Add(death);
         }
 
@@ -1408,7 +1443,7 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     topTeam = $"第 {top} 名";
                 }
-                topTeam = $"☆--- {topTeam}团队：" + team.Name + " ---☆" + $"（得分：{team.Members.Sum(c => CharacterStatistics[c].Kills)}）\r\n";
+                topTeam = $"☆--- {topTeam}团队：" + team.Name + " ---☆" + $"（得分：{team.Score}）\r\n";
                 foreach (Character ec in team.Members)
                 {
                     CharacterStatistics statistics = CharacterStatistics[ec];
@@ -1527,21 +1562,23 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="interrupter"></param>
         public void InterruptCasting(Character caster, Character interrupter)
         {
-            if (_castingSkills.TryGetValue(caster, out Skill? cast))
+            Skill? skill = null;
+            if (_castingSkills.TryGetValue(caster, out SkillTarget target))
             {
+                skill = target.Skill;
                 _castingSkills.Remove(caster);
             }
-            else if (_castingSuperSkills.TryGetValue(caster, out cast))
+            else if (_castingSuperSkills.TryGetValue(caster, out skill))
             {
                 _castingSuperSkills.Remove(caster);
             }
-            if (cast != null)
+            if (skill != null)
             {
                 WriteLine($"[ {caster} ] 的施法被 [ {interrupter} ] 打断了！！");
-                List<Effect> effects = cast.Effects.Where(e => e.Level > 0).ToList();
+                List<Effect> effects = skill.Effects.Where(e => e.Level > 0).ToList();
                 foreach (Effect e in effects)
                 {
-                    e.OnSkillCastInterrupted(caster, cast, interrupter);
+                    e.OnSkillCastInterrupted(caster, skill, interrupter);
                 }
             }
         }

@@ -252,10 +252,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// 吟唱结束后释放技能（魔法）/ 直接释放技能（战技/爆发技）
         /// </summary>
         /// <param name="caster"></param>
-        /// <param name="enemys"></param>
-        /// <param name="teammates"></param>
+        /// <param name="targets"></param>
         /// <param name="others"></param>
-        public virtual void OnSkillCasted(Character caster, List<Character> enemys, List<Character> teammates, Dictionary<string, object> others)
+        public virtual void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)
         {
 
         }

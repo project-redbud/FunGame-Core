@@ -83,6 +83,21 @@ namespace Milimoe.FunGame.Core.Entity
         public bool IsMagic => SkillType == SkillType.Magic;
 
         /// <summary>
+        /// 可选取自身
+        /// </summary>
+        public virtual bool CanSelectSelf { get; set; } = false;
+
+        /// <summary>
+        /// 可选取的作用目标数量
+        /// </summary>
+        public virtual int CanSelectTargetCount { get; set; } = 1;
+
+        /// <summary>
+        /// 可选取的作用范围
+        /// </summary>
+        public virtual double CanSelectTargetRange { get; set; } = 0;
+
+        /// <summary>
         /// 实际魔法消耗 [ 魔法 ]
         /// </summary>
         public double RealMPCost => Math.Max(0, MPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * 0.00125)));
@@ -224,8 +239,64 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 预释放爆发技选取技能目标 [ 不可取消 ]
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <returns></returns>
+        public virtual List<Character> SelectTargetsPreSuperSkill(Character caster, List<Character> enemys, List<Character> teammates)
+        {
+            if (CanSelectSelf)
+            {
+                return [caster];
+            }
+            else
+            {
+                List<Character> targets = [];
+
+                if (enemys.Count <= CanSelectTargetCount)
+                {
+                    return [.. enemys];
+                }
+
+                return enemys.OrderBy(x => Random.Shared.Next()).Take(CanSelectTargetCount).ToList();
+            }
+        }
+
+        /// <summary>
+        /// 选取技能目标
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <param name="cancel"></param>
+        /// <returns></returns>
+        public virtual List<Character> SelectTargets(Character caster, List<Character> enemys, List<Character> teammates, out bool cancel)
+        {
+            cancel = false;
+            if (CanSelectSelf)
+            {
+                return [caster];
+            }
+            else
+            {
+                List<Character> targets = [];
+
+                if (enemys.Count <= CanSelectTargetCount)
+                {
+                    return [.. enemys];
+                }
+
+                return enemys.OrderBy(x => Random.Shared.Next()).Take(CanSelectTargetCount).ToList();
+            }
+        }
+
+        /// <summary>
         /// 技能开始吟唱时 [ 吟唱魔法、释放战技和爆发技、预释放爆发技均可触发 ]
         /// </summary>
+        /// <param name="queue"></param>
+        /// <param name="caster"></param>
         public void OnSkillCasting(IGamingQueue queue, Character caster)
         {
             GamingQueue = queue;
@@ -239,13 +310,16 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 触发技能效果
         /// </summary>
-        public void OnSkillCasted(IGamingQueue queue, Character caster, List<Character> enemys, List<Character> teammates)
+        /// <param name="queue"></param>
+        /// <param name="caster"></param>
+        /// <param name="targets"></param>
+        public void OnSkillCasted(IGamingQueue queue, Character caster, List<Character> targets)
         {
             GamingQueue = queue;
             foreach (Effect e in Effects)
             {
                 e.GamingQueue = GamingQueue;
-                e.OnSkillCasted(caster, enemys, teammates, Values);
+                e.OnSkillCasted(caster, targets, Values);
             }
         }
 
