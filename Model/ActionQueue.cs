@@ -82,7 +82,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 上回合记录
         /// </summary>
-        public RoundRecord? LastRound { get; set; } = null;
+        public RoundRecord LastRound { get; set; } = new(0, Factory.GetCharacter());
 
         /// <summary>
         /// 当前的行动顺序
