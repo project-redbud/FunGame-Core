@@ -1359,5 +1359,94 @@ namespace Milimoe.FunGame.Core.Entity
             c.Recovery();
             return c;
         }
+
+        /// <summary>
+        /// 复活此角色，回复出厂状态
+        /// </summary>
+        /// <returns></returns>
+        public void Respawn()
+        {
+            Item? mcp = UnEquip(EquipSlotType.MagicCardPack);
+            Item? w = UnEquip(EquipSlotType.Weapon);
+            Item? a = UnEquip(EquipSlotType.Armor);
+            Item? s = UnEquip(EquipSlotType.Shoes);
+            Item? ac1 = UnEquip(EquipSlotType.Accessory1);
+            Item? ac2 = UnEquip(EquipSlotType.Accessory2);
+            List<Skill> skills = new(Skills);
+            List<Item> items = new(Items);
+            Character c = Copy();
+            Effects.Clear();
+            Skills.Clear();
+            Items.Clear();
+            Id = c.Id;
+            Name = c.Name;
+            FirstName = c.FirstName;
+            NickName = c.NickName;
+            Profile = c.Profile.Copy();
+            MagicType = c.MagicType;
+            FirstRoleType = c.FirstRoleType;
+            SecondRoleType = c.SecondRoleType;
+            ThirdRoleType = c.ThirdRoleType;
+            Promotion = c.Promotion;
+            PrimaryAttribute = c.PrimaryAttribute;
+            Level = c.Level;
+            EXP = c.EXP;
+            CharacterState = c.CharacterState;
+            InitialHP = c.InitialHP;
+            ExHP2 = c.ExHP2;
+            InitialMP = c.InitialMP;
+            ExMP2 = c.ExMP2;
+            EP = c.EP;
+            InitialATK = c.InitialATK;
+            ExATK2 = c.ExATK2;
+            InitialDEF = c.InitialDEF;
+            ExDEF2 = c.ExDEF2;
+            MDF = c.MDF.Copy();
+            PhysicalPenetration = c.PhysicalPenetration;
+            MagicalPenetration = c.MagicalPenetration;
+            InitialHR = c.InitialHR;
+            ExHR = c.ExHR;
+            InitialMR = c.InitialMR;
+            ExMR = c.ExMR;
+            ER = c.ER;
+            InitialSTR = c.InitialSTR;
+            InitialAGI = c.InitialAGI;
+            InitialINT = c.InitialINT;
+            ExSTR = c.ExSTR;
+            ExAGI = c.ExAGI;
+            ExINT = c.ExINT;
+            STRGrowth = c.STRGrowth;
+            AGIGrowth = c.AGIGrowth;
+            INTGrowth = c.INTGrowth;
+            InitialSPD = c.InitialSPD;
+            ExSPD = c.ExSPD;
+            ExActionCoefficient = c.ExActionCoefficient;
+            AccelerationCoefficient = c.AccelerationCoefficient;
+            ExCDR = c.ExCDR;
+            ATR = c.ATR;
+            ExCritRate = c.ExCritRate;
+            ExCritDMG = c.ExCritDMG;
+            ExEvadeRate = c.ExEvadeRate;
+            foreach (Skill skill in skills)
+            {
+                Skill newskill = skill.Copy();
+                newskill.Character = this;
+                newskill.Level = skill.Level;
+                Skills.Add(newskill);
+            }
+            foreach (Item item in items)
+            {
+                Item newitem = item.Copy(true);
+                newitem.Character = this;
+                Items.Add(newitem);
+            }
+            if (mcp != null) Equip(mcp);
+            if (w != null) Equip(w);
+            if (a != null) Equip(a);
+            if (s != null) Equip(s);
+            if (ac1 != null) Equip(ac1);
+            if (ac2 != null) Equip(ac2);
+            Recovery(0D);
+        }
     }
 }

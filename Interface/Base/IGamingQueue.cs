@@ -99,5 +99,27 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="caster"></param>
         /// <param name="interrupter"></param>
         public void InterruptCasting(Character caster, Character interrupter);
+
+        /// <summary>
+        /// 选取技能目标
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="skill"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <param name="cancel"></param>
+        /// <returns></returns>
+        public List<Character> SelectTargets(Character caster, Skill skill, List<Character> enemys, List<Character> teammates, out bool cancel);
+
+        /// <summary>
+        /// 选取普通攻击目标
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="attack"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <param name="cancel"></param>
+        /// <returns></returns>
+        public List<Character> SelectTargets(Character character, NormalAttack attack, List<Character> enemys, List<Character> teammates, out bool cancel);
     }
 }

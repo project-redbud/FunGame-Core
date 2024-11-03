@@ -1,6 +1,4 @@
-﻿using Milimoe.FunGame.Core.Entity;
-
-namespace Milimoe.FunGame.Core.Model
+﻿namespace Milimoe.FunGame.Core.Entity
 {
     public struct SkillTarget(Skill skill, List<Character> targets)
     {

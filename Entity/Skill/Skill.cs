@@ -239,42 +239,14 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 预释放爆发技选取技能目标 [ 不可取消 ]
-        /// </summary>
-        /// <param name="caster"></param>
-        /// <param name="enemys"></param>
-        /// <param name="teammates"></param>
-        /// <returns></returns>
-        public virtual List<Character> SelectTargetsPreSuperSkill(Character caster, List<Character> enemys, List<Character> teammates)
-        {
-            if (CanSelectSelf)
-            {
-                return [caster];
-            }
-            else
-            {
-                List<Character> targets = [];
-
-                if (enemys.Count <= CanSelectTargetCount)
-                {
-                    return [.. enemys];
-                }
-
-                return enemys.OrderBy(x => Random.Shared.Next()).Take(CanSelectTargetCount).ToList();
-            }
-        }
-
-        /// <summary>
         /// 选取技能目标
         /// </summary>
         /// <param name="caster"></param>
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
-        /// <param name="cancel"></param>
         /// <returns></returns>
-        public virtual List<Character> SelectTargets(Character caster, List<Character> enemys, List<Character> teammates, out bool cancel)
+        public virtual List<Character> SelectTargets(Character caster, List<Character> enemys, List<Character> teammates)
         {
-            cancel = false;
             if (CanSelectSelf)
             {
                 return [caster];
@@ -291,7 +263,7 @@ namespace Milimoe.FunGame.Core.Entity
                 return enemys.OrderBy(x => Random.Shared.Next()).Take(CanSelectTargetCount).ToList();
             }
         }
-
+        
         /// <summary>
         /// 技能开始吟唱时 [ 吟唱魔法、释放战技和爆发技、预释放爆发技均可触发 ]
         /// </summary>

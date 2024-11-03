@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Net.NetworkInformation;
+using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
@@ -252,8 +253,7 @@ namespace Milimoe.FunGame.Core.Entity
             if (Skills.Active != null)
             {
                 Skill skill = Skills.Active;
-
-                List<Character> targets = skill.SelectTargets(character, enemys, teammates, out cancel);
+                List<Character> targets = queue.SelectTargets(character, skill, enemys, teammates, out cancel);
                 if (!cancel)
                 {
                     skill.OnSkillCasted(queue, character, targets);
@@ -434,7 +434,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 复制一个物品
         /// </summary>
         /// <returns></returns>
-        public Item Copy(int level = 0)
+        public Item Copy(bool copyLevel = false)
         {
             Item item = Factory.OpenFactory.GetInstance<Item>(Id, Name, []);
             SetPropertyToItemModuleNew(item);
@@ -461,15 +461,34 @@ namespace Milimoe.FunGame.Core.Entity
             item.NextTradableTime = NextTradableTime;
             item.RemainUseTimes = RemainUseTimes;
             item.Skills.Active = Skills.Active?.Copy();
-            if (item.Skills.Active != null) item.Skills.Active.Level = level;
+            if (item.Skills.Active != null && copyLevel)
+            {
+                item.Skills.Active.Level = Skills.Active?.Level ?? 0;
+            }
             foreach (Skill skill in Skills.Passives)
             {
                 Skill newskill = skill.Copy();
                 newskill.Item = item;
-                newskill.Level = level;
+                newskill.Level = copyLevel ? skill.Level : 0;
                 item.Skills.Passives.Add(newskill);
             }
             return item;
+        }
+
+        /// <summary>
+        /// 设置所有技能的等级
+        /// </summary>
+        /// <param name="level"></param>
+        public void SetLevel(int level)
+        {
+            if (Skills.Active != null)
+            {
+                Skills.Active.Level = level;
+            }
+            foreach (Skill skill in Skills.Passives)
+            {
+                skill.Level = level;
+            }
         }
 
         /// <summary>

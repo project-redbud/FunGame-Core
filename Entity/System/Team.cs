@@ -1,7 +1,6 @@
-﻿using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Interface.Base;
+﻿using Milimoe.FunGame.Core.Interface.Base;
 
-namespace Milimoe.FunGame.Core.Model
+namespace Milimoe.FunGame.Core.Entity
 {
     public class Team(string name, IEnumerable<Character> charaters)
     {
