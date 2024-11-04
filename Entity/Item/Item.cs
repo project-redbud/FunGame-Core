@@ -1,7 +1,8 @@
-﻿using System.Text;
+﻿using System.Net.NetworkInformation;
+using System.Text;
+using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
-using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Entity
@@ -42,7 +43,7 @@ namespace Milimoe.FunGame.Core.Entity
         public bool Unequipable { get; set; } = true;
 
         /// <summary>
-        /// 装备槽位
+        /// 当前装备的槽位
         /// </summary>
         public virtual EquipSlotType EquipSlotType { get; set; } = EquipSlotType.None;
 
@@ -50,6 +51,21 @@ namespace Milimoe.FunGame.Core.Entity
         /// 武器类型（如果是武器）
         /// </summary>
         public virtual WeaponType WeaponType { get; set; } = WeaponType.None;
+
+        /// <summary>
+        /// 品质类型
+        /// </summary>
+        public virtual QualityType QualityType { get; set; } = QualityType.White;
+
+        /// <summary>
+        /// 稀有度类型
+        /// </summary>
+        public virtual RarityType RarityType { get; set; } = RarityType.OneStar;
+
+        /// <summary>
+        /// 物品评级
+        /// </summary>
+        public virtual ItemRankType RankType { get; set; } = ItemRankType.D;
 
         /// <summary>
         /// 快捷键
@@ -140,9 +156,10 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 当装备物品时
         /// </summary>
-        public void OnItemEquip(Character character, EquipItemToSlot type)
+        public void OnItemEquip(Character character, EquipSlotType type)
         {
             Character = character;
+            EquipSlotType = type;
             foreach (Skill skill in Skills.Passives)
             {
                 if (!skill.IsActive && skill.Level > 0)
@@ -164,13 +181,14 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 当取消装备物品时
         /// </summary>
-        public void OnItemUnEquip(EquipItemToSlot type)
+        public void OnItemUnEquip(EquipSlotType type)
         {
             if (Character != null)
             {
                 if (Skills.Active != null)
                 {
-                    foreach (Effect e in Character.Effects.Where(e => e.Skill == Skills.Active && e.Level > 0).ToList())
+                    List<Effect> effects = Character.Effects.Where(e => e.Skill == Skills.Active && e.Level > 0).ToList();
+                    foreach (Effect e in effects)
                     {
                         Character.Effects.Remove(e);
                         e.OnEffectLost(Character);
@@ -178,7 +196,8 @@ namespace Milimoe.FunGame.Core.Entity
                 }
                 foreach (Skill skill in Skills.Passives)
                 {
-                    foreach (Effect e in Character.Effects.Where(e => e.Skill == skill && e.Level > 0).ToList())
+                    List<Effect> effects = Character.Effects.Where(e => e.Skill == skill && e.Level > 0).ToList();
+                    foreach (Effect e in effects)
                     {
                         Character.Effects.Remove(e);
                         e.OnEffectLost(Character);
@@ -186,28 +205,42 @@ namespace Milimoe.FunGame.Core.Entity
                 }
                 switch (type)
                 {
-                    case EquipItemToSlot.MagicCardPack:
+                    case EquipSlotType.MagicCardPack:
                         Character.EquipSlot.MagicCardPack = null;
                         break;
-                    case EquipItemToSlot.Weapon:
+                    case EquipSlotType.Weapon:
                         Character.EquipSlot.Weapon = null;
                         break;
-                    case EquipItemToSlot.Armor:
+                    case EquipSlotType.Armor:
                         Character.EquipSlot.Armor = null;
                         break;
-                    case EquipItemToSlot.Shoes:
+                    case EquipSlotType.Shoes:
                         Character.EquipSlot.Shoes = null;
                         break;
-                    case EquipItemToSlot.Accessory1:
+                    case EquipSlotType.Accessory1:
                         Character.EquipSlot.Accessory1 = null;
                         break;
-                    case EquipItemToSlot.Accessory2:
+                    case EquipSlotType.Accessory2:
                         Character.EquipSlot.Accessory2 = null;
                         break;
                 }
                 OnItemUnEquipped(Character, this, type);
             }
             Character = null;
+            EquipSlotType = EquipSlotType.None;
+        }
+
+        /// <summary>
+        /// 设置游戏内的行动顺序表实例
+        /// </summary>
+        /// <param name="queue"></param>
+        public void SetGamingQueue(IGamingQueue queue)
+        {
+            if (Skills.Active != null) Skills.Active.GamingQueue = queue;
+            foreach (Skill skill in Skills.Passives)
+            {
+                skill.GamingQueue = queue;
+            }
         }
 
         /// <summary>
@@ -215,8 +248,19 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         public void UseItem(IGamingQueue queue, Character character, List<Character> enemys, List<Character> teammates)
         {
-            OnItemUsed(character, this);
-            Skills.Active?.OnSkillCasted(queue, character, enemys, teammates);
+            bool cancel = false;
+            bool used = false;
+            if (Skills.Active != null)
+            {
+                Skill skill = Skills.Active;
+                List<Character> targets = queue.SelectTargets(character, skill, enemys, teammates, out cancel);
+                if (!cancel)
+                {
+                    skill.OnSkillCasted(queue, character, targets);
+                    used = true;
+                }
+            }
+            OnItemUsed(character, this, cancel, used);
         }
 
         /// <summary>
@@ -232,7 +276,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="character"></param>
         /// <param name="item"></param>
-        public virtual void OnItemUsed(Character character, Item item)
+        /// <param name="cancel"></param>
+        /// <param name="used"></param>
+        public virtual void OnItemUsed(Character character, Item item, bool cancel, bool used)
         {
 
         }
@@ -253,7 +299,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="character"></param>
         /// <param name="item"></param>
         /// <param name="type"></param>
-        public virtual void OnItemEquipped(Character character, Item item, EquipItemToSlot type)
+        public virtual void OnItemEquipped(Character character, Item item, EquipSlotType type)
         {
 
         }
@@ -264,17 +310,16 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="character"></param>
         /// <param name="item"></param>
         /// <param name="type"></param>
-        public virtual void OnItemUnEquipped(Character character, Item item, EquipItemToSlot type)
+        public virtual void OnItemUnEquipped(Character character, Item item, EquipSlotType type)
         {
 
         }
 
 
-        protected Item(ItemType type, bool isInGame = true, EquipSlotType slot = EquipSlotType.None)
+        protected Item(ItemType type, bool isInGame = true)
         {
             ItemType = type;
             IsInGameItem = isInGame;
-            EquipSlotType = slot;
         }
 
         internal Item() { }
@@ -307,7 +352,7 @@ namespace Milimoe.FunGame.Core.Entity
             StringBuilder builder = new();
 
             builder.AppendLine($"【{Name}】");
-            builder.AppendLine($"{ItemSet.GetItemTypeName(ItemType)}" + (IsPurchasable && Price > 0 ? $"    售价：{Price}" : ""));
+            builder.AppendLine($"{ItemSet.GetItemTypeName(ItemType) + (ItemType == ItemType.Weapon && WeaponType != WeaponType.None ? "-" + ItemSet.GetWeaponTypeName(WeaponType) : "")}" + (IsPurchasable && Price > 0 ? $"  售价：{Price}" : ""));
 
             if (RemainUseTimes > 0)
             {
@@ -369,59 +414,81 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 设置一些属性给从 <see cref="ItemModule"/> 新建来的 <paramref name="newbyItemModule"/><para/>
-        /// 对于还原存档而言，在使用 JSON 反序列化 Item，且从 <see cref="ItemModule.GetItem"/> 中获取了实例后，需要使用此方法复制给新实例
+        /// 设置一些属性给从工厂构造出来的 <paramref name="newbyFactory"/> 对象
         /// </summary>
-        /// <param name="newbyItemModule"></param>
-        public void SetPropertyToItemModuleNew(Item newbyItemModule)
+        /// <param name="newbyFactory"></param>
+        public void SetPropertyToItemModuleNew(Item newbyFactory)
         {
-            newbyItemModule.WeaponType = WeaponType;
-            newbyItemModule.EquipSlotType = EquipSlotType;
-            newbyItemModule.Equipable = Equipable;
-            newbyItemModule.IsPurchasable = IsPurchasable;
-            newbyItemModule.Price = Price;
-            newbyItemModule.IsSellable = IsSellable;
-            newbyItemModule.NextSellableTime = NextSellableTime;
-            newbyItemModule.IsTradable = IsTradable;
-            newbyItemModule.NextTradableTime = NextTradableTime;
+            newbyFactory.WeaponType = WeaponType;
+            newbyFactory.EquipSlotType = EquipSlotType;
+            newbyFactory.Equipable = Equipable;
+            newbyFactory.IsPurchasable = IsPurchasable;
+            newbyFactory.Price = Price;
+            newbyFactory.IsSellable = IsSellable;
+            newbyFactory.NextSellableTime = NextSellableTime;
+            newbyFactory.IsTradable = IsTradable;
+            newbyFactory.NextTradableTime = NextTradableTime;
         }
 
         /// <summary>
         /// 复制一个物品
         /// </summary>
         /// <returns></returns>
-        public Item Copy()
+        public Item Copy(bool copyLevel = false)
         {
-            Item item = new()
-            {
-                Id = Id,
-                Name = Name,
-                Description = Description,
-                GeneralDescription = GeneralDescription,
-                ItemType = ItemType,
-                Equipable = Equipable,
-                Unequipable = Unequipable,
-                EquipSlotType = EquipSlotType,
-                WeaponType = WeaponType,
-                Key = Key,
-                Enable = Enable,
-                IsInGameItem = IsInGameItem,
-                IsPurchasable = IsPurchasable,
-                Price = Price,
-                IsSellable = IsSellable,
-                NextSellableTime = NextSellableTime,
-                IsTradable = IsTradable,
-                NextTradableTime = NextTradableTime,
-                RemainUseTimes = RemainUseTimes,
-            };
+            Item item = Factory.OpenFactory.GetInstance<Item>(Id, Name, []);
+            SetPropertyToItemModuleNew(item);
+            item.Id = Id;
+            item.Name = Name;
+            item.Description = Description;
+            item.GeneralDescription = GeneralDescription;
+            item.BackgroundStory = BackgroundStory;
+            item.ItemType = ItemType;
+            item.Equipable = Equipable;
+            item.Unequipable = Unequipable;
+            item.WeaponType = WeaponType;
+            item.QualityType = QualityType;
+            item.RarityType = RarityType;
+            item.RankType = RankType;
+            item.Key = Key;
+            item.Enable = Enable;
+            item.IsInGameItem = IsInGameItem;
+            item.IsPurchasable = IsPurchasable;
+            item.Price = Price;
+            item.IsSellable = IsSellable;
+            item.NextSellableTime = NextSellableTime;
+            item.IsTradable = IsTradable;
+            item.NextTradableTime = NextTradableTime;
+            item.RemainUseTimes = RemainUseTimes;
             item.Skills.Active = Skills.Active?.Copy();
+            if (item.Skills.Active != null && copyLevel)
+            {
+                item.Skills.Active.Level = Skills.Active?.Level ?? 0;
+            }
             foreach (Skill skill in Skills.Passives)
             {
                 Skill newskill = skill.Copy();
                 newskill.Item = item;
+                newskill.Level = copyLevel ? skill.Level : 0;
                 item.Skills.Passives.Add(newskill);
             }
             return item;
+        }
+
+        /// <summary>
+        /// 设置所有技能的等级
+        /// </summary>
+        /// <param name="level"></param>
+        public void SetLevel(int level)
+        {
+            if (Skills.Active != null)
+            {
+                Skills.Active.Level = level;
+            }
+            foreach (Skill skill in Skills.Passives)
+            {
+                skill.Level = level;
+            }
         }
 
         /// <summary>

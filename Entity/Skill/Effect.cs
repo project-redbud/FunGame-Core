@@ -91,6 +91,11 @@ namespace Milimoe.FunGame.Core.Entity
         public IGamingQueue? GamingQueue { get; set; } = null;
 
         /// <summary>
+        /// 用于动态扩展特效的参数
+        /// </summary>
+        public Dictionary<string, object> Values { get; } = [];
+
+        /// <summary>
         /// 输出文本或日志
         /// </summary>
         public Action<string> WriteLine
@@ -102,9 +107,16 @@ namespace Milimoe.FunGame.Core.Entity
             }
         }
 
-        protected Effect(Skill skill)
+        protected Effect(Skill skill, Dictionary<string, object>? args = null)
         {
             Skill = skill;
+            if (args != null)
+            {
+                foreach (string key in args.Keys)
+                {
+                    Values[key] = args[key];
+                }
+            }
         }
 
         internal Effect()
@@ -240,10 +252,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// 吟唱结束后释放技能（魔法）/ 直接释放技能（战技/爆发技）
         /// </summary>
         /// <param name="caster"></param>
-        /// <param name="enemys"></param>
-        /// <param name="teammates"></param>
+        /// <param name="targets"></param>
         /// <param name="others"></param>
-        public virtual void OnSkillCasted(Character caster, List<Character> enemys, List<Character> teammates, Dictionary<string, object> others)
+        public virtual void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)
         {
 
         }
@@ -324,6 +335,17 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 闪避检定前触发
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="throwingBonus"></param>
+        /// <returns>返回 false 表示不进行闪避检定</returns>
+        public virtual bool BeforeEvadeCheck(Character character, ref double throwingBonus)
+        {
+            return true;
+        }
+
+        /// <summary>
         /// 在触发闪避时
         /// </summary>
         /// <param name="attacker"></param>
@@ -333,6 +355,17 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual bool OnEvadedTriggered(Character attacker, Character evader, double dice)
         {
             return false;
+        }
+
+        /// <summary>
+        /// 暴击检定前触发
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="throwingBonus"></param>
+        /// <returns>返回 false 表示不进行暴击检定</returns>
+        public virtual bool BeforeCriticalCheck(Character character, ref double throwingBonus)
+        {
+            return true;
         }
 
         /// <summary>
@@ -441,20 +474,24 @@ namespace Milimoe.FunGame.Core.Entity
         /// <returns></returns>
         public Effect Copy(Skill skill)
         {
-            Effect copy = new(skill)
+            Dictionary<string, object> args = new()
             {
-                EffectType = EffectType,
-                TargetSelf = TargetSelf,
-                TargetCount = TargetCount,
-                TargetRange = TargetRange,
-                Durative = Durative,
-                Duration = Duration,
-                DurationTurn = DurationTurn,
-                MagicType = MagicType,
-                Description = Description,
-                GamingQueue = GamingQueue
+                { "skill", skill },
+                { "values", Values }
             };
-
+            Effect copy = Factory.OpenFactory.GetInstance<Effect>(Id, Name, args);
+            copy.Id = Id;
+            copy.Name = Name;
+            copy.Description = Description;
+            copy.EffectType = EffectType;
+            copy.TargetSelf = TargetSelf;
+            copy.TargetCount = TargetCount;
+            copy.TargetRange = TargetRange;
+            copy.Durative = Durative;
+            copy.Duration = Duration;
+            copy.DurationTurn = DurationTurn;
+            copy.MagicType = MagicType;
+            copy.GamingQueue = GamingQueue;
             return copy;
         }
 

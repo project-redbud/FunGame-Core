@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Model;
 
@@ -10,6 +11,11 @@ namespace Milimoe.FunGame.Core.Library.Constant
     public class General
     {
         #region  Static Variable
+
+        /// <summary>
+        /// 支持动态扩展的工厂实例
+        /// </summary>
+        public static Factory OpenFactory { get; } = Factory.OpenFactory;
 
         /// <summary>
         /// 空的实体类 用于object返回

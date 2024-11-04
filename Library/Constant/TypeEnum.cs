@@ -479,22 +479,9 @@ namespace Milimoe.FunGame.Core.Library.Constant
     }
 
     /// <summary>
-    /// 区别于 <see cref="EquipItemToSlot"/>，这个是定义物品所属的栏位
+    /// 指示物品在哪个栏位上
     /// </summary>
     public enum EquipSlotType
-    {
-        None,
-        MagicCardPack,
-        Weapon,
-        Armor,
-        Shoes,
-        Accessory
-    }
-
-    /// <summary>
-    /// 区别于 <see cref="EquipSlotType"/>，这个是指示物品具体在哪个栏位上
-    /// </summary>
-    public enum EquipItemToSlot
     {
         None,
         MagicCardPack,
@@ -759,7 +746,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         D
     }
 
-    public enum ItemQualityType
+    public enum QualityType
     {
         White,
         Green,
@@ -769,7 +756,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Red
     }
 
-    public enum ItemRarityType
+    public enum RarityType
     {
         OneStar,
         TwoStar,

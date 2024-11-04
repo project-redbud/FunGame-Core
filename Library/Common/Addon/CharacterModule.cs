@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Addons;
 
 namespace Milimoe.FunGame.Core.Library.Common.Addon
@@ -28,7 +29,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 此模组中包含的角色
         /// </summary>
-        public abstract List<Character> Characters { get; }
+        public abstract Dictionary<string, Character> Characters { get; }
 
         /// <summary>
         /// 加载标记
@@ -49,10 +50,26 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             {
                 // 模组加载后，不允许再次加载此模组
                 IsLoaded = true;
+                // 注册工厂
+                Factory.OpenFactory.RegisterFactory(EntityFactory());
                 // 如果加载后需要执行代码，请重写AfterLoad方法
                 AfterLoad();
             }
             return IsLoaded;
+        }
+
+        /// <summary>
+        /// 注册工厂
+        /// </summary>
+        protected virtual Factory.EntityFactoryDelegate<Character> EntityFactory()
+        {
+            return (id, name, args) =>
+            {
+                Character c = Factory.GetCharacter();
+                c.Id = id;
+                c.Name = name;
+                return c;
+            };
         }
 
         /// <summary>

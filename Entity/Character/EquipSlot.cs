@@ -33,45 +33,17 @@ namespace Milimoe.FunGame.Core.Entity
         public Item? Accessory2 { get; internal set; } = null;
 
         /// <summary>
+        /// 上一次装备的饰品槽
+        /// </summary>
+        public EquipSlotType LastEquipSlotType { get; internal set; } = EquipSlotType.Accessory1;
+
+        /// <summary>
         /// 是否有任意装备
         /// </summary>
         /// <returns></returns>
         public bool Any()
         {
             return MagicCardPack != null || Weapon != null || Armor != null || Shoes != null || Accessory1 != null || Accessory2 != null;
-        }
-
-        /// <summary>
-        /// 获取物品所装备的栏位
-        /// </summary>
-        /// <returns></returns>
-        public EquipItemToSlot GetEquipItemToSlot(Item item)
-        {
-            if (MagicCardPack == item)
-            {
-                return EquipItemToSlot.MagicCardPack;
-            }
-            else if (Weapon == item)
-            {
-                return EquipItemToSlot.Weapon;
-            }
-            else if (Armor == item)
-            {
-                return EquipItemToSlot.Armor;
-            }
-            else if (Shoes == item)
-            {
-                return EquipItemToSlot.Shoes;
-            }
-            else if (Accessory1 == item)
-            {
-                return EquipItemToSlot.Accessory1;
-            }
-            else if (Accessory2 == item)
-            {
-                return EquipItemToSlot.Accessory2;
-            }
-            return EquipItemToSlot.None;
         }
     }
 }

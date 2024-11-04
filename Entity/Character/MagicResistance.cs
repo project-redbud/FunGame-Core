@@ -14,5 +14,58 @@
         public double Element { get; set; } = 0;
         public double Fleabane { get; set; } = 0;
         public double Particle { get; set; } = 0;
+
+        /// <summary>
+        /// 对所有抗性赋值
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="assignment"></param>
+        public void SetAllValue(double value, bool assignment = true)
+        {
+            if (assignment)
+            {
+                None = value;
+                Particle = value;
+                Fleabane = value;
+                Element = value;
+                Shadow = value;
+                Bright = value;
+                PurityContemporary = value;
+                PurityNatural = value;
+                Starmark = value;
+            }
+            else
+            {
+                None += value;
+                Particle += value;
+                Fleabane += value;
+                Element += value;
+                Shadow += value;
+                Bright += value;
+                PurityContemporary += value;
+                PurityNatural += value;
+                Starmark += value;
+            }
+        }
+
+        /// <summary>
+        /// 复制一个魔法抗性对象
+        /// </summary>
+        /// <returns></returns>
+        public MagicResistance Copy()
+        {
+            return new()
+            {
+                None = None,
+                Starmark = Starmark,
+                PurityNatural = PurityNatural,
+                PurityContemporary = PurityContemporary,
+                Bright = Bright,
+                Shadow = Shadow,
+                Element = Element,
+                Fleabane = Fleabane,
+                Particle = Particle
+            };
+        }
     }
 }

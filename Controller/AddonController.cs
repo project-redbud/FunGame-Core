@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using Milimoe.FunGame.Core.Api.Transmittal;
+﻿using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Interface.Addons;
 using Milimoe.FunGame.Core.Library.Constant;
 

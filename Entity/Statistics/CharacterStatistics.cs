@@ -32,6 +32,8 @@
         public int Kills { get; set; } = 0;
         public int Deaths { get; set; } = 0;
         public int Assists { get; set; } = 0;
+        public int FirstKills { get; set; } = 0;
+        public int FirstDeaths { get; set; } = 0;
         public int Plays { get; set; } = 0;
         public int Wins { get; set; } = 0;
         public int Top3s { get; set; } = 0;
@@ -40,5 +42,6 @@
         public double Top3rates { get; set; } = 0;
         public int LastRank { get; set; } = 0;
         public double AvgRank { get; set; } = 0;
+        public double Rating { get; set; } = 0;
     }
 }

@@ -10,7 +10,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
     {
         public override Skill NewInstance()
         {
-            return new();
+            return new OpenSkill(0, "", []);
         }
 
         public override void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref Skill result)
@@ -29,11 +29,23 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Skill.GeneralDescription):
                     result.GeneralDescription = reader.GetString() ?? "";
                     break;
+                case nameof(Skill.Slogan):
+                    result.Slogan = reader.GetString() ?? "";
+                    break;
                 case nameof(Skill.Level):
                     result.Level = reader.GetInt32();
                     break;
                 case nameof(Skill.SkillType):
                     result.SkillType = (SkillType)reader.GetInt32();
+                    break;
+                case nameof(Skill.CanSelectSelf):
+                    result.CanSelectSelf = reader.GetBoolean();
+                    break;
+                case nameof(Skill.CanSelectTargetCount):
+                    result.CanSelectTargetCount = reader.GetInt32();
+                    break;
+                case nameof(Skill.CanSelectTargetRange):
+                    result.CanSelectTargetRange = reader.GetInt32();
                     break;
                 case nameof(Skill.Enable):
                     result.Enable = reader.GetBoolean();
@@ -66,11 +78,11 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                         result.Effects.Add(effect);
                     }
                     break;
-                case nameof(Skill.OtherArgs):
-                    Dictionary<string, object> others = NetworkUtility.JsonDeserialize<Dictionary<string, object>>(ref reader, options) ?? [];
-                    foreach (string key in others.Keys)
+                case nameof(Skill.Values):
+                    Dictionary<string, object> values = NetworkUtility.JsonDeserialize<Dictionary<string, object>>(ref reader, options) ?? [];
+                    foreach (string key in values.Keys)
                     {
-                        result.OtherArgs.Add(key, others[key]);
+                        result.Values.Add(key, values[key]);
                     }
                     break;
             }
@@ -84,8 +96,12 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteString(nameof(Skill.Name), value.Name);
             writer.WriteString(nameof(Skill.Description), value.Description);
             if (value.GeneralDescription.Length > 0) writer.WriteString(nameof(Skill.GeneralDescription), value.GeneralDescription);
+            if (value.Slogan.Length > 0) writer.WriteString(nameof(Skill.Slogan), value.Slogan);
             if (value.Level > 0) writer.WriteNumber(nameof(Skill.Level), value.Level);
             writer.WriteNumber(nameof(Skill.SkillType), (int)value.SkillType);
+            if (value.CanSelectSelf) writer.WriteBoolean(nameof(Skill.CanSelectSelf), value.CanSelectSelf);
+            if (value.CanSelectTargetCount != 0) writer.WriteNumber(nameof(Skill.CanSelectTargetCount), value.CanSelectTargetCount);
+            if (value.CanSelectTargetRange != 0) writer.WriteNumber(nameof(Skill.CanSelectTargetRange), value.CanSelectTargetRange);
             if (!value.Enable) writer.WriteBoolean(nameof(Skill.Enable), value.Enable);
             if (value.IsInEffect) writer.WriteBoolean(nameof(Skill.IsInEffect), value.IsInEffect);
             if (value.MPCost > 0) writer.WriteNumber(nameof(Skill.MPCost), value.MPCost);
@@ -96,8 +112,8 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             if (value.HardnessTime > 0) writer.WriteNumber(nameof(Skill.HardnessTime), value.HardnessTime);
             writer.WritePropertyName(nameof(Skill.Effects));
             JsonSerializer.Serialize(writer, value.Effects, options);
-            writer.WritePropertyName(nameof(Skill.OtherArgs));
-            JsonSerializer.Serialize(writer, value.OtherArgs, options);
+            writer.WritePropertyName(nameof(Skill.Values));
+            JsonSerializer.Serialize(writer, value.Values, options);
 
             writer.WriteEndObject();
         }

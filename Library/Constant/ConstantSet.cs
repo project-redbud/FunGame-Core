@@ -325,6 +325,22 @@ namespace Milimoe.FunGame.Core.Library.Constant
             };
         }
 
+        public static string GetMagicResistanceName(MagicType type)
+        {
+            return type switch
+            {
+                MagicType.Starmark => "星痕抗性",
+                MagicType.PurityNatural => "现代结晶抗性",
+                MagicType.PurityContemporary => "纯粹结晶抗性",
+                MagicType.Bright => "光抗性",
+                MagicType.Shadow => "影抗性",
+                MagicType.Element => "元素抗性",
+                MagicType.Fleabane => "紫宛抗性",
+                MagicType.Particle => "时空抗性",
+                _ => "魔法抗性",
+            };
+        }
+
         public static string GetContinuousKilling(int kills)
         {
             if (kills > 10) return "超越神的杀戮";
@@ -447,7 +463,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EquipSlotType.Weapon => "武器",
                 EquipSlotType.Armor => "防具",
                 EquipSlotType.Shoes => "鞋子",
-                EquipSlotType.Accessory => "饰品",
+                EquipSlotType.Accessory1 => "饰品1",
+                EquipSlotType.Accessory2 => "饰品2",
                 _ => ""
             };
         }
@@ -460,36 +477,9 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 "武器" => EquipSlotType.Weapon,
                 "防具" => EquipSlotType.Armor,
                 "鞋子" => EquipSlotType.Shoes,
-                "饰品" => EquipSlotType.Accessory,
+                "饰品1" => EquipSlotType.Accessory1,
+                "饰品2" => EquipSlotType.Accessory2,
                 _ => EquipSlotType.None
-            };
-        }
-
-        public static string GetEquipItemToSlotTypeName(EquipItemToSlot type)
-        {
-            return type switch
-            {
-                EquipItemToSlot.MagicCardPack => "魔法卡包",
-                EquipItemToSlot.Weapon => "武器",
-                EquipItemToSlot.Armor => "防具",
-                EquipItemToSlot.Shoes => "鞋子",
-                EquipItemToSlot.Accessory1 => "饰品1",
-                EquipItemToSlot.Accessory2 => "饰品2",
-                _ => ""
-            };
-        }
-
-        public static EquipItemToSlot GetEquipItemToSlotTypeFromName(string name)
-        {
-            return name switch
-            {
-                "魔法卡包" => EquipItemToSlot.MagicCardPack,
-                "武器" => EquipItemToSlot.Weapon,
-                "防具" => EquipItemToSlot.Armor,
-                "鞋子" => EquipItemToSlot.Shoes,
-                "饰品1" => EquipItemToSlot.Accessory1,
-                "饰品2" => EquipItemToSlot.Accessory2,
-                _ => EquipItemToSlot.None
             };
         }
     }

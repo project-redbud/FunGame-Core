@@ -1,5 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Entity.System;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Constant;
 
@@ -26,9 +27,19 @@ namespace Milimoe.FunGame.Core.Model
         public List<Character> Eliminated => _eliminated;
 
         /// <summary>
+        /// 当前团灭的团队顺序(第一个是最早死的)
+        /// </summary>
+        public List<Team> EliminatedTeams => _eliminatedTeams;
+
+        /// <summary>
         /// 角色数据
         /// </summary>
         public Dictionary<Character, CharacterStatistics> CharacterStatistics => _stats;
+
+        /// <summary>
+        /// 团队及其成员
+        /// </summary>
+        public Dictionary<string, Team> Teams => _teams;
 
         /// <summary>
         /// 游戏运行的时间
@@ -42,6 +53,38 @@ namespace Milimoe.FunGame.Core.Model
         public int TotalRound { get; set; } = 0;
 
         /// <summary>
+        /// 第一滴血获得者
+        /// </summary>
+        public Character? FirstKiller { get; set; } = null;
+        
+        /// <summary>
+        /// 最大复活次数
+        /// 0：不复活 / -1：无限复活
+        /// </summary>
+        public int MaxRespawnTimes { get; set; } = 0;
+        
+        /// <summary>
+        /// 复活次数统计
+        /// </summary>
+        public Dictionary<Character, int> RespawnTimes => _respawnTimes;
+
+        /// <summary>
+        /// 复活倒计时
+        /// </summary>
+        public Dictionary<Character, double> RespawnCountdown => _respawnCountdown;
+
+        /// <summary>
+        /// 最大获胜积分 [ 适用于团队模式 ]
+        /// 设置一个大于0的数以启用
+        /// </summary>
+        public int MaxScoreToWin { get; set; } = 0;
+
+        /// <summary>
+        /// 上回合记录
+        /// </summary>
+        public RoundRecord LastRound { get; set; } = new(0, Factory.GetCharacter());
+
+        /// <summary>
         /// 当前的行动顺序
         /// </summary>
         protected readonly List<Character> _queue = [];
@@ -52,6 +95,11 @@ namespace Milimoe.FunGame.Core.Model
         protected readonly List<Character> _eliminated = [];
 
         /// <summary>
+        /// 当前团灭的团队顺序(第一个是最早死的)
+        /// </summary>
+        protected readonly List<Team> _eliminatedTeams = [];
+
+        /// <summary>
         /// 硬直时间表
         /// </summary>
         protected readonly Dictionary<Character, double> _hardnessTimes = [];
@@ -59,7 +107,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 角色正在吟唱的魔法
         /// </summary>
-        protected readonly Dictionary<Character, Skill> _castingSkills = [];
+        protected readonly Dictionary<Character, SkillTarget> _castingSkills = [];
 
         /// <summary>
         /// 角色预释放的爆发技
@@ -92,6 +140,26 @@ namespace Milimoe.FunGame.Core.Model
         protected readonly Dictionary<Character, CharacterStatistics> _stats = [];
 
         /// <summary>
+        /// 团队及其成员
+        /// </summary>
+        protected readonly Dictionary<string, Team> _teams = [];
+
+        /// <summary>
+        /// 复活次数统计
+        /// </summary>
+        protected readonly Dictionary<Character, int> _respawnTimes = [];
+        
+        /// <summary>
+        /// 复活倒计时
+        /// </summary>
+        protected readonly Dictionary<Character, double> _respawnCountdown = [];
+
+        /// <summary>
+        /// 是否是团队模式
+        /// </summary>
+        protected bool _isTeamMode = false;
+
+        /// <summary>
         /// 游戏是否结束
         /// </summary>
         protected bool _isGameEnd = false;
@@ -99,16 +167,41 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 新建一个行动顺序表
         /// </summary>
-        /// <param name="characters">参与本次游戏的角色列表</param>
+        /// <param name="isTeamMdoe">是否是团队模式</param>
         /// <param name="writer">用于文本输出</param>
-        public ActionQueue(List<Character> characters, Action<string>? writer = null)
+        public ActionQueue(bool isTeamMdoe = false, Action<string>? writer = null)
         {
+            _isTeamMode = isTeamMdoe;
             if (writer != null)
             {
                 WriteLine = writer;
             }
             WriteLine ??= new Action<string>(Console.WriteLine);
+        }
 
+        /// <summary>
+        /// 新建一个行动顺序表并初始化
+        /// </summary>
+        /// <param name="characters">参与本次游戏的角色列表</param>
+        /// <param name="isTeamMdoe">是否是团队模式</param>
+        /// <param name="writer">用于文本输出</param>
+        public ActionQueue(List<Character> characters, bool isTeamMdoe = false, Action<string>? writer = null)
+        {
+            _isTeamMode = isTeamMdoe;
+            if (writer != null)
+            {
+                WriteLine = writer;
+            }
+            WriteLine ??= new Action<string>(Console.WriteLine);
+            InitCharacterQueue(characters);
+        }
+
+        /// <summary>
+        /// 初始化行动顺序表
+        /// </summary>
+        /// <param name="characters"></param>
+        public void InitCharacterQueue(List<Character> characters)
+        {
             // 初始排序：按速度排序
             List<IGrouping<double, Character>> groupedBySpeed = [.. characters
                 .GroupBy(c => c.SPD)
@@ -190,6 +283,85 @@ namespace Milimoe.FunGame.Core.Model
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// 清空行动队列
+        /// </summary>
+        public void ClearQueue()
+        {
+            FirstKiller = null;
+            _queue.Clear();
+            _hardnessTimes.Clear();
+            _assistDamage.Clear();
+            _stats.Clear();
+            _cutCount.Clear();
+            _castingSkills.Clear();
+            _castingSuperSkills.Clear();
+            _continuousKilling.Clear();
+            _earnedMoney.Clear();
+            _eliminated.Clear();
+        }
+
+        /// <summary>
+        /// 添加一个团队
+        /// </summary>
+        /// <param name="teamName"></param>
+        /// <param name="characters"></param>
+        public void AddTeam(string teamName, IEnumerable<Character> characters)
+        {
+            if (teamName != "" && characters.Any())
+            {
+                _teams.Add(teamName, new(teamName, characters));
+            }
+        }
+
+        /// <summary>
+        /// 获取角色的团队
+        /// </summary>
+        /// <param name="character"></param>
+        public Team? GetTeam(Character character)
+        {
+            foreach (Team team in _teams.Values)
+            {
+                if (team.IsOnThisTeam(character))
+                {
+                    return team;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 从已淘汰的团队中获取角色的团队
+        /// </summary>
+        /// <param name="character"></param>
+        public Team? GetTeamFromEliminated(Character character)
+        {
+            foreach (Team team in _eliminatedTeams)
+            {
+                if (team.IsOnThisTeam(character))
+                {
+                    return team;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 获取某角色的团队成员
+        /// </summary>
+        /// <param name="character"></param>
+        public List<Character> GetTeammates(Character character)
+        {
+            foreach (string team in _teams.Keys)
+            {
+                if (_teams[team].IsOnThisTeam(character))
+                {
+                    return _teams[team].GetTeammates(character);
+                }
+            }
+            return [];
         }
 
         /// <summary>
@@ -320,13 +492,15 @@ namespace Milimoe.FunGame.Core.Model
         public bool ProcessTurn(Character character)
         {
             TotalRound++;
+            LastRound = new(TotalRound, character);
 
             if (!BeforeTurn(character))
             {
                 return _isGameEnd;
             }
 
-            foreach (Effect effect in character.Effects.Where(e => e.Level > 0).ToList())
+            List<Effect> effects = character.Effects.Where(e => e.Level > 0).ToList();
+            foreach (Effect effect in effects)
             {
                 effect.OnTurnStart(character);
             }
@@ -335,11 +509,11 @@ namespace Milimoe.FunGame.Core.Model
             double baseTime = 10;
             bool isCheckProtected = true;
 
-            // 敌人列表
-            List<Character> enemys = [.. _queue.Where(c => c != character && !c.IsUnselectable)];
-
             // 队友列表
-            List<Character> teammates = [];
+            List<Character> teammates = [.. GetTeammates(character).Where(_queue.Contains)];
+
+            // 敌人列表
+            List<Character> enemys = [.. _queue.Where(c => c != character && !c.IsUnselectable && !teammates.Contains(c))];
 
             // 技能列表
             List<Skill> skills = [.. character.Skills.Where(s => s.Level > 0 && s.SkillType != SkillType.Passive && s.Enable && !s.IsInEffect && s.CurrentCD == 0 &&
@@ -349,249 +523,290 @@ namespace Milimoe.FunGame.Core.Model
             List<Item> items = [.. character.Items.Where(i => i.IsActive && i.Skills.Active != null && i.Enable && i.IsInGameItem &&
                 i.Skills.Active.SkillType == SkillType.Item && i.Skills.Active.Enable && !i.Skills.Active.IsInEffect && i.Skills.Active.CurrentCD == 0 && i.Skills.Active.RealMPCost <= character.MP && i.Skills.Active.RealEPCost <= character.EP)];
 
+            // 此变量用于在取消选择时，能够重新行动
+            bool decided = false;
+            // 最大取消次数
+            int cancelTimes = 3;
+
             // 作出了什么行动
             CharacterActionType type = CharacterActionType.None;
 
-            // 是否能使用物品和释放技能
-            bool canUseItem = items.Count > 0;
-            bool canCastSkill = skills.Count > 0;
-
-            // 使用物品和释放技能、使用普通攻击的概率
-            double pUseItem = 0.33;
-            double pCastSkill = 0.33;
-            double pNormalAttack = 0.34;
-
-            // 不允许在吟唱和预释放状态下，修改角色的行动
-            if (character.CharacterState != CharacterState.Casting && character.CharacterState != CharacterState.PreCastSuperSkill)
+            while (!decided && cancelTimes > 0)
             {
-                CharacterActionType actionTypeTemp = CharacterActionType.None;
-                foreach (Effect e in character.Effects.Where(e => e.Level > 0).ToList())
-                {
-                    actionTypeTemp = e.AlterActionTypeBeforeAction(character, character.CharacterState, ref canUseItem, ref canCastSkill, ref pUseItem, ref pCastSkill, ref pNormalAttack);
-                }
-                if (actionTypeTemp != CharacterActionType.None && actionTypeTemp != CharacterActionType.CastSkill && actionTypeTemp != CharacterActionType.CastSuperSkill)
-                {
-                    type = actionTypeTemp;
-                }
-            }
+                type = CharacterActionType.None;
 
-            if (type == CharacterActionType.None)
-            {
-                if (character.CharacterState != CharacterState.NotActionable && character.CharacterState != CharacterState.Casting && character.CharacterState != CharacterState.PreCastSuperSkill)
-                {
-                    if (character.CharacterState == CharacterState.Actionable)
-                    {
-                        // 可以任意行动
-                        if (canUseItem && canCastSkill)
-                        {
-                            // 不做任何处理
-                        }
-                        else if (canUseItem && !canCastSkill)
-                        {
-                            pCastSkill = 0;
-                        }
-                        else if (!canUseItem && canCastSkill)
-                        {
-                            pUseItem = 0;
-                        }
-                        else
-                        {
-                            pUseItem = 0;
-                            pCastSkill = 0;
-                        }
-                    }
-                    else if (character.CharacterState == CharacterState.ActionRestricted)
-                    {
-                        // 行动受限，只能使用特殊物品
-                        if (canUseItem)
-                        {
-                            pCastSkill = 0;
-                            pNormalAttack = 0;
-                        }
-                        else
-                        {
-                            pUseItem = 0;
-                            pCastSkill = 0;
-                            pNormalAttack = 0;
-                        }
-                    }
-                    else if (character.CharacterState == CharacterState.BattleRestricted)
-                    {
-                        // 战斗不能，只能使用物品
-                        if (canUseItem)
-                        {
-                            pCastSkill = 0;
-                            pNormalAttack = 0;
-                        }
-                        else
-                        {
-                            pUseItem = 0;
-                            pCastSkill = 0;
-                            pNormalAttack = 0;
-                        }
-                    }
-                    else if (character.CharacterState == CharacterState.SkillRestricted)
-                    {
-                        // 技能受限，无法使用技能，可以使用物品
-                        if (canUseItem)
-                        {
-                            pCastSkill = 0;
-                        }
-                        else
-                        {
-                            pUseItem = 0;
-                            pCastSkill = 0;
-                        }
-                    }
-                    type = GetActionType(pUseItem, pCastSkill, pNormalAttack);
-                    _stats[character].ActionTurn += 1;
-                }
-                else if (character.CharacterState == CharacterState.Casting)
-                {
-                    // 如果角色上一次吟唱了魔法，这次的行动则是结算这个魔法
-                    type = CharacterActionType.CastSkill;
-                }
-                else if (character.CharacterState == CharacterState.PreCastSuperSkill)
-                {
-                    // 角色使用回合外爆发技插队
-                    type = CharacterActionType.CastSuperSkill;
-                }
-                else
-                {
-                    WriteLine("[ " + character + $" ] 完全行动不能！");
-                    type = CharacterActionType.None;
-                }
-            }
+                // 是否能使用物品和释放技能
+                bool canUseItem = items.Count > 0;
+                bool canCastSkill = skills.Count > 0;
 
-            List<Character> enemysTemp = new(enemys);
-            List<Character> teammatesTemp = new(teammates);
-            List<Skill> skillsTemp = new(skills);
-            Dictionary<Character, int> continuousKillingTemp = new(_continuousKilling);
-            Dictionary<Character, int> earnedMoneyTemp = new(_earnedMoney);
-            foreach (Effect e in character.Effects.Where(e => e.Level > 0).ToList())
-            {
-                if (e.AlterEnemyListBeforeAction(character, enemysTemp, teammatesTemp, skillsTemp, continuousKillingTemp, earnedMoneyTemp))
-                {
-                    enemys = enemysTemp.Distinct().ToList();
-                    teammates = teammatesTemp.Distinct().ToList();
-                    skills = skillsTemp.Distinct().ToList();
-                }
-            }
+                // 使用物品和释放技能、使用普通攻击的概率
+                double pUseItem = 0.33;
+                double pCastSkill = 0.33;
+                double pNormalAttack = 0.34;
 
-            if (type == CharacterActionType.NormalAttack)
-            {
-                // 使用普通攻击逻辑
-                // 获取随机敌人
-                if (enemys.Count > 0)
+                cancelTimes--;
+                // 不允许在吟唱和预释放状态下，修改角色的行动
+                if (character.CharacterState != CharacterState.Casting && character.CharacterState != CharacterState.PreCastSuperSkill)
                 {
-                    Character enemy = enemys[Random.Shared.Next(enemys.Count)];
-                    character.NormalAttack.Attack(this, character, enemy);
-                    baseTime = character.NormalAttack.HardnessTime;
-                    foreach (Effect effect in character.Effects.Where(e => e.Level > 0).ToList())
+                    CharacterActionType actionTypeTemp = CharacterActionType.None;
+                    effects = character.Effects.Where(e => e.Level > 0).ToList();
+                    foreach (Effect e in effects)
                     {
-                        effect.AlterHardnessTimeAfterNormalAttack(character, ref baseTime, ref isCheckProtected);
+                        actionTypeTemp = e.AlterActionTypeBeforeAction(character, character.CharacterState, ref canUseItem, ref canCastSkill, ref pUseItem, ref pCastSkill, ref pNormalAttack);
+                    }
+                    if (actionTypeTemp != CharacterActionType.None && actionTypeTemp != CharacterActionType.CastSkill && actionTypeTemp != CharacterActionType.CastSuperSkill)
+                    {
+                        type = actionTypeTemp;
                     }
                 }
-            }
-            else if (type == CharacterActionType.PreCastSkill)
-            {
-                // 预使用技能，即开始吟唱逻辑
-                // 注意：FastAuto 模式下，此吟唱逻辑删减了选取目标的逻辑，将选取逻辑放在了实际释放的环节
-                // 在正常交互式模式下，吟唱前需要先选取目标
-                Skill skill = skills[Random.Shared.Next(skills.Count)];
-                if (skill.SkillType == SkillType.Magic)
+
+                if (type == CharacterActionType.None)
                 {
-                    character.CharacterState = CharacterState.Casting;
-                    _castingSkills.Add(character, skill);
-                    baseTime = skill.CastTime;
-                    skill.OnSkillCasting(this, character);
+                    if (character.CharacterState != CharacterState.NotActionable && character.CharacterState != CharacterState.Casting && character.CharacterState != CharacterState.PreCastSuperSkill)
+                    {
+                        if (character.CharacterState == CharacterState.Actionable)
+                        {
+                            // 可以任意行动
+                            if (canUseItem && canCastSkill)
+                            {
+                                // 不做任何处理
+                            }
+                            else if (canUseItem && !canCastSkill)
+                            {
+                                pCastSkill = 0;
+                            }
+                            else if (!canUseItem && canCastSkill)
+                            {
+                                pUseItem = 0;
+                            }
+                            else
+                            {
+                                pUseItem = 0;
+                                pCastSkill = 0;
+                            }
+                        }
+                        else if (character.CharacterState == CharacterState.ActionRestricted)
+                        {
+                            // 行动受限，只能使用特殊物品
+                            if (canUseItem)
+                            {
+                                pCastSkill = 0;
+                                pNormalAttack = 0;
+                            }
+                            else
+                            {
+                                pUseItem = 0;
+                                pCastSkill = 0;
+                                pNormalAttack = 0;
+                            }
+                        }
+                        else if (character.CharacterState == CharacterState.BattleRestricted)
+                        {
+                            // 战斗不能，只能使用物品
+                            if (canUseItem)
+                            {
+                                pCastSkill = 0;
+                                pNormalAttack = 0;
+                            }
+                            else
+                            {
+                                pUseItem = 0;
+                                pCastSkill = 0;
+                                pNormalAttack = 0;
+                            }
+                        }
+                        else if (character.CharacterState == CharacterState.SkillRestricted)
+                        {
+                            // 技能受限，无法使用技能，可以使用物品
+                            if (canUseItem)
+                            {
+                                pCastSkill = 0;
+                            }
+                            else
+                            {
+                                pUseItem = 0;
+                                pCastSkill = 0;
+                            }
+                        }
+                        type = GetActionType(pUseItem, pCastSkill, pNormalAttack);
+                        _stats[character].ActionTurn += 1;
+                    }
+                    else if (character.CharacterState == CharacterState.Casting)
+                    {
+                        // 如果角色上一次吟唱了魔法，这次的行动则是结算这个魔法
+                        type = CharacterActionType.CastSkill;
+                    }
+                    else if (character.CharacterState == CharacterState.PreCastSuperSkill)
+                    {
+                        // 角色使用回合外爆发技插队
+                        type = CharacterActionType.CastSuperSkill;
+                    }
+                    else
+                    {
+                        WriteLine("[ " + character + $" ] 完全行动不能！");
+                        type = CharacterActionType.None;
+                    }
                 }
-                else
+
+                List<Character> enemysTemp = new(enemys);
+                List<Character> teammatesTemp = new(teammates);
+                List<Skill> skillsTemp = new(skills);
+                Dictionary<Character, int> continuousKillingTemp = new(_continuousKilling);
+                Dictionary<Character, int> earnedMoneyTemp = new(_earnedMoney);
+                effects = character.Effects.Where(e => e.Level > 0).ToList();
+                foreach (Effect e in effects)
                 {
+                    if (e.AlterEnemyListBeforeAction(character, enemysTemp, teammatesTemp, skillsTemp, continuousKillingTemp, earnedMoneyTemp))
+                    {
+                        enemys = enemysTemp.Distinct().ToList();
+                        teammates = teammatesTemp.Distinct().ToList();
+                        skills = skillsTemp.Distinct().ToList();
+                    }
+                }
+
+                if (type == CharacterActionType.NormalAttack)
+                {
+                    // 使用普通攻击逻辑
+                    Character[] targets = [.. SelectTargets(character, character.NormalAttack, enemys, teammates, out bool cancel)];
+                    LastRound.Targets = [.. targets];
+                    if (!cancel && targets.Length > 0)
+                    {
+                        decided = true;
+                        character.NormalAttack.Attack(this, character, targets);
+                        baseTime = character.NormalAttack.HardnessTime;
+                        effects = character.Effects.Where(e => e.Level > 0).ToList();
+                        foreach (Effect effect in effects)
+                        {
+                            effect.AlterHardnessTimeAfterNormalAttack(character, ref baseTime, ref isCheckProtected);
+                        }
+                    }
+                }
+                else if (type == CharacterActionType.PreCastSkill)
+                {
+                    // 预使用技能，即开始吟唱逻辑
+                    // 吟唱前需要先选取目标
+                    Skill skill = skills[Random.Shared.Next(skills.Count)];
+                    if (skill.SkillType == SkillType.Magic)
+                    {
+                        List<Character> targets = SelectTargets(character, skill, enemys, teammates, out bool cancel);
+                        LastRound.Targets = [.. targets];
+                        if (!cancel)
+                        {
+                            decided = true;
+                            character.CharacterState = CharacterState.Casting;
+                            _castingSkills.Add(character, new(skill, targets));
+                            baseTime = skill.CastTime;
+                            skill.OnSkillCasting(this, character);
+                        }
+                    }
+                    else
+                    {
+                        if (CheckCanCast(character, skill, out double cost))
+                        {
+                            List<Character> targets = SelectTargets(character, skill, enemys, teammates, out bool cancel);
+                            LastRound.Targets = [.. targets];
+                            if (!cancel)
+                            {
+                                decided = true;
+                                skill.OnSkillCasting(this, character);
+
+                                character.EP -= cost;
+                                baseTime = skill.HardnessTime;
+                                skill.CurrentCD = skill.RealCD;
+                                skill.Enable = false;
+
+                                WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
+                                skill.OnSkillCasted(this, character, targets);
+                                effects = character.Effects.Where(e => e.Level > 0).ToList();
+                                foreach (Effect effect in effects)
+                                {
+                                    effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
+                                }
+                            }
+                        }
+                    }
+                    LastRound.Skill = skill;
+                }
+                else if (type == CharacterActionType.CastSkill)
+                {
+                    decided = true;
+                    // 使用技能逻辑，结束吟唱状态
+                    character.CharacterState = CharacterState.Actionable;
+                    SkillTarget skillTarget = _castingSkills[character];
+                    Skill skill = skillTarget.Skill;
+                    List<Character> targets = skillTarget.Targets;
+                    LastRound.Targets = [.. targets];
+                    LastRound.Skill = skill;
+                    _castingSkills.Remove(character);
+
+                    // 判断是否能够释放技能
                     if (CheckCanCast(character, skill, out double cost))
                     {
-                        skill.OnSkillCasting(this, character);
+                        character.MP -= cost;
+                        baseTime = skill.HardnessTime;
+                        skill.CurrentCD = skill.RealCD;
+                        skill.Enable = false;
+
+                        WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点魔法值，释放了魔法 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
+                        skill.OnSkillCasted(this, character, targets);
+                    }
+                    else
+                    {
+                        WriteLine("[ " + character + $" ] 放弃释放技能！");
+                        // 放弃释放技能会获得3的硬直时间
+                        baseTime = 3;
+                    }
+
+                    effects = character.Effects.Where(e => e.Level > 0).ToList();
+                    foreach (Effect effect in effects)
+                    {
+                        effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
+                    }
+                }
+                else if (type == CharacterActionType.CastSuperSkill)
+                {
+                    decided = true;
+                    // 结束预释放爆发技的状态
+                    character.CharacterState = CharacterState.Actionable;
+                    Skill skill = _castingSuperSkills[character];
+                    LastRound.Skill = skill;
+                    _castingSuperSkills.Remove(character);
+
+                    // 判断是否能够释放技能
+                    if (CheckCanCast(character, skill, out double cost))
+                    {
+                        // 预释放的爆发技不可取消
+                        List<Character> targets = SelectTargets(character, skill, enemys, teammates, out _);
+                        LastRound.Targets = [.. targets];
 
                         character.EP -= cost;
                         baseTime = skill.HardnessTime;
                         skill.CurrentCD = skill.RealCD;
                         skill.Enable = false;
 
-                        WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} {skill.Name}！");
-                        skill.OnSkillCasted(this, character, enemys, teammates);
+                        WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量值，释放了爆发技 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
+                        skill.OnSkillCasted(this, character, targets);
+                    }
+                    else
+                    {
+                        WriteLine("[ " + character + $" ] 因能量不足放弃释放爆发技！");
+                        // 放弃释放技能会获得3的硬直时间
+                        baseTime = 3;
+                    }
 
-                        foreach (Effect effect in character.Effects.Where(e => e.Level > 0).ToList())
-                        {
-                            effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
-                        }
+                    effects = character.Effects.Where(e => e.Level > 0).ToList();
+                    foreach (Effect effect in effects)
+                    {
+                        effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
                     }
                 }
-            }
-            else if (type == CharacterActionType.CastSkill)
-            {
-                // 使用技能逻辑，结束吟唱状态
-                character.CharacterState = CharacterState.Actionable;
-                Skill skill = _castingSkills[character];
-                _castingSkills.Remove(character);
-
-                // 判断是否能够释放技能
-                if (CheckCanCast(character, skill, out double cost))
+                else if (type == CharacterActionType.UseItem)
                 {
-                    character.MP -= cost;
-                    baseTime = skill.HardnessTime;
-                    skill.CurrentCD = skill.RealCD;
-                    skill.Enable = false;
-
-                    WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点魔法值，释放了技能 {skill.Name}！");
-                    skill.OnSkillCasted(this, character, enemys, teammates);
-                }
-                else
-                {
-                    WriteLine("[ " + character + $" ] 放弃释放技能！");
-                    // 放弃释放技能会获得3的硬直时间
-                    baseTime = 3;
-                }
-
-                foreach (Effect effect in character.Effects.Where(e => e.Level > 0).ToList())
-                {
-                    effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
+                    // 使用物品逻辑
                 }
             }
-            else if (type == CharacterActionType.CastSuperSkill)
-            {
-                // 结束预释放爆发技的状态
-                character.CharacterState = CharacterState.Actionable;
-                Skill skill = _castingSuperSkills[character];
-                _castingSuperSkills.Remove(character);
 
-                // 判断是否能够释放技能
-                if (CheckCanCast(character, skill, out double cost))
-                {
-                    character.EP -= cost;
-                    baseTime = skill.HardnessTime;
-                    skill.CurrentCD = skill.RealCD;
-                    skill.Enable = false;
-
-                    WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量值，释放了爆发技 {skill.Name}！");
-                    skill.OnSkillCasted(this, character, enemys, teammates);
-                }
-                else
-                {
-                    WriteLine("[ " + character + $" ] 放弃释放技能！");
-                    // 放弃释放技能会获得3的硬直时间
-                    baseTime = 3;
-                }
-
-                foreach (Effect effect in character.Effects.Where(e => e.Level > 0).ToList())
-                {
-                    effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
-                }
-            }
-            else if (type == CharacterActionType.UseItem)
-            {
-                // 使用物品逻辑
-            }
-            else
+            if (!decided || type == CharacterActionType.None)
             {
                 WriteLine("[ " + character + $" ] 放弃了行动！");
             }
@@ -600,6 +815,8 @@ namespace Milimoe.FunGame.Core.Model
             {
                 return _isGameEnd;
             }
+
+            LastRound.ActionType = type;
 
             // 减少硬直时间
             double newHardnessTime = baseTime;
@@ -618,7 +835,8 @@ namespace Milimoe.FunGame.Core.Model
             // 有人想要插队吗？
             WillPreCastSuperSkill(character);
 
-            foreach (Effect effect in character.Effects.Where(e => e.Level > 0).ToList())
+            effects = character.Effects.Where(e => e.Level > 0).ToList();
+            foreach (Effect effect in effects)
             {
                 effect.OnTurnEnd(character);
 
@@ -722,7 +940,8 @@ namespace Milimoe.FunGame.Core.Model
                 }
 
                 // 移除到时间的特效
-                foreach (Effect effect in character.Effects.ToList())
+                List<Effect> effects = character.Effects.Where(e => e.Level > 0).ToList();
+                foreach (Effect effect in effects)
                 {
                     if (effect.Level == 0)
                     {
@@ -751,6 +970,24 @@ namespace Milimoe.FunGame.Core.Model
                 }
             }
 
+            // 减少复活倒计时
+            foreach (Character character in _respawnCountdown.Keys)
+            {
+                _respawnCountdown[character] -= timeToReduce;
+                if (_respawnCountdown[character] <= 0)
+                {
+                    double hardnessTime = 5;
+                    character.Respawn();
+                    WriteLine($"[ {character} ] 已复活！获得 {hardnessTime} 硬直时间。");
+                    AddCharacter(character, hardnessTime, false);
+                    _respawnCountdown.Remove(character);
+                    if (!_respawnTimes.TryAdd(character, 1))
+                    {
+                        _respawnTimes[character] += 1;
+                    }
+                }
+            }
+
             WriteLine("\r\n");
             return timeToReduce;
         }
@@ -767,8 +1004,15 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="damageResult"></param>
         public void DamageToEnemy(Character actor, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage = false, MagicType magicType = MagicType.None, DamageResult damageResult = DamageResult.Normal)
         {
+            // 如果敌人在结算伤害之前就已经死亡，将不会继续下去
+            if (enemy.HP <= 0)
+            {
+                return;
+            }
+
             bool isEvaded = damageResult == DamageResult.Evaded;
-            foreach (Effect effect in actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList())
+            List<Effect> effects = actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList();
+            foreach (Effect effect in effects)
             {
                 if (effect.AlterActualDamageAfterCalculation(actor, enemy, ref damage, isNormalAttack, isMagicDamage, magicType, damageResult))
                 {
@@ -796,36 +1040,92 @@ namespace Milimoe.FunGame.Core.Model
                 _assistDamage[actor][enemy] += damage;
 
                 // 造成伤害和受伤都可以获得能量
-                double ep = GetEP(damage, 0.2, 40);
-                foreach (Effect effect in actor.Effects)
+                double ep = GetEP(damage, 0.03, 30);
+                effects = [.. actor.Effects];
+                foreach (Effect effect in effects)
                 {
                     effect.AlterEPAfterDamage(actor, ref ep);
                 }
                 actor.EP += ep;
-                ep = GetEP(damage, 0.1, 20);
-                foreach (Effect effect in enemy.Effects.Where(e => e.Level > 0).ToList())
+                ep = GetEP(damage, 0.015, 15);
+                effects = enemy.Effects.Where(e => e.Level > 0).ToList();
+                foreach (Effect effect in effects)
                 {
                     effect.AlterEPAfterGetDamage(enemy, ref ep);
                 }
                 enemy.EP += ep;
             }
 
-            foreach (Effect effect in actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList())
+            effects = actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList();
+            foreach (Effect effect in effects)
             {
                 effect.AfterDamageCalculation(actor, enemy, damage, isNormalAttack, isMagicDamage, magicType, damageResult);
             }
+
             if (enemy.HP <= 0 && !_eliminated.Contains(enemy))
             {
                 DeathCalculation(actor, enemy);
                 // 给所有角色的特效广播角色死亡结算
-                foreach (Effect effect in _queue.SelectMany(c => c.Effects.Where(e => e.Level > 0).ToList()))
+                effects = _queue.SelectMany(c => c.Effects.Where(e => e.Level > 0)).ToList();
+                foreach (Effect effect in effects)
                 {
                     effect.AfterDeathCalculation(enemy, actor, _continuousKilling, _earnedMoney);
                 }
-                if (_queue.Remove(enemy) && !_queue.Where(c => c != actor).Any())
+                // 将死者移出队列
+                _queue.Remove(enemy);
+                if (_isTeamMode)
                 {
-                    // 没有其他的角色了，游戏结束
-                    EndGameInfo(actor);
+                    Team? killTeam = GetTeam(actor);
+                    Team? deathTeam = GetTeam(enemy);
+                    if (deathTeam != null)
+                    {
+                        if (deathTeam.GetActiveCharacters(this).Count == 0)
+                        {
+                            // 团灭了
+                            _eliminatedTeams.Add(deathTeam);
+                            _teams.Remove(deathTeam.Name);
+                        }
+                        else
+                        {
+                            List<Character> remain = deathTeam.GetActiveTeammates(this, enemy);
+                            int remainCount = remain.Count;
+                            if (remainCount > 0) WriteLine($"[ {deathTeam} ] 剩余成员：[ {string.Join(" ] / [ ", remain)} ]（{remainCount} 人）");
+                        }
+                    }
+
+                    if (killTeam != null)
+                    {
+                        if (MaxScoreToWin > 0 && killTeam.Score >= MaxScoreToWin)
+                        {
+                            List<Team> combinedTeams = [.. _eliminatedTeams, .. _teams.Values];
+                            combinedTeams.Remove(killTeam);
+                            _eliminatedTeams.Clear();
+                            _eliminatedTeams.AddRange(combinedTeams.OrderByDescending(t => t.Score));
+                            EndGameInfo(killTeam);
+                            return;
+                        }
+                        if (!_teams.Keys.Where(str => str != killTeam.Name).Any())
+                        {
+                            // 没有其他的团队了，游戏结束
+                            EndGameInfo(killTeam);
+                            return;
+                        }
+                        else if (killTeam != null)
+                        {
+                            List<Character> actives = killTeam.GetActiveCharacters(this);
+                            actives.Add(actor);
+                            int remainCount = actives.Count;
+                            if (remainCount > 0) WriteLine($"[ {killTeam} ] 剩余成员：[ {string.Join(" ] / [ ", actives)} ]（{remainCount} 人）");
+                        }
+                    }
+                }
+                else
+                {
+                    if (!_queue.Where(c => c != actor).Any())
+                    {
+                        // 没有其他的角色了，游戏结束
+                        EndGameInfo(actor);
+                    }
                 }
             }
         }
@@ -854,7 +1154,8 @@ namespace Milimoe.FunGame.Core.Model
         {
             bool isMagic = false;
             MagicType magicType = MagicType.None;
-            foreach (Effect effect in actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList())
+            List<Effect> effects = actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList();
+            foreach (Effect effect in effects)
             {
                 effect.AlterDamageTypeBeforeCalculation(actor, enemy, ref isNormalAttack, ref isMagic, ref magicType);
             }
@@ -863,31 +1164,45 @@ namespace Milimoe.FunGame.Core.Model
                 return CalculateMagicalDamage(actor, enemy, isNormalAttack, magicType, expectedDamage, out finalDamage);
             }
 
-            foreach (Effect effect in actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList())
+            effects = actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList();
+            foreach (Effect effect in effects)
             {
                 effect.AlterExpectedDamageBeforeCalculation(actor, enemy, ref expectedDamage, isNormalAttack, false, MagicType.None);
             }
 
             double dice = Random.Shared.NextDouble();
+            double throwingBonus = 0;
+            bool checkEvade = true;
+            bool checkCritical = true;
             if (isNormalAttack)
             {
-                // 闪避判定
-                if (dice < enemy.EvadeRate)
+                effects = actor.Effects.Where(e => e.Level > 0).ToList();
+                foreach (Effect effect in effects)
                 {
-                    finalDamage = 0;
-                    List<Character> characters = [actor, enemy];
-                    bool isAlterEvaded = false;
-                    foreach (Effect effect in characters.SelectMany(c => c.Effects.Where(e => e.Level > 0).ToList()))
+                    checkEvade = effect.BeforeEvadeCheck(actor, ref throwingBonus);
+                }
+
+                if (checkEvade)
+                {
+                    // 闪避判定
+                    if (dice < (enemy.EvadeRate + throwingBonus))
                     {
-                        if (effect.OnEvadedTriggered(actor, enemy, dice))
+                        finalDamage = 0;
+                        List<Character> characters = [actor, enemy];
+                        bool isAlterEvaded = false;
+                        effects = characters.SelectMany(c => c.Effects.Where(e => e.Level > 0)).ToList();
+                        foreach (Effect effect in effects)
                         {
-                            isAlterEvaded = true;
+                            if (effect.OnEvadedTriggered(actor, enemy, dice))
+                            {
+                                isAlterEvaded = true;
+                            }
                         }
-                    }
-                    if (!isAlterEvaded)
-                    {
-                        WriteLine("此物理攻击被完美闪避了！");
-                        return DamageResult.Evaded;
+                        if (!isAlterEvaded)
+                        {
+                            WriteLine("此物理攻击被完美闪避了！");
+                            return DamageResult.Evaded;
+                        }
                     }
                 }
             }
@@ -902,16 +1217,26 @@ namespace Milimoe.FunGame.Core.Model
             finalDamage = expectedDamage * (1 - physicalDamageReduction);
 
             // 暴击判定
-            dice = Random.Shared.NextDouble();
-            if (dice < actor.CritRate)
+            effects = actor.Effects.Where(e => e.Level > 0).ToList();
+            foreach (Effect effect in effects)
             {
-                finalDamage *= actor.CritDMG; // 暴击伤害倍率加成
-                WriteLine("暴击生效！！");
-                foreach (Effect effect in actor.Effects.Where(e => e.Level > 0).ToList())
+                checkCritical = effect.BeforeCriticalCheck(actor, ref throwingBonus);
+            }
+
+            if (checkCritical)
+            {
+                dice = Random.Shared.NextDouble();
+                if (dice < (actor.CritRate + throwingBonus))
                 {
-                    effect.OnCriticalDamageTriggered(actor, dice);
+                    finalDamage *= actor.CritDMG; // 暴击伤害倍率加成
+                    WriteLine("暴击生效！！");
+                    effects = actor.Effects.Where(e => e.Level > 0).ToList();
+                    foreach (Effect effect in effects)
+                    {
+                        effect.OnCriticalDamageTriggered(actor, dice);
+                    }
+                    return DamageResult.Critical;
                 }
-                return DamageResult.Critical;
             }
 
             // 是否有效伤害
@@ -931,7 +1256,8 @@ namespace Milimoe.FunGame.Core.Model
         public DamageResult CalculateMagicalDamage(Character actor, Character enemy, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage)
         {
             bool isMagic = true;
-            foreach (Effect effect in actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList())
+            List<Effect> effects = actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList();
+            foreach (Effect effect in effects)
             {
                 effect.AlterDamageTypeBeforeCalculation(actor, enemy, ref isNormalAttack, ref isMagic, ref magicType);
             }
@@ -940,31 +1266,45 @@ namespace Milimoe.FunGame.Core.Model
                 return CalculatePhysicalDamage(actor, enemy, isNormalAttack, expectedDamage, out finalDamage);
             }
 
-            foreach (Effect effect in actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList())
+            effects = actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList();
+            foreach (Effect effect in effects)
             {
                 effect.AlterExpectedDamageBeforeCalculation(actor, enemy, ref expectedDamage, isNormalAttack, true, magicType);
             }
 
             double dice = Random.Shared.NextDouble();
+            double throwingBonus = 0;
+            bool checkEvade = true;
+            bool checkCritical = true;
             if (isNormalAttack)
             {
-                // 闪避判定
-                if (dice < enemy.EvadeRate)
+                effects = actor.Effects.Where(e => e.Level > 0).ToList();
+                foreach (Effect effect in effects)
                 {
-                    finalDamage = 0;
-                    List<Character> characters = [actor, enemy];
-                    bool isAlterEvaded = false;
-                    foreach (Effect effect in characters.SelectMany(c => c.Effects.Where(e => e.Level > 0).ToList()))
+                    checkEvade = effect.BeforeEvadeCheck(actor, ref throwingBonus);
+                }
+
+                if (checkEvade)
+                {
+                    // 闪避判定
+                    if (dice < (enemy.EvadeRate + throwingBonus))
                     {
-                        if (effect.OnEvadedTriggered(actor, enemy, dice))
+                        finalDamage = 0;
+                        List<Character> characters = [actor, enemy];
+                        bool isAlterEvaded = false;
+                        effects = characters.SelectMany(c => c.Effects.Where(e => e.Level > 0)).ToList();
+                        foreach (Effect effect in effects)
                         {
-                            isAlterEvaded = true;
+                            if (effect.OnEvadedTriggered(actor, enemy, dice))
+                            {
+                                isAlterEvaded = true;
+                            }
                         }
-                    }
-                    if (!isAlterEvaded)
-                    {
-                        WriteLine("此魔法攻击被完美闪避了！");
-                        return DamageResult.Evaded;
+                        if (!isAlterEvaded)
+                        {
+                            WriteLine("此魔法攻击被完美闪避了！");
+                            return DamageResult.Evaded;
+                        }
                     }
                 }
             }
@@ -989,16 +1329,26 @@ namespace Milimoe.FunGame.Core.Model
             finalDamage = expectedDamage * (1 - MDF);
 
             // 暴击判定
-            dice = Random.Shared.NextDouble();
-            if (dice < actor.CritRate)
+            effects = actor.Effects.Where(e => e.Level > 0).ToList();
+            foreach (Effect effect in effects)
             {
-                finalDamage *= actor.CritDMG; // 暴击伤害倍率加成
-                WriteLine("暴击生效！！");
-                foreach (Effect effect in actor.Effects.Where(e => e.Level > 0).ToList())
+                checkCritical = effect.BeforeCriticalCheck(actor, ref throwingBonus);
+            }
+
+            if (checkCritical)
+            {
+                dice = Random.Shared.NextDouble();
+                if (dice < (actor.CritRate + throwingBonus))
                 {
-                    effect.OnCriticalDamageTriggered(actor, dice);
+                    finalDamage *= actor.CritDMG; // 暴击伤害倍率加成
+                    WriteLine("暴击生效！！");
+                    effects = actor.Effects.Where(e => e.Level > 0).ToList();
+                    foreach (Effect effect in effects)
+                    {
+                        effect.OnCriticalDamageTriggered(actor, dice);
+                    }
+                    return DamageResult.Critical;
                 }
-                return DamageResult.Critical;
             }
 
             // 是否有效伤害
@@ -1058,6 +1408,15 @@ namespace Milimoe.FunGame.Core.Model
                 WriteLine(msg);
             }
 
+            if (FirstKiller is null)
+            {
+                FirstKiller = killer;
+                _stats[killer].FirstKills += 1;
+                _stats[death].FirstDeaths += 1;
+                money += 200;
+                WriteLine($"[ {killer} ] 拿下了第一滴血！额外奖励 200 {General.GameplayEquilibriumConstant.InGameCurrency}！！");
+            }
+
             int kills = _continuousKilling[killer];
             string continuousKilling = CharacterSet.GetContinuousKilling(kills);
             if (kills == 2 || kills == 3)
@@ -1079,7 +1438,38 @@ namespace Milimoe.FunGame.Core.Model
 
             if (!_earnedMoney.TryAdd(killer, money)) _earnedMoney[killer] += money;
 
-            _eliminated.Add(death);
+            if (_isTeamMode)
+            {
+                Team? team = GetTeam(killer);
+                if (team != null)
+                {
+                    team.Score++;
+                }
+            }
+
+            // 清除对死者的助攻数据
+            List<AssistDetail> ads = [.. _assistDamage.Values.Where(ad => ad.Character != death)];
+            foreach (AssistDetail ad in ads)
+            {
+                ad[death] = 0;
+            }
+
+            _continuousKilling.Remove(death);
+            if (MaxRespawnTimes == 0)
+            {
+                _eliminated.Add(death);
+            }
+            else if (_respawnTimes.TryGetValue(death, out int times) && MaxRespawnTimes != -1 && times > MaxRespawnTimes)
+            {
+                WriteLine($"[ {death} ] 已达到复活次数上限，将不能再复活！！");
+                _eliminated.Add(death);
+            }
+            else
+            {
+                // 进入复活倒计时
+                double respawnTime = Math.Min(90, death.Level * 0.36 + times * 2.77);
+                _respawnCountdown.TryAdd(death, respawnTime);
+            }
         }
 
         /// <summary>
@@ -1096,7 +1486,11 @@ namespace Milimoe.FunGame.Core.Model
             for (int i = _eliminated.Count - 1; i >= 0; i--)
             {
                 Character ec = _eliminated[i];
-                string topCharacter = ec.ToString() + (_continuousKilling.TryGetValue(ec, out int kills) && kills > 1 ? $" [ {CharacterSet.GetContinuousKilling(kills)} ]" : "") + (_earnedMoney.TryGetValue(ec, out int earned) ? $" [ 已赚取 {earned} {General.GameplayEquilibriumConstant.InGameCurrency} ]" : "");
+                CharacterStatistics statistics = CharacterStatistics[ec];
+                string topCharacter = ec.ToString() +
+                    (statistics.FirstKills > 0 ? " [ 第一滴血 ]" : "") +
+                    (_continuousKilling.TryGetValue(ec, out int kills) && kills > 1 ? $" [ {CharacterSet.GetContinuousKilling(kills)} ]" : "") +
+                    (_earnedMoney.TryGetValue(ec, out int earned) ? $" [ 已赚取 {earned} {General.GameplayEquilibriumConstant.InGameCurrency} ]" : "");
                 if (top == 1)
                 {
                     WriteLine("冠军：" + topCharacter);
@@ -1123,6 +1517,88 @@ namespace Milimoe.FunGame.Core.Model
                 _stats[ec].Plays += 1;
                 _stats[ec].TotalEarnedMoney += earned;
                 _stats[ec].LastRank = top;
+                top++;
+            }
+            WriteLine("");
+            _isGameEnd = true;
+        }
+
+        /// <summary>
+        /// 游戏结束信息 [ 团队版 ] 
+        /// </summary>
+        public void EndGameInfo(Team winner)
+        {
+            WriteLine("[ " + winner + " ] 是胜利者。");
+
+            int top = 1;
+            WriteLine("");
+            WriteLine("=== 排名 ===");
+            WriteLine("");
+
+            _eliminatedTeams.Add(winner);
+            _teams.Remove(winner.Name);
+
+            for (int i = _eliminatedTeams.Count - 1; i >= 0; i--)
+            {
+                Team team = _eliminatedTeams[i];
+                string topTeam = "";
+                if (top == 1)
+                {
+                    topTeam = "冠军";
+                }
+                if (top == 2)
+                {
+                    topTeam = "亚军";
+                }
+                if (top == 3)
+                {
+                    topTeam = "季军";
+                }
+                if (top > 3)
+                {
+                    topTeam = $"第 {top} 名";
+                }
+                topTeam = $"☆--- {topTeam}团队：" + team.Name + " ---☆" + $"（得分：{team.Score}）\r\n";
+                foreach (Character ec in team.Members)
+                {
+                    CharacterStatistics statistics = CharacterStatistics[ec];
+
+                    string respawning = "";
+                    if (ec.HP <= 0)
+                    {
+                        respawning = "[ " + (_respawnCountdown.TryGetValue(ec, out double time) && time > 0 ? $"{time:0.##} 时间后复活" : "阵亡") + " ] ";
+                    }
+
+                    string topCharacter = respawning + ec.ToString() +
+                        (statistics.FirstKills > 0 ? " [ 第一滴血 ]" : "") +
+                        (_continuousKilling.TryGetValue(ec, out int kills) && kills > 1 ? $" [ {CharacterSet.GetContinuousKilling(kills)} ]" : "") +
+                        (_earnedMoney.TryGetValue(ec, out int earned) ? $" [ 已赚取 {earned} {General.GameplayEquilibriumConstant.InGameCurrency} ]" : "") +
+                        $"（{statistics.Kills} / {statistics.Assists}{(MaxRespawnTimes != 0 ? " / " + statistics.Deaths : "")}）";
+                    topTeam += topCharacter + "\r\n";
+                    if (top == 1)
+                    {
+                        _stats[ec].Wins += 1;
+                        _stats[ec].Top3s += 1;
+                    }
+                    else if (top == 2)
+                    {
+                        _stats[ec].Loses += 1;
+                        _stats[ec].Top3s += 1;
+                    }
+                    else if (top == 3)
+                    {
+                        _stats[ec].Loses += 1;
+                        _stats[ec].Top3s += 1;
+                    }
+                    else
+                    {
+                        _stats[ec].Loses += 1;
+                    }
+                    _stats[ec].Plays += 1;
+                    _stats[ec].TotalEarnedMoney += earned;
+                    _stats[ec].LastRank = top;
+                }
+                WriteLine(topTeam);
                 top++;
             }
             WriteLine("");
@@ -1208,20 +1684,23 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="interrupter"></param>
         public void InterruptCasting(Character caster, Character interrupter)
         {
-            if (_castingSkills.TryGetValue(caster, out Skill? cast))
+            Skill? skill = null;
+            if (_castingSkills.TryGetValue(caster, out SkillTarget target))
             {
+                skill = target.Skill;
                 _castingSkills.Remove(caster);
             }
-            else if (_castingSuperSkills.TryGetValue(caster, out cast))
+            else if (_castingSuperSkills.TryGetValue(caster, out skill))
             {
                 _castingSuperSkills.Remove(caster);
             }
-            if (cast != null)
+            if (skill != null)
             {
                 WriteLine($"[ {caster} ] 的施法被 [ {interrupter} ] 打断了！！");
-                foreach (Effect e in cast.Effects.Where(e => e.Level > 0).ToList())
+                List<Effect> effects = skill.Effects.Where(e => e.Level > 0).ToList();
+                foreach (Effect e in effects)
                 {
-                    e.OnSkillCastInterrupted(caster, cast, interrupter);
+                    e.OnSkillCastInterrupted(caster, skill, interrupter);
                 }
             }
         }
@@ -1311,8 +1790,8 @@ namespace Milimoe.FunGame.Core.Model
         {
             if (character.Equip(item))
             {
-                EquipItemToSlot type = character.EquipSlot.GetEquipItemToSlot(item);
-                WriteLine($"[ {character} ] 装备了 [ {item.Name} ]。" + (type != EquipItemToSlot.None ? $"（{ItemSet.GetEquipItemToSlotTypeName(type)} 栏位）" : ""));
+                EquipSlotType type = item.EquipSlotType;
+                WriteLine($"[ {character} ] 装备了 [ {item.Name} ]。" + (type != EquipSlotType.None ? $"（{ItemSet.GetEquipSlotTypeName(type)} 栏位）" : ""));
             }
         }
 
@@ -1322,11 +1801,11 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="character"></param>
         /// <param name="type"></param>
         /// <param name="item"></param>
-        public void Equip(Character character, EquipItemToSlot type, Item item)
+        public void Equip(Character character, EquipSlotType type, Item item)
         {
             if (character.Equip(item, type))
             {
-                WriteLine($"[ {character} ] 装备了 [ {item.Name} ]。（{ItemSet.GetEquipItemToSlotTypeName(type)} 栏位）");
+                WriteLine($"[ {character} ] 装备了 [ {item.Name} ]。（{ItemSet.GetEquipSlotTypeName(type)} 栏位）");
             }
         }
 
@@ -1335,13 +1814,50 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         /// <param name="character"></param>
         /// <param name="type"></param>
-        public void UnEquip(Character character, EquipItemToSlot type)
+        public void UnEquip(Character character, EquipSlotType type)
         {
             Item? item = character.UnEquip(type);
             if (item != null)
             {
-                WriteLine($"[ {character} ] 取消装备了 [ {item.Name} ]。（{ItemSet.GetEquipItemToSlotTypeName(type)} 栏位）");
+                WriteLine($"[ {character} ] 取消装备了 [ {item.Name} ]。（{ItemSet.GetEquipSlotTypeName(type)} 栏位）");
             }
+        }
+
+        /// <summary>
+        /// 选取技能目标
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="skill"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <param name="cancel"></param>
+        /// <returns></returns>
+        public virtual List<Character> SelectTargets(Character caster, Skill skill, List<Character> enemys, List<Character> teammates, out bool cancel)
+        {
+            cancel = false;
+            if (skill.SkillType == SkillType.SuperSkill) cancel = false;
+            List<Character> targets = skill.SelectTargets(caster, enemys, teammates);
+            return targets;
+        }
+
+        /// <summary>
+        /// 选取普通攻击目标
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="attack"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <param name="cancel"></param>
+        /// <returns></returns>
+        public virtual List<Character> SelectTargets(Character character, NormalAttack attack, List<Character> enemys, List<Character> teammates, out bool cancel)
+        {
+            cancel = false;
+            if (enemys.Count > 0)
+            {
+                List<Character> targets = [enemys[Random.Shared.Next(enemys.Count)]];
+                return targets;
+            }
+            return [];
         }
     }
 }

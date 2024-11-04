@@ -41,6 +41,15 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Item.EquipSlotType):
                     result.EquipSlotType = (EquipSlotType)reader.GetInt32();
                     break;
+                case nameof(Item.QualityType):
+                    result.QualityType = (QualityType)reader.GetInt32();
+                    break;
+                case nameof(Item.RarityType):
+                    result.RarityType = (RarityType)reader.GetInt32();
+                    break;
+                case nameof(Item.RankType):
+                    result.RankType = (ItemRankType)reader.GetInt32();
+                    break;
                 case nameof(Item.IsInGameItem):
                     result.IsInGameItem = reader.GetBoolean();
                     break;
@@ -101,6 +110,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Item.ItemType), (int)value.ItemType);
             writer.WriteNumber(nameof(Item.WeaponType), (int)value.WeaponType);
             writer.WriteNumber(nameof(Item.EquipSlotType), (int)value.EquipSlotType);
+            writer.WriteNumber(nameof(Item.QualityType), (int)value.QualityType);
+            writer.WriteNumber(nameof(Item.RarityType), (int)value.RarityType);
+            writer.WriteNumber(nameof(Item.RankType), (int)value.RankType);
             writer.WriteBoolean(nameof(Item.IsInGameItem), value.IsInGameItem);
             writer.WriteBoolean(nameof(Item.Equipable), value.Equipable);
             writer.WriteBoolean(nameof(Item.IsPurchasable), value.IsPurchasable);

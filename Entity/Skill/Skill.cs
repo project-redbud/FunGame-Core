@@ -2,7 +2,6 @@
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
-using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Entity
@@ -26,6 +25,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 技能的通用描述
         /// </summary>
         public virtual string GeneralDescription { get; set; } = "";
+
+        /// <summary>
+        /// 释放技能时的口号
+        /// </summary>
+        public virtual string Slogan { get; set; } = "";
 
         /// <summary>
         /// 技能等级，等于 0 时可以称之为尚未学习
@@ -79,6 +83,21 @@ namespace Milimoe.FunGame.Core.Entity
         public bool IsMagic => SkillType == SkillType.Magic;
 
         /// <summary>
+        /// 可选取自身
+        /// </summary>
+        public virtual bool CanSelectSelf { get; set; } = false;
+
+        /// <summary>
+        /// 可选取的作用目标数量
+        /// </summary>
+        public virtual int CanSelectTargetCount { get; set; } = 1;
+
+        /// <summary>
+        /// 可选取的作用范围
+        /// </summary>
+        public virtual double CanSelectTargetRange { get; set; } = 0;
+
+        /// <summary>
         /// 实际魔法消耗 [ 魔法 ]
         /// </summary>
         public double RealMPCost => Math.Max(0, MPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * 0.00125)));
@@ -103,13 +122,23 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 实际能量消耗 [ 战技 ]
         /// </summary>
-        public double RealEPCost => IsSuperSkill ? EPCost : Math.Max(0, EPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * 0.00075)));
+        public double RealEPCost => CostAllEP ? Math.Max(MinCostEP, Character?.EP ?? MinCostEP) : (IsSuperSkill ? EPCost : Math.Max(0, EPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * 0.00075))));
 
         /// <summary>
         /// 能量消耗 [ 战技 ]
         /// </summary>
         [InitOptional]
         public virtual double EPCost { get; set; } = 0;
+
+        /// <summary>
+        /// 消耗所有能量 [ 战技 ]
+        /// </summary>
+        public virtual bool CostAllEP { get; set; } = false;
+
+        /// <summary>
+        /// 消耗所有能量的最小能量限制 [ 战技 ] 默认值：100
+        /// </summary>
+        public virtual double MinCostEP { get; set; } = 100;
 
         /// <summary>
         /// 实际冷却时间
@@ -139,9 +168,9 @@ namespace Milimoe.FunGame.Core.Entity
         public HashSet<Effect> Effects { get; } = [];
 
         /// <summary>
-        /// 其他参数
+        /// 用于动态扩展技能的参数
         /// </summary>
-        public Dictionary<string, object> OtherArgs { get; } = [];
+        public Dictionary<string, object> Values { get; } = [];
 
         /// <summary>
         /// 游戏中的行动顺序表实例，在技能效果被触发时，此实例会获得赋值，使用时需要判断其是否存在
@@ -170,15 +199,14 @@ namespace Milimoe.FunGame.Core.Entity
         internal Skill() { }
 
         /// <summary>
-        /// 设置一些属性给从 <see cref="SkillModule"/> 新建来的 <paramref name="newbySkillModule"/><para/>
-        /// 对于还原存档而言，在使用 JSON 反序列化 Skill，且从 <see cref="SkillModule.GetSkill"/> 中获取了实例后，需要使用此方法复制给新实例
+        /// 设置一些属性给从工厂构造出来的 <paramref name="newbyFactory"/> 对象
         /// </summary>
-        /// <param name="newbySkillModule"></param>
-        public void SetPropertyToItemModuleNew(Skill newbySkillModule)
+        /// <param name="newbyFactory"></param>
+        public void SetPropertyToItemModuleNew(Skill newbyFactory)
         {
-            newbySkillModule.Enable = Enable;
-            newbySkillModule.IsInEffect = IsInEffect;
-            newbySkillModule.CurrentCD = CurrentCD;
+            newbyFactory.Enable = Enable;
+            newbyFactory.IsInEffect = IsInEffect;
+            newbyFactory.CurrentCD = CurrentCD;
         }
 
         /// <summary>
@@ -211,8 +239,36 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 选取技能目标
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <returns></returns>
+        public virtual List<Character> SelectTargets(Character caster, List<Character> enemys, List<Character> teammates)
+        {
+            if (CanSelectSelf)
+            {
+                return [caster];
+            }
+            else
+            {
+                List<Character> targets = [];
+
+                if (enemys.Count <= CanSelectTargetCount)
+                {
+                    return [.. enemys];
+                }
+
+                return enemys.OrderBy(x => Random.Shared.Next()).Take(CanSelectTargetCount).ToList();
+            }
+        }
+        
+        /// <summary>
         /// 技能开始吟唱时 [ 吟唱魔法、释放战技和爆发技、预释放爆发技均可触发 ]
         /// </summary>
+        /// <param name="queue"></param>
+        /// <param name="caster"></param>
         public void OnSkillCasting(IGamingQueue queue, Character caster)
         {
             GamingQueue = queue;
@@ -226,13 +282,16 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 触发技能效果
         /// </summary>
-        public void OnSkillCasted(IGamingQueue queue, Character caster, List<Character> enemys, List<Character> teammates)
+        /// <param name="queue"></param>
+        /// <param name="caster"></param>
+        /// <param name="targets"></param>
+        public void OnSkillCasted(IGamingQueue queue, Character caster, List<Character> targets)
         {
             GamingQueue = queue;
             foreach (Effect e in Effects)
             {
                 e.GamingQueue = GamingQueue;
-                e.OnSkillCasted(caster, enemys, teammates, OtherArgs);
+                e.OnSkillCasted(caster, targets, Values);
             }
         }
 
@@ -333,27 +392,33 @@ namespace Milimoe.FunGame.Core.Entity
         /// <returns></returns>
         public Skill Copy()
         {
-            Skill s = new()
+            Dictionary<string, object> args = new()
             {
-                Id = Id,
-                Name = Name,
-                Description = Description,
-                GeneralDescription = GeneralDescription,
-                SkillType = SkillType,
-                MPCost = MPCost,
-                CastTime = CastTime,
-                EPCost = EPCost,
-                CD = CD,
-                CurrentCD = CurrentCD,
-                HardnessTime = HardnessTime,
-                GamingQueue = GamingQueue
+                { "values", Values }
             };
-            foreach (Effect e in Effects)
+            Skill skill = Factory.OpenFactory.GetInstance<Skill>(Id, Name, args);
+            SetPropertyToItemModuleNew(skill);
+            skill.Id = Id;
+            skill.Name = Name;
+            skill.Description = Description;
+            skill.GeneralDescription = GeneralDescription;
+            skill.SkillType = SkillType;
+            skill.MPCost = MPCost;
+            skill.CastTime = CastTime;
+            skill.EPCost = EPCost;
+            skill.CD = CD;
+            skill.CurrentCD = CurrentCD;
+            skill.HardnessTime = HardnessTime;
+            skill.GamingQueue = GamingQueue;
+            if (skill is OpenSkill)
             {
-                Effect neweffect = e.Copy(s);
-                s.Effects.Add(neweffect);
+                foreach (Effect e in Effects)
+                {
+                    Effect neweffect = e.Copy(skill);
+                    skill.Effects.Add(neweffect);
+                }
             }
-            return s;
+            return skill;
         }
 
         /// <summary>
