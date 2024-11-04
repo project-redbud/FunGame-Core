@@ -14,9 +14,24 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public Action<string> WriteLine { get; }
 
         /// <summary>
+        /// 原始的角色字典
+        /// </summary>
+        public Dictionary<Guid, Character> Original { get; }
+
+        /// <summary>
         /// 当前的行动顺序
         /// </summary>
         public List<Character> Queue { get; }
+
+        /// <summary>
+        /// 上回合记录
+        /// </summary>
+        public RoundRecord LastRound { get; set; }
+
+        /// <summary>
+        /// 所有回合的记录
+        /// </summary>
+        public List<RoundRecord> Rounds { get; }
 
         /// <summary>
         /// 当前已死亡的角色顺序(第一个是最早死的)

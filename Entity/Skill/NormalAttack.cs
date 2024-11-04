@@ -67,10 +67,13 @@ namespace Milimoe.FunGame.Core.Entity
         {
             foreach (Character enemy in enemys)
             {
-                queue.WriteLine("[ " + Character + $" ] 对 [ {enemy} ] 发起了普通攻击！");
-                double expected = Damage;
-                DamageResult result = IsMagic ? queue.CalculateMagicalDamage(attacker, enemy, true, MagicType, expected, out double damage) : queue.CalculatePhysicalDamage(attacker, enemy, true, expected, out damage);
-                queue.DamageToEnemy(attacker, enemy, damage, true, IsMagic, MagicType, result);
+                if (enemy.HP > 0)
+                {
+                    queue.WriteLine("[ " + Character + $" ] 对 [ {enemy} ] 发起了普通攻击！");
+                    double expected = Damage;
+                    DamageResult result = IsMagic ? queue.CalculateMagicalDamage(attacker, enemy, true, MagicType, expected, out double damage) : queue.CalculatePhysicalDamage(attacker, enemy, true, expected, out damage);
+                    queue.DamageToEnemy(attacker, enemy, damage, true, IsMagic, MagicType, result);
+                }
             }
         }
 
@@ -95,7 +98,7 @@ namespace Milimoe.FunGame.Core.Entity
             StringBuilder builder = new();
 
             builder.AppendLine(Name + " - 等级 " + Level);
-            builder.AppendLine("技能描述：" + Description);
+            builder.AppendLine("描述：" + Description);
             builder.AppendLine("硬直时间：" + HardnessTime);
 
             return builder.ToString();

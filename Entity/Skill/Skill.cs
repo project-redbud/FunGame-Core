@@ -263,19 +263,20 @@ namespace Milimoe.FunGame.Core.Entity
                 return enemys.OrderBy(x => Random.Shared.Next()).Take(CanSelectTargetCount).ToList();
             }
         }
-        
+
         /// <summary>
         /// 技能开始吟唱时 [ 吟唱魔法、释放战技和爆发技、预释放爆发技均可触发 ]
         /// </summary>
         /// <param name="queue"></param>
         /// <param name="caster"></param>
-        public void OnSkillCasting(IGamingQueue queue, Character caster)
+        /// <param name="targets"></param>
+        public void OnSkillCasting(IGamingQueue queue, Character caster, List<Character> targets)
         {
             GamingQueue = queue;
             foreach (Effect e in Effects)
             {
                 e.GamingQueue = GamingQueue;
-                e.OnSkillCasting(caster);
+                e.OnSkillCasting(caster, targets);
             }
         }
 

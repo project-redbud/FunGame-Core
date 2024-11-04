@@ -1307,7 +1307,6 @@ namespace Milimoe.FunGame.Core.Entity
                 PrimaryAttribute = PrimaryAttribute,
                 Level = Level,
                 EXP = EXP,
-                CharacterState = CharacterState,
                 InitialHP = InitialHP,
                 ExHP2 = ExHP2,
                 InitialMP = InitialMP,
@@ -1363,8 +1362,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 复活此角色，回复出厂状态
         /// </summary>
+        /// <param name="original">需要一个原始的角色用于还原状态</param>
         /// <returns></returns>
-        public void Respawn()
+        public void Respawn(Character original)
         {
             Item? mcp = UnEquip(EquipSlotType.MagicCardPack);
             Item? w = UnEquip(EquipSlotType.Weapon);
@@ -1374,11 +1374,17 @@ namespace Milimoe.FunGame.Core.Entity
             Item? ac2 = UnEquip(EquipSlotType.Accessory2);
             List<Skill> skills = new(Skills);
             List<Item> items = new(Items);
-            Character c = Copy();
+            Character c = original.Copy();
+            List<Effect> effects = [.. Effects];
+            foreach (Effect e in effects)
+            {
+                e.OnEffectLost(this);
+            }
             Effects.Clear();
             Skills.Clear();
             Items.Clear();
             Id = c.Id;
+            Guid = original.Guid;
             Name = c.Name;
             FirstName = c.FirstName;
             NickName = c.NickName;
@@ -1392,6 +1398,10 @@ namespace Milimoe.FunGame.Core.Entity
             Level = c.Level;
             EXP = c.EXP;
             CharacterState = c.CharacterState;
+            CharacterEffectStates.Clear();
+            CharacterEffectTypes.Clear();
+            IsUnselectable = false;
+            UpdateCharacterState();
             InitialHP = c.InitialHP;
             ExHP2 = c.ExHP2;
             InitialMP = c.InitialMP;
@@ -1432,6 +1442,7 @@ namespace Milimoe.FunGame.Core.Entity
                 Skill newskill = skill.Copy();
                 newskill.Character = this;
                 newskill.Level = skill.Level;
+                newskill.CurrentCD = 0;
                 Skills.Add(newskill);
             }
             foreach (Item item in items)
