@@ -438,6 +438,18 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 治疗一个目标 [ 强烈建议使用此方法造成伤害而不是自行调用 <see cref="IGamingQueue.HealToTarget"/> ]
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="target"></param>
+        /// <param name="heal"></param>
+        /// <param name="canRespawn"></param>
+        public void HealToTarget(Character actor, Character target, double heal, bool canRespawn = false)
+        {
+            GamingQueue?.HealToTarget(actor, target, heal, canRespawn);
+        }
+
+        /// <summary>
         /// 打断施法 [ 尽可能的调用此方法而不是直接调用 <see cref="IGamingQueue.InterruptCasting"/>，以防止中断性变更 ]
         /// </summary>
         /// <param name="caster"></param>

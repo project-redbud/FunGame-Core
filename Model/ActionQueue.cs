@@ -740,6 +740,7 @@ namespace Milimoe.FunGame.Core.Model
                             {
                                 decided = true;
                                 skill.OnSkillCasting(this, character, targets);
+                                skill.BeforeSkillCasted();
 
                                 character.EP -= cost;
                                 baseTime = skill.HardnessTime;
@@ -774,6 +775,8 @@ namespace Milimoe.FunGame.Core.Model
                     // 判断是否能够释放技能
                     if (CheckCanCast(character, skill, out double cost))
                     {
+                        skill.BeforeSkillCasted();
+
                         character.MP -= cost;
                         baseTime = skill.HardnessTime;
                         skill.CurrentCD = skill.RealCD;
@@ -811,6 +814,8 @@ namespace Milimoe.FunGame.Core.Model
                         // 预释放的爆发技不可取消
                         List<Character> targets = SelectTargets(character, skill, enemys, teammates, out _);
                         LastRound.Targets = [.. targets];
+
+                        skill.BeforeSkillCasted();
 
                         character.EP -= cost;
                         baseTime = skill.HardnessTime;
@@ -1180,6 +1185,49 @@ namespace Milimoe.FunGame.Core.Model
                         EndGameInfo(actor);
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// 治疗一个目标
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="target"></param>
+        /// <param name="heal"></param>
+        /// <param name="canRespawn"></param>
+        public void HealToTarget(Character actor, Character target, double heal, bool canRespawn = false)
+        {
+            if (target.HP == target.MaxHP)
+            {
+                return;
+            }
+
+            bool isDead = target.HP <= 0;
+
+            if (heal < 0) heal = 0;
+            if (target.HP > 0 || (isDead && canRespawn))
+            {
+                target.HP += heal;
+                if (!LastRound.Heals.TryAdd(target, heal))
+                {
+                    LastRound.Heals[target] += heal;
+                }
+            }
+
+            if (isDead && canRespawn)
+            {
+                if (target != actor)
+                {
+                    WriteLine($"[ {target} ] 被 [ {actor} ] 复苏了，并回复了 {heal:0.##} 点生命值！！");
+                }
+                else
+                {
+                    WriteLine($"[ {target} ] 复苏了，并回复了 {heal:0.##} 点生命值！！");
+                }
+            }
+            else
+            {
+                WriteLine($"[ {target} ] 回复了 {heal:0.##} 点生命值！");
             }
         }
 
@@ -1934,6 +1982,10 @@ namespace Milimoe.FunGame.Core.Model
             cancel = false;
             if (skill.SkillType == SkillType.SuperSkill) cancel = false;
             List<Character> targets = skill.SelectTargets(caster, enemys, teammates);
+            if (targets.Count == 0)
+            {
+                cancel = true;
+            }
             return targets;
         }
 

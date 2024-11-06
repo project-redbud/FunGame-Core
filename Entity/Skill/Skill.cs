@@ -83,9 +83,24 @@ namespace Milimoe.FunGame.Core.Entity
         public bool IsMagic => SkillType == SkillType.Magic;
 
         /// <summary>
+        /// 是否属于 Debuff
+        /// </summary>
+        public bool IsDebuff { get; set; } = false;
+
+        /// <summary>
         /// 可选取自身
         /// </summary>
         public virtual bool CanSelectSelf { get; set; } = false;
+
+        /// <summary>
+        /// 可选取敌对角色
+        /// </summary>
+        public virtual bool CanSelectEnemy { get; set; } = true;
+
+        /// <summary>
+        /// 可选取友方角色
+        /// </summary>
+        public virtual bool CanSelectTeammate { get; set; } = false;
 
         /// <summary>
         /// 可选取的作用目标数量
@@ -98,9 +113,14 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual double CanSelectTargetRange { get; set; } = 0;
 
         /// <summary>
+        /// 选取角色的条件
+        /// </summary>
+        public List<Func<Character, bool>> SelectTargetPredicates { get; } = [];
+
+        /// <summary>
         /// 实际魔法消耗 [ 魔法 ]
         /// </summary>
-        public double RealMPCost => Math.Max(0, MPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * 0.00125)));
+        public double RealMPCost => Math.Max(0, MPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * General.GameplayEquilibriumConstant.INTtoCastMPReduce)));
 
         /// <summary>
         /// 魔法消耗 [ 魔法 ]
@@ -122,7 +142,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 实际能量消耗 [ 战技 ]
         /// </summary>
-        public double RealEPCost => CostAllEP ? Math.Max(MinCostEP, Character?.EP ?? MinCostEP) : (IsSuperSkill ? EPCost : Math.Max(0, EPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * 0.00075))));
+        public double RealEPCost => CostAllEP ? Math.Max(MinCostEP, Character?.EP ?? MinCostEP) : (IsSuperSkill ? EPCost : Math.Max(0, EPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * General.GameplayEquilibriumConstant.INTtoCastEPReduce))));
 
         /// <summary>
         /// 能量消耗 [ 战技 ]
@@ -141,9 +161,19 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual double MinCostEP { get; set; } = 100;
 
         /// <summary>
+        /// 上一次释放此技能消耗的魔法 [ 魔法 ]
+        /// </summary>
+        public double LastCostMP { get; set; } = 0;
+
+        /// <summary>
+        /// 上一次释放此技能消耗的能量 [ 战技 ]
+        /// </summary>
+        public double LastCostEP { get; set; } = 0;
+
+        /// <summary>
         /// 实际冷却时间
         /// </summary>
-        public double RealCD => Math.Max(0, CD * (1 - Character?.CDR ?? 0));
+        public double RealCD => Math.Max(0, CD * (1 - (Character?.CDR ?? 0)));
 
         /// <summary>
         /// 冷却时间
@@ -247,21 +277,37 @@ namespace Milimoe.FunGame.Core.Entity
         /// <returns></returns>
         public virtual List<Character> SelectTargets(Character caster, List<Character> enemys, List<Character> teammates)
         {
+            List<Character> tobeSelected = [];
+
             if (CanSelectSelf)
             {
-                return [caster];
+                tobeSelected.Add(caster);
+            }
+
+            if (CanSelectEnemy)
+            {
+                tobeSelected.AddRange(enemys);
+            }
+            if (CanSelectTeammate)
+            {
+                tobeSelected.AddRange(teammates);
+            }
+
+            // 筛选出符合条件的角色
+            tobeSelected = [.. tobeSelected.Where(c => SelectTargetPredicates.All(f => f(c)))];
+
+            List<Character> targets = [];
+
+            if (tobeSelected.Count <= CanSelectTargetCount)
+            {
+                targets.AddRange(tobeSelected);
             }
             else
             {
-                List<Character> targets = [];
-
-                if (enemys.Count <= CanSelectTargetCount)
-                {
-                    return [.. enemys];
-                }
-
-                return enemys.OrderBy(x => Random.Shared.Next()).Take(CanSelectTargetCount).ToList();
+                targets.AddRange(tobeSelected.OrderBy(x => Random.Shared.Next()).Take(CanSelectTargetCount));
             }
+
+            return [.. targets.Distinct()];
         }
 
         /// <summary>
@@ -280,6 +326,15 @@ namespace Milimoe.FunGame.Core.Entity
             }
         }
 
+        /// <summary>
+        /// 技能效果触发前
+        /// </summary>
+        public void BeforeSkillCasted()
+        {
+            LastCostMP = RealMPCost;
+            LastCostEP = RealEPCost;
+        }
+        
         /// <summary>
         /// 触发技能效果
         /// </summary>

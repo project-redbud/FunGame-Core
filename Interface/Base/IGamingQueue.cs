@@ -79,6 +79,15 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public void DamageToEnemy(Character actor, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage = false, MagicType magicType = MagicType.None, DamageResult damageResult = DamageResult.Normal);
 
         /// <summary>
+        /// 治疗一个目标
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="target"></param>
+        /// <param name="heal"></param>
+        /// <param name="canRespawn"></param>
+        public void HealToTarget(Character actor, Character target, double heal, bool canRespawn = false);
+
+        /// <summary>
         /// 计算物理伤害
         /// </summary>
         /// <param name="actor"></param>
