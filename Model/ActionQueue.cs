@@ -174,6 +174,11 @@ namespace Milimoe.FunGame.Core.Model
         protected readonly Dictionary<Character, double> _respawnCountdown = [];
 
         /// <summary>
+        /// 当前回合死亡角色
+        /// </summary>
+        protected readonly List<Character> _roundDeaths = [];
+
+        /// <summary>
         /// 是否是团队模式
         /// </summary>
         protected bool _isTeamMode = false;
@@ -524,6 +529,7 @@ namespace Milimoe.FunGame.Core.Model
             TotalRound++;
             LastRound = new(TotalRound, character);
             Rounds.Add(LastRound);
+            _roundDeaths.Clear();
 
             if (!BeforeTurn(character))
             {
@@ -850,6 +856,9 @@ namespace Milimoe.FunGame.Core.Model
                 WriteLine("[ " + character + $" ] 放弃了行动！");
             }
 
+            // 统一在回合结束时处理角色的死亡
+            ProcessCharacterDeath(character);
+
             if (_isGameEnd)
             {
                 return _isGameEnd;
@@ -1116,75 +1125,8 @@ namespace Milimoe.FunGame.Core.Model
             if (enemy.HP <= 0 && !_eliminated.Contains(enemy) && !_respawnCountdown.ContainsKey(enemy))
             {
                 LastRound.HasKill = true;
+                _roundDeaths.Add(enemy);
                 DeathCalculation(actor, enemy);
-                // 给所有角色的特效广播角色死亡结算
-                effects = _queue.SelectMany(c => c.Effects.Where(e => e.Level > 0)).ToList();
-                foreach (Effect effect in effects)
-                {
-                    effect.AfterDeathCalculation(enemy, actor, _continuousKilling, _earnedMoney);
-                }
-                // 将死者移出队列
-                _queue.Remove(enemy);
-                if (_isTeamMode)
-                {
-                    Team? killTeam = GetTeam(actor);
-                    Team? deathTeam = GetTeam(enemy);
-
-                    if (MaxRespawnTimes != 0)
-                    {
-                        WriteLine($"\r\n=== 当前死亡竞赛比分 ===\r\n{string.Join("\r\n", Teams.OrderByDescending(kv => kv.Value.Score).Select(kv => kv.Key + "：" + kv.Value.Score + "（剩余存活人数：" + kv.Value.GetActiveCharacters(this).Count + "）"))}");
-                    }
-
-                    if (deathTeam != null)
-                    {
-                        List<Character> remain = deathTeam.GetActiveCharacters(this);
-                        int remainCount = remain.Count;
-                        if (remainCount == 0)
-                        {
-                            // 团灭了
-                            _eliminatedTeams.Add(deathTeam);
-                            _teams.Remove(deathTeam.Name);
-                        }
-                        else if (MaxRespawnTimes == 0)
-                        {
-                            WriteLine($"[ {deathTeam} ] 剩余成员：[ {string.Join(" ] / [ ", remain)} ]（{remainCount} 人）");
-                        }
-                    }
-
-                    if (killTeam != null)
-                    {
-                        List<Character> actives = killTeam.GetActiveCharacters(this);
-                        actives.Add(actor);
-                        int remainCount = actives.Count;
-                        if (remainCount > 0 && MaxRespawnTimes == 0)
-                        {
-                            WriteLine($"[ {killTeam} ] 剩余成员：[ {string.Join(" ] / [ ", actives)} ]（{remainCount} 人）");
-                        }
-                        if (!_teams.Keys.Where(str => str != killTeam.Name).Any())
-                        {
-                            // 没有其他的团队了，游戏结束
-                            EndGameInfo(killTeam);
-                            return;
-                        }
-                        if (MaxScoreToWin > 0 && killTeam.Score >= MaxScoreToWin)
-                        {
-                            List<Team> combinedTeams = [.. _eliminatedTeams, .. _teams.Values];
-                            combinedTeams.Remove(killTeam);
-                            _eliminatedTeams.Clear();
-                            _eliminatedTeams.AddRange(combinedTeams.OrderByDescending(t => t.Score));
-                            EndGameInfo(killTeam);
-                            return;
-                        }
-                    }
-                }
-                else
-                {
-                    if (!_queue.Where(c => c != actor).Any())
-                    {
-                        // 没有其他的角色了，游戏结束
-                        EndGameInfo(actor);
-                    }
-                }
             }
         }
 
@@ -1454,6 +1396,79 @@ namespace Milimoe.FunGame.Core.Model
 
             // 是否有效伤害
             return DamageResult.Normal;
+        }
+
+        public void ProcessCharacterDeath(Character character)
+        {
+            foreach (Character enemy in _roundDeaths)
+            {
+                // 给所有角色的特效广播角色死亡结算
+                List<Effect> effects = _queue.SelectMany(c => c.Effects.Where(e => e.Level > 0)).ToList();
+                foreach (Effect effect in effects)
+                {
+                    effect.AfterDeathCalculation(enemy, character, _continuousKilling, _earnedMoney);
+                }
+                // 将死者移出队列
+                _queue.Remove(enemy);
+                if (_isTeamMode)
+                {
+                    Team? killTeam = GetTeam(character);
+                    Team? deathTeam = GetTeam(enemy);
+
+                    if (MaxRespawnTimes != 0)
+                    {
+                        WriteLine($"\r\n=== 当前死亡竞赛比分 ===\r\n{string.Join("\r\n", Teams.OrderByDescending(kv => kv.Value.Score).Select(kv => kv.Key + "：" + kv.Value.Score + "（剩余存活人数：" + kv.Value.GetActiveCharacters(this).Count + "）"))}");
+                    }
+
+                    if (deathTeam != null)
+                    {
+                        List<Character> remain = deathTeam.GetActiveCharacters(this);
+                        int remainCount = remain.Count;
+                        if (remainCount == 0)
+                        {
+                            // 团灭了
+                            _eliminatedTeams.Add(deathTeam);
+                            _teams.Remove(deathTeam.Name);
+                        }
+                        else if (MaxRespawnTimes == 0)
+                        {
+                            WriteLine($"[ {deathTeam} ] 剩余成员：[ {string.Join(" ] / [ ", remain)} ]（{remainCount} 人）");
+                        }
+                    }
+
+                    if (killTeam != null)
+                    {
+                        List<Character> actives = killTeam.GetActiveCharacters(this);
+                        actives.Add(character);
+                        int remainCount = actives.Count;
+                        if (remainCount > 0 && MaxRespawnTimes == 0)
+                        {
+                            WriteLine($"[ {killTeam} ] 剩余成员：[ {string.Join(" ] / [ ", actives)} ]（{remainCount} 人）");
+                        }
+                        if (!_teams.Keys.Where(str => str != killTeam.Name).Any())
+                        {
+                            // 没有其他的团队了，游戏结束
+                            EndGameInfo(killTeam);
+                        }
+                        if (MaxScoreToWin > 0 && killTeam.Score >= MaxScoreToWin)
+                        {
+                            List<Team> combinedTeams = [.. _eliminatedTeams, .. _teams.Values];
+                            combinedTeams.Remove(killTeam);
+                            _eliminatedTeams.Clear();
+                            _eliminatedTeams.AddRange(combinedTeams.OrderByDescending(t => t.Score));
+                            EndGameInfo(killTeam);
+                        }
+                    }
+                }
+                else
+                {
+                    if (!_queue.Where(c => c != character).Any())
+                    {
+                        // 没有其他的角色了，游戏结束
+                        EndGameInfo(character);
+                    }
+                }
+            }
         }
 
         /// <summary>
