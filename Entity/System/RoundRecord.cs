@@ -1,12 +1,13 @@
 ﻿using System.Text;
+using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Entity
 {
-    public class RoundRecord(int round, Character actor)
+    public class RoundRecord(int round)
     {
         public int Round { get; set; } = round;
-        public Character Actor { get; set; } = actor;
+        public Character Actor { get; set; } = Factory.GetCharacter();
         public CharacterActionType ActionType { get; set; } = CharacterActionType.None;
         public List<Character> Targets { get; set; } = [];
         public Skill? Skill { get; set; } = null;
@@ -14,9 +15,11 @@ namespace Milimoe.FunGame.Core.Entity
         public Item? Item { get; set; } = null;
         public bool HasKill { get; set; } = false;
         public Dictionary<Character, double> Damages { get; set; } = [];
+        public Dictionary<Character, bool> IsCritical { get; set; } = [];
         public Dictionary<Character, double> Heals { get; set; } = [];
         public Dictionary<Character, EffectType> Effects { get; set; } = [];
-        public string ActorContinuousKilling { get; set; } = "";
+        public List<string> ActorContinuousKilling { get; set; } = [];
+        public List<string> DeathContinuousKilling { get; set; } = [];
         public double CastTime { get; set; } = 0;
         public double HardnessTime { get; set; } = 0;
         public Dictionary<Character, double> RespawnCountdowns { get; set; } = [];
@@ -30,7 +33,7 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"=== Round {Round} ===");
             if (RoundRewards.Count > 0)
             {
-                builder.Append($"[ {Actor} ] 回合奖励 -> {string.Join(" / ", RoundRewards.Select(s => s.Description)).Trim()}");
+                builder.AppendLine($"[ {Actor} ] 回合奖励 -> {string.Join(" / ", RoundRewards.Select(s => s.Description)).Trim()}");
             }
             if (ActionType == CharacterActionType.NormalAttack || ActionType == CharacterActionType.CastSkill || ActionType == CharacterActionType.CastSuperSkill)
             {
@@ -50,7 +53,8 @@ namespace Milimoe.FunGame.Core.Entity
                     }
                 }
                 builder.AppendLine(string.Join(" / ", GetTargetsState()));
-                if (ActorContinuousKilling != "") builder.AppendLine($"{ActorContinuousKilling}");
+                if (DeathContinuousKilling.Count > 0) builder.AppendLine($"{string.Join("\r\n", DeathContinuousKilling)}");
+                if (ActorContinuousKilling.Count > 0) builder.AppendLine($"{string.Join("\r\n", ActorContinuousKilling)}");
             }
 
             if (ActionType == CharacterActionType.PreCastSkill && Skill != null)
@@ -61,7 +65,7 @@ namespace Milimoe.FunGame.Core.Entity
                 }
                 else
                 {
-                    builder.AppendLine($"[ {Actor} ]：释放 [ {Skill.Name} ] -> ");
+                    builder.AppendLine($"[ {Actor} ]：{Skill.Name}（{SkillCost}）-> ");
                     builder.AppendLine(string.Join(" / ", GetTargetsState()));
                     builder.AppendLine($"[ {Actor} ] 回合结束，硬直时间：{HardnessTime:0.##}");
                 }
@@ -87,7 +91,7 @@ namespace Milimoe.FunGame.Core.Entity
         private List<string> GetTargetsState()
         {
             List<string> strings = [];
-            foreach (Character target in Targets)
+            foreach (Character target in Targets.Distinct())
             {
                 string hasDamage = "";
                 string hasHeal = "";
@@ -95,6 +99,10 @@ namespace Milimoe.FunGame.Core.Entity
                 if (Damages.TryGetValue(target, out double damage))
                 {
                     hasDamage = $"伤害：{damage:0.##}";
+                    if (IsCritical.TryGetValue(target, out bool isCritical) && isCritical)
+                    {
+                        hasDamage = "暴击，" + hasDamage;
+                    }
                 }
                 if (Heals.TryGetValue(target, out double heals))
                 {
@@ -108,7 +116,7 @@ namespace Milimoe.FunGame.Core.Entity
                 {
                     hasDamage = "完美闪避";
                 }
-                if ((ActionType == CharacterActionType.PreCastSkill || ActionType == CharacterActionType.PreCastSkill || ActionType == CharacterActionType.CastSkill) && hasDamage == "")
+                if ((ActionType == CharacterActionType.PreCastSkill || ActionType == CharacterActionType.PreCastSkill || ActionType == CharacterActionType.CastSkill) && hasDamage == "" && target != Actor)
                 {
                     hasDamage = "免疫";
                 }

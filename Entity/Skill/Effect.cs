@@ -23,21 +23,6 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual EffectType EffectType { get; set; } = EffectType.None;
 
         /// <summary>
-        /// 作用于自身
-        /// </summary>
-        public virtual bool TargetSelf { get; set; } = false;
-
-        /// <summary>
-        /// 作用目标数量
-        /// </summary>
-        public virtual int TargetCount { get; set; } = 0;
-
-        /// <summary>
-        /// 作用范围
-        /// </summary>
-        public virtual double TargetRange { get; set; } = 0;
-
-        /// <summary>
         /// 持续性的<para/>
         /// 配合 <see cref="Duration"/> 使用，而不是 <see cref="DurationTurn"/>。
         /// </summary>
@@ -438,7 +423,7 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 治疗一个目标 [ 强烈建议使用此方法造成伤害而不是自行调用 <see cref="IGamingQueue.HealToTarget"/> ]
+        /// 治疗一个目标 [ 强烈建议使用此方法而不是自行调用 <see cref="IGamingQueue.HealToTarget"/> ]
         /// </summary>
         /// <param name="actor"></param>
         /// <param name="target"></param>
@@ -497,9 +482,6 @@ namespace Milimoe.FunGame.Core.Entity
             copy.Name = Name;
             copy.Description = Description;
             copy.EffectType = EffectType;
-            copy.TargetSelf = TargetSelf;
-            copy.TargetCount = TargetCount;
-            copy.TargetRange = TargetRange;
             copy.Durative = Durative;
             copy.Duration = Duration;
             copy.DurationTurn = DurationTurn;

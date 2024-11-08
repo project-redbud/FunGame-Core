@@ -675,7 +675,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// 此方法检查一个 百分比(%) 数值是否存在于 [0,1] 区间
         /// </summary>
         /// <param name="value"></param>
-        /// <returns>如果超过0，则返回0；超过1则返回1。</returns>
+        /// <returns>如果低于0，则返回0；超过1则返回1。</returns>
         public static double PercentageCheck(double value)
         {
             return Math.Max(0, Math.Min(value, 1));

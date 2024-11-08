@@ -86,7 +86,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 上回合记录
         /// </summary>
-        public RoundRecord LastRound { get; set; } = new(0, Factory.GetCharacter());
+        public RoundRecord LastRound { get; set; } = new(0);
         
         /// <summary>
         /// 所有回合的记录
@@ -526,9 +526,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <returns>是否结束游戏</returns>
         public bool ProcessTurn(Character character)
         {
-            TotalRound++;
-            LastRound = new(TotalRound, character);
-            Rounds.Add(LastRound);
+            LastRound.Actor = character;
             _roundDeaths.Clear();
 
             if (!BeforeTurn(character))
@@ -856,6 +854,8 @@ namespace Milimoe.FunGame.Core.Model
                 WriteLine("[ " + character + $" ] 放弃了行动！");
             }
 
+            LastRound.ActionType = type;
+
             // 统一在回合结束时处理角色的死亡
             ProcessCharacterDeath(character);
 
@@ -863,8 +863,6 @@ namespace Milimoe.FunGame.Core.Model
             {
                 return _isGameEnd;
             }
-
-            LastRound.ActionType = type;
 
             // 减少硬直时间
             double newHardnessTime = baseTime;
@@ -1049,6 +1047,12 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             WriteLine("\r\n");
+
+            // 在时间流逝后，进入下一回合
+            TotalRound++;
+            LastRound = new(TotalRound);
+            Rounds.Add(LastRound);
+
             return timeToReduce;
         }
 
@@ -1070,6 +1074,10 @@ namespace Milimoe.FunGame.Core.Model
                 return;
             }
 
+            if (!LastRound.IsCritical.TryAdd(enemy, damageResult == DamageResult.Critical) && damageResult == DamageResult.Critical)
+            {
+                LastRound.IsCritical[enemy] = true;
+            }
             bool isEvaded = damageResult == DamageResult.Evaded;
             List<Effect> effects = actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList();
             foreach (Effect effect in effects)
@@ -1254,10 +1262,10 @@ namespace Milimoe.FunGame.Core.Model
             double penetratedDEF = (1 - actor.PhysicalPenetration) * enemy.DEF;
 
             // 物理伤害减免
-            double physicalDamageReduction = penetratedDEF / (penetratedDEF + 120);
+            double physicalDamageReduction = penetratedDEF / (penetratedDEF + General.GameplayEquilibriumConstant.DEFReductionFactor);
 
             // 最终的物理伤害
-            finalDamage = expectedDamage * (1 - physicalDamageReduction);
+            finalDamage = expectedDamage * (1 - Calculation.PercentageCheck(physicalDamageReduction + enemy.ExPDR));
 
             // 暴击判定
             effects = actor.Effects.Where(e => e.Level > 0).ToList();
@@ -1512,6 +1520,7 @@ namespace Milimoe.FunGame.Core.Model
                 money += (coefficient + 1) * Random.Shared.Next(50, 100);
                 string termination = CharacterSet.GetContinuousKilling(coefficient);
                 string msg = $"[ {killer} ] 终结了 [ {death} ]{(termination != "" ? " 的" + termination : "")}，获得 {money} {General.GameplayEquilibriumConstant.InGameCurrency}！";
+                LastRound.DeathContinuousKilling.Add(msg);
                 if (assists.Length > 1)
                 {
                     msg += "助攻：[ " + string.Join(" ] / [ ", assists.Where(c => c != killer)) + " ]";
@@ -1521,6 +1530,7 @@ namespace Milimoe.FunGame.Core.Model
             else
             {
                 string msg = $"[ {killer} ] 杀死了 [ {death} ]，获得 {money} {General.GameplayEquilibriumConstant.InGameCurrency}！";
+                LastRound.DeathContinuousKilling.Add(msg);
                 if (assists.Length > 1)
                 {
                     msg += "助攻：[ " + string.Join(" ] / [ ", assists.Where(c => c != killer)) + " ]";
@@ -1558,7 +1568,7 @@ namespace Milimoe.FunGame.Core.Model
             }
             if (actorContinuousKilling != "")
             {
-                LastRound.ActorContinuousKilling = actorContinuousKilling;
+                LastRound.ActorContinuousKilling.Add(actorContinuousKilling);
                 WriteLine(actorContinuousKilling);
             }
 
