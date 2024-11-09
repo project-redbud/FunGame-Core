@@ -14,9 +14,24 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public Action<string> WriteLine { get; }
 
         /// <summary>
+        /// 原始的角色字典
+        /// </summary>
+        public Dictionary<Guid, Character> Original { get; }
+
+        /// <summary>
         /// 当前的行动顺序
         /// </summary>
         public List<Character> Queue { get; }
+
+        /// <summary>
+        /// 上回合记录
+        /// </summary>
+        public RoundRecord LastRound { get; set; }
+
+        /// <summary>
+        /// 所有回合的记录
+        /// </summary>
+        public List<RoundRecord> Rounds { get; }
 
         /// <summary>
         /// 当前已死亡的角色顺序(第一个是最早死的)
@@ -62,6 +77,15 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="magicType"></param>
         /// <param name="damageResult"></param>
         public void DamageToEnemy(Character actor, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage = false, MagicType magicType = MagicType.None, DamageResult damageResult = DamageResult.Normal);
+
+        /// <summary>
+        /// 治疗一个目标
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="target"></param>
+        /// <param name="heal"></param>
+        /// <param name="canRespawn"></param>
+        public void HealToTarget(Character actor, Character target, double heal, bool canRespawn = false);
 
         /// <summary>
         /// 计算物理伤害

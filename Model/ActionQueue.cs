@@ -1,6 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Entity.System;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Constant;
 
@@ -16,6 +15,11 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         public Action<string> WriteLine { get; }
 
+        /// <summary>
+        /// 原始的角色字典
+        /// </summary>
+        public Dictionary<Guid, Character> Original => _original;
+        
         /// <summary>
         /// 当前的行动顺序
         /// </summary>
@@ -82,8 +86,18 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 上回合记录
         /// </summary>
-        public RoundRecord LastRound { get; set; } = new(0, Factory.GetCharacter());
+        public RoundRecord LastRound { get; set; } = new(0);
+        
+        /// <summary>
+        /// 所有回合的记录
+        /// </summary>
+        public List<RoundRecord> Rounds { get; } = [];
 
+        /// <summary>
+        /// 原始的角色字典
+        /// </summary>
+        protected readonly Dictionary<Guid, Character> _original = [];
+        
         /// <summary>
         /// 当前的行动顺序
         /// </summary>
@@ -120,6 +134,11 @@ namespace Milimoe.FunGame.Core.Model
         protected readonly Dictionary<Character, int> _earnedMoney = [];
 
         /// <summary>
+        /// 角色最高连杀数
+        /// </summary>
+        protected readonly Dictionary<Character, int> _maxContinuousKilling = [];
+        
+        /// <summary>
         /// 角色目前的连杀数
         /// </summary>
         protected readonly Dictionary<Character, int> _continuousKilling = [];
@@ -153,6 +172,11 @@ namespace Milimoe.FunGame.Core.Model
         /// 复活倒计时
         /// </summary>
         protected readonly Dictionary<Character, double> _respawnCountdown = [];
+
+        /// <summary>
+        /// 当前回合死亡角色
+        /// </summary>
+        protected readonly List<Character> _roundDeaths = [];
 
         /// <summary>
         /// 是否是团队模式
@@ -202,6 +226,15 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="characters"></param>
         public void InitCharacterQueue(List<Character> characters)
         {
+            // 保存原始的角色信息。用于复活时还原状态
+            foreach (Character character in characters)
+            {
+                Character original = character.Copy();
+                original.Guid = Guid.NewGuid();
+                character.Guid = original.Guid;
+                _original.Add(original.Guid, original);
+            }
+
             // 初始排序：按速度排序
             List<IGrouping<double, Character>> groupedBySpeed = [.. characters
                 .GroupBy(c => c.SPD)
@@ -291,6 +324,7 @@ namespace Milimoe.FunGame.Core.Model
         public void ClearQueue()
         {
             FirstKiller = null;
+            _original.Clear();
             _queue.Clear();
             _hardnessTimes.Clear();
             _assistDamage.Clear();
@@ -298,6 +332,7 @@ namespace Milimoe.FunGame.Core.Model
             _cutCount.Clear();
             _castingSkills.Clear();
             _castingSuperSkills.Clear();
+            _maxContinuousKilling.Clear();
             _continuousKilling.Clear();
             _earnedMoney.Clear();
             _eliminated.Clear();
@@ -491,8 +526,8 @@ namespace Milimoe.FunGame.Core.Model
         /// <returns>是否结束游戏</returns>
         public bool ProcessTurn(Character character)
         {
-            TotalRound++;
-            LastRound = new(TotalRound, character);
+            LastRound.Actor = character;
+            _roundDeaths.Clear();
 
             if (!BeforeTurn(character))
             {
@@ -696,7 +731,7 @@ namespace Milimoe.FunGame.Core.Model
                             character.CharacterState = CharacterState.Casting;
                             _castingSkills.Add(character, new(skill, targets));
                             baseTime = skill.CastTime;
-                            skill.OnSkillCasting(this, character);
+                            skill.OnSkillCasting(this, character, targets);
                         }
                     }
                     else
@@ -708,12 +743,14 @@ namespace Milimoe.FunGame.Core.Model
                             if (!cancel)
                             {
                                 decided = true;
-                                skill.OnSkillCasting(this, character);
+                                skill.OnSkillCasting(this, character, targets);
+                                skill.BeforeSkillCasted();
 
                                 character.EP -= cost;
                                 baseTime = skill.HardnessTime;
                                 skill.CurrentCD = skill.RealCD;
                                 skill.Enable = false;
+                                LastRound.SkillCost = $"{-cost:0.##} EP";
 
                                 WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
                                 skill.OnSkillCasted(this, character, targets);
@@ -742,10 +779,13 @@ namespace Milimoe.FunGame.Core.Model
                     // 判断是否能够释放技能
                     if (CheckCanCast(character, skill, out double cost))
                     {
+                        skill.BeforeSkillCasted();
+
                         character.MP -= cost;
                         baseTime = skill.HardnessTime;
                         skill.CurrentCD = skill.RealCD;
                         skill.Enable = false;
+                        LastRound.SkillCost = $"{-cost:0.##} MP";
 
                         WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点魔法值，释放了魔法 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
                         skill.OnSkillCasted(this, character, targets);
@@ -779,10 +819,13 @@ namespace Milimoe.FunGame.Core.Model
                         List<Character> targets = SelectTargets(character, skill, enemys, teammates, out _);
                         LastRound.Targets = [.. targets];
 
+                        skill.BeforeSkillCasted();
+
                         character.EP -= cost;
                         baseTime = skill.HardnessTime;
                         skill.CurrentCD = skill.RealCD;
                         skill.Enable = false;
+                        LastRound.SkillCost = $"{-cost:0.##} EP";
 
                         WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量值，释放了爆发技 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
                         skill.OnSkillCasted(this, character, targets);
@@ -811,12 +854,15 @@ namespace Milimoe.FunGame.Core.Model
                 WriteLine("[ " + character + $" ] 放弃了行动！");
             }
 
+            LastRound.ActionType = type;
+
+            // 统一在回合结束时处理角色的死亡
+            ProcessCharacterDeath(character);
+
             if (_isGameEnd)
             {
                 return _isGameEnd;
             }
-
-            LastRound.ActionType = type;
 
             // 减少硬直时间
             double newHardnessTime = baseTime;
@@ -829,8 +875,10 @@ namespace Milimoe.FunGame.Core.Model
             {
                 newHardnessTime = Math.Max(0, Calculation.Round2Digits(baseTime * (1 - character.AccelerationCoefficient)));
                 WriteLine("[ " + character + " ] 进行吟唱，持续时间: " + newHardnessTime);
+                LastRound.CastTime = newHardnessTime;
             }
             AddCharacter(character, newHardnessTime, isCheckProtected);
+            LastRound.HardnessTime = newHardnessTime;
 
             // 有人想要插队吗？
             WillPreCastSuperSkill(character);
@@ -885,9 +933,37 @@ namespace Milimoe.FunGame.Core.Model
 
             // 获取第一个角色的硬直时间
             double timeToReduce = _hardnessTimes[_queue[0]];
-            TotalTime = Calculation.Round2Digits(TotalTime + timeToReduce);
+            // 如果复活时间更快，应该先流逝复活时间
+            if (_respawnCountdown.Count != 0)
+            {
+                double timeToRespawn = _respawnCountdown.Values.Min();
+                if (timeToRespawn < timeToReduce)
+                {
+                    timeToReduce = Calculation.Round2Digits(timeToRespawn);
+                }
+            }
 
+            TotalTime = Calculation.Round2Digits(TotalTime + timeToReduce);
             WriteLine("时间流逝：" + timeToReduce);
+
+            // 减少复活倒计时
+            foreach (Character character in _respawnCountdown.Keys)
+            {
+                _respawnCountdown[character] = Calculation.Round2Digits(_respawnCountdown[character] - timeToReduce);
+                if (_respawnCountdown[character] <= 0)
+                {
+                    double hardnessTime = 5;
+                    character.Respawn(_original[character.Guid]);
+                    WriteLine($"[ {character} ] 已复活！获得 {hardnessTime} 硬直时间。");
+                    AddCharacter(character, hardnessTime, false);
+                    LastRound.Respawns.Add(character);
+                    _respawnCountdown.Remove(character);
+                    if (!_respawnTimes.TryAdd(character, 1))
+                    {
+                        _respawnTimes[character] += 1;
+                    }
+                }
+            }
 
             foreach (Character character in _queue)
             {
@@ -970,25 +1046,13 @@ namespace Milimoe.FunGame.Core.Model
                 }
             }
 
-            // 减少复活倒计时
-            foreach (Character character in _respawnCountdown.Keys)
-            {
-                _respawnCountdown[character] -= timeToReduce;
-                if (_respawnCountdown[character] <= 0)
-                {
-                    double hardnessTime = 5;
-                    character.Respawn();
-                    WriteLine($"[ {character} ] 已复活！获得 {hardnessTime} 硬直时间。");
-                    AddCharacter(character, hardnessTime, false);
-                    _respawnCountdown.Remove(character);
-                    if (!_respawnTimes.TryAdd(character, 1))
-                    {
-                        _respawnTimes[character] += 1;
-                    }
-                }
-            }
-
             WriteLine("\r\n");
+
+            // 在时间流逝后，进入下一回合
+            TotalRound++;
+            LastRound = new(TotalRound);
+            Rounds.Add(LastRound);
+
             return timeToReduce;
         }
 
@@ -1010,6 +1074,10 @@ namespace Milimoe.FunGame.Core.Model
                 return;
             }
 
+            if (!LastRound.IsCritical.TryAdd(enemy, damageResult == DamageResult.Critical) && damageResult == DamageResult.Critical)
+            {
+                LastRound.IsCritical[enemy] = true;
+            }
             bool isEvaded = damageResult == DamageResult.Evaded;
             List<Effect> effects = actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList();
             foreach (Effect effect in effects)
@@ -1062,71 +1130,54 @@ namespace Milimoe.FunGame.Core.Model
                 effect.AfterDamageCalculation(actor, enemy, damage, isNormalAttack, isMagicDamage, magicType, damageResult);
             }
 
-            if (enemy.HP <= 0 && !_eliminated.Contains(enemy))
+            if (enemy.HP <= 0 && !_eliminated.Contains(enemy) && !_respawnCountdown.ContainsKey(enemy))
             {
+                LastRound.HasKill = true;
+                _roundDeaths.Add(enemy);
                 DeathCalculation(actor, enemy);
-                // 给所有角色的特效广播角色死亡结算
-                effects = _queue.SelectMany(c => c.Effects.Where(e => e.Level > 0)).ToList();
-                foreach (Effect effect in effects)
-                {
-                    effect.AfterDeathCalculation(enemy, actor, _continuousKilling, _earnedMoney);
-                }
-                // 将死者移出队列
-                _queue.Remove(enemy);
-                if (_isTeamMode)
-                {
-                    Team? killTeam = GetTeam(actor);
-                    Team? deathTeam = GetTeam(enemy);
-                    if (deathTeam != null)
-                    {
-                        if (deathTeam.GetActiveCharacters(this).Count == 0)
-                        {
-                            // 团灭了
-                            _eliminatedTeams.Add(deathTeam);
-                            _teams.Remove(deathTeam.Name);
-                        }
-                        else
-                        {
-                            List<Character> remain = deathTeam.GetActiveTeammates(this, enemy);
-                            int remainCount = remain.Count;
-                            if (remainCount > 0) WriteLine($"[ {deathTeam} ] 剩余成员：[ {string.Join(" ] / [ ", remain)} ]（{remainCount} 人）");
-                        }
-                    }
+            }
+        }
 
-                    if (killTeam != null)
-                    {
-                        if (MaxScoreToWin > 0 && killTeam.Score >= MaxScoreToWin)
-                        {
-                            List<Team> combinedTeams = [.. _eliminatedTeams, .. _teams.Values];
-                            combinedTeams.Remove(killTeam);
-                            _eliminatedTeams.Clear();
-                            _eliminatedTeams.AddRange(combinedTeams.OrderByDescending(t => t.Score));
-                            EndGameInfo(killTeam);
-                            return;
-                        }
-                        if (!_teams.Keys.Where(str => str != killTeam.Name).Any())
-                        {
-                            // 没有其他的团队了，游戏结束
-                            EndGameInfo(killTeam);
-                            return;
-                        }
-                        else if (killTeam != null)
-                        {
-                            List<Character> actives = killTeam.GetActiveCharacters(this);
-                            actives.Add(actor);
-                            int remainCount = actives.Count;
-                            if (remainCount > 0) WriteLine($"[ {killTeam} ] 剩余成员：[ {string.Join(" ] / [ ", actives)} ]（{remainCount} 人）");
-                        }
-                    }
+        /// <summary>
+        /// 治疗一个目标
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="target"></param>
+        /// <param name="heal"></param>
+        /// <param name="canRespawn"></param>
+        public void HealToTarget(Character actor, Character target, double heal, bool canRespawn = false)
+        {
+            if (target.HP == target.MaxHP)
+            {
+                return;
+            }
+
+            bool isDead = target.HP <= 0;
+
+            if (heal < 0) heal = 0;
+            if (target.HP > 0 || (isDead && canRespawn))
+            {
+                target.HP += heal;
+                if (!LastRound.Heals.TryAdd(target, heal))
+                {
+                    LastRound.Heals[target] += heal;
+                }
+            }
+
+            if (isDead && canRespawn)
+            {
+                if (target != actor)
+                {
+                    WriteLine($"[ {target} ] 被 [ {actor} ] 复苏了，并回复了 {heal:0.##} 点生命值！！");
                 }
                 else
                 {
-                    if (!_queue.Where(c => c != actor).Any())
-                    {
-                        // 没有其他的角色了，游戏结束
-                        EndGameInfo(actor);
-                    }
+                    WriteLine($"[ {target} ] 复苏了，并回复了 {heal:0.##} 点生命值！！");
                 }
+            }
+            else
+            {
+                WriteLine($"[ {target} ] 回复了 {heal:0.##} 点生命值！");
             }
         }
 
@@ -1211,10 +1262,10 @@ namespace Milimoe.FunGame.Core.Model
             double penetratedDEF = (1 - actor.PhysicalPenetration) * enemy.DEF;
 
             // 物理伤害减免
-            double physicalDamageReduction = penetratedDEF / (penetratedDEF + 120);
+            double physicalDamageReduction = penetratedDEF / (penetratedDEF + General.GameplayEquilibriumConstant.DEFReductionFactor);
 
             // 最终的物理伤害
-            finalDamage = expectedDamage * (1 - physicalDamageReduction);
+            finalDamage = expectedDamage * (1 - Calculation.PercentageCheck(physicalDamageReduction + enemy.ExPDR));
 
             // 暴击判定
             effects = actor.Effects.Where(e => e.Level > 0).ToList();
@@ -1355,6 +1406,79 @@ namespace Milimoe.FunGame.Core.Model
             return DamageResult.Normal;
         }
 
+        public void ProcessCharacterDeath(Character character)
+        {
+            foreach (Character enemy in _roundDeaths)
+            {
+                // 给所有角色的特效广播角色死亡结算
+                List<Effect> effects = _queue.SelectMany(c => c.Effects.Where(e => e.Level > 0)).ToList();
+                foreach (Effect effect in effects)
+                {
+                    effect.AfterDeathCalculation(enemy, character, _continuousKilling, _earnedMoney);
+                }
+                // 将死者移出队列
+                _queue.Remove(enemy);
+                if (_isTeamMode)
+                {
+                    Team? killTeam = GetTeam(character);
+                    Team? deathTeam = GetTeam(enemy);
+
+                    if (MaxRespawnTimes != 0)
+                    {
+                        WriteLine($"\r\n=== 当前死亡竞赛比分 ===\r\n{string.Join("\r\n", Teams.OrderByDescending(kv => kv.Value.Score).Select(kv => kv.Key + "：" + kv.Value.Score + "（剩余存活人数：" + kv.Value.GetActiveCharacters(this).Count + "）"))}");
+                    }
+
+                    if (deathTeam != null)
+                    {
+                        List<Character> remain = deathTeam.GetActiveCharacters(this);
+                        int remainCount = remain.Count;
+                        if (remainCount == 0)
+                        {
+                            // 团灭了
+                            _eliminatedTeams.Add(deathTeam);
+                            _teams.Remove(deathTeam.Name);
+                        }
+                        else if (MaxRespawnTimes == 0)
+                        {
+                            WriteLine($"[ {deathTeam} ] 剩余成员：[ {string.Join(" ] / [ ", remain)} ]（{remainCount} 人）");
+                        }
+                    }
+
+                    if (killTeam != null)
+                    {
+                        List<Character> actives = killTeam.GetActiveCharacters(this);
+                        actives.Add(character);
+                        int remainCount = actives.Count;
+                        if (remainCount > 0 && MaxRespawnTimes == 0)
+                        {
+                            WriteLine($"[ {killTeam} ] 剩余成员：[ {string.Join(" ] / [ ", actives)} ]（{remainCount} 人）");
+                        }
+                        if (!_teams.Keys.Where(str => str != killTeam.Name).Any())
+                        {
+                            // 没有其他的团队了，游戏结束
+                            EndGameInfo(killTeam);
+                        }
+                        if (MaxScoreToWin > 0 && killTeam.Score >= MaxScoreToWin)
+                        {
+                            List<Team> combinedTeams = [.. _eliminatedTeams, .. _teams.Values];
+                            combinedTeams.Remove(killTeam);
+                            _eliminatedTeams.Clear();
+                            _eliminatedTeams.AddRange(combinedTeams.OrderByDescending(t => t.Score));
+                            EndGameInfo(killTeam);
+                        }
+                    }
+                }
+                else
+                {
+                    if (!_queue.Where(c => c != character).Any())
+                    {
+                        // 没有其他的角色了，游戏结束
+                        EndGameInfo(character);
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// 死亡结算
         /// </summary>
@@ -1363,6 +1487,10 @@ namespace Milimoe.FunGame.Core.Model
         public void DeathCalculation(Character killer, Character death)
         {
             if (!_continuousKilling.TryAdd(killer, 1)) _continuousKilling[killer] += 1;
+            if (!_maxContinuousKilling.TryAdd(killer, 1) && _continuousKilling[killer] > _maxContinuousKilling[killer])
+            {
+                _maxContinuousKilling[killer] = _continuousKilling[killer];
+            }
             _stats[killer].Kills += 1;
             _stats[death].Deaths += 1;
             int money = Random.Shared.Next(250, 350);
@@ -1392,6 +1520,7 @@ namespace Milimoe.FunGame.Core.Model
                 money += (coefficient + 1) * Random.Shared.Next(50, 100);
                 string termination = CharacterSet.GetContinuousKilling(coefficient);
                 string msg = $"[ {killer} ] 终结了 [ {death} ]{(termination != "" ? " 的" + termination : "")}，获得 {money} {General.GameplayEquilibriumConstant.InGameCurrency}！";
+                LastRound.DeathContinuousKilling.Add(msg);
                 if (assists.Length > 1)
                 {
                     msg += "助攻：[ " + string.Join(" ] / [ ", assists.Where(c => c != killer)) + " ]";
@@ -1401,6 +1530,7 @@ namespace Milimoe.FunGame.Core.Model
             else
             {
                 string msg = $"[ {killer} ] 杀死了 [ {death} ]，获得 {money} {General.GameplayEquilibriumConstant.InGameCurrency}！";
+                LastRound.DeathContinuousKilling.Add(msg);
                 if (assists.Length > 1)
                 {
                     msg += "助攻：[ " + string.Join(" ] / [ ", assists.Where(c => c != killer)) + " ]";
@@ -1419,21 +1549,27 @@ namespace Milimoe.FunGame.Core.Model
 
             int kills = _continuousKilling[killer];
             string continuousKilling = CharacterSet.GetContinuousKilling(kills);
+            string actorContinuousKilling = "";
             if (kills == 2 || kills == 3)
             {
-                WriteLine("[ " + killer + " ] 完成了" + continuousKilling + "！");
+                actorContinuousKilling = "[ " + killer + " ] 完成了一次" + continuousKilling + "！";
             }
             else if (kills == 4)
             {
-                WriteLine("[ " + killer + " ] 正在" + continuousKilling + "！");
+                actorContinuousKilling = "[ " + killer + " ] 正在" + continuousKilling + "！";
             }
             else if (kills > 4 && kills < 10)
             {
-                WriteLine("[ " + killer + " ] 已经" + continuousKilling + "！");
+                actorContinuousKilling = "[ " + killer + " ] 已经" + continuousKilling + "！";
             }
             else if (kills >= 10)
             {
-                WriteLine("[ " + killer + " ] 已经" + continuousKilling + "！拜托谁去杀了他吧！！！");
+                actorContinuousKilling = "[ " + killer + " ] 已经" + continuousKilling + "！拜托谁去杀了他吧！！！";
+            }
+            if (actorContinuousKilling != "")
+            {
+                LastRound.ActorContinuousKilling.Add(actorContinuousKilling);
+                WriteLine(actorContinuousKilling);
             }
 
             if (!_earnedMoney.TryAdd(killer, money)) _earnedMoney[killer] += money;
@@ -1467,8 +1603,34 @@ namespace Milimoe.FunGame.Core.Model
             else
             {
                 // 进入复活倒计时
-                double respawnTime = Math.Min(90, death.Level * 0.36 + times * 2.77);
+                double respawnTime = Calculation.Round2Digits(Math.Min(90, death.Level * 0.36 + times * 2.77 + kills * Random.Shared.Next(0, 3)));
                 _respawnCountdown.TryAdd(death, respawnTime);
+                LastRound.RespawnCountdowns.TryAdd(death, respawnTime);
+                WriteLine($"[ {death} ] 进入复活倒计时：{respawnTime:0.##} 时间！");
+            }
+
+            // 移除死者的施法
+            _castingSkills.Remove(death);
+            _castingSuperSkills.Remove(death);
+
+            // 因丢失目标而中断施法
+            List<Character> castingSkills = [.. _castingSkills.Keys];
+            foreach (Character caster in castingSkills)
+            {
+                SkillTarget st = _castingSkills[caster];
+                if (st.Targets.Remove(death) && st.Targets.Count == 0)
+                {
+                    _castingSkills.Remove(caster);
+                    if (caster.CharacterState == CharacterState.Casting)
+                    {
+                        caster.CharacterState = CharacterState.Actionable;
+                    }
+                    WriteLine($"[ {caster} ] 终止了 [ {st.Skill.Name} ] 的施法" + (_hardnessTimes[caster] > 3 ? "，并获得了 3 硬直时间的补偿。" : "。"));
+                    if (_hardnessTimes[caster] > 3)
+                    {
+                        _hardnessTimes[caster] = 3;
+                    }
+                }
             }
         }
 
@@ -1489,7 +1651,7 @@ namespace Milimoe.FunGame.Core.Model
                 CharacterStatistics statistics = CharacterStatistics[ec];
                 string topCharacter = ec.ToString() +
                     (statistics.FirstKills > 0 ? " [ 第一滴血 ]" : "") +
-                    (_continuousKilling.TryGetValue(ec, out int kills) && kills > 1 ? $" [ {CharacterSet.GetContinuousKilling(kills)} ]" : "") +
+                    (_maxContinuousKilling.TryGetValue(ec, out int kills) && kills > 1 ? $" [ {CharacterSet.GetContinuousKilling(kills)} ]" : "") +
                     (_earnedMoney.TryGetValue(ec, out int earned) ? $" [ 已赚取 {earned} {General.GameplayEquilibriumConstant.InGameCurrency} ]" : "");
                 if (top == 1)
                 {
@@ -1571,7 +1733,7 @@ namespace Milimoe.FunGame.Core.Model
 
                     string topCharacter = respawning + ec.ToString() +
                         (statistics.FirstKills > 0 ? " [ 第一滴血 ]" : "") +
-                        (_continuousKilling.TryGetValue(ec, out int kills) && kills > 1 ? $" [ {CharacterSet.GetContinuousKilling(kills)} ]" : "") +
+                        (_maxContinuousKilling.TryGetValue(ec, out int kills) && kills > 1 ? $" [ {CharacterSet.GetContinuousKilling(kills)} ]" : "") +
                         (_earnedMoney.TryGetValue(ec, out int earned) ? $" [ 已赚取 {earned} {General.GameplayEquilibriumConstant.InGameCurrency} ]" : "") +
                         $"（{statistics.Kills} / {statistics.Assists}{(MaxRespawnTimes != 0 ? " / " + statistics.Deaths : "")}）";
                     topTeam += topCharacter + "\r\n";
@@ -1671,7 +1833,7 @@ namespace Milimoe.FunGame.Core.Model
                                 _hardnessTimes[c] = Calculation.Round2Digits(_hardnessTimes[c] + 0.01);
                             }
                         }
-                        skill.OnSkillCasting(this, other);
+                        skill.OnSkillCasting(this, other, []);
                     }
                 }
             }
@@ -1779,6 +1941,14 @@ namespace Milimoe.FunGame.Core.Model
                 }
                 statsTaken.TotalTakenDamage = Calculation.Round2Digits(statsTaken.TotalTakenDamage + damage);
             }
+            if (LastRound.Damages.TryGetValue(characterTaken, out double damageTotal))
+            {
+                LastRound.Damages[characterTaken] = damageTotal + damage;
+            }
+            else
+            {
+                LastRound.Damages[characterTaken] = damage;
+            }
         }
 
         /// <summary>
@@ -1837,6 +2007,10 @@ namespace Milimoe.FunGame.Core.Model
             cancel = false;
             if (skill.SkillType == SkillType.SuperSkill) cancel = false;
             List<Character> targets = skill.SelectTargets(caster, enemys, teammates);
+            if (targets.Count == 0)
+            {
+                cancel = true;
+            }
             return targets;
         }
 

@@ -41,6 +41,12 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Skill.CanSelectSelf):
                     result.CanSelectSelf = reader.GetBoolean();
                     break;
+                case nameof(Skill.CanSelectEnemy):
+                    result.CanSelectEnemy = reader.GetBoolean();
+                    break;
+                case nameof(Skill.CanSelectTeammate):
+                    result.CanSelectTeammate = reader.GetBoolean();
+                    break;
                 case nameof(Skill.CanSelectTargetCount):
                     result.CanSelectTargetCount = reader.GetInt32();
                     break;
@@ -58,6 +64,12 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     break;
                 case nameof(Skill.EPCost):
                     result.EPCost = reader.GetDouble();
+                    break;
+                case nameof(Skill.CostAllEP):
+                    result.CostAllEP = reader.GetBoolean();
+                    break;
+                case nameof(Skill.MinCostEP):
+                    result.MinCostEP = reader.GetDouble();
                     break;
                 case nameof(Skill.CastTime):
                     result.CastTime = reader.GetDouble();
@@ -100,12 +112,16 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             if (value.Level > 0) writer.WriteNumber(nameof(Skill.Level), value.Level);
             writer.WriteNumber(nameof(Skill.SkillType), (int)value.SkillType);
             if (value.CanSelectSelf) writer.WriteBoolean(nameof(Skill.CanSelectSelf), value.CanSelectSelf);
+            if (!value.CanSelectEnemy) writer.WriteBoolean(nameof(Skill.CanSelectEnemy), value.CanSelectEnemy);
+            if (value.CanSelectTeammate) writer.WriteBoolean(nameof(Skill.CanSelectTeammate), value.CanSelectTeammate);
             if (value.CanSelectTargetCount != 0) writer.WriteNumber(nameof(Skill.CanSelectTargetCount), value.CanSelectTargetCount);
             if (value.CanSelectTargetRange != 0) writer.WriteNumber(nameof(Skill.CanSelectTargetRange), value.CanSelectTargetRange);
             if (!value.Enable) writer.WriteBoolean(nameof(Skill.Enable), value.Enable);
             if (value.IsInEffect) writer.WriteBoolean(nameof(Skill.IsInEffect), value.IsInEffect);
             if (value.MPCost > 0) writer.WriteNumber(nameof(Skill.MPCost), value.MPCost);
             if (value.EPCost > 0) writer.WriteNumber(nameof(Skill.EPCost), value.EPCost);
+            if (value.CostAllEP) writer.WriteBoolean(nameof(Skill.CostAllEP), value.CostAllEP);
+            if (value.MinCostEP > 0) writer.WriteNumber(nameof(Skill.MinCostEP), value.MinCostEP);
             if (value.CastTime > 0) writer.WriteNumber(nameof(Skill.CastTime), value.CastTime);
             if (value.CD > 0) writer.WriteNumber(nameof(Skill.CD), value.CD);
             if (value.CurrentCD > 0) writer.WriteNumber(nameof(Skill.CurrentCD), value.CurrentCD);

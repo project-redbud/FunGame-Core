@@ -521,5 +521,53 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 _ => General.GameplayEquilibriumConstant.MaxPassiveSkillLevel
             };
         }
+
+        public static string GetEffectTypeName(EffectType type)
+        {
+            return type switch
+            {
+                EffectType.None => "无特殊效果",
+                EffectType.Item => "装备特效",
+                EffectType.Mark => "标记",
+                EffectType.Stun => "眩晕",
+                EffectType.Freeze => "冰冻",
+                EffectType.Silence => "沉默",
+                EffectType.Root => "定身",
+                EffectType.Fear => "恐惧",
+                EffectType.Sleep => "睡眠",
+                EffectType.Knockback => "击退",
+                EffectType.Knockdown => "击倒",
+                EffectType.Taunt => "嘲讽",
+                EffectType.Slow => "减速",
+                EffectType.Weaken => "衰弱",
+                EffectType.Poison => "中毒",
+                EffectType.Burn => "燃烧",
+                EffectType.Bleed => "流血",
+                EffectType.Blind => "致盲",
+                EffectType.Cripple => "致残",
+                EffectType.Shield => "护盾",
+                EffectType.HealOverTime => "持续治疗",
+                EffectType.Haste => "加速",
+                EffectType.Invulnerable => "无敌",
+                EffectType.Unselectable => "不可选中",
+                EffectType.DamageBoost => "伤害提升",
+                EffectType.DefenseBoost => "防御提升",
+                EffectType.CritBoost => "暴击提升",
+                EffectType.ManaRegen => "魔法恢复",
+                EffectType.ArmorBreak => "破甲",
+                EffectType.MagicResistBreak => "降低魔抗",
+                EffectType.Curse => "诅咒",
+                EffectType.Exhaustion => "疲劳",
+                EffectType.ManaBurn => "魔力燃烧",
+                EffectType.Charm => "魅惑",
+                EffectType.Disarm => "缴械",
+                EffectType.Confusion => "混乱",
+                EffectType.Petrify => "石化",
+                EffectType.SilenceMagic => "法术沉默",
+                EffectType.Banish => "放逐",
+                EffectType.Doom => "毁灭",
+                _ => "未知效果"
+            };
+        }
     }
 }
