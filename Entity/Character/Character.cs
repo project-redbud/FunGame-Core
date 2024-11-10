@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.IO;
+using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -929,6 +930,10 @@ namespace Milimoe.FunGame.Core.Entity
         public Item? UnEquip(EquipSlotType type)
         {
             Item? result = null;
+            double pastHP = HP;
+            double pastMaxHP = MaxHP;
+            double pastMP = MP;
+            double pastMaxMP = MaxMP;
             switch (type)
             {
                 case EquipSlotType.MagicCardPack:
@@ -974,6 +979,11 @@ namespace Milimoe.FunGame.Core.Entity
                     }
                     break;
             }
+            if (result != null)
+            {
+                OnAttributeChanged();
+                Recovery(pastHP, pastMP, pastMaxHP, pastMaxMP);
+            }
             return result;
         }
 
@@ -982,7 +992,8 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         public void OnAttributeChanged()
         {
-            foreach (Effect effect in Effects.Where(e => e.Level > 0).ToList())
+            List<Effect> effects = [.. Effects.Where(e => e.Level > 0)];
+            foreach (Effect effect in effects)
             {
                 effect.OnAttributeChanged(this);
             }
@@ -1087,7 +1098,7 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"物理护甲：{DEF:0.##}" + (ExDEF + ExDEF2 > 0 ? $" [{BaseDEF:0.##} + {ExDEF + ExDEF2:0.##}]" : "") + $" ({PDR * 100:0.##}%)");
             double mdf = (MDF.None + MDF.Starmark + MDF.PurityNatural + MDF.PurityContemporary +
                 MDF.Bright + MDF.Shadow + MDF.Element + MDF.Fleabane + MDF.Particle) / 9;
-            builder.AppendLine($"魔法抗性：{mdf * 100:0.##}%（平均）");
+            builder.AppendLine($"魔法抗性：{Calculation.Round4Digits(mdf) * 100:0.##}%（平均）");
             double exSPD = AGI * General.GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
             builder.AppendLine($"行动速度：{SPD:0.##}" + (exSPD > 0 ? $" [{InitialSPD:0.##} + {exSPD:0.##}]" : "") + $" ({ActionCoefficient * 100:0.##}%)");
             builder.AppendLine($"核心属性：{CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)}");
