@@ -392,7 +392,7 @@ namespace Milimoe.FunGame.Core.Entity
             if (Skills.Active != null) builder.AppendLine($"{Skills.Active.ToString()}");
             foreach (Skill skill in Skills.Passives)
             {
-                builder.Append($"{skill.ToString()}");
+                builder.Append($"{skill.ToString().Trim()}");
             }
 
             if (BackgroundStory != "")

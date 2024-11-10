@@ -9,7 +9,7 @@ namespace Milimoe.FunGame.Core.Entity
     {
         public override long Id { get; set; }
         public override string Name { get; set; }
-        public override string Description => string.Join("\r\n", Effects);
+        public override string Description => string.Join("\r\n", Effects.Select(e => e.Description));
 
         public OpenSkill(long id, string name, Dictionary<string, object> args, Character? character = null) : base(SkillType.Passive, character)
         {
