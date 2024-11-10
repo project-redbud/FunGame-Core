@@ -389,10 +389,10 @@ namespace Milimoe.FunGame.Core.Entity
                 builder.AppendLine("物品描述：" + Description);
             }
 
-            if (Skills.Active != null) builder.AppendLine($"{Skills.Active.ToString()}");
+            if (Skills.Active != null) builder.AppendLine($"{Skills.Active.ToString().Trim()}");
             foreach (Skill skill in Skills.Passives)
             {
-                builder.Append($"{skill.ToString().Trim()}");
+                builder.AppendLine($"{skill.ToString().Trim()}");
             }
 
             if (BackgroundStory != "")
