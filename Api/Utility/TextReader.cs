@@ -125,7 +125,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     WriteINI("Mailer", "Password", "");
                     WriteINI("Mailer", "Host", "");
                     WriteINI("Mailer", "Port", "587");
-                    WriteINI("Mailer", "OpenSSL", "true");
+                    WriteINI("Mailer", "SSL", "true");
                     break;
             }
         }

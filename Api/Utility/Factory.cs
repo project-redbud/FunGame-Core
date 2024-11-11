@@ -1,8 +1,10 @@
 ﻿using System.Data;
 using Milimoe.FunGame.Core.Api.EntityFactory;
 using Milimoe.FunGame.Core.Api.OpenEntityAdapter;
+using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Library.Exception;
 using Milimoe.FunGame.Core.Library.SQLScript.Entity;
 
 namespace Milimoe.FunGame.Core.Api.Utility
@@ -81,9 +83,16 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 foreach (EntityFactoryDelegate<Character> d in CharacterFactories)
                 {
-                    if (d.Invoke(id, name, args) is T character)
+                    try
                     {
-                        return character;
+                        if (d.Invoke(id, name, args) is T character)
+                        {
+                            return character;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TXTHelper.AppendErrorLog(e.GetErrorInfo());
                     }
                 }
                 return (T)(object)GetCharacter();
@@ -92,9 +101,16 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 foreach (EntityFactoryDelegate<Inventory> d in InventoryFactories)
                 {
-                    if (d.Invoke(id, name, args) is T inventory)
+                    try
                     {
-                        return inventory;
+                        if (d.Invoke(id, name, args) is T inventory)
+                        {
+                            return inventory;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TXTHelper.AppendErrorLog(e.GetErrorInfo());
                     }
                 }
                 return (T)(object)GetInventory();
@@ -103,9 +119,16 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 foreach (EntityFactoryDelegate<Skill> d in SkillFactories)
                 {
-                    if (d.Invoke(id, name, args) is T skill)
+                    try
                     {
-                        return skill;
+                        if (d.Invoke(id, name, args) is T skill)
+                        {
+                            return skill;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TXTHelper.AppendErrorLog(e.GetErrorInfo());
                     }
                 }
                 return (T)(object)new OpenSkill(id, name, args);
@@ -114,9 +137,16 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 foreach (EntityFactoryDelegate<Effect> d in EffectFactories)
                 {
-                    if (d.Invoke(id, name, args) is T effect)
+                    try
                     {
-                        return effect;
+                        if (d.Invoke(id, name, args) is T effect)
+                        {
+                            return effect;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TXTHelper.AppendErrorLog(e.GetErrorInfo());
                     }
                 }
                 return (T)(object)GetEffect();
@@ -125,9 +155,16 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 foreach (EntityFactoryDelegate<Item> d in ItemFactories)
                 {
-                    if (d.Invoke(id, name, args) is T item)
+                    try
                     {
-                        return item;
+                        if (d.Invoke(id, name, args) is T item)
+                        {
+                            return item;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TXTHelper.AppendErrorLog(e.GetErrorInfo());
                     }
                 }
                 return (T)(object)GetItem();
@@ -136,9 +173,16 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 foreach (EntityFactoryDelegate<Room> d in RoomFactories)
                 {
-                    if (d.Invoke(id, name, args) is T room)
+                    try
                     {
-                        return room;
+                        if (d.Invoke(id, name, args) is T room)
+                        {
+                            return room;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TXTHelper.AppendErrorLog(e.GetErrorInfo());
                     }
                 }
                 return (T)(object)GetRoom();
@@ -147,9 +191,16 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 foreach (EntityFactoryDelegate<User> d in UserFactories)
                 {
-                    if (d.Invoke(id, name, args) is T user)
+                    try
                     {
-                        return user;
+                        if (d.Invoke(id, name, args) is T user)
+                        {
+                            return user;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TXTHelper.AppendErrorLog(e.GetErrorInfo());
                     }
                 }
                 return (T)(object)GetUser();
@@ -195,6 +246,42 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 config[key] = dict[key];
             }
             config.SaveConfig();
+        }
+
+        internal HashSet<SQLHelperFactoryDelegate> SQLHelperFactories { get; } = [];
+
+        public delegate SQLHelper? SQLHelperFactoryDelegate();
+
+        /// <summary>
+        /// 注册工厂方法 [SQLHelper]
+        /// </summary>
+        /// <param name="d"></param>
+        public void RegisterFactory(SQLHelperFactoryDelegate d)
+        {
+            SQLHelperFactories.Add(d);
+        }
+
+        /// <summary>
+        /// 构造一个 SQLHelper 实例
+        /// </summary>
+        /// <returns></returns>
+        public SQLHelper? GetSQLHelper()
+        {
+            foreach (SQLHelperFactoryDelegate d in SQLHelperFactories)
+            {
+                try
+                {
+                    if (d.Invoke() is SQLHelper helper)
+                    {
+                        return helper;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TXTHelper.AppendErrorLog(e.GetErrorInfo());
+                }
+            }
+            return null;
         }
 
         private readonly static CharacterFactory CharacterFactory = new();

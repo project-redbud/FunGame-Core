@@ -1,5 +1,4 @@
-﻿using System.Net.NetworkInformation;
-using System.Text;
+﻿using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
@@ -346,38 +345,73 @@ namespace Milimoe.FunGame.Core.Entity
         /// 显示物品的详细信息
         /// </summary>
         /// <param name="isShowGeneralDescription">是否显示通用描述，而不是描述</param>
+        /// <param name="isShowInStore">是否在商店中显示</param>
         /// <returns></returns>
-        public string ToString(bool isShowGeneralDescription)
+        public string ToString(bool isShowGeneralDescription, bool isShowInStore = false)
         {
             StringBuilder builder = new();
 
             builder.AppendLine($"【{Name}】");
-            builder.AppendLine($"{ItemSet.GetItemTypeName(ItemType) + (ItemType == ItemType.Weapon && WeaponType != WeaponType.None ? "-" + ItemSet.GetWeaponTypeName(WeaponType) : "")}" + (IsPurchasable && Price > 0 ? $"  售价：{Price}" : ""));
+
+            string itemquality = ItemSet.GetQualityTypeName(QualityType);
+            string itemtype = ItemSet.GetItemTypeName(ItemType) + (ItemType == ItemType.Weapon && WeaponType != WeaponType.None ? "-" + ItemSet.GetWeaponTypeName(WeaponType) : "");
+            if (itemtype != "") itemtype = $" {itemtype}";
+
+            builder.AppendLine($"{itemquality + itemtype}");
+
+            if (isShowInStore && Price > 0)
+            {
+                builder.AppendLine($"售价：{Price} {General.GameplayEquilibriumConstant.InGameCurrency}");
+            }
 
             if (RemainUseTimes > 0)
             {
-                builder.AppendLine($"剩余可用次数：{RemainUseTimes}");
+                builder.AppendLine($"{(isShowInStore ? "" : "剩余")}可用次数：{RemainUseTimes}");
             }
 
-            List<string> sellandtrade = [""];
-            if (IsSellable)
+            if (isShowInStore)
             {
-                sellandtrade.Add("可出售");
+                if (IsSellable)
+                {
+                    builder.AppendLine($"购买此物品后可立即出售");
+                }
+                if (IsTradable)
+                {
+                    DateTime date = DateTimeUtility.GetTradableTime();
+                    builder.AppendLine($"购买此物品后将在 {date.ToString(General.GeneralDateTimeFormatChinese)} 后可交易");
+                }
             }
-            if (IsTradable)
+            else
             {
-                sellandtrade.Add("可交易");
-            }
-            builder.AppendLine(string.Join(" ", sellandtrade).Trim());
+                List<string> sellandtrade = [""];
+                if (IsSellable)
+                {
+                    sellandtrade.Add("可出售");
+                }
+                if (IsTradable)
+                {
+                    sellandtrade.Add("可交易");
+                }
 
-            if (!IsSellable && NextSellableTime != DateTime.MinValue)
-            {
-                builder.AppendLine($"此物品将在 {NextSellableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可出售");
-            }
+                if (!IsSellable && NextSellableTime != DateTime.MinValue)
+                {
+                    builder.AppendLine($"此物品将在 {NextSellableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可出售");
+                }
+                else if (!IsSellable)
+                {
+                    sellandtrade.Add("不可出售");
+                }
 
-            if (!IsTradable && NextTradableTime != DateTime.MinValue)
-            {
-                builder.AppendLine($"此物品将在 {NextTradableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可交易");
+                if (!IsTradable && NextTradableTime != DateTime.MinValue)
+                {
+                    builder.AppendLine($"此物品将在 {NextTradableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可交易");
+                }
+                else if (!IsTradable)
+                {
+                    sellandtrade.Add("不可交易");
+                }
+
+                builder.AppendLine(string.Join(" ", sellandtrade).Trim());
             }
 
             if (isShowGeneralDescription && GeneralDescription != "")

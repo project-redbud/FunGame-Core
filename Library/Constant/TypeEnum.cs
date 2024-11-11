@@ -753,7 +753,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Blue,
         Purple,
         Orange,
-        Red
+        Red,
+        Gold
     }
 
     public enum RarityType

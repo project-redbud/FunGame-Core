@@ -398,6 +398,27 @@ namespace Milimoe.FunGame.Core.Api.Utility
 
             return $"{month}. {day}, {lastWriteTime.Year} {time}";
         }
+
+        /// <summary>
+        /// 获取下一次可交易的时间
+        /// </summary>
+        /// <returns></returns>
+        public static DateTime GetTradableTime(DateTime? date = null)
+        {
+            date ??= DateTime.Now;
+            if (date is DateTime d)
+            {
+                if (d.Hour < 15)
+                {
+                    return d.Date.AddDays(1).AddHours(15);
+                }
+                else
+                {
+                    return d.Date.AddDays(2).AddHours(9);
+                }
+            }
+            return DateTime.MinValue;
+        }
     }
 
     #endregion
