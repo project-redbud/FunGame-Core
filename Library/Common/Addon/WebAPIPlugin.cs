@@ -1,12 +1,9 @@
-﻿using Milimoe.FunGame.Core.Api.Transmittal;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Controller;
+﻿using Milimoe.FunGame.Core.Controller;
 using Milimoe.FunGame.Core.Interface.Addons;
-using Milimoe.FunGame.Core.Library.SQLScript.Common;
 
 namespace Milimoe.FunGame.Core.Library.Common.Addon
 {
-    public abstract class WebAPIPlugin : IAddon, IServerAddon, IAddonController<IAddon>
+    public abstract class WebAPIPlugin : IAddon, IAddonController<IAddon>
     {
         /// <summary>
         /// 插件名称
@@ -31,41 +28,30 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 包含了一些常用方法的控制器
         /// </summary>
-        public BaseAddonController<IAddon> Controller
+        public ServerAddonController<IAddon> Controller
         {
-            get => _controller ?? throw new NotImplementedException();
-            set => _controller = value;
+            get => _Controller ?? throw new NotImplementedException();
+            internal set => _Controller = value;
+        }
+
+        /// <summary>
+        /// base控制器
+        /// </summary>
+        BaseAddonController<IAddon> IAddonController<IAddon>.Controller
+        {
+            get => Controller;
+            set => _Controller = (ServerAddonController<IAddon>?)value;
         }
 
         /// <summary>
         /// 控制器内部变量
         /// </summary>
-        private BaseAddonController<IAddon>? _controller;
-
-        /// <summary>
-        /// 全局数据库连接器
-        /// </summary>
-        public SQLHelper? SQLHelper { get; set; } = null;
-
-        /// <summary>
-        /// 全局邮件发送器
-        /// </summary>
-        public MailSender? MailSender { get; set; } = null;
+        private ServerAddonController<IAddon>? _Controller;
 
         /// <summary>
         /// 加载标记
         /// </summary>
         private bool _isLoaded = false;
-
-        /// <summary>
-        /// SQL 线程
-        /// </summary>
-        private Task? _sqlPolling = null;
-        
-        /// <summary>
-        /// SQL 线程取消标记
-        /// </summary>
-        private CancellationTokenSource? _cts = null;
 
         /// <summary>
         /// 加载插件
@@ -79,37 +65,6 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             // BeforeLoad可以阻止加载此插件
             if (BeforeLoad(objs))
             {
-                // 创建持久化 SQLHelper
-                _cts = new();
-                _sqlPolling = Task.Run(async () =>
-                {
-                    await Task.Delay(30);
-                    SQLHelper = Factory.OpenFactory.GetSQLHelper();
-                    if (SQLHelper != null)
-                    {
-                        while (true)
-                        {
-                            if (_cts.Token.IsCancellationRequested)
-                            {
-                                break;
-                            }
-                            // 每两小时触发一次SQL服务器的心跳查询，防止SQL服务器掉线
-                            try
-                            {
-                                await Task.Delay(2 * 1000 * 3600);
-                                SQLHelper?.ExecuteDataSet(ServerLoginLogs.Select_GetLastLoginTime());
-                            }
-                            catch (OperationCanceledException)
-                            {
-                                break;
-                            }
-                            catch (System.Exception e)
-                            {
-                                Controller.Error(e);
-                            }
-                        }
-                    }
-                }, _cts.Token);
                 // 插件加载后，不允许再次加载此插件
                 _isLoaded = true;
             }
@@ -137,21 +92,6 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         protected virtual bool BeforeLoad(params object[] objs)
         {
             return true;
-        }
-
-        /// <summary>
-        /// 关闭插件的服务
-        /// </summary>
-        public async void Close()
-        {
-            _cts?.Cancel();
-            if (_sqlPolling != null)
-            {
-                await _sqlPolling;
-                _sqlPolling.Dispose();
-                _sqlPolling = null;
-            }
-            _cts?.Dispose();
         }
     }
 }

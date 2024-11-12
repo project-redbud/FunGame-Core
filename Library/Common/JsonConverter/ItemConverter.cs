@@ -94,6 +94,14 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     SkillGroup skills = NetworkUtility.JsonDeserialize<SkillGroup>(ref reader, options) ?? new();
                     result.Skills.Active = skills.Active;
                     result.Skills.Passives = skills.Passives;
+                    result.Skills.Magics = skills.Magics;
+                    break;
+                case nameof(Item.Others):
+                    Dictionary<string, object> values = NetworkUtility.JsonDeserialize<Dictionary<string, object>>(ref reader, options) ?? [];
+                    foreach (string key in values.Keys)
+                    {
+                        result.Others.Add(key, values[key]);
+                    }
                     break;
             }
         }
@@ -129,6 +137,8 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             }
             writer.WritePropertyName(nameof(Item.Skills));
             JsonSerializer.Serialize(writer, value.Skills, options);
+            writer.WritePropertyName(nameof(Item.Others));
+            JsonSerializer.Serialize(writer, value.Others, options);
 
             writer.WriteEndObject();
         }

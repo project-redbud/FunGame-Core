@@ -1,5 +1,4 @@
 ﻿using Milimoe.FunGame.Core.Api.Transmittal;
-using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Controller;
 using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Interface.Addons;
@@ -7,7 +6,7 @@ using Milimoe.FunGame.Core.Library.Common.Event;
 
 namespace Milimoe.FunGame.Core.Library.Common.Addon
 {
-    public abstract class ServerPlugin : IPlugin, IServerAddon
+    public abstract class ServerPlugin : IPlugin
     {
         /// <summary>
         /// 插件名称
@@ -32,26 +31,25 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 包含了一些常用方法的控制器
         /// </summary>
-        public BaseAddonController<IPlugin> Controller
+        public ServerAddonController<IPlugin> Controller
         {
             get => _Controller ?? throw new NotImplementedException();
-            set => _Controller = value;
+            internal set => _Controller = value;
         }
 
         /// <summary>
-        /// 全局数据库连接器
+        /// base控制器
         /// </summary>
-        public SQLHelper? SQLHelper => Singleton.Get<SQLHelper>();
-
-        /// <summary>
-        /// 全局邮件发送器
-        /// </summary>
-        public MailSender? MailSender => Singleton.Get<MailSender>();
+        BaseAddonController<IPlugin> IAddonController<IPlugin>.Controller
+        {
+            get => Controller;
+            set => _Controller = (ServerAddonController<IPlugin>?)value;
+        }
 
         /// <summary>
         /// 控制器内部变量
         /// </summary>
-        private BaseAddonController<IPlugin>? _Controller;
+        private ServerAddonController<IPlugin>? _Controller;
 
         /// <summary>
         /// 加载标记

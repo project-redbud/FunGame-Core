@@ -139,6 +139,14 @@ namespace Milimoe.FunGame.Core.Entity
                         e.Source = _character;
                     }
                 }
+                foreach (Skill skill in Skills.Magics)
+                {
+                    skill.Character = _character;
+                    foreach (Effect e in skill.Effects)
+                    {
+                        e.Source = _character;
+                    }
+                }
             }
         }
 
@@ -151,6 +159,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 物品拥有的技能
         /// </summary>
         public SkillGroup Skills { get; set; } = new();
+        
+        /// <summary>
+        /// 其他内容
+        /// </summary>
+        public Dictionary<string, object> Others { get; set; } = [];
 
         /// <summary>
         /// 当装备物品时
@@ -174,6 +187,13 @@ namespace Milimoe.FunGame.Core.Entity
                     }
                 }
             }
+            foreach (Skill skill in Skills.Magics)
+            {
+                if (Character != null && skill.IsMagic && skill.Level > 0)
+                {
+                    Character.Skills.Add(skill);
+                }
+            }
             if (Character != null) OnItemEquipped(Character, this, type);
         }
 
@@ -184,15 +204,6 @@ namespace Milimoe.FunGame.Core.Entity
         {
             if (Character != null)
             {
-                if (Skills.Active != null)
-                {
-                    List<Effect> effects = Character.Effects.Where(e => e.Skill == Skills.Active && e.Level > 0).ToList();
-                    foreach (Effect e in effects)
-                    {
-                        Character.Effects.Remove(e);
-                        e.OnEffectLost(Character);
-                    }
-                }
                 foreach (Skill skill in Skills.Passives)
                 {
                     List<Effect> effects = Character.Effects.Where(e => e.Skill == skill && e.Level > 0).ToList();
@@ -201,6 +212,10 @@ namespace Milimoe.FunGame.Core.Entity
                         Character.Effects.Remove(e);
                         e.OnEffectLost(Character);
                     }
+                }
+                foreach (Skill skill in Skills.Magics)
+                {
+                    Character.Skills.Remove(skill);
                 }
                 switch (type)
                 {
@@ -237,6 +252,10 @@ namespace Milimoe.FunGame.Core.Entity
         {
             if (Skills.Active != null) Skills.Active.GamingQueue = queue;
             foreach (Skill skill in Skills.Passives)
+            {
+                skill.GamingQueue = queue;
+            }
+            foreach (Skill skill in Skills.Magics)
             {
                 skill.GamingQueue = queue;
             }
@@ -422,6 +441,10 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 builder.AppendLine("物品描述：" + Description);
             }
+            if (ItemType == ItemType.MagicCardPack && Skills.Magics.Count > 0)
+            {
+                builder.AppendLine("此魔法卡包包含以下魔法：\r\n" + string.Join("\r\n", Skills.Magics.Select(m => m.ToString().Trim())));
+            }
 
             if (Skills.Active != null) builder.AppendLine($"{Skills.Active.ToString().Trim()}");
             foreach (Skill skill in Skills.Passives)
@@ -495,16 +518,23 @@ namespace Milimoe.FunGame.Core.Entity
             item.NextTradableTime = NextTradableTime;
             item.RemainUseTimes = RemainUseTimes;
             item.Skills.Active = Skills.Active?.Copy();
-            if (item.Skills.Active != null && copyLevel)
+            if (item.Skills.Active != null)
             {
-                item.Skills.Active.Level = Skills.Active?.Level ?? 0;
+                item.Skills.Active.Level = copyLevel ? (Skills.Active?.Level ?? 1) : 1;
             }
             foreach (Skill skill in Skills.Passives)
             {
                 Skill newskill = skill.Copy();
                 newskill.Item = item;
-                newskill.Level = copyLevel ? skill.Level : 0;
+                newskill.Level = copyLevel ? skill.Level : 1;
                 item.Skills.Passives.Add(newskill);
+            }
+            foreach (Skill skill in Skills.Magics)
+            {
+                Skill newskill = skill.Copy();
+                newskill.Item = item;
+                newskill.Level = copyLevel ? skill.Level : 1;
+                item.Skills.Magics.Add(newskill);
             }
             return item;
         }
@@ -520,6 +550,22 @@ namespace Milimoe.FunGame.Core.Entity
                 Skills.Active.Level = level;
             }
             foreach (Skill skill in Skills.Passives)
+            {
+                skill.Level = level;
+            }
+        }
+        
+        /// <summary>
+        /// 设置所有魔法的等级
+        /// </summary>
+        /// <param name="level"></param>
+        public void SetMagicsLevel(int level)
+        {
+            if (Skills.Active != null)
+            {
+                Skills.Active.Level = level;
+            }
+            foreach (Skill skill in Skills.Magics)
             {
                 skill.Level = level;
             }

@@ -1,5 +1,4 @@
 using Milimoe.FunGame.Core.Api.Transmittal;
-using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Controller;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Addons;
@@ -44,26 +43,25 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 包含了一些常用方法的控制器
         /// </summary>
-        public BaseAddonController<IGameModuleServer> Controller
+        public ServerAddonController<IGameModuleServer> Controller
         {
             get => _Controller ?? throw new NotImplementedException();
-            set => _Controller = value;
+            internal set => _Controller = value;
+        }
+
+        /// <summary>
+        /// base控制器
+        /// </summary>
+        BaseAddonController<IGameModuleServer> IAddonController<IGameModuleServer>.Controller
+        {
+            get => Controller;
+            set => _Controller = (ServerAddonController<IGameModuleServer>?)value;
         }
 
         /// <summary>
         /// 控制器内部变量
         /// </summary>
-        private BaseAddonController<IGameModuleServer>? _Controller;
-
-        /// <summary>
-        /// 全局数据库连接器
-        /// </summary>
-        public SQLHelper? SQLHelper => Singleton.Get<SQLHelper>();
-
-        /// <summary>
-        /// 全局邮件发送器
-        /// </summary>
-        public MailSender? MailSender => Singleton.Get<MailSender>();
+        private ServerAddonController<IGameModuleServer>? _Controller;
 
         /// <summary>
         /// 启动服务器监听 请在此处实现服务器逻辑

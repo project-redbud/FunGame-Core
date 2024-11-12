@@ -283,6 +283,42 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
             return null;
         }
+        
+        internal HashSet<MailSenderFactoryDelegate> MailSenderFactories { get; } = [];
+
+        public delegate MailSender? MailSenderFactoryDelegate();
+
+        /// <summary>
+        /// 注册工厂方法 [MailSender]
+        /// </summary>
+        /// <param name="d"></param>
+        public void RegisterFactory(MailSenderFactoryDelegate d)
+        {
+            MailSenderFactories.Add(d);
+        }
+
+        /// <summary>
+        /// 构造一个 MailSender 实例
+        /// </summary>
+        /// <returns></returns>
+        public MailSender? GetMailSender()
+        {
+            foreach (MailSenderFactoryDelegate d in MailSenderFactories)
+            {
+                try
+                {
+                    if (d.Invoke() is MailSender sender)
+                    {
+                        return sender;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TXTHelper.AppendErrorLog(e.GetErrorInfo());
+                }
+            }
+            return null;
+        }
 
         private readonly static CharacterFactory CharacterFactory = new();
         private readonly static InventoryFactory InventoryFactory = new();

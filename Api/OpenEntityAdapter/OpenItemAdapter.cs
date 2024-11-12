@@ -14,7 +14,6 @@ namespace Milimoe.FunGame.Core.Api.OpenEntityAdapter
                     Item next = prev.Copy();
                     if (next is T t)
                     {
-                        next.SetLevel(1);
                         config[key] = t;
                     }
                 }
