@@ -443,8 +443,10 @@ namespace Milimoe.FunGame.Core.Entity
             }
             if (ItemType == ItemType.MagicCardPack && Skills.Magics.Count > 0)
             {
-                builder.AppendLine("此魔法卡包包含以下魔法：\r\n" + string.Join("\r\n", Skills.Magics.Select(m => m.ToString().Trim())));
+                builder.AppendLine("== 魔法卡 ==\r\n" + string.Join("\r\n", Skills.Magics.Select(m => m.ToString().Trim())));
             }
+
+            builder.AppendLine("== 物品技能 ==");
 
             if (Skills.Active != null) builder.AppendLine($"{Skills.Active.ToString().Trim()}");
             foreach (Skill skill in Skills.Passives)
