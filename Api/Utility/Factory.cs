@@ -283,7 +283,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
             return null;
         }
-        
+
         internal HashSet<MailSenderFactoryDelegate> MailSenderFactories { get; } = [];
 
         public delegate MailSender? MailSenderFactoryDelegate();

@@ -25,7 +25,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// 邮件发送器
         /// </summary>
         public MailSender? MailSender => _mailSender;
-        
+
         private SQLHelper? _sqlHelper = null;
         private MailSender? _mailSender = null;
         private Task? _sqlPolling = null;

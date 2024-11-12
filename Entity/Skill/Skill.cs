@@ -334,7 +334,7 @@ namespace Milimoe.FunGame.Core.Entity
             LastCostMP = RealMPCost;
             LastCostEP = RealEPCost;
         }
-        
+
         /// <summary>
         /// 触发技能效果
         /// </summary>

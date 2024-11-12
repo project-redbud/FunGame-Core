@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Transmittal;
-using Milimoe.FunGame.Core.Controller;
+﻿using Milimoe.FunGame.Core.Controller;
 using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Interface.Addons;
 using Milimoe.FunGame.Core.Library.Common.Event;

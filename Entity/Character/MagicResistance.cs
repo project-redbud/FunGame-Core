@@ -47,7 +47,7 @@
                 Starmark += value;
             }
         }
-        
+
         /// <summary>
         /// 增加所有抗性，传入负数来减少
         /// </summary>

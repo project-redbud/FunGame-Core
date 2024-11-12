@@ -19,7 +19,7 @@ namespace Milimoe.FunGame.Core.Model
         /// 原始的角色字典
         /// </summary>
         public Dictionary<Guid, Character> Original => _original;
-        
+
         /// <summary>
         /// 当前的行动顺序
         /// </summary>
@@ -60,13 +60,13 @@ namespace Milimoe.FunGame.Core.Model
         /// 第一滴血获得者
         /// </summary>
         public Character? FirstKiller { get; set; } = null;
-        
+
         /// <summary>
         /// 最大复活次数
         /// 0：不复活 / -1：无限复活
         /// </summary>
         public int MaxRespawnTimes { get; set; } = 0;
-        
+
         /// <summary>
         /// 复活次数统计
         /// </summary>
@@ -87,7 +87,7 @@ namespace Milimoe.FunGame.Core.Model
         /// 上回合记录
         /// </summary>
         public RoundRecord LastRound { get; set; } = new(0);
-        
+
         /// <summary>
         /// 所有回合的记录
         /// </summary>
@@ -97,7 +97,7 @@ namespace Milimoe.FunGame.Core.Model
         /// 原始的角色字典
         /// </summary>
         protected readonly Dictionary<Guid, Character> _original = [];
-        
+
         /// <summary>
         /// 当前的行动顺序
         /// </summary>
@@ -137,7 +137,7 @@ namespace Milimoe.FunGame.Core.Model
         /// 角色最高连杀数
         /// </summary>
         protected readonly Dictionary<Character, int> _maxContinuousKilling = [];
-        
+
         /// <summary>
         /// 角色目前的连杀数
         /// </summary>
@@ -167,7 +167,7 @@ namespace Milimoe.FunGame.Core.Model
         /// 复活次数统计
         /// </summary>
         protected readonly Dictionary<Character, int> _respawnTimes = [];
-        
+
         /// <summary>
         /// 复活倒计时
         /// </summary>

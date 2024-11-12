@@ -159,7 +159,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 物品拥有的技能
         /// </summary>
         public SkillGroup Skills { get; set; } = new();
-        
+
         /// <summary>
         /// 其他内容
         /// </summary>
@@ -554,7 +554,7 @@ namespace Milimoe.FunGame.Core.Entity
                 skill.Level = level;
             }
         }
-        
+
         /// <summary>
         /// 设置所有魔法的等级
         /// </summary>
