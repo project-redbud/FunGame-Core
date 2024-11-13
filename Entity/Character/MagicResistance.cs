@@ -49,6 +49,23 @@
         }
 
         /// <summary>
+        /// 增加所有抗性，传入负数来减少
+        /// </summary>
+        /// <param name="value"></param>
+        public void AddAllValue(double value)
+        {
+            None += value;
+            Particle += value;
+            Fleabane += value;
+            Element += value;
+            Shadow += value;
+            Bright += value;
+            PurityContemporary += value;
+            PurityNatural += value;
+            Starmark += value;
+        }
+
+        /// <summary>
         /// 复制一个魔法抗性对象
         /// </summary>
         /// <returns></returns>

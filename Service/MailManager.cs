@@ -25,11 +25,11 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 获取某个已经保存过的邮件服务
         /// </summary>
-        /// <param name="MailSenderID"></param>
+        /// <param name="mailSenderID"></param>
         /// <returns></returns>
-        internal static MailSender? GetSender(Guid MailSenderID)
+        internal static MailSender? GetSender(Guid mailSenderID)
         {
-            if (MailSenders.TryGetValue(MailSenderID, out MailSender? value))
+            if (MailSenders.TryGetValue(mailSenderID, out MailSender? value))
             {
                 return value;
             }
@@ -39,60 +39,60 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 统一调用此方法发送邮件
         /// </summary>
-        /// <param name="Sender"></param>
-        /// <param name="Mail"></param>
-        /// <param name="ErrorMsg"></param>
+        /// <param name="sender"></param>
+        /// <param name="mail"></param>
+        /// <param name="errorMsg"></param>
         /// <returns></returns>
-        internal static MailSendResult Send(MailSender Sender, MailObject Mail, out string ErrorMsg)
+        internal static MailSendResult Send(MailSender sender, MailObject mail, out string errorMsg)
         {
-            ErrorMsg = "";
+            errorMsg = "";
             try
             {
-                SmtpClientInfo Info = Sender.SmtpClientInfo;
-                SmtpClient Smtp;
-                Guid MailSenderID = Sender.MailSenderID;
-                if (!SmtpClients.TryGetValue(MailSenderID, out SmtpClient? value))
+                SmtpClientInfo info = sender.SmtpClientInfo;
+                SmtpClient smtp;
+                Guid senderID = sender.MailSenderID;
+                if (!SmtpClients.TryGetValue(senderID, out SmtpClient? value))
                 {
-                    Smtp = new()
+                    smtp = new()
                     {
-                        Host = Info.Host,
-                        Port = Info.Port,
-                        EnableSsl = Info.OpenSSL,
+                        Host = info.Host,
+                        Port = info.Port,
+                        EnableSsl = info.SSL,
                         DeliveryMethod = SmtpDeliveryMethod.Network,
-                        Credentials = new NetworkCredential(Info.SenderMailAddress, Info.SenderPassword)
+                        Credentials = new NetworkCredential(info.SenderMailAddress, info.SenderPassword)
                     };
-                    SmtpClients.Add(MailSenderID, Smtp);
+                    SmtpClients.Add(senderID, smtp);
                 }
-                else Smtp = value;
+                else smtp = value;
                 MailMessage Msg = new()
                 {
-                    Subject = Mail.Subject,
+                    Subject = mail.Subject,
                     SubjectEncoding = General.DefaultEncoding,
-                    Body = Mail.Body,
+                    Body = mail.Body,
                     BodyEncoding = General.DefaultEncoding,
-                    From = new MailAddress(Mail.Sender, Mail.SenderName, General.DefaultEncoding),
-                    IsBodyHtml = Mail.HTML,
-                    Priority = Mail.Priority
+                    From = new MailAddress(mail.Sender, mail.SenderName, General.DefaultEncoding),
+                    IsBodyHtml = mail.HTML,
+                    Priority = mail.Priority
                 };
-                foreach (string To in Mail.ToList)
+                foreach (string To in mail.ToList)
                 {
                     if (To.Trim() != "") Msg.To.Add(To);
                 }
-                foreach (string CC in Mail.CCList)
+                foreach (string CC in mail.CCList)
                 {
                     if (CC.Trim() != "") Msg.CC.Add(CC);
                 }
-                foreach (string BCC in Mail.BCCList)
+                foreach (string BCC in mail.BCCList)
                 {
                     if (BCC.Trim() != "") Msg.Bcc.Add(BCC);
                 }
-                Smtp.SendMailAsync(Msg);
+                smtp.SendMailAsync(Msg);
                 return MailSendResult.Success;
             }
             catch (Exception e)
             {
-                ErrorMsg = e.GetErrorInfo();
-                Api.Utility.TXTHelper.AppendErrorLog(ErrorMsg);
+                errorMsg = e.GetErrorInfo();
+                Api.Utility.TXTHelper.AppendErrorLog(errorMsg);
                 return MailSendResult.Fail;
             }
         }
@@ -100,18 +100,18 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 关闭邮件服务
         /// </summary>
-        /// <param name="Sender"></param>
+        /// <param name="sender"></param>
         /// <returns></returns>
-        internal static bool Dispose(MailSender Sender)
+        internal static bool Dispose(MailSender sender)
         {
             try
             {
-                Guid MailSenderID = Sender.MailSenderID;
-                if (SmtpClients.TryGetValue(MailSenderID, out SmtpClient? value))
+                Guid senderID = sender.MailSenderID;
+                if (SmtpClients.TryGetValue(senderID, out SmtpClient? value))
                 {
                     value.Dispose();
-                    SmtpClients.Remove(MailSenderID);
-                    MailSenders.Remove(MailSenderID);
+                    SmtpClients.Remove(senderID);
+                    MailSenders.Remove(senderID);
                     return true;
                 }
                 return false;

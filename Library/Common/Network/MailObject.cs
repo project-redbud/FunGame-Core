@@ -39,17 +39,17 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         /// <summary>
         /// 收件人列表
         /// </summary>
-        public List<string> ToList { get; } = new();
+        public List<string> ToList { get; } = [];
 
         /// <summary>
         /// 抄送列表
         /// </summary>
-        public List<string> CCList { get; } = new();
+        public List<string> CCList { get; } = [];
 
         /// <summary>
         /// 密送列表
         /// </summary>
-        public List<string> BCCList { get; } = new();
+        public List<string> BCCList { get; } = [];
 
         public MailObject()
         {
@@ -59,80 +59,80 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         /// <summary>
         /// 使用MailSender工具类创建邮件对象
         /// </summary>
-        /// <param name="Sender"></param>
-        public MailObject(MailSender Sender)
+        /// <param name="sender"></param>
+        public MailObject(MailSender sender)
         {
-            this.Sender = Sender.SmtpClientInfo.SenderMailAddress;
-            this.SenderName = Sender.SmtpClientInfo.SenderName;
+            this.Sender = sender.SmtpClientInfo.SenderMailAddress;
+            this.SenderName = sender.SmtpClientInfo.SenderName;
         }
 
         /// <summary>
         /// 使用地址和名称创建邮件对象
         /// </summary>
-        /// <param name="Sender"></param>
-        /// <param name="SenderName"></param>
-        public MailObject(string Sender, string SenderName)
+        /// <param name="sender"></param>
+        /// <param name="senderName"></param>
+        public MailObject(string sender, string senderName)
         {
-            this.Sender = Sender;
-            this.SenderName = SenderName;
+            this.Sender = sender;
+            this.SenderName = senderName;
         }
 
         /// <summary>
         /// 使用地址和名称创建邮件对象，同时写主题、内容、单个收件人
         /// </summary>
-        /// <param name="Sender"></param>
-        /// <param name="Subject"></param>
-        /// <param name="Body"></param>
-        /// <param name="To"></param>
-        public MailObject(MailSender Sender, string Subject, string Body, string To)
+        /// <param name="sender"></param>
+        /// <param name="subject"></param>
+        /// <param name="body"></param>
+        /// <param name="to"></param>
+        public MailObject(MailSender sender, string subject, string body, string to)
         {
-            this.Sender = Sender.SmtpClientInfo.SenderMailAddress;
-            this.SenderName = Sender.SmtpClientInfo.SenderName;
-            this.Subject = Subject;
-            this.Body = Body;
-            ToList.Add(To);
+            this.Sender = sender.SmtpClientInfo.SenderMailAddress;
+            this.SenderName = sender.SmtpClientInfo.SenderName;
+            this.Subject = subject;
+            this.Body = body;
+            ToList.Add(to);
         }
 
         /// <summary>
         /// 使用地址和名称创建邮件对象，同时写主题、内容、单个收件人、单个抄送
         /// </summary>
-        /// <param name="Sender"></param>
-        /// <param name="Subject"></param>
-        /// <param name="Body"></param>
-        /// <param name="To"></param>
-        /// <param name="CC"></param>
-        public MailObject(MailSender Sender, string Subject, string Body, string To, string CC)
+        /// <param name="sender"></param>
+        /// <param name="subject"></param>
+        /// <param name="body"></param>
+        /// <param name="to"></param>
+        /// <param name="cc"></param>
+        public MailObject(MailSender sender, string subject, string body, string to, string cc)
         {
-            this.Sender = Sender.SmtpClientInfo.SenderMailAddress;
-            this.SenderName = Sender.SmtpClientInfo.SenderName;
-            this.Subject = Subject;
-            this.Body = Body;
-            ToList.Add(To);
-            CCList.Add(CC);
+            this.Sender = sender.SmtpClientInfo.SenderMailAddress;
+            this.SenderName = sender.SmtpClientInfo.SenderName;
+            this.Subject = subject;
+            this.Body = body;
+            ToList.Add(to);
+            CCList.Add(cc);
         }
 
         /// <summary>
         /// 完整的创建邮件对象
         /// </summary>
-        /// <param name="Sender"></param>
-        /// <param name="Subject"></param>
-        /// <param name="Body"></param>
-        /// <param name="Priority"></param>
-        /// <param name="HTML"></param>
-        /// <param name="ToList"></param>
-        /// <param name="CCList"></param>
-        /// <param name="BCCList"></param>
-        public MailObject(MailSender Sender, string Subject, string Body, MailPriority Priority, bool HTML, string[] ToList, string[]? CCList = null, string[]? BCCList = null)
+        /// <param name="sender"></param>
+        /// <param name="subject"></param>
+        /// <param name="body"></param>
+        /// <param name="priority"></param>
+        /// <param name="html"></param>
+        /// <param name="toList"></param>
+        /// <param name="ccList"></param>
+        /// <param name="bccList"></param>
+        public MailObject(MailSender sender, string subject, string body, MailPriority priority, bool html, string[] toList, string[]? ccList = null, string[]? bccList = null)
         {
-            this.Sender = Sender.SmtpClientInfo.SenderMailAddress;
-            this.SenderName = Sender.SmtpClientInfo.SenderName;
-            this.Subject = Subject;
-            this.Body = Body;
-            this.Priority = Priority;
-            this.HTML = HTML;
-            AddTo(ToList);
-            if (CCList != null) AddCC(CCList);
-            if (BCCList != null) AddBCC(BCCList);
+            Sender = sender.SmtpClientInfo.SenderMailAddress;
+            SenderName = sender.SmtpClientInfo.SenderName;
+            Subject = subject;
+            Body = body;
+            Priority = priority;
+            HTML = html;
+            AddTo(toList);
+            if (ccList != null) AddCC(ccList);
+            if (bccList != null) AddBCC(bccList);
         }
 
         /// <summary>

@@ -1,11 +1,9 @@
-﻿using Milimoe.FunGame.Core.Api.Transmittal;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Controller;
+﻿using Milimoe.FunGame.Core.Controller;
 using Milimoe.FunGame.Core.Interface.Addons;
 
 namespace Milimoe.FunGame.Core.Library.Common.Addon
 {
-    public abstract class WebAPIPlugin : IAddon, IServerAddon, IAddonController<IAddon>
+    public abstract class WebAPIPlugin : IAddon, IAddonController<IAddon>
     {
         /// <summary>
         /// 插件名称
@@ -30,38 +28,37 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 包含了一些常用方法的控制器
         /// </summary>
-        public BaseAddonController<IAddon> Controller
+        public ServerAddonController<IAddon> Controller
         {
             get => _Controller ?? throw new NotImplementedException();
-            set => _Controller = value;
+            internal set => _Controller = value;
+        }
+
+        /// <summary>
+        /// base控制器
+        /// </summary>
+        BaseAddonController<IAddon> IAddonController<IAddon>.Controller
+        {
+            get => Controller;
+            set => _Controller = (ServerAddonController<IAddon>?)value;
         }
 
         /// <summary>
         /// 控制器内部变量
         /// </summary>
-        private BaseAddonController<IAddon>? _Controller;
-
-        /// <summary>
-        /// 全局数据库连接器
-        /// </summary>
-        public SQLHelper? SQLHelper => Singleton.Get<SQLHelper>();
-
-        /// <summary>
-        /// 全局邮件发送器
-        /// </summary>
-        public MailSender? MailSender => Singleton.Get<MailSender>();
+        private ServerAddonController<IAddon>? _Controller;
 
         /// <summary>
         /// 加载标记
         /// </summary>
-        private bool IsLoaded = false;
+        private bool _isLoaded = false;
 
         /// <summary>
         /// 加载插件
         /// </summary>
         public bool Load(params object[] objs)
         {
-            if (IsLoaded)
+            if (_isLoaded)
             {
                 return false;
             }
@@ -69,9 +66,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             if (BeforeLoad(objs))
             {
                 // 插件加载后，不允许再次加载此插件
-                IsLoaded = true;
+                _isLoaded = true;
             }
-            return IsLoaded;
+            return _isLoaded;
         }
 
         /// <summary>

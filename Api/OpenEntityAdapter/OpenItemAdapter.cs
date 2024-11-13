@@ -12,7 +12,10 @@ namespace Milimoe.FunGame.Core.Api.OpenEntityAdapter
                 if (config[key] is Item prev)
                 {
                     Item next = prev.Copy();
-                    if (next is T t) config[key] = t;
+                    if (next is T t)
+                    {
+                        config[key] = t;
+                    }
                 }
             }
         }

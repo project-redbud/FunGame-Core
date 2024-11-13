@@ -5,7 +5,7 @@ using Milimoe.FunGame.Core.Library.Constant;
 namespace Milimoe.FunGame.Core.Controller
 {
     /// <summary>
-    /// 这个控制器在Base的基础上添加了DataRequest
+    /// 这个控制器在 Base 的基础上添加了 DataRequest
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class AddonController<T> : BaseAddonController<T> where T : IAddon
@@ -105,10 +105,10 @@ namespace Milimoe.FunGame.Core.Controller
         /// <param name="delegates"></param>
         public AddonController(IAddon addon, Dictionary<string, object> delegates) : base(addon, delegates)
         {
-            if (delegates.ContainsKey("NewDataRequest")) MaskMethod_NewDataRequest = delegates["NewDataRequest"] != null ? (Func<DataRequestType, DataRequest>)delegates["NewDataRequest"]! : new(DefaultNewDataRequest);
-            if (delegates.ContainsKey("NewLongRunningDataRequest")) MaskMethod_NewLongRunningDataRequest = delegates["NewLongRunningDataRequest"] != null ? (Func<DataRequestType, DataRequest>)delegates["NewLongRunningDataRequest"]! : new(DefaultNewDataRequest);
-            if (delegates.ContainsKey("NewGamingRequest")) MaskMethod_NewGamingRequest = delegates["NewGamingRequest"] != null ? (Func<GamingType, DataRequest>)delegates["NewGamingRequest"]! : new(DefaultNewDataRequest);
-            if (delegates.ContainsKey("NewLongRunningGamingRequest")) MaskMethod_NewLongRunningGamingRequest = delegates["NewLongRunningGamingRequest"] != null ? (Func<GamingType, DataRequest>)delegates["NewLongRunningGamingRequest"]! : new(DefaultNewDataRequest);
+            if (delegates.TryGetValue("NewDataRequest", out object? value)) MaskMethod_NewDataRequest = value != null ? (Func<DataRequestType, DataRequest>)value : new(DefaultNewDataRequest);
+            if (delegates.TryGetValue("NewLongRunningDataRequest", out value)) MaskMethod_NewLongRunningDataRequest = value != null ? (Func<DataRequestType, DataRequest>)value : new(DefaultNewDataRequest);
+            if (delegates.TryGetValue("NewGamingRequest", out value)) MaskMethod_NewGamingRequest = value != null ? (Func<GamingType, DataRequest>)value : new(DefaultNewDataRequest);
+            if (delegates.TryGetValue("NewLongRunningGamingRequest", out value)) MaskMethod_NewLongRunningGamingRequest = value != null ? (Func<GamingType, DataRequest>)value : new(DefaultNewDataRequest);
             MaskMethod_NewDataRequest ??= new(DefaultNewDataRequest);
             MaskMethod_NewLongRunningDataRequest ??= new(DefaultNewDataRequest);
             MaskMethod_NewGamingRequest ??= new(DefaultNewDataRequest);

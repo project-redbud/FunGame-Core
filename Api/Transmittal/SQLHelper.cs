@@ -8,7 +8,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
     /// <summary>
     /// 需要在Server中继承此类实现
     /// </summary>
-    public abstract class SQLHelper : ISQLHelper
+    public abstract class SQLHelper : ISQLHelper, IDisposable
     {
         public abstract FunGameInfo.FunGame FunGameType { get; }
         public abstract SQLMode Mode { get; }
@@ -29,9 +29,9 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// <summary>
         /// 执行一个指定的命令
         /// </summary>
-        /// <param name="Script">命令</param>
+        /// <param name="script">命令</param>
         /// <returns>影响的行数</returns>
-        public abstract int Execute(string Script);
+        public abstract int Execute(string script);
 
         /// <summary>
         /// 查询DataSet
@@ -42,9 +42,9 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// <summary>
         /// 执行指定的命令查询DataSet
         /// </summary>
-        /// <param name="Script">命令</param>
+        /// <param name="script">命令</param>
         /// <returns>结果集</returns>
-        public abstract DataSet ExecuteDataSet(string Script);
+        public abstract DataSet ExecuteDataSet(string script);
 
         /// <summary>
         /// 执行指定的命令查询DataRow（可选实现）
@@ -52,16 +52,21 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// <returns>结果行</returns>
         public virtual DataRow? ExecuteDataRow()
         {
-            return null;
+            return ExecuteDataRow(Script);
         }
 
         /// <summary>
         /// 执行指定的命令查询DataRow（可选实现）
         /// </summary>
-        /// <param name="Script">命令</param>
+        /// <param name="script">命令</param>
         /// <returns>结果行</returns>
-        public virtual DataRow? ExecuteDataRow(string Script)
+        public virtual DataRow? ExecuteDataRow(string script)
         {
+            DataSet dataSet = ExecuteDataSet(script);
+            if (dataSet.Tables.Count > 0 && dataSet.Tables[0].Rows.Count > 0)
+            {
+                return dataSet.Tables[0].Rows[0];
+            }
             return null;
         }
 
@@ -84,5 +89,10 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// 回滚事务
         /// </summary>
         public abstract void Rollback();
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        public abstract void Dispose();
     }
 }

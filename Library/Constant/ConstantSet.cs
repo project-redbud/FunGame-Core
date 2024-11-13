@@ -482,6 +482,34 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 _ => EquipSlotType.None
             };
         }
+
+        public static string GetQualityTypeName(QualityType type)
+        {
+            return type switch
+            {
+                QualityType.Green => "优秀",
+                QualityType.Blue => "稀有",
+                QualityType.Purple => "史诗",
+                QualityType.Orange => "传说",
+                QualityType.Red => "神话",
+                QualityType.Gold => "不朽",
+                _ => "普通"
+            };
+        }
+
+        public static QualityType GetQualityTypeFromName(string name)
+        {
+            return name switch
+            {
+                "优秀" => QualityType.Green,
+                "稀有" => QualityType.Blue,
+                "史诗" => QualityType.Purple,
+                "传说" => QualityType.Orange,
+                "神话" => QualityType.Red,
+                "不朽" => QualityType.Gold,
+                _ => QualityType.White
+            };
+        }
     }
 
     public class SkillSet

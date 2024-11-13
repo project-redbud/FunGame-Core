@@ -224,12 +224,12 @@
         /// 每 1 点智力增加魔法回复力
         /// </summary>
         public double INTtoMRFactor { get; set; } = 0.1;
-        
+
         /// <summary>
         /// 每 1 点智力减少魔法消耗
         /// </summary>
         public double INTtoCastMPReduce { get; set; } = 0.00125;
-        
+
         /// <summary>
         /// 每 1 点智力减少能量消耗
         /// </summary>

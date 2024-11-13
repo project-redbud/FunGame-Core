@@ -38,47 +38,47 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// <summary>
         /// 创建邮件服务
         /// </summary>
-        /// <param name="SenderMailAddress"></param>
-        /// <param name="SenderName"></param>
-        /// <param name="SenderPassword"></param>
-        /// <param name="Host"></param>
-        /// <param name="Port"></param>
-        /// <param name="OpenSSL"></param>
-        public MailSender(string SenderMailAddress, string SenderName, string SenderPassword, string Host, int Port, bool OpenSSL)
+        /// <param name="senderMailAddress"></param>
+        /// <param name="senderName"></param>
+        /// <param name="senderPassword"></param>
+        /// <param name="host"></param>
+        /// <param name="port"></param>
+        /// <param name="ssl"></param>
+        public MailSender(string senderMailAddress, string senderName, string senderPassword, string host, int port, bool ssl)
         {
             MailSenderID = Guid.NewGuid();
-            _SmtpClientInfo = new SmtpClientInfo(SenderMailAddress, SenderName, SenderPassword, Host, Port, OpenSSL);
+            _SmtpClientInfo = new SmtpClientInfo(senderMailAddress, senderName, senderPassword, host, port, ssl);
             if (!MailManager.MailSenders.ContainsKey(MailSenderID)) MailManager.MailSenders.Add(MailSenderID, this);
         }
 
         /// <summary>
         /// 创建完整邮件对象
         /// </summary>
-        /// <param name="Subject"></param>
-        /// <param name="Body"></param>
-        /// <param name="Priority"></param>
-        /// <param name="HTML"></param>
-        /// <param name="ToList"></param>
-        /// <param name="CCList"></param>
-        /// <param name="BCCList"></param>
+        /// <param name="subject"></param>
+        /// <param name="body"></param>
+        /// <param name="priority"></param>
+        /// <param name="html"></param>
+        /// <param name="toList"></param>
+        /// <param name="ccList"></param>
+        /// <param name="bccList"></param>
         /// <returns></returns>
-        public MailObject CreateMail(string Subject, string Body, MailPriority Priority, bool HTML, string[] ToList, string[]? CCList = null, string[]? BCCList = null)
+        public MailObject CreateMail(string subject, string body, MailPriority priority, bool html, string[] toList, string[]? ccList = null, string[]? bccList = null)
         {
-            return new MailObject(this, Subject, Body, Priority, HTML, ToList, CCList, BCCList);
+            return new MailObject(this, subject, body, priority, html, toList, ccList, bccList);
         }
 
         /// <summary>
         /// 发送邮件
         /// </summary>
-        /// <param name="Mail"></param>
+        /// <param name="mail"></param>
         /// <returns></returns>
-        public MailSendResult Send(MailObject Mail)
+        public MailSendResult Send(MailObject mail)
         {
-            _LastestResult = MailManager.Send(this, Mail, out _ErrorMsg);
+            _LastestResult = MailManager.Send(this, mail, out _ErrorMsg);
             return _LastestResult;
         }
 
-        private bool IsDisposed = false;
+        private bool _isDisposed = false;
 
         /// <summary>
         /// 关闭邮件服务
@@ -92,17 +92,17 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// <summary>
         /// 关闭邮件服务
         /// </summary>
-        /// <param name="Disposing"></param>
-        protected void Dispose(bool Disposing)
+        /// <param name="disposing"></param>
+        protected void Dispose(bool disposing)
         {
-            if (!IsDisposed)
+            if (!_isDisposed)
             {
-                if (Disposing)
+                if (disposing)
                 {
                     MailManager.Dispose(this);
                 }
             }
-            IsDisposed = true;
+            _isDisposed = true;
         }
     }
 }

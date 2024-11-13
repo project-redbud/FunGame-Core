@@ -4,28 +4,21 @@ namespace Milimoe.FunGame.Core.Model
 {
     public class SmtpClientInfo : IMailSender
     {
-        public string Host => _Host;
-        public int Port => _Port;
-        public bool OpenSSL => _OpenSSL;
-        public string SenderMailAddress => _SenderMailAddress;
-        public string SenderName => _SenderName;
-        public string SenderPassword => _SenderPassword;
+        public string SenderMailAddress { get; set; } = "";
+        public string SenderName { get; set; } = "";
+        public string SenderPassword { get; set; } = "";
+        public string Host { get; set; } = "";
+        public int Port { get; set; } = 587;
+        public bool SSL { get; set; } = false;
 
-        private string _Host = "";
-        private int _Port = 587;
-        private bool _OpenSSL = true;
-        private string _SenderMailAddress = "";
-        private string _SenderName = "";
-        private string _SenderPassword = "";
-
-        internal SmtpClientInfo(string SenderMailAddress, string SenderName, string SenderPassword, string Host, int Port, bool OpenSSL)
+        internal SmtpClientInfo(string senderMailAddress, string senderName, string senderPassword, string host, int port, bool ssl)
         {
-            _Host = Host;
-            _Port = Port;
-            _OpenSSL = OpenSSL;
-            _SenderMailAddress = SenderMailAddress;
-            _SenderName = SenderName;
-            _SenderPassword = SenderPassword;
+            SenderMailAddress = senderMailAddress;
+            SenderName = senderName;
+            SenderPassword = senderPassword;
+            Host = host;
+            Port = port;
+            SSL = ssl;
         }
     }
 }

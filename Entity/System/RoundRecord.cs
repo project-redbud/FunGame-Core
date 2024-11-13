@@ -79,7 +79,7 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 builder.AppendLine($"[ {character} ] 进入复活倒计时：{RespawnCountdowns[character]:0.##}");
             }
-            
+
             foreach (Character character in Respawns)
             {
                 builder.AppendLine($"[ {character} ] 复活了");
