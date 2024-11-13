@@ -13,14 +13,16 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 默认的序列化选项
         /// </summary>
-        private readonly static JsonSerializerOptions GeneralOptions = new()
+        internal static JsonSerializerOptions GeneralOptions { get; } = new()
         {
             WriteIndented = true,
             PropertyNameCaseInsensitive = true,
             Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
             Converters = { new DateTimeConverter(), new DataTableConverter(), new DataSetConverter(), new UserConverter(), new RoomConverter(),
-                new CharacterConverter(), new MagicResistanceConverter(), new EquipSlotConverter(), new SkillConverter(), new EffectConverter(), new ItemConverter() }
+                new CharacterConverter(), new MagicResistanceConverter(), new EquipSlotConverter(), new SkillConverter(), new EffectConverter(), new ItemConverter(),
+                new InventoryConverter()
+            }
         };
 
         /// <summary>

@@ -12,6 +12,11 @@ namespace Milimoe.FunGame.Core.Entity
     public class Item : BaseEntity, IItem
     {
         /// <summary>
+        /// 唯一标识符
+        /// </summary>
+        public override Guid Guid { get; set; } = Guid.NewGuid();
+
+        /// <summary>
         /// 物品的描述
         /// </summary>
         public virtual string Description { get; set; } = "";
@@ -499,6 +504,7 @@ namespace Milimoe.FunGame.Core.Entity
             SetPropertyToItemModuleNew(item);
             item.Id = Id;
             item.Name = Name;
+            item.Guid = Guid;
             item.Description = Description;
             item.GeneralDescription = GeneralDescription;
             item.BackgroundStory = BackgroundStory;
@@ -519,24 +525,27 @@ namespace Milimoe.FunGame.Core.Entity
             item.IsTradable = IsTradable;
             item.NextTradableTime = NextTradableTime;
             item.RemainUseTimes = RemainUseTimes;
-            item.Skills.Active = Skills.Active?.Copy();
-            if (item.Skills.Active != null)
+            if (item is OpenItem)
             {
-                item.Skills.Active.Level = copyLevel ? (Skills.Active?.Level ?? 1) : 1;
-            }
-            foreach (Skill skill in Skills.Passives)
-            {
-                Skill newskill = skill.Copy();
-                newskill.Item = item;
-                newskill.Level = copyLevel ? skill.Level : 1;
-                item.Skills.Passives.Add(newskill);
-            }
-            foreach (Skill skill in Skills.Magics)
-            {
-                Skill newskill = skill.Copy();
-                newskill.Item = item;
-                newskill.Level = copyLevel ? skill.Level : 1;
-                item.Skills.Magics.Add(newskill);
+                item.Skills.Active = Skills.Active?.Copy();
+                if (item.Skills.Active != null)
+                {
+                    item.Skills.Active.Level = copyLevel ? (Skills.Active?.Level ?? 1) : 1;
+                }
+                foreach (Skill skill in Skills.Passives)
+                {
+                    Skill newskill = skill.Copy();
+                    newskill.Item = item;
+                    newskill.Level = copyLevel ? skill.Level : 1;
+                    item.Skills.Passives.Add(newskill);
+                }
+                foreach (Skill skill in Skills.Magics)
+                {
+                    Skill newskill = skill.Copy();
+                    newskill.Item = item;
+                    newskill.Level = copyLevel ? skill.Level : 1;
+                    item.Skills.Magics.Add(newskill);
+                }
             }
             return item;
         }

@@ -23,6 +23,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Item.Name):
                     result.Name = reader.GetString() ?? "";
                     break;
+                case nameof(Item.Guid):
+                    result.Guid = reader.GetGuid();
+                    break;
                 case nameof(Item.Description):
                     result.Description = reader.GetString() ?? "";
                     break;
@@ -112,6 +115,8 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
 
             writer.WriteNumber(nameof(Item.Id), (int)value.Id);
             writer.WriteString(nameof(Item.Name), value.Name);
+            writer.WritePropertyName(nameof(Item.Guid));
+            JsonSerializer.Serialize(writer, value.Guid, options);
             writer.WriteString(nameof(Item.Description), value.Description);
             writer.WriteString(nameof(Item.GeneralDescription), value.GeneralDescription);
             writer.WriteString(nameof(Item.BackgroundStory), value.BackgroundStory);

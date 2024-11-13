@@ -1306,6 +1306,7 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 Id = Id,
                 Name = Name,
+                Guid = Guid,
                 FirstName = FirstName,
                 NickName = NickName,
                 Profile = Profile.Copy(),
@@ -1394,7 +1395,7 @@ namespace Milimoe.FunGame.Core.Entity
             Skills.Clear();
             Items.Clear();
             Id = c.Id;
-            Guid = original.Guid;
+            Guid = c.Guid;
             Name = c.Name;
             FirstName = c.FirstName;
             NickName = c.NickName;

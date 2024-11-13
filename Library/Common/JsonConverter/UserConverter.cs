@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.SQLScript.Entity;
@@ -67,12 +68,25 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case UserQuery.Column_AutoKey:
                     result.AutoKey = reader.GetString() ?? "";
                     break;
+                case nameof(Inventory):
+                    Inventory inventory = NetworkUtility.JsonDeserialize<Inventory>(ref reader, options) ?? Factory.GetInventory();
+                    result.Inventory.Name = inventory.Name;
+                    foreach (string key in inventory.Characters.Keys)
+                    {
+                        result.Inventory.Characters[key] = inventory.Characters[key];
+                    }
+                    foreach (string key in inventory.Items.Keys)
+                    {
+                        result.Inventory.Items[key] = inventory.Items[key];
+                    }
+                    break;
             }
         }
 
         public override void Write(Utf8JsonWriter writer, User value, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
+
             writer.WriteNumber(UserQuery.Column_UID, value.Id);
             writer.WriteString(UserQuery.Column_Username, value.Username);
             writer.WriteString(UserQuery.Column_RegTime, value.RegTime.ToString(General.GeneralDateTimeFormat));
@@ -86,6 +100,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(UserQuery.Column_Materials, value.Materials);
             writer.WriteNumber(UserQuery.Column_GameTime, value.GameTime);
             writer.WriteString(UserQuery.Column_AutoKey, value.AutoKey);
+            writer.WritePropertyName(nameof(Inventory));
+            JsonSerializer.Serialize(writer, value.Inventory, options);
+
             writer.WriteEndObject();
         }
     }

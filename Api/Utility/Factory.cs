@@ -131,7 +131,17 @@ namespace Milimoe.FunGame.Core.Api.Utility
                         TXTHelper.AppendErrorLog(e.GetErrorInfo());
                     }
                 }
-                return (T)(object)new OpenSkill(id, name, args);
+
+                Skill openSkill = new OpenSkill(id, name, args);
+                if (args.TryGetValue("values", out object? value) && value is Dictionary<string, object> dict)
+                {
+                    foreach (string key in dict.Keys)
+                    {
+                        openSkill.Values[key] = dict[key];
+                    }
+                }
+
+                return (T)(object)openSkill;
             }
             if (typeof(T) == typeof(Effect))
             {
@@ -167,7 +177,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                         TXTHelper.AppendErrorLog(e.GetErrorInfo());
                     }
                 }
-                return (T)(object)GetItem();
+                return (T)(object)new OpenItem(id, name, args);
             }
             if (typeof(T) == typeof(Room))
             {

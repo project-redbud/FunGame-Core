@@ -15,17 +15,15 @@ namespace Milimoe.FunGame.Core.Api.Utility
     public class JsonTool
     {
         /// <summary>
-        /// 序列化选项<para/>
-        /// 已经默认添加了下列转换器：<para/>
-        /// <see cref="DateTimeConverter"/>, <see cref="DataTableConverter"/>, <see cref="DataSetConverter"/>
+        /// 序列化选项
         /// </summary>
-        public JsonSerializerOptions JsonSerializerOptions => options;
+        public static JsonSerializerOptions JsonSerializerOptions => JsonManager.GeneralOptions;
 
         /// <summary>
         /// 注册一个自定义转换器，支持 <see cref="BaseEntityConverter{T}"/>
         /// </summary>
         /// <param name="converter"></param>
-        public void AddConverter(JsonConverter converter)
+        public static void AddConverter(JsonConverter converter)
         {
             if (!JsonSerializerOptions.Converters.Contains(converter))
                 JsonSerializerOptions.Converters.Add(converter);
@@ -49,7 +47,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <typeparam name="T"></typeparam>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public string GetString<T>(T obj) => JsonManager.GetString(obj, options);
+        public string GetString<T>(T obj) => JsonManager.GetString(obj, JsonSerializerOptions);
 
         /// <summary>
         /// 反序列化Json对象
@@ -57,14 +55,14 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <typeparam name="T"></typeparam>
         /// <param name="json"></param>
         /// <returns></returns>
-        public T? GetObject<T>(string json) => JsonManager.GetObject<T>(json, options);
+        public T? GetObject<T>(string json) => JsonManager.GetObject<T>(json, JsonSerializerOptions);
 
         /// <summary>
         /// 反序列化Json对象，此方法可能无法返回正确的类型，请注意辨别
         /// </summary>
         /// <param name="json"></param>
         /// <returns></returns>
-        public object? GetObject(string json) => JsonManager.GetObject(json, options);
+        public object? GetObject(string json) => JsonManager.GetObject(json, JsonSerializerOptions);
 
         /// <summary>
         /// 反序列化Hashtable中Key对应的Json对象
@@ -73,7 +71,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="table"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        public T? GetObject<T>(Hashtable table, string key) => JsonManager.GetObject<T>(table, key, options);
+        public T? GetObject<T>(Hashtable table, string key) => JsonManager.GetObject<T>(table, key, JsonSerializerOptions);
 
         /// <summary>
         /// 反序列化Dictionary中Key对应的Json对象
@@ -82,7 +80,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="dict"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        public T? GetObject<T>(Dictionary<string, object> dict, string key) => JsonManager.GetObject<T>(dict, key, options);
+        public T? GetObject<T>(Dictionary<string, object> dict, string key) => JsonManager.GetObject<T>(dict, key, JsonSerializerOptions);
 
         /// <summary>
         /// 反序列化IEnumerable中的Json对象 可指定反序列化选项
@@ -91,7 +89,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="e"></param>
         /// <param name="index"></param>
         /// <returns></returns>
-        public T? JsonDeserializeFromIEnumerable<T>(IEnumerable<object> e, int index) => JsonManager.GetObject<T>(e, index, options);
+        public T? JsonDeserializeFromIEnumerable<T>(IEnumerable<object> e, int index) => JsonManager.GetObject<T>(e, index, JsonSerializerOptions);
 
         /// <summary>
         /// 反序列化多个Json对象
@@ -100,18 +98,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <typeparam name="T"></typeparam>
         /// <param name="json"></param>
         /// <returns></returns>
-        public List<T> GetObjects<T>(string json) => JsonManager.GetObjects<T>(json, options);
-
-        /// <summary>
-        /// Private JsonSerializerOptions
-        /// </summary>
-        private readonly JsonSerializerOptions options = new()
-        {
-            WriteIndented = true,
-            PropertyNameCaseInsensitive = true,
-            ReferenceHandler = ReferenceHandler.IgnoreCycles,
-            Converters = { new DateTimeConverter(), new DataTableConverter(), new DataSetConverter(), new UserConverter(), new RoomConverter(),
-                new CharacterConverter(), new MagicResistanceConverter(), new EquipSlotConverter(), new SkillConverter(), new EffectConverter(), new ItemConverter() }
-        };
+        public List<T> GetObjects<T>(string json) => JsonManager.GetObjects<T>(json, JsonSerializerOptions);
     }
 }
