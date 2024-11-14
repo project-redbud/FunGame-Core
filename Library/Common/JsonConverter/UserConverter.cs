@@ -56,12 +56,6 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case UserQuery.Column_IsEnable:
                     result.IsEnable = reader.GetBoolean();
                     break;
-                case UserQuery.Column_Credits:
-                    result.Credits = reader.GetDouble();
-                    break;
-                case UserQuery.Column_Materials:
-                    result.Materials = reader.GetDouble();
-                    break;
                 case UserQuery.Column_GameTime:
                     result.GameTime = reader.GetDouble();
                     break;
@@ -71,13 +65,15 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Inventory):
                     Inventory inventory = NetworkUtility.JsonDeserialize<Inventory>(ref reader, options) ?? Factory.GetInventory();
                     result.Inventory.Name = inventory.Name;
-                    foreach (string key in inventory.Characters.Keys)
+                    result.Inventory.Credits = inventory.Credits;
+                    result.Inventory.Materials = inventory.Materials;
+                    foreach (Character character in inventory.Characters)
                     {
-                        result.Inventory.Characters[key] = inventory.Characters[key];
+                        result.Inventory.Characters.Add(character);
                     }
-                    foreach (string key in inventory.Items.Keys)
+                    foreach (Item item in inventory.Items)
                     {
-                        result.Inventory.Items[key] = inventory.Items[key];
+                        result.Inventory.Items.Add(item);
                     }
                     break;
             }
@@ -96,8 +92,6 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteBoolean(UserQuery.Column_IsAdmin, value.IsAdmin);
             writer.WriteBoolean(UserQuery.Column_IsOperator, value.IsOperator);
             writer.WriteBoolean(UserQuery.Column_IsEnable, value.IsEnable);
-            writer.WriteNumber(UserQuery.Column_Credits, value.Credits);
-            writer.WriteNumber(UserQuery.Column_Materials, value.Materials);
             writer.WriteNumber(UserQuery.Column_GameTime, value.GameTime);
             writer.WriteString(UserQuery.Column_AutoKey, value.AutoKey);
             writer.WritePropertyName(nameof(Inventory));

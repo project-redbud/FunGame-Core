@@ -19,18 +19,24 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Inventory.Name):
                     result.Name = reader.GetString() ?? "";
                     break;
+                case nameof(Inventory.Credits):
+                    result.Credits = reader.GetDouble();
+                    break;
+                case nameof(Inventory.Materials):
+                    result.Materials = reader.GetDouble();
+                    break;
                 case nameof(Inventory.Characters):
-                    Dictionary<string, Character> characters = NetworkUtility.JsonDeserialize<Dictionary<string, Character>>(ref reader, options) ?? [];
-                    foreach (string key in characters.Keys)
+                    HashSet<Character> characters = NetworkUtility.JsonDeserialize<HashSet<Character>>(ref reader, options) ?? [];
+                    foreach (Character character in characters)
                     {
-                        result.Characters[key] = characters[key];
+                        result.Characters.Add(character);
                     }
                     break;
                 case nameof(Inventory.Items):
-                    Dictionary<string, Item> items = NetworkUtility.JsonDeserialize<Dictionary<string, Item>>(ref reader, options) ?? [];
-                    foreach (string key in items.Keys)
+                    HashSet<Item> items = NetworkUtility.JsonDeserialize<HashSet<Item>>(ref reader, options) ?? [];
+                    foreach (Item item in items)
                     {
-                        result.Items[key] = items[key];
+                        result.Items.Add(item);
                     }
                     break;
             }
@@ -41,6 +47,8 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteStartObject();
 
             writer.WriteString(nameof(Inventory.Name), value.Name);
+            writer.WriteNumber(nameof(Inventory.Credits), value.Credits);
+            writer.WriteNumber(nameof(Inventory.Materials), value.Materials);
             writer.WritePropertyName(nameof(Inventory.Characters));
             JsonSerializer.Serialize(writer, value.Characters, options);
             writer.WritePropertyName(nameof(Inventory.Items));

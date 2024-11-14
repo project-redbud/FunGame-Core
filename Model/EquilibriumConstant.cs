@@ -9,6 +9,11 @@
         /// 游戏货币名称
         /// </summary>
         public string InGameCurrency { get; set; } = "金币";
+        
+        /// <summary>
+        /// 游戏材料名称（第二货币）
+        /// </summary>
+        public string InGameMaterial { get; set; } = "材料";
 
         /// <summary>
         /// 晋升点数上限

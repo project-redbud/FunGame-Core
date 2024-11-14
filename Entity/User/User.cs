@@ -14,8 +14,6 @@ namespace Milimoe.FunGame.Core.Entity
         public bool IsAdmin { get; set; } = false;
         public bool IsOperator { get; set; } = false;
         public bool IsEnable { get; set; } = true;
-        public double Credits { get; set; } = 0;
-        public double Materials { get; set; } = 0;
         public double GameTime { get; set; } = 0;
         public string AutoKey { get; set; } = "";
         public UserStatistics Statistics { get; }
@@ -27,7 +25,7 @@ namespace Milimoe.FunGame.Core.Entity
             Inventory = new(this);
         }
 
-        internal User(long Id = 0, string Username = "", DateTime? RegTime = null, DateTime? LastTime = null, string Email = "", string NickName = "", bool IsAdmin = false, bool IsOperator = false, bool IsEnable = true, double Credits = 0, double Materials = 0, double GameTime = 0, string AutoKey = "")
+        internal User(long Id = 0, string Username = "", DateTime? RegTime = null, DateTime? LastTime = null, string Email = "", string NickName = "", bool IsAdmin = false, bool IsOperator = false, bool IsEnable = true, double GameTime = 0, string AutoKey = "")
         {
             this.Id = Id;
             this.Username = Username;
@@ -38,8 +36,6 @@ namespace Milimoe.FunGame.Core.Entity
             this.IsAdmin = IsAdmin;
             this.IsOperator = IsOperator;
             this.IsEnable = IsEnable;
-            this.Credits = Credits;
-            this.Materials = Materials;
             this.GameTime = GameTime;
             this.AutoKey = AutoKey;
             Statistics = new(this);

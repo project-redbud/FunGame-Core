@@ -1054,9 +1054,25 @@ namespace Milimoe.FunGame.Core.Entity
                 if (str != "") str += ", ";
                 str += NickName;
             }
+            str += " - 等级 " + Level;
             if (User != null && User.Username != "")
             {
-                str += "(" + User.Username + ")";
+                str += "（" + User.Username + "）";
+            }
+            return str;
+        }
+        
+        /// <summary>
+        /// 获取角色实例的名字、昵称以及等级
+        /// </summary>
+        /// <returns></returns>
+        public string ToStringWithLevelWithOutUser()
+        {
+            string str = GetName();
+            if (NickName != "")
+            {
+                if (str != "") str += ", ";
+                str += NickName;
             }
             str += " - 等级 " + Level;
             return str;
@@ -1085,11 +1101,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 获取角色的详细信息
         /// </summary>
         /// <returns></returns>
-        public string GetInfo()
+        public string GetInfo(bool showUser = true)
         {
             StringBuilder builder = new();
 
-            builder.AppendLine(ToStringWithLevel());
+            builder.AppendLine(showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser());
             builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (ExHP + ExHP2 > 0 ? $" [{BaseHP:0.##} + {(ExHP + ExHP2):0.##}]" : ""));
             builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (ExMP + ExMP2 > 0 ? $" [{BaseMP:0.##} + {(ExMP + ExMP2):0.##}]" : ""));
             builder.AppendLine($"能量值：{EP:0.##} / {General.GameplayEquilibriumConstant.MaxEP:0.##}");
@@ -1372,6 +1388,7 @@ namespace Milimoe.FunGame.Core.Entity
 
         /// <summary>
         /// 复活此角色，回复出厂状态
+        /// <para>注意：此方法仅用于角色的复活，如果需要完全重构相同角色，请使用 <see cref="CharacterBuilder"/></para>
         /// </summary>
         /// <param name="original">需要一个原始的角色用于还原状态</param>
         /// <returns></returns>

@@ -1,32 +1,32 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-	  <OutputType>Library</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <BaseOutputPath>bin\</BaseOutputPath>
-    <Company>Milimoe</Company>
-    <Authors>Milimoe</Authors>
-    <AssemblyVersion>1.0</AssemblyVersion>
-    <FileVersion>1.0</FileVersion>
-    <PackageOutputPath>..\bin</PackageOutputPath>
-    <Title>Core</Title>
-    <RootNamespace>Milimoe.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <AssemblyName>$(MSBuildProjectName)</AssemblyName>
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <DocumentationFile></DocumentationFile>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Library</OutputType>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<BaseOutputPath>bin\</BaseOutputPath>
+		<Company>Milimoe</Company>
+		<Authors>Milimoe</Authors>
+		<AssemblyVersion>1.0</AssemblyVersion>
+		<FileVersion>1.0</FileVersion>
+		<PackageOutputPath>..\bin</PackageOutputPath>
+		<Title>Core</Title>
+		<RootNamespace>Milimoe.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<AssemblyName>$(MSBuildProjectName)</AssemblyName>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<DocumentationFile></DocumentationFile>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DebugType>embedded</DebugType>
-    <NoWarn>1701;1702;CS1591;CS1587;IDE0130</NoWarn>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<DebugType>embedded</DebugType>
+		<NoWarn>1701;1702;CS1591;CS1587;IDE0130</NoWarn>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DebugType>embedded</DebugType>
-    <NoWarn>1701;1702;CS1591;CS1587;IDE0130</NoWarn>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<DebugType>embedded</DebugType>
+		<NoWarn>1701;1702;CS1591;CS1587;IDE0130</NoWarn>
+	</PropertyGroup>
 
 </Project>

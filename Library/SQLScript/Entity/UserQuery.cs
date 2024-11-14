@@ -14,8 +14,6 @@
         public const string Column_IsAdmin = "IsAdmin";
         public const string Column_IsOperator = "IsOperator";
         public const string Column_IsEnable = "IsEnable";
-        public const string Column_Credits = "Credits";
-        public const string Column_Materials = "Materials";
         public const string Column_GameTime = "GameTime";
         public const string Column_AutoKey = "AutoKey";
         public const string Select_Users = $"{Command_Select} {Command_All} {Command_From} {TableName}";

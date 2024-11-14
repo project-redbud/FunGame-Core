@@ -492,6 +492,12 @@ namespace Milimoe.FunGame.Core.Model
             {
                 _queue.Remove(character);
                 _cutCount.Remove(character);
+
+                // 进入下一回合
+                TotalRound++;
+                LastRound = new(TotalRound);
+                Rounds.Add(LastRound);
+
                 return character;
             }
 
@@ -1048,11 +1054,6 @@ namespace Milimoe.FunGame.Core.Model
 
             WriteLine("\r\n");
 
-            // 在时间流逝后，进入下一回合
-            TotalRound++;
-            LastRound = new(TotalRound);
-            Rounds.Add(LastRound);
-
             return timeToReduce;
         }
 
@@ -1078,16 +1079,20 @@ namespace Milimoe.FunGame.Core.Model
             {
                 LastRound.IsCritical[enemy] = true;
             }
+
             bool isEvaded = damageResult == DamageResult.Evaded;
+            Dictionary<Effect, double> totalDamageBonus = [];
             List<Effect> effects = actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList();
             foreach (Effect effect in effects)
             {
-                if (effect.AlterActualDamageAfterCalculation(actor, enemy, ref damage, isNormalAttack, isMagicDamage, magicType, damageResult))
+                double damageBonus = effect.AlterActualDamageAfterCalculation(actor, enemy, damage, isNormalAttack, isMagicDamage, magicType, damageResult, ref isEvaded, totalDamageBonus);
+                totalDamageBonus[effect] = damageBonus;
+                if (isEvaded)
                 {
-                    isEvaded = true;
                     damageResult = DamageResult.Evaded;
                 }
             }
+            damage += totalDamageBonus.Sum(kv => kv.Value);
 
             // 闪避了就没伤害了
             if (!isEvaded)
@@ -1215,11 +1220,14 @@ namespace Milimoe.FunGame.Core.Model
                 return CalculateMagicalDamage(actor, enemy, isNormalAttack, magicType, expectedDamage, out finalDamage);
             }
 
+            Dictionary<Effect, double> totalDamageBonus = [];
             effects = actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList();
             foreach (Effect effect in effects)
             {
-                effect.AlterExpectedDamageBeforeCalculation(actor, enemy, ref expectedDamage, isNormalAttack, false, MagicType.None);
+                double damageBonus = effect.AlterExpectedDamageBeforeCalculation(actor, enemy, expectedDamage, isNormalAttack, false, MagicType.None, totalDamageBonus);
+                totalDamageBonus[effect] = damageBonus;
             }
+            expectedDamage += totalDamageBonus.Sum(kv => kv.Value);
 
             double dice = Random.Shared.NextDouble();
             double throwingBonus = 0;
@@ -1317,11 +1325,14 @@ namespace Milimoe.FunGame.Core.Model
                 return CalculatePhysicalDamage(actor, enemy, isNormalAttack, expectedDamage, out finalDamage);
             }
 
+            Dictionary<Effect, double> totalDamageBonus = [];
             effects = actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList();
             foreach (Effect effect in effects)
             {
-                effect.AlterExpectedDamageBeforeCalculation(actor, enemy, ref expectedDamage, isNormalAttack, true, magicType);
+                double damageBonus = effect.AlterExpectedDamageBeforeCalculation(actor, enemy, expectedDamage, isNormalAttack, true, magicType, totalDamageBonus);
+                totalDamageBonus[effect] = damageBonus;
             }
+            expectedDamage += totalDamageBonus.Sum(kv => kv.Value);
 
             double dice = Random.Shared.NextDouble();
             double throwingBonus = 0;
@@ -1457,6 +1468,7 @@ namespace Milimoe.FunGame.Core.Model
                         {
                             // 没有其他的团队了，游戏结束
                             EndGameInfo(killTeam);
+                            return;
                         }
                         if (MaxScoreToWin > 0 && killTeam.Score >= MaxScoreToWin)
                         {
@@ -1465,6 +1477,7 @@ namespace Milimoe.FunGame.Core.Model
                             _eliminatedTeams.Clear();
                             _eliminatedTeams.AddRange(combinedTeams.OrderByDescending(t => t.Score));
                             EndGameInfo(killTeam);
+                            return;
                         }
                     }
                 }

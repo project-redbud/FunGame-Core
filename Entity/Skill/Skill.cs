@@ -12,6 +12,12 @@ namespace Milimoe.FunGame.Core.Entity
     public class Skill : BaseEntity, IActiveEnable
     {
         /// <summary>
+        /// 唯一标识符 [ 只有物品技能需要赋值，用于表示与其关联的物品：<see cref="Item.Guid"/> ]
+        /// <para>其他情况请保持此属性为 <see cref="Guid.Empty"/></para>
+        /// </summary>
+        public override Guid Guid { get; set; } = Guid.Empty;
+
+        /// <summary>
         /// 此技能所属的角色
         /// </summary>
         public Character? Character { get; set; } = null;

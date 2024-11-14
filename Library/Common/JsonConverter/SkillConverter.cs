@@ -23,6 +23,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Skill.Name):
                     result.Name = reader.GetString() ?? "";
                     break;
+                case nameof(Skill.Guid):
+                    result.Guid = reader.GetGuid();
+                    break;
                 case nameof(Skill.Description):
                     result.Description = reader.GetString() ?? "";
                     break;
@@ -106,6 +109,11 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
 
             writer.WriteNumber(nameof(Skill.Id), (int)value.Id);
             writer.WriteString(nameof(Skill.Name), value.Name);
+            if (value.Guid != Guid.Empty)
+            {
+                writer.WritePropertyName(nameof(Skill.Guid));
+                JsonSerializer.Serialize(writer, value.Guid, options);
+            }
             writer.WriteString(nameof(Skill.Description), value.Description);
             if (value.GeneralDescription.Length > 0) writer.WriteString(nameof(Skill.GeneralDescription), value.GeneralDescription);
             if (value.Slogan.Length > 0) writer.WriteString(nameof(Skill.Slogan), value.Slogan);

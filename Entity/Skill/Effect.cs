@@ -149,9 +149,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="isNormalAttack"></param>
         /// <param name="isMagicDamage"></param>
         /// <param name="magicType"></param>
-        public virtual void AlterExpectedDamageBeforeCalculation(Character character, Character enemy, ref double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType)
+        /// <param name="totalDamageBonus"></param>
+        /// <returns>返回伤害增减值</returns>
+        public virtual double AlterExpectedDamageBeforeCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, Dictionary<Effect, double> totalDamageBonus)
         {
-
+            return 0;
         }
 
         /// <summary>
@@ -164,10 +166,12 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="isMagicDamage"></param>
         /// <param name="magicType"></param>
         /// <param name="damageResult"></param>
-        /// <returns>返回 true 表示取消此伤害，等同于闪避</returns>
-        public virtual bool AlterActualDamageAfterCalculation(Character character, Character enemy, ref double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        /// <param name="isEvaded"></param>
+        /// <param name="totalDamageBonus"></param>
+        /// <returns>返回伤害增减值</returns>
+        public virtual double AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult, ref bool isEvaded, Dictionary<Effect, double> totalDamageBonus)
         {
-            return false;
+            return 0;
         }
 
         /// <summary>
