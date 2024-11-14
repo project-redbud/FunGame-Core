@@ -492,6 +492,12 @@ namespace Milimoe.FunGame.Core.Model
             {
                 _queue.Remove(character);
                 _cutCount.Remove(character);
+
+                // 进入下一回合
+                TotalRound++;
+                LastRound = new(TotalRound);
+                Rounds.Add(LastRound);
+
                 return character;
             }
 
@@ -1048,11 +1054,6 @@ namespace Milimoe.FunGame.Core.Model
 
             WriteLine("\r\n");
 
-            // 在时间流逝后，进入下一回合
-            TotalRound++;
-            LastRound = new(TotalRound);
-            Rounds.Add(LastRound);
-
             return timeToReduce;
         }
 
@@ -1467,6 +1468,7 @@ namespace Milimoe.FunGame.Core.Model
                         {
                             // 没有其他的团队了，游戏结束
                             EndGameInfo(killTeam);
+                            return;
                         }
                         if (MaxScoreToWin > 0 && killTeam.Score >= MaxScoreToWin)
                         {
@@ -1475,6 +1477,7 @@ namespace Milimoe.FunGame.Core.Model
                             _eliminatedTeams.Clear();
                             _eliminatedTeams.AddRange(combinedTeams.OrderByDescending(t => t.Score));
                             EndGameInfo(killTeam);
+                            return;
                         }
                     }
                 }
