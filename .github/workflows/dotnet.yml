@@ -31,7 +31,7 @@ jobs:
     - name: Prepare files for latest branch
       run: |
         mkdir -p latest
-        cp -r ./bin/Release/net9.0/FunGame.Core.dll ./bin/Release/net8.0/FunGame.Core.xml ./bin/Release/net9.0/FunGame.Core.deps.json ./latest/
+        cp -r ./bin/Release/net9.0/FunGame.Core.dll ./bin/Release/net9.0/FunGame.Core.xml ./bin/Release/net9.0/FunGame.Core.deps.json ./latest/
     - name: Commit and push to latest
       if: success()
       run: |
