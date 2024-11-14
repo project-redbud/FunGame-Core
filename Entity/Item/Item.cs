@@ -37,6 +37,25 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual ItemType ItemType { get; set; } = ItemType.Others;
 
         /// <summary>
+        /// 是否是装备
+        /// </summary>
+        public bool IsEquipment
+        {
+            get
+            {
+                return ItemType switch
+                {
+                    ItemType.MagicCardPack => true,
+                    ItemType.Weapon => true,
+                    ItemType.Armor => true,
+                    ItemType.Shoes => true,
+                    ItemType.Accessory => true,
+                    _ => false
+                };
+            }
+        }
+        
+        /// <summary>
         /// 是否允许装备
         /// </summary>
         public bool Equipable { get; set; } = true;
@@ -407,14 +426,11 @@ namespace Milimoe.FunGame.Core.Entity
             }
             else
             {
-                List<string> sellandtrade = [""];
+                List<string> sellandtrade = [];
+
                 if (IsSellable)
                 {
                     sellandtrade.Add("可出售");
-                }
-                if (IsTradable)
-                {
-                    sellandtrade.Add("可交易");
                 }
 
                 if (!IsSellable && NextSellableTime != DateTime.MinValue)
@@ -426,6 +442,11 @@ namespace Milimoe.FunGame.Core.Entity
                     sellandtrade.Add("不可出售");
                 }
 
+                if (IsTradable)
+                {
+                    sellandtrade.Add("可交易");
+                }
+
                 if (!IsTradable && NextTradableTime != DateTime.MinValue)
                 {
                     builder.AppendLine($"此物品将在 {NextTradableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可交易");
@@ -435,7 +456,7 @@ namespace Milimoe.FunGame.Core.Entity
                     sellandtrade.Add("不可交易");
                 }
 
-                builder.AppendLine(string.Join(" ", sellandtrade).Trim());
+                if (sellandtrade.Count > 0) builder.AppendLine(string.Join(" ", sellandtrade).Trim());
             }
 
             if (isShowGeneralDescription && GeneralDescription != "")
@@ -462,6 +483,46 @@ namespace Milimoe.FunGame.Core.Entity
             if (BackgroundStory != "")
             {
                 builder.AppendLine($"\"{BackgroundStory}\"");
+            }
+
+            return builder.ToString();
+        }
+
+        public string ToStringInventory(bool showAll)
+        {
+            StringBuilder builder = new();
+
+            if (showAll)
+            {
+                builder.Append($"{ToString()}");
+                if (IsEquipment && Character != null) builder.AppendLine($"装备于：{Character.ToStringWithLevelWithOutUser()}");
+                builder.AppendLine();
+            }
+            else
+            {
+                List<string> sellandtrade = [];
+
+                if (!IsSellable && NextSellableTime != DateTime.MinValue)
+                {
+                    builder.AppendLine($"此物品将在 {NextSellableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可出售");
+                }
+                else if (!IsSellable)
+                {
+                    sellandtrade.Add("不可出售");
+                }
+
+                if (!IsTradable && NextTradableTime != DateTime.MinValue)
+                {
+                    builder.AppendLine($"此物品将在 {NextTradableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可交易");
+                }
+                else if (!IsTradable)
+                {
+                    sellandtrade.Add("不可交易");
+                }
+
+                if (sellandtrade.Count > 0) builder.AppendLine(string.Join(" ", sellandtrade).Trim());
+                if (Description != "") builder.AppendLine($"{Description}");
+                if (IsEquipment && Character != null) builder.AppendLine($"装备于：{Character.ToStringWithLevelWithOutUser()}");
             }
 
             return builder.ToString();
@@ -498,13 +559,13 @@ namespace Milimoe.FunGame.Core.Entity
         /// 复制一个物品
         /// </summary>
         /// <returns></returns>
-        public Item Copy(bool copyLevel = false)
+        public Item Copy(bool copyLevel = false, bool copyGuid = false)
         {
             Item item = Factory.OpenFactory.GetInstance<Item>(Id, Name, []);
             SetPropertyToItemModuleNew(item);
             item.Id = Id;
             item.Name = Name;
-            item.Guid = Guid;
+            if (copyGuid) item.Guid = Guid;
             item.Description = Description;
             item.GeneralDescription = GeneralDescription;
             item.BackgroundStory = BackgroundStory;

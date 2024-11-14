@@ -51,12 +51,6 @@ CREATE TABLE serverloginlogs (
 );
 
 -- ----------------------------
--- Table structure for sqlite_sequence
--- ----------------------------
-DROP TABLE IF EXISTS "main"."sqlite_sequence";
-CREATE TABLE sqlite_sequence(name,seq);
-
--- ----------------------------
 -- Table structure for users
 -- ----------------------------
 DROP TABLE IF EXISTS "main"."users";
