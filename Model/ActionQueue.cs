@@ -1436,7 +1436,15 @@ namespace Milimoe.FunGame.Core.Model
 
                     if (MaxRespawnTimes != 0)
                     {
-                        WriteLine($"\r\n=== 当前死亡竞赛比分 ===\r\n{string.Join("\r\n", Teams.OrderByDescending(kv => kv.Value.Score).Select(kv => kv.Key + "：" + kv.Value.Score + "（剩余存活人数：" + kv.Value.GetActiveCharacters(this).Count + "）"))}");
+                        string[] teamActive = Teams.OrderByDescending(kv => kv.Value.Score).Select(kv => {
+                            int activeCount = kv.Value.GetActiveCharacters(this).Count;
+                            if (kv.Value == killTeam)
+                            {
+                                activeCount += 1;
+                            }
+                            return kv.Key + "：" + kv.Value.Score + "（剩余存活人数：" + activeCount + "）";
+                        }).ToArray();
+                        WriteLine($"\r\n=== 当前死亡竞赛比分 ===\r\n{string.Join("\r\n", teamActive)}");
                     }
 
                     if (deathTeam != null)
@@ -1616,7 +1624,7 @@ namespace Milimoe.FunGame.Core.Model
             else
             {
                 // 进入复活倒计时
-                double respawnTime = Calculation.Round2Digits(Math.Min(90, death.Level * 0.36 + times * 2.77 + kills * Random.Shared.Next(0, 3)));
+                double respawnTime = Calculation.Round2Digits(Math.Min(90, death.Level * 0.15 + times * 2.77 + coefficient * Random.Shared.Next(1, 3)));
                 _respawnCountdown.TryAdd(death, respawnTime);
                 LastRound.RespawnCountdowns.TryAdd(death, respawnTime);
                 WriteLine($"[ {death} ] 进入复活倒计时：{respawnTime:0.##} 时间！");
