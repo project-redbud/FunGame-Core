@@ -116,7 +116,7 @@ namespace Milimoe.FunGame.Core.Entity
                 {
                     hasDamage = "完美闪避";
                 }
-                if ((ActionType == CharacterActionType.PreCastSkill || ActionType == CharacterActionType.PreCastSkill || ActionType == CharacterActionType.CastSkill) && hasDamage == "" && target != Actor)
+                if ((ActionType == CharacterActionType.PreCastSkill || ActionType == CharacterActionType.CastSkill || ActionType == CharacterActionType.CastSuperSkill) && hasDamage == "" && target != Actor)
                 {
                     hasDamage = "免疫";
                 }
