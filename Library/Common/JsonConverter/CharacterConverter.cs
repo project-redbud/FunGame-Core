@@ -68,14 +68,20 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Character.InitialHP):
                     result.InitialHP = reader.GetDouble();
                     break;
-                case nameof(Character.ExHP):
+                case nameof(Character.ExHP2):
                     result.ExHP2 = reader.GetDouble();
+                    break;
+                case nameof(Character.ExHPPercentage):
+                    result.ExHPPercentage = reader.GetDouble();
                     break;
                 case nameof(Character.InitialMP):
                     result.InitialMP = reader.GetDouble();
                     break;
-                case nameof(Character.ExMP):
+                case nameof(Character.ExMP2):
                     result.ExMP2 = reader.GetDouble();
+                    break;
+                case nameof(Character.ExMPPercentage):
+                    result.ExMPPercentage = reader.GetDouble();
                     break;
                 case nameof(Character.EP):
                     result.EP = reader.GetDouble();
@@ -214,8 +220,10 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Character.CharacterState), (int)value.CharacterState);
             writer.WriteNumber(nameof(Character.InitialHP), value.InitialHP);
             writer.WriteNumber(nameof(Character.ExHP2), value.ExHP2);
+            writer.WriteNumber(nameof(Character.ExHPPercentage), value.ExHPPercentage);
             writer.WriteNumber(nameof(Character.InitialMP), value.InitialMP);
             writer.WriteNumber(nameof(Character.ExMP2), value.ExMP2);
+            writer.WriteNumber(nameof(Character.ExMPPercentage), value.ExMPPercentage);
             writer.WriteNumber(nameof(Character.EP), value.EP);
             writer.WriteNumber(nameof(Character.InitialATK), value.InitialATK);
             writer.WriteNumber(nameof(Character.ExATK2), value.ExATK2);

@@ -181,11 +181,16 @@ namespace Milimoe.FunGame.Core.Entity
         /// 额外生命值2 [ 与技能和物品相关 ]
         /// </summary>
         public double ExHP2 { get; set; } = 0;
+        
+        /// <summary>
+        /// 额外生命值% [ 与技能和物品相关 ]
+        /// </summary>
+        public double ExHPPercentage { get; set; } = 0;
 
         /// <summary>
-        /// 最大生命值 = 基础生命值 + 额外生命值 + 额外生命值2
+        /// 最大生命值 = 基础生命值 + 额外生命值 + 额外生命值2 + 额外生命值%
         /// </summary>
-        public double MaxHP => BaseHP + ExHP + ExHP2;
+        public double MaxHP => BaseHP + ExHP + ExHP2 + ((BaseHP + ExHP + ExHP2) * ExHPPercentage);
 
         /// <summary>
         /// 当前生命值 [ 战斗相关 ]
@@ -226,9 +231,14 @@ namespace Milimoe.FunGame.Core.Entity
         public double ExMP2 { get; set; } = 0;
 
         /// <summary>
-        /// 最大魔法值 = 基础魔法值 + 额外魔法值 + 额外魔法值2
+        /// 额外魔法值% [ 与技能和物品相关 ]
         /// </summary>
-        public double MaxMP => BaseMP + ExMP + ExMP2;
+        public double ExMPPercentage { get; set; } = 0;
+
+        /// <summary>
+        /// 最大魔法值 = 基础魔法值 + 额外魔法值 + 额外魔法值2 + 额外魔法值%
+        /// </summary>
+        public double MaxMP => BaseMP + ExMP + ExMP2 + ((BaseMP + ExMP + ExMP2) * ExMPPercentage);
 
         /// <summary>
         /// 当前魔法值 [ 战斗相关 ]
@@ -1106,8 +1116,8 @@ namespace Milimoe.FunGame.Core.Entity
             StringBuilder builder = new();
 
             builder.AppendLine(showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser());
-            builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (ExHP + ExHP2 > 0 ? $" [{BaseHP:0.##} + {(ExHP + ExHP2):0.##}]" : ""));
-            builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (ExMP + ExMP2 > 0 ? $" [{BaseMP:0.##} + {(ExMP + ExMP2):0.##}]" : ""));
+            builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (ExHP + ExHP2 + ExHPPercentage > 0 ? $" [{BaseHP:0.##} + {ExHP + ExHP2 + (MaxHP * ExHPPercentage):0.##}]" : ""));
+            builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (ExMP + ExMP2 + ExMPPercentage > 0 ? $" [{BaseMP:0.##} + {ExMP + ExMP2 + (MaxMP * ExMPPercentage):0.##}]" : ""));
             builder.AppendLine($"能量值：{EP:0.##} / {General.GameplayEquilibriumConstant.MaxEP:0.##}");
             builder.AppendLine($"攻击力：{ATK:0.##}" + (ExATK + ExATK2 > 0 ? $" [{BaseATK:0.##} + {ExATK + ExATK2:0.##}]" : ""));
             builder.AppendLine($"物理护甲：{DEF:0.##}" + (ExDEF + ExDEF2 > 0 ? $" [{BaseDEF:0.##} + {ExDEF + ExDEF2:0.##}]" : "") + $" ({PDR * 100:0.##}%)");
@@ -1336,8 +1346,10 @@ namespace Milimoe.FunGame.Core.Entity
                 EXP = EXP,
                 InitialHP = InitialHP,
                 ExHP2 = ExHP2,
+                ExHPPercentage = ExHPPercentage,
                 InitialMP = InitialMP,
                 ExMP2 = ExMP2,
+                ExMPPercentage = ExMPPercentage,
                 EP = EP,
                 InitialATK = InitialATK,
                 ExATK2 = ExATK2,
@@ -1432,8 +1444,10 @@ namespace Milimoe.FunGame.Core.Entity
             UpdateCharacterState();
             InitialHP = c.InitialHP;
             ExHP2 = c.ExHP2;
+            ExHPPercentage = c.ExHPPercentage;
             InitialMP = c.InitialMP;
             ExMP2 = c.ExMP2;
+            ExMPPercentage = c.ExMPPercentage;
             EP = c.EP;
             InitialATK = c.InitialATK;
             ExATK2 = c.ExATK2;
