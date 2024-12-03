@@ -188,7 +188,7 @@
         /// <summary>
         /// 物理伤害减免因子
         /// </summary>
-        public double DEFReductionFactor { get; set; } = 120;
+        public double DEFReductionFactor { get; set; } = 240;
 
         /// <summary>
         /// 行动速度上限

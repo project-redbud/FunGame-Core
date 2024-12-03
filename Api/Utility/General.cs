@@ -701,6 +701,17 @@ namespace Milimoe.FunGame.Core.Api.Utility
         {
             return Math.Max(0, Math.Min(value, 1));
         }
+
+        /// <summary>
+        /// 检查 <paramref name="value"/> 是否约等于 0
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="epsilon"></param>
+        /// <returns></returns>
+        public static bool IsApproximatelyZero(double value, double epsilon = 1e-10)
+        {
+            return Math.Abs(value) < epsilon;
+        }
     }
 
     #endregion

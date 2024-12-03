@@ -181,6 +181,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 额外生命值2 [ 与技能和物品相关 ]
         /// </summary>
         public double ExHP2 { get; set; } = 0;
+
+        /// <summary>
+        /// 额外生命值3 [ 额外生命值% ]
+        /// </summary>
+        public double ExHP3 => (BaseHP + ExHP + ExHP2) * ExHPPercentage;
         
         /// <summary>
         /// 额外生命值% [ 与技能和物品相关 ]
@@ -188,9 +193,9 @@ namespace Milimoe.FunGame.Core.Entity
         public double ExHPPercentage { get; set; } = 0;
 
         /// <summary>
-        /// 最大生命值 = 基础生命值 + 额外生命值 + 额外生命值2 + 额外生命值%
+        /// 最大生命值 = 基础生命值 + 额外生命值 + 额外生命值2 + 额外生命值3
         /// </summary>
-        public double MaxHP => BaseHP + ExHP + ExHP2 + ((BaseHP + ExHP + ExHP2) * ExHPPercentage);
+        public double MaxHP => BaseHP + ExHP + ExHP2 + ExHP3;
 
         /// <summary>
         /// 当前生命值 [ 战斗相关 ]
@@ -231,14 +236,19 @@ namespace Milimoe.FunGame.Core.Entity
         public double ExMP2 { get; set; } = 0;
 
         /// <summary>
+        /// 额外魔法值2 [ 额外魔法值% ]
+        /// </summary>
+        public double ExMP3 => (BaseMP + ExMP + ExMP2) * ExMPPercentage;
+        
+        /// <summary>
         /// 额外魔法值% [ 与技能和物品相关 ]
         /// </summary>
         public double ExMPPercentage { get; set; } = 0;
 
         /// <summary>
-        /// 最大魔法值 = 基础魔法值 + 额外魔法值 + 额外魔法值2 + 额外魔法值%
+        /// 最大魔法值 = 基础魔法值 + 额外魔法值 + 额外魔法值2 + 额外魔法值3
         /// </summary>
-        public double MaxMP => BaseMP + ExMP + ExMP2 + ((BaseMP + ExMP + ExMP2) * ExMPPercentage);
+        public double MaxMP => BaseMP + ExMP + ExMP2 + ExMP3;
 
         /// <summary>
         /// 当前魔法值 [ 战斗相关 ]
@@ -1116,22 +1126,27 @@ namespace Milimoe.FunGame.Core.Entity
             StringBuilder builder = new();
 
             builder.AppendLine(showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser());
-            builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (ExHP + ExHP2 + ExHPPercentage > 0 ? $" [{BaseHP:0.##} + {ExHP + ExHP2 + (MaxHP * ExHPPercentage):0.##}]" : ""));
-            builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (ExMP + ExMP2 + ExMPPercentage > 0 ? $" [{BaseMP:0.##} + {ExMP + ExMP2 + (MaxMP * ExMPPercentage):0.##}]" : ""));
+            double exHP = ExHP + ExHP2 + ExHP3;
+            builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : ""));
+            double exMP = ExMP + ExMP2 + ExMP3;
+            builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
             builder.AppendLine($"能量值：{EP:0.##} / {General.GameplayEquilibriumConstant.MaxEP:0.##}");
-            builder.AppendLine($"攻击力：{ATK:0.##}" + (ExATK + ExATK2 > 0 ? $" [{BaseATK:0.##} + {ExATK + ExATK2:0.##}]" : ""));
-            builder.AppendLine($"物理护甲：{DEF:0.##}" + (ExDEF + ExDEF2 > 0 ? $" [{BaseDEF:0.##} + {ExDEF + ExDEF2:0.##}]" : "") + $" ({PDR * 100:0.##}%)");
-            double mdf = (MDF.None + MDF.Starmark + MDF.PurityNatural + MDF.PurityContemporary +
-                MDF.Bright + MDF.Shadow + MDF.Element + MDF.Fleabane + MDF.Particle) / 9;
-            builder.AppendLine($"魔法抗性：{Calculation.Round4Digits(mdf) * 100:0.##}%（平均）");
+            double exATK = ExATK + ExATK2;
+            builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
+            double exDEF = ExDEF + ExDEF2;
+            builder.AppendLine($"物理护甲：{DEF:0.##}" + (exDEF != 0 ? $" [{BaseDEF:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exDEF):0.##}]" : "") + $" ({PDR * 100:0.##}%)");
+            double mdf = Calculation.Round4Digits((MDF.None + MDF.Starmark + MDF.PurityNatural + MDF.PurityContemporary +
+                MDF.Bright + MDF.Shadow + MDF.Element + MDF.Fleabane + MDF.Particle) / 9) * 100;
+            if (Calculation.IsApproximatelyZero(mdf)) mdf = 0;
+            builder.AppendLine($"魔法抗性：{mdf:0.##}%（平均）");
             double exSPD = AGI * General.GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
-            builder.AppendLine($"行动速度：{SPD:0.##}" + (exSPD > 0 ? $" [{InitialSPD:0.##} + {exSPD:0.##}]" : "") + $" ({ActionCoefficient * 100:0.##}%)");
+            builder.AppendLine($"行动速度：{SPD:0.##}" + (exSPD != 0 ? $" [{InitialSPD:0.##} {(exSPD >= 0 ? "+" : "-")} {Math.Abs(exSPD):0.##}]" : "") + $" ({ActionCoefficient * 100:0.##}%)");
             builder.AppendLine($"核心属性：{CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)}");
-            builder.AppendLine($"力量：{STR:0.##}" + (ExSTR > 0 ? $" [{BaseSTR:0.##} + {ExSTR:0.##}]" : ""));
-            builder.AppendLine($"敏捷：{AGI:0.##}" + (ExAGI > 0 ? $" [{BaseAGI:0.##} + {ExAGI:0.##}]" : ""));
-            builder.AppendLine($"智力：{INT:0.##}" + (ExINT > 0 ? $" [{BaseINT:0.##} + {ExINT:0.##}]" : ""));
-            builder.AppendLine($"生命回复：{HR:0.##}" + (ExHR > 0 ? $" [{InitialHR + STR * 0.25:0.##} + {ExHR:0.##}]" : ""));
-            builder.AppendLine($"魔法回复：{MR:0.##}" + (ExMR > 0 ? $" [{InitialMR + INT * 0.1:0.##} + {ExMR:0.##}]" : ""));
+            builder.AppendLine($"力量：{STR:0.##}" + (ExSTR != 0 ? $" [{BaseSTR:0.##} {(ExSTR >= 0 ? "+" : "-")} {Math.Abs(ExSTR):0.##}]" : ""));
+            builder.AppendLine($"敏捷：{AGI:0.##}" + (ExAGI != 0 ? $" [{BaseAGI:0.##} {(ExAGI >= 0 ? "+" : "-")} {Math.Abs(ExAGI):0.##}]" : ""));
+            builder.AppendLine($"智力：{INT:0.##}" + (ExINT != 0 ? $" [{BaseINT:0.##} {(ExINT >= 0 ? "+" : "-")} {Math.Abs(ExINT):0.##}]" : ""));
+            builder.AppendLine($"生命回复：{HR:0.##}" + (ExHR != 0 ? $" [{InitialHR + STR * 0.25:0.##} {(ExHR >= 0 ? "+" : "-")} {Math.Abs(ExHR):0.##}]" : ""));
+            builder.AppendLine($"魔法回复：{MR:0.##}" + (ExMR != 0 ? $" [{InitialMR + INT * 0.1:0.##} {(ExMR >= 0 ? "+" : "-")} {Math.Abs(ExMR):0.##}]" : ""));
             builder.AppendLine($"暴击率：{CritRate * 100:0.##}%");
             builder.AppendLine($"暴击伤害：{CritDMG * 100:0.##}%");
             builder.AppendLine($"闪避率：{EvadeRate * 100:0.##}%");
@@ -1235,11 +1250,14 @@ namespace Milimoe.FunGame.Core.Entity
             StringBuilder builder = new();
 
             builder.AppendLine(ToStringWithLevel());
-            builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (ExHP + ExHP2 > 0 ? $" [{BaseHP:0.##} + {ExHP + ExHP2:0.##}]" : ""));
-            builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (ExMP + ExMP2 > 0 ? $" [{BaseMP:0.##} + {ExMP + ExMP2:0.##}]" : ""));
+            double exHP = ExHP + ExHP2 + ExHP3;
+            builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : ""));
+            double exMP = ExMP + ExMP2 + ExMP3;
+            builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
             builder.AppendLine($"能量值：{EP:0.##} / {General.GameplayEquilibriumConstant.MaxEP:0.##}");
-            builder.AppendLine($"攻击力：{ATK:0.##}" + (ExATK + ExATK2 > 0 ? $" [{BaseATK:0.##} + {ExATK + ExATK2:0.##}]" : ""));
-            builder.AppendLine($"核心属性：{PrimaryAttributeValue:0.##}" + (ExPrimaryAttributeValue > 0 ? $" [{BasePrimaryAttributeValue:0.##} + {ExPrimaryAttributeValue:0.##}]" : ""));
+            double exATK = ExATK + ExATK2;
+            builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
+            builder.AppendLine($"核心属性：{PrimaryAttributeValue:0.##}" + (ExPrimaryAttributeValue != 0 ? $" [{BasePrimaryAttributeValue:0.##} {(ExPrimaryAttributeValue >= 0 ? "+" : "-")} {Math.Abs(ExPrimaryAttributeValue):0.##}]" : ""));
 
             if (CharacterState != CharacterState.Actionable)
             {
