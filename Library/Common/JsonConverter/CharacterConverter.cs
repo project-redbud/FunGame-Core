@@ -89,14 +89,20 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Character.InitialATK):
                     result.InitialATK = reader.GetDouble();
                     break;
-                case nameof(Character.ExATK):
+                case nameof(Character.ExATK2):
                     result.ExATK2 = reader.GetDouble();
+                    break;
+                case nameof(Character.ExATKPercentage):
+                    result.ExATKPercentage = reader.GetDouble();
                     break;
                 case nameof(Character.InitialDEF):
                     result.InitialDEF = reader.GetDouble();
                     break;
-                case nameof(Character.ExDEF):
+                case nameof(Character.ExDEF2):
                     result.ExDEF2 = reader.GetDouble();
+                    break;
+                case nameof(Character.ExDEFPercentage):
+                    result.ExDEFPercentage = reader.GetDouble();
                     break;
                 case nameof(Character.MDF):
                     result.MDF = NetworkUtility.JsonDeserialize<MagicResistance>(ref reader, options) ?? new();
@@ -142,6 +148,15 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     break;
                 case nameof(Character.ExINT):
                     result.ExINT = reader.GetDouble();
+                    break;
+                case nameof(Character.ExSTRPercentage):
+                    result.ExSTRPercentage = reader.GetDouble();
+                    break;
+                case nameof(Character.ExAGIPercentage):
+                    result.ExAGIPercentage = reader.GetDouble();
+                    break;
+                case nameof(Character.ExINTPercentage):
+                    result.ExINTPercentage = reader.GetDouble();
                     break;
                 case nameof(Character.STRGrowth):
                     result.STRGrowth = reader.GetDouble();
@@ -227,8 +242,10 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Character.EP), value.EP);
             writer.WriteNumber(nameof(Character.InitialATK), value.InitialATK);
             writer.WriteNumber(nameof(Character.ExATK2), value.ExATK2);
+            writer.WriteNumber(nameof(Character.ExATKPercentage), value.ExATKPercentage);
             writer.WriteNumber(nameof(Character.InitialDEF), value.InitialDEF);
             writer.WriteNumber(nameof(Character.ExDEF2), value.ExDEF2);
+            writer.WriteNumber(nameof(Character.ExDEFPercentage), value.ExDEFPercentage);
             writer.WritePropertyName(nameof(Character.MDF));
             JsonSerializer.Serialize(writer, value.MDF, options);
             writer.WriteNumber(nameof(Character.PhysicalPenetration), value.PhysicalPenetration);
@@ -244,6 +261,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Character.ExSTR), value.ExSTR);
             writer.WriteNumber(nameof(Character.ExAGI), value.ExAGI);
             writer.WriteNumber(nameof(Character.ExINT), value.ExINT);
+            writer.WriteNumber(nameof(Character.ExSTRPercentage), value.ExSTRPercentage);
+            writer.WriteNumber(nameof(Character.ExAGIPercentage), value.ExAGIPercentage);
+            writer.WriteNumber(nameof(Character.ExINTPercentage), value.ExINTPercentage);
             writer.WriteNumber(nameof(Character.STRGrowth), value.STRGrowth);
             writer.WriteNumber(nameof(Character.AGIGrowth), value.AGIGrowth);
             writer.WriteNumber(nameof(Character.INTGrowth), value.INTGrowth);

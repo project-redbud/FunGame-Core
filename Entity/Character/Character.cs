@@ -236,7 +236,7 @@ namespace Milimoe.FunGame.Core.Entity
         public double ExMP2 { get; set; } = 0;
 
         /// <summary>
-        /// 额外魔法值2 [ 额外魔法值% ]
+        /// 额外魔法值3 [ 额外魔法值% ]
         /// </summary>
         public double ExMP3 => (BaseMP + ExMP + ExMP2) * ExMPPercentage;
         
@@ -339,11 +339,21 @@ namespace Milimoe.FunGame.Core.Entity
         /// 额外攻击力2 [ 与技能和物品相关 ]
         /// </summary>
         public double ExATK2 { get; set; } = 0;
+        
+        /// <summary>
+        /// 额外攻击力3 [ 额外攻击力% ]
+        /// </summary>
+        public double ExATK3 => (BaseATK + ExATK + ExATK2) * ExATKPercentage;
 
         /// <summary>
-        /// 攻击力 = 基础攻击力 + 额外攻击力 + 额外攻击力2
+        /// 额外攻击力% [ 与技能和物品相关 ]
         /// </summary>
-        public double ATK => BaseATK + ExATK + ExATK2;
+        public double ExATKPercentage { get; set; } = 0;
+
+        /// <summary>
+        /// 攻击力 = 基础攻击力 + 额外攻击力 + 额外攻击力2 + 额外攻击力3
+        /// </summary>
+        public double ATK => BaseATK + ExATK + ExATK2 + ExATK3;
 
         /// <summary>
         /// 初始物理护甲 [ 初始设定 ]
@@ -367,9 +377,19 @@ namespace Milimoe.FunGame.Core.Entity
         public double ExDEF2 { get; set; } = 0;
 
         /// <summary>
-        /// 物理护甲 = 基础物理护甲 + 额外物理护甲 + 额外物理护甲2
+        /// 额外物理护甲3 [ 额外物理护甲% ]
         /// </summary>
-        public double DEF => BaseDEF + ExDEF + ExDEF2;
+        public double ExDEF3 => (BaseDEF + ExDEF + ExDEF2) * ExDEFPercentage;
+        
+        /// <summary>
+        /// 额外物理护甲% [ 与技能和物品相关 ]
+        /// </summary>
+        public double ExDEFPercentage { get; set; } = 0;
+
+        /// <summary>
+        /// 物理护甲 = 基础物理护甲 + 额外物理护甲 + 额外物理护甲2 + 额外物理护甲3
+        /// </summary>
+        public double DEF => BaseDEF + ExDEF + ExDEF2 + ExDEF3;
 
         /// <summary>
         /// 物理伤害减免(%) = [ 与物理护甲相关 ] + 额外物理伤害减免(%)
@@ -575,19 +595,49 @@ namespace Milimoe.FunGame.Core.Entity
         public double ExINT { get; set; } = 0;
 
         /// <summary>
-        /// 力量 = 基础力量 + 额外力量
+        /// 额外力量2 [ 额外力量% ]
         /// </summary>
-        public double STR => BaseSTR + ExSTR;
+        public double ExSTR2 => (BaseSTR + ExSTR) * ExSTRPercentage;
 
         /// <summary>
-        /// 敏捷 = 基础敏捷 + 额外敏捷
+        /// 额外敏捷2 [ 额外敏捷% ]
         /// </summary>
-        public double AGI => BaseAGI + ExAGI;
+        public double ExAGI2 => (BaseAGI + ExAGI) * ExAGIPercentage;
 
         /// <summary>
-        /// 智力 = 基础智力 + 额外智力
+        /// 额外智力2 [ 额外智力% ]
         /// </summary>
-        public double INT => BaseINT + ExINT;
+        public double ExINT2 => (BaseINT + ExINT) * ExINTPercentage;
+        
+        /// <summary>
+        /// 额外力量% [ 与技能和物品相关 ]
+        /// </summary>
+        public double ExSTRPercentage { get; set; } = 0;
+
+        /// <summary>
+        /// 额外敏捷% [ 与技能和物品相关 ]
+        /// </summary>
+        public double ExAGIPercentage { get; set; } = 0;
+
+        /// <summary>
+        /// 额外智力% [ 与技能和物品相关 ]
+        /// </summary>
+        public double ExINTPercentage { get; set; } = 0;
+
+        /// <summary>
+        /// 力量 = 基础力量 + 额外力量 + 额外力量2
+        /// </summary>
+        public double STR => BaseSTR + ExSTR + ExSTR2;
+
+        /// <summary>
+        /// 敏捷 = 基础敏捷 + 额外敏捷 + 额外敏捷2
+        /// </summary>
+        public double AGI => BaseAGI + ExAGI + ExAGI2;
+
+        /// <summary>
+        /// 智力 = 基础智力 + 额外智力 + 额外智力2
+        /// </summary>
+        public double INT => BaseINT + ExINT + ExINT2;
 
         /// <summary>
         /// 力量成长值(+BaseSTR/Lv)
