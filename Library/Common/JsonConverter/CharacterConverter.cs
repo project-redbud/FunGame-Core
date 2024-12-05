@@ -277,7 +277,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Character.ExCritDMG), value.ExCritDMG);
             writer.WriteNumber(nameof(Character.ExEvadeRate), value.ExEvadeRate);
             writer.WritePropertyName(nameof(Character.Skills));
-            JsonSerializer.Serialize(writer, value.Skills, options);
+            JsonSerializer.Serialize(writer, value.Skills.Where(s => s.Guid == Guid.Empty), options);
             writer.WritePropertyName(nameof(Character.Items));
             JsonSerializer.Serialize(writer, value.Items, options);
             writer.WriteEndObject();

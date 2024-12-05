@@ -592,12 +592,14 @@ namespace Milimoe.FunGame.Core.Entity
                 if (item.Skills.Active != null)
                 {
                     item.Skills.Active.Level = copyLevel ? (Skills.Active?.Level ?? 1) : 1;
+                    item.Skills.Active.Guid = item.Guid;
                 }
                 foreach (Skill skill in Skills.Passives)
                 {
                     Skill newskill = skill.Copy();
                     newskill.Item = item;
                     newskill.Level = copyLevel ? skill.Level : 1;
+                    newskill.Guid = item.Guid;
                     item.Skills.Passives.Add(newskill);
                 }
                 foreach (Skill skill in Skills.Magics)
@@ -605,6 +607,7 @@ namespace Milimoe.FunGame.Core.Entity
                     Skill newskill = skill.Copy();
                     newskill.Item = item;
                     newskill.Level = copyLevel ? skill.Level : 1;
+                    newskill.Guid = item.Guid;
                     item.Skills.Magics.Add(newskill);
                 }
             }
