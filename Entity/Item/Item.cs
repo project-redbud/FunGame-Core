@@ -57,11 +57,13 @@ namespace Milimoe.FunGame.Core.Entity
         
         /// <summary>
         /// 是否允许装备
+        /// [ 注意：这个不是用来判断是不是装备类型的，判断装备类型时，请判断他们的 <see cref="ItemType"/> ]
         /// </summary>
         public bool Equipable { get; set; } = true;
 
         /// <summary>
         /// 是否允许取消装备
+        /// [ 注意：这个不是用来判断是不是装备类型的，判断装备类型时，请判断他们的 <see cref="ItemType"/> ]
         /// </summary>
         public bool Unequipable { get; set; } = true;
 
