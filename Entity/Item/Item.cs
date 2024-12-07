@@ -54,16 +54,16 @@ namespace Milimoe.FunGame.Core.Entity
                 };
             }
         }
-        
+
         /// <summary>
         /// 是否允许装备
-        /// [ 注意：这个不是用来判断是不是装备类型的，判断装备类型时，请判断他们的 <see cref="ItemType"/> ]
+        /// [ 注意：这个不是用来判断是不是装备类型的，判断装备类型时，请判断他们的 <see cref="IsEquipment"/> ]
         /// </summary>
         public bool Equipable { get; set; } = true;
 
         /// <summary>
         /// 是否允许取消装备
-        /// [ 注意：这个不是用来判断是不是装备类型的，判断装备类型时，请判断他们的 <see cref="ItemType"/> ]
+        /// [ 注意：这个不是用来判断是不是装备类型的，判断装备类型时，使用 <see cref="IsEquipment"/> ]
         /// </summary>
         public bool Unequipable { get; set; } = true;
 
@@ -310,7 +310,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 局外（库存）使用物品触发
         /// </summary>
-        public void UseItem(/*Inventory inventory*/)
+        public void UseItem()
         {
             if (User != null) OnItemUsed(User, this);
         }
@@ -322,7 +322,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="item"></param>
         /// <param name="cancel"></param>
         /// <param name="used"></param>
-        public virtual void OnItemUsed(Character character, Item item, bool cancel, bool used)
+        protected virtual void OnItemUsed(Character character, Item item, bool cancel, bool used)
         {
 
         }
@@ -332,7 +332,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="item"></param>
-        public virtual void OnItemUsed(User user, Item item)
+        protected virtual void OnItemUsed(User user, Item item)
         {
 
         }
@@ -343,7 +343,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="character"></param>
         /// <param name="item"></param>
         /// <param name="type"></param>
-        public virtual void OnItemEquipped(Character character, Item item, EquipSlotType type)
+        protected virtual void OnItemEquipped(Character character, Item item, EquipSlotType type)
         {
 
         }
@@ -354,7 +354,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="character"></param>
         /// <param name="item"></param>
         /// <param name="type"></param>
-        public virtual void OnItemUnEquipped(Character character, Item item, EquipSlotType type)
+        protected virtual void OnItemUnEquipped(Character character, Item item, EquipSlotType type)
         {
 
         }

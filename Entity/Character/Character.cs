@@ -875,12 +875,15 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 为角色装备物品（必须使用此方法而不是自己去给EquipSlot里的物品赋值）
+        /// 为角色装备物品（必须使用此方法而不是自己去给EquipSlot里的物品赋值）<para/>
+        /// 此方法装备到指定栏位，并返回被替换的装备（如果有的话）
         /// </summary>
         /// <param name="item"></param>
         /// <param name="slot"></param>
-        public bool Equip(Item item, EquipSlotType slot)
+        /// <param name="previous"></param>
+        public bool Equip(Item item, EquipSlotType slot, out Item? previous)
         {
+            previous = null;
             bool result = false;
             double pastHP = HP;
             double pastMaxHP = MaxHP;
@@ -891,7 +894,7 @@ namespace Milimoe.FunGame.Core.Entity
                 case EquipSlotType.MagicCardPack:
                     if (item.ItemType == ItemType.MagicCardPack)
                     {
-                        UnEquip(EquipSlotType.MagicCardPack);
+                        previous = UnEquip(EquipSlotType.MagicCardPack);
                         EquipSlot.MagicCardPack = item;
                         item.OnItemEquip(this, EquipSlotType.MagicCardPack);
                         result = true;
@@ -900,7 +903,7 @@ namespace Milimoe.FunGame.Core.Entity
                 case EquipSlotType.Weapon:
                     if (item.ItemType == ItemType.Weapon)
                     {
-                        UnEquip(EquipSlotType.Weapon);
+                        previous = UnEquip(EquipSlotType.Weapon);
                         EquipSlot.Weapon = item;
                         item.OnItemEquip(this, EquipSlotType.Weapon);
                         result = true;
@@ -909,7 +912,7 @@ namespace Milimoe.FunGame.Core.Entity
                 case EquipSlotType.Armor:
                     if (item.ItemType == ItemType.Armor)
                     {
-                        UnEquip(EquipSlotType.Armor);
+                        previous = UnEquip(EquipSlotType.Armor);
                         EquipSlot.Armor = item;
                         item.OnItemEquip(this, EquipSlotType.Armor);
                         result = true;
@@ -918,7 +921,7 @@ namespace Milimoe.FunGame.Core.Entity
                 case EquipSlotType.Shoes:
                     if (item.ItemType == ItemType.Shoes)
                     {
-                        UnEquip(EquipSlotType.Shoes);
+                        previous = UnEquip(EquipSlotType.Shoes);
                         EquipSlot.Shoes = item;
                         item.OnItemEquip(this, EquipSlotType.Shoes);
                         result = true;
@@ -927,7 +930,7 @@ namespace Milimoe.FunGame.Core.Entity
                 case EquipSlotType.Accessory1:
                     if (item.ItemType == ItemType.Accessory)
                     {
-                        UnEquip(EquipSlotType.Accessory1);
+                        previous = UnEquip(EquipSlotType.Accessory1);
                         EquipSlot.Accessory1 = item;
                         EquipSlot.LastEquipSlotType = EquipSlotType.Accessory1;
                         item.OnItemEquip(this, EquipSlotType.Accessory1);
@@ -937,7 +940,7 @@ namespace Milimoe.FunGame.Core.Entity
                 case EquipSlotType.Accessory2:
                     if (item.ItemType == ItemType.Accessory)
                     {
-                        UnEquip(EquipSlotType.Accessory2);
+                        previous = UnEquip(EquipSlotType.Accessory2);
                         EquipSlot.Accessory2 = item;
                         EquipSlot.LastEquipSlotType = EquipSlotType.Accessory2;
                         item.OnItemEquip(this, EquipSlotType.Accessory2);
@@ -963,29 +966,70 @@ namespace Milimoe.FunGame.Core.Entity
             switch (item.ItemType)
             {
                 case ItemType.MagicCardPack:
-                    return Equip(item, EquipSlotType.MagicCardPack);
+                    return Equip(item, EquipSlotType.MagicCardPack, out _);
                 case ItemType.Weapon:
-                    return Equip(item, EquipSlotType.Weapon);
+                    return Equip(item, EquipSlotType.Weapon, out _);
                 case ItemType.Armor:
-                    return Equip(item, EquipSlotType.Armor);
+                    return Equip(item, EquipSlotType.Armor, out _);
                 case ItemType.Shoes:
-                    return Equip(item, EquipSlotType.Shoes);
+                    return Equip(item, EquipSlotType.Shoes, out _);
                 case ItemType.Accessory:
                     if (EquipSlot.Accessory1 is null)
                     {
-                        return Equip(item, EquipSlotType.Accessory1);
+                        return Equip(item, EquipSlotType.Accessory1, out _);
                     }
                     else if (EquipSlot.Accessory1 != null && EquipSlot.Accessory2 is null)
                     {
-                        return Equip(item, EquipSlotType.Accessory2);
+                        return Equip(item, EquipSlotType.Accessory2, out _);
                     }
                     else if (EquipSlot.Accessory1 != null && EquipSlot.Accessory2 != null && EquipSlot.LastEquipSlotType == EquipSlotType.Accessory1)
                     {
-                        return Equip(item, EquipSlotType.Accessory2);
+                        return Equip(item, EquipSlotType.Accessory2, out _);
                     }
                     else
                     {
-                        return Equip(item, EquipSlotType.Accessory1);
+                        return Equip(item, EquipSlotType.Accessory1, out _);
+                    }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 为角色装备物品（必须使用此方法而不是自己去给EquipSlot里的物品赋值）<para/>
+        /// 此方法为根据物品类型，优先空位自动装备<para/>
+        /// 此方法可返回被替换的装备（如果有的话）
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="previous"></param>
+        public bool Equip(Item item, out Item? previous)
+        {
+            previous = null;
+            switch (item.ItemType)
+            {
+                case ItemType.MagicCardPack:
+                    return Equip(item, EquipSlotType.MagicCardPack, out previous);
+                case ItemType.Weapon:
+                    return Equip(item, EquipSlotType.Weapon, out previous);
+                case ItemType.Armor:
+                    return Equip(item, EquipSlotType.Armor, out previous);
+                case ItemType.Shoes:
+                    return Equip(item, EquipSlotType.Shoes, out previous);
+                case ItemType.Accessory:
+                    if (EquipSlot.Accessory1 is null)
+                    {
+                        return Equip(item, EquipSlotType.Accessory1, out previous);
+                    }
+                    else if (EquipSlot.Accessory1 != null && EquipSlot.Accessory2 is null)
+                    {
+                        return Equip(item, EquipSlotType.Accessory2, out previous);
+                    }
+                    else if (EquipSlot.Accessory1 != null && EquipSlot.Accessory2 != null && EquipSlot.LastEquipSlotType == EquipSlotType.Accessory1)
+                    {
+                        return Equip(item, EquipSlotType.Accessory2, out previous);
+                    }
+                    else
+                    {
+                        return Equip(item, EquipSlotType.Accessory1, out previous);
                     }
             }
             return false;

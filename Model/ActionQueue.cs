@@ -1987,31 +1987,34 @@ namespace Milimoe.FunGame.Core.Model
         }
 
         /// <summary>
-        /// 装备物品到指定栏位
+        /// 装备物品到指定栏位，并返回被替换的装备（如果有的话）
         /// </summary>
         /// <param name="character"></param>
         /// <param name="type"></param>
         /// <param name="item"></param>
-        public void Equip(Character character, EquipSlotType type, Item item)
+        /// <param name="previous"></param>
+        public void Equip(Character character, EquipSlotType type, Item item, out Item? previous)
         {
-            if (character.Equip(item, type))
+            if (character.Equip(item, type, out previous))
             {
                 WriteLine($"[ {character} ] 装备了 [ {item.Name} ]。（{ItemSet.GetEquipSlotTypeName(type)} 栏位）");
             }
         }
 
         /// <summary>
-        /// 取消装备
+        /// 取消装备，并返回被替换的装备（如果有的话）
         /// </summary>
         /// <param name="character"></param>
         /// <param name="type"></param>
-        public void UnEquip(Character character, EquipSlotType type)
+        /// <returns></returns>
+        public Item? UnEquip(Character character, EquipSlotType type)
         {
             Item? item = character.UnEquip(type);
             if (item != null)
             {
                 WriteLine($"[ {character} ] 取消装备了 [ {item.Name} ]。（{ItemSet.GetEquipSlotTypeName(type)} 栏位）");
             }
+            return item;
         }
 
         /// <summary>
