@@ -452,26 +452,35 @@ namespace Milimoe.FunGame.Core.Entity
         /// 复制一个技能
         /// </summary>
         /// <returns></returns>
-        public Skill Copy()
+        public Skill Copy(bool copyProperty = true, IEnumerable<Skill>? skillsDefined = null)
         {
             Dictionary<string, object> args = new()
             {
                 { "values", Values }
             };
+            Skill? skillDefined = null;
+            if (skillsDefined != null && skillsDefined.FirstOrDefault(i => i.GetIdName() == GetIdName()) is Skill temp)
+            {
+                skillDefined = temp;
+            }
+            if (skillDefined != null)
+            {
+                args["values"] = skillDefined.Values;
+            }
             Skill skill = Factory.OpenFactory.GetInstance<Skill>(Id, Name, args);
-            SetPropertyToItemModuleNew(skill);
-            skill.Id = Id;
-            skill.Name = Name;
-            skill.Description = Description;
-            skill.GeneralDescription = GeneralDescription;
-            skill.SkillType = SkillType;
-            skill.MPCost = MPCost;
-            skill.CastTime = CastTime;
-            skill.EPCost = EPCost;
-            skill.CD = CD;
-            skill.CurrentCD = CurrentCD;
-            skill.HardnessTime = HardnessTime;
-            skill.GamingQueue = GamingQueue;
+            skillDefined ??= skill;
+            if (copyProperty) SetPropertyToItemModuleNew(skill);
+            skill.Id = skillDefined.Id;
+            skill.Name = skillDefined.Name;
+            skill.Description = skillDefined.Description;
+            skill.GeneralDescription = skillDefined.GeneralDescription;
+            skill.SkillType = skillDefined.SkillType;
+            skill.MPCost = skillDefined.MPCost;
+            skill.CastTime = skillDefined.CastTime;
+            skill.EPCost = skillDefined.EPCost;
+            skill.CD = skillDefined.CD;
+            skill.HardnessTime = skillDefined.HardnessTime;
+            skill.GamingQueue = skillDefined.GamingQueue;
             if (skill is OpenSkill)
             {
                 foreach (Effect e in Effects)

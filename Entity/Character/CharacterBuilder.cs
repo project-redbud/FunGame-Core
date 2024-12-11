@@ -102,8 +102,10 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="items"></param>
         /// <param name="newItemGuid"></param>
         /// <param name="equips"></param>
+        /// <param name="itemsDefined"></param>
+        /// <param name="skillsDefined"></param>
         /// <returns>构建的新角色</returns>
-        public Character Build(int level, IEnumerable<Skill> skills, IEnumerable<Item> items, bool newItemGuid = true, EquipSlot? equips = null)
+        public Character Build(int level, IEnumerable<Skill> skills, IEnumerable<Item> items, bool newItemGuid = true, EquipSlot? equips = null, IEnumerable<Item>? itemsDefined = null, IEnumerable<Skill>? skillsDefined = null)
         {
             Character character = Factory.GetCharacter();
             character.Id = Id;
@@ -133,7 +135,7 @@ namespace Milimoe.FunGame.Core.Entity
                 // 主动技能的Guid表示与其关联的物品
                 if (skill.Guid == Guid.Empty)
                 {
-                    Skill newskill = skill.Copy();
+                    Skill newskill = skill.Copy(true, skillsDefined);
                     newskill.Character = character;
                     newskill.Level = skill.Level;
                     if (skill.CurrentCD > 0 && !skill.Enable)
@@ -146,7 +148,16 @@ namespace Milimoe.FunGame.Core.Entity
             }
             foreach (Item item in items)
             {
-                Item newitem = item.Copy(true, !newItemGuid);
+                Item newitem;
+                if (itemsDefined != null && itemsDefined.FirstOrDefault(i => i.GetIdName() == item.GetIdName()) is Item itemDefined)
+                {
+                    newitem = itemDefined.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
+                    item.SetPropertyToItemModuleNew(newitem);
+                }
+                else
+                {
+                    newitem = item.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
+                }
                 newitem.Character = character;
                 character.Items.Add(newitem);
             }
@@ -160,32 +171,32 @@ namespace Milimoe.FunGame.Core.Entity
                 Item? ac2 = equips.Accessory2;
                 if (mcp != null)
                 {
-                    mcp = mcp.Copy(true, !newItemGuid);
+                    mcp = mcp.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
                     character.Equip(mcp);
                 }
                 if (w != null)
                 {
-                    w = w.Copy(true, !newItemGuid);
+                    w = w.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
                     character.Equip(w);
                 }
                 if (a != null)
                 {
-                    a = a.Copy(true, !newItemGuid);
+                    a = a.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
                     character.Equip(a);
                 }
                 if (s != null)
                 {
-                    s = s.Copy(true, !newItemGuid);
+                    s = s.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
                     character.Equip(s);
                 }
                 if (ac1 != null)
                 {
-                    ac1 = ac1.Copy(true, !newItemGuid);
+                    ac1 = ac1.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
                     character.Equip(ac1);
                 }
                 if (ac2 != null)
                 {
-                    ac2 = ac2.Copy(true, !newItemGuid);
+                    ac2 = ac2.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
                     character.Equip(ac2);
                 }
             }
@@ -199,10 +210,12 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="reference"></param>
         /// <param name="newItemGuid"></param>
+        /// <param name="itemsDefined">对于动态扩展的物品而言，传入已定义的物品表，不使用被复制物品的数据</param>
+        /// <param name="skillsDefined">对于动态扩展的技能而言，传入已定义的技能表，不使用被复制技能的数据</param>
         /// <returns>构建的新角色</returns>
-        public static Character Build(Character reference, bool newItemGuid = true)
+        public static Character Build(Character reference, bool newItemGuid = true, IEnumerable<Item>? itemsDefined = null, IEnumerable<Skill>? skillsDefined = null)
         {
-            Character character = new CharacterBuilder(reference).Build(reference.Level, reference.Skills, reference.Items, newItemGuid, reference.EquipSlot);
+            Character character = new CharacterBuilder(reference).Build(reference.Level, reference.Skills, reference.Items, newItemGuid, reference.EquipSlot, itemsDefined, skillsDefined);
             character.NormalAttack.Level = reference.Level;
             character.NormalAttack.SetMagicType(reference.NormalAttack.IsMagic, reference.NormalAttack.MagicType);
             return character;
