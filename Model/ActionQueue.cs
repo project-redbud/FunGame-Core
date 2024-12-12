@@ -684,6 +684,7 @@ namespace Milimoe.FunGame.Core.Model
                     }
                     else
                     {
+                        decided = true;
                         WriteLine("[ " + character + $" ] 完全行动不能！");
                         type = CharacterActionType.None;
                     }
@@ -1639,7 +1640,7 @@ namespace Milimoe.FunGame.Core.Model
             foreach (Character caster in castingSkills)
             {
                 SkillTarget st = _castingSkills[caster];
-                if (st.Targets.Remove(death) && st.Targets.Count == 0)
+                if (st.Targets.Remove(death))
                 {
                     _castingSkills.Remove(caster);
                     if (caster.CharacterState == CharacterState.Casting)

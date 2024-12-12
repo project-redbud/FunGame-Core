@@ -1239,8 +1239,8 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"力量：{STR:0.##}" + (ExSTR != 0 ? $" [{BaseSTR:0.##} {(ExSTR >= 0 ? "+" : "-")} {Math.Abs(ExSTR):0.##}]" : "") + (showGrowth ? $"（{(STRGrowth >= 0 ? "+" : "-")}{Math.Abs(STRGrowth)}/Lv）" : ""));
             builder.AppendLine($"敏捷：{AGI:0.##}" + (ExAGI != 0 ? $" [{BaseAGI:0.##} {(ExAGI >= 0 ? "+" : "-")} {Math.Abs(ExAGI):0.##}]" : "") + (showGrowth ? $"（{(AGIGrowth >= 0 ? "+" : "-")}{Math.Abs(AGIGrowth)}/Lv）" : ""));
             builder.AppendLine($"智力：{INT:0.##}" + (ExINT != 0 ? $" [{BaseINT:0.##} {(ExINT >= 0 ? "+" : "-")} {Math.Abs(ExINT):0.##}]" : "") + (showGrowth ? $"（{(INTGrowth >= 0 ? "+" : "-")}{Math.Abs(INTGrowth)}/Lv）" : ""));
-            builder.AppendLine($"生命回复：{HR:0.##}" + (ExHR != 0 ? $" [{InitialHR + STR * 0.25:0.##} {(ExHR >= 0 ? "+" : "-")} {Math.Abs(ExHR):0.##}]" : ""));
-            builder.AppendLine($"魔法回复：{MR:0.##}" + (ExMR != 0 ? $" [{InitialMR + INT * 0.1:0.##} {(ExMR >= 0 ? "+" : "-")} {Math.Abs(ExMR):0.##}]" : ""));
+            builder.AppendLine($"生命回复：{HR:0.##}" + (ExHR != 0 ? $" [{InitialHR + STR * General.GameplayEquilibriumConstant.STRtoHRFactor:0.##} {(ExHR >= 0 ? "+" : "-")} {Math.Abs(ExHR):0.##}]" : ""));
+            builder.AppendLine($"魔法回复：{MR:0.##}" + (ExMR != 0 ? $" [{InitialMR + INT * General.GameplayEquilibriumConstant.INTtoMRFactor:0.##} {(ExMR >= 0 ? "+" : "-")} {Math.Abs(ExMR):0.##}]" : ""));
             builder.AppendLine($"暴击率：{CritRate * 100:0.##}%");
             builder.AppendLine($"暴击伤害：{CritDMG * 100:0.##}%");
             builder.AppendLine($"闪避率：{EvadeRate * 100:0.##}%");
@@ -1362,8 +1362,8 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"力量：{STR:0.##}" + (ExSTR != 0 ? $" [{BaseSTR:0.##} {(ExSTR >= 0 ? "+" : "-")} {Math.Abs(ExSTR):0.##}]" : "") + (showGrowth ? $"（{(STRGrowth >= 0 ? "+" : "-")}{Math.Abs(STRGrowth)}/Lv）" : ""));
             builder.AppendLine($"敏捷：{AGI:0.##}" + (ExAGI != 0 ? $" [{BaseAGI:0.##} {(ExAGI >= 0 ? "+" : "-")} {Math.Abs(ExAGI):0.##}]" : "") + (showGrowth ? $"（{(AGIGrowth >= 0 ? "+" : "-")}{Math.Abs(AGIGrowth)}/Lv）" : ""));
             builder.AppendLine($"智力：{INT:0.##}" + (ExINT != 0 ? $" [{BaseINT:0.##} {(ExINT >= 0 ? "+" : "-")} {Math.Abs(ExINT):0.##}]" : "") + (showGrowth ? $"（{(INTGrowth >= 0 ? "+" : "-")}{Math.Abs(INTGrowth)}/Lv）" : ""));
-            builder.AppendLine($"生命回复：{HR:0.##}" + (ExHR != 0 ? $" [{InitialHR + STR * 0.25:0.##} {(ExHR >= 0 ? "+" : "-")} {Math.Abs(ExHR):0.##}]" : ""));
-            builder.AppendLine($"魔法回复：{MR:0.##}" + (ExMR != 0 ? $" [{InitialMR + INT * 0.1:0.##} {(ExMR >= 0 ? "+" : "-")} {Math.Abs(ExMR):0.##}]" : ""));
+            builder.AppendLine($"生命回复：{HR:0.##}" + (ExHR != 0 ? $" [{InitialHR + STR * General.GameplayEquilibriumConstant.STRtoHRFactor:0.##} {(ExHR >= 0 ? "+" : "-")} {Math.Abs(ExHR):0.##}]" : ""));
+            builder.AppendLine($"魔法回复：{MR:0.##}" + (ExMR != 0 ? $" [{InitialMR + INT * General.GameplayEquilibriumConstant.INTtoMRFactor:0.##} {(ExMR >= 0 ? "+" : "-")} {Math.Abs(ExMR):0.##}]" : ""));
 
             if (CharacterState != CharacterState.Actionable)
             {
