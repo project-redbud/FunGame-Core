@@ -240,6 +240,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="newbyFactory"></param>
         public void SetPropertyToItemModuleNew(Skill newbyFactory)
         {
+            newbyFactory.GamingQueue = GamingQueue;
             newbyFactory.Enable = Enable;
             newbyFactory.IsInEffect = IsInEffect;
             newbyFactory.CurrentCD = CurrentCD;
