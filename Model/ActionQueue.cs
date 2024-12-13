@@ -736,11 +736,6 @@ namespace Milimoe.FunGame.Core.Model
                         {
                             decided = true;
                             character.CharacterState = CharacterState.Casting;
-                            // TODO 不知道为什么被眩晕的人被打断施法后，没有从_castingSkills中被移除，查不到原因只能暂不处理
-                            if (_castingSkills.Remove(character))
-                            {
-                                WriteLine("Debug：系统出现异常，重复添加了_castingSkills");
-                            }
                             _castingSkills.Add(character, new(skill, targets));
                             baseTime = skill.CastTime;
                             skill.OnSkillCasting(this, character, targets);
