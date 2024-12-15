@@ -684,7 +684,6 @@ namespace Milimoe.FunGame.Core.Model
                     }
                     else
                     {
-                        decided = true;
                         WriteLine("[ " + character + $" ] 完全行动不能！");
                         type = CharacterActionType.None;
                     }
@@ -995,19 +994,19 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     character.HP += reallyReHP;
                     character.MP += reallyReMP;
-                    WriteLine($"角色 {character.NickName} 回血：{recoveryHP:0.##} / 回蓝：{recoveryMP:0.##}");
+                    WriteLine($"角色 {character.Name} 回血：{recoveryHP:0.##} [{character.HP:0.##} / {character.MaxHP:0.##}] / 回蓝：{recoveryMP:0.##} [{character.MP:0.##} / {character.MaxMP:0.##}]");
                 }
                 else
                 {
                     if (reallyReHP > 0)
                     {
                         character.HP += reallyReHP;
-                        WriteLine($"角色 {character.NickName} 回血：{recoveryHP:0.##}");
+                        WriteLine($"角色 {character.Name} 回血：{recoveryHP:0.##} [{character.HP:0.##} / {character.MaxHP:0.##}]");
                     }
                     if (reallyReMP > 0)
                     {
                         character.MP += reallyReMP;
-                        WriteLine($"角色 {character.NickName} 回蓝：{recoveryMP:0.##}");
+                        WriteLine($"角色 {character.Name} 回蓝：{recoveryMP:0.##} [{character.MP:0.##} / {character.MaxMP:0.##}]");
                     }
                 }
 

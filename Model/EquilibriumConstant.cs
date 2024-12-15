@@ -18,42 +18,17 @@
         /// <summary>
         /// 晋升点数上限
         /// </summary>
-        public int PromotionThresholdXUpperLimit { get; set; } = 999;
-
-        /// <summary>
-        /// 角色评级 S 的晋升点数上限
-        /// </summary>
-        public int PromotionThresholdSUpperLimit { get; set; } = 998;
-
-        /// <summary>
-        /// 角色评级 A+ 的晋升点数上限
-        /// </summary>
-        public int PromotionThresholdAPlusUpperLimit { get; set; } = 850;
-
-        /// <summary>
-        /// 角色评级 A 的晋升点数上限
-        /// </summary>
-        public int PromotionThresholdAUpperLimit { get; set; } = 700;
-
-        /// <summary>
-        /// 角色评级 B 的晋升点数上限
-        /// </summary>
-        public int PromotionThresholdBUpperLimit { get; set; } = 550;
-
-        /// <summary>
-        /// 角色评级 C 的晋升点数上限
-        /// </summary>
-        public int PromotionThresholdCUpperLimit { get; set; } = 400;
-
-        /// <summary>
-        /// 角色评级 D 的晋升点数上限
-        /// </summary>
-        public int PromotionThresholdDUpperLimit { get; set; } = 300;
-
-        /// <summary>
-        /// 角色评级 E 的晋升点数上限
-        /// </summary>
-        public int PromotionThresholdEUpperLimit { get; set; } = 200;
+        public Dictionary<string, int> PromotionsUpperLimit { get; set; } = new()
+        {
+            { "X", 999 },
+            { "S", 998 },
+            { "A+", 850 },
+            { "A", 700 },
+            { "B", 550 },
+            { "C", 400 },
+            { "D", 300 },
+            { "E", 200 },
+        };
 
         /// <summary>
         /// 初始生命值
@@ -69,6 +44,11 @@
         /// 角色最高等级
         /// </summary>
         public int MaxLevel { get; set; } = 60;
+
+        /// <summary>
+        /// 经验值上限
+        /// </summary>
+        public Dictionary<int, double> EXPUpperLimit { get; set; } = [];
 
         /// <summary>
         /// 魔法最高等级

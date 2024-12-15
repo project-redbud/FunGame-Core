@@ -69,31 +69,31 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                if (Promotion > General.GameplayEquilibriumConstant.PromotionThresholdSUpperLimit)
+                if (Promotion > General.GameplayEquilibriumConstant.PromotionsUpperLimit["S"])
                 {
                     return RoleRating.X;
                 }
-                else if (Promotion > General.GameplayEquilibriumConstant.PromotionThresholdAPlusUpperLimit && Promotion <= General.GameplayEquilibriumConstant.PromotionThresholdSUpperLimit)
+                else if (Promotion > General.GameplayEquilibriumConstant.PromotionsUpperLimit["A+"] && Promotion <= General.GameplayEquilibriumConstant.PromotionsUpperLimit["S"])
                 {
                     return RoleRating.S;
                 }
-                else if (Promotion > General.GameplayEquilibriumConstant.PromotionThresholdAUpperLimit && Promotion <= General.GameplayEquilibriumConstant.PromotionThresholdAPlusUpperLimit)
+                else if (Promotion > General.GameplayEquilibriumConstant.PromotionsUpperLimit["A"] && Promotion <= General.GameplayEquilibriumConstant.PromotionsUpperLimit["A+"])
                 {
                     return RoleRating.APlus;
                 }
-                else if (Promotion > General.GameplayEquilibriumConstant.PromotionThresholdBUpperLimit && Promotion <= General.GameplayEquilibriumConstant.PromotionThresholdAUpperLimit)
+                else if (Promotion > General.GameplayEquilibriumConstant.PromotionsUpperLimit["B"] && Promotion <= General.GameplayEquilibriumConstant.PromotionsUpperLimit["A"])
                 {
                     return RoleRating.A;
                 }
-                else if (Promotion > General.GameplayEquilibriumConstant.PromotionThresholdCUpperLimit && Promotion <= General.GameplayEquilibriumConstant.PromotionThresholdBUpperLimit)
+                else if (Promotion > General.GameplayEquilibriumConstant.PromotionsUpperLimit["C"] && Promotion <= General.GameplayEquilibriumConstant.PromotionsUpperLimit["B"])
                 {
                     return RoleRating.B;
                 }
-                else if (Promotion > General.GameplayEquilibriumConstant.PromotionThresholdDUpperLimit && Promotion <= General.GameplayEquilibriumConstant.PromotionThresholdCUpperLimit)
+                else if (Promotion > General.GameplayEquilibriumConstant.PromotionsUpperLimit["D"] && Promotion <= General.GameplayEquilibriumConstant.PromotionsUpperLimit["C"])
                 {
                     return RoleRating.C;
                 }
-                else if (Promotion > General.GameplayEquilibriumConstant.PromotionThresholdEUpperLimit && Promotion <= General.GameplayEquilibriumConstant.PromotionThresholdDUpperLimit)
+                else if (Promotion > General.GameplayEquilibriumConstant.PromotionsUpperLimit["E"] && Promotion <= General.GameplayEquilibriumConstant.PromotionsUpperLimit["D"])
                 {
                     return RoleRating.D;
                 }
@@ -1215,11 +1215,16 @@ namespace Milimoe.FunGame.Core.Entity
         /// 获取角色的详细信息
         /// </summary>
         /// <returns></returns>
-        public string GetInfo(bool showUser = true, bool showGrowth = true)
+        public string GetInfo(bool showUser = true, bool showGrowth = true, bool showEXP = false)
         {
             StringBuilder builder = new();
 
             builder.AppendLine(showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser());
+            if (showEXP)
+            {
+                builder.AppendLine($"等级：{Level} / {General.GameplayEquilibriumConstant.MaxLevel}");
+                builder.AppendLine($"经验值：{EXP}{(Level > 0 && Level <= General.GameplayEquilibriumConstant.EXPUpperLimit.Keys.Max() ? " / " + General.GameplayEquilibriumConstant.EXPUpperLimit[Level] : "")}");
+            }
             double exHP = ExHP + ExHP2 + ExHP3;
             builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : ""));
             double exMP = ExMP + ExMP2 + ExMP3;
@@ -1338,11 +1343,16 @@ namespace Milimoe.FunGame.Core.Entity
         /// 获取角色的简略信息
         /// </summary>
         /// <returns></returns>
-        public string GetSimpleInfo(bool showUser = true, bool showGrowth = true)
+        public string GetSimpleInfo(bool showUser = true, bool showGrowth = true, bool showEXP = false)
         {
             StringBuilder builder = new();
 
             builder.AppendLine(showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser());
+            if (showEXP)
+            {
+                builder.AppendLine($"等级：{Level} / {General.GameplayEquilibriumConstant.MaxLevel}");
+                builder.AppendLine($"经验值：{EXP}{(Level > 0 && Level <= General.GameplayEquilibriumConstant.EXPUpperLimit.Keys.Max() ? " / " + General.GameplayEquilibriumConstant.EXPUpperLimit[Level] : "")}");
+            }
             double exHP = ExHP + ExHP2 + ExHP3;
             builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : ""));
             double exMP = ExMP + ExMP2 + ExMP3;
@@ -1586,8 +1596,10 @@ namespace Milimoe.FunGame.Core.Entity
                 EP = EP,
                 InitialATK = InitialATK,
                 ExATK2 = ExATK2,
+                ExATKPercentage = ExATKPercentage,
                 InitialDEF = InitialDEF,
                 ExDEF2 = ExDEF2,
+                ExDEFPercentage = ExDEFPercentage,
                 MDF = MDF.Copy(),
                 PhysicalPenetration = PhysicalPenetration,
                 MagicalPenetration = MagicalPenetration,
@@ -1602,6 +1614,9 @@ namespace Milimoe.FunGame.Core.Entity
                 ExSTR = ExSTR,
                 ExAGI = ExAGI,
                 ExINT = ExINT,
+                ExSTRPercentage = ExSTRPercentage,
+                ExAGIPercentage = ExAGIPercentage,
+                ExINTPercentage = ExINTPercentage,
                 STRGrowth = STRGrowth,
                 AGIGrowth = AGIGrowth,
                 INTGrowth = INTGrowth,

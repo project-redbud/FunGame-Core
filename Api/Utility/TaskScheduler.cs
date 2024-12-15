@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Model;
+﻿using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Api.Utility
 {
@@ -33,7 +34,12 @@ namespace Milimoe.FunGame.Core.Api.Utility
         {
             lock (_lock)
             {
-                _tasks.Add(new ScheduledTask(name, timeOfDay, action));
+                ScheduledTask task = new(name, timeOfDay, action);
+                if (DateTime.Now > DateTime.Today.Add(timeOfDay))
+                {
+                    task.LastRun = DateTime.Today.Add(timeOfDay);
+                }
+                _tasks.Add(task);
             }
         }
 
@@ -70,6 +76,83 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 int removeTasks = _tasks.RemoveAll(t => t.Name == name);
                 int removeRecurringTasks = _recurringTasks.RemoveAll(t => t.Name == name);
             }
+        }
+
+        /// <summary>
+        /// 获取任务计划上一次执行时间
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="recurring"></param>
+        /// <returns></returns>
+        public DateTime GetLastTime(string name, bool recurring = false)
+        {
+            if (!recurring)
+            {
+                if (_tasks.FirstOrDefault(t => t.Name == name) is ScheduledTask task && task.LastRun.HasValue)
+                {
+                    return task.LastRun.Value;
+                }
+                else if (_recurringTasks.FirstOrDefault(t => t.Name == name) is RecurringTask recurringTask && recurringTask.LastRun.HasValue)
+                {
+                    return recurringTask.LastRun.Value;
+                }
+            }
+            else if (_recurringTasks.FirstOrDefault(t => t.Name == name) is RecurringTask recurringTask && recurringTask.LastRun.HasValue)
+            {
+                return recurringTask.LastRun.Value;
+            }
+            return DateTime.MinValue;
+        }
+
+        /// <summary>
+        /// 获取任务计划下一次执行时间
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="recurring"></param>
+        /// <returns></returns>
+        public DateTime GetNextTime(string name, bool recurring = false)
+        {
+            if (!recurring)
+            {
+                if (_tasks.FirstOrDefault(t => t.Name == name) is ScheduledTask task)
+                {
+                    DateTime today = DateTime.Today.Add(task.TimeOfDay);
+                    return task.IsTodayRun ? today.AddDays(1) : today;
+                }
+                else if (_recurringTasks.FirstOrDefault(t => t.Name == name) is RecurringTask recurringTask)
+                {
+                    return recurringTask.NextRun;
+                }
+            }
+            else if (_recurringTasks.FirstOrDefault(t => t.Name == name) is RecurringTask recurringTask)
+            {
+                return recurringTask.NextRun;
+            }
+            return DateTime.MaxValue;
+        }
+
+        public string GetRunTimeInfo(string name)
+        {
+            DateTime last = GetLastTime(name);
+            DateTime next = GetNextTime(name);
+            string msg = "";
+            if (last != DateTime.MinValue)
+            {
+                msg += $"上次运行时间：{last.ToString(General.GeneralDateTimeFormat)}\r\n";
+            }
+            if (next != DateTime.MaxValue)
+            {
+                msg += $"下次运行时间：{next.ToString(General.GeneralDateTimeFormat)}\r\n";
+            }
+            if (msg != "")
+            {
+                msg = $"任务计划：{name}\r\n{msg}";
+            }
+            else
+            {
+                msg = $"任务计划 {name} 不存在！";
+            }
+            return msg.Trim();
         }
 
         /// <summary>
