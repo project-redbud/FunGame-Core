@@ -549,48 +549,46 @@ namespace Milimoe.FunGame.Core.Entity
             newbyFactory.WeaponType = WeaponType;
             newbyFactory.EquipSlotType = EquipSlotType;
             newbyFactory.Equipable = Equipable;
+            newbyFactory.Unequipable = Unequipable;
             newbyFactory.IsPurchasable = IsPurchasable;
             newbyFactory.Price = Price;
             newbyFactory.IsSellable = IsSellable;
             newbyFactory.NextSellableTime = NextSellableTime;
             newbyFactory.IsTradable = IsTradable;
             newbyFactory.NextTradableTime = NextTradableTime;
+            newbyFactory.RemainUseTimes = RemainUseTimes;
         }
 
         /// <summary>
         /// 复制一个物品
         /// </summary>
         /// <returns></returns>
-        public Item Copy(bool copyLevel = false, bool copyGuid = false)
+        public Item Copy(bool copyLevel = false, bool copyGuid = false, bool copyProperty = true, IEnumerable<Item>? itemsDefined = null, IEnumerable<Skill>? skillsDefined = null)
         {
             Item item = Factory.OpenFactory.GetInstance<Item>(Id, Name, []);
-            SetPropertyToItemModuleNew(item);
-            item.Id = Id;
-            item.Name = Name;
+            Item? itemDefined = null;
+            if (itemsDefined != null && itemsDefined.FirstOrDefault(i => i.GetIdName() == item.GetIdName()) is Item temp)
+            {
+                itemDefined = temp;
+            }
+            if (copyProperty) SetPropertyToItemModuleNew(item);
             if (copyGuid) item.Guid = Guid;
-            item.Description = Description;
-            item.GeneralDescription = GeneralDescription;
-            item.BackgroundStory = BackgroundStory;
-            item.ItemType = ItemType;
-            item.Equipable = Equipable;
-            item.Unequipable = Unequipable;
-            item.WeaponType = WeaponType;
-            item.QualityType = QualityType;
-            item.RarityType = RarityType;
-            item.RankType = RankType;
-            item.Key = Key;
-            item.Enable = Enable;
-            item.IsInGameItem = IsInGameItem;
-            item.IsPurchasable = IsPurchasable;
-            item.Price = Price;
-            item.IsSellable = IsSellable;
-            item.NextSellableTime = NextSellableTime;
-            item.IsTradable = IsTradable;
-            item.NextTradableTime = NextTradableTime;
-            item.RemainUseTimes = RemainUseTimes;
+            itemDefined ??= this;
+            item.Id = itemDefined.Id;
+            item.Name = itemDefined.Name;
+            item.Description = itemDefined.Description;
+            item.GeneralDescription = itemDefined.GeneralDescription;
+            item.BackgroundStory = itemDefined.BackgroundStory;
+            item.ItemType = itemDefined.ItemType;
+            item.QualityType = itemDefined.QualityType;
+            item.RarityType = itemDefined.RarityType;
+            item.RankType = itemDefined.RankType;
+            item.Key = itemDefined.Key;
+            item.Enable = itemDefined.Enable;
+            item.IsInGameItem = itemDefined.IsInGameItem;
             if (item is OpenItem)
             {
-                item.Skills.Active = Skills.Active?.Copy();
+                item.Skills.Active = Skills.Active?.Copy(true, skillsDefined);
                 if (item.Skills.Active != null)
                 {
                     item.Skills.Active.Level = copyLevel ? (Skills.Active?.Level ?? 1) : 1;
@@ -598,7 +596,7 @@ namespace Milimoe.FunGame.Core.Entity
                 }
                 foreach (Skill skill in Skills.Passives)
                 {
-                    Skill newskill = skill.Copy();
+                    Skill newskill = skill.Copy(true, skillsDefined);
                     newskill.Item = item;
                     newskill.Level = copyLevel ? skill.Level : 1;
                     newskill.Guid = item.Guid;
@@ -606,7 +604,7 @@ namespace Milimoe.FunGame.Core.Entity
                 }
                 foreach (Skill skill in Skills.Magics)
                 {
-                    Skill newskill = skill.Copy();
+                    Skill newskill = skill.Copy(true, skillsDefined);
                     newskill.Item = item;
                     newskill.Level = copyLevel ? skill.Level : 1;
                     newskill.Guid = item.Guid;
@@ -638,10 +636,6 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="level"></param>
         public void SetMagicsLevel(int level)
         {
-            if (Skills.Active != null)
-            {
-                Skills.Active.Level = level;
-            }
             foreach (Skill skill in Skills.Magics)
             {
                 skill.Level = level;

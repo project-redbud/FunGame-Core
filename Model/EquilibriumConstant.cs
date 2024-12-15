@@ -203,7 +203,7 @@
         /// <summary>
         /// 每 1 点力量增加生命回复力
         /// </summary>
-        public double STRtoHRFactor { get; set; } = 0.25;
+        public double STRtoHRFactor { get; set; } = 0.025;
 
         /// <summary>
         /// 每 1 点力量增加物理护甲
@@ -228,7 +228,7 @@
         /// <summary>
         /// 每 1 点智力增加魔法回复力
         /// </summary>
-        public double INTtoMRFactor { get; set; } = 0.1;
+        public double INTtoMRFactor { get; set; } = 0.01;
 
         /// <summary>
         /// 每 1 点智力减少魔法消耗
