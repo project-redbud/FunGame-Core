@@ -95,9 +95,8 @@ namespace Milimoe.FunGame.Core.Entity
 
         /// <summary>
         /// 基于初始条件构建新的角色
-        /// <para>需要传入等级、技能、物品，可选构建装备</para>
+        /// <para>需要传入技能、物品，可选构建装备</para>
         /// </summary>
-        /// <param name="level"></param>
         /// <param name="skills"></param>
         /// <param name="items"></param>
         /// <param name="newItemGuid"></param>
@@ -105,7 +104,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="itemsDefined"></param>
         /// <param name="skillsDefined"></param>
         /// <returns>构建的新角色</returns>
-        public Character Build(int level, IEnumerable<Skill> skills, IEnumerable<Item> items, bool newItemGuid = true, EquipSlot? equips = null, IEnumerable<Item>? itemsDefined = null, IEnumerable<Skill>? skillsDefined = null)
+        public Character Build(IEnumerable<Skill> skills, IEnumerable<Item> items, bool newItemGuid = true, EquipSlot? equips = null, IEnumerable<Item>? itemsDefined = null, IEnumerable<Skill>? skillsDefined = null)
         {
             Character character = Factory.GetCharacter();
             character.Id = Id;
@@ -126,10 +125,6 @@ namespace Milimoe.FunGame.Core.Entity
             character.InitialSPD = InitialSPD;
             character.InitialHR = InitialHR;
             character.InitialMR = InitialMR;
-            if (level > 1)
-            {
-                character.Level = level;
-            }
             foreach (Skill skill in skills)
             {
                 // 主动技能的Guid表示与其关联的物品
@@ -212,10 +207,17 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="newItemGuid"></param>
         /// <param name="itemsDefined">对于动态扩展的物品而言，传入已定义的物品表，不使用被复制物品的数据</param>
         /// <param name="skillsDefined">对于动态扩展的技能而言，传入已定义的技能表，不使用被复制技能的数据</param>
+        /// <param name="copyLevel"></param>
         /// <returns>构建的新角色</returns>
-        public static Character Build(Character reference, bool newItemGuid = true, IEnumerable<Item>? itemsDefined = null, IEnumerable<Skill>? skillsDefined = null)
+        public static Character Build(Character reference, bool newItemGuid = true, IEnumerable<Item>? itemsDefined = null, IEnumerable<Skill>? skillsDefined = null, bool copyLevel = true)
         {
-            Character character = new CharacterBuilder(reference).Build(reference.Level, reference.Skills, reference.Items, newItemGuid, reference.EquipSlot, itemsDefined, skillsDefined);
+            Character character = new CharacterBuilder(reference).Build(reference.Skills, reference.Items, newItemGuid, reference.EquipSlot, itemsDefined, skillsDefined);
+            if (copyLevel)
+            {
+                character.Level = reference.Level;
+                character.LevelBreak = reference.LevelBreak;
+                character.EXP = reference.EXP;
+            }
             character.NormalAttack.Level = reference.NormalAttack.Level;
             character.NormalAttack.SetMagicType(reference.NormalAttack.IsMagic, reference.NormalAttack.MagicType);
             return character;
