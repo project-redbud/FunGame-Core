@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -135,6 +135,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 经验值
         /// </summary>
         public double EXP { get; set; } = 0;
+        
+        /// <summary>
+        /// 等级突破进度 [ 对应 <see cref="Model.EquilibriumConstant.LevelBreakList"/> 中的索引 ]
+        /// </summary>
+        public int LevelBreak { get; set; } = -1;
 
         /// <summary>
         /// 角色目前所处的状态 [ 战斗相关 ]
@@ -1098,6 +1103,57 @@ namespace Milimoe.FunGame.Core.Entity
                 Recovery(pastHP, pastMP, pastMaxHP, pastMaxMP);
             }
             return result;
+        }
+
+        /// <summary>
+        /// 角色升级，用完所有溢出的经验值
+        /// </summary>
+        public void OnLevelUp()
+        {
+            bool flag = false;
+            while (!flag)
+            {
+                if (Level > 0 && Level < General.GameplayEquilibriumConstant.MaxLevel && General.GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) && EXP > need)
+                {
+                    EXP -= need;
+                    Level++;
+                    OnAttributeChanged();
+                    Recovery();
+                }
+                else
+                {
+                    flag = true;
+                }
+            }
+        }
+        
+        /// <summary>
+        /// 角色突破，允许继续升级
+        /// </summary>
+        public void OnLevelBreak()
+        {
+            if (General.GameplayEquilibriumConstant.UseLevelBreak)
+            {
+                // 检查角色突破进度
+                int[] levels = [.. General.GameplayEquilibriumConstant.LevelBreakList];
+                int breaks = LevelBreak + 1;
+                if (breaks < levels.Length)
+                {
+                    bool flag = false;
+                    while (!flag)
+                    {
+                        // 检查角色等级
+                        if (Level >= levels[breaks])
+                        {
+                            LevelBreak++;
+                        }
+                        else
+                        {
+                            flag = true;
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
