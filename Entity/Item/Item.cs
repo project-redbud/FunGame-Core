@@ -588,13 +588,13 @@ namespace Milimoe.FunGame.Core.Entity
             item.IsInGameItem = itemDefined.IsInGameItem;
             if (item is OpenItem)
             {
-                item.Skills.Active = Skills.Active?.Copy(true, skillsDefined);
+                item.Skills.Active = itemDefined.Skills.Active?.Copy(true, skillsDefined);
                 if (item.Skills.Active != null)
                 {
-                    item.Skills.Active.Level = copyLevel ? (Skills.Active?.Level ?? 1) : 1;
+                    item.Skills.Active.Level = copyLevel ? (itemDefined.Skills.Active?.Level ?? 1) : 1;
                     item.Skills.Active.Guid = item.Guid;
                 }
-                foreach (Skill skill in Skills.Passives)
+                foreach (Skill skill in itemDefined.Skills.Passives)
                 {
                     Skill newskill = skill.Copy(true, skillsDefined);
                     newskill.Item = item;
@@ -602,7 +602,7 @@ namespace Milimoe.FunGame.Core.Entity
                     newskill.Guid = item.Guid;
                     item.Skills.Passives.Add(newskill);
                 }
-                foreach (Skill skill in Skills.Magics)
+                foreach (Skill skill in itemDefined.Skills.Magics)
                 {
                     Skill newskill = skill.Copy(true, skillsDefined);
                     newskill.Item = item;

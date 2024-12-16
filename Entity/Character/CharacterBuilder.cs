@@ -216,7 +216,7 @@ namespace Milimoe.FunGame.Core.Entity
         public static Character Build(Character reference, bool newItemGuid = true, IEnumerable<Item>? itemsDefined = null, IEnumerable<Skill>? skillsDefined = null)
         {
             Character character = new CharacterBuilder(reference).Build(reference.Level, reference.Skills, reference.Items, newItemGuid, reference.EquipSlot, itemsDefined, skillsDefined);
-            character.NormalAttack.Level = reference.Level;
+            character.NormalAttack.Level = reference.NormalAttack.Level;
             character.NormalAttack.SetMagicType(reference.NormalAttack.IsMagic, reference.NormalAttack.MagicType);
             return character;
         }

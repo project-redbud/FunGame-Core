@@ -469,7 +469,7 @@ namespace Milimoe.FunGame.Core.Entity
                 args["values"] = skillDefined.Values;
             }
             Skill skill = Factory.OpenFactory.GetInstance<Skill>(Id, Name, args);
-            skillDefined ??= skill;
+            skillDefined ??= this;
             if (copyProperty) SetPropertyToItemModuleNew(skill);
             skill.Id = skillDefined.Id;
             skill.Name = skillDefined.Name;
@@ -484,7 +484,7 @@ namespace Milimoe.FunGame.Core.Entity
             skill.GamingQueue = skillDefined.GamingQueue;
             if (skill is OpenSkill)
             {
-                foreach (Effect e in Effects)
+                foreach (Effect e in skillDefined.Effects)
                 {
                     Effect neweffect = e.Copy(skill);
                     skill.Effects.Add(neweffect);
