@@ -1106,13 +1106,31 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 角色升级，用完所有溢出的经验值
+        /// 角色升级
         /// </summary>
-        public void OnLevelUp()
+        /// <param name="level"></param>
+        /// <param name="checkLevelBreak"></param>
+        public void OnLevelUp(int level = 0, bool checkLevelBreak = true)
         {
-            bool flag = false;
-            while (!flag)
+            int count = 0;
+            while (true)
             {
+                // 传入 level 表示最多升级多少次，0 为用完所有溢出的经验值
+                if (level != 0 && count++ > level)
+                {
+                    break;
+                }
+                if (General.GameplayEquilibriumConstant.UseLevelBreak && checkLevelBreak)
+                {
+                    // 检查角色突破进度
+                    int[] levels = [.. General.GameplayEquilibriumConstant.LevelBreakList];
+                    int breaks = LevelBreak + 1;
+                    if (breaks < levels.Length && Level >= levels[breaks])
+                    {
+                        // 需要突破才能继续升级
+                        break;
+                    }
+                }
                 if (Level > 0 && Level < General.GameplayEquilibriumConstant.MaxLevel && General.GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) && EXP > need)
                 {
                     EXP -= need;
@@ -1122,7 +1140,7 @@ namespace Milimoe.FunGame.Core.Entity
                 }
                 else
                 {
-                    flag = true;
+                    break;
                 }
             }
         }
@@ -1136,20 +1154,18 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 // 检查角色突破进度
                 int[] levels = [.. General.GameplayEquilibriumConstant.LevelBreakList];
-                int breaks = LevelBreak + 1;
-                if (breaks < levels.Length)
+                if (LevelBreak + 1 < levels.Length)
                 {
-                    bool flag = false;
-                    while (!flag)
+                    while (true)
                     {
                         // 检查角色等级
-                        if (Level >= levels[breaks])
+                        if (Level >= levels[LevelBreak + 1])
                         {
                             LevelBreak++;
                         }
                         else
                         {
-                            flag = true;
+                            break;
                         }
                     }
                 }
