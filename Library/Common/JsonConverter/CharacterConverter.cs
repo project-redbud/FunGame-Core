@@ -179,8 +179,8 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Character.ExActionCoefficient):
                     result.ExActionCoefficient = reader.GetDouble();
                     break;
-                case nameof(Character.AccelerationCoefficient):
-                    result.AccelerationCoefficient = reader.GetDouble();
+                case nameof(Character.ExAccelerationCoefficient):
+                    result.ExAccelerationCoefficient = reader.GetDouble();
                     break;
                 case nameof(Character.ExCDR):
                     result.ExCDR = reader.GetDouble();
@@ -274,7 +274,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Character.InitialSPD), value.InitialSPD);
             writer.WriteNumber(nameof(Character.ExSPD), value.ExSPD);
             writer.WriteNumber(nameof(Character.ExActionCoefficient), value.ExActionCoefficient);
-            writer.WriteNumber(nameof(Character.AccelerationCoefficient), value.AccelerationCoefficient);
+            writer.WriteNumber(nameof(Character.ExAccelerationCoefficient), value.ExAccelerationCoefficient);
             writer.WriteNumber(nameof(Character.ExCDR), value.ExCDR);
             writer.WriteNumber(nameof(Character.ATR), value.ATR);
             writer.WriteNumber(nameof(Character.ExCritRate), value.ExCritRate);

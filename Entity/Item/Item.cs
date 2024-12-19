@@ -520,12 +520,15 @@ namespace Milimoe.FunGame.Core.Entity
                 builder.AppendLine("== 魔法卡 ==\r\n" + string.Join("\r\n", Skills.Magics.Select(m => m.ToString().Trim())));
             }
 
-            builder.AppendLine("== 物品技能 ==");
-
-            if (Skills.Active != null) builder.AppendLine($"{Skills.Active.ToString().Trim()}");
-            foreach (Skill skill in Skills.Passives)
+            if (Skills.Active != null || Skills.Passives.Count > 0)
             {
-                builder.AppendLine($"{skill.ToString().Trim()}");
+                builder.AppendLine("== 物品技能 ==");
+
+                if (Skills.Active != null) builder.AppendLine($"{Skills.Active.ToString().Trim()}");
+                foreach (Skill skill in Skills.Passives)
+                {
+                    builder.AppendLine($"{skill.ToString().Trim()}");
+                }
             }
 
             if (BackgroundStory != "")

@@ -202,7 +202,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 每 1 点力量增加生命回复力
         /// </summary>
-        public double STRtoHRFactor { get; set; } = 0.025;
+        public double STRtoHRFactor { get; set; } = 0.1;
 
         /// <summary>
         /// 每 1 点力量增加物理护甲
@@ -227,7 +227,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 每 1 点智力增加魔法回复力
         /// </summary>
-        public double INTtoMRFactor { get; set; } = 0.01;
+        public double INTtoMRFactor { get; set; } = 0.04;
 
         /// <summary>
         /// 每 1 点智力减少魔法消耗
@@ -238,6 +238,11 @@ namespace Milimoe.FunGame.Core.Model
         /// 每 1 点智力减少能量消耗
         /// </summary>
         public double INTtoCastEPReduce { get; set; } = 0.00075;
+        
+        /// <summary>
+        /// 每 1 点智力增加加速系数
+        /// </summary>
+        public double INTtoAccelerationCoefficientMultiplier { get; set; } = 0.00125;
 
         /// <summary>
         /// 每 1 点敏捷增加行动速度
@@ -252,6 +257,6 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 每 1 点敏捷增加闪避率
         /// </summary>
-        public double AGItoEvadeRateMultiplier { get; set; } = 0.0025;
+        public double AGItoEvadeRateMultiplier { get; set; } = 0.00175;
     }
 }

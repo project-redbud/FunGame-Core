@@ -650,6 +650,31 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 await Task.Delay(milliseconds);
             }).OnCompleted(action);
         }
+
+        /// <summary>
+        /// 添加任务计划，使用 <paramref name="time"/> 的时分秒。如果用 <see cref="TimeSpan"/>，请直接在 <see cref="TaskScheduler.Shared"/> 中添加
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="time"></param>
+        /// <param name="action"></param>
+        public static void AddSchedulerTask(string name, DateTime time, Action action)
+        {
+            TaskScheduler.Shared.AddTask(name, new TimeSpan(time.Hour, time.Minute, time.Second), action);
+        }
+
+        /// <summary>
+        /// 添加循环任务。如果用 <see cref="TimeSpan"/>，请直接在 <see cref="TaskScheduler.Shared"/> 中添加
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="seconds"></param>
+        /// <param name="action"></param>
+        /// <param name="hours"></param>
+        /// <param name="minutes"></param>
+        /// <param name="startNow"></param>
+        public static void AddRecurringTask(string name, int seconds, Action action, int hours = 0, int minutes = 0, bool startNow = false)
+        {
+            TaskScheduler.Shared.AddRecurringTask(name, new TimeSpan(hours, minutes, seconds), action, startNow);
+        }
     }
 
     #endregion
