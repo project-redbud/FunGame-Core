@@ -41,6 +41,42 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         public HashSet<Item> Items { get; } = [];
 
+        /// <summary>
+        /// 主战角色
+        /// </summary>
+        public Character MainCharacter
+        {
+            get
+            {
+                if (_character != null)
+                {
+                    return _character;
+                }
+                else if (Characters.Count > 0)
+                {
+                    _character = Characters.First();
+                    return _character;
+                }
+                throw new GetInstanceException();
+            }
+            set
+            {
+                _character = value;
+            }
+        }
+
+        /// <summary>
+        /// 小队
+        /// </summary>
+        public List<Character> Squad { get; set; } = [];
+        
+        /// <summary>
+        /// 练级中的角色
+        /// </summary>
+        public List<Character> Training { get; set; } = [];
+
+        private Character? _character;
+
         internal Inventory(User user)
         {
             User = user;

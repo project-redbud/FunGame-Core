@@ -1,4 +1,4 @@
-﻿namespace Milimoe.FunGame.Core.Model
+namespace Milimoe.FunGame.Core.Model
 {
     /// <summary>
     /// 游戏平衡常数
@@ -48,7 +48,26 @@
         /// <summary>
         /// 经验值上限
         /// </summary>
-        public Dictionary<int, double> EXPUpperLimit { get; set; } = [];
+        public Dictionary<int, double> EXPUpperLimit { get; set; } = new()
+        {
+            { 1, 1000 }, { 2, 1000 }, { 3, 1000 }, { 4, 1000 }, { 5, 1000 }, { 6, 1000 }, { 7, 1000 }, { 8, 1000 }, { 9, 1000 },
+            { 10, 1500 }, { 11, 1500 }, { 12, 1500 }, { 13, 1500 }, { 14, 1500 }, { 15, 1500 }, { 16, 1500 }, { 17, 1500 }, { 18, 1500 }, { 19, 1500 },
+            { 20, 2000 }, { 21, 2000 }, { 22, 2000 }, { 23, 2000 }, { 24, 2000 }, { 25, 2000 }, { 26, 2000 }, { 27, 2000 }, { 28, 2000 }, { 29, 2000 },
+            { 30, 3000 }, { 31, 3000 }, { 32, 3000 }, { 33, 3000 }, { 34, 3000 }, { 35, 3000 }, { 36, 3000 }, { 37, 3000 }, { 38, 3000 }, { 39, 3000 },
+            { 40, 4000 }, { 41, 4000 }, { 42, 4000 }, { 43, 4000 }, { 44, 4000 }, { 45, 4000 }, { 46, 4000 }, { 47, 4000 }, { 48, 4000 }, { 49, 4000 },
+            { 50, 5000 }, { 51, 5000 }, { 52, 5000 }, { 53, 5000 }, { 54, 5000 }, { 55, 5000 }, { 56, 5000 }, { 57, 5000 }, { 58, 5000 }, { 59, 5000 },
+            { 60, 9999999999999 }
+        };
+
+        /// <summary>
+        /// 使用等级突破机制
+        /// </summary>
+        public bool UseLevelBreak { get; set; } = true;
+
+        /// <summary>
+        /// 使用等级突破机制后，角色处于这些等级时需要突破才能继续升级
+        /// </summary>
+        public HashSet<int> LevelBreakList { get; set; } = [10, 20, 30, 40, 50, 60];
 
         /// <summary>
         /// 魔法最高等级
@@ -183,7 +202,7 @@
         /// <summary>
         /// 每 1 点力量增加生命回复力
         /// </summary>
-        public double STRtoHRFactor { get; set; } = 0.025;
+        public double STRtoHRFactor { get; set; } = 0.1;
 
         /// <summary>
         /// 每 1 点力量增加物理护甲
@@ -208,7 +227,7 @@
         /// <summary>
         /// 每 1 点智力增加魔法回复力
         /// </summary>
-        public double INTtoMRFactor { get; set; } = 0.01;
+        public double INTtoMRFactor { get; set; } = 0.04;
 
         /// <summary>
         /// 每 1 点智力减少魔法消耗
@@ -219,6 +238,11 @@
         /// 每 1 点智力减少能量消耗
         /// </summary>
         public double INTtoCastEPReduce { get; set; } = 0.00075;
+        
+        /// <summary>
+        /// 每 1 点智力增加加速系数
+        /// </summary>
+        public double INTtoAccelerationCoefficientMultiplier { get; set; } = 0.00125;
 
         /// <summary>
         /// 每 1 点敏捷增加行动速度
@@ -233,6 +257,6 @@
         /// <summary>
         /// 每 1 点敏捷增加闪避率
         /// </summary>
-        public double AGItoEvadeRateMultiplier { get; set; } = 0.0025;
+        public double AGItoEvadeRateMultiplier { get; set; } = 0.00175;
     }
 }
