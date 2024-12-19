@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -10,7 +10,7 @@ namespace Milimoe.FunGame.Core.Entity
     /// 在使用时仅需要调用 <see cref="Copy"/> 方法即可获得相同对象<para />
     /// 不建议继承
     /// </summary>
-    public class Character : BaseEntity, ICopyable<Character>
+    public class Character : BaseEntity
     {
         /// <summary>
         /// 角色的姓
@@ -135,6 +135,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 经验值
         /// </summary>
         public double EXP { get; set; } = 0;
+        
+        /// <summary>
+        /// 等级突破进度 [ 对应 <see cref="Model.EquilibriumConstant.LevelBreakList"/> 中的索引 ]
+        /// </summary>
+        public int LevelBreak { get; set; } = -1;
 
         /// <summary>
         /// 角色目前所处的状态 [ 战斗相关 ]
@@ -1101,6 +1106,73 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 角色升级
+        /// </summary>
+        /// <param name="level"></param>
+        /// <param name="checkLevelBreak"></param>
+        public void OnLevelUp(int level = 0, bool checkLevelBreak = true)
+        {
+            int count = 0;
+            while (true)
+            {
+                // 传入 level 表示最多升级多少次，0 为用完所有溢出的经验值
+                if (level != 0 && count++ > level)
+                {
+                    break;
+                }
+                if (General.GameplayEquilibriumConstant.UseLevelBreak && checkLevelBreak)
+                {
+                    // 检查角色突破进度
+                    int[] levels = [.. General.GameplayEquilibriumConstant.LevelBreakList];
+                    int breaks = LevelBreak + 1;
+                    if (breaks < levels.Length && Level >= levels[breaks])
+                    {
+                        // 需要突破才能继续升级
+                        break;
+                    }
+                }
+                if (Level > 0 && Level < General.GameplayEquilibriumConstant.MaxLevel && General.GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) && EXP > need)
+                {
+                    EXP -= need;
+                    Level++;
+                    OnAttributeChanged();
+                    Recovery();
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        
+        /// <summary>
+        /// 角色突破，允许继续升级
+        /// </summary>
+        public void OnLevelBreak()
+        {
+            if (General.GameplayEquilibriumConstant.UseLevelBreak)
+            {
+                // 检查角色突破进度
+                int[] levels = [.. General.GameplayEquilibriumConstant.LevelBreakList];
+                if (LevelBreak + 1 < levels.Length)
+                {
+                    while (true)
+                    {
+                        // 检查角色等级
+                        if (Level >= levels[LevelBreak + 1])
+                        {
+                            LevelBreak++;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// 角色的属性发生变化，会影响特殊效果的计算
         /// </summary>
         public void OnAttributeChanged()
@@ -1222,8 +1294,8 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine(showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser());
             if (showEXP)
             {
-                builder.AppendLine($"等级：{Level} / {General.GameplayEquilibriumConstant.MaxLevel}");
-                builder.AppendLine($"经验值：{EXP}{(Level > 0 && Level <= General.GameplayEquilibriumConstant.EXPUpperLimit.Keys.Max() ? " / " + General.GameplayEquilibriumConstant.EXPUpperLimit[Level] : "")}");
+                builder.AppendLine($"等级：{Level} / {General.GameplayEquilibriumConstant.MaxLevel}（突破进度：{LevelBreak + 1} / {General.GameplayEquilibriumConstant.LevelBreakList.Count}）");
+                builder.AppendLine($"经验值：{EXP}{(Level != General.GameplayEquilibriumConstant.MaxLevel && General.GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) ? " / " + need : "")}");
             }
             double exHP = ExHP + ExHP2 + ExHP3;
             builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : ""));
@@ -1350,8 +1422,8 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine(showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser());
             if (showEXP)
             {
-                builder.AppendLine($"等级：{Level} / {General.GameplayEquilibriumConstant.MaxLevel}");
-                builder.AppendLine($"经验值：{EXP}{(Level > 0 && Level <= General.GameplayEquilibriumConstant.EXPUpperLimit.Keys.Max() ? " / " + General.GameplayEquilibriumConstant.EXPUpperLimit[Level] : "")}");
+                builder.AppendLine($"等级：{Level} / {General.GameplayEquilibriumConstant.MaxLevel}（突破进度：{LevelBreak + 1} / {General.GameplayEquilibriumConstant.LevelBreakList.Count}）");
+                builder.AppendLine($"经验值：{EXP}{(Level != General.GameplayEquilibriumConstant.MaxLevel && General.GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) ? " / " + need : "")}");
             }
             double exHP = ExHP + ExHP2 + ExHP3;
             builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : ""));
@@ -1569,7 +1641,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// [ 推荐从模组中复制后使用对象 ]
         /// </summary>
         /// <returns></returns>
-        public Character Copy()
+        public Character Copy(bool copyEx = false)
         {
             Character c = new()
             {
@@ -1586,50 +1658,54 @@ namespace Milimoe.FunGame.Core.Entity
                 Promotion = Promotion,
                 PrimaryAttribute = PrimaryAttribute,
                 Level = Level,
+                LevelBreak = LevelBreak,
                 EXP = EXP,
                 InitialHP = InitialHP,
-                ExHP2 = ExHP2,
-                ExHPPercentage = ExHPPercentage,
                 InitialMP = InitialMP,
-                ExMP2 = ExMP2,
-                ExMPPercentage = ExMPPercentage,
                 EP = EP,
                 InitialATK = InitialATK,
-                ExATK2 = ExATK2,
-                ExATKPercentage = ExATKPercentage,
                 InitialDEF = InitialDEF,
-                ExDEF2 = ExDEF2,
-                ExDEFPercentage = ExDEFPercentage,
                 MDF = MDF.Copy(),
                 PhysicalPenetration = PhysicalPenetration,
                 MagicalPenetration = MagicalPenetration,
                 InitialHR = InitialHR,
-                ExHR = ExHR,
                 InitialMR = InitialMR,
-                ExMR = ExMR,
                 ER = ER,
                 InitialSTR = InitialSTR,
                 InitialAGI = InitialAGI,
                 InitialINT = InitialINT,
-                ExSTR = ExSTR,
-                ExAGI = ExAGI,
-                ExINT = ExINT,
-                ExSTRPercentage = ExSTRPercentage,
-                ExAGIPercentage = ExAGIPercentage,
-                ExINTPercentage = ExINTPercentage,
                 STRGrowth = STRGrowth,
                 AGIGrowth = AGIGrowth,
                 INTGrowth = INTGrowth,
                 InitialSPD = InitialSPD,
-                ExSPD = ExSPD,
-                ExActionCoefficient = ExActionCoefficient,
                 AccelerationCoefficient = AccelerationCoefficient,
-                ExCDR = ExCDR,
                 ATR = ATR,
-                ExCritRate = ExCritRate,
-                ExCritDMG = ExCritDMG,
-                ExEvadeRate = ExEvadeRate
             };
+            if (copyEx)
+            {
+                c.ExHP2 = ExHP2;
+                c.ExHPPercentage = ExHPPercentage;
+                c.ExMP2 = ExMP2;
+                c.ExMPPercentage = ExMPPercentage;
+                c.ExATK2 = ExATK2;
+                c.ExATKPercentage = ExATKPercentage;
+                c.ExDEF2 = ExDEF2;
+                c.ExDEFPercentage = ExDEFPercentage;
+                c.ExHR = ExHR;
+                c.ExMR = ExMR;
+                c.ExSTRPercentage = ExSTRPercentage;
+                c.ExAGIPercentage = ExAGIPercentage;
+                c.ExINTPercentage = ExINTPercentage;
+                c.ExSTR = ExSTR;
+                c.ExAGI = ExAGI;
+                c.ExINT = ExINT;
+                c.ExSPD = ExSPD;
+                c.ExActionCoefficient = ExActionCoefficient;
+                c.ExCDR = ExCDR;
+                c.ExCritRate = ExCritRate;
+                c.ExCritDMG = ExCritDMG;
+                c.ExEvadeRate = ExEvadeRate;
+            }
             foreach (Skill skill in Skills)
             {
                 Skill newskill = skill.Copy();
@@ -1684,6 +1760,7 @@ namespace Milimoe.FunGame.Core.Entity
             Promotion = c.Promotion;
             PrimaryAttribute = c.PrimaryAttribute;
             Level = c.Level;
+            LevelBreak = c.LevelBreak;
             EXP = c.EXP;
             CharacterState = c.CharacterState;
             CharacterEffectStates.Clear();
