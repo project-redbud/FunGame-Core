@@ -101,10 +101,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="items"></param>
         /// <param name="newItemGuid"></param>
         /// <param name="equips"></param>
+        /// <param name="inventory"></param>
         /// <param name="itemsDefined"></param>
         /// <param name="skillsDefined"></param>
         /// <returns>构建的新角色</returns>
-        public Character Build(IEnumerable<Skill> skills, IEnumerable<Item> items, bool newItemGuid = true, EquipSlot? equips = null, IEnumerable<Item>? itemsDefined = null, IEnumerable<Skill>? skillsDefined = null)
+        public Character Build(IEnumerable<Skill> skills, IEnumerable<Item> items, bool newItemGuid = true, EquipSlot? equips = null, Inventory? inventory = null, IEnumerable<Item>? itemsDefined = null, IEnumerable<Skill>? skillsDefined = null)
         {
             Character character = Factory.GetCharacter();
             character.Id = Id;
@@ -164,35 +165,65 @@ namespace Milimoe.FunGame.Core.Entity
                 Item? s = equips.Shoes;
                 Item? ac1 = equips.Accessory1;
                 Item? ac2 = equips.Accessory2;
-                if (mcp != null)
+                if (inventory != null)
                 {
-                    mcp = mcp.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
-                    character.Equip(mcp);
+                    if (inventory.Items.FirstOrDefault(i => i.Guid == mcp?.Guid) is Item newmcp)
+                    {
+                        character.Equip(newmcp);
+                    }
+                    if (inventory.Items.FirstOrDefault(i => i.Guid == w?.Guid) is Item neww)
+                    {
+                        character.Equip(neww);
+                    }
+                    if (inventory.Items.FirstOrDefault(i => i.Guid == a?.Guid) is Item newa)
+                    {
+                        character.Equip(newa);
+                    }
+                    if (inventory.Items.FirstOrDefault(i => i.Guid == s?.Guid) is Item news)
+                    {
+                        character.Equip(news);
+                    }
+                    if (inventory.Items.FirstOrDefault(i => i.Guid == ac1?.Guid) is Item newac1)
+                    {
+                        character.Equip(newac1);
+                    }
+                    if (inventory.Items.FirstOrDefault(i => i.Guid == ac2?.Guid) is Item newac2)
+                    {
+                        character.Equip(newac2);
+                    }
                 }
-                if (w != null)
+                else
                 {
-                    w = w.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
-                    character.Equip(w);
-                }
-                if (a != null)
-                {
-                    a = a.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
-                    character.Equip(a);
-                }
-                if (s != null)
-                {
-                    s = s.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
-                    character.Equip(s);
-                }
-                if (ac1 != null)
-                {
-                    ac1 = ac1.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
-                    character.Equip(ac1);
-                }
-                if (ac2 != null)
-                {
-                    ac2 = ac2.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
-                    character.Equip(ac2);
+                    if (mcp != null)
+                    {
+                        mcp = mcp.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
+                        character.Equip(mcp);
+                    }
+                    if (w != null)
+                    {
+                        w = w.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
+                        character.Equip(w);
+                    }
+                    if (a != null)
+                    {
+                        a = a.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
+                        character.Equip(a);
+                    }
+                    if (s != null)
+                    {
+                        s = s.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
+                        character.Equip(s);
+                    }
+                    if (ac1 != null)
+                    {
+                        ac1 = ac1.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
+                        character.Equip(ac1);
+                    }
+                    if (ac2 != null)
+                    {
+                        ac2 = ac2.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
+                        character.Equip(ac2);
+                    }
                 }
             }
             character.Recovery();
@@ -205,13 +236,14 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="reference"></param>
         /// <param name="newItemGuid"></param>
+        /// <param name="copyLevel"></param>
+        /// <param name="inventory"></param>
         /// <param name="itemsDefined">对于动态扩展的物品而言，传入已定义的物品表，不使用被复制物品的数据</param>
         /// <param name="skillsDefined">对于动态扩展的技能而言，传入已定义的技能表，不使用被复制技能的数据</param>
-        /// <param name="copyLevel"></param>
         /// <returns>构建的新角色</returns>
-        public static Character Build(Character reference, bool newItemGuid = true, IEnumerable<Item>? itemsDefined = null, IEnumerable<Skill>? skillsDefined = null, bool copyLevel = true)
+        public static Character Build(Character reference, bool newItemGuid = true, bool copyLevel = true, Inventory? inventory = null, IEnumerable<Item>? itemsDefined = null, IEnumerable<Skill>? skillsDefined = null)
         {
-            Character character = new CharacterBuilder(reference).Build(reference.Skills, reference.Items, newItemGuid, reference.EquipSlot, itemsDefined, skillsDefined);
+            Character character = new CharacterBuilder(reference).Build(reference.Skills, reference.Items, newItemGuid, reference.EquipSlot, inventory, itemsDefined, skillsDefined);
             if (copyLevel)
             {
                 character.Level = reference.Level;

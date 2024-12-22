@@ -323,15 +323,7 @@ namespace Milimoe.FunGame.Core.Entity
             }
             if (used)
             {
-                if (IsReduceTimesAfterUse)
-                {
-                    RemainUseTimes--;
-                }
-                if (RemainUseTimes < 0) RemainUseTimes = 0;
-                if (IsRemoveAfterUse && RemainUseTimes == 0)
-                {
-                    character.Items.Remove(this);
-                }
+                ReduceTimesAndRemove();
             }
             return result && used;
         }
@@ -347,19 +339,27 @@ namespace Milimoe.FunGame.Core.Entity
                 bool result = OnItemUsed(args);
                 if (result)
                 {
-                    if (IsReduceTimesAfterUse)
-                    {
-                        RemainUseTimes--;
-                    }
-                    if (RemainUseTimes < 0) RemainUseTimes = 0;
-                    if (IsRemoveAfterUse && RemainUseTimes == 0)
-                    {
-                        User.Inventory.Items.Remove(this);
-                    }
+                    ReduceTimesAndRemove();
                 }
                 return result;
             }
             return false;
+        }
+
+        public void ReduceTimesAndRemove()
+        {
+            if (User != null)
+            {
+                if (IsReduceTimesAfterUse)
+                {
+                    RemainUseTimes--;
+                }
+                if (RemainUseTimes < 0) RemainUseTimes = 0;
+                if (IsRemoveAfterUse && RemainUseTimes == 0)
+                {
+                    User.Inventory.Items.Remove(this);
+                }
+            }
         }
 
         /// <summary>
