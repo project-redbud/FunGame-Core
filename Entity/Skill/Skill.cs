@@ -357,6 +357,18 @@ namespace Milimoe.FunGame.Core.Entity
                 e.OnSkillCasted(caster, targets, Values);
             }
         }
+        
+        /// <summary>
+        /// 对目标触发技能效果
+        /// </summary>
+        /// <param name="targets"></param>
+        public void OnSkillCasted(List<Character> targets)
+        {
+            foreach (Effect e in Effects)
+            {
+                e.OnSkillCasted(targets, Values);
+            }
+        }
 
         /// <summary>
         /// 被动技能，需要重写此方法，返回被动特效给角色 [ 此方法会在技能学习时触发 ]
@@ -391,7 +403,7 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 builder.AppendLine("效果结束前不可用");
             }
-            if (IsActive)
+            if (IsActive && (Item?.IsInGameItem ?? true))
             {
                 if (SkillType == SkillType.Item)
                 {
@@ -469,7 +481,7 @@ namespace Milimoe.FunGame.Core.Entity
                 args["values"] = skillDefined.Values;
             }
             Skill skill = Factory.OpenFactory.GetInstance<Skill>(Id, Name, args);
-            skillDefined ??= skill;
+            skillDefined ??= this;
             if (copyProperty) SetPropertyToItemModuleNew(skill);
             skill.Id = skillDefined.Id;
             skill.Name = skillDefined.Name;
@@ -484,7 +496,7 @@ namespace Milimoe.FunGame.Core.Entity
             skill.GamingQueue = skillDefined.GamingQueue;
             if (skill is OpenSkill)
             {
-                foreach (Effect e in Effects)
+                foreach (Effect e in skillDefined.Effects)
                 {
                     Effect neweffect = e.Copy(skill);
                     skill.Effects.Add(neweffect);

@@ -143,9 +143,20 @@ namespace Milimoe.FunGame.Core.Entity
         public DateTime NextTradableTime { get; set; } = DateTime.MinValue;
 
         /// <summary>
-        /// 剩余使用次数（消耗品才会用到）
+        /// 剩余使用次数<para/>
+        /// 对于永久性主动物品而言，如果是 <see cref="IsInGameItem"/> 物品，可以不设置此值；反之，强烈建议设置为 1.
         /// </summary>
         public int RemainUseTimes { get; set; } = 0;
+
+        /// <summary>
+        /// 使用后减少使用次数
+        /// </summary>
+        public bool IsReduceTimesAfterUse { get; set; } = true;
+
+        /// <summary>
+        /// 用完后删除物品
+        /// </summary>
+        public bool IsRemoveAfterUse { get; set; } = true;
 
         /// <summary>
         /// 物品所属的角色（只有装备物品，才需要设置）
@@ -290,11 +301,17 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 局内使用物品触发 对某个角色使用
         /// </summary>
-        public void UseItem(IGamingQueue queue, Character character, List<Character> enemys, List<Character> teammates)
+        /// <returns></returns>
+        public bool UseItem(IGamingQueue queue, Character character, List<Character> enemys, List<Character> teammates)
         {
             bool cancel = false;
             bool used = false;
-            if (Skills.Active != null)
+            bool result = OnItemUsed(character, this, ref cancel);
+            if (cancel)
+            {
+                return result;
+            }
+            if (result && Skills.Active != null)
             {
                 Skill skill = Skills.Active;
                 List<Character> targets = queue.SelectTargets(character, skill, enemys, teammates, out cancel);
@@ -304,15 +321,45 @@ namespace Milimoe.FunGame.Core.Entity
                     used = true;
                 }
             }
-            OnItemUsed(character, this, cancel, used);
+            if (used)
+            {
+                ReduceTimesAndRemove();
+            }
+            return result && used;
         }
 
         /// <summary>
         /// 局外（库存）使用物品触发
         /// </summary>
-        public void UseItem()
+        /// <returns></returns>
+        public bool UseItem(Dictionary<string, object> args)
         {
-            if (User != null) OnItemUsed(User, this);
+            if (User != null) 
+            {
+                bool result = OnItemUsed(args);
+                if (result)
+                {
+                    ReduceTimesAndRemove();
+                }
+                return result;
+            }
+            return false;
+        }
+
+        public void ReduceTimesAndRemove()
+        {
+            if (User != null)
+            {
+                if (IsReduceTimesAfterUse)
+                {
+                    RemainUseTimes--;
+                }
+                if (RemainUseTimes < 0) RemainUseTimes = 0;
+                if (IsRemoveAfterUse && RemainUseTimes == 0)
+                {
+                    User.Inventory.Items.Remove(this);
+                }
+            }
         }
 
         /// <summary>
@@ -321,20 +368,20 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="character"></param>
         /// <param name="item"></param>
         /// <param name="cancel"></param>
-        /// <param name="used"></param>
-        protected virtual void OnItemUsed(Character character, Item item, bool cancel, bool used)
+        /// <returns></returns>
+        protected virtual bool OnItemUsed(Character character, Item item, ref bool cancel)
         {
-
+            return false;
         }
 
         /// <summary>
         /// 当物品被玩家使用时
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="item"></param>
-        protected virtual void OnItemUsed(User user, Item item)
+        /// <param name="args"></param>
+        /// <returns></returns>
+        protected virtual bool OnItemUsed(Dictionary<string, object> args)
         {
-
+            return false;
         }
 
         /// <summary>
@@ -358,7 +405,6 @@ namespace Milimoe.FunGame.Core.Entity
         {
 
         }
-
 
         protected Item(ItemType type, bool isInGame = true)
         {
@@ -474,12 +520,15 @@ namespace Milimoe.FunGame.Core.Entity
                 builder.AppendLine("== 魔法卡 ==\r\n" + string.Join("\r\n", Skills.Magics.Select(m => m.ToString().Trim())));
             }
 
-            builder.AppendLine("== 物品技能 ==");
-
-            if (Skills.Active != null) builder.AppendLine($"{Skills.Active.ToString().Trim()}");
-            foreach (Skill skill in Skills.Passives)
+            if (Skills.Active != null || Skills.Passives.Count > 0)
             {
-                builder.AppendLine($"{skill.ToString().Trim()}");
+                builder.AppendLine("== 物品技能 ==");
+
+                if (Skills.Active != null) builder.AppendLine($"{Skills.Active.ToString().Trim()}");
+                foreach (Skill skill in Skills.Passives)
+                {
+                    builder.AppendLine($"{skill.ToString().Trim()}");
+                }
             }
 
             if (BackgroundStory != "")
@@ -588,13 +637,13 @@ namespace Milimoe.FunGame.Core.Entity
             item.IsInGameItem = itemDefined.IsInGameItem;
             if (item is OpenItem)
             {
-                item.Skills.Active = Skills.Active?.Copy(true, skillsDefined);
+                item.Skills.Active = itemDefined.Skills.Active?.Copy(true, skillsDefined);
                 if (item.Skills.Active != null)
                 {
-                    item.Skills.Active.Level = copyLevel ? (Skills.Active?.Level ?? 1) : 1;
+                    item.Skills.Active.Level = copyLevel ? (itemDefined.Skills.Active?.Level ?? 1) : 1;
                     item.Skills.Active.Guid = item.Guid;
                 }
-                foreach (Skill skill in Skills.Passives)
+                foreach (Skill skill in itemDefined.Skills.Passives)
                 {
                     Skill newskill = skill.Copy(true, skillsDefined);
                     newskill.Item = item;
@@ -602,7 +651,7 @@ namespace Milimoe.FunGame.Core.Entity
                     newskill.Guid = item.Guid;
                     item.Skills.Passives.Add(newskill);
                 }
-                foreach (Skill skill in Skills.Magics)
+                foreach (Skill skill in itemDefined.Skills.Magics)
                 {
                     Skill newskill = skill.Copy(true, skillsDefined);
                     newskill.Item = item;

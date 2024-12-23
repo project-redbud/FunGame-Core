@@ -39,6 +39,27 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                         result.Items.Add(item);
                     }
                     break;
+                case nameof(Inventory.MainCharacter):
+                    Character? mc = NetworkUtility.JsonDeserialize<Character>(ref reader, options);
+                    if (mc != null)
+                    {
+                        result.MainCharacter = mc;
+                    }
+                    break;
+                case nameof(Inventory.Squad):
+                    HashSet<Character> squad = NetworkUtility.JsonDeserialize<HashSet<Character>>(ref reader, options) ?? [];
+                    foreach (Character character in squad)
+                    {
+                        result.Squad.Add(character);
+                    }
+                    break;
+                case nameof(Inventory.Training):
+                    Dictionary<Character, DateTime> training = NetworkUtility.JsonDeserialize<Dictionary<Character, DateTime>>(ref reader, options) ?? [];
+                    foreach (Character character in training.Keys)
+                    {
+                        result.Training.Add(character, training[character]);
+                    }
+                    break;
             }
         }
 
@@ -53,6 +74,12 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             JsonSerializer.Serialize(writer, value.Characters, options);
             writer.WritePropertyName(nameof(Inventory.Items));
             JsonSerializer.Serialize(writer, value.Items, options);
+            writer.WritePropertyName(nameof(Inventory.MainCharacter));
+            JsonSerializer.Serialize(writer, value.MainCharacter, options);
+            writer.WritePropertyName(nameof(Inventory.Squad));
+            JsonSerializer.Serialize(writer, value.Squad, options);
+            writer.WritePropertyName(nameof(Inventory.Training));
+            JsonSerializer.Serialize(writer, value.Training, options);
 
             writer.WriteEndObject();
         }

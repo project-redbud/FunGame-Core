@@ -510,6 +510,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 _ => QualityType.White
             };
         }
+
+        public static string[] QualityTypeNameArray => ["普通", "优秀", "稀有", "史诗", "传说", "神话", "不朽"];
     }
 
     public class SkillSet
