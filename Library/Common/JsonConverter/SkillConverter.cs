@@ -114,11 +114,11 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 writer.WritePropertyName(nameof(Skill.Guid));
                 JsonSerializer.Serialize(writer, value.Guid, options);
             }
+            writer.WriteNumber(nameof(Skill.SkillType), (int)value.SkillType);
             writer.WriteString(nameof(Skill.Description), value.Description);
             if (value.GeneralDescription.Length > 0) writer.WriteString(nameof(Skill.GeneralDescription), value.GeneralDescription);
             if (value.Slogan.Length > 0) writer.WriteString(nameof(Skill.Slogan), value.Slogan);
             if (value.Level > 0) writer.WriteNumber(nameof(Skill.Level), value.Level);
-            writer.WriteNumber(nameof(Skill.SkillType), (int)value.SkillType);
             if (value.CanSelectSelf) writer.WriteBoolean(nameof(Skill.CanSelectSelf), value.CanSelectSelf);
             if (!value.CanSelectEnemy) writer.WriteBoolean(nameof(Skill.CanSelectEnemy), value.CanSelectEnemy);
             if (value.CanSelectTeammate) writer.WriteBoolean(nameof(Skill.CanSelectTeammate), value.CanSelectTeammate);

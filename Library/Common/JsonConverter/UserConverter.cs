@@ -75,6 +75,15 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     {
                         result.Inventory.Items.Add(item);
                     }
+                    result.Inventory.MainCharacter = inventory.MainCharacter;
+                    foreach (Character character in inventory.Squad)
+                    {
+                        result.Inventory.Squad.Add(character);
+                    }
+                    foreach (Character character in inventory.Training.Keys)
+                    {
+                        result.Inventory.Training[character] = inventory.Training[character];
+                    }
                     break;
             }
         }
