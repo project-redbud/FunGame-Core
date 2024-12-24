@@ -73,7 +73,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 练级中的角色
         /// </summary>
-        public Dictionary<Character, DateTime> Training { get; set; } = [];
+        public Dictionary<long, DateTime> Training { get; set; } = [];
 
         private Character? _character;
 

@@ -54,10 +54,10 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     }
                     break;
                 case nameof(Inventory.Training):
-                    Dictionary<Character, DateTime> training = NetworkUtility.JsonDeserialize<Dictionary<Character, DateTime>>(ref reader, options) ?? [];
-                    foreach (Character character in training.Keys)
+                    Dictionary<long, DateTime> training = NetworkUtility.JsonDeserialize<Dictionary<long, DateTime>>(ref reader, options) ?? [];
+                    foreach (long cid in training.Keys)
                     {
-                        result.Training.Add(character, training[character]);
+                        result.Training.Add(cid, training[cid]);
                     }
                     break;
             }

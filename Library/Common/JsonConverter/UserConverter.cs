@@ -80,9 +80,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     {
                         result.Inventory.Squad.Add(character);
                     }
-                    foreach (Character character in inventory.Training.Keys)
+                    foreach (long cid in inventory.Training.Keys)
                     {
-                        result.Inventory.Training[character] = inventory.Training[character];
+                        result.Inventory.Training[cid] = inventory.Training[cid];
                     }
                     break;
             }
