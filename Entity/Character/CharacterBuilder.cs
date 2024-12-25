@@ -251,6 +251,7 @@ namespace Milimoe.FunGame.Core.Entity
                 character.EXP = reference.EXP;
             }
             character.NormalAttack.Level = reference.NormalAttack.Level;
+            character.NormalAttack.HardnessTime = reference.NormalAttack.HardnessTime;
             character.NormalAttack.SetMagicType(reference.NormalAttack.IsMagic, reference.NormalAttack.MagicType);
             return character;
         }

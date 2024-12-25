@@ -197,6 +197,12 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Character.ExEvadeRate):
                     result.ExEvadeRate = reader.GetDouble();
                     break;
+                case nameof(Character.NormalAttack):
+                    NormalAttack normalAttack = NetworkUtility.JsonDeserialize<NormalAttack>(ref reader, options) ?? new NormalAttack(result);
+                    result.NormalAttack.Level = normalAttack.Level;
+                    result.NormalAttack.HardnessTime = normalAttack.HardnessTime;
+                    result.NormalAttack.SetMagicType(normalAttack.IsMagic, normalAttack.MagicType);
+                    break;
                 case nameof(Character.Skills):
                     HashSet<Skill> skills = NetworkUtility.JsonDeserialize<HashSet<Skill>>(ref reader, options) ?? [];
                     foreach (Skill skill in skills)
@@ -280,6 +286,8 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Character.ExCritRate), value.ExCritRate);
             writer.WriteNumber(nameof(Character.ExCritDMG), value.ExCritDMG);
             writer.WriteNumber(nameof(Character.ExEvadeRate), value.ExEvadeRate);
+            writer.WritePropertyName(nameof(Character.NormalAttack));
+            JsonSerializer.Serialize(writer, value.NormalAttack, options);
             writer.WritePropertyName(nameof(Character.Skills));
             JsonSerializer.Serialize(writer, value.Skills.Where(s => s.Guid == Guid.Empty), options);
             writer.WritePropertyName(nameof(Character.Items));
