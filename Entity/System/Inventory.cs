@@ -68,7 +68,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 小队
         /// </summary>
-        public HashSet<Character> Squad { get; set; } = [];
+        public HashSet<long> Squad { get; set; } = [];
         
         /// <summary>
         /// 练级中的角色

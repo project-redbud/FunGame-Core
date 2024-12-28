@@ -699,7 +699,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                double value = INT * General.GameplayEquilibriumConstant.INTtoAccelerationCoefficientMultiplier + ExActionCoefficient;
+                double value = INT * General.GameplayEquilibriumConstant.INTtoAccelerationCoefficientMultiplier + ExAccelerationCoefficient;
                 return Calculation.PercentageCheck(value);
             }
         }
@@ -1509,7 +1509,7 @@ namespace Milimoe.FunGame.Core.Entity
             if (Effects.Where(e => e.EffectType != EffectType.Item).Any())
             {
                 builder.AppendLine("== 状态栏 ==");
-                builder.Append(string.Join("，", Effects.Select(e => e.Name)));
+                builder.Append(string.Join("，", Effects.Where(e => e.EffectType != EffectType.Item).Select(e => e.Name)));
             }
 
             return builder.ToString();
@@ -1551,7 +1551,7 @@ namespace Milimoe.FunGame.Core.Entity
 
             builder.AppendLine($"硬直时间：{hardnessTimes:0.##}");
 
-            if (Effects.Count > 0)
+            if (Effects.Where(e => e.EffectType != EffectType.Item).Any())
             {
                 builder.AppendLine("== 状态栏 ==");
                 foreach (Effect effect in Effects.Where(e => e.EffectType != EffectType.Item))
@@ -1583,10 +1583,10 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"核心属性：{PrimaryAttributeValue:0.##}" + (ExPrimaryAttributeValue != 0 ? $" [{BasePrimaryAttributeValue:0.##} {(ExPrimaryAttributeValue >= 0 ? "+" : "-")} {Math.Abs(ExPrimaryAttributeValue):0.##}]" : ""));
             builder.AppendLine($"硬直时间：{hardnessTimes:0.##}");
 
-            if (Effects.Count > 0)
+            if (Effects.Where(e => e.EffectType != EffectType.Item).Any())
             {
                 builder.AppendLine("== 状态栏 ==");
-                builder.Append(string.Join("，", Effects.Select(e => e.Name)));
+                builder.Append(string.Join("，", Effects.Where(e => e.EffectType != EffectType.Item).Select(e => e.Name)));
             }
 
             return builder.ToString();

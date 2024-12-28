@@ -47,10 +47,10 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     }
                     break;
                 case nameof(Inventory.Squad):
-                    HashSet<Character> squad = NetworkUtility.JsonDeserialize<HashSet<Character>>(ref reader, options) ?? [];
-                    foreach (Character character in squad)
+                    HashSet<long> squad = NetworkUtility.JsonDeserialize<HashSet<long>>(ref reader, options) ?? [];
+                    foreach (long cid in squad)
                     {
-                        result.Squad.Add(character);
+                        result.Squad.Add(cid);
                     }
                     break;
                 case nameof(Inventory.Training):

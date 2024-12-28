@@ -76,9 +76,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                         result.Inventory.Items.Add(item);
                     }
                     result.Inventory.MainCharacter = inventory.MainCharacter;
-                    foreach (Character character in inventory.Squad)
+                    foreach (long cid in inventory.Squad)
                     {
-                        result.Inventory.Squad.Add(character);
+                        result.Inventory.Squad.Add(cid);
                     }
                     foreach (long cid in inventory.Training.Keys)
                     {

@@ -86,6 +86,12 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Character.ExMPPercentage):
                     result.ExMPPercentage = reader.GetDouble();
                     break;
+                case nameof(Character.HP):
+                    result.HP = reader.GetDouble();
+                    break;
+                case nameof(Character.MP):
+                    result.MP = reader.GetDouble();
+                    break;
                 case nameof(Character.EP):
                     result.EP = reader.GetDouble();
                     break;
@@ -249,6 +255,8 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Character.InitialMP), value.InitialMP);
             writer.WriteNumber(nameof(Character.ExMP2), value.ExMP2);
             writer.WriteNumber(nameof(Character.ExMPPercentage), value.ExMPPercentage);
+            writer.WriteNumber(nameof(Character.HP), value.HP);
+            writer.WriteNumber(nameof(Character.MP), value.MP);
             writer.WriteNumber(nameof(Character.EP), value.EP);
             writer.WriteNumber(nameof(Character.InitialATK), value.InitialATK);
             writer.WriteNumber(nameof(Character.ExATK2), value.ExATK2);
