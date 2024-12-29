@@ -1417,6 +1417,10 @@ namespace Milimoe.FunGame.Core.Model
             return DamageResult.Normal;
         }
 
+        /// <summary>
+        /// 处理角色死亡
+        /// </summary>
+        /// <param name="character"></param>
         public void ProcessCharacterDeath(Character character)
         {
             foreach (Character enemy in _roundDeaths)
@@ -1603,6 +1607,8 @@ namespace Milimoe.FunGame.Core.Model
                     team.Score++;
                 }
             }
+
+            death.EP = 0;
 
             // 清除对死者的助攻数据
             List<AssistDetail> ads = [.. _assistDamage.Values.Where(ad => ad.Character != death)];

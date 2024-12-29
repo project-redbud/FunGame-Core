@@ -617,6 +617,50 @@ namespace Milimoe.FunGame.Core.Api.Utility
         }
     }
 
+    public class WebAPIAuthenticator
+    {
+        /// <summary>
+        /// Web API 自定义 Token 验证器
+        /// </summary>
+        public static event Func<string, string>? WebAPICustomBearerTokenAuthenticator;
+
+        /// <summary>
+        /// 添加自定义 Token 验证器
+        /// </summary>
+        /// <param name="handler"></param>
+        public static void AddCustomBearerTokenHandler(Func<string, string> handler)
+        {
+            WebAPICustomBearerTokenAuthenticator += handler;
+        }
+
+        /// <summary>
+        /// 对自定义 Token 进行验证
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public static string ValidateToken(string token)
+        {
+            string result = "";
+
+            if (WebAPICustomBearerTokenAuthenticator != null)
+            {
+                foreach (Delegate handler in WebAPICustomBearerTokenAuthenticator.GetInvocationList())
+                {
+                    if (handler is Func<string, string> authHandler)
+                    {
+                        string name = authHandler.Invoke(token);
+                        if (name != "")
+                        {
+                            return name;
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+    }
+
     #endregion
 
     #region 多线程服务

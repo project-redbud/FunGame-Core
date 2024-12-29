@@ -62,8 +62,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         /// <param name="sender"></param>
         public MailObject(MailSender sender)
         {
-            this.Sender = sender.SmtpClientInfo.SenderMailAddress;
-            this.SenderName = sender.SmtpClientInfo.SenderName;
+            Sender = sender.SmtpClientInfo.SenderMailAddress;
+            SenderName = sender.SmtpClientInfo.SenderName;
         }
 
         /// <summary>
@@ -73,8 +73,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         /// <param name="senderName"></param>
         public MailObject(string sender, string senderName)
         {
-            this.Sender = sender;
-            this.SenderName = senderName;
+            Sender = sender;
+            SenderName = senderName;
         }
 
         /// <summary>
@@ -86,10 +86,10 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         /// <param name="to"></param>
         public MailObject(MailSender sender, string subject, string body, string to)
         {
-            this.Sender = sender.SmtpClientInfo.SenderMailAddress;
-            this.SenderName = sender.SmtpClientInfo.SenderName;
-            this.Subject = subject;
-            this.Body = body;
+            Sender = sender.SmtpClientInfo.SenderMailAddress;
+            SenderName = sender.SmtpClientInfo.SenderName;
+            Subject = subject;
+            Body = body;
             ToList.Add(to);
         }
 
@@ -103,10 +103,10 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         /// <param name="cc"></param>
         public MailObject(MailSender sender, string subject, string body, string to, string cc)
         {
-            this.Sender = sender.SmtpClientInfo.SenderMailAddress;
-            this.SenderName = sender.SmtpClientInfo.SenderName;
-            this.Subject = subject;
-            this.Body = body;
+            Sender = sender.SmtpClientInfo.SenderMailAddress;
+            SenderName = sender.SmtpClientInfo.SenderName;
+            Subject = subject;
+            Body = body;
             ToList.Add(to);
             CCList.Add(cc);
         }

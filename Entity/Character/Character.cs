@@ -1593,6 +1593,150 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 获取角色的技能信息
+        /// </summary>
+        /// <returns></returns>
+        public string GetSkillInfo(bool showUser = true)
+        {
+            StringBuilder builder = new();
+
+            builder.AppendLine(showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser());
+
+            if (CharacterState != CharacterState.Actionable)
+            {
+                builder.AppendLine(CharacterSet.GetCharacterState(CharacterState));
+            }
+
+            if (IsNeutral)
+            {
+                builder.AppendLine("角色是无敌的");
+            }
+
+            if (IsUnselectable)
+            {
+                builder.AppendLine("角色是不可选中的");
+            }
+
+            builder.AppendLine("== 普通攻击 ==");
+            builder.Append(NormalAttack.ToString());
+
+            if (Skills.Count > 0)
+            {
+                builder.AppendLine("== 角色技能 ==");
+                foreach (Skill skill in Skills)
+                {
+                    builder.Append(skill.ToString());
+                }
+            }
+
+            if (Effects.Where(e => e.EffectType != EffectType.Item).Any())
+            {
+                builder.AppendLine("== 状态栏 ==");
+                foreach (Effect effect in Effects.Where(e => e.EffectType != EffectType.Item))
+                {
+                    builder.Append(effect.ToString());
+                }
+            }
+
+            return builder.ToString();
+        }
+
+        /// <summary>
+        /// 获取角色的物品信息
+        /// </summary>
+        /// <returns></returns>
+        public string GetItemInfo(bool showUser = true, bool showGrowth = true, bool showEXP = false)
+        {
+            StringBuilder builder = new();
+
+            builder.AppendLine(showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser());
+            if (showEXP)
+            {
+                builder.AppendLine($"等级：{Level} / {General.GameplayEquilibriumConstant.MaxLevel}（突破进度：{LevelBreak + 1} / {General.GameplayEquilibriumConstant.LevelBreakList.Count}）");
+                builder.AppendLine($"经验值：{EXP}{(Level != General.GameplayEquilibriumConstant.MaxLevel && General.GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) ? " / " + need : "")}");
+            }
+            double exHP = ExHP + ExHP2 + ExHP3;
+            builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : ""));
+            double exMP = ExMP + ExMP2 + ExMP3;
+            builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
+            builder.AppendLine($"能量值：{EP:0.##} / {General.GameplayEquilibriumConstant.MaxEP:0.##}");
+            double exATK = ExATK + ExATK2 + ExATK3;
+            builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
+            double exDEF = ExDEF + ExDEF2 + ExDEF3;
+            builder.AppendLine($"物理护甲：{DEF:0.##}" + (exDEF != 0 ? $" [{BaseDEF:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exDEF):0.##}]" : "") + $" ({PDR * 100:0.##}%)");
+            double mdf = Calculation.Round4Digits((MDF.None + MDF.Starmark + MDF.PurityNatural + MDF.PurityContemporary +
+                MDF.Bright + MDF.Shadow + MDF.Element + MDF.Fleabane + MDF.Particle) / 9) * 100;
+            if (Calculation.IsApproximatelyZero(mdf)) mdf = 0;
+            builder.AppendLine($"魔法抗性：{mdf:0.##}%（平均）");
+            double exSPD = AGI * General.GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
+            builder.AppendLine($"行动速度：{SPD:0.##}" + (exSPD != 0 ? $" [{InitialSPD:0.##} {(exSPD >= 0 ? "+" : "-")} {Math.Abs(exSPD):0.##}]" : "") + $" ({ActionCoefficient * 100:0.##}%)");
+            builder.AppendLine($"核心属性：{CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)}");
+            double exSTR = ExSTR + ExSTR2;
+            builder.AppendLine($"力量：{STR:0.##}" + (exSTR != 0 ? $" [{BaseSTR:0.##} {(exSTR >= 0 ? "+" : "-")} {Math.Abs(exSTR):0.##}]" : "") + (showGrowth ? $"（{(STRGrowth >= 0 ? "+" : "-")}{Math.Abs(STRGrowth)}/Lv）" : ""));
+            double exAGI = ExAGI + ExAGI2;
+            builder.AppendLine($"敏捷：{AGI:0.##}" + (exAGI != 0 ? $" [{BaseAGI:0.##} {(exAGI >= 0 ? "+" : "-")} {Math.Abs(exAGI):0.##}]" : "") + (showGrowth ? $"（{(AGIGrowth >= 0 ? "+" : "-")}{Math.Abs(AGIGrowth)}/Lv）" : ""));
+            double exINT = ExINT + ExINT2;
+            builder.AppendLine($"智力：{INT:0.##}" + (exINT != 0 ? $" [{BaseINT:0.##} {(exINT >= 0 ? "+" : "-")} {Math.Abs(exINT):0.##}]" : "") + (showGrowth ? $"（{(INTGrowth >= 0 ? "+" : "-")}{Math.Abs(INTGrowth)}/Lv）" : ""));
+            builder.AppendLine($"生命回复：{HR:0.##}" + (ExHR != 0 ? $" [{InitialHR + STR * General.GameplayEquilibriumConstant.STRtoHRFactor:0.##} {(ExHR >= 0 ? "+" : "-")} {Math.Abs(ExHR):0.##}]" : ""));
+            builder.AppendLine($"魔法回复：{MR:0.##}" + (ExMR != 0 ? $" [{InitialMR + INT * General.GameplayEquilibriumConstant.INTtoMRFactor:0.##} {(ExMR >= 0 ? "+" : "-")} {Math.Abs(ExMR):0.##}]" : ""));
+            builder.AppendLine($"暴击率：{CritRate * 100:0.##}%");
+            builder.AppendLine($"暴击伤害：{CritDMG * 100:0.##}%");
+            builder.AppendLine($"闪避率：{EvadeRate * 100:0.##}%");
+            builder.AppendLine($"冷却缩减：{CDR * 100:0.##}%");
+            builder.AppendLine($"加速系数：{AccelerationCoefficient * 100:0.##}%");
+            builder.AppendLine($"物理穿透：{PhysicalPenetration * 100:0.##}%");
+            builder.AppendLine($"魔法穿透：{MagicalPenetration * 100:0.##}%");
+            builder.AppendLine($"魔法消耗减少：{INT * General.GameplayEquilibriumConstant.INTtoCastMPReduce * 100:0.##}%");
+            builder.AppendLine($"能量消耗减少：{INT * General.GameplayEquilibriumConstant.INTtoCastEPReduce * 100:0.##}%");
+
+            if (EquipSlot.Any())
+            {
+                builder.AppendLine("== 装备栏 ==");
+                if (EquipSlot.MagicCardPack != null)
+                {
+                    builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.MagicCardPack.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.MagicCardPack) + "：" + EquipSlot.MagicCardPack.Name);
+                    builder.AppendLine(EquipSlot.MagicCardPack.Description);
+                }
+                if (EquipSlot.Weapon != null)
+                {
+                    builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.Weapon.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.Weapon) + "：" + EquipSlot.Weapon.Name);
+                    builder.AppendLine(EquipSlot.Weapon.Description);
+                }
+                if (EquipSlot.Armor != null)
+                {
+                    builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.Armor.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.Armor) + "：" + EquipSlot.Armor.Name);
+                    builder.AppendLine(EquipSlot.Armor.Description);
+                }
+                if (EquipSlot.Shoes != null)
+                {
+                    builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.Shoes.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.Shoes) + "：" + EquipSlot.Shoes.Name);
+                    builder.AppendLine(EquipSlot.Shoes.Description);
+                }
+                if (EquipSlot.Accessory1 != null)
+                {
+                    builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.Accessory1.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.Accessory1) + "：" + EquipSlot.Accessory1.Name);
+                    builder.AppendLine(EquipSlot.Accessory1.Description);
+                }
+                if (EquipSlot.Accessory2 != null)
+                {
+                    builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.Accessory2.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.Accessory2) + "：" + EquipSlot.Accessory2.Name);
+                    builder.AppendLine(EquipSlot.Accessory2.Description);
+                }
+            }
+
+            if (Items.Count > 0)
+            {
+                builder.AppendLine("== 角色背包 ==");
+                foreach (Item item in Items)
+                {
+                    builder.Append(item.ToString());
+                }
+            }
+
+            return builder.ToString();
+        }
+
+        /// <summary>
         /// 更新角色的状态
         /// </summary>
         /// <returns></returns>
