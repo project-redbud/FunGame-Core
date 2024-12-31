@@ -7,7 +7,7 @@ namespace Milimoe.FunGame.Core.Entity
     {
         public string Description { get; set; } = "";
         public int EstimatedMinutes { get; set; } = 0;
-        public int Status { get; set; } = 0;
+        public QuestState Status { get; set; } = 0;
         public int CharacterIndex { get; set; } = 0;
         public Dictionary<string, int> Awards { get; set; } = [];
         public DateTime? StartTime { get; set; } = null;
@@ -19,7 +19,7 @@ namespace Milimoe.FunGame.Core.Entity
                 $"{Description}\r\n" +
                 $"需要时间：{EstimatedMinutes} 分钟\r\n" +
                 (StartTime.HasValue ? $"开始时间：{StartTime.Value.ToString(General.GeneralDateTimeFormatChinese)}" +
-                    (Status == 1 ?
+                    (Status == QuestState.InProgress ?
                     $"\r\n预计在 {Math.Max(Math.Round((StartTime.Value.AddMinutes(EstimatedMinutes) - DateTime.Now).TotalMinutes, MidpointRounding.ToPositiveInfinity), 1)} 分钟后完成" : "")
                     + "\r\n"
                 : "") +
@@ -37,9 +37,9 @@ namespace Milimoe.FunGame.Core.Entity
         {
             return Status switch
             {
-                1 => "进行中",
-                2 => "已完成",
-                3 => "已结算",
+                QuestState.InProgress => "进行中",
+                QuestState.Completed => "已完成",
+                QuestState.Settled => "已结算",
                 _ => "未开始"
             };
         }

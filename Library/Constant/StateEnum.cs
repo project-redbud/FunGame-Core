@@ -20,6 +20,47 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Complete
     }
 
+    /// <summary>
+    /// 角色目前所处的状态
+    /// </summary>
+    public enum CharacterState
+    {
+        /// <summary>
+        /// 可以行动 [ 战斗相关 ]
+        /// </summary>
+        Actionable,
+
+        /// <summary>
+        /// 完全行动不能 [ 战斗相关 ]
+        /// </summary>
+        NotActionable,
+
+        /// <summary>
+        /// 行动受限 [ 战斗相关 ]
+        /// </summary>
+        ActionRestricted,
+
+        /// <summary>
+        /// 战斗不能 [ 战斗相关 ]
+        /// </summary>
+        BattleRestricted,
+
+        /// <summary>
+        /// 技能受限 [ 战斗相关 ]
+        /// </summary>
+        SkillRestricted,
+
+        /// <summary>
+        /// 处于吟唱中 [ 战斗相关 ] [ 技能相关 ]
+        /// </summary>
+        Casting,
+
+        /// <summary>
+        /// 预释放爆发技(插队) [ 战斗相关 ] [ 技能相关 ]
+        /// </summary>
+        PreCastSuperSkill
+    }
+
     public enum SelectState
     {
         None,
@@ -44,5 +85,13 @@ namespace Milimoe.FunGame.Core.Library.Constant
         WaitLogin,
         Online,
         InRoom
+    }
+
+    public enum QuestState
+    {
+        NotStarted = 0,
+        InProgress = 1,
+        Completed = 2,
+        Settled = 3
     }
 }
