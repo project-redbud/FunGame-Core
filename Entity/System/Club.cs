@@ -10,18 +10,13 @@ namespace Milimoe.FunGame.Core.Entity
         public bool IsPublic { get; set; } = false;
         public double ClubPoins { get; set; } = 0;
         public User? Master { get; set; }
-        public Dictionary<string, User> Admins { get; set; } = [];
-        public Dictionary<string, User> Members { get; set; } = [];
-        public Dictionary<string, User> Applicants { get; set; } = [];
-
-        public bool Equals(Club other)
-        {
-            return Equals(other);
-        }
+        public Dictionary<long, User> Admins { get; set; } = [];
+        public Dictionary<long, User> Members { get; set; } = [];
+        public Dictionary<long, User> Applicants { get; set; } = [];
 
         public override bool Equals(IBaseEntity? other)
         {
-            return other?.Id == Id;
+            return other is Club && other?.Id == Id;
         }
     }
 }

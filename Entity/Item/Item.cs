@@ -415,15 +415,6 @@ namespace Milimoe.FunGame.Core.Entity
         internal Item() { }
 
         /// <summary>
-        /// Id.Name
-        /// </summary>
-        /// <returns></returns>
-        public string GetIdName()
-        {
-            return Id + "." + Name;
-        }
-
-        /// <summary>
         /// 显示物品的详细信息
         /// </summary>
         /// <returns></returns>

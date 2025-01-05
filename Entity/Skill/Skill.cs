@@ -443,15 +443,6 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// Id.Name
-        /// </summary>
-        /// <returns></returns>
-        public string GetIdName()
-        {
-            return Id + "." + Name;
-        }
-
-        /// <summary>
         /// 判断两个技能是否相同 检查Id.Name
         /// </summary>
         /// <param name="other"></param>

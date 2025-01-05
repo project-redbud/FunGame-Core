@@ -5,5 +5,7 @@
         public long Id { get; }
         public Guid Guid { get; }
         public string Name { get; }
+
+        public string GetIdName();
     }
 }

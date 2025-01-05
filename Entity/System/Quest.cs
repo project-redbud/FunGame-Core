@@ -28,11 +28,6 @@ namespace Milimoe.FunGame.Core.Entity
                 (SettleTime.HasValue ? $"\r\n结算时间：{SettleTime.Value.ToString(General.GeneralDateTimeFormatChinese)}" : "");
         }
 
-        public string GetIdName()
-        {
-            return Id + "." + Name;
-        }
-
         private string GetStatus()
         {
             return Status switch
