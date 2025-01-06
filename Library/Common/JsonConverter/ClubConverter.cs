@@ -1,10 +1,7 @@
 ﻿using System.Text.Json;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Common.Architecture;
-using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Core.Library.SQLScript.Entity;
 
 namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
 {
@@ -68,6 +65,20 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                         result.Applicants[id] = new(id);
                     }
                     break;
+                case nameof(Club.MemberJoinTime):
+                    Dictionary<long, DateTime> memberJoinTime = NetworkUtility.JsonDeserialize<Dictionary<long, DateTime>>(ref reader, options) ?? [];
+                    foreach (long id in memberJoinTime.Keys)
+                    {
+                        result.MemberJoinTime[id] = memberJoinTime[id];
+                    }
+                    break;
+                case nameof(Club.ApplicationTime):
+                    Dictionary<long, DateTime> applicationTime = NetworkUtility.JsonDeserialize<Dictionary<long, DateTime>>(ref reader, options) ?? [];
+                    foreach (long id in applicationTime.Keys)
+                    {
+                        result.ApplicationTime[id] = applicationTime[id];
+                    }
+                    break;
             }
         }
 
@@ -91,6 +102,10 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             JsonSerializer.Serialize(writer, value.Members.Keys, options);
             writer.WritePropertyName(nameof(Club.Applicants));
             JsonSerializer.Serialize(writer, value.Applicants.Keys, options);
+            writer.WritePropertyName(nameof(Club.MemberJoinTime));
+            JsonSerializer.Serialize(writer, value.MemberJoinTime, options);
+            writer.WritePropertyName(nameof(Club.ApplicationTime));
+            JsonSerializer.Serialize(writer, value.ApplicationTime, options);
 
             writer.WriteEndObject();
         }

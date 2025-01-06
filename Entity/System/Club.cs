@@ -13,6 +13,8 @@ namespace Milimoe.FunGame.Core.Entity
         public Dictionary<long, User> Admins { get; set; } = [];
         public Dictionary<long, User> Members { get; set; } = [];
         public Dictionary<long, User> Applicants { get; set; } = [];
+        public Dictionary<long, DateTime> MemberJoinTime { get; set; } = [];
+        public Dictionary<long, DateTime> ApplicationTime { get; set; } = [];
 
         public override bool Equals(IBaseEntity? other)
         {
