@@ -12,20 +12,29 @@ namespace Milimoe.FunGame.Core.Entity
         public Dictionary<string, int> Awards { get; set; } = [];
         public DateTime? StartTime { get; set; } = null;
         public DateTime? SettleTime { get; set; } = null;
+        public QuestType QuestType { get; set; } = QuestType.Continuous;
+        public int Progress { get; set; } = 0;
+        public int MaxProgress { get; set; } = 100;
 
         public override string ToString()
         {
+            string progressString = "";
+            if (QuestType == QuestType.Progressive)
+            {
+                progressString = $"\r\n当前进度：{Progress}/{MaxProgress}";
+            }
+
             return $"{Id}. {Name}\r\n" +
-                $"{Description}\r\n" +
-                $"需要时间：{EstimatedMinutes} 分钟\r\n" +
-                (StartTime.HasValue ? $"开始时间：{StartTime.Value.ToString(General.GeneralDateTimeFormatChinese)}" +
-                    (Status == QuestState.InProgress ?
-                    $"\r\n预计在 {Math.Max(Math.Round((StartTime.Value.AddMinutes(EstimatedMinutes) - DateTime.Now).TotalMinutes, MidpointRounding.ToPositiveInfinity), 1)} 分钟后完成" : "")
-                    + "\r\n"
-                : "") +
-                $"完成奖励：{string.Join("，", Awards.Select(kv=> kv.Key + " * " + kv.Value))}\r\n" +
-                $"任务状态：{GetStatus()}" +
-                (SettleTime.HasValue ? $"\r\n结算时间：{SettleTime.Value.ToString(General.GeneralDateTimeFormatChinese)}" : "");
+                   $"{Description}\r\n" +
+                   (QuestType == QuestType.Continuous ? $"需要时间：{EstimatedMinutes} 分钟\r\n" : "") +
+                   (StartTime.HasValue ? $"开始时间：{StartTime.Value.ToString(General.GeneralDateTimeFormatChinese)}" +
+                       (Status == QuestState.InProgress && QuestType == QuestType.Continuous ?
+                       $"\r\n预计在 {Math.Max(Math.Round((StartTime.Value.AddMinutes(EstimatedMinutes) - DateTime.Now).TotalMinutes, MidpointRounding.ToPositiveInfinity), 1)} 分钟后完成" : "")
+                       + "\r\n"
+                   : "") +
+                   $"完成奖励：{string.Join("，", Awards.Select(kv => kv.Key + " * " + kv.Value))}\r\n" +
+                   $"任务状态：{GetStatus()}" + progressString +
+                   (SettleTime.HasValue ? $"\r\n结算时间：{SettleTime.Value.ToString(General.GeneralDateTimeFormatChinese)}" : "");
         }
 
         private string GetStatus()

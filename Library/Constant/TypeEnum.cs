@@ -802,4 +802,11 @@ namespace Milimoe.FunGame.Core.Library.Constant
         MySQL,
         SQLite
     }
+
+    public enum QuestType
+    {
+        Continuous,
+        Immediate,
+        Progressive
+    }
 }
