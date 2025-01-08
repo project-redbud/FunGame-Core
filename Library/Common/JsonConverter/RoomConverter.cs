@@ -14,7 +14,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             return Factory.GetRoom();
         }
 
-        public override void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref Room result)
+        public override void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref Room result, Dictionary<string, object> convertingContext)
         {
             switch (propertyName)
             {

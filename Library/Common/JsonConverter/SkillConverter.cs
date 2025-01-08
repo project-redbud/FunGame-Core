@@ -13,7 +13,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             return new OpenSkill(0, "", []);
         }
 
-        public override void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref Skill result)
+        public override void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref Skill result, Dictionary<string, object> convertingContext)
         {
             switch (propertyName)
             {

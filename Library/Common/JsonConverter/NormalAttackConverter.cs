@@ -13,7 +13,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             return new NormalAttack(Factory.GetCharacter());
         }
 
-        public override void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref NormalAttack result)
+        public override void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref NormalAttack result, Dictionary<string, object> convertingContext)
         {
             switch (propertyName)
             {
