@@ -19,14 +19,14 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         public TaskScheduler()
         {
-            Task.Run(async () =>
+            Task.Factory.StartNew(async () =>
             {
                 while (true)
                 {
-                    await Task.Run(CheckAndRunTasks);
+                    CheckAndRunTasks();
                     await Task.Delay(1000);
                 }
-            });
+            }, TaskCreationOptions.LongRunning);
         }
 
         /// <summary>

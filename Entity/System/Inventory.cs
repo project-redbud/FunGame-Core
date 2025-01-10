@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
 
@@ -57,7 +58,7 @@ namespace Milimoe.FunGame.Core.Entity
                     _character = Characters.First();
                     return _character;
                 }
-                throw new GetInstanceException();
+                return Factory.GetCharacter();
             }
             set
             {

@@ -23,7 +23,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         private bool _receiving = false;
         private readonly HashSet<Action<SocketObject>> _boundEvents = [];
 
-        private HTTPClient(System.Net.WebSockets.ClientWebSocket instance, string serverAddress, int serverPort, params object[] args)
+        private HTTPClient(ClientWebSocket instance, string serverAddress, int serverPort, params object[] args)
         {
             Instance = instance;
             ServerAddress = serverAddress;
@@ -33,11 +33,10 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             Task.Factory.StartNew(async () => await StartListening(args));
         }
 
-        public static async Task<HTTPClient> Connect(string serverAddress, int serverPort, bool ssl, string subUrl = "", params object[] args)
+        public static async Task<HTTPClient> Connect(string serverAddress, bool ssl, int serverPort = 0, string subUrl = "", params object[] args)
         {
-            string ServerIP = Api.Utility.NetworkUtility.GetIPAddress(serverAddress);
-            Uri uri = new((ssl ? "wss://" : "ws://") + ServerIP + ":" + serverPort + "/" + subUrl.Trim('/') + "/");
-            System.Net.WebSockets.ClientWebSocket? socket = await HTTPManager.Connect(uri);
+            Uri uri = new((ssl ? "wss://" : "ws://") + serverAddress + ":" + (serverPort != 0 ? serverPort : "") + "/" + subUrl.Trim('/') + "/");
+            ClientWebSocket? socket = await HTTPManager.Connect(uri);
             if (socket != null && socket.State == WebSocketState.Open)
             {
                 HTTPClient client = new(socket, serverAddress, serverPort, args);

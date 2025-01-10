@@ -57,7 +57,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
         public bool Authenticate(string username, string password)
         {
             if (!BeforeAuthenticator(AuthenticationType.Username, username, password)) return false;
-            SQLHelper.ExecuteDataSet(UserQuery.Select_Users_LoginQuery(username, password));
+            SQLHelper.ExecuteDataSet(UserQuery.Select_Users_LoginQuery(SQLHelper, username, password));
             if (SQLHelper.Success)
             {
                 DataSet ds = SQLHelper.DataSet;
