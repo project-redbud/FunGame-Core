@@ -12,7 +12,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
 
         private readonly List<ScheduledTask> _tasks = [];
         private readonly List<RecurringTask> _recurringTasks = [];
-        private readonly Timer _timer;
         private readonly Lock _lock = new();
 
         /// <summary>
@@ -20,8 +19,14 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         public TaskScheduler()
         {
-            _timer = new Timer(CheckAndRunTasks, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
-            _timer.Change(TimeSpan.Zero, TimeSpan.FromSeconds(1));
+            Task.Factory.StartNew(async () =>
+            {
+                while (true)
+                {
+                    CheckAndRunTasks();
+                    await Task.Delay(1000);
+                }
+            }, TaskCreationOptions.LongRunning);
         }
 
         /// <summary>
@@ -158,8 +163,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <summary>
         /// 执行任务
         /// </summary>
-        /// <param name="state"></param>
-        private void CheckAndRunTasks(object? state)
+        private void CheckAndRunTasks()
         {
             lock (_lock)
             {
@@ -172,7 +176,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                         if (now.TimeOfDay >= task.TimeOfDay && now.TimeOfDay < task.TimeOfDay.Add(TimeSpan.FromSeconds(10)))
                         {
                             task.LastRun = now;
-                            ThreadPool.QueueUserWorkItem(_ =>
+                            Task.Run(() =>
                             {
                                 try
                                 {
@@ -193,7 +197,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     {
                         recurringTask.LastRun = now;
                         recurringTask.NextRun = recurringTask.NextRun.Add(recurringTask.Interval);
-                        ThreadPool.QueueUserWorkItem(_ =>
+                        Task.Run(() =>
                         {
                             try
                             {

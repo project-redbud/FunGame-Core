@@ -1,4 +1,6 @@
-﻿namespace Milimoe.FunGame.Core.Library.SQLScript
+﻿using Milimoe.FunGame.Core.Api.Transmittal;
+
+namespace Milimoe.FunGame.Core.Library.SQLScript
 {
     public class Constant
     {
@@ -37,9 +39,12 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Common
         public const string Column_LoginTime = "LoginTime";
         public const string Column_LastTime = "LastTime";
 
-        public static string Insert_ServerLoginLogs(string ServerName, string ServerKey)
+        public static string Insert_ServerLoginLogs(SQLHelper SQLHelper, string ServerName, string ServerKey)
         {
-            return $"{Command_Insert} {Command_Into} {TableName} ({Column_ServerName}, {Column_ServerKey}, {Column_LoginTime}) {Command_Values} ('{ServerName}', '{ServerKey}', '{DateTime.Now}')";
+            SQLHelper.Parameters["@ServerName"] = ServerName;
+            SQLHelper.Parameters["@ServerKey"] = ServerKey;
+            SQLHelper.Parameters["@LoginTime"] = DateTime.Now;
+            return $"{Command_Insert} {Command_Into} {TableName} ({Column_ServerName}, {Column_ServerKey}, {Column_LoginTime}) {Command_Values} (@ServerName, @ServerKey, @LoginTime)";
         }
 
         public static string Select_GetLastLoginTime()

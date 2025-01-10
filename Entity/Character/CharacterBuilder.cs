@@ -104,9 +104,8 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="inventory"></param>
         /// <param name="itemsDefined"></param>
         /// <param name="skillsDefined"></param>
-        /// <param name="recovery"></param>
         /// <returns>构建的新角色</returns>
-        public Character Build(IEnumerable<Skill> skills, IEnumerable<Item> items, bool newItemGuid = true, EquipSlot? equips = null, Inventory? inventory = null, IEnumerable<Item>? itemsDefined = null, IEnumerable<Skill>? skillsDefined = null, bool recovery = true)
+        public Character Build(IEnumerable<Skill> skills, IEnumerable<Item> items, bool newItemGuid = true, EquipSlot? equips = null, Inventory? inventory = null, IEnumerable<Item>? itemsDefined = null, IEnumerable<Skill>? skillsDefined = null)
         {
             Character character = Factory.GetCharacter();
             character.Id = Id;
@@ -227,7 +226,7 @@ namespace Milimoe.FunGame.Core.Entity
                     }
                 }
             }
-            if (recovery) character.Recovery();
+            character.Recovery();
             return character;
         }
 
@@ -245,7 +244,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <returns>构建的新角色</returns>
         public static Character Build(Character reference, bool newItemGuid = true, bool copyLevel = true, Inventory? inventory = null, IEnumerable<Item>? itemsDefined = null, IEnumerable<Skill>? skillsDefined = null, bool recovery = true)
         {
-            Character character = new CharacterBuilder(reference).Build(reference.Skills, reference.Items, newItemGuid, reference.EquipSlot, inventory, itemsDefined, skillsDefined, recovery);
+            Character character = new CharacterBuilder(reference).Build(reference.Skills, reference.Items, newItemGuid, reference.EquipSlot, inventory, itemsDefined, skillsDefined);
             if (copyLevel)
             {
                 character.Level = reference.Level;
@@ -255,6 +254,11 @@ namespace Milimoe.FunGame.Core.Entity
             character.NormalAttack.Level = reference.NormalAttack.Level;
             character.NormalAttack.HardnessTime = reference.NormalAttack.HardnessTime;
             character.NormalAttack.SetMagicType(reference.NormalAttack.IsMagic, reference.NormalAttack.MagicType);
+            if (!recovery)
+            {
+                character.HP = reference.HP;
+                character.MP = reference.MP;
+            }
             return character;
         }
     }

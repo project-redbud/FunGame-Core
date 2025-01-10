@@ -1,4 +1,6 @@
-﻿namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
+﻿using Milimoe.FunGame.Core.Api.Transmittal;
+
+namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
 {
     public class UserQuery : Constant
     {
@@ -18,55 +20,77 @@
         public const string Column_AutoKey = "AutoKey";
         public const string Select_Users = $"{Command_Select} {Command_All} {Command_From} {TableName}";
 
-        public static string Select_Users_LoginQuery(string Username, string Password)
+        public static string Select_Users_LoginQuery(SQLHelper SQLHelper, string Username, string Password)
         {
-            return $"{Select_Users} {Command_Where} {Column_Username} = '{Username}' and {Column_Password} = '{Password}'";
+            SQLHelper.Parameters["@Username"] = Username;
+            SQLHelper.Parameters["@Password"] = Password;
+            return $"{Select_Users} {Command_Where} {Column_Username} = @Username and {Column_Password} = @Password";
         }
 
-        public static string Select_IsExistEmail(string Email)
+        public static string Select_IsExistEmail(SQLHelper SQLHelper, string Email)
         {
-            return $"{Select_Users} {Command_Where} {Column_Email} = '{Email}'";
+            SQLHelper.Parameters["@Email"] = Email;
+            return $"{Select_Users} {Command_Where} {Column_Email} = @Email";
         }
 
-        public static string Select_IsExistUsername(string Username)
+        public static string Select_IsExistUsername(SQLHelper SQLHelper, string Username)
         {
-            return $"{Select_Users} {Command_Where} {Column_Username} = '{Username}'";
+            SQLHelper.Parameters["@Username"] = Username;
+            return $"{Select_Users} {Command_Where} {Column_Username} = @Username";
         }
 
-        public static string Select_CheckEmailWithUsername(string Username, string email)
+        public static string Select_CheckEmailWithUsername(SQLHelper SQLHelper, string Username, string email)
         {
-            return $"{Select_Users} {Command_Where} {Column_Username} = '{Username}' and {Column_Email} = '{email}'";
+            SQLHelper.Parameters["@Username"] = Username;
+            SQLHelper.Parameters["@Email"] = email;
+            return $"{Select_Users} {Command_Where} {Column_Username} = @Username and {Column_Email} = @Email";
         }
 
-        public static string Select_Users_Where(string Where)
+        public static string Select_Users_Where(SQLHelper SQLHelper, string Where)
         {
-            return $"{Select_Users} {Command_Where} {Where}";
+            SQLHelper.Parameters["@Where"] = Where;
+            return $"{Select_Users} {Command_Where} @Where";
         }
 
-        public static string Select_CheckAutoKey(string Username, string AutoKey)
+        public static string Select_CheckAutoKey(SQLHelper SQLHelper, string Username, string AutoKey)
         {
-            return $"{Select_Users} {Command_Where} {Column_Username} = '{Username}' and {Column_AutoKey} = '{AutoKey}'";
+            SQLHelper.Parameters["@Username"] = Username;
+            SQLHelper.Parameters["@AutoKey"] = AutoKey;
+            return $"{Select_Users} {Command_Where} {Column_Username} = @Username and {Column_AutoKey} = @AutoKey";
         }
 
-        public static string Update_CheckLogin(string Username, string IP)
+        public static string Update_CheckLogin(SQLHelper SQLHelper, string Username, string IP)
         {
-            return $"{Command_Update} {TableName} {Command_Set} {Column_LastTime} = '{DateTime.Now}', {Column_LastIP} = '{IP}' {Command_Where} {Column_Username} = '{Username}'";
+            SQLHelper.Parameters["@Username"] = Username;
+            SQLHelper.Parameters["@LastTime"] = DateTime.Now;
+            SQLHelper.Parameters["@LastIP"] = IP;
+            return $"{Command_Update} {TableName} {Command_Set} {Column_LastTime} = @LastTime, {Column_LastIP} = @LastIP {Command_Where} {Column_Username} = @Username";
         }
 
-        public static string Update_Password(string Username, string Password)
+        public static string Update_Password(SQLHelper SQLHelper, string Username, string Password)
         {
-            return $"{Command_Update} {TableName} {Command_Set} {Column_Password} = '{Password}' {Command_Where} {Column_Username} = '{Username}'";
+            SQLHelper.Parameters["@Username"] = Username;
+            SQLHelper.Parameters["@Password"] = Password;
+            return $"{Command_Update} {TableName} {Command_Set} {Column_Password} = @Password {Command_Where} {Column_Username} = @Username";
         }
 
-        public static string Update_GameTime(string Username, int GameTimeMinutes)
+        public static string Update_GameTime(SQLHelper SQLHelper, string Username, int GameTimeMinutes)
         {
-            return $"{Command_Update} {TableName} {Command_Set} {Column_GameTime} = {Column_GameTime} + {GameTimeMinutes} {Command_Where} {Column_Username} = '{Username}'";
+            SQLHelper.Parameters["@Username"] = Username;
+            SQLHelper.Parameters["@GameTimeMinutes"] = GameTimeMinutes;
+            return $"{Command_Update} {TableName} {Command_Set} {Column_GameTime} = {Column_GameTime} + @GameTimeMinutes {Command_Where} {Column_Username} = @Username";
         }
 
-        public static string Insert_Register(string Username, string Password, string Email, string IP)
+        public static string Insert_Register(SQLHelper SQLHelper, string Username, string Password, string Email, string IP)
         {
             DateTime Now = DateTime.Now;
-            return $"{Command_Insert} {Command_Into} {TableName} ({Column_Username}, {Column_Password}, {Column_Email}, {Column_RegTime}, {Column_LastTime}, {Column_LastIP}) {Command_Values} ('{Username}', '{Password}', '{Email}', '{Now}', '{Now}', '{IP}')";
+            SQLHelper.Parameters["@Username"] = Username;
+            SQLHelper.Parameters["@Password"] = Password;
+            SQLHelper.Parameters["@Email"] = Email;
+            SQLHelper.Parameters["@RegTime"] = Now;
+            SQLHelper.Parameters["@LastTime"] = Now;
+            SQLHelper.Parameters["@LastIP"] = IP;
+            return $"{Command_Insert} {Command_Into} {TableName} ({Column_Username}, {Column_Password}, {Column_Email}, {Column_RegTime}, {Column_LastTime}, {Column_LastIP}) {Command_Values} (@Username, @Password, @Email, @RegTime, @LastTime, @LastIP)";
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             return Factory.GetInventory();
         }
 
-        public override void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref Inventory result)
+        public override void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref Inventory result, Dictionary<string, object> convertingContext)
         {
             switch (propertyName)
             {

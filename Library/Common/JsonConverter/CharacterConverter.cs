@@ -13,7 +13,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             return Factory.GetCharacter();
         }
 
-        public override void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref Character result)
+        public override void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref Character result, Dictionary<string, object> convertingContext)
         {
             switch (propertyName)
             {
@@ -87,13 +87,13 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.ExMPPercentage = reader.GetDouble();
                     break;
                 case nameof(Character.HP):
-                    result.HP = reader.GetDouble();
+                    convertingContext[nameof(Character.HP)] = reader.GetDouble();
                     break;
                 case nameof(Character.MP):
-                    result.MP = reader.GetDouble();
+                    convertingContext[nameof(Character.MP)] = reader.GetDouble();
                     break;
                 case nameof(Character.EP):
-                    result.EP = reader.GetDouble();
+                    convertingContext[nameof(Character.EP)] = reader.GetDouble();
                     break;
                 case nameof(Character.InitialATK):
                     result.InitialATK = reader.GetDouble();
@@ -303,5 +303,20 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteEndObject();
         }
 
+        public override void AfterConvert(ref Character result, Dictionary<string, object> convertingContext)
+        {
+            if (convertingContext.TryGetValue(nameof(Character.HP), out object? value) && value is double hp)
+            {
+                result.HP = hp;
+            }
+            if (convertingContext.TryGetValue(nameof(Character.MP), out value) && value is double mp)
+            {
+                result.MP = mp;
+            }
+            if (convertingContext.TryGetValue(nameof(Character.EP), out value) && value is double ep)
+            {
+                result.EP = ep;
+            }
+        }
     }
 }

@@ -12,7 +12,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             return new();
         }
 
-        public override void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref Club result)
+        public override void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref Club result, Dictionary<string, object> convertingContext)
         {
             switch (propertyName)
             {

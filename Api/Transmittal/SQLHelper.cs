@@ -18,6 +18,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         public abstract SQLServerInfo ServerInfo { get; }
         public abstract int UpdateRows { get; }
         public abstract DataSet DataSet { get; }
+        public abstract Dictionary<string, object> Parameters { get; } 
         public bool Success => Result == SQLResult.Success;
 
         /// <summary>
