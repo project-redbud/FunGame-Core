@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using Milimoe.FunGame.Core.Api.EntityFactory;
 using Milimoe.FunGame.Core.Api.OpenEntityAdapter;
 using Milimoe.FunGame.Core.Api.Transmittal;
@@ -416,7 +416,10 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 long id = (long)drRoom[RoomQuery.Column_ID];
                 string roomid = (string)drRoom[RoomQuery.Column_RoomID];
-                DateTime createTime = (DateTime)drRoom[RoomQuery.Column_CreateTime];
+                if (!DateTime.TryParse(drRoom[RoomQuery.Column_CreateTime].ToString(), out DateTime createTime))
+                {
+                    createTime = General.DefaultTime;
+                }
                 User roomMaster = user;
                 RoomType roomType = (RoomType)Convert.ToInt32(drRoom[RoomQuery.Column_RoomType]);
                 string gameModule = (string)drRoom[RoomQuery.Column_GameModule];
@@ -424,7 +427,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 RoomState roomState = (RoomState)Convert.ToInt32(drRoom[RoomQuery.Column_RoomState]);
                 bool isRank = Convert.ToInt32(drRoom[RoomQuery.Column_IsRank]) == 1;
                 string password = (string)drRoom[RoomQuery.Column_Password];
-                int maxUsers = (int)drRoom[RoomQuery.Column_MaxUsers];
+                int maxUsers = Convert.ToInt32(drRoom[RoomQuery.Column_MaxUsers]);
                 room = GetRoom(id, roomid, createTime, roomMaster, roomType, gameModule, gameMap, roomState, isRank, password, maxUsers);
             }
             return room;
@@ -448,7 +451,10 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 {
                     long Id = (long)drRoom[RoomQuery.Column_ID];
                     string Roomid = (string)drRoom[RoomQuery.Column_RoomID];
-                    DateTime createTime = (DateTime)drRoom[RoomQuery.Column_CreateTime];
+                    if (!DateTime.TryParse(drRoom[RoomQuery.Column_CreateTime].ToString(), out DateTime createTime))
+                    {
+                        createTime = General.DefaultTime;
+                    }
                     User roomMaster = General.UnknownUserInstance;
                     if (dsUser != null && dsUser.Tables.Count > 0)
                     {
@@ -533,8 +539,14 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 long Id = (long)dr[UserQuery.Column_UID];
                 string Username = (string)dr[UserQuery.Column_Username];
-                DateTime RegTime = (DateTime)dr[UserQuery.Column_RegTime];
-                DateTime LastTime = (DateTime)dr[UserQuery.Column_LastTime];
+                if (!DateTime.TryParse(dr[UserQuery.Column_RegTime].ToString(), out DateTime RegTime))
+                {
+                    RegTime = General.DefaultTime;
+                }
+                if (!DateTime.TryParse(dr[UserQuery.Column_LastTime].ToString(), out DateTime LastTime))
+                {
+                    LastTime = General.DefaultTime;
+                }
                 string Email = (string)dr[UserQuery.Column_Email];
                 string NickName = (string)dr[UserQuery.Column_Nickname];
                 bool IsAdmin = Convert.ToInt32(dr[UserQuery.Column_IsAdmin]) == 1;
