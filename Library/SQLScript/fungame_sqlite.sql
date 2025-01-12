@@ -37,7 +37,8 @@ CREATE TABLE "rooms" (
 "RoomState"  INTEGER DEFAULT 0,
 "IsRank"  INTEGER DEFAULT 0,
 "HasPass"  INTEGER DEFAULT 0,
-"Password"  TEXT DEFAULT ''
+"Password"  TEXT DEFAULT '',
+"MaxUsers" INTEGER DEFAULT 0
 );
 
 -- ----------------------------
