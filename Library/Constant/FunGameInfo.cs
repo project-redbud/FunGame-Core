@@ -11,7 +11,7 @@
             FunGame_Server
         }
 
-        public const string FunGame_CopyRight = @"©2024 Milimoe. 米粒的糖果屋";
+        public const string FunGame_CopyRight = @"©2025 Milimoe. 米粒的糖果屋";
 
         /// <summary>
         /// 添加-debug启动项将开启DebugMode（仅适用于Desktop或Console）
@@ -52,7 +52,7 @@
                 FunGame.FunGame_Server => FunGame_Server,
                 _ => ""
             };
-            return type + " [版本: " + FunGame_Version + FunGame_VersionPatch + "]\n" + (type.Equals(FunGame_Desktop) ? @"©" : "(C)") + "2024 Milimoe. 保留所有权利\n";
+            return type + " [版本: " + FunGame_Version + FunGame_VersionPatch + "]\n" + (type.Equals(FunGame_Desktop) ? @"©" : "(C)") + "2022-Present Milimoe. 保留所有权利\n";
         }
     }
 }
