@@ -52,39 +52,55 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
 
         private async Task SendHeartBeat()
         {
-            await Task.Delay(100);
-            if (_Socket != null)
+            try
             {
-                while (_Socket.Connected)
+                await Task.Delay(100);
+                if (_Socket != null)
                 {
-                    if (!SendingHeartBeat) _SendingHeartBeat = true;
-                    // 发送心跳包
-                    _LastHeartbeatReceived = false;
-                    if (_Socket.Send(SocketMessageType.HeartBeat) == SocketResult.Success)
+                    while (_Socket.Connected)
                     {
-                        await Task.Delay(4 * 1000);
-                        if (!_LastHeartbeatReceived) AddHeartBeatFaileds();
+                        if (!SendingHeartBeat) _SendingHeartBeat = true;
+                        // 发送心跳包
+                        _LastHeartbeatReceived = false;
+                        if (_Socket.Send(SocketMessageType.HeartBeat) == SocketResult.Success)
+                        {
+                            await Task.Delay(4 * 1000);
+                            if (!_LastHeartbeatReceived) AddHeartBeatFaileds();
+                        }
+                        else AddHeartBeatFaileds();
+                        await Task.Delay(20 * 1000);
                     }
-                    else AddHeartBeatFaileds();
-                    await Task.Delay(20 * 1000);
+                }
+                else if (_HTTPClient != null)
+                {
+                    while (_HTTPClient.WebSocket?.State == System.Net.WebSockets.WebSocketState.Open)
+                    {
+                        if (!SendingHeartBeat) _SendingHeartBeat = true;
+                        // 发送心跳包
+                        if (await _HTTPClient.Send(SocketMessageType.HeartBeat) == SocketResult.Success)
+                        {
+                            await Task.Delay(4 * 1000);
+                            AddHeartBeatFaileds();
+                        }
+                        else AddHeartBeatFaileds();
+                        await Task.Delay(20 * 1000);
+                    }
+                }
+                _SendingHeartBeat = false;
+            }
+            catch (System.Exception e)
+            {
+                if (_Socket != null)
+                {
+                    _Socket.OnConnectionLost(e);
+                    _Socket.Close();
+                }
+                if (_HTTPClient != null)
+                {
+                    _HTTPClient.OnConnectionLost(e);
+                    _HTTPClient.Close();
                 }
             }
-            else if (_HTTPClient != null)
-            {
-                while (_HTTPClient.Instance?.State == System.Net.WebSockets.WebSocketState.Open)
-                {
-                    if (!SendingHeartBeat) _SendingHeartBeat = true;
-                    // 发送心跳包
-                    if (await _HTTPClient.Send(SocketMessageType.HeartBeat) == SocketResult.Success)
-                    {
-                        await Task.Delay(4 * 1000);
-                        AddHeartBeatFaileds();
-                    }
-                    else AddHeartBeatFaileds();
-                    await Task.Delay(20 * 1000);
-                }
-            }
-            _SendingHeartBeat = false;
         }
 
         private void AddHeartBeatFaileds()

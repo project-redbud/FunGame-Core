@@ -38,9 +38,9 @@ namespace Milimoe.FunGame.Core.Service
         /// </summary>
         /// <param name="uri"></param>
         /// <returns></returns>
-        internal static async Task<System.Net.WebSockets.ClientWebSocket?> Connect(Uri uri)
+        internal static async Task<ClientWebSocket?> Connect(Uri uri)
         {
-            System.Net.WebSockets.ClientWebSocket socket = new();
+            ClientWebSocket socket = new();
             await socket.ConnectAsync(uri, CancellationToken.None);
             if (socket.State == WebSocketState.Open)
             {
@@ -55,7 +55,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <param name="socket"></param>
         /// <param name="obj"></param>
         /// <returns></returns>
-        internal static async Task<SocketResult> Send(System.Net.WebSockets.ClientWebSocket socket, SocketObject obj)
+        internal static async Task<SocketResult> Send(ClientWebSocket socket, SocketObject obj)
         {
             if (socket != null)
             {
@@ -176,12 +176,12 @@ namespace Milimoe.FunGame.Core.Service
         /// <returns></returns>
         internal static async Task<bool> ReceiveMessage(HTTPClient client)
         {
-            if (client.Instance is null) return false;
+            if (client.WebSocket is null) return false;
 
             byte[] buffer = new byte[General.SocketByteSize];
-            WebSocketReceiveResult result = await client.Instance.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            WebSocketReceiveResult result = await client.WebSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
             string msg = General.DefaultEncoding.GetString(buffer).Replace("\0", "").Trim();
-            SocketObject[] objs = await GetSocketObjects(client.Instance, result, msg);
+            SocketObject[] objs = await GetSocketObjects(client.WebSocket, result, msg);
 
             foreach (SocketObject obj in objs)
             {
@@ -192,7 +192,7 @@ namespace Milimoe.FunGame.Core.Service
                 }
                 else if (obj.SocketType == SocketMessageType.Disconnect)
                 {
-                    await client.Instance.CloseAsync(result.CloseStatus ?? WebSocketCloseStatus.NormalClosure, result.CloseStatusDescription, CancellationToken.None);
+                    await client.WebSocket.CloseAsync(result.CloseStatus ?? WebSocketCloseStatus.NormalClosure, result.CloseStatusDescription, CancellationToken.None);
                     return true;
                 }
             }

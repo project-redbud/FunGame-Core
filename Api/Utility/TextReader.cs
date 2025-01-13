@@ -77,11 +77,15 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     break;
                 case FunGameInfo.FunGame.FunGame_Server:
                     /**
+                     * Console
+                     */
+                    WriteINI("Console", "LogLevel", "INFO");
+                    /**
                      * Server
                      */
                     WriteINI("Server", "Name", "FunGame Server");
                     WriteINI("Server", "Password", "");
-                    WriteINI("Server", "Describe", "Just Another FunGame Server.");
+                    WriteINI("Server", "Description", "Just Another FunGame Server.");
                     WriteINI("Server", "Notice", "This is the FunGame Server's Notice.");
                     WriteINI("Server", "Key", "");
                     WriteINI("Server", "Status", "1");

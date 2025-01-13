@@ -72,7 +72,7 @@ namespace Milimoe.FunGame.Core.Controller
             }
             else
             {
-                WriteLine("已经创建过 SQLHelper 实例。");
+                WriteLine("已经创建过 SQLHelper 实例。", Library.Constant.LogLevel.Warning);
             }
         }
 
@@ -87,7 +87,7 @@ namespace Milimoe.FunGame.Core.Controller
             }
             else
             {
-                WriteLine("已经创建过 MailSender 实例。");
+                WriteLine("已经创建过 MailSender 实例。", Library.Constant.LogLevel.Warning);
             }
         }
 

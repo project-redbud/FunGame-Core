@@ -19,6 +19,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public bool Receiving => _receiving;
         private HeartBeat HeartBeat { get; }
 
+        public event Action<System.Exception>? ConnectionLost;
+        public event Action? Closed;
+
         private Task? _receivingTask;
         private bool _receiving = false;
         private readonly HashSet<Action<SocketObject>> _boundEvents = [];
@@ -61,6 +64,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             }
             catch (System.Exception e)
             {
+                OnConnectionLost(e);
+                Close();
                 Api.Utility.TXTHelper.AppendErrorLog(e.GetErrorInfo());
                 throw new SocketWrongInfoException();
             }
@@ -80,6 +85,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             SocketManager.SocketReceive -= new SocketManager.SocketReceiveHandler(method);
         }
 
+        public void OnConnectionLost(System.Exception e)
+        {
+            ConnectionLost?.Invoke(e);
+        }
+
         public void Close()
         {
             HeartBeat.StopSendingHeartBeat();
@@ -89,6 +99,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             {
                 RemoveSocketObjectHandler(method);
             }
+            Closed?.Invoke();
+            ConnectionLost = null;
+            Closed = null;
         }
 
         public void StartReceiving(Task t)

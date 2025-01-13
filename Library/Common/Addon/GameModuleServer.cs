@@ -40,6 +40,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         public abstract GameModuleDepend GameModuleDepend { get; }
 
         /// <summary>
+        /// 是否是匿名服务器
+        /// </summary>
+        public virtual bool IsAnonymous { get; set; } = false;
+
+        /// <summary>
         /// 包含了一些常用方法的控制器
         /// </summary>
         public ServerAddonController<IGameModuleServer> Controller
@@ -82,6 +87,38 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <param name="data">消息参数</param>
         /// <returns>底层会将字典中的数据发送给客户端</returns>
         public abstract Task<Dictionary<string, object>> GamingMessageHandler(string username, GamingType type, Dictionary<string, object> data);
+        
+        /// <summary>
+        /// 启动匿名服务器监听
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        public virtual bool StartAnonymousServer(IServerModel model)
+        {
+            return true;
+        }
+        
+        /// <summary>
+        /// 结束匿名服务器监听
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        public virtual void CloseAnonymousServer(IServerModel model)
+        {
+
+        }
+
+        /// <summary>
+        /// 接收并处理匿名服务器监听消息<para/>
+        /// 此方法为可选实现，可以帮助 RESTful API 处理不需要验证的 WebSocket 请求
+        /// </summary>
+        /// <param name="data">消息参数</param>
+        /// <returns>底层会将字典中的数据发送给客户端</returns>
+        public virtual async Task<Dictionary<string, object>> AnonymousGameServerHandler(Dictionary<string, object> data)
+        {
+            await Task.Delay(1);
+            return [];
+        }
 
         /// <summary>
         /// 加载标记
@@ -150,6 +187,19 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             foreach (IServerModel s in clients)
             {
                 await s.Send(type, args);
+            }
+        }
+
+        /// <summary>
+        /// 给客户端发送匿名服务器消息
+        /// </summary>
+        /// <param name="clients"></param>
+        /// <param name="data"></param>
+        protected virtual async Task SendAnonymousGameServerMessage(IEnumerable<IServerModel> clients, Dictionary<string, object> data)
+        {
+            foreach (IServerModel s in clients)
+            {
+                await s.Send(SocketMessageType.AnonymousGameServer, data);
             }
         }
     }

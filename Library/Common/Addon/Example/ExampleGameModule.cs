@@ -205,12 +205,45 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
                         ConnectedUser.Add(Users.Where(u => u.Username == username).First());
                         Controller.WriteLine(username + " 已经连接。");
                     }
-                    else Controller.WriteLine(username + " 确认连接失败！");
+                    else Controller.WriteLine(username + " 确认连接失败！", LogLevel.Warning);
                     break;
                 default:
                     await Task.Delay(1);
                     break;
             }
+
+            return result;
+        }
+
+        protected IServerModel? _clientModel; 
+
+        /// <summary>
+        /// 匿名服务器示例
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        public override bool StartAnonymousServer(IServerModel model)
+        {
+            // 接收连接匿名服务器的客户端
+            _clientModel = model;
+            return true;
+        }
+
+        /// <summary>
+        /// 接收并处理匿名服务器消息
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public override async Task<Dictionary<string, object>> AnonymousGameServerHandler(Dictionary<string, object> data)
+        {
+            Dictionary<string, object> result = [];
+
+            // 根据服务器和客户端的数据传输约定，自行处理 data，并返回。
+            if (data.Count > 0)
+            {
+                await Task.Delay(1);
+            }
+            result.Add("msg", "匿名服务器已经收到消息了");
 
             return result;
         }
