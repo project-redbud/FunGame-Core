@@ -385,12 +385,14 @@ namespace Milimoe.FunGame.Core.Controller
             }
             return true;
         }
-
+        
         /// <summary>
         /// 输出消息
         /// </summary>
         /// <param name="msg"></param>
-        public abstract void WritelnSystemInfo(string msg);
+        /// <param name="level"></param>
+        /// <param name="useLevel"></param>
+        public abstract void WritelnSystemInfo(string msg, LogLevel level = LogLevel.Info, bool useLevel = true);
 
         /// <summary>
         /// 自定处理异常的方法
