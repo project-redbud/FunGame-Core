@@ -63,7 +63,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
                 {
                     OnConnectionLost(e);
                     Close();
-                    Api.Utility.TXTHelper.AppendErrorLog(e.GetErrorInfo());
+                    TXTHelper.AppendErrorLog(e.GetErrorInfo());
                     throw new SocketWrongInfoException();
                 }
             }

@@ -580,7 +580,7 @@ namespace Milimoe.FunGame.Core.Controller
             }
             catch (Exception e)
             {
-                _Socket.OnConnectionLost(e);
+                _Socket?.OnConnectionLost(e);
                 Close_Socket();
             }
             return result;
