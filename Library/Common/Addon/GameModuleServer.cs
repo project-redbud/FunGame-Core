@@ -82,18 +82,19 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 接收并处理GamingMessage
         /// </summary>
-        /// <param name="username">发送此消息的账号</param>
+        /// <param name="model">发送此消息的客户端</param>
         /// <param name="type">消息类型</param>
         /// <param name="data">消息参数</param>
         /// <returns>底层会将字典中的数据发送给客户端</returns>
-        public abstract Task<Dictionary<string, object>> GamingMessageHandler(string username, GamingType type, Dictionary<string, object> data);
-        
+        public abstract Task<Dictionary<string, object>> GamingMessageHandler(IServerModel model, GamingType type, Dictionary<string, object> data);
+
         /// <summary>
         /// 启动匿名服务器监听
         /// </summary>
         /// <param name="model"></param>
+        /// <param name="data"></param>
         /// <returns></returns>
-        public virtual bool StartAnonymousServer(IServerModel model)
+        public virtual bool StartAnonymousServer(IServerModel model, Dictionary<string, object> data)
         {
             return true;
         }
@@ -112,9 +113,10 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// 接收并处理匿名服务器监听消息<para/>
         /// 此方法为可选实现，可以帮助 RESTful API 处理不需要验证的 WebSocket 请求
         /// </summary>
+        /// <param name="model">发送此消息的客户端</param>
         /// <param name="data">消息参数</param>
         /// <returns>底层会将字典中的数据发送给客户端</returns>
-        public virtual async Task<Dictionary<string, object>> AnonymousGameServerHandler(Dictionary<string, object> data)
+        public virtual async Task<Dictionary<string, object>> AnonymousGameServerHandler(IServerModel model, Dictionary<string, object> data)
         {
             await Task.Delay(1);
             return [];
@@ -166,13 +168,24 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <param name="clients"></param>
         /// <param name="type"></param>
         /// <param name="data"></param>
-        protected virtual async Task SendGamingMessage(IEnumerable<IServerModel> clients, GamingType type, Dictionary<string, object> data)
+        /// <returns>发送失败的客户端</returns>
+        protected virtual async Task<List<IServerModel>> SendGamingMessage(IEnumerable<IServerModel> clients, GamingType type, Dictionary<string, object> data)
         {
             // 发送局内消息
+            List<IServerModel> failedModels = [];
             foreach (IServerModel s in clients)
             {
-                await s.Send(SocketMessageType.Gaming, type, data);
+                try
+                {
+                    await s.Send(SocketMessageType.Gaming, type, data);
+                }
+                catch (System.Exception e)
+                {
+                    Controller.Error(e);
+                    failedModels.Add(s);
+                }
             }
+            return failedModels;
         }
 
         /// <summary>
@@ -181,13 +194,24 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <param name="clients"></param>
         /// <param name="type"></param>
         /// <param name="args"></param>
-        protected virtual async Task Send(IEnumerable<IServerModel> clients, SocketMessageType type, params object[] args)
+        /// <returns>发送失败的客户端</returns>
+        protected virtual async Task<List<IServerModel>> Send(IEnumerable<IServerModel> clients, SocketMessageType type, params object[] args)
         {
             // 发送消息
+            List<IServerModel> failedModels = [];
             foreach (IServerModel s in clients)
             {
-                await s.Send(type, args);
+                try
+                {
+                    await s.Send(type, args);
+                }
+                catch (System.Exception e)
+                {
+                    Controller.Error(e);
+                    failedModels.Add(s);
+                }
             }
+            return failedModels;
         }
 
         /// <summary>
@@ -195,12 +219,23 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// </summary>
         /// <param name="clients"></param>
         /// <param name="data"></param>
-        protected virtual async Task SendAnonymousGameServerMessage(IEnumerable<IServerModel> clients, Dictionary<string, object> data)
+        /// <returns>发送失败的客户端</returns>
+        protected virtual async Task<List<IServerModel>> SendAnonymousGameServerMessage(IEnumerable<IServerModel> clients, Dictionary<string, object> data)
         {
+            List<IServerModel> failedModels = [];
             foreach (IServerModel s in clients)
             {
-                await s.Send(SocketMessageType.AnonymousGameServer, data);
+                try
+                {
+                    await s.Send(SocketMessageType.AnonymousGameServer, data);
+                }
+                catch (System.Exception e)
+                {
+                    Controller.Error(e);
+                    failedModels.Add(s);
+                }
             }
+            return failedModels;
         }
     }
 }
