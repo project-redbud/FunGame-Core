@@ -3,6 +3,23 @@
  */
 namespace Milimoe.FunGame.Core.Library.Constant
 {
+    public class CommonSet
+    {
+        public static string GetLogLevelPrefix(LogLevel level)
+        {
+            return level switch
+            {
+                LogLevel.Trace => "T/",
+                LogLevel.Debug => "D/",
+                LogLevel.Info => "I/",
+                LogLevel.Warning => "W/",
+                LogLevel.Error => "E/",
+                LogLevel.Critical => "C/",
+                _ => "I/"
+            };
+        }
+    }
+
     /// <summary>
     /// 配合 <see cref="InterfaceMethod"/> <see cref="InterfaceType"/> 使用，也别忘了修改 <see cref="Api.Utility.Implement"/>
     /// </summary>
@@ -49,6 +66,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string StartGame = "StartGame";
         public const string EndGame = "EndGame";
         public const string Gaming = "Gaming";
+        public const string AnonymousGameServer = "AnonymousGameServer";
 
         /// <summary>
         /// 将通信类型的枚举转换为字符串

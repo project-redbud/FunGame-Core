@@ -21,7 +21,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// <summary>
         /// 与服务器的连接套接字实例（WebSocket）
         /// </summary>
-        public HTTPClient? WebSocket => _WebSocket;
+        public HTTPClient? HTTPClient => _HTTPClient;
 
         /// <summary>
         /// 套接字是否已经连接
@@ -41,7 +41,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// <summary>
         /// 用于类内赋值
         /// </summary>
-        protected HTTPClient? _WebSocket;
+        protected HTTPClient? _HTTPClient;
 
         /// <summary>
         /// 是否正在接收服务器信息
@@ -204,6 +204,7 @@ namespace Milimoe.FunGame.Core.Controller
                                         }
                                     }
                                 });
+                                _Socket.ConnectionLost += Error;
                             }
                         }
                     }
@@ -231,12 +232,12 @@ namespace Milimoe.FunGame.Core.Controller
             string serverName = "";
             string notice = "";
 
-            _WebSocket?.Close();
-            _WebSocket = await HTTPClient.Connect(address, ssl, port, subUrl, connectArgs.Cast<object>().ToArray());
-            if (_WebSocket.Connected)
+            _HTTPClient?.Close();
+            _HTTPClient = await HTTPClient.Connect(address, ssl, port, subUrl, connectArgs.Cast<object>().ToArray());
+            if (_HTTPClient.Connected)
             {
                 bool webSocketConnected = false;
-                _WebSocket.AddSocketObjectHandler(obj =>
+                _HTTPClient.AddSocketObjectHandler(obj =>
                 {
                     try
                     {
@@ -247,7 +248,7 @@ namespace Milimoe.FunGame.Core.Controller
                             result = success ? ConnectResult.Success : ConnectResult.ConnectFailed;
                             if (success)
                             {
-                                _WebSocket.Token = obj.GetParam<Guid>(2);
+                                _HTTPClient.Token = obj.GetParam<Guid>(2);
                                 serverName = obj.GetParam<string>(3) ?? "";
                                 notice = obj.GetParam<string>(4) ?? "";
                             }
@@ -265,10 +266,11 @@ namespace Milimoe.FunGame.Core.Controller
                 {
                     await Task.Delay(100);
                 }
+                _HTTPClient.ConnectionLost += Error;
             }
             else
             {
-                _WebSocket?.Close();
+                _HTTPClient?.Close();
                 result = ConnectResult.ConnectFailed;
             }
 
@@ -370,10 +372,10 @@ namespace Milimoe.FunGame.Core.Controller
         {
             try
             {
-                if (_WebSocket != null)
+                if (_HTTPClient != null)
                 {
-                    _WebSocket.Close();
-                    _WebSocket = null;
+                    _HTTPClient.Close();
+                    _HTTPClient = null;
                 }
             }
             catch (Exception e)
@@ -383,12 +385,14 @@ namespace Milimoe.FunGame.Core.Controller
             }
             return true;
         }
-
+        
         /// <summary>
         /// 输出消息
         /// </summary>
         /// <param name="msg"></param>
-        public abstract void WritelnSystemInfo(string msg);
+        /// <param name="level"></param>
+        /// <param name="useLevel"></param>
+        public abstract void WritelnSystemInfo(string msg, LogLevel level = LogLevel.Info, bool useLevel = true);
 
         /// <summary>
         /// 自定处理异常的方法
@@ -410,9 +414,9 @@ namespace Milimoe.FunGame.Core.Controller
                 DataRequest request = new(_Socket, RequestType);
                 return request;
             }
-            else if (_WebSocket != null)
+            else if (_HTTPClient != null)
             {
-                DataRequest request = new(_WebSocket, RequestType);
+                DataRequest request = new(_HTTPClient, RequestType);
                 return request;
             }
             throw new ConnectFailedException();
@@ -431,9 +435,9 @@ namespace Milimoe.FunGame.Core.Controller
                 DataRequest request = new(_Socket, RequestType, true);
                 return request;
             }
-            else if (_WebSocket != null)
+            else if (_HTTPClient != null)
             {
-                DataRequest request = new(_WebSocket, RequestType, true);
+                DataRequest request = new(_HTTPClient, RequestType, true);
                 return request;
             }
             throw new ConnectFailedException();
@@ -453,9 +457,9 @@ namespace Milimoe.FunGame.Core.Controller
                 DataRequest request = new(_Socket, RequestType, false, SocketRuntimeType.Addon);
                 return request;
             }
-            else if (_WebSocket != null)
+            else if (_HTTPClient != null)
             {
-                DataRequest request = new(_WebSocket, RequestType, false, SocketRuntimeType.Addon);
+                DataRequest request = new(_HTTPClient, RequestType, false, SocketRuntimeType.Addon);
                 return request;
             }
             throw new ConnectFailedException();
@@ -475,9 +479,9 @@ namespace Milimoe.FunGame.Core.Controller
                 DataRequest request = new(_Socket, RequestType, true, SocketRuntimeType.Addon);
                 return request;
             }
-            else if (_WebSocket != null)
+            else if (_HTTPClient != null)
             {
-                DataRequest request = new(_WebSocket, RequestType, true, SocketRuntimeType.Addon);
+                DataRequest request = new(_HTTPClient, RequestType, true, SocketRuntimeType.Addon);
                 return request;
             }
             throw new ConnectFailedException();
@@ -497,9 +501,9 @@ namespace Milimoe.FunGame.Core.Controller
                 DataRequest request = new(_Socket, GamingType, false, SocketRuntimeType.Addon);
                 return request;
             }
-            else if (_WebSocket != null)
+            else if (_HTTPClient != null)
             {
-                DataRequest request = new(_WebSocket, GamingType, false, SocketRuntimeType.Addon);
+                DataRequest request = new(_HTTPClient, GamingType, false, SocketRuntimeType.Addon);
                 return request;
             }
             throw new ConnectFailedException();
@@ -519,9 +523,9 @@ namespace Milimoe.FunGame.Core.Controller
                 DataRequest request = new(_Socket, GamingType, true, SocketRuntimeType.Addon);
                 return request;
             }
-            else if (_WebSocket != null)
+            else if (_HTTPClient != null)
             {
-                DataRequest request = new(_WebSocket, GamingType, true, SocketRuntimeType.Addon);
+                DataRequest request = new(_HTTPClient, GamingType, true, SocketRuntimeType.Addon);
                 return request;
             }
             throw new ConnectFailedException();
@@ -576,8 +580,8 @@ namespace Milimoe.FunGame.Core.Controller
             }
             catch (Exception e)
             {
-                // 报错中断服务器连接
-                Error(e);
+                _Socket?.OnConnectionLost(e);
+                Close_Socket();
             }
             return result;
         }
@@ -640,6 +644,10 @@ namespace Milimoe.FunGame.Core.Controller
 
                 case SocketMessageType.Gaming:
                     SocketHandler_Gaming(obj);
+                    break;
+                    
+                case SocketMessageType.AnonymousGameServer:
+                    SocketHandler_AnonymousGameServer(obj);
                     break;
 
                 case SocketMessageType.Unknown:
@@ -732,6 +740,15 @@ namespace Milimoe.FunGame.Core.Controller
         /// </summary>
         /// <param name="ServerMessage"></param>
         protected virtual void SocketHandler_Gaming(SocketObject ServerMessage)
+        {
+
+        }
+
+        /// <summary>
+        /// 客户端接收并处理匿名服务器的消息
+        /// </summary>
+        /// <param name="ServerMessage"></param>
+        protected virtual void SocketHandler_AnonymousGameServer(SocketObject ServerMessage)
         {
 
         }

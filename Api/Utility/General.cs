@@ -443,7 +443,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             byte[] key_bytes = General.DefaultEncoding.GetBytes(key);
             HMACSHA512 hmacsha512 = new(key_bytes);
             byte[] hash_bytes = hmacsha512.ComputeHash(text_bytes);
-            string hmac = BitConverter.ToString(hash_bytes).Replace("-", "");
+            string hmac = Convert.ToHexString(hash_bytes);
             return hmac.ToLower();
         }
 
@@ -452,12 +452,12 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="file_path">要计算哈希值的文件路径</param>
         /// <returns>文件的 SHA-256 哈希值</returns>
-        public static string FileSha512(string file_path)
+        public static string FileSha256(string file_path)
         {
             using SHA256 sha256 = SHA256.Create();
             using FileStream stream = File.OpenRead(file_path);
             byte[] hash = sha256.ComputeHash(stream);
-            return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+            return Convert.ToHexStringLower(hash);
         }
 
         /// <summary>
@@ -471,7 +471,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             byte[] plain = General.DefaultEncoding.GetBytes(plain_text);
             using RSACryptoServiceProvider rsa = new();
             rsa.FromXmlString(plublic_key);
-            byte[] encrypted = rsa.Encrypt(plain, false);
+            byte[] encrypted = rsa.Encrypt(plain, true);
             return Convert.ToBase64String(encrypted);
         }
 
@@ -486,7 +486,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             byte[] secret = Convert.FromBase64String(secret_text);
             using RSACryptoServiceProvider rsa = new();
             rsa.FromXmlString(private_key);
-            byte[] decrypted = rsa.Decrypt(secret, false);
+            byte[] decrypted = rsa.Decrypt(secret, true);
             return General.DefaultEncoding.GetString(decrypted);
         }
     }

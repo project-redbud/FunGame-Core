@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
@@ -128,29 +129,31 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
 
         public override GameModuleDepend GameModuleDepend => ExampleGameModuleConstant.GameModuleDepend;
 
-        protected Room Room = General.HallInstance;
-        protected List<User> Users = [];
-        protected IServerModel? RoomMaster;
-        protected Dictionary<string, IServerModel> All = [];
+        private readonly struct ModuleServerWorker(Room room, List<User> users, IServerModel roomMaster, Dictionary<string, IServerModel> serverModels)
+        {
+            public Room Room { get; } = room;
+            public List<User> Users { get; } = users;
+            public IServerModel RoomMaster { get; } = roomMaster;
+            public Dictionary<string, IServerModel> All { get; } = serverModels;
+            public List<User> ConnectedUser { get; } = [];
+            public Dictionary<string, Dictionary<string, object>> UserData { get; } = [];
+        }
+
+        private ConcurrentDictionary<string, ModuleServerWorker> Workers { get; } = [];
 
         public override bool StartServer(string GameModule, Room Room, List<User> Users, IServerModel RoomMasterServerModel, Dictionary<string, IServerModel> ServerModels, params object[] Args)
         {
-            // 将参数转为本地属性
-            this.Room = Room;
-            this.Users = Users;
-            RoomMaster = RoomMasterServerModel;
-            All = ServerModels;
+            // 因为模组是单例的，需要为这个房间创建一个工作类接收参数，不能直接用本地变量处理
+            ModuleServerWorker worker = new(Room, Users, RoomMasterServerModel, ServerModels);
+            Workers[Room.Roomid] = worker;
             // 创建一个线程执行Test()
-            TaskUtility.NewTask(Test).OnError(Controller.Error);
+            TaskUtility.NewTask(async () => await Test(worker)).OnError(Controller.Error);
             return true;
         }
 
-        private readonly List<User> ConnectedUser = [];
-        private readonly Dictionary<string, Dictionary<string, object>> UserData = [];
-
-        private async Task Test()
+        private async Task Test(ModuleServerWorker worker)
         {
-            Controller.WriteLine("欢迎各位玩家进入房间 " + Room.Roomid + " 。");
+            Controller.WriteLine("欢迎各位玩家进入房间 " + worker.Room.Roomid + " 。");
 
             // 通常，我们可以对客户端的连接状态进行确认，此方法展示如何确认客户端的连接
             // 有两种确认的方式，1是服务器主动确认，2是客户端发起确认
@@ -165,33 +168,36 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             data.Add("connect_token", token);
 
             // 我们保存到字典UserData中，这样可以方便跨方法检查变量
-            foreach (string username in Users.Select(u => u.Username).Distinct())
+            foreach (string username in worker.Users.Select(u => u.Username).Distinct())
             {
-                if (UserData.TryGetValue(username, out Dictionary<string, object>? value))
+                if (worker.UserData.TryGetValue(username, out Dictionary<string, object>? value))
                 {
                     value.Add("connect_token", token);
                 }
                 else
                 {
-                    UserData.Add(username, []);
-                    UserData[username].Add("connect_token", token);
+                    worker.UserData.Add(username, []);
+                    worker.UserData[username].Add("connect_token", token);
                 }
             }
-            await SendGamingMessage(All.Values, GamingType.UpdateInfo, data);
+            await SendGamingMessage(worker.All.Values, GamingType.UpdateInfo, data);
 
             // 新建一个线程等待所有玩家确认
             while (true)
             {
-                if (ConnectedUser.Count == Users.Count) break;
+                if (worker.ConnectedUser.Count == worker.Users.Count) break;
                 // 每200ms确认一次，不需要太频繁
                 await Task.Delay(200);
             }
             Controller.WriteLine("所有玩家都已经连接。");
         }
 
-        public override async Task<Dictionary<string, object>> GamingMessageHandler(string username, GamingType type, Dictionary<string, object> data)
+        public override async Task<Dictionary<string, object>> GamingMessageHandler(IServerModel model, GamingType type, Dictionary<string, object> data)
         {
             Dictionary<string, object> result = [];
+            // 获取model所在的房间工作类
+            ModuleServerWorker worker = Workers[model.InRoom.Roomid];
+            string username = model.User.Username;
 
             switch (type)
             {
@@ -200,17 +206,64 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
                     // 如果需要处理客户端传递的参数：获取与客户端约定好的参数key对应的值
                     string un = NetworkUtility.JsonDeserializeFromDictionary<string>(data, "username") ?? "";
                     Guid token = NetworkUtility.JsonDeserializeFromDictionary<Guid>(data, "connect_token");
-                    if (un == username && UserData.TryGetValue(username, out Dictionary<string, object>? value) && value != null && (value["connect_token"]?.Equals(token) ?? false))
+                    if (un == username && worker.UserData.TryGetValue(username, out Dictionary<string, object>? value) && value != null && (value["connect_token"]?.Equals(token) ?? false))
                     {
-                        ConnectedUser.Add(Users.Where(u => u.Username == username).First());
+                        worker.ConnectedUser.Add(worker.Users.Where(u => u.Username == username).First());
                         Controller.WriteLine(username + " 已经连接。");
                     }
-                    else Controller.WriteLine(username + " 确认连接失败！");
+                    else Controller.WriteLine(username + " 确认连接失败！", LogLevel.Warning);
                     break;
                 default:
                     await Task.Delay(1);
                     break;
             }
+
+            return result;
+        }
+
+        protected HashSet<IServerModel> _clientModels = [];
+
+        /// <summary>
+        /// 匿名服务器示例
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public override bool StartAnonymousServer(IServerModel model, Dictionary<string, object> data)
+        {
+            // 可以做验证处理
+            string access_token = NetworkUtility.JsonDeserializeFromDictionary<string>(data, "access_token") ?? "";
+            if (access_token == "approval_access_token")
+            {
+                // 接收连接匿名服务器的客户端
+                _clientModels.Add(model);
+                return true;
+            }
+            return false;
+        }
+
+        public override void CloseAnonymousServer(IServerModel model)
+        {
+            // 移除客户端
+            _clientModels.Remove(model);
+        }
+
+        /// <summary>
+        /// 接收并处理匿名服务器消息
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public override async Task<Dictionary<string, object>> AnonymousGameServerHandler(IServerModel model, Dictionary<string, object> data)
+        {
+            Dictionary<string, object> result = [];
+
+            // 根据服务器和客户端的数据传输约定，自行处理 data，并返回。
+            if (data.Count > 0)
+            {
+                await Task.Delay(1);
+            }
+            result.Add("msg", "匿名服务器已经收到消息了");
 
             return result;
         }

@@ -77,7 +77,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
         MatchRoom,
         StartGame,
         EndGame,
-        Gaming
+        Gaming,
+        AnonymousGameServer
     }
 
     /// <summary>
@@ -808,5 +809,15 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Continuous,
         Immediate,
         Progressive
+    }
+
+    public enum LogLevel
+    {
+        Trace,
+        Debug,
+        Info,
+        Warning,
+        Error,
+        Critical
     }
 }

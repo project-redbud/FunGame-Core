@@ -70,13 +70,13 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// 插件则使用 <see cref="RunTimeController"/> 中的 <see cref="RunTimeController.NewDataRequestForAddon(DataRequestType)"/> 创建一个新的请求<para/>
         /// 此数据请求只能调用异步方法 <see cref="SendRequestAsync"/> 请求数据
         /// </summary>
-        /// <param name="WebSocket"></param>
+        /// <param name="HTTPClient"></param>
         /// <param name="RequestType"></param>
         /// <param name="IsLongRunning"></param>
         /// <param name="RuntimeType"></param>
-        internal DataRequest(HTTPClient WebSocket, DataRequestType RequestType, bool IsLongRunning = false, SocketRuntimeType RuntimeType = SocketRuntimeType.Client)
+        internal DataRequest(HTTPClient HTTPClient, DataRequestType RequestType, bool IsLongRunning = false, SocketRuntimeType RuntimeType = SocketRuntimeType.Client)
         {
-            Worker = new(WebSocket, RequestType, Guid.NewGuid(), IsLongRunning, RuntimeType);
+            Worker = new(HTTPClient, RequestType, Guid.NewGuid(), IsLongRunning, RuntimeType);
         }
 
         /// <summary>
@@ -99,13 +99,13 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// 此构造方法是给 <see cref="Library.Common.Addon.GameModule"/> 提供的<para/>
         /// 此数据请求只能调用异步方法 <see cref="SendRequestAsync"/> 请求数据
         /// </summary>
-        /// <param name="WebSocket"></param>
+        /// <param name="Client"></param>
         /// <param name="GamingType"></param>
         /// <param name="IsLongRunning"></param>
         /// <param name="RuntimeType"></param>
-        internal DataRequest(HTTPClient WebSocket, GamingType GamingType, bool IsLongRunning = false, SocketRuntimeType RuntimeType = SocketRuntimeType.Client)
+        internal DataRequest(HTTPClient Client, GamingType GamingType, bool IsLongRunning = false, SocketRuntimeType RuntimeType = SocketRuntimeType.Client)
         {
-            GamingWorker = new(WebSocket, GamingType, Guid.NewGuid(), IsLongRunning, RuntimeType);
+            GamingWorker = new(Client, GamingType, Guid.NewGuid(), IsLongRunning, RuntimeType);
         }
 
         /// <summary>
@@ -194,7 +194,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             public string Error => _Error;
 
             private readonly Socket? Socket = null;
-            private readonly HTTPClient? WebSocket = null;
+            private readonly HTTPClient? HTTPClient = null;
             private readonly DataRequestType RequestType = DataRequestType.UnKnown;
             private readonly Guid RequestID = Guid.Empty;
             private readonly bool IsLongRunning = false;
@@ -212,9 +212,9 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 this.RuntimeType = RuntimeType;
             }
 
-            public SocketRequest(HTTPClient? WebSocket, DataRequestType RequestType, Guid RequestID, bool IsLongRunning = false, SocketRuntimeType RuntimeType = SocketRuntimeType.Client) : base(WebSocket)
+            public SocketRequest(HTTPClient? HTTPClient, DataRequestType RequestType, Guid RequestID, bool IsLongRunning = false, SocketRuntimeType RuntimeType = SocketRuntimeType.Client) : base(HTTPClient)
             {
-                this.WebSocket = WebSocket;
+                this.HTTPClient = HTTPClient;
                 this.RequestType = RequestType;
                 this.RequestID = RequestID;
                 this.IsLongRunning = IsLongRunning;
@@ -236,7 +236,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                     {
                         WaitForWorkDone();
                     }
-                    else if (WebSocket != null)
+                    else if (HTTPClient != null)
                     {
                         throw new AsyncSendException();
                     }
@@ -265,7 +265,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                     {
                         await WaitForWorkDoneAsync();
                     }
-                    else if (WebSocket != null && await WebSocket.Send(SocketMessageType.DataRequest, RequestType, RequestID, RequestData) == SocketResult.Success)
+                    else if (HTTPClient != null && await HTTPClient.Send(SocketMessageType.DataRequest, RequestType, RequestID, RequestData) == SocketResult.Success)
                     {
                         await WaitForWorkDoneAsync();
                     }
@@ -317,7 +317,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             public string Error => _Error;
 
             private readonly Socket? Socket = null;
-            private readonly HTTPClient? WebSocket = null;
+            private readonly HTTPClient? HTTPClient = null;
             private readonly GamingType GamingType = GamingType.None;
             private readonly Guid RequestID = Guid.Empty;
             private readonly bool IsLongRunning = false;
@@ -335,9 +335,9 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 this.RuntimeType = RuntimeType;
             }
 
-            public GamingRequest(HTTPClient? WebSocket, GamingType GamingType, Guid RequestID, bool IsLongRunning = false, SocketRuntimeType RuntimeType = SocketRuntimeType.Client) : base(WebSocket)
+            public GamingRequest(HTTPClient? HTTPClient, GamingType GamingType, Guid RequestID, bool IsLongRunning = false, SocketRuntimeType RuntimeType = SocketRuntimeType.Client) : base(HTTPClient)
             {
-                this.WebSocket = WebSocket;
+                this.HTTPClient = HTTPClient;
                 this.GamingType = GamingType;
                 this.RequestID = RequestID;
                 this.IsLongRunning = IsLongRunning;
@@ -359,7 +359,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                     {
                         WaitForWorkDone();
                     }
-                    else if (WebSocket != null)
+                    else if (HTTPClient != null)
                     {
                         throw new AsyncSendException();
                     }
@@ -388,7 +388,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                     {
                         await WaitForWorkDoneAsync();
                     }
-                    else if (WebSocket != null && await WebSocket.Send(SocketMessageType.GamingRequest, GamingType, RequestID, RequestData) == SocketResult.Success)
+                    else if (HTTPClient != null && await HTTPClient.Send(SocketMessageType.GamingRequest, GamingType, RequestID, RequestData) == SocketResult.Success)
                     {
                         await WaitForWorkDoneAsync();
                     }
