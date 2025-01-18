@@ -58,8 +58,8 @@ namespace Milimoe.FunGame.Core.Api.Utility
             GameModuleLoader loader = new();
             if (runtime == FunGameInfo.FunGame.FunGame_Desktop)
             {
-                AddonManager.LoadGameModules(loader.Modules, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
                 AddonManager.LoadGameMaps(loader.Maps, otherobjs);
+                AddonManager.LoadGameModules(loader.Modules, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
                 foreach (GameModule module in loader.Modules.Values.ToList())
                 {
                     // 读取模组的依赖集合
@@ -70,8 +70,8 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
             else if (runtime == FunGameInfo.FunGame.FunGame_Server)
             {
-                AddonManager.LoadGameModulesForServer(loader.ModuleServers, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
                 AddonManager.LoadGameMaps(loader.Maps, otherobjs);
+                AddonManager.LoadGameModulesForServer(loader.ModuleServers, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
                 foreach (GameModuleServer server in loader.ModuleServers.Values.ToList())
                 {
                     server.GameModuleDepend.GetDependencies(loader);

@@ -33,7 +33,22 @@ namespace Milimoe.FunGame.Core.Service
             foreach (string dll in dlls)
             {
                 // 加载目录下所有的DLL
-                Assembly assembly = Assembly.LoadFrom(dll);
+                Assembly? assembly = null;
+                try
+                {
+                    assembly = Assembly.LoadFrom(dll);
+                }
+                catch
+                {
+                    try
+                    {
+                        assembly = Assembly.Load(Path.GetFileName(dll));
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+                }
 
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(Plugin))))
                 {
@@ -71,7 +86,22 @@ namespace Milimoe.FunGame.Core.Service
             foreach (string dll in dlls)
             {
                 // 加载目录下所有的DLL
-                Assembly assembly = Assembly.LoadFrom(dll);
+                Assembly? assembly = null;
+                try
+                {
+                    assembly = Assembly.LoadFrom(dll);
+                }
+                catch
+                {
+                    try
+                    {
+                        assembly = Assembly.Load(Path.GetFileName(dll));
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+                }
 
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(ServerPlugin))))
                 {
@@ -109,7 +139,22 @@ namespace Milimoe.FunGame.Core.Service
             foreach (string dll in dlls)
             {
                 // 加载目录下所有的DLL
-                Assembly assembly = Assembly.LoadFrom(dll);
+                Assembly? assembly = null;
+                try
+                {
+                    assembly = Assembly.LoadFrom(dll);
+                }
+                catch
+                {
+                    try
+                    {
+                        assembly = Assembly.Load(Path.GetFileName(dll));
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+                }
 
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(WebAPIPlugin))))
                 {
@@ -149,7 +194,22 @@ namespace Milimoe.FunGame.Core.Service
 
             foreach (string dll in dlls)
             {
-                Assembly assembly = Assembly.LoadFrom(dll);
+                Assembly? assembly = null;
+                try
+                {
+                    assembly = Assembly.LoadFrom(dll);
+                }
+                catch
+                {
+                    try
+                    {
+                        assembly = Assembly.Load(Path.GetFileName(dll));
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+                }
 
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => typeof(IAddon).IsAssignableFrom(type)))
                 {
@@ -208,7 +268,22 @@ namespace Milimoe.FunGame.Core.Service
 
             foreach (string dll in dlls)
             {
-                Assembly assembly = Assembly.LoadFrom(dll);
+                Assembly? assembly = null;
+                try
+                {
+                    assembly = Assembly.LoadFrom(dll);
+                }
+                catch
+                {
+                    try
+                    {
+                        assembly = Assembly.Load(Path.GetFileName(dll));
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+                }
 
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => typeof(IAddon).IsAssignableFrom(type)))
                 {
@@ -263,7 +338,22 @@ namespace Milimoe.FunGame.Core.Service
 
             foreach (string dll in dlls)
             {
-                Assembly assembly = Assembly.LoadFrom(dll);
+                Assembly? assembly = null;
+                try
+                {
+                    assembly = Assembly.LoadFrom(dll);
+                }
+                catch
+                {
+                    try
+                    {
+                        assembly = Assembly.Load(Path.GetFileName(dll));
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+                }
 
                 foreach (Type type in assembly.GetTypes().AsEnumerable().Where(type => type.IsSubclassOf(typeof(GameMap))))
                 {
