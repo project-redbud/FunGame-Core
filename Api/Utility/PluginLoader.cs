@@ -35,7 +35,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             foreach (Plugin plugin in loader.Plugins.Values.ToList())
             {
                 // 如果插件加载后需要执行代码，请重写AfterLoad方法
-                plugin.AfterLoad(loader);
+                plugin.AfterLoad(loader, otherobjs);
             }
             return loader;
         }

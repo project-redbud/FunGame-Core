@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Controller;
+﻿using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Controller;
 using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Interface.Addons;
 using Milimoe.FunGame.Core.Library.Common.Event;
@@ -81,7 +82,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 插件完全加载后需要做的事
         /// </summary>
-        public virtual void AfterLoad(params object[] objs)
+        public virtual void AfterLoad(PluginLoader loader, params object[] objs)
         {
             // override
         }

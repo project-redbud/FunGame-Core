@@ -65,7 +65,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     // 读取模组的依赖集合
                     module.GameModuleDepend.GetDependencies(loader);
                     // 如果模组加载后需要执行代码，请重写AfterLoad方法
-                    module.AfterLoad(loader);
+                    module.AfterLoad(loader, otherobjs);
                 }
             }
             else if (runtime == FunGameInfo.FunGame.FunGame_Server)
@@ -75,7 +75,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 foreach (GameModuleServer server in loader.ModuleServers.Values.ToList())
                 {
                     server.GameModuleDepend.GetDependencies(loader);
-                    server.AfterLoad(loader);
+                    server.AfterLoad(loader, otherobjs);
                 }
             }
             return loader;
