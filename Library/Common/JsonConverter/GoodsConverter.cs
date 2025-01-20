@@ -9,7 +9,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
     {
         public override Goods NewInstance()
         {
-            return new Goods(0, Factory.GetItem(), 0, "", "");
+            return new Goods();
         }
 
         public override void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref Goods result, Dictionary<string, object> convertingContext)

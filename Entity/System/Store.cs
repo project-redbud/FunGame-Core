@@ -89,17 +89,19 @@ namespace Milimoe.FunGame.Core.Entity
 
     public class Goods
     {
-        public long Id { get; set; }
-        public List<Item> Items { get; }
-        public string Name { get; set; }
-        public string Description { get; set; }
+        public long Id { get; set; } = 0;
+        public List<Item> Items { get; } = [];
+        public string Name { get; set; } = "";
+        public string Description { get; set; } = "";
         public Dictionary<string, double> Prices { get; } = [];
         public int Stock { get; set; }
+
+        public Goods() { }
 
         public Goods(long id, Item item, int stock, string name, string description, Dictionary<string, double>? prices = null)
         {
             Id = id;
-            Items = [item];
+            Items.Add(item);
             Stock = stock;
             Name = name;
             Description = description;
