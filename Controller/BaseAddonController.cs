@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Interface.Addons;
+using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Interface.Addons;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 
@@ -40,6 +41,11 @@ namespace Milimoe.FunGame.Core.Controller
         /// <param name="e"></param>
         /// <returns></returns>
         public void Error(Exception e) => MaskMethod_Error(e);
+
+        /// <summary>
+        /// JSON 工具类对象
+        /// </summary>
+        public JsonTool JSON { get; } = new();
 
         /// <summary>
         /// 新建一个BaseAddonController
