@@ -64,4 +64,11 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Critical,
         Evaded
     }
+
+    public enum RedeemResult
+    {
+        Success,
+        StockNotEnough,
+        PointsNotEnough
+    }
 }

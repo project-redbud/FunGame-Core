@@ -89,9 +89,17 @@ namespace Milimoe.FunGame.Core.Library.Constant
 
     public enum QuestState
     {
-        NotStarted = 0,
-        InProgress = 1,
-        Completed = 2,
-        Settled = 3
+        NotStarted,
+        InProgress,
+        Completed,
+        Settled
+    }
+
+    public enum ActivityState
+    {
+        Future,
+        Upcoming,
+        InProgress,
+        Ended
     }
 }
