@@ -1,4 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Transmittal;
+using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Addons;
 using Milimoe.FunGame.Core.Library.SQLScript.Common;
@@ -17,7 +17,7 @@ namespace Milimoe.FunGame.Core.Controller
     public class ServerAddonController<T>(IAddon addon, Dictionary<string, object> delegates) : BaseAddonController<T>(addon, delegates), IServerAddon where T : IAddon
     {
         /// <summary>
-        /// 数据库连接器
+        /// 数据库连接器 [ 后台长连接仅查询专用，请勿用于事务、更新和新增，对应需求请使用：<see cref="GetSQLHelper"/> ]
         /// </summary>
         public SQLHelper? SQLHelper => _sqlHelper;
 
@@ -32,7 +32,16 @@ namespace Milimoe.FunGame.Core.Controller
         private CancellationTokenSource? _cts = null;
 
         /// <summary>
-        /// 新建 SQLHelper
+        /// 获取一个可以用来进行事务操作、更新/新增数据的数据库连接器 [ 请使用 using Controller.GetSQLHelper() 来让它能够自动释放 ]
+        /// </summary>
+        /// <returns></returns>
+        public SQLHelper? GetSQLHelper()
+        {
+            return Factory.OpenFactory.GetSQLHelper();
+        }
+
+        /// <summary>
+        /// 新建 SQLHelper [ 后台长连接仅查询专用，请勿用于事务、更新和新增，对应需求请使用：<see cref="GetSQLHelper"/> ]
         /// </summary>
         public void NewSQLHelper()
         {
@@ -55,7 +64,7 @@ namespace Milimoe.FunGame.Core.Controller
                             // 每两小时触发一次SQL服务器的心跳查询，防止SQL服务器掉线
                             try
                             {
-                                await Task.Delay(2 * 1000 * 3600);
+                                await Task.Delay(2 * 1000 * 3600, _cts.Token);
                                 _sqlHelper?.ExecuteDataSet(ServerLoginLogs.Select_GetLastLoginTime());
                             }
                             catch (OperationCanceledException)
