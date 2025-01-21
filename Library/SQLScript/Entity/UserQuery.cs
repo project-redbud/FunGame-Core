@@ -81,16 +81,18 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             return $"{Command_Update} {TableName} {Command_Set} {Column_GameTime} = {Column_GameTime} + @GameTimeMinutes {Command_Where} {Column_Username} = @Username";
         }
 
-        public static string Insert_Register(SQLHelper SQLHelper, string Username, string Password, string Email, string IP)
+        public static string Insert_Register(SQLHelper SQLHelper, string Username, string Password, string Email, string IP, string AutoKey = "")
         {
             DateTime Now = DateTime.Now;
             SQLHelper.Parameters["@Username"] = Username;
+            SQLHelper.Parameters["@Nickname"] = Username;
             SQLHelper.Parameters["@Password"] = Password;
             SQLHelper.Parameters["@Email"] = Email;
             SQLHelper.Parameters["@RegTime"] = Now;
             SQLHelper.Parameters["@LastTime"] = Now;
             SQLHelper.Parameters["@LastIP"] = IP;
-            return $"{Command_Insert} {Command_Into} {TableName} ({Column_Username}, {Column_Password}, {Column_Email}, {Column_RegTime}, {Column_LastTime}, {Column_LastIP}) {Command_Values} (@Username, @Password, @Email, @RegTime, @LastTime, @LastIP)";
+            if (AutoKey != "") SQLHelper.Parameters["@AutoKey"] = AutoKey;
+            return $"{Command_Insert} {Command_Into} {TableName} ({Column_Username}, {Column_Nickname}, {Column_Password}, {Column_Email}, {Column_RegTime}, {Column_LastTime}, {Column_LastIP}, {Column_AutoKey}) {Command_Values} (@Username, @Nickname, @Password, @Email, @RegTime, @LastTime, @LastIP, @AutoKey)";
         }
     }
 }

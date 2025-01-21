@@ -445,6 +445,10 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 builder.AppendLine($"售价：{Price} {General.GameplayEquilibriumConstant.InGameCurrency}");
             }
+            else if (Price > 0)
+            {
+                builder.AppendLine($"回收价：{Price} {General.GameplayEquilibriumConstant.InGameCurrency}");
+            }
 
             if (RemainUseTimes > 0)
             {
@@ -474,7 +478,7 @@ namespace Milimoe.FunGame.Core.Entity
 
                 if (!IsSellable && NextSellableTime != DateTime.MinValue)
                 {
-                    builder.AppendLine($"此物品将在 {NextSellableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可出售");
+                    sellandtrade.Add($"此物品将在 {NextSellableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可出售");
                 }
                 else if (!IsSellable)
                 {
@@ -488,7 +492,7 @@ namespace Milimoe.FunGame.Core.Entity
 
                 if (!IsTradable && NextTradableTime != DateTime.MinValue)
                 {
-                    builder.AppendLine($"此物品将在 {NextTradableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可交易");
+                    sellandtrade.Add($"此物品将在 {NextTradableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可交易");
                 }
                 else if (!IsTradable)
                 {

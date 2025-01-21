@@ -3,10 +3,10 @@
     public class GeneralEventArgs : EventArgs
     {
         public string EventMsg { get; set; } = "";
-        public object[] Parameters { get; set; } = Array.Empty<object>();
+        public Dictionary<string, object> Parameters { get; set; } = [];
         public bool Cancel { get; set; } = false;
 
-        public GeneralEventArgs(string EventMsg, object[] Parameters)
+        public GeneralEventArgs(string EventMsg, Dictionary<string, object> Parameters)
         {
             this.EventMsg = EventMsg;
             this.Parameters = Parameters;
@@ -14,7 +14,11 @@
 
         public GeneralEventArgs(params object[] Parameters)
         {
-            this.Parameters = Parameters;
+            int count = 0;
+            foreach (object obj in Parameters)
+            {
+                this.Parameters[count++.ToString()] = obj;
+            }
         }
     }
 
