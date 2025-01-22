@@ -1196,17 +1196,12 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 获取角色实例的名字、昵称以及所属玩家
+        /// 获取角色实例的昵称以及所属玩家，如果没有昵称，则用名字代替
         /// </summary>
         /// <returns></returns>
         public override string ToString()
         {
-            string str = GetName();
-            if (NickName != "")
-            {
-                if (str != "") str += ", ";
-                str += NickName;
-            }
+            string str = NickName != "" ? NickName : GetName();
             if (User != null && User.Username != "")
             {
                 str += "(" + User.Username + ")";
@@ -1225,6 +1220,25 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 if (str != "") str += ", ";
                 str += NickName;
+            }
+            return str;
+        }
+
+        /// <summary>
+        /// 获取角色实例的名字、昵称以及所属玩家
+        /// </summary>
+        /// <returns></returns>
+        public string ToStringWithUser()
+        {
+            string str = GetName();
+            if (NickName != "")
+            {
+                if (str != "") str += ", ";
+                str += NickName;
+            }
+            if (User != null && User.Username != "")
+            {
+                str += "（" + User.Username + "）";
             }
             return str;
         }
