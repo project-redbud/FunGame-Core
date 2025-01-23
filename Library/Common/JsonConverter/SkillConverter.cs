@@ -35,11 +35,11 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Skill.Slogan):
                     result.Slogan = reader.GetString() ?? "";
                     break;
-                case nameof(Skill.Level):
-                    result.Level = reader.GetInt32();
-                    break;
                 case nameof(Skill.SkillType):
                     result.SkillType = (SkillType)reader.GetInt32();
+                    break;
+                case nameof(Skill.Level):
+                    result.Level = reader.GetInt32();
                     break;
                 case nameof(Skill.CanSelectSelf):
                     result.CanSelectSelf = reader.GetBoolean();
