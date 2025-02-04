@@ -392,6 +392,18 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 _ => "角色现在完全行动不能"
             };
         }
+
+        public static string GetRarityTypeName(RarityType type)
+        {
+            return type switch
+            {
+                RarityType.TwoStar => "★★",
+                RarityType.ThreeStar => "★★★",
+                RarityType.FourStar => "★★★★",
+                RarityType.FiveStar => "★★★★★",
+                _ => "★"
+            };
+        }
     }
 
     public class ItemSet
