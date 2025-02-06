@@ -8,7 +8,6 @@ namespace Milimoe.FunGame.Core.Entity
     /// <summary>
     /// 角色需要使用 Factory.Get 的方式来构造，并赋值 <see cref="InitRequired"/> 标记的属性<para />
     /// 在使用时仅需要调用 <see cref="Copy"/> 方法即可获得相同对象<para />
-    /// 不建议继承
     /// </summary>
     public class Character : BaseEntity
     {

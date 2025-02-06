@@ -18,6 +18,18 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 _ => "I/"
             };
         }
+
+        public static string GetQuestStatus(QuestState status)
+        {
+            return status switch
+            {
+                QuestState.InProgress => "进行中",
+                QuestState.Completed => "已完成",
+                QuestState.Settled => "已结算",
+                QuestState.Missed => "未完成",
+                _ => "未开始"
+            };
+        }
     }
 
     /// <summary>

@@ -92,7 +92,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
         NotStarted,
         InProgress,
         Completed,
-        Settled
+        Settled,
+        Missed
     }
 
     public enum ActivityState

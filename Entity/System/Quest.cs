@@ -13,7 +13,26 @@ namespace Milimoe.FunGame.Core.Entity
         public double MaterialsAward { get; set; } = 0;
         public HashSet<Item> Awards { get; set; } = [];
         public Dictionary<string, int> AwardsCount { get; set; } = [];
-        public string AwardsString { get; set; } = "";
+        public string AwardsString
+        {
+            get
+            {
+                List<string> awards = [];
+                if (CreditsAward > 0)
+                {
+                    awards.Add($"{General.GameplayEquilibriumConstant.InGameCurrency} * {CreditsAward}");
+                }
+                if (MaterialsAward > 0)
+                {
+                    awards.Add($"{General.GameplayEquilibriumConstant.InGameMaterial} * {MaterialsAward}");
+                }
+                foreach (Item item in Awards)
+                {
+                    awards.Add($"[{ItemSet.GetQualityTypeName(item.QualityType)}|{ItemSet.GetItemTypeName(item.ItemType)}] {item.Name} * {AwardsCount[item.Name]}");
+                }
+                return string.Join("，", awards);
+            }
+        }
         public DateTime? StartTime { get; set; } = null;
         public DateTime? SettleTime { get; set; } = null;
         public QuestType QuestType { get; set; } = QuestType.Continuous;
@@ -29,21 +48,6 @@ namespace Milimoe.FunGame.Core.Entity
                 progressString = $"\r\n当前进度：{Progress}/{MaxProgress}";
             }
 
-            List<string> awards = [];
-            if (CreditsAward > 0)
-            {
-                awards.Add($"{General.GameplayEquilibriumConstant.InGameCurrency} * {CreditsAward}");
-            }
-            if (MaterialsAward > 0)
-            {
-                awards.Add($"{General.GameplayEquilibriumConstant.InGameMaterial} * {MaterialsAward}");
-            }
-            foreach (Item item in Awards)
-            {
-                awards.Add($"[{ItemSet.GetQualityTypeName(item.QualityType)}|{ItemSet.GetItemTypeName(item.ItemType)}] {item.Name} * {AwardsCount[item.Name]}");
-            }
-            AwardsString = string.Join("，", awards);
-
             return $"{Id}. {Name}\r\n" +
                    $"{Description}\r\n" +
                    (QuestType == QuestType.Continuous ? $"需要时间：{EstimatedMinutes} 分钟\r\n" : "") +
@@ -53,24 +57,13 @@ namespace Milimoe.FunGame.Core.Entity
                        + "\r\n"
                    : "") +
                    $"完成奖励：{AwardsString}\r\n" +
-                   $"任务状态：{GetStatus()}" + progressString +
+                   $"任务状态：{CommonSet.GetQuestStatus(Status)}" + progressString +
                    (SettleTime.HasValue ? $"\r\n结算时间：{SettleTime.Value.ToString(General.GeneralDateTimeFormatChinese)}" : "");
-        }
-
-        private string GetStatus()
-        {
-            return Status switch
-            {
-                QuestState.InProgress => "进行中",
-                QuestState.Completed => "已完成",
-                QuestState.Settled => "已结算",
-                _ => "未开始"
-            };
         }
 
         public override bool Equals(IBaseEntity? other)
         {
-            return other is Quest && other.Id == Id;
+            return other is Quest && other.GetIdName() == GetIdName();
         }
     }
 }
