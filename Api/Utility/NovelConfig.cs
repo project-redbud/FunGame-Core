@@ -88,7 +88,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 {
                     NovelNode obj = dict[key];
                     base.Add(key, obj);
-                    if (obj.Values.TryGetValue(nameof(NovelNode.NextNodes), out object? value) && value is List<string> nextKeys)
+                    if (obj.Values.TryGetValue(nameof(NovelNode.Previous), out object? value) && value is string prevKey && dict.Values.FirstOrDefault(n => n.Key == prevKey) is NovelNode prev)
+                    {
+                        obj.Previous = prev;
+                    }
+                    if (obj.Values.TryGetValue(nameof(NovelNode.NextNodes), out value) && value is List<string> nextKeys)
                     {
                         foreach (string nextKey in nextKeys)
                         {
