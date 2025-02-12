@@ -21,7 +21,8 @@ namespace Milimoe.FunGame.Core.Service
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
             Converters = { new DateTimeConverter(), new DataTableConverter(), new DataSetConverter(), new UserConverter(), new RoomConverter(),
                 new CharacterConverter(), new MagicResistanceConverter(), new EquipSlotConverter(), new SkillConverter(), new EffectConverter(), new ItemConverter(),
-                new InventoryConverter(), new NormalAttackConverter(), new ClubConverter(), new GoodsConverter(), new StoreConverter()
+                new InventoryConverter(), new NormalAttackConverter(), new ClubConverter(), new GoodsConverter(), new StoreConverter(),
+                new NovelOptionConverter(), new NovelNodeConverter()
             }
         };
 
