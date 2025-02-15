@@ -72,10 +72,57 @@ namespace Milimoe.FunGame.Core.Api.Utility
         }
 
         /// <summary>
+        /// 从指定路径加载配置文件，并根据其文件名，转换为本框架所需的文件<para/>
+        /// 需要注意：<paramref name="checkConflict"/> 用于检查加载的文件名是否在配置文件目录中已经存在<para/>
+        /// 如果不使用此检查，使用 <see cref="SaveConfig"/> 时可能会覆盖原有文件（程序目录/<see cref="RootPath"/>(通常是 novels)/<paramref name="novelName"/>/[所选的文件名].json）
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="novelName"></param>
+        /// <param name="checkConflict"></param>
+        /// <param name="predicates"></param>
+        /// <returns></returns>
+        /// <exception cref="FileNotFoundException" />
+        /// <exception cref="InvalidOperationException" />
+        /// <exception cref="InvalidDataException" />
+        public static NovelConfig LoadFrom(string path, string novelName, bool checkConflict = true, Dictionary<string, Func<bool>>? predicates = null)
+        {
+            if (!File.Exists(path))
+            {
+                throw new FileNotFoundException($"找不到文件：{path}");
+            }
+
+            string fileName = Path.GetFileNameWithoutExtension(path);
+            string dpath = $@"{AppDomain.CurrentDomain.BaseDirectory}{RootPath}/{novelName}";
+            string fpath = $@"{dpath}/{fileName}.json";
+
+            if (checkConflict && File.Exists(fpath))
+            {
+                throw new InvalidOperationException($"文件 {fileName}.json 已存在，请先重命名。");
+            }
+
+            // 确保目录存在
+            ExistsDirectoryAndCreate(novelName);
+
+            // 复制文件内容
+            string json = File.ReadAllText(path, General.DefaultEncoding);
+            if (NetworkUtility.JsonDeserialize<Dictionary<string, NovelNode>>(json) is null)
+            {
+                throw new InvalidDataException($"文件 {path} 内容为空或格式不正确。");
+            }
+            File.WriteAllText(fpath, json, General.DefaultEncoding);
+
+            // 从新文件加载配置
+            NovelConfig config = new(novelName, fileName);
+            config.LoadConfig(predicates);
+
+            return config;
+        }
+
+        /// <summary>
         /// 从配置文件中读取配置。
         /// </summary>
-        /// <param name="Predicates">传入定义好的条件字典</param>
-        public void LoadConfig(Dictionary<string, Func<bool>>? Predicates = null)
+        /// <param name="predicates">传入定义好的条件字典</param>
+        public void LoadConfig(Dictionary<string, Func<bool>>? predicates = null)
         {
             string dpath = $@"{AppDomain.CurrentDomain.BaseDirectory}{RootPath}/{NovelName}";
             string fpath = $@"{dpath}/{FileName}.json";
@@ -102,13 +149,13 @@ namespace Milimoe.FunGame.Core.Api.Utility
                             }
                         }
                     }
-                    if (Predicates != null)
+                    if (predicates != null)
                     {
                         if (obj.Values.TryGetValue(nameof(NovelNode.AndPredicates), out object? value2) && value2 is List<string> aps)
                         {
                             foreach (string ap in aps)
                             {
-                                if (Predicates.TryGetValue(ap, out Func<bool>? value3) && value3 != null)
+                                if (predicates.TryGetValue(ap, out Func<bool>? value3) && value3 != null)
                                 {
                                     obj.AndPredicates[ap] = value3;
                                 }
@@ -118,7 +165,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                         {
                             foreach (string op in ops)
                             {
-                                if (Predicates.TryGetValue(op, out Func<bool>? value3) && value3 != null)
+                                if (predicates.TryGetValue(op, out Func<bool>? value3) && value3 != null)
                                 {
                                     obj.OrPredicates[op] = value3;
                                 }
@@ -137,13 +184,13 @@ namespace Milimoe.FunGame.Core.Api.Utility
                                 }
                             }
                         }
-                        if (Predicates != null)
+                        if (predicates != null)
                         {
                             if (option.Values.TryGetValue(nameof(NovelNode.AndPredicates), out object? value3) && value3 is List<string> aps)
                             {
                                 foreach (string ap in aps)
                                 {
-                                    if (Predicates.TryGetValue(ap, out Func<bool>? value4) && value4 != null)
+                                    if (predicates.TryGetValue(ap, out Func<bool>? value4) && value4 != null)
                                     {
                                         option.AndPredicates[ap] = value4;
                                     }
@@ -153,7 +200,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                             {
                                 foreach (string op in ops)
                                 {
-                                    if (Predicates.TryGetValue(op, out Func<bool>? value4) && value4 != null)
+                                    if (predicates.TryGetValue(op, out Func<bool>? value4) && value4 != null)
                                     {
                                         option.OrPredicates[op] = value4;
                                     }
@@ -180,6 +227,46 @@ namespace Milimoe.FunGame.Core.Api.Utility
             using StreamWriter writer = new(fpath, false, General.DefaultEncoding);
             writer.WriteLine(json);
             writer.Flush();
+        }
+
+        /// <summary>
+        /// 检查配置文件目录是否存在
+        /// </summary>
+        /// <param name="novelName"></param>
+        /// <returns></returns>
+        public static bool ExistsDirectory(string novelName)
+        {
+            string dpath = $@"{AppDomain.CurrentDomain.BaseDirectory}{RootPath}/{novelName}";
+            return Directory.Exists(dpath);
+        }
+
+        /// <summary>
+        /// 检查配置文件目录是否存在，不存在则创建
+        /// </summary>
+        /// <param name="novelName"></param>
+        /// <returns></returns>
+        public static bool ExistsDirectoryAndCreate(string novelName)
+        {
+            string dpath = $@"{AppDomain.CurrentDomain.BaseDirectory}{RootPath}/{novelName}";
+            bool result = Directory.Exists(dpath);
+            if (!result)
+            {
+                Directory.CreateDirectory(dpath);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 检查配置文件目录中是否存在指定文件
+        /// </summary>
+        /// <param name="novelName"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public static bool ExistsFile(string novelName, string fileName)
+        {
+            string dpath = $@"{AppDomain.CurrentDomain.BaseDirectory}{RootPath}/{novelName}";
+            string fpath = $@"{dpath}/{fileName}.json";
+            return File.Exists(fpath);
         }
     }
 }
