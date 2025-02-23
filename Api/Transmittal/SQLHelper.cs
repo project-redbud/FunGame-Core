@@ -20,6 +20,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         public abstract DataSet DataSet { get; }
         public abstract Dictionary<string, object> Parameters { get; } 
         public bool Success => Result == SQLResult.Success;
+        public bool ClearParametersAfterExecute { get; set; } = true;
 
         /// <summary>
         /// 执行一个命令
