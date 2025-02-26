@@ -68,22 +68,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             });
         }
 
-        public void OnSucceedConnectEvent(object sender, ConnectEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnSucceedConnectEvent(sender, e);
-            });
-        }
-
-        public void OnFailedConnectEvent(object sender, ConnectEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnFailedConnectEvent(sender, e);
-            });
-        }
-
         public void OnBeforeDisconnectEvent(object sender, GeneralEventArgs e)
         {
             Parallel.ForEach(Plugins.Values, plugin =>
@@ -97,22 +81,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             Parallel.ForEach(Plugins.Values, plugin =>
             {
                 plugin.OnAfterDisconnectEvent(sender, e);
-            });
-        }
-
-        public void OnSucceedDisconnectEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnSucceedDisconnectEvent(sender, e);
-            });
-        }
-
-        public void OnFailedDisconnectEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnFailedDisconnectEvent(sender, e);
             });
         }
 
@@ -132,22 +100,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             });
         }
 
-        public void OnSucceedLoginEvent(object sender, LoginEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnSucceedLoginEvent(sender, e);
-            });
-        }
-
-        public void OnFailedLoginEvent(object sender, LoginEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnFailedLoginEvent(sender, e);
-            });
-        }
-
         public void OnBeforeLogoutEvent(object sender, GeneralEventArgs e)
         {
             Parallel.ForEach(Plugins.Values, plugin =>
@@ -161,22 +113,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             Parallel.ForEach(Plugins.Values, plugin =>
             {
                 plugin.OnAfterLogoutEvent(sender, e);
-            });
-        }
-
-        public void OnSucceedLogoutEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnSucceedLogoutEvent(sender, e);
-            });
-        }
-
-        public void OnFailedLogoutEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnFailedLogoutEvent(sender, e);
             });
         }
 
@@ -196,22 +132,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             });
         }
 
-        public void OnSucceedRegEvent(object sender, RegisterEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnSucceedRegEvent(sender, e);
-            });
-        }
-
-        public void OnFailedRegEvent(object sender, RegisterEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnFailedRegEvent(sender, e);
-            });
-        }
-
         public void OnBeforeIntoRoomEvent(object sender, RoomEventArgs e)
         {
             Parallel.ForEach(Plugins.Values, plugin =>
@@ -225,22 +145,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             Parallel.ForEach(Plugins.Values, plugin =>
             {
                 plugin.OnAfterIntoRoomEvent(sender, e);
-            });
-        }
-
-        public void OnSucceedIntoRoomEvent(object sender, RoomEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnSucceedIntoRoomEvent(sender, e);
-            });
-        }
-
-        public void OnFailedIntoRoomEvent(object sender, RoomEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnFailedIntoRoomEvent(sender, e);
             });
         }
 
@@ -260,22 +164,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             });
         }
 
-        public void OnSucceedSendTalkEvent(object sender, SendTalkEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnSucceedSendTalkEvent(sender, e);
-            });
-        }
-
-        public void OnFailedSendTalkEvent(object sender, SendTalkEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnFailedSendTalkEvent(sender, e);
-            });
-        }
-
         public void OnBeforeCreateRoomEvent(object sender, RoomEventArgs e)
         {
             Parallel.ForEach(Plugins.Values, plugin =>
@@ -289,22 +177,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             Parallel.ForEach(Plugins.Values, plugin =>
             {
                 plugin.OnAfterCreateRoomEvent(sender, e);
-            });
-        }
-
-        public void OnSucceedCreateRoomEvent(object sender, RoomEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnSucceedCreateRoomEvent(sender, e);
-            });
-        }
-
-        public void OnFailedCreateRoomEvent(object sender, RoomEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnFailedCreateRoomEvent(sender, e);
             });
         }
 
@@ -324,22 +196,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             });
         }
 
-        public void OnSucceedQuitRoomEvent(object sender, RoomEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnSucceedQuitRoomEvent(sender, e);
-            });
-        }
-
-        public void OnFailedQuitRoomEvent(object sender, RoomEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnFailedQuitRoomEvent(sender, e);
-            });
-        }
-
         public void OnBeforeChangeRoomSettingEvent(object sender, GeneralEventArgs e)
         {
             Parallel.ForEach(Plugins.Values, plugin =>
@@ -353,22 +209,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             Parallel.ForEach(Plugins.Values, plugin =>
             {
                 plugin.OnAfterChangeRoomSettingEvent(sender, e);
-            });
-        }
-
-        public void OnSucceedChangeRoomSettingEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnSucceedChangeRoomSettingEvent(sender, e);
-            });
-        }
-
-        public void OnFailedChangeRoomSettingEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnFailedChangeRoomSettingEvent(sender, e);
             });
         }
 
@@ -388,22 +228,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             });
         }
 
-        public void OnSucceedStartMatchEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnSucceedStartMatchEvent(sender, e);
-            });
-        }
-
-        public void OnFailedStartMatchEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnFailedStartMatchEvent(sender, e);
-            });
-        }
-
         public void OnBeforeStartGameEvent(object sender, GeneralEventArgs e)
         {
             Parallel.ForEach(Plugins.Values, plugin =>
@@ -417,22 +241,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             Parallel.ForEach(Plugins.Values, plugin =>
             {
                 plugin.OnAfterStartGameEvent(sender, e);
-            });
-        }
-
-        public void OnSucceedStartGameEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnSucceedStartGameEvent(sender, e);
-            });
-        }
-
-        public void OnFailedStartGameEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnFailedStartGameEvent(sender, e);
             });
         }
 
@@ -452,22 +260,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             });
         }
 
-        public void OnSucceedChangeProfileEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnSucceedChangeProfileEvent(sender, e);
-            });
-        }
-
-        public void OnFailedChangeProfileEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnFailedChangeProfileEvent(sender, e);
-            });
-        }
-
         public void OnBeforeChangeAccountSettingEvent(object sender, GeneralEventArgs e)
         {
             Parallel.ForEach(Plugins.Values, plugin =>
@@ -481,22 +273,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             Parallel.ForEach(Plugins.Values, plugin =>
             {
                 plugin.OnAfterChangeAccountSettingEvent(sender, e);
-            });
-        }
-
-        public void OnSucceedChangeAccountSettingEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnSucceedChangeAccountSettingEvent(sender, e);
-            });
-        }
-
-        public void OnFailedChangeAccountSettingEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnFailedChangeAccountSettingEvent(sender, e);
             });
         }
 
@@ -516,22 +292,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             });
         }
 
-        public void OnSucceedOpenInventoryEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnSucceedOpenInventoryEvent(sender, e);
-            });
-        }
-
-        public void OnFailedOpenInventoryEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnFailedOpenInventoryEvent(sender, e);
-            });
-        }
-
         public void OnBeforeSignInEvent(object sender, GeneralEventArgs e)
         {
             Parallel.ForEach(Plugins.Values, plugin =>
@@ -545,22 +305,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             Parallel.ForEach(Plugins.Values, plugin =>
             {
                 plugin.OnAfterSignInEvent(sender, e);
-            });
-        }
-
-        public void OnSucceedSignInEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnSucceedSignInEvent(sender, e);
-            });
-        }
-
-        public void OnFailedSignInEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnFailedSignInEvent(sender, e);
             });
         }
 
@@ -580,22 +324,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             });
         }
 
-        public void OnSucceedOpenStoreEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnSucceedOpenStoreEvent(sender, e);
-            });
-        }
-
-        public void OnFailedOpenStoreEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnFailedOpenStoreEvent(sender, e);
-            });
-        }
-
         public void OnBeforeBuyItemEvent(object sender, GeneralEventArgs e)
         {
             Parallel.ForEach(Plugins.Values, plugin =>
@@ -609,22 +337,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             Parallel.ForEach(Plugins.Values, plugin =>
             {
                 plugin.OnAfterBuyItemEvent(sender, e);
-            });
-        }
-
-        public void OnSucceedBuyItemEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnSucceedBuyItemEvent(sender, e);
-            });
-        }
-
-        public void OnFailedBuyItemEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnFailedBuyItemEvent(sender, e);
             });
         }
 
@@ -644,22 +356,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             });
         }
 
-        public void OnSucceedShowRankingEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnSucceedShowRankingEvent(sender, e);
-            });
-        }
-
-        public void OnFailedShowRankingEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnFailedShowRankingEvent(sender, e);
-            });
-        }
-
         public void OnBeforeUseItemEvent(object sender, GeneralEventArgs e)
         {
             Parallel.ForEach(Plugins.Values, plugin =>
@@ -676,22 +372,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             });
         }
 
-        public void OnSucceedUseItemEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnSucceedUseItemEvent(sender, e);
-            });
-        }
-
-        public void OnFailedUseItemEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnFailedUseItemEvent(sender, e);
-            });
-        }
-
         public void OnBeforeEndGameEvent(object sender, GeneralEventArgs e)
         {
             Parallel.ForEach(Plugins.Values, plugin =>
@@ -705,22 +385,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
             Parallel.ForEach(Plugins.Values, plugin =>
             {
                 plugin.OnAfterEndGameEvent(sender, e);
-            });
-        }
-
-        public void OnSucceedEndGameEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnSucceedEndGameEvent(sender, e);
-            });
-        }
-
-        public void OnFailedEndGameEvent(object sender, GeneralEventArgs e)
-        {
-            Parallel.ForEach(Plugins.Values, plugin =>
-            {
-                plugin.OnFailedEndGameEvent(sender, e);
             });
         }
     }

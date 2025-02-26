@@ -27,15 +27,5 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             // 如果这里设置Cancel = true，将终止登录
             e.Cancel = true;
         }
-
-        public void FailedLoginEvent(object sender, LoginEventArgs e)
-        {
-
-        }
-
-        public void SucceedLoginEvent(object sender, LoginEventArgs e)
-        {
-
-        }
     }
 }

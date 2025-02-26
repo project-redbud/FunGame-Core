@@ -2,22 +2,23 @@
 {
     public class GeneralEventArgs : EventArgs
     {
+        public bool Success { get; set; } = true;
         public string EventMsg { get; set; } = "";
         public Dictionary<string, object> Parameters { get; set; } = [];
         public bool Cancel { get; set; } = false;
 
-        public GeneralEventArgs(string EventMsg, Dictionary<string, object> Parameters)
+        public GeneralEventArgs(string msg, Dictionary<string, object> args)
         {
-            this.EventMsg = EventMsg;
-            this.Parameters = Parameters;
+            EventMsg = msg;
+            Parameters = args;
         }
 
-        public GeneralEventArgs(params object[] Parameters)
+        public GeneralEventArgs(params object[] args)
         {
             int count = 0;
-            foreach (object obj in Parameters)
+            foreach (object obj in args)
             {
-                this.Parameters[count++.ToString()] = obj;
+                Parameters[count++.ToString()] = obj;
             }
         }
     }
@@ -27,7 +28,7 @@
         public T? Instance { get; set; }
         public GeneralEvent()
         {
-            Instance = (T?)Activator.CreateInstance(typeof(T?));
+            Instance = Activator.CreateInstance<T>();
         }
     }
 }
