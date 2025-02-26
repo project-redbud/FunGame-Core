@@ -15,17 +15,17 @@ namespace Milimoe.FunGame.Core.Controller
         /// <summary>
         /// 接收到的SocketObject实例
         /// </summary>
-        protected override SocketObject Work { get; set; }
+        protected override SocketObject ReceivedObject { get; set; }
 
         /// <summary>
         /// Socket
         /// </summary>
-        private readonly Socket? _Socket;
+        private readonly Socket? _socket;
 
         /// <summary>
         /// WebSocket
         /// </summary>
-        private readonly HTTPClient? _WebSocket;
+        private readonly HTTPClient? _webSocket;
 
         /// <summary>
         /// 继承请调用base构造
@@ -35,7 +35,7 @@ namespace Milimoe.FunGame.Core.Controller
         {
             if (socket != null)
             {
-                _Socket = socket;
+                _socket = socket;
                 socket.AddSocketObjectHandler(SocketHandler);
             }
             else throw new SocketCreateReceivingException();
@@ -49,7 +49,7 @@ namespace Milimoe.FunGame.Core.Controller
         {
             if (websocket != null)
             {
-                _WebSocket = websocket;
+                _webSocket = websocket;
                 websocket.AddSocketObjectHandler(SocketHandler);
             }
             else throw new SocketCreateReceivingException();
@@ -67,7 +67,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// <summary>
         /// 判断是否已经Disposed
         /// </summary>
-        private bool IsDisposed = false;
+        private bool _isDisposed = false;
 
         /// <summary>
         /// 公开的Dispose方法
@@ -85,15 +85,15 @@ namespace Milimoe.FunGame.Core.Controller
         /// <param name="Disposing"></param>
         protected void Dispose(bool Disposing)
         {
-            if (!IsDisposed)
+            if (!_isDisposed)
             {
                 if (Disposing)
                 {
-                    _Socket?.RemoveSocketObjectHandler(SocketHandler);
-                    _WebSocket?.RemoveSocketObjectHandler(SocketHandler);
+                    _socket?.RemoveSocketObjectHandler(SocketHandler);
+                    _webSocket?.RemoveSocketObjectHandler(SocketHandler);
                 }
             }
-            IsDisposed = true;
+            _isDisposed = true;
         }
 
         /// <summary>

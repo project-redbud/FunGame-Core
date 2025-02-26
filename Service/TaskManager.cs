@@ -5,14 +5,14 @@ namespace Milimoe.FunGame.Core.Service
     internal class TaskManager
     {
         /// <summary>
-        /// 开启一个任务：调用返回对象的OnCompleted()方法可以执行后续操作，支持异步
+        /// 开启一个任务：调用返回对象的 OnCompleted() 方法可以执行后续操作，支持异步
         /// </summary>
         /// <param name="action"></param>
         /// <returns></returns>
         internal static ITaskAwaiter NewTask(Action action) => new TaskAwaiter(action);
 
         /// <summary>
-        /// 开启一个任务：调用返回对象的OnCompleted()方法可以执行后续操作，支持异步
+        /// 开启一个任务：调用返回对象的 OnCompleted() 方法可以执行后续操作，支持异步
         /// </summary>
         /// <param name="function"></param>
         /// <returns></returns>
@@ -39,21 +39,22 @@ namespace Milimoe.FunGame.Core.Service
             internal TaskAwaiter(Func<Task> function) => Worker(function);
 
             /// <summary>
-            /// 返回ITaskAwaiter可以进一步调用方法<para/>
-            /// 但是意义不大，前一个OnCompleted方法并不会等待下一个方法<para/>
-            /// 可以理解为并行广播<para/>
+            /// 返回 ITaskAwaiter 可以进一步等待并执行方法<para/>
+            /// 注意事项：async () 委托的后续 OnCompleted 方法将不会进一步等待，而是直接执行，因为它是异步的
             /// </summary>
             /// <param name="action"></param>
             /// <returns></returns>
             public ITaskAwaiter OnCompleted(Action action)
             {
-                if (IsCompleted) action();
-                else Completed += new CompletedEvent(action);
+                Completed += () =>
+                {
+                    action();
+                };
                 return this;
             }
 
             /// <summary>
-            /// 在捕获到异常时，将触发Error事件
+            /// 在捕获到异常时，将触发 Error 事件
             /// </summary>
             /// <param name="action"></param>
             /// <returns></returns>
