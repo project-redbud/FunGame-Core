@@ -58,7 +58,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 例如：
 ```
-This program uses FunGame-Core, a C# game development framework licensed under the GNU Lesser General Public License v3.0.
+This project uses the FunGame-Core library, which is licensed under the GNU Lesser General Public License version 3.0. More information can be found at https://github.com/project-redbud/FunGame-Core.
 ```
 
 ### 二次开发和衍生项目
