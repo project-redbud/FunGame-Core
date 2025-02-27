@@ -30,7 +30,7 @@ git clone -b latest https://github.com/project-redbud/FunGame-Core.git
 我们维护了一份 API 文档，如有需要请随时查阅：[FunGame 开发文档](https://docs.redbud.fun)。
 文档内容会随着本项目的更改而变化，但是我们不保证能够及时更新文档。
 
-在使用本项目的过程中遇到任何问题，欢迎提交 `issues`，我们会积极解决你的问题。
+在使用本项目的过程中遇到任何问题，欢迎提交 [issues](https://github.com/project-redbud/FunGame-Core/issues)，我们会积极解决你的问题。
 
 ## 许可证
 
