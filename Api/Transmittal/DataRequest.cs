@@ -10,17 +10,22 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
     /// 如果是 <see cref="Model.Gaming"/> 的数据请求，则配合 <see cref="GamingType"/> 使用<para/>
     /// 确保已添加对应的枚举
     /// </summary>
-    public class DataRequest
+    public class DataRequest : IDisposable
     {
         /// <summary>
         /// 数据请求结果
         /// </summary>
-        public RequestResult Result => Worker != null ? Worker.Result : (GamingWorker != null ? GamingWorker.Result : RequestResult.Missing);
+        public RequestResult Result => _worker != null ? _worker.Result : (_gamingWorker != null ? _gamingWorker.Result : RequestResult.Missing);
 
         /// <summary>
         /// 详细错误信息
         /// </summary>
-        public string Error => Worker != null ? Worker.Error : (GamingWorker != null ? GamingWorker.Error : "");
+        public string Error => _worker != null ? _worker.Error : (_gamingWorker != null ? _gamingWorker.Error : "");
+
+        /// <summary>
+        /// 是否已经关闭
+        /// </summary>
+        public bool IsDisposed => _isDisposed;
 
         // 获取ResultData中key值对应的Json字符串
         // -- 此索引器仅返回Json字符串，对象类型请使用反序列化方法GetResult<T>() --
@@ -30,8 +35,8 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         {
             get
             {
-                if (Worker != null) return Worker.ResultData[key];
-                else if (GamingWorker != null) return GamingWorker.ResultData[key];
+                if (_worker != null) return _worker.ResultData[key];
+                else if (_gamingWorker != null) return _gamingWorker.ResultData[key];
                 return null;
             }
             set
@@ -43,25 +48,30 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// <summary>
         /// 私有的实现类
         /// </summary>
-        private readonly SocketRequest? Worker;
+        private readonly SocketRequest? _worker;
 
         /// <summary>
         /// 私有的实现类（这是局内请求的）
         /// </summary>
-        private readonly GamingRequest? GamingWorker;
+        private readonly GamingRequest? _gamingWorker;
+
+        /// <summary>
+        /// 指示关闭的变量
+        /// </summary>
+        private bool _isDisposed = false;
 
         /// <summary>
         /// 基于本地已连接的 <see cref="Socket"/> 创建新的数据请求<para/>
         /// 使用 <see cref="RunTimeController"/> 中的 <see cref="RunTimeController.NewDataRequest(DataRequestType)"/> 创建一个新的请求
         /// 插件则使用 <see cref="RunTimeController"/> 中的 <see cref="RunTimeController.NewDataRequestForAddon(DataRequestType)"/> 创建一个新的请求<para/>
         /// </summary>
-        /// <param name="Socket"></param>
-        /// <param name="RequestType"></param>
-        /// <param name="IsLongRunning"></param>
-        /// <param name="RuntimeType"></param>
-        internal DataRequest(Socket Socket, DataRequestType RequestType, bool IsLongRunning = false, SocketRuntimeType RuntimeType = SocketRuntimeType.Client)
+        /// <param name="socket"></param>
+        /// <param name="type"></param>
+        /// <param name="longRunning"></param>
+        /// <param name="runtime"></param>
+        internal DataRequest(Socket socket, DataRequestType type, bool longRunning = false, SocketRuntimeType runtime = SocketRuntimeType.Client)
         {
-            Worker = new(Socket, RequestType, Guid.NewGuid(), IsLongRunning, RuntimeType);
+            _worker = new(socket, type, Guid.NewGuid(), longRunning, runtime);
         }
 
         /// <summary>
@@ -70,13 +80,13 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// 插件则使用 <see cref="RunTimeController"/> 中的 <see cref="RunTimeController.NewDataRequestForAddon(DataRequestType)"/> 创建一个新的请求<para/>
         /// 此数据请求只能调用异步方法 <see cref="SendRequestAsync"/> 请求数据
         /// </summary>
-        /// <param name="HTTPClient"></param>
-        /// <param name="RequestType"></param>
-        /// <param name="IsLongRunning"></param>
-        /// <param name="RuntimeType"></param>
-        internal DataRequest(HTTPClient HTTPClient, DataRequestType RequestType, bool IsLongRunning = false, SocketRuntimeType RuntimeType = SocketRuntimeType.Client)
+        /// <param name="client"></param>
+        /// <param name="type"></param>
+        /// <param name="longRunning"></param>
+        /// <param name="runtime"></param>
+        internal DataRequest(HTTPClient client, DataRequestType type, bool longRunning = false, SocketRuntimeType runtime = SocketRuntimeType.Client)
         {
-            Worker = new(HTTPClient, RequestType, Guid.NewGuid(), IsLongRunning, RuntimeType);
+            _worker = new(client, type, Guid.NewGuid(), longRunning, runtime);
         }
 
         /// <summary>
@@ -84,13 +94,13 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// 使用 <see cref="RunTimeController"/> 中的 <see cref="RunTimeController.NewDataRequestForAddon(GamingType)"/> 创建一个新的请求<para/>
         /// 此构造方法是给 <see cref="Library.Common.Addon.GameModule"/> 提供的
         /// </summary>
-        /// <param name="Socket"></param>
-        /// <param name="GamingType"></param>
-        /// <param name="IsLongRunning"></param>
-        /// <param name="RuntimeType"></param>
-        internal DataRequest(Socket Socket, GamingType GamingType, bool IsLongRunning = false, SocketRuntimeType RuntimeType = SocketRuntimeType.Client)
+        /// <param name="socket"></param>
+        /// <param name="type"></param>
+        /// <param name="longRunning"></param>
+        /// <param name="runtime"></param>
+        internal DataRequest(Socket socket, GamingType type, bool longRunning = false, SocketRuntimeType runtime = SocketRuntimeType.Client)
         {
-            GamingWorker = new(Socket, GamingType, Guid.NewGuid(), IsLongRunning, RuntimeType);
+            _gamingWorker = new(socket, type, Guid.NewGuid(), longRunning, runtime);
         }
 
         /// <summary>
@@ -99,13 +109,13 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// 此构造方法是给 <see cref="Library.Common.Addon.GameModule"/> 提供的<para/>
         /// 此数据请求只能调用异步方法 <see cref="SendRequestAsync"/> 请求数据
         /// </summary>
-        /// <param name="Client"></param>
-        /// <param name="GamingType"></param>
-        /// <param name="IsLongRunning"></param>
-        /// <param name="RuntimeType"></param>
-        internal DataRequest(HTTPClient Client, GamingType GamingType, bool IsLongRunning = false, SocketRuntimeType RuntimeType = SocketRuntimeType.Client)
+        /// <param name="client"></param>
+        /// <param name="type"></param>
+        /// <param name="longRunning"></param>
+        /// <param name="runtime"></param>
+        internal DataRequest(HTTPClient client, GamingType type, bool longRunning = false, SocketRuntimeType runtime = SocketRuntimeType.Client)
         {
-            GamingWorker = new(Client, GamingType, Guid.NewGuid(), IsLongRunning, RuntimeType);
+            _gamingWorker = new(client, type, Guid.NewGuid(), longRunning, runtime);
         }
 
         /// <summary>
@@ -115,13 +125,13 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// <param name="value"></param>
         public void AddRequestData(string key, object value)
         {
-            if (Worker != null)
+            if (_worker != null)
             {
-                if (!Worker.RequestData.TryAdd(key, value)) Worker.RequestData[key] = value;
+                if (!_worker.RequestData.TryAdd(key, value)) _worker.RequestData[key] = value;
             }
-            else if (GamingWorker != null)
+            else if (_gamingWorker != null)
             {
-                if (!GamingWorker.RequestData.TryAdd(key, value)) GamingWorker.RequestData[key] = value;
+                if (!_gamingWorker.RequestData.TryAdd(key, value)) _gamingWorker.RequestData[key] = value;
             }
         }
 
@@ -130,8 +140,25 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// </summary>
         public void Dispose()
         {
-            Worker?.Dispose();
-            GamingWorker?.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// 关闭时
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected void Dispose(bool disposing)
+        {
+            if (!_isDisposed)
+            {
+                if (disposing)
+                {
+                    _worker?.Dispose();
+                    _gamingWorker?.Dispose();
+                }
+            }
+            _isDisposed = true;
         }
 
         /// <summary>
@@ -142,8 +169,8 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// <exception cref="AsyncSendException"></exception>
         public RequestResult SendRequest()
         {
-            Worker?.SendRequest();
-            GamingWorker?.SendRequest();
+            _worker?.SendRequest();
+            _gamingWorker?.SendRequest();
             return Result;
         }
 
@@ -153,13 +180,13 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// <returns></returns>
         public async Task<RequestResult> SendRequestAsync()
         {
-            if (Worker != null)
+            if (_worker != null)
             {
-                await Worker.SendRequestAsync();
+                await _worker.SendRequestAsync();
             }
-            else if (GamingWorker != null)
+            else if (_gamingWorker != null)
             {
-                await GamingWorker.SendRequestAsync();
+                await _gamingWorker.SendRequestAsync();
             }
             return Result;
         }
@@ -172,13 +199,13 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// <returns></returns>
         public T? GetResult<T>(string key)
         {
-            if (Worker != null)
+            if (_worker != null)
             {
-                return GetDictionaryJsonObject<T>(Worker.ResultData, key);
+                return GetDictionaryJsonObject<T>(_worker.ResultData, key);
             }
-            else if (GamingWorker != null)
+            else if (_gamingWorker != null)
             {
-                return GetDictionaryJsonObject<T>(GamingWorker.ResultData, key);
+                return GetDictionaryJsonObject<T>(_gamingWorker.ResultData, key);
             }
             return default;
         }
@@ -203,22 +230,22 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             private RequestResult _Result = RequestResult.Missing;
             private string _Error = "";
 
-            public SocketRequest(Socket? Socket, DataRequestType RequestType, Guid RequestID, bool IsLongRunning = false, SocketRuntimeType RuntimeType = SocketRuntimeType.Client) : base(Socket)
+            public SocketRequest(Socket? socket, DataRequestType type, Guid requestId, bool longRunning = false, SocketRuntimeType runtime = SocketRuntimeType.Client) : base(socket)
             {
-                this.Socket = Socket;
-                this.RequestType = RequestType;
-                this.RequestID = RequestID;
-                this.IsLongRunning = IsLongRunning;
-                this.RuntimeType = RuntimeType;
+                Socket = socket;
+                RequestType = type;
+                RequestID = requestId;
+                IsLongRunning = longRunning;
+                RuntimeType = runtime;
             }
 
-            public SocketRequest(HTTPClient? HTTPClient, DataRequestType RequestType, Guid RequestID, bool IsLongRunning = false, SocketRuntimeType RuntimeType = SocketRuntimeType.Client) : base(HTTPClient)
+            public SocketRequest(HTTPClient? client, DataRequestType type, Guid requestId, bool longRunning = false, SocketRuntimeType runtime = SocketRuntimeType.Client) : base(client)
             {
-                this.HTTPClient = HTTPClient;
-                this.RequestType = RequestType;
-                this.RequestID = RequestID;
-                this.IsLongRunning = IsLongRunning;
-                this.RuntimeType = RuntimeType;
+                HTTPClient = client;
+                RequestType = type;
+                RequestID = requestId;
+                IsLongRunning = longRunning;
+                RuntimeType = runtime;
             }
 
             public void SendRequest()
@@ -279,20 +306,20 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 }
             }
 
-            public override void SocketHandler(SocketObject SocketObject)
+            public override void SocketHandler(SocketObject obj)
             {
                 try
                 {
-                    if (SocketObject.SocketType == SocketMessageType.DataRequest)
+                    if (obj.SocketType == SocketMessageType.DataRequest)
                     {
-                        DataRequestType type = SocketObject.GetParam<DataRequestType>(0);
-                        Guid id = SocketObject.GetParam<Guid>(1);
+                        DataRequestType type = obj.GetParam<DataRequestType>(0);
+                        Guid id = obj.GetParam<Guid>(1);
                         if (type == RequestType && id == RequestID)
                         {
                             if (!IsLongRunning) Dispose();
-                            Work = SocketObject;
+                            ReceivedObject = obj;
                             Working = false;
-                            _ResultData = SocketObject.GetParam<Dictionary<string, object>>(2) ?? [];
+                            _ResultData = obj.GetParam<Dictionary<string, object>>(2) ?? [];
                             _Result = RequestResult.Success;
                         }
                     }
@@ -326,22 +353,22 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
             private RequestResult _Result = RequestResult.Missing;
             private string _Error = "";
 
-            public GamingRequest(Socket? Socket, GamingType GamingType, Guid RequestID, bool IsLongRunning = false, SocketRuntimeType RuntimeType = SocketRuntimeType.Client) : base(Socket)
+            public GamingRequest(Socket? socket, GamingType type, Guid requestId, bool longRunning = false, SocketRuntimeType runtime = SocketRuntimeType.Client) : base(socket)
             {
-                this.Socket = Socket;
-                this.GamingType = GamingType;
-                this.RequestID = RequestID;
-                this.IsLongRunning = IsLongRunning;
-                this.RuntimeType = RuntimeType;
+                Socket = socket;
+                GamingType = type;
+                RequestID = requestId;
+                IsLongRunning = longRunning;
+                RuntimeType = runtime;
             }
 
-            public GamingRequest(HTTPClient? HTTPClient, GamingType GamingType, Guid RequestID, bool IsLongRunning = false, SocketRuntimeType RuntimeType = SocketRuntimeType.Client) : base(HTTPClient)
+            public GamingRequest(HTTPClient? client, GamingType type, Guid requestId, bool longRunning = false, SocketRuntimeType runtime = SocketRuntimeType.Client) : base(client)
             {
-                this.HTTPClient = HTTPClient;
-                this.GamingType = GamingType;
-                this.RequestID = RequestID;
-                this.IsLongRunning = IsLongRunning;
-                this.RuntimeType = RuntimeType;
+                HTTPClient = client;
+                GamingType = type;
+                RequestID = requestId;
+                IsLongRunning = longRunning;
+                RuntimeType = runtime;
             }
 
             public void SendRequest()
@@ -402,20 +429,20 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 }
             }
 
-            public override void SocketHandler(SocketObject SocketObject)
+            public override void SocketHandler(SocketObject obj)
             {
                 try
                 {
-                    if (SocketObject.SocketType == SocketMessageType.GamingRequest)
+                    if (obj.SocketType == SocketMessageType.GamingRequest)
                     {
-                        GamingType type = SocketObject.GetParam<GamingType>(0);
-                        Guid id = SocketObject.GetParam<Guid>(1);
+                        GamingType type = obj.GetParam<GamingType>(0);
+                        Guid id = obj.GetParam<Guid>(1);
                         if (type == GamingType && id == RequestID)
                         {
                             if (!IsLongRunning) Dispose();
-                            Work = SocketObject;
+                            ReceivedObject = obj;
                             Working = false;
-                            _ResultData = SocketObject.GetParam<Dictionary<string, object>>(2) ?? [];
+                            _ResultData = obj.GetParam<Dictionary<string, object>>(2) ?? [];
                             _Result = RequestResult.Success;
                         }
                     }

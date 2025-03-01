@@ -671,13 +671,13 @@ namespace Milimoe.FunGame.Core.Api.Utility
     public class TaskUtility
     {
         /// <summary>
-        /// 开启一个任务：调用返回对象的OnCompleted()方法可以执行后续操作，支持异步
+        /// 开启一个异步任务。调用返回对象的 OnCompleted() 方法可以执行后续操作
         /// </summary>
         /// <param name="action"></param>
         public static TaskAwaiter NewTask(Action action) => new(Service.TaskManager.NewTask(action));
 
         /// <summary>
-        /// 开启一个任务：调用返回对象的OnCompleted()方法可以执行后续操作，支持异步
+        /// 开启一个异步任务。调用返回对象的 OnCompleted() 方法可以执行后续操作
         /// </summary>
         /// <param name="task"></param>
         public static TaskAwaiter NewTask(Func<Task> task) => new(Service.TaskManager.NewTask(task));

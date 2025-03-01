@@ -9,7 +9,7 @@
         /// <summary>
         /// 接收到的实例
         /// </summary>
-        protected abstract T? Work { get; set; }
+        protected abstract T? ReceivedObject { get; set; }
 
         /// <summary>
         /// 是否处于等待的状态
@@ -22,7 +22,7 @@
         protected virtual void SetWorking()
         {
             Working = true;
-            Work = default;
+            ReceivedObject = default;
         }
 
         /// <summary>
