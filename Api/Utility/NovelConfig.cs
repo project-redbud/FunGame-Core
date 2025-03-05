@@ -20,6 +20,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
         public static string RootPath { get; set; } = "novels";
 
         /// <summary>
+        /// 是否允许 <see cref="SaveConfig"/>
+        /// </summary>
+        public bool Readonly { get; set; } = false;
+
+        /// <summary>
         /// 模组的名称
         /// </summary>
         public string NovelName { get; set; } = novel_name;
@@ -28,6 +33,12 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// 配置文件的名称（后缀将是.json）
         /// </summary>
         public string FileName { get; set; } = file_name;
+
+        /// <summary>
+        /// 断言方法字典<para/>
+        /// <see cref="NovelNode"/> 和 <see cref="NovelOption"/> 都有显示的条件，反序列化 json 文件时，会根据其名称来分配具体的断言方法
+        /// </summary>
+        public Dictionary<string, Func<bool>> Predicates { get; set; } = [];
 
         /// <summary>
         /// 使用索引器给指定key赋值，不存在key会新增
@@ -62,29 +73,24 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        public new void Add(string key, NovelNode value)
-        {
-            if (value != null)
-            {
-                if (TryGetValue(key, out _)) base[key] = value;
-                else base.Add(key, value);
-            }
-        }
+        public new void Add(string key, NovelNode value) => base[key] = value;
 
         /// <summary>
         /// 从指定路径加载配置文件，并根据其文件名，转换为本框架所需的文件<para/>
+        /// <paramref name="copyToRootPath"/> 为 false 时将不会复制此文件至配置文件目录并且不允许 <see cref="SaveConfig"/><para/>
         /// 需要注意：<paramref name="checkConflict"/> 用于检查加载的文件名是否在配置文件目录中已经存在<para/>
         /// 如果不使用此检查，使用 <see cref="SaveConfig"/> 时可能会覆盖原有文件（程序目录/<see cref="RootPath"/>(通常是 novels)/<paramref name="novelName"/>/[所选的文件名].json）
         /// </summary>
         /// <param name="path"></param>
         /// <param name="novelName"></param>
+        /// <param name="copyToRootPath"></param>
         /// <param name="checkConflict"></param>
         /// <param name="predicates"></param>
         /// <returns></returns>
         /// <exception cref="FileNotFoundException" />
         /// <exception cref="InvalidOperationException" />
         /// <exception cref="InvalidDataException" />
-        public static NovelConfig LoadFrom(string path, string novelName, bool checkConflict = true, Dictionary<string, Func<bool>>? predicates = null)
+        public static NovelConfig LoadFrom(string path, string novelName, bool copyToRootPath = true, bool checkConflict = true, Dictionary<string, Func<bool>>? predicates = null)
         {
             if (!File.Exists(path))
             {
@@ -92,28 +98,42 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
 
             string fileName = Path.GetFileNameWithoutExtension(path);
-            string dpath = $@"{AppDomain.CurrentDomain.BaseDirectory}{RootPath}/{novelName}";
-            string fpath = $@"{dpath}/{fileName}.json";
 
-            if (checkConflict && File.Exists(fpath))
+            NovelConfig config;
+            if (copyToRootPath)
             {
-                throw new InvalidOperationException($"文件 {fileName}.json 已存在，请先重命名。");
+                string dpath = $@"{AppDomain.CurrentDomain.BaseDirectory}{RootPath}/{novelName}";
+                string fpath = $@"{dpath}/{fileName}.json";
+                if (checkConflict && File.Exists(fpath))
+                {
+                    throw new InvalidOperationException($"文件 {fileName}.json 已存在，请先重命名。");
+                }
+
+                // 确保目录存在
+                ExistsDirectoryAndCreate(novelName);
+
+                // 复制文件内容
+                string json = File.ReadAllText(path, General.DefaultEncoding);
+                if (NetworkUtility.JsonDeserialize<Dictionary<string, NovelNode>>(json) is null)
+                {
+                    throw new InvalidDataException($"文件 {path} 内容为空或格式不正确。");
+                }
+                File.WriteAllText(fpath, json, General.DefaultEncoding);
+
+                config = new(novelName, fileName);
+                config.LoadConfig(predicates);
             }
-
-            // 确保目录存在
-            ExistsDirectoryAndCreate(novelName);
-
-            // 复制文件内容
-            string json = File.ReadAllText(path, General.DefaultEncoding);
-            if (NetworkUtility.JsonDeserialize<Dictionary<string, NovelNode>>(json) is null)
+            else
             {
-                throw new InvalidDataException($"文件 {path} 内容为空或格式不正确。");
+                // 从新文件加载配置
+                config = new(novelName, fileName)
+                {
+                    Readonly = true
+                };
+                string json = File.ReadAllText(path, General.DefaultEncoding);
+                Dictionary<string, NovelNode> dict = NetworkUtility.JsonDeserialize<Dictionary<string, NovelNode>>(json) ?? [];
+                config.LoadConfig(dict, predicates);
             }
-            File.WriteAllText(fpath, json, General.DefaultEncoding);
-
-            // 从新文件加载配置
-            NovelConfig config = new(novelName, fileName);
-            config.LoadConfig(predicates);
 
             return config;
         }
@@ -130,80 +150,98 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 string json = File.ReadAllText(fpath, General.DefaultEncoding);
                 Dictionary<string, NovelNode> dict = NetworkUtility.JsonDeserialize<Dictionary<string, NovelNode>>(json) ?? [];
-                Clear();
-                foreach (string key in dict.Keys)
+                LoadConfig(dict, predicates);
+            }
+        }
+
+        /// <summary>
+        /// 根据断言方法字典重新生成小说的字典
+        /// </summary>
+        /// <param name="dict"></param>
+        /// <param name="predicates"></param>
+        private void LoadConfig(Dictionary<string, NovelNode> dict, Dictionary<string, Func<bool>>? predicates = null)
+        {
+            if (predicates != null)
+            {
+                foreach (string key in predicates.Keys)
                 {
-                    NovelNode obj = dict[key];
-                    base.Add(key, obj);
-                    if (obj.Values.TryGetValue(nameof(NovelNode.Previous), out object? value) && value is string prevKey && dict.Values.FirstOrDefault(n => n.Key == prevKey) is NovelNode prev)
+                    // 直接覆盖
+                    Predicates[key] = predicates[key];
+                }
+            }
+            Clear();
+            foreach (string key in dict.Keys)
+            {
+                NovelNode obj = dict[key];
+                base.Add(key, obj);
+                if (obj.Values.TryGetValue(nameof(NovelNode.Previous), out object? value) && value is string prevKey && dict.Values.FirstOrDefault(n => n.Key == prevKey) is NovelNode prev)
+                {
+                    obj.Previous = prev;
+                }
+                if (obj.Values.TryGetValue(nameof(NovelNode.NextNodes), out value) && value is List<string> nextKeys)
+                {
+                    foreach (string nextKey in nextKeys)
                     {
-                        obj.Previous = prev;
-                    }
-                    if (obj.Values.TryGetValue(nameof(NovelNode.NextNodes), out value) && value is List<string> nextKeys)
-                    {
-                        foreach (string nextKey in nextKeys)
+                        if (dict.TryGetValue(nextKey, out NovelNode? node) && node != null)
                         {
-                            if (dict.TryGetValue(nextKey, out NovelNode? node) && node != null)
+                            obj.NextNodes.Add(node);
+                        }
+                    }
+                }
+                if (Predicates != null)
+                {
+                    if (obj.Values.TryGetValue(nameof(NovelNode.AndPredicates), out object? value2) && value2 is List<string> aps)
+                    {
+                        foreach (string ap in aps)
+                        {
+                            if (Predicates.TryGetValue(ap, out Func<bool>? value3) && value3 != null)
                             {
-                                obj.NextNodes.Add(node);
+                                obj.AndPredicates[ap] = value3;
                             }
                         }
                     }
-                    if (predicates != null)
+                    if (obj.Values.TryGetValue(nameof(NovelNode.OrPredicates), out value2) && value2 is List<string> ops)
                     {
-                        if (obj.Values.TryGetValue(nameof(NovelNode.AndPredicates), out object? value2) && value2 is List<string> aps)
+                        foreach (string op in ops)
+                        {
+                            if (Predicates.TryGetValue(op, out Func<bool>? value3) && value3 != null)
+                            {
+                                obj.OrPredicates[op] = value3;
+                            }
+                        }
+                    }
+                }
+                foreach (NovelOption option in obj.Options)
+                {
+                    if (option.Values.TryGetValue(nameof(NovelOption.Targets), out object? value2) && value2 is List<string> targets)
+                    {
+                        foreach (string targetKey in targets)
+                        {
+                            if (dict.TryGetValue(targetKey, out NovelNode? node) && node != null)
+                            {
+                                option.Targets.Add(node);
+                            }
+                        }
+                    }
+                    if (Predicates != null)
+                    {
+                        if (option.Values.TryGetValue(nameof(NovelNode.AndPredicates), out object? value3) && value3 is List<string> aps)
                         {
                             foreach (string ap in aps)
                             {
-                                if (predicates.TryGetValue(ap, out Func<bool>? value3) && value3 != null)
+                                if (Predicates.TryGetValue(ap, out Func<bool>? value4) && value4 != null)
                                 {
-                                    obj.AndPredicates[ap] = value3;
+                                    option.AndPredicates[ap] = value4;
                                 }
                             }
                         }
-                        if (obj.Values.TryGetValue(nameof(NovelNode.OrPredicates), out value2) && value2 is List<string> ops)
+                        if (option.Values.TryGetValue(nameof(NovelNode.OrPredicates), out value3) && value3 is List<string> ops)
                         {
                             foreach (string op in ops)
                             {
-                                if (predicates.TryGetValue(op, out Func<bool>? value3) && value3 != null)
+                                if (Predicates.TryGetValue(op, out Func<bool>? value4) && value4 != null)
                                 {
-                                    obj.OrPredicates[op] = value3;
-                                }
-                            }
-                        }
-                    }
-                    foreach (NovelOption option in obj.Options)
-                    {
-                        if (option.Values.TryGetValue(nameof(NovelOption.Targets), out object? value2) && value2 is List<string> targets)
-                        {
-                            foreach (string targetKey in targets)
-                            {
-                                if (dict.TryGetValue(targetKey, out NovelNode? node) && node != null)
-                                {
-                                    option.Targets.Add(node);
-                                }
-                            }
-                        }
-                        if (predicates != null)
-                        {
-                            if (option.Values.TryGetValue(nameof(NovelNode.AndPredicates), out object? value3) && value3 is List<string> aps)
-                            {
-                                foreach (string ap in aps)
-                                {
-                                    if (predicates.TryGetValue(ap, out Func<bool>? value4) && value4 != null)
-                                    {
-                                        option.AndPredicates[ap] = value4;
-                                    }
-                                }
-                            }
-                            if (option.Values.TryGetValue(nameof(NovelNode.OrPredicates), out value3) && value3 is List<string> ops)
-                            {
-                                foreach (string op in ops)
-                                {
-                                    if (predicates.TryGetValue(op, out Func<bool>? value4) && value4 != null)
-                                    {
-                                        option.OrPredicates[op] = value4;
-                                    }
+                                    option.OrPredicates[op] = value4;
                                 }
                             }
                         }
@@ -217,6 +255,10 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         public void SaveConfig()
         {
+            if (Readonly)
+            {
+                return;
+            }
             string json = NetworkUtility.JsonSerialize((Dictionary<string, NovelNode>)this);
             string dpath = $@"{AppDomain.CurrentDomain.BaseDirectory}{RootPath}/{NovelName}";
             string fpath = $@"{dpath}/{FileName}.json";
