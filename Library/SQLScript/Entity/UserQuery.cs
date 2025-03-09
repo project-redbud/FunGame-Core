@@ -91,7 +91,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             SQLHelper.Parameters["@RegTime"] = Now;
             SQLHelper.Parameters["@LastTime"] = Now;
             SQLHelper.Parameters["@LastIP"] = IP;
-            if (AutoKey != "") SQLHelper.Parameters["@AutoKey"] = AutoKey;
+            SQLHelper.Parameters["@AutoKey"] = AutoKey;
             return $"{Command_Insert} {Command_Into} {TableName} ({Column_Username}, {Column_Nickname}, {Column_Password}, {Column_Email}, {Column_RegTime}, {Column_LastTime}, {Column_LastIP}, {Column_AutoKey}) {Command_Values} (@Username, @Nickname, @Password, @Email, @RegTime, @LastTime, @LastIP, @AutoKey)";
         }
     }
