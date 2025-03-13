@@ -129,31 +129,31 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
 
         public override GameModuleDepend GameModuleDepend => ExampleGameModuleConstant.GameModuleDepend;
 
-        private readonly struct ModuleServerWorker(Room room, List<User> users, IServerModel roomMaster, Dictionary<string, IServerModel> serverModels)
+        /// <summary>
+        /// 创建一个工作类，接收服务器启动参数的同时，还能定义一些需要的属性
+        /// </summary>
+        /// <param name="obj"></param>
+        private readonly struct ModuleServerWorker(GamingObject obj)
         {
-            public Room Room { get; } = room;
-            public List<User> Users { get; } = users;
-            public IServerModel RoomMaster { get; } = roomMaster;
-            public Dictionary<string, IServerModel> All { get; } = serverModels;
+            public GamingObject GamingObject { get; } = obj;
             public List<User> ConnectedUser { get; } = [];
             public Dictionary<string, Dictionary<string, object>> UserData { get; } = [];
         }
 
         private ConcurrentDictionary<string, ModuleServerWorker> Workers { get; } = [];
 
-        public override bool StartServer(string GameModule, Room Room, List<User> Users, IServerModel RoomMasterServerModel, Dictionary<string, IServerModel> ServerModels, params object[] Args)
+        public override bool StartServer(GamingObject obj, params object[] args)
         {
             // 因为模组是单例的，需要为这个房间创建一个工作类接收参数，不能直接用本地变量处理
-            ModuleServerWorker worker = new(Room, Users, RoomMasterServerModel, ServerModels);
-            Workers[Room.Roomid] = worker;
-            // 创建一个线程执行Test()
-            TaskUtility.NewTask(async () => await Test(worker)).OnError(Controller.Error);
+            ModuleServerWorker worker = new(obj);
+            // 创建一个线程执行Test()，因为这个方法必须立即返回
+            TaskUtility.NewTask(async () => await Test(obj, worker)).OnError(Controller.Error);
             return true;
         }
 
-        private async Task Test(ModuleServerWorker worker)
+        private async Task Test(GamingObject obj, ModuleServerWorker worker)
         {
-            Controller.WriteLine("欢迎各位玩家进入房间 " + worker.Room.Roomid + " 。");
+            Controller.WriteLine("欢迎各位玩家进入房间 " + obj.Room.Roomid + " 。");
 
             // 通常，我们可以对客户端的连接状态进行确认，此方法展示如何确认客户端的连接
             // 有两种确认的方式，1是服务器主动确认，2是客户端发起确认
@@ -168,7 +168,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             data.Add("connect_token", token);
 
             // 我们保存到字典UserData中，这样可以方便跨方法检查变量
-            foreach (string username in worker.Users.Select(u => u.Username).Distinct())
+            foreach (string username in obj.Users.Select(u => u.Username).Distinct())
             {
                 if (worker.UserData.TryGetValue(username, out Dictionary<string, object>? value))
                 {
@@ -180,16 +180,51 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
                     worker.UserData[username].Add("connect_token", token);
                 }
             }
-            await SendGamingMessage(worker.All.Values, GamingType.UpdateInfo, data);
+            await SendGamingMessage(obj.All.Values, GamingType.UpdateInfo, data);
 
-            // 新建一个线程等待所有玩家确认
-            while (true)
+            // 新建一个线程等待所有玩家确认，如果超时则取消游戏，30秒
+            CancellationTokenSource cts = new();
+            CancellationToken ct = cts.Token;
+            Task timeoutTask = Task.Delay(TimeSpan.FromSeconds(30), ct);
+
+            Task completionTask = Task.Run(async () =>
             {
-                if (worker.ConnectedUser.Count == worker.Users.Count) break;
-                // 每200ms确认一次，不需要太频繁
-                await Task.Delay(200);
+                while (!ct.IsCancellationRequested)
+                {
+                    if (worker.ConnectedUser.Count == obj.Users.Count)
+                    {
+                        Controller.WriteLine("所有玩家都已经连接。");
+                        return;
+                    }
+                    // 每200ms确认一次，不需要太频繁
+                    await Task.Delay(200);
+                }
+            }, ct);
+
+            // 等待完成或超时
+            Task completedTask = await Task.WhenAny(completionTask, timeoutTask);
+
+            if (completedTask == timeoutTask)
+            {
+                Controller.WriteLine("等待玩家连接超时，放弃该局游戏！", LogLevel.Warning);
+                cts.Cancel();
+
+                // 通知已连接的玩家
+                Dictionary<string, object> timeoutData = new()
+                {
+                    { "msg", "由于等待超时，游戏已取消！" }
+                };
+                // 结束
+                SendEndGame(obj);
+                worker.ConnectedUser.Clear();
+                Workers.Remove(obj.Room.Roomid, out _);
             }
-            Controller.WriteLine("所有玩家都已经连接。");
+            else
+            {
+                cts.Cancel();
+            }
+
+            cts.Dispose();
         }
 
         public override async Task<Dictionary<string, object>> GamingMessageHandler(IServerModel model, GamingType type, Dictionary<string, object> data)
@@ -197,6 +232,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             Dictionary<string, object> result = [];
             // 获取model所在的房间工作类
             ModuleServerWorker worker = Workers[model.InRoom.Roomid];
+            GamingObject obj = worker.GamingObject;
             string username = model.User.Username;
 
             switch (type)
@@ -208,7 +244,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
                     Guid token = NetworkUtility.JsonDeserializeFromDictionary<Guid>(data, "connect_token");
                     if (un == username && worker.UserData.TryGetValue(username, out Dictionary<string, object>? value) && value != null && (value["connect_token"]?.Equals(token) ?? false))
                     {
-                        worker.ConnectedUser.Add(worker.Users.Where(u => u.Username == username).First());
+                        worker.ConnectedUser.Add(obj.Users.Where(u => u.Username == username).First());
                         Controller.WriteLine(username + " 已经连接。");
                     }
                     else Controller.WriteLine(username + " 确认连接失败！", LogLevel.Warning);
