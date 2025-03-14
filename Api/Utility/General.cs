@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Milimoe.FunGame.Core.Library.Common.Architecture;
@@ -488,6 +489,36 @@ namespace Milimoe.FunGame.Core.Api.Utility
             rsa.FromXmlString(private_key);
             byte[] decrypted = rsa.Decrypt(secret, true);
             return General.DefaultEncoding.GetString(decrypted);
+        }
+
+        /// <summary>
+        /// 使用 MD5 算法加密
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public static string MD5(string text)
+        {
+            byte[] inputBytes = General.DefaultEncoding.GetBytes(text);
+            byte[] hash = System.Security.Cryptography.MD5.HashData(inputBytes);
+            return Convert.ToHexStringLower(hash);
+        }
+
+        /// <summary>
+        /// 生成随机字符串
+        /// </summary>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        public static string GenerateRandomString(int length = 18)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+=-`~[]\\{}|;':\",./<>?";
+            byte[] data = RandomNumberGenerator.GetBytes(length);
+
+            StringBuilder result = new(length);
+            foreach (byte b in data)
+            {
+                result.Append(chars[b % chars.Length]);
+            }
+            return result.ToString();
         }
     }
 

@@ -1,76 +1,88 @@
 SET FOREIGN_KEY_CHECKS=0;
 
 -- ----------------------------
--- Table structure for forgetverifycodes
+-- Table structure for ForgetVerifyCodes
 -- ----------------------------
-DROP TABLE IF EXISTS `forgetverifycodes`;
-CREATE TABLE `forgetverifycodes` (
-  `Username` varchar(255) DEFAULT NULL,
-  `Email` varchar(255) DEFAULT NULL,
-  `ForgetVerifyCode` varchar(255) DEFAULT NULL,
-  `SendTime` datetime DEFAULT NULL
+DROP TABLE IF EXISTS `ForgetVerifyCodes`;
+CREATE TABLE `ForgetVerifyCodes` (
+  `Username` varchar(255) NOT NULL DEFAULT '',
+  `Email` varchar(255) NOT NULL DEFAULT '',
+  `ForgetVerifyCode` varchar(255) NOT NULL DEFAULT '',
+  `SendTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
--- Table structure for regverifycodes
+-- Table structure for RegVerifyCodes
 -- ----------------------------
-DROP TABLE IF EXISTS `regverifycodes`;
-CREATE TABLE `regverifycodes` (
-  `Username` varchar(255) DEFAULT NULL,
-  `Email` varchar(255) DEFAULT NULL,
-  `RegVerifyCode` varchar(255) DEFAULT NULL,
-  `RegTime` datetime DEFAULT NULL
+DROP TABLE IF EXISTS `RegVerifyCodes`;
+CREATE TABLE `RegVerifyCodes` (
+  `Username` varchar(255) NOT NULL DEFAULT '',
+  `Email` varchar(255) NOT NULL DEFAULT '',
+  `RegVerifyCode` varchar(255) NOT NULL DEFAULT '',
+  `RegTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
--- Table structure for rooms
+-- Table structure for Rooms
 -- ----------------------------
-DROP TABLE IF EXISTS `rooms`;
-CREATE TABLE `rooms` (
+DROP TABLE IF EXISTS `Rooms`;
+CREATE TABLE `Rooms` (
   `Id` bigint(20) NOT NULL AUTO_INCREMENT,
   `Roomid` varchar(255) NOT NULL DEFAULT '-1',
-  `CreateTime` datetime NOT NULL,
+  `CreateTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `RoomMaster` bigint(20) NOT NULL DEFAULT '0',
-  `RoomType` int(8) DEFAULT '0',
-  `GameModule` varchar(255) DEFAULT '',
-  `GameMap` varchar(255) DEFAULT '',
-  `RoomState` int(8) DEFAULT '0',
-  `IsRank` int(1) DEFAULT '0',
-  `HasPass` int(1) DEFAULT '0',
-  `Password` varchar(255) DEFAULT '',
-  `MaxUsers` int(8) DEFAULT '0',
+  `RoomType` int(8) NOT NULL DEFAULT '0',
+  `GameModule` varchar(255) NOT NULL DEFAULT '',
+  `GameMap` varchar(255) NOT NULL DEFAULT '',
+  `RoomState` int(8) NOT NULL DEFAULT '0',
+  `IsRank` int(1) NOT NULL DEFAULT '0',
+  `HasPass` int(1) NOT NULL DEFAULT '0',
+  `Password` varchar(255) NOT NULL DEFAULT '',
+  `MaxUsers` int(8) NOT NULL DEFAULT '0',
   PRIMARY KEY (`Id`,`Roomid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
--- Table structure for serverloginlogs
+-- Table structure for ServerLoginLogs
 -- ----------------------------
-DROP TABLE IF EXISTS `serverloginlogs`;
-CREATE TABLE `serverloginlogs` (
-  `ServerName` varchar(255) DEFAULT NULL,
-  `ServerKey` varchar(255) DEFAULT NULL,
-  `LoginTime` datetime DEFAULT NULL
+DROP TABLE IF EXISTS `ServerLoginLogs`;
+CREATE TABLE `ServerLoginLogs` (
+  `ServerName` varchar(255) NOT NULL DEFAULT '',
+  `ServerKey` varchar(255) NOT NULL DEFAULT '',
+  `LoginTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
--- Table structure for users
+-- Table structure for ApiTokens
 -- ----------------------------
-DROP TABLE IF EXISTS `users`;
-CREATE TABLE `users` (
+DROP TABLE IF EXISTS `ApiTokens`;
+CREATE TABLE `ApiTokens` (
+  `TokenID` varchar(255) NOT NULL DEFAULT '',
+  `SecretKey` varchar(255) NOT NULL DEFAULT '',
+  `Reference1` varchar(255) NOT NULL DEFAULT '',
+  `Reference2` varchar(255) NOT NULL DEFAULT '',
+  PRIMARY KEY (`TokenID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ----------------------------
+-- Table structure for Users
+-- ----------------------------
+DROP TABLE IF EXISTS `Users`;
+CREATE TABLE `Users` (
   `UID` bigint(20) NOT NULL AUTO_INCREMENT,
-  `Username` varchar(255) NOT NULL,
-  `Password` varchar(255) NOT NULL,
-  `RegTime` datetime DEFAULT NULL,
-  `LastTime` datetime DEFAULT NULL,
-  `LastIP` varchar(255) DEFAULT '',
+  `Username` varchar(255) NOT NULL DEFAULT '',
+  `Password` varchar(255) NOT NULL DEFAULT '',
+  `RegTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `LastTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `LastIP` varchar(255) NOT NULL DEFAULT '',
   `Email` varchar(255) NOT NULL DEFAULT '',
-  `Nickname` varchar(255) DEFAULT '',
-  `IsAdmin` int(1) DEFAULT '0',
-  `IsOperator` int(1) DEFAULT '0',
-  `IsEnable` int(1) DEFAULT '1',
-  `Credits` decimal(20,0) DEFAULT '0',
-  `Materials` decimal(20,0) DEFAULT '0',
-  `GameTime` decimal(20,0) DEFAULT '0',
-  `AutoKey` varchar(255) DEFAULT '',
+  `Nickname` varchar(255) NOT NULL DEFAULT '',
+  `IsAdmin` int(1) NOT NULL DEFAULT '0',
+  `IsOperator` int(1) NOT NULL DEFAULT '0',
+  `IsEnable` int(1) NOT NULL DEFAULT '1',
+  `Credits` decimal(20,0) NOT NULL DEFAULT '0',
+  `Materials` decimal(20,0) NOT NULL DEFAULT '0',
+  `GameTime` decimal(20,0) NOT NULL DEFAULT '0',
+  `AutoKey` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`UID`,`Username`,`Email`)
 ) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4;
