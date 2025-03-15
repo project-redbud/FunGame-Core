@@ -73,6 +73,36 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         }
 
         /// <summary>
+        /// 查询数据库是否存在
+        /// </summary>
+        /// <returns></returns>
+        public abstract bool DatabaseExists();
+
+        /// <summary>
+        /// 执行一个 sql 脚本文件
+        /// </summary>
+        /// <param name="path"></param>
+        public virtual void ExecuteSqlFile(string path)
+        {
+            if (!File.Exists(path))
+            {
+                throw new FileNotFoundException("SQL 脚本文件不存在", path);
+            }
+
+            string content = File.ReadAllText(path);
+            string[] commands = content.Split([";"], StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (string command in commands)
+            {
+                string sql = command.Trim();
+                if (!string.IsNullOrEmpty(sql))
+                {
+                    Execute(sql);
+                }
+            }
+        }
+
+        /// <summary>
         /// 关闭连接
         /// </summary>
         public abstract void Close();
