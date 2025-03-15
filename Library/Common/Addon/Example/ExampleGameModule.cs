@@ -146,6 +146,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
         {
             // 因为模组是单例的，需要为这个房间创建一个工作类接收参数，不能直接用本地变量处理
             ModuleServerWorker worker = new(obj);
+            Workers[obj.Room.Roomid] = worker;
             // 创建一个线程执行Test()，因为这个方法必须立即返回
             TaskUtility.NewTask(async () => await Test(obj, worker)).OnError(Controller.Error);
             return true;
