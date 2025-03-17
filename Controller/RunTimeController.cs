@@ -17,7 +17,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// 与服务器的连接套接字实例
         /// </summary>
         public Socket? Socket => _Socket;
-        
+
         /// <summary>
         /// 与服务器的连接套接字实例（WebSocket）
         /// </summary>
@@ -37,7 +37,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// 用于类内赋值
         /// </summary>
         protected Socket? _Socket;
-        
+
         /// <summary>
         /// 用于类内赋值
         /// </summary>
@@ -215,7 +215,7 @@ namespace Milimoe.FunGame.Core.Controller
 
             return [result, msg, serverName, notice];
         }
-        
+
         /// <summary>
         /// 使用 WebSocket 方式连接服务器
         /// </summary>
@@ -363,7 +363,7 @@ namespace Milimoe.FunGame.Core.Controller
             }
             return true;
         }
-        
+
         /// <summary>
         /// 关闭 WebSocket 连接
         /// </summary>
@@ -385,7 +385,7 @@ namespace Milimoe.FunGame.Core.Controller
             }
             return true;
         }
-        
+
         /// <summary>
         /// 输出消息
         /// </summary>
@@ -645,7 +645,7 @@ namespace Milimoe.FunGame.Core.Controller
                 case SocketMessageType.Gaming:
                     SocketHandler_Gaming(obj);
                     break;
-                    
+
                 case SocketMessageType.AnonymousGameServer:
                     SocketHandler_AnonymousGameServer(obj);
                     break;

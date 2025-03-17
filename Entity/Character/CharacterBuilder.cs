@@ -66,7 +66,7 @@ namespace Milimoe.FunGame.Core.Entity
             InitialHR = initialHR;
             InitialMR = initialMR;
         }
-        
+
         /// <summary>
         /// 基于模板角色创建角色构建器
         /// </summary>

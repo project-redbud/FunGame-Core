@@ -466,7 +466,7 @@ namespace Milimoe.FunGame.Core.Entity
                     builder.Append(item.ToString());
                 }
             }
-            
+
             /**
              * 意义不明（✖）的代码
              */

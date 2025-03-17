@@ -26,7 +26,7 @@ namespace Milimoe.FunGame.Core.Entity
             }
             return false;
         }
-        
+
         public bool ChangeRandomWeather()
         {
             if (Weathers.Count == 0) return false;
@@ -55,13 +55,13 @@ namespace Milimoe.FunGame.Core.Entity
                 builder.AppendLine($"== 头目 ==");
                 builder.AppendLine(string.Join("，", Characters.Select(o => o.Name)));
             }
-            
+
             if (Units.Count > 0)
             {
                 builder.AppendLine($"== 生物 ==");
                 builder.AppendLine(string.Join("，", Units.Select(o => o.Name)));
             }
-            
+
             if (Crops.Count > 0)
             {
                 builder.AppendLine($"== 作物 ==");

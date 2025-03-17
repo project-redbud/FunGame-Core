@@ -1440,7 +1440,8 @@ namespace Milimoe.FunGame.Core.Model
 
                     if (MaxRespawnTimes != 0)
                     {
-                        string[] teamActive = Teams.OrderByDescending(kv => kv.Value.Score).Select(kv => {
+                        string[] teamActive = Teams.OrderByDescending(kv => kv.Value.Score).Select(kv =>
+                        {
                             int activeCount = kv.Value.GetActiveCharacters(this).Count;
                             if (kv.Value == killTeam)
                             {

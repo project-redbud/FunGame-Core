@@ -81,7 +81,7 @@ namespace Milimoe.FunGame.Core.Entity
                 goods.SetPrice(needy, price);
             }
         }
-        
+
         public bool GetPrice(long id, string needy, out double price)
         {
             price = 0;
