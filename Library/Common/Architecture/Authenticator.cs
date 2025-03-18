@@ -5,49 +5,43 @@ using Milimoe.FunGame.Core.Library.SQLScript.Entity;
 
 namespace Milimoe.FunGame.Core.Library.Common.Architecture
 {
-    public abstract class Authenticator
+    public class Authenticator(SQLHelper SQLHelper)
     {
-        private readonly SQLHelper SQLHelper;
+        private readonly SQLHelper SQLHelper = SQLHelper;
 
-        public Authenticator(SQLHelper SQLHelper)
+        public virtual bool BeforeAuthenticator(AuthenticationType type, params object[] args)
         {
-            this.SQLHelper = SQLHelper;
+            return true;
         }
 
-        public abstract bool BeforeAuthenticator(AuthenticationType type, params object[] args);
-
-        public abstract bool AfterAuthenticator(AuthenticationType type, params object[] args);
+        public virtual bool AfterAuthenticator(AuthenticationType type, params object[] args)
+        {
+            return true;
+        }
 
         public bool Authenticate(string script)
         {
             if (!BeforeAuthenticator(AuthenticationType.ScriptOnly, script)) return false;
             SQLHelper.ExecuteDataSet(script);
-            if (SQLHelper.Success)
+            if (SQLHelper.Success && AfterAuthenticator(AuthenticationType.ScriptOnly, script))
             {
-                DataSet ds = SQLHelper.DataSet;
-                if (ds.Tables.Count > 0 &&
-                    ds.Tables[0].Rows.Count > 0)
-                {
-                    if (!AfterAuthenticator(AuthenticationType.ScriptOnly, script)) return false;
-                    return true;
-                }
+                return true;
             }
             return false;
         }
 
         public bool Authenticate<T>(string script, string column, T keyword)
         {
-            if (!BeforeAuthenticator(AuthenticationType.Column, script, column, keyword?.ToString() ?? "")) return false;
+            if (keyword is null) return false;
+            if (!BeforeAuthenticator(AuthenticationType.Column, script, column, keyword)) return false;
             SQLHelper.ExecuteDataSet(script);
             if (SQLHelper.Success)
             {
                 DataSet ds = SQLHelper.DataSet;
-                if (ds.Tables.Count > 0 &&
-                    ds.Tables[0].Columns.Contains(column) &&
-                    ds.Tables[0].Rows.Count > 0 &&
-                    ds.Tables[0].AsEnumerable().Where(row => row.Field<T>(column)?.Equals(keyword) ?? false).Any())
+                if (ds.Tables[0].Columns.Contains(column) &&
+                    ds.Tables[0].AsEnumerable().Any(dr => dr.Field<T>(column)?.Equals(keyword) ?? false) &&
+                    AfterAuthenticator(AuthenticationType.Column, script, column, keyword))
                 {
-                    if (!AfterAuthenticator(AuthenticationType.Column, script, column, keyword?.ToString() ?? "")) return false;
                     return true;
                 }
             }
@@ -58,14 +52,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
         {
             if (!BeforeAuthenticator(AuthenticationType.Username, username, password)) return false;
             SQLHelper.ExecuteDataSet(UserQuery.Select_Users_LoginQuery(SQLHelper, username, password));
-            if (SQLHelper.Success)
+            if (SQLHelper.Success && AfterAuthenticator(AuthenticationType.Username, username, password))
             {
-                DataSet ds = SQLHelper.DataSet;
-                if (ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
-                {
-                    if (!AfterAuthenticator(AuthenticationType.Username, username, password)) return false;
-                    return true;
-                }
+                return true;
             }
             return false;
         }
