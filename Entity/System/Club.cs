@@ -4,6 +4,7 @@ namespace Milimoe.FunGame.Core.Entity
 {
     public class Club : BaseEntity
     {
+        public DateTime CreateTime { get;set; } = DateTime.Now;
         public string Prefix { get; set; } = "";
         public string Description { get; set; } = "";
         public bool IsNeedApproval { get; set; } = false;
