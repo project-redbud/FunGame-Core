@@ -64,7 +64,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Common
         public const string Column_Reference1 = "Reference1";
         public const string Column_Reference2 = "Reference2";
 
-        public static string Insert_APITokens(SQLHelper SQLHelper, string TokenID, string SecretKey = "", string Reference1 = "", string Reference2 = "")
+        public static string Insert_APIToken(SQLHelper SQLHelper, string TokenID, string SecretKey = "", string Reference1 = "", string Reference2 = "")
         {
             SQLHelper.Parameters["@TokenID"] = TokenID;
             SQLHelper.Parameters["@SecretKey"] = SecretKey;
@@ -77,6 +77,12 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Common
         {
             SQLHelper.Parameters["@TokenID"] = TokenID;
             return $"{Command_Select} {Command_All} {Command_From} {TableName} {Command_Where} {Column_TokenID} = @TokenID";
+        }
+        
+        public static string Select_GetAPISecretKey(SQLHelper SQLHelper, string SecretKey)
+        {
+            SQLHelper.Parameters["@SecretKey"] = SecretKey;
+            return $"{Command_Select} {Command_All} {Command_From} {TableName} {Command_Where} {Column_SecretKey} = @SecretKey";
         }
 
         public static string Update_GetAPIToken(SQLHelper SQLHelper, string TokenID, string SecretKey, string Reference1 = "", string Reference2 = "")
