@@ -5,7 +5,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
     public class UserQuery : Constant
     {
         public const string TableName = "Users";
-        public const string Column_UID = "UID";
+        public const string Column_Id = "Id";
         public const string Column_Username = "Username";
         public const string Column_Password = "Password";
         public const string Column_RegTime = "RegTime";

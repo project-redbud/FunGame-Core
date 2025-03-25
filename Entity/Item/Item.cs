@@ -95,7 +95,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 快捷键
         /// </summary>
-        public char Key { get; set; } = '/';
+        public int Key { get; set; } = '/';
 
         /// <summary>
         /// 是否是主动物品

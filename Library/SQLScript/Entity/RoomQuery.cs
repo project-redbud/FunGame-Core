@@ -19,7 +19,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
         public const string Column_Password = "Password";
         public const string Column_MaxUsers = "MaxUsers";
         public const string Select_Rooms = $"{Command_Select} {TableName}.{Command_All}, {UserQuery.TableName}.{UserQuery.Column_Username} {Command_As} {Column_RoomMasterName} " +
-            $"{Command_From} {TableName} {Command_LeftJoin} {UserQuery.TableName} {Command_On} {UserQuery.TableName}.{UserQuery.Column_UID} = {TableName}.{Column_RoomMaster}";
+            $"{Command_From} {TableName} {Command_LeftJoin} {UserQuery.TableName} {Command_On} {UserQuery.TableName}.{UserQuery.Column_Id} = {TableName}.{Column_RoomMaster}";
 
         public static string Insert_CreateRoom(SQLHelper SQLHelper, string roomid, long roomMaster, Library.Constant.RoomType roomType, string gameModule, string gameMap, bool isRank, string password, int maxUsers)
         {
