@@ -13,6 +13,18 @@ CREATE TABLE ApiTokens (
 );
 
 -- ----------------------------
+-- Table structure for Configs
+-- ----------------------------
+DROP TABLE IF EXISTS "main"."Configs";
+CREATE TABLE Configs (
+  Id TEXT NOT NULL DEFAULT '',
+  Content TEXT NOT NULL DEFAULT '',
+  Description TEXT NOT NULL DEFAULT '',
+  UpdateTime DATETIME NOT NULL DEFAULT (DATETIME('now')),
+  PRIMARY KEY (Id)
+);
+
+-- ----------------------------
 -- Table structure for ForgetVerifyCodes
 -- ----------------------------
 DROP TABLE IF EXISTS "main"."ForgetVerifyCodes";
@@ -29,7 +41,7 @@ CREATE TABLE ForgetVerifyCodes (
 DROP TABLE IF EXISTS "main"."GoodItems";
 CREATE TABLE GoodItems (
  Id INTEGER PRIMARY KEY AUTOINCREMENT,
- GoodId INTEGER NOT NULL DEFAULT 0,
+ GoodsId INTEGER NOT NULL DEFAULT 0,
  ItemId INTEGER NOT NULL DEFAULT 0
 );
 
@@ -39,7 +51,7 @@ CREATE TABLE GoodItems (
 DROP TABLE IF EXISTS "main"."GoodPrices";
 CREATE TABLE GoodPrices (
  Id INTEGER PRIMARY KEY AUTOINCREMENT,
- GoodId INTEGER NOT NULL DEFAULT 0,
+ GoodsId INTEGER NOT NULL DEFAULT 0,
  Currency TEXT NOT NULL DEFAULT '',
  Price REAL NOT NULL DEFAULT 0
 );
@@ -104,7 +116,8 @@ CREATE TABLE Offers (
  Offeree INTEGER NOT NULL DEFAULT 0,
  CreateTime DATETIME NOT NULL DEFAULT (DATETIME('now')),
  FinishTime DATETIME DEFAULT NULL,
- Status INTEGER NOT NULL DEFAULT 0
+ Status INTEGER NOT NULL DEFAULT 0,
+ NegotiatedTimes INTEGER NOT NULL DEFAULT 0
 );
 
 -- ----------------------------
@@ -145,6 +158,16 @@ CREATE TABLE ServerLoginLogs (
  ServerName TEXT NOT NULL DEFAULT '',
  ServerKey TEXT NOT NULL DEFAULT '',
  LoginTime DATETIME NOT NULL DEFAULT (DATETIME('now'))
+);
+
+-- ----------------------------
+-- Table structure for StoreGoods
+-- ----------------------------
+DROP TABLE IF EXISTS "main"."StoreGoods";
+CREATE TABLE StoreGoods (
+ Id INTEGER PRIMARY KEY AUTOINCREMENT,
+ StoreId INTEGER NOT NULL DEFAULT 0,
+ GoodsId INTEGER NOT NULL DEFAULT 0
 );
 
 -- ----------------------------

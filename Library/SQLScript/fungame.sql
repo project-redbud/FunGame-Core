@@ -13,6 +13,18 @@ CREATE TABLE `ApiTokens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
+-- Table structure for Configs
+-- ----------------------------
+DROP TABLE IF EXISTS `Configs`;
+CREATE TABLE `Configs` (
+  `Id` varchar(255) NOT NULL DEFAULT '',
+  `Content` varchar(255) NOT NULL DEFAULT '',
+  `Description` varchar(255) NOT NULL DEFAULT '',
+  `UpdateTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ----------------------------
 -- Table structure for ForgetVerifyCodes
 -- ----------------------------
 DROP TABLE IF EXISTS `ForgetVerifyCodes`;
@@ -29,7 +41,7 @@ CREATE TABLE `ForgetVerifyCodes` (
 DROP TABLE IF EXISTS `GoodItems`;
 CREATE TABLE `GoodItems` (
  `Id` bigint(20) NOT NULL AUTO_INCREMENT,
- `GoodId` bigint(20) NOT NULL DEFAULT '0',
+ `GoodsId` bigint(20) NOT NULL DEFAULT '0',
  `ItemId` bigint(20) NOT NULL DEFAULT '0',
  PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -40,7 +52,7 @@ CREATE TABLE `GoodItems` (
 DROP TABLE IF EXISTS `GoodPrices`;
 CREATE TABLE `GoodPrices` (
  `Id` bigint(20) NOT NULL AUTO_INCREMENT,
- `GoodId` bigint(20) NOT NULL DEFAULT '0',
+ `GoodsId` bigint(20) NOT NULL DEFAULT '0',
  `Currency` varchar(255) NOT NULL DEFAULT '',
  `Price` double(20,0) NOT NULL DEFAULT '0',
  PRIMARY KEY (`Id`)
@@ -110,6 +122,7 @@ CREATE TABLE `Offers` (
  `CreateTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
  `FinishTime` datetime DEFAULT NULL,
  `Status` int(10) NOT NULL DEFAULT '0',
+ `NegotiatedTimes` int(10) NOT NULL DEFAULT '0',
  PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -152,6 +165,17 @@ CREATE TABLE `ServerLoginLogs` (
  `ServerName` varchar(255) NOT NULL DEFAULT '',
  `ServerKey` varchar(255) NOT NULL DEFAULT '',
  `LoginTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ----------------------------
+-- Table structure for StoreGoods
+-- ----------------------------
+DROP TABLE IF EXISTS `StoreGoods`;
+CREATE TABLE `StoreGoods` (
+  `Id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `StoreId` bigint(20) NOT NULL DEFAULT '0',
+  `GoodsId` bigint(20) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------

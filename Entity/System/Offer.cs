@@ -12,6 +12,7 @@ namespace Milimoe.FunGame.Core.Entity.System
         public DateTime CreateTime { get; set; } = DateTime.Now;
         public DateTime? FinishTime { get; set; } = null;
         public OfferState Status { get; set; } = OfferState.Created;
+        public int NegotiatedTimes { get; set; } = 0;
 
         public override bool Equals(IBaseEntity? other)
         {
