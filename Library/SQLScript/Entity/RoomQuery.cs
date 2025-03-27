@@ -68,6 +68,13 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             SQLHelper.Parameters["@newRoomMaster"] = newRoomMaster;
             return $"{Command_Update} {TableName} {Command_Set} {Column_RoomMaster} = @newRoomMaster {Command_Where} {Column_RoomID} = @roomid {Command_And} {Column_RoomMaster} = @oldRoomMaster";
         }
+        
+        public static string Update_UpdateRoomMaster(SQLHelper SQLHelper, string roomid, long newRoomMaster)
+        {
+            SQLHelper.Parameters["@roomid"] = roomid;
+            SQLHelper.Parameters["@newRoomMaster"] = newRoomMaster;
+            return $"{Command_Update} {TableName} {Command_Set} {Column_RoomMaster} = @newRoomMaster {Command_Where} {Column_RoomID} = @roomid";
+        }
 
         public static string Select_IsExistRoom(SQLHelper SQLHelper, string roomid)
         {
