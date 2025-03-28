@@ -6,17 +6,24 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<BaseOutputPath>bin\</BaseOutputPath>
-		<Company>Milimoe</Company>
-		<Authors>Milimoe</Authors>
-		<AssemblyVersion>1.0</AssemblyVersion>
-		<FileVersion>1.0</FileVersion>
+		<Company>$(Author)</Company>
+		<Authors>Project Redbud</Authors>
+		<AssemblyVersion>1.0.0</AssemblyVersion>
+		<FileVersion>1.0.0</FileVersion>
 		<PackageOutputPath>..\bin</PackageOutputPath>
-		<Title>Core</Title>
+		<Title>FunGame Core</Title>
 		<RootNamespace>Milimoe.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<AssemblyName>$(MSBuildProjectName)</AssemblyName>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<DocumentationFile></DocumentationFile>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Copyright>Project Redbud and contributors</Copyright>
+		<PackageId>ProjectRedbud.$(AssemblyName)</PackageId>
+		<RepositoryUrl>https://github.com/project-redbud/FunGame-Core</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/project-redbud</PackageProjectUrl>
+		<PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

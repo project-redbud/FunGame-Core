@@ -16,6 +16,19 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             SQLHelper.Parameters["@StoreId"] = StoreId;
             return $"{Select_StoreGoods} {Command_Where} {Column_StoreId} = @StoreId";
         }
+        
+        public static string Select_StoreGoodsByGoodsId(SQLHelper SQLHelper, long GoodsId)
+        {
+            SQLHelper.Parameters["@GoodsId"] = GoodsId;
+            return $"{Select_StoreGoods} {Command_Where} {Column_GoodsId} = @GoodsId";
+        }
+        
+        public static string Select_StoreGoodsByStoreIdAndGoodsId(SQLHelper SQLHelper, long StoreId, long goodsId)
+        {
+            SQLHelper.Parameters["@StoreId"] = StoreId;
+            SQLHelper.Parameters["@GoodsId"] = goodsId;
+            return $"{Select_StoreGoods} {Command_Where} {Column_StoreId} = @StoreId {Command_And} {Column_GoodsId} = @GoodsId";
+        }
 
         public static string Insert_StoreGoods(SQLHelper SQLHelper, long StoreId, long GoodsId)
         {
@@ -40,6 +53,13 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
         {
             SQLHelper.Parameters["@GoodsId"] = GoodsId;
             return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_GoodsId} = @GoodsId";
+        }
+
+        public static string Delete_StoreGoodsByStoreIdAndGoodsId(SQLHelper SQLHelper, long StoreId, long GoodsId)
+        {
+            SQLHelper.Parameters["@StoreId"] = StoreId;
+            SQLHelper.Parameters["@GoodsId"] = GoodsId;
+            return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_StoreId} = @StoreId {Command_And} {Column_GoodsId} = @GoodsId";
         }
     }
 }

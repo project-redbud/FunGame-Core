@@ -26,13 +26,12 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             return $"{Command_Insert} {Command_Into} {TableName} ({Column_GoodsId}, {Column_Currency}, {Column_Price}) {Command_Values} (@GoodsId, @Currency, @Price)";
         }
 
-        public static string Update_GoodPrice(SQLHelper SQLHelper, long Id, long GoodsId, string Currency, double Price)
+        public static string Update_GoodPrice(SQLHelper SQLHelper, long GoodsId, string Currency, double Price)
         {
-            SQLHelper.Parameters["@Id"] = Id;
             SQLHelper.Parameters["@GoodsId"] = GoodsId;
             SQLHelper.Parameters["@Currency"] = Currency;
             SQLHelper.Parameters["@Price"] = Price;
-            return $"{Command_Update} {TableName} {Command_Set} {Column_GoodsId} = @GoodsId, {Column_Currency} = @Currency, {Column_Price} = @Price {Command_Where} {Column_Id} = @Id";
+            return $"{Command_Update} {TableName} {Command_Set} {Column_GoodsId} = @GoodsId, {Column_Price} = @Price {Command_Where} {Column_Currency} = @Currency";
         }
 
         public static string Delete_GoodPrice(SQLHelper SQLHelper, long Id)

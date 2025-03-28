@@ -9,8 +9,20 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
         public const string Column_StoreName = "StoreName";
         public const string Column_StartTime = "StartTime";
         public const string Column_EndTime = "EndTime";
+        public const string Column_StoreId = "StoreId";
+        public const string Column_GoodsId = "GoodsId";
+        public const string Column_GoodsName = "GoodsName";
 
         public const string Select_Stores = $"{Command_Select} {Command_All} {Command_From} {TableName}";
+        public const string Select_StoresWithGoods = $"{Command_Select} {TableName}.{Column_Id} {Column_StoreId}, {TableName}.{Column_StoreName}, " +
+            $"{GoodsQuery.TableName}.{GoodsQuery.Column_Id} {Column_GoodsId}, {GoodsQuery.TableName}.{GoodsQuery.Column_Name} {Column_GoodsName}, " +
+            $"{GoodsQuery.TableName}.{GoodsQuery.Column_Description}, {GoodsQuery.TableName}.{GoodsQuery.Column_Stock}, " +
+            $"{GoodItemsQuery.TableName}.{GoodItemsQuery.Column_ItemId}, {GoodPricesQuery.TableName}.{GoodPricesQuery.Column_Currency}, {GoodPricesQuery.TableName}.{GoodPricesQuery.Column_Price} " +
+            $"{Command_From} {StoreGoodsQuery.TableName}\r\n" +
+            $"{Command_LeftJoin} {TableName} {Command_On} {TableName}.{Column_Id} = {StoreGoodsQuery.TableName}.{StoreGoodsQuery.Column_StoreId}\r\n" +
+            $"{Command_LeftJoin} {GoodsQuery.TableName} {Command_On} {GoodsQuery.TableName}.{GoodsQuery.Column_Id} = {StoreGoodsQuery.TableName}.{StoreGoodsQuery.Column_GoodsId}\r\n" +
+            $"{Command_LeftJoin} {GoodItemsQuery.TableName} {Command_On} {GoodItemsQuery.TableName}.{GoodItemsQuery.Column_GoodsId} = {GoodsQuery.TableName}.{GoodsQuery.Column_Id}\r\n" +
+            $"{Command_LeftJoin} {GoodPricesQuery.TableName} {Command_On} {GoodPricesQuery.TableName}.{GoodPricesQuery.Column_GoodsId} = {GoodsQuery.TableName}.{GoodsQuery.Column_Id}";
 
         public static string Select_StoreById(SQLHelper SQLHelper, long Id)
         {
@@ -50,16 +62,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
                 SQLHelper.Parameters["@StoreId"] = StoreId;
             }
 
-            string sql = $"{Command_Select} {TableName}.{Column_Id} StoreId, {TableName}.{Column_StoreName}, " +
-                $"{GoodsQuery.TableName}.{GoodsQuery.Column_Id} GoodsId, {GoodsQuery.TableName}.{GoodsQuery.Column_Name} GoodsName, " +
-                $"{GoodsQuery.TableName}.{GoodsQuery.Column_Description}, {GoodsQuery.TableName}.{GoodsQuery.Column_Stock}, " +
-                $"{GoodItemsQuery.TableName}.{GoodItemsQuery.Column_ItemId}, {GoodPricesQuery.TableName}.{GoodPricesQuery.Column_Currency}, {GoodPricesQuery.TableName}.{GoodPricesQuery.Column_Price} " +
-                $"{Command_From} {StoreGoodsQuery.TableName}\r\n" +
-                $"{Command_LeftJoin} {TableName} {Command_On} {TableName}.{Column_Id} = {StoreGoodsQuery.TableName}.{StoreGoodsQuery.Column_StoreId}\r\n" +
-                $"{Command_LeftJoin} {GoodsQuery.TableName} {Command_On} {GoodsQuery.TableName}.{GoodsQuery.Column_Id} = {StoreGoodsQuery.TableName}.{StoreGoodsQuery.Column_GoodsId}\r\n" +
-                $"{Command_LeftJoin} {GoodItemsQuery.TableName} {Command_On} {GoodItemsQuery.TableName}.{GoodItemsQuery.Column_GoodsId} = {GoodsQuery.TableName}.{GoodsQuery.Column_Id}\r\n" +
-                $"{Command_LeftJoin} {GoodPricesQuery.TableName} {Command_On} {GoodPricesQuery.TableName}.{GoodPricesQuery.Column_GoodsId} = {GoodsQuery.TableName}.{GoodsQuery.Column_Id}\r\n" +
-                (StoreId != 0 ? $"{Command_Where} {StoreGoodsQuery.TableName}.{StoreGoodsQuery.Column_StoreId} = @StoreId" : "");
+            string sql = $"{Select_StoresWithGoods}{(StoreId != 0 ? $"\r\n{Command_Where} {StoreGoodsQuery.TableName}.{StoreGoodsQuery.Column_StoreId} = @StoreId" : "")}";
 
             return sql;
         }

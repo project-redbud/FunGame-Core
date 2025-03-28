@@ -11,6 +11,11 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
         public const string Column_Stock = "Stock";
 
         public const string Select_Goods = $"{Command_Select} {Command_All} {Command_From} {TableName}";
+        public const string Select_GoodsWithItemAndPrice = $"{Command_Select} {TableName}.{Column_Id}, {TableName}.{Column_Name}, {TableName}.{Column_Description}, {TableName}.{Column_Stock}, " +
+            $"{GoodItemsQuery.TableName}.{GoodItemsQuery.Column_ItemId}, {GoodPricesQuery.TableName}.{GoodPricesQuery.Column_Currency}, {GoodPricesQuery.TableName}.{GoodPricesQuery.Column_Price} " +
+            $"{Command_From} {TableName} \r\n" +
+            $"{Command_LeftJoin} {GoodItemsQuery.TableName} {Command_On} {GoodItemsQuery.TableName}.{GoodItemsQuery.Column_GoodsId} = {TableName}.{Column_Id}\r\n" +
+            $"{Command_LeftJoin} {GoodPricesQuery.TableName} {Command_On} {GoodPricesQuery.TableName}.{GoodPricesQuery.Column_GoodsId} = {TableName}.{Column_Id}";
 
         public static string Select_GoodsById(SQLHelper SQLHelper, long Id)
         {
@@ -48,12 +53,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
                 SQLHelper.Parameters["@GoodsId"] = GoodsId;
             }
 
-            string sql = $"{Command_Select} {TableName}.{Column_Id}, {TableName}.{Column_Name}, {TableName}.{Column_Description}, {TableName}.{Column_Stock}, " +
-                         $"{GoodItemsQuery.TableName}.{GoodItemsQuery.Column_ItemId}, {GoodPricesQuery.TableName}.{GoodPricesQuery.Column_Currency}, {GoodPricesQuery.TableName}.{GoodPricesQuery.Column_Price} " +
-                         $"{Command_From} {TableName} \r\n" +
-                         $"{Command_LeftJoin} {GoodItemsQuery.TableName} {Command_On} {GoodItemsQuery.TableName}.{GoodItemsQuery.Column_GoodsId} = {TableName}.{Column_Id}\r\n" +
-                         $"{Command_LeftJoin} {GoodPricesQuery.TableName} {Command_On} {GoodPricesQuery.TableName}.{GoodPricesQuery.Column_GoodsId} = {TableName}.{Column_Id}\r\n" +
-                         (GoodsId != 0 ? $"{Command_Where} {TableName}.{Column_Id} = @GoodsId" : "");
+            string sql = $"{Select_GoodsWithItemAndPrice}{(GoodsId != 0 ? $"\r\n{Command_Where} {TableName}.{Column_Id} = @GoodsId" : "")}";
 
             return sql;
         }
