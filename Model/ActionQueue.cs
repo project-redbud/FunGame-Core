@@ -540,7 +540,7 @@ namespace Milimoe.FunGame.Core.Model
                 return _isGameEnd;
             }
 
-            List<Effect> effects = character.Effects.Where(e => e.Level > 0).ToList();
+            List<Effect> effects = [.. character.Effects.Where(e => e.Level > 0)];
             foreach (Effect effect in effects)
             {
                 effect.OnTurnStart(character);
@@ -590,7 +590,7 @@ namespace Milimoe.FunGame.Core.Model
                 if (character.CharacterState != CharacterState.Casting && character.CharacterState != CharacterState.PreCastSuperSkill)
                 {
                     CharacterActionType actionTypeTemp = CharacterActionType.None;
-                    effects = character.Effects.Where(e => e.Level > 0).ToList();
+                    effects = [.. character.Effects.Where(e => e.Level > 0)];
                     foreach (Effect e in effects)
                     {
                         actionTypeTemp = e.AlterActionTypeBeforeAction(character, character.CharacterState, ref canUseItem, ref canCastSkill, ref pUseItem, ref pCastSkill, ref pNormalAttack);
@@ -605,71 +605,77 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     if (character.CharacterState != CharacterState.NotActionable && character.CharacterState != CharacterState.Casting && character.CharacterState != CharacterState.PreCastSuperSkill)
                     {
-                        if (character.CharacterState == CharacterState.Actionable)
+                        // 模组可以通过以下事件来决定角色的行动
+                        type = OnDecideAction(character, pUseItem, pCastSkill, pNormalAttack);
+                        if (type != CharacterActionType.None)
                         {
-                            // 可以任意行动
-                            if (canUseItem && canCastSkill)
+                            // 若事件未完成决策，则将通过概率对角色进行自动化决策
+                            if (character.CharacterState == CharacterState.Actionable)
                             {
-                                // 不做任何处理
+                                // 可以任意行动
+                                if (canUseItem && canCastSkill)
+                                {
+                                    // 不做任何处理
+                                }
+                                else if (canUseItem && !canCastSkill)
+                                {
+                                    pCastSkill = 0;
+                                }
+                                else if (!canUseItem && canCastSkill)
+                                {
+                                    pUseItem = 0;
+                                }
+                                else
+                                {
+                                    pUseItem = 0;
+                                    pCastSkill = 0;
+                                }
                             }
-                            else if (canUseItem && !canCastSkill)
+                            else if (character.CharacterState == CharacterState.ActionRestricted)
                             {
-                                pCastSkill = 0;
+                                // 行动受限，只能使用特殊物品
+                                if (canUseItem)
+                                {
+                                    pCastSkill = 0;
+                                    pNormalAttack = 0;
+                                }
+                                else
+                                {
+                                    pUseItem = 0;
+                                    pCastSkill = 0;
+                                    pNormalAttack = 0;
+                                }
                             }
-                            else if (!canUseItem && canCastSkill)
+                            else if (character.CharacterState == CharacterState.BattleRestricted)
                             {
-                                pUseItem = 0;
+                                // 战斗不能，只能使用物品
+                                if (canUseItem)
+                                {
+                                    pCastSkill = 0;
+                                    pNormalAttack = 0;
+                                }
+                                else
+                                {
+                                    pUseItem = 0;
+                                    pCastSkill = 0;
+                                    pNormalAttack = 0;
+                                }
                             }
-                            else
+                            else if (character.CharacterState == CharacterState.SkillRestricted)
                             {
-                                pUseItem = 0;
-                                pCastSkill = 0;
+                                // 技能受限，无法使用技能，可以使用物品
+                                if (canUseItem)
+                                {
+                                    pCastSkill = 0;
+                                }
+                                else
+                                {
+                                    pUseItem = 0;
+                                    pCastSkill = 0;
+                                }
                             }
+                            type = GetActionType(pUseItem, pCastSkill, pNormalAttack);
                         }
-                        else if (character.CharacterState == CharacterState.ActionRestricted)
-                        {
-                            // 行动受限，只能使用特殊物品
-                            if (canUseItem)
-                            {
-                                pCastSkill = 0;
-                                pNormalAttack = 0;
-                            }
-                            else
-                            {
-                                pUseItem = 0;
-                                pCastSkill = 0;
-                                pNormalAttack = 0;
-                            }
-                        }
-                        else if (character.CharacterState == CharacterState.BattleRestricted)
-                        {
-                            // 战斗不能，只能使用物品
-                            if (canUseItem)
-                            {
-                                pCastSkill = 0;
-                                pNormalAttack = 0;
-                            }
-                            else
-                            {
-                                pUseItem = 0;
-                                pCastSkill = 0;
-                                pNormalAttack = 0;
-                            }
-                        }
-                        else if (character.CharacterState == CharacterState.SkillRestricted)
-                        {
-                            // 技能受限，无法使用技能，可以使用物品
-                            if (canUseItem)
-                            {
-                                pCastSkill = 0;
-                            }
-                            else
-                            {
-                                pUseItem = 0;
-                                pCastSkill = 0;
-                            }
-                        }
-                        type = GetActionType(pUseItem, pCastSkill, pNormalAttack);
                         _stats[character].ActionTurn += 1;
                     }
                     else if (character.CharacterState == CharacterState.Casting)
@@ -689,19 +695,19 @@ namespace Milimoe.FunGame.Core.Model
                     }
                 }
 
-                List<Character> enemysTemp = new(enemys);
-                List<Character> teammatesTemp = new(teammates);
-                List<Skill> skillsTemp = new(skills);
+                List<Character> enemysTemp = [.. enemys];
+                List<Character> teammatesTemp = [.. teammates];
+                List<Skill> skillsTemp = [.. skills];
                 Dictionary<Character, int> continuousKillingTemp = new(_continuousKilling);
                 Dictionary<Character, int> earnedMoneyTemp = new(_earnedMoney);
-                effects = character.Effects.Where(e => e.Level > 0).ToList();
+                effects = [.. character.Effects.Where(e => e.Level > 0)];
                 foreach (Effect e in effects)
                 {
                     if (e.AlterEnemyListBeforeAction(character, enemysTemp, teammatesTemp, skillsTemp, continuousKillingTemp, earnedMoneyTemp))
                     {
-                        enemys = enemysTemp.Distinct().ToList();
-                        teammates = teammatesTemp.Distinct().ToList();
-                        skills = skillsTemp.Distinct().ToList();
+                        enemys = [.. enemysTemp.Distinct()];
+                        teammates = [.. teammatesTemp.Distinct()];
+                        skills = [.. skillsTemp.Distinct()];
                     }
                 }
 
@@ -710,12 +716,12 @@ namespace Milimoe.FunGame.Core.Model
                     // 使用普通攻击逻辑
                     Character[] targets = [.. SelectTargets(character, character.NormalAttack, enemys, teammates, out bool cancel)];
                     LastRound.Targets = [.. targets];
-                    if (!cancel && targets.Length > 0)
+                    if (!cancel)
                     {
                         decided = true;
                         character.NormalAttack.Attack(this, character, targets);
                         baseTime = character.NormalAttack.HardnessTime;
-                        effects = character.Effects.Where(e => e.Level > 0).ToList();
+                        effects = [.. character.Effects.Where(e => e.Level > 0)];
                         foreach (Effect effect in effects)
                         {
                             effect.AlterHardnessTimeAfterNormalAttack(character, ref baseTime, ref isCheckProtected);
@@ -760,7 +766,7 @@ namespace Milimoe.FunGame.Core.Model
 
                                 WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
                                 skill.OnSkillCasted(this, character, targets);
-                                effects = character.Effects.Where(e => e.Level > 0).ToList();
+                                effects = [.. character.Effects.Where(e => e.Level > 0)];
                                 foreach (Effect effect in effects)
                                 {
                                     effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
@@ -803,7 +809,7 @@ namespace Milimoe.FunGame.Core.Model
                         baseTime = 3;
                     }
 
-                    effects = character.Effects.Where(e => e.Level > 0).ToList();
+                    effects = [.. character.Effects.Where(e => e.Level > 0)];
                     foreach (Effect effect in effects)
                     {
                         effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
@@ -843,7 +849,7 @@ namespace Milimoe.FunGame.Core.Model
                         baseTime = 3;
                     }
 
-                    effects = character.Effects.Where(e => e.Level > 0).ToList();
+                    effects = [.. character.Effects.Where(e => e.Level > 0)];
                     foreach (Effect effect in effects)
                     {
                         effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
@@ -889,7 +895,7 @@ namespace Milimoe.FunGame.Core.Model
             // 有人想要插队吗？
             WillPreCastSuperSkill(character);
 
-            effects = character.Effects.Where(e => e.Level > 0).ToList();
+            effects = [.. character.Effects.Where(e => e.Level > 0)];
             foreach (Effect effect in effects)
             {
                 effect.OnTurnEnd(character);
@@ -1022,7 +1028,7 @@ namespace Milimoe.FunGame.Core.Model
                 }
 
                 // 移除到时间的特效
-                List<Effect> effects = character.Effects.Where(e => e.Level > 0).ToList();
+                List<Effect> effects = [.. character.Effects.Where(e => e.Level > 0)];
                 foreach (Effect effect in effects)
                 {
                     if (effect.Level == 0)
@@ -1082,7 +1088,7 @@ namespace Milimoe.FunGame.Core.Model
 
             bool isEvaded = damageResult == DamageResult.Evaded;
             Dictionary<Effect, double> totalDamageBonus = [];
-            List<Effect> effects = actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList();
+            List<Effect> effects = [.. actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0)];
             foreach (Effect effect in effects)
             {
                 double damageBonus = effect.AlterActualDamageAfterCalculation(actor, enemy, damage, isNormalAttack, isMagicDamage, magicType, damageResult, ref isEvaded, totalDamageBonus);
@@ -1121,7 +1127,7 @@ namespace Milimoe.FunGame.Core.Model
                 }
                 actor.EP += ep;
                 ep = GetEP(damage, 0.015, 15);
-                effects = enemy.Effects.Where(e => e.Level > 0).ToList();
+                effects = [.. enemy.Effects.Where(e => e.Level > 0)];
                 foreach (Effect effect in effects)
                 {
                     effect.AlterEPAfterGetDamage(enemy, ref ep);
@@ -1129,7 +1135,7 @@ namespace Milimoe.FunGame.Core.Model
                 enemy.EP += ep;
             }
 
-            effects = actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList();
+            effects = [.. actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0)];
             foreach (Effect effect in effects)
             {
                 effect.AfterDamageCalculation(actor, enemy, damage, isNormalAttack, isMagicDamage, magicType, damageResult);
@@ -1210,7 +1216,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             bool isMagic = false;
             MagicType magicType = MagicType.None;
-            List<Effect> effects = actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList();
+            List<Effect> effects = [.. actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0)];
             foreach (Effect effect in effects)
             {
                 effect.AlterDamageTypeBeforeCalculation(actor, enemy, ref isNormalAttack, ref isMagic, ref magicType);
@@ -1221,7 +1227,7 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             Dictionary<Effect, double> totalDamageBonus = [];
-            effects = actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList();
+            effects = [.. actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0)];
             foreach (Effect effect in effects)
             {
                 double damageBonus = effect.AlterExpectedDamageBeforeCalculation(actor, enemy, expectedDamage, isNormalAttack, false, MagicType.None, totalDamageBonus);
@@ -1235,7 +1241,7 @@ namespace Milimoe.FunGame.Core.Model
             bool checkCritical = true;
             if (isNormalAttack)
             {
-                effects = actor.Effects.Where(e => e.Level > 0).ToList();
+                effects = [.. actor.Effects.Where(e => e.Level > 0)];
                 foreach (Effect effect in effects)
                 {
                     checkEvade = effect.BeforeEvadeCheck(actor, ref throwingBonus);
@@ -1249,7 +1255,7 @@ namespace Milimoe.FunGame.Core.Model
                         finalDamage = 0;
                         List<Character> characters = [actor, enemy];
                         bool isAlterEvaded = false;
-                        effects = characters.SelectMany(c => c.Effects.Where(e => e.Level > 0)).ToList();
+                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0))];
                         foreach (Effect effect in effects)
                         {
                             if (effect.OnEvadedTriggered(actor, enemy, dice))
@@ -1276,7 +1282,7 @@ namespace Milimoe.FunGame.Core.Model
             finalDamage = expectedDamage * (1 - Calculation.PercentageCheck(physicalDamageReduction + enemy.ExPDR));
 
             // 暴击判定
-            effects = actor.Effects.Where(e => e.Level > 0).ToList();
+            effects = [.. actor.Effects.Where(e => e.Level > 0)];
             foreach (Effect effect in effects)
             {
                 checkCritical = effect.BeforeCriticalCheck(actor, ref throwingBonus);
@@ -1289,7 +1295,7 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     finalDamage *= actor.CritDMG; // 暴击伤害倍率加成
                     WriteLine("暴击生效！！");
-                    effects = actor.Effects.Where(e => e.Level > 0).ToList();
+                    effects = [.. actor.Effects.Where(e => e.Level > 0)];
                     foreach (Effect effect in effects)
                     {
                         effect.OnCriticalDamageTriggered(actor, dice);
@@ -1315,7 +1321,7 @@ namespace Milimoe.FunGame.Core.Model
         public DamageResult CalculateMagicalDamage(Character actor, Character enemy, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage)
         {
             bool isMagic = true;
-            List<Effect> effects = actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList();
+            List<Effect> effects = [.. actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0)];
             foreach (Effect effect in effects)
             {
                 effect.AlterDamageTypeBeforeCalculation(actor, enemy, ref isNormalAttack, ref isMagic, ref magicType);
@@ -1326,7 +1332,7 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             Dictionary<Effect, double> totalDamageBonus = [];
-            effects = actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0).ToList();
+            effects = [.. actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0)];
             foreach (Effect effect in effects)
             {
                 double damageBonus = effect.AlterExpectedDamageBeforeCalculation(actor, enemy, expectedDamage, isNormalAttack, true, magicType, totalDamageBonus);
@@ -1340,7 +1346,7 @@ namespace Milimoe.FunGame.Core.Model
             bool checkCritical = true;
             if (isNormalAttack)
             {
-                effects = actor.Effects.Where(e => e.Level > 0).ToList();
+                effects = [.. actor.Effects.Where(e => e.Level > 0)];
                 foreach (Effect effect in effects)
                 {
                     checkEvade = effect.BeforeEvadeCheck(actor, ref throwingBonus);
@@ -1354,7 +1360,7 @@ namespace Milimoe.FunGame.Core.Model
                         finalDamage = 0;
                         List<Character> characters = [actor, enemy];
                         bool isAlterEvaded = false;
-                        effects = characters.SelectMany(c => c.Effects.Where(e => e.Level > 0)).ToList();
+                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0))];
                         foreach (Effect effect in effects)
                         {
                             if (effect.OnEvadedTriggered(actor, enemy, dice))
@@ -1391,7 +1397,7 @@ namespace Milimoe.FunGame.Core.Model
             finalDamage = expectedDamage * (1 - MDF);
 
             // 暴击判定
-            effects = actor.Effects.Where(e => e.Level > 0).ToList();
+            effects = [.. actor.Effects.Where(e => e.Level > 0)];
             foreach (Effect effect in effects)
             {
                 checkCritical = effect.BeforeCriticalCheck(actor, ref throwingBonus);
@@ -1404,7 +1410,7 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     finalDamage *= actor.CritDMG; // 暴击伤害倍率加成
                     WriteLine("暴击生效！！");
-                    effects = actor.Effects.Where(e => e.Level > 0).ToList();
+                    effects = [.. actor.Effects.Where(e => e.Level > 0)];
                     foreach (Effect effect in effects)
                     {
                         effect.OnCriticalDamageTriggered(actor, dice);
@@ -1426,7 +1432,7 @@ namespace Milimoe.FunGame.Core.Model
             foreach (Character enemy in _roundDeaths)
             {
                 // 给所有角色的特效广播角色死亡结算
-                List<Effect> effects = _queue.SelectMany(c => c.Effects.Where(e => e.Level > 0)).ToList();
+                List<Effect> effects = [.. _queue.SelectMany(c => c.Effects.Where(e => e.Level > 0))];
                 foreach (Effect effect in effects)
                 {
                     effect.AfterDeathCalculation(enemy, character, _continuousKilling, _earnedMoney);
@@ -1440,14 +1446,15 @@ namespace Milimoe.FunGame.Core.Model
 
                     if (MaxRespawnTimes != 0)
                     {
-                        string[] teamActive = Teams.OrderByDescending(kv => kv.Value.Score).Select(kv => {
+                        string[] teamActive = [.. Teams.OrderByDescending(kv => kv.Value.Score).Select(kv =>
+                        {
                             int activeCount = kv.Value.GetActiveCharacters(this).Count;
                             if (kv.Value == killTeam)
                             {
                                 activeCount += 1;
                             }
                             return kv.Key + "：" + kv.Value.Score + "（剩余存活人数：" + activeCount + "）";
-                        }).ToArray();
+                        })];
                         WriteLine($"\r\n=== 当前死亡竞赛比分 ===\r\n{string.Join("\r\n", teamActive)}");
                     }
 
@@ -1520,7 +1527,7 @@ namespace Milimoe.FunGame.Core.Model
             _stats[death].Deaths += 1;
             int money = Random.Shared.Next(250, 350);
 
-            Character[] assists = _assistDamage.Keys.Where(c => c != death && _assistDamage[c].GetPercentage(death) > 0.10).ToArray();
+            Character[] assists = [.. _assistDamage.Keys.Where(c => c != death && _assistDamage[c].GetPercentage(death) > 0.10)];
             double totalDamagePercentage = _assistDamage.Keys.Where(assists.Contains).Select(c => _assistDamage[c].GetPercentage(death)).Sum();
             int totalMoney = Math.Min(Convert.ToInt32(money * totalDamagePercentage), 425); // 防止刷伤害设置金钱上限
 
@@ -1843,7 +1850,7 @@ namespace Milimoe.FunGame.Core.Model
                 // 有 65% 欲望插队
                 if (Random.Shared.NextDouble() < 0.65)
                 {
-                    List<Skill> skills = other.Skills.Where(s => s.Level > 0 && s.SkillType == SkillType.SuperSkill && s.Enable && !s.IsInEffect && s.CurrentCD == 0 && other.EP >= s.RealEPCost).ToList();
+                    List<Skill> skills = [.. other.Skills.Where(s => s.Level > 0 && s.SkillType == SkillType.SuperSkill && s.Enable && !s.IsInEffect && s.CurrentCD == 0 && other.EP >= s.RealEPCost)];
                     if (skills.Count > 0)
                     {
                         Skill skill = skills[Random.Shared.Next(skills.Count)];
@@ -1886,7 +1893,7 @@ namespace Milimoe.FunGame.Core.Model
             if (skill != null)
             {
                 WriteLine($"[ {caster} ] 的施法被 [ {interrupter} ] 打断了！！");
-                List<Effect> effects = skill.Effects.Where(e => e.Level > 0).ToList();
+                List<Effect> effects = [.. skill.Effects.Where(e => e.Level > 0)];
                 foreach (Effect e in effects)
                 {
                     e.OnSkillCastInterrupted(caster, skill, interrupter);
@@ -2034,13 +2041,12 @@ namespace Milimoe.FunGame.Core.Model
         /// <returns></returns>
         public virtual List<Character> SelectTargets(Character caster, Skill skill, List<Character> enemys, List<Character> teammates, out bool cancel)
         {
-            cancel = false;
-            if (skill.SkillType == SkillType.SuperSkill) cancel = false;
-            List<Character> targets = skill.SelectTargets(caster, enemys, teammates);
+            List<Character> targets = OnSelectSkillTargets(caster, skill, enemys, teammates);
             if (targets.Count == 0)
             {
-                cancel = true;
+                targets = skill.SelectTargets(caster, enemys, teammates);
             }
+            cancel = targets.Count == 0;
             return targets;
         }
 
@@ -2055,13 +2061,58 @@ namespace Milimoe.FunGame.Core.Model
         /// <returns></returns>
         public virtual List<Character> SelectTargets(Character character, NormalAttack attack, List<Character> enemys, List<Character> teammates, out bool cancel)
         {
-            cancel = false;
-            if (enemys.Count > 0)
+            List<Character> targets = OnSelectNormalAttackTargets(character, attack, enemys, teammates);
+            if (targets.Count == 0 && enemys.Count > 0)
             {
-                List<Character> targets = [enemys[Random.Shared.Next(enemys.Count)]];
-                return targets;
+                targets = [enemys[Random.Shared.Next(enemys.Count)]];
             }
-            return [];
+            cancel = targets.Count == 0;
+            return targets;
+        }
+
+        public delegate CharacterActionType DecideActionEventHandler(Character character, double pUseItem, double pCastSkill, double pNormalAttack);
+        public event DecideActionEventHandler? DecideAction;
+        /// <summary>
+        /// 决定角色的行动事件
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="pUseItem"></param>
+        /// <param name="pCastSkill"></param>
+        /// <param name="pNormalAttack"></param>
+        /// <returns></returns>
+        public CharacterActionType OnDecideAction(Character character, double pUseItem, double pCastSkill, double pNormalAttack)
+        {
+            return DecideAction?.Invoke(character, pUseItem, pCastSkill, pNormalAttack) ?? CharacterActionType.None;
+        }
+
+        public delegate List<Character> SelectSkillTargetsEventHandler(Character caster, Skill skill, List<Character> enemys, List<Character> teammates);
+        public event SelectSkillTargetsEventHandler? SelectSkillTargets;
+        /// <summary>
+        /// 选取技能目标事件
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="skill"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <returns></returns>
+        public List<Character> OnSelectSkillTargets(Character caster, Skill skill, List<Character> enemys, List<Character> teammates)
+        {
+            return SelectSkillTargets?.Invoke(caster, skill, enemys, teammates) ?? [];
+        }
+
+        public delegate List<Character> SelectNormalAttackTargetsEventHandler(Character character, NormalAttack attack, List<Character> enemys, List<Character> teammates);
+        public event SelectNormalAttackTargetsEventHandler? SelectNormalAttackTargets;
+        /// <summary>
+        /// 选取普通攻击目标事件
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="attack"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <returns></returns>
+        public List<Character> OnSelectNormalAttackTargets(Character character, NormalAttack attack, List<Character> enemys, List<Character> teammates)
+        {
+            return SelectNormalAttackTargets?.Invoke(character, attack, enemys, teammates) ?? [];
         }
     }
 }

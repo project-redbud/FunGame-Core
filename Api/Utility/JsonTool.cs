@@ -19,7 +19,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// 默认的序列化选项
         /// </summary>
         public static JsonSerializerOptions JsonSerializerOptions => JsonManager.GeneralOptions;
-        
+
         /// <summary>
         /// 序列化选项
         /// </summary>

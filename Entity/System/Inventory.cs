@@ -70,7 +70,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 小队
         /// </summary>
         public HashSet<long> Squad { get; set; } = [];
-        
+
         /// <summary>
         /// 练级中的角色
         /// </summary>
@@ -112,7 +112,7 @@ namespace Milimoe.FunGame.Core.Entity
                     builder.AppendLine($"{i}. {character.ToStringWithLevelWithOutUser()}");
                 }
             }
-            
+
             builder.AppendLine($"======= 物品 =======");
             Item[] items = [.. Items];
             for (int i = 1; i <= items.Length; i++)

@@ -334,7 +334,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <returns></returns>
         public bool UseItem(Dictionary<string, object> args)
         {
-            if (User != null) 
+            if (User != null)
             {
                 bool result = OnItemUsed(args);
                 if (result)

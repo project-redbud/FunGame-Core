@@ -2,6 +2,7 @@
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Architecture;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
 {
@@ -24,6 +25,13 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     break;
                 case nameof(Club.Name):
                     result.Name = reader.GetString() ?? "";
+                    break;
+                case nameof(Club.CreateTime):
+                    string createTime = reader.GetString() ?? "";
+                    if (DateTime.TryParseExact(createTime, General.GeneralDateTimeFormat, null, System.Globalization.DateTimeStyles.None, out DateTime CreateTime))
+                    {
+                        result.CreateTime = CreateTime;
+                    }
                     break;
                 case nameof(Club.Prefix):
                     result.Prefix = reader.GetString() ?? "";
@@ -90,6 +98,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WritePropertyName(nameof(Club.Guid));
             JsonSerializer.Serialize(writer, value.Guid, options);
             writer.WriteString(nameof(Club.Name), value.Name);
+            writer.WriteString(nameof(Club.CreateTime), value.CreateTime);
             writer.WriteString(nameof(Club.Prefix), value.Prefix);
             writer.WriteString(nameof(Club.Description), value.Description);
             writer.WriteBoolean(nameof(Club.IsPublic), value.IsPublic);

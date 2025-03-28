@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Milimoe.FunGame.Core.Library.Common.Architecture;
@@ -489,23 +490,35 @@ namespace Milimoe.FunGame.Core.Api.Utility
             byte[] decrypted = rsa.Decrypt(secret, true);
             return General.DefaultEncoding.GetString(decrypted);
         }
-    }
 
-    /// <summary>
-    /// 为字符串（string）添加扩展方法
-    /// </summary>
-    public static class StringExtension
-    {
         /// <summary>
-        /// 使用 HMAC-SHA512 算法对文本进行加密<para/>
-        /// 注意：此方法会先将 <paramref name="key" /> 转为小写并计算两次哈希。
+        /// 使用 MD5 算法加密
         /// </summary>
-        /// <param name="text">需要加密的文本</param>
-        /// <param name="key">用于加密的秘钥</param>
-        /// <returns>加密后的 HMAC-SHA512 哈希值</returns>
-        public static string Encrypt(this string text, string key)
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public static string MD5(string text)
         {
-            return Encryption.HmacSha512(text, Encryption.HmacSha512(text, key.ToLower()));
+            byte[] inputBytes = General.DefaultEncoding.GetBytes(text);
+            byte[] hash = System.Security.Cryptography.MD5.HashData(inputBytes);
+            return Convert.ToHexStringLower(hash);
+        }
+
+        /// <summary>
+        /// 生成随机字符串
+        /// </summary>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        public static string GenerateRandomString(int length = 18)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+=-`~[]\\{}|;':\",./<>?";
+            byte[] data = RandomNumberGenerator.GetBytes(length);
+
+            StringBuilder result = new(length);
+            foreach (byte b in data)
+            {
+                result.Append(chars[b % chars.Length]);
+            }
+            return result.ToString();
         }
     }
 

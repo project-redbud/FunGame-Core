@@ -9,7 +9,7 @@ namespace Milimoe.FunGame.Core.Model
         /// 游戏货币名称
         /// </summary>
         public string InGameCurrency { get; set; } = "金币";
-        
+
         /// <summary>
         /// 游戏材料名称（第二货币）
         /// </summary>
@@ -238,7 +238,7 @@ namespace Milimoe.FunGame.Core.Model
         /// 每 1 点智力减少能量消耗
         /// </summary>
         public double INTtoCastEPReduce { get; set; } = 0.00075;
-        
+
         /// <summary>
         /// 每 1 点智力增加加速系数
         /// </summary>

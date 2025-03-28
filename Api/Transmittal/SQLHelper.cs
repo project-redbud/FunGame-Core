@@ -18,7 +18,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         public abstract SQLServerInfo ServerInfo { get; }
         public abstract int UpdateRows { get; }
         public abstract DataSet DataSet { get; }
-        public abstract Dictionary<string, object> Parameters { get; } 
+        public abstract Dictionary<string, object> Parameters { get; }
         public bool Success => Result == SQLResult.Success;
         public bool ClearParametersAfterExecute { get; set; } = true;
 
@@ -70,6 +70,36 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 return dataSet.Tables[0].Rows[0];
             }
             return null;
+        }
+
+        /// <summary>
+        /// 查询数据库是否存在
+        /// </summary>
+        /// <returns></returns>
+        public abstract bool DatabaseExists();
+
+        /// <summary>
+        /// 执行一个 sql 脚本文件
+        /// </summary>
+        /// <param name="path"></param>
+        public virtual void ExecuteSqlFile(string path)
+        {
+            if (!File.Exists(path))
+            {
+                throw new FileNotFoundException("SQL 脚本文件不存在", path);
+            }
+
+            string content = File.ReadAllText(path);
+            string[] commands = content.Split([";"], StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (string command in commands)
+            {
+                string sql = command.Trim();
+                if (!string.IsNullOrEmpty(sql))
+                {
+                    Execute(sql);
+                }
+            }
         }
 
         /// <summary>

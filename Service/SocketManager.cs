@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Sockets;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Core.Library.Exception;
 
 namespace Milimoe.FunGame.Core.Service
 {

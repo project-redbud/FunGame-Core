@@ -134,7 +134,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 经验值
         /// </summary>
         public double EXP { get; set; } = 0;
-        
+
         /// <summary>
         /// 等级突破进度 [ 对应 <see cref="Model.EquilibriumConstant.LevelBreakList"/> 中的索引 ]
         /// </summary>
@@ -190,7 +190,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 额外生命值3 [ 额外生命值% ]
         /// </summary>
         public double ExHP3 => (BaseHP + ExHP + ExHP2) * ExHPPercentage;
-        
+
         /// <summary>
         /// 额外生命值% [ 与技能和物品相关 ]
         /// </summary>
@@ -243,7 +243,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 额外魔法值3 [ 额外魔法值% ]
         /// </summary>
         public double ExMP3 => (BaseMP + ExMP + ExMP2) * ExMPPercentage;
-        
+
         /// <summary>
         /// 额外魔法值% [ 与技能和物品相关 ]
         /// </summary>
@@ -343,7 +343,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 额外攻击力2 [ 与技能和物品相关 ]
         /// </summary>
         public double ExATK2 { get; set; } = 0;
-        
+
         /// <summary>
         /// 额外攻击力3 [ 额外攻击力% ]
         /// </summary>
@@ -384,7 +384,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 额外物理护甲3 [ 额外物理护甲% ]
         /// </summary>
         public double ExDEF3 => (BaseDEF + ExDEF + ExDEF2) * ExDEFPercentage;
-        
+
         /// <summary>
         /// 额外物理护甲% [ 与技能和物品相关 ]
         /// </summary>
@@ -612,7 +612,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 额外智力2 [ 额外智力% ]
         /// </summary>
         public double ExINT2 => (BaseINT + ExINT) * ExINTPercentage;
-        
+
         /// <summary>
         /// 额外力量% [ 与技能和物品相关 ]
         /// </summary>
@@ -702,7 +702,7 @@ namespace Milimoe.FunGame.Core.Entity
                 return Calculation.PercentageCheck(value);
             }
         }
-        
+
         /// <summary>
         /// 额外加速系数(%) [ 与技能和物品相关 ]
         /// </summary>
@@ -1155,7 +1155,7 @@ namespace Milimoe.FunGame.Core.Entity
                 }
             }
         }
-        
+
         /// <summary>
         /// 角色突破，允许继续升级
         /// </summary>
@@ -1261,7 +1261,7 @@ namespace Milimoe.FunGame.Core.Entity
             }
             return str;
         }
-        
+
         /// <summary>
         /// 获取角色实例的名字、昵称以及等级
         /// </summary>
@@ -1427,7 +1427,7 @@ namespace Milimoe.FunGame.Core.Entity
 
             return builder.ToString();
         }
-        
+
         /// <summary>
         /// 获取角色的简略信息
         /// </summary>
@@ -1585,7 +1585,7 @@ namespace Milimoe.FunGame.Core.Entity
 
             return builder.ToString();
         }
-        
+
         /// <summary>
         /// 获取战斗状态的信息（简略版）
         /// </summary>

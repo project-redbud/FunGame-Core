@@ -90,6 +90,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     WriteINI("Server", "Key", "");
                     WriteINI("Server", "Status", "1");
                     WriteINI("Server", "BannedList", "");
+                    WriteINI("Server", "UseDesktopParameters", "true");
                     /**
                      * ServerMail
                      */

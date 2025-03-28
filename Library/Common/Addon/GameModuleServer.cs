@@ -1,5 +1,5 @@
+using System.Collections.Concurrent;
 using Milimoe.FunGame.Core.Controller;
-using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Addons;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -68,16 +68,17 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         private ServerAddonController<IGameModuleServer>? _Controller;
 
         /// <summary>
-        /// 启动服务器监听 请在此处实现服务器逻辑
+        /// 此模组所有正在运行的游戏对象
         /// </summary>
-        /// <param name="GameModule"></param>
-        /// <param name="Room"></param>
-        /// <param name="Users"></param>
-        /// <param name="RoomMasterServerModel"></param>
-        /// <param name="ServerModels"></param>
-        /// <param name="Args"></param>
+        public ConcurrentDictionary<string, GamingObject> GamingObjects { get; } = [];
+
+        /// <summary>
+        /// 启动服务器监听 请在此处实现服务器逻辑。注意，此方法必须立即返回
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="args"></param>
         /// <returns></returns>
-        public abstract bool StartServer(string GameModule, Room Room, List<User> Users, IServerModel RoomMasterServerModel, Dictionary<string, IServerModel> ServerModels, params object[] Args);
+        public abstract bool StartServer(GamingObject obj, params object[] args);
 
         /// <summary>
         /// 接收并处理GamingMessage
@@ -98,7 +99,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         {
             return true;
         }
-        
+
         /// <summary>
         /// 结束匿名服务器监听
         /// </summary>
@@ -160,6 +161,20 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         protected virtual bool BeforeLoad()
         {
             return true;
+        }
+
+        /// <summary>
+        /// 给所有客户端发送游戏结束通知
+        /// </summary>
+        /// <param name="obj"></param>
+        public virtual async void SendEndGame(GamingObject obj)
+        {
+            GamingObjects.TryRemove(obj.Room.Roomid, out _);
+            await Send(obj.All.Values, SocketMessageType.EndGame, obj.Room, obj.Users);
+            foreach (IServerModel model in obj.All.Values)
+            {
+                model.NowGamingServer = null;
+            }
         }
 
         /// <summary>
