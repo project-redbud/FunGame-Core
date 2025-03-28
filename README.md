@@ -2,7 +2,7 @@
 
 `FunGame` 是一套基于 `C#.NET` 设计的回合制游戏服务器端开发框架，旨在简化多人回合制在线游戏的开发流程。
 
-配套项目：[FunGameServer](https://github.com/project-redbud/FunGame-Server)（基于 `ASP.NET Core Web API` 的跨平台高性能服务器项目）
+配套解决方案：[FunGameServer](https://github.com/project-redbud/FunGame-Server)（基于 `ASP.NET Core Web API` 的跨平台高性能服务器控制台）
 
 本仓库 `FunGame.Core` 项目是 `FunGame` 框架的核心模块，包含了框架的基础组件。
 本项目不局限于服务器端开发，在支持 `.NET` 编程的客户端项目中也能使用。
