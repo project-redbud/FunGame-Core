@@ -33,7 +33,8 @@
 
         public const int FunGame_Version_Major = 1;
         public const int FunGame_Version_Minor = 0;
-        public const string FunGame_VersionPatch = ".0-rc1";
+        public const string FunGame_VersionPatch = ".0-rc.1";
+        public const string FunGame_Version_Build = "";
 
         public const string FunGameCoreTitle = @"  _____ _   _ _   _  ____    _    __  __ _____    ____ ___  ____  _____ 
  |  ___| | | | \ | |/ ___|  / \  |  \/  | ____|  / ___/ _ \|  _ \| ____|

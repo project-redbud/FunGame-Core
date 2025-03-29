@@ -10,7 +10,7 @@
 		<Authors>Project Redbud</Authors>
 		<AssemblyVersion>1.0.0</AssemblyVersion>
 		<FileVersion>1.0.0</FileVersion>
-		<PackageOutputPath>..\bin</PackageOutputPath>
+		<PackageOutputPath>bin</PackageOutputPath>
 		<Title>FunGame Core</Title>
 		<RootNamespace>Milimoe.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -18,12 +18,16 @@
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<DocumentationFile></DocumentationFile>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Copyright>Project Redbud and contributors</Copyright>
+		<Copyright>Project Redbud and Contributors</Copyright>
 		<PackageId>ProjectRedbud.$(AssemblyName)</PackageId>
 		<RepositoryUrl>https://github.com/project-redbud/FunGame-Core</RepositoryUrl>
 		<PackageProjectUrl>https://github.com/project-redbud</PackageProjectUrl>
 		<PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<VersionPrefix>1.0.0-rc.1</VersionPrefix>
+		<VersionSuffix Condition="'$(VersionSuffix)' == ''">$([System.DateTime]::Now.ToString("MMdd"))</VersionSuffix>
+		<Version>$(VersionPrefix)</Version>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -35,5 +39,12 @@
 		<DebugType>embedded</DebugType>
 		<NoWarn>1701;1702;CS1591;CS1587;IDE0130</NoWarn>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Update="README.md">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	</ItemGroup>
 
 </Project>
