@@ -18,7 +18,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
         {
             switch (propertyName)
             {
-                case UserQuery.Column_UID:
+                case UserQuery.Column_Id:
                     result.Id = reader.GetInt64();
                     break;
                 case UserQuery.Column_Username:
@@ -91,7 +91,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
         {
             writer.WriteStartObject();
 
-            writer.WriteNumber(UserQuery.Column_UID, value.Id);
+            writer.WriteNumber(UserQuery.Column_Id, value.Id);
             writer.WriteString(UserQuery.Column_Username, value.Username);
             writer.WriteString(UserQuery.Column_RegTime, value.RegTime.ToString(General.GeneralDateTimeFormat));
             writer.WriteString(UserQuery.Column_LastTime, value.LastTime.ToString(General.GeneralDateTimeFormat));

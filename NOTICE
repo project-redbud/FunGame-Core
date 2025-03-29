@@ -1,0 +1,16 @@
+This project incorporates material from the following open source projects:
+
+*   FunGame Core
+    Copyright (c) 2023-present Project Redbud and Contributors.
+    Copyright (c) 2022-2023 Milimoe.
+    Licensed under the LGPLv3 License. See LICENSE for details.
+
+    Contributors:
+    - ChrisWynyard (Project Redbud Member)
+    - CoolinP (Project Redbud Member)
+    - Milimoe (Project Redbud Member)
+    - yeziuku (Project Redbud Member)
+
+*   .NET Runtime
+    Copyright (c) .NET Foundation and Contributors
+    Licensed under the MIT License. See https://github.com/dotnet/runtime/blob/main/LICENSE.TXT for details.

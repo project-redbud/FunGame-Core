@@ -19,7 +19,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
         public const string Column_Password = "Password";
         public const string Column_MaxUsers = "MaxUsers";
         public const string Select_Rooms = $"{Command_Select} {TableName}.{Command_All}, {UserQuery.TableName}.{UserQuery.Column_Username} {Command_As} {Column_RoomMasterName} " +
-            $"{Command_From} {TableName} {Command_LeftJoin} {UserQuery.TableName} {Command_On} {UserQuery.TableName}.{UserQuery.Column_UID} = {TableName}.{Column_RoomMaster}";
+            $"{Command_From} {TableName} {Command_LeftJoin} {UserQuery.TableName} {Command_On} {UserQuery.TableName}.{UserQuery.Column_Id} = {TableName}.{Column_RoomMaster}";
 
         public static string Insert_CreateRoom(SQLHelper SQLHelper, string roomid, long roomMaster, Library.Constant.RoomType roomType, string gameModule, string gameMap, bool isRank, string password, int maxUsers)
         {
@@ -67,6 +67,13 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             SQLHelper.Parameters["@oldRoomMaster"] = oldRoomMaster;
             SQLHelper.Parameters["@newRoomMaster"] = newRoomMaster;
             return $"{Command_Update} {TableName} {Command_Set} {Column_RoomMaster} = @newRoomMaster {Command_Where} {Column_RoomID} = @roomid {Command_And} {Column_RoomMaster} = @oldRoomMaster";
+        }
+        
+        public static string Update_UpdateRoomMaster(SQLHelper SQLHelper, string roomid, long newRoomMaster)
+        {
+            SQLHelper.Parameters["@roomid"] = roomid;
+            SQLHelper.Parameters["@newRoomMaster"] = newRoomMaster;
+            return $"{Command_Update} {TableName} {Command_Set} {Column_RoomMaster} = @newRoomMaster {Command_Where} {Column_RoomID} = @roomid";
         }
 
         public static string Select_IsExistRoom(SQLHelper SQLHelper, string roomid)
