@@ -36,20 +36,20 @@ CREATE TABLE ForgetVerifyCodes (
 );
 
 -- ----------------------------
--- Table structure for GoodItems
+-- Table structure for GoodsItems
 -- ----------------------------
-DROP TABLE IF EXISTS "main"."GoodItems";
-CREATE TABLE GoodItems (
+DROP TABLE IF EXISTS "main"."GoodsItems";
+CREATE TABLE GoodsItems (
  Id INTEGER PRIMARY KEY AUTOINCREMENT,
  GoodsId INTEGER NOT NULL DEFAULT 0,
  ItemId INTEGER NOT NULL DEFAULT 0
 );
 
 -- ----------------------------
--- Table structure for GoodPrices
+-- Table structure for GoodsPrices
 -- ----------------------------
-DROP TABLE IF EXISTS "main"."GoodPrices";
-CREATE TABLE GoodPrices (
+DROP TABLE IF EXISTS "main"."GoodsPrices";
+CREATE TABLE GoodsPrices (
  Id INTEGER PRIMARY KEY AUTOINCREMENT,
  GoodsId INTEGER NOT NULL DEFAULT 0,
  Currency TEXT NOT NULL DEFAULT '',

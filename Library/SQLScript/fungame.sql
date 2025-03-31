@@ -36,10 +36,10 @@ CREATE TABLE `ForgetVerifyCodes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
--- Table structure for GoodItems
+-- Table structure for GoodsItems
 -- ----------------------------
-DROP TABLE IF EXISTS `GoodItems`;
-CREATE TABLE `GoodItems` (
+DROP TABLE IF EXISTS `GoodsItems`;
+CREATE TABLE `GoodsItems` (
  `Id` bigint(20) NOT NULL AUTO_INCREMENT,
  `GoodsId` bigint(20) NOT NULL DEFAULT '0',
  `ItemId` bigint(20) NOT NULL DEFAULT '0',
@@ -47,10 +47,10 @@ CREATE TABLE `GoodItems` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
--- Table structure for GoodPrices
+-- Table structure for GoodsPrices
 -- ----------------------------
-DROP TABLE IF EXISTS `GoodPrices`;
-CREATE TABLE `GoodPrices` (
+DROP TABLE IF EXISTS `GoodsPrices`;
+CREATE TABLE `GoodsPrices` (
  `Id` bigint(20) NOT NULL AUTO_INCREMENT,
  `GoodsId` bigint(20) NOT NULL DEFAULT '0',
  `Currency` varchar(255) NOT NULL DEFAULT '',
@@ -77,8 +77,8 @@ DROP TABLE IF EXISTS `Inventories`;
 CREATE TABLE `Inventories` (
  `UserId` bigint(20) NOT NULL DEFAULT '0',
  `Name` varchar(255) NOT NULL DEFAULT '',
- `Credits` decimal(20,0) NOT NULL DEFAULT '0',
- `Materials` decimal(20,0) NOT NULL DEFAULT '0',
+ `Credits` double(20,0) NOT NULL DEFAULT '0',
+ `Materials` double(20,0) NOT NULL DEFAULT '0',
  `MainCharacter` bigint(20) NOT NULL DEFAULT '0',
  PRIMARY KEY (`UserId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

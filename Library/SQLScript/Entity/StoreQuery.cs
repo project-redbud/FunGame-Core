@@ -17,12 +17,12 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
         public const string Select_StoresWithGoods = $"{Command_Select} {TableName}.{Column_Id} {Column_StoreId}, {TableName}.{Column_StoreName}, " +
             $"{GoodsQuery.TableName}.{GoodsQuery.Column_Id} {Column_GoodsId}, {GoodsQuery.TableName}.{GoodsQuery.Column_Name} {Column_GoodsName}, " +
             $"{GoodsQuery.TableName}.{GoodsQuery.Column_Description}, {GoodsQuery.TableName}.{GoodsQuery.Column_Stock}, " +
-            $"{GoodItemsQuery.TableName}.{GoodItemsQuery.Column_ItemId}, {GoodPricesQuery.TableName}.{GoodPricesQuery.Column_Currency}, {GoodPricesQuery.TableName}.{GoodPricesQuery.Column_Price} " +
+            $"{GoodsItemsQuery.TableName}.{GoodsItemsQuery.Column_ItemId}, {GoodsPricesQuery.TableName}.{GoodsPricesQuery.Column_Currency}, {GoodsPricesQuery.TableName}.{GoodsPricesQuery.Column_Price} " +
             $"{Command_From} {StoreGoodsQuery.TableName}\r\n" +
             $"{Command_LeftJoin} {TableName} {Command_On} {TableName}.{Column_Id} = {StoreGoodsQuery.TableName}.{StoreGoodsQuery.Column_StoreId}\r\n" +
             $"{Command_LeftJoin} {GoodsQuery.TableName} {Command_On} {GoodsQuery.TableName}.{GoodsQuery.Column_Id} = {StoreGoodsQuery.TableName}.{StoreGoodsQuery.Column_GoodsId}\r\n" +
-            $"{Command_LeftJoin} {GoodItemsQuery.TableName} {Command_On} {GoodItemsQuery.TableName}.{GoodItemsQuery.Column_GoodsId} = {GoodsQuery.TableName}.{GoodsQuery.Column_Id}\r\n" +
-            $"{Command_LeftJoin} {GoodPricesQuery.TableName} {Command_On} {GoodPricesQuery.TableName}.{GoodPricesQuery.Column_GoodsId} = {GoodsQuery.TableName}.{GoodsQuery.Column_Id}";
+            $"{Command_LeftJoin} {GoodsItemsQuery.TableName} {Command_On} {GoodsItemsQuery.TableName}.{GoodsItemsQuery.Column_GoodsId} = {GoodsQuery.TableName}.{GoodsQuery.Column_Id}\r\n" +
+            $"{Command_LeftJoin} {GoodsPricesQuery.TableName} {Command_On} {GoodsPricesQuery.TableName}.{GoodsPricesQuery.Column_GoodsId} = {GoodsQuery.TableName}.{GoodsQuery.Column_Id}";
 
         public static string Select_StoreById(SQLHelper SQLHelper, long Id)
         {

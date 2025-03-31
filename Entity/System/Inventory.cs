@@ -15,7 +15,17 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 库存的名称，默认为 “<see cref="User.Username"/>的库存”；可更改
         /// </summary>
-        public string Name { get; set; } = "";
+        public string Name
+        {
+            get
+            {
+                return _customName.Trim() == "" ? User.Username + "的库存" : _customName;
+            }
+            set
+            {
+                _customName = value;
+            }
+        }
 
         /// <summary>
         /// 库存属于哪个玩家
@@ -77,6 +87,7 @@ namespace Milimoe.FunGame.Core.Entity
         public Dictionary<long, DateTime> Training { get; set; } = [];
 
         private Character? _character;
+        private string _customName = "";
 
         internal Inventory(User user)
         {

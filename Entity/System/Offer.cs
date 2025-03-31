@@ -1,7 +1,7 @@
 ﻿using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Entity.System
+namespace Milimoe.FunGame.Core.Entity
 {
     public class Offer : BaseEntity
     {

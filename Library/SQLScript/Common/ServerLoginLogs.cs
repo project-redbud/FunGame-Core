@@ -10,7 +10,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Common
         public const string Column_LoginTime = "LoginTime";
         public const string Column_LastTime = "LastTime";
 
-        public static string Insert_ServerLoginLogs(SQLHelper SQLHelper, string ServerName, string ServerKey)
+        public static string Insert_ServerLoginLog(SQLHelper SQLHelper, string ServerName, string ServerKey)
         {
             SQLHelper.Parameters["@ServerName"] = ServerName;
             SQLHelper.Parameters["@ServerKey"] = ServerKey;
