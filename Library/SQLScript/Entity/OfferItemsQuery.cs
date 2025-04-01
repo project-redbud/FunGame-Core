@@ -40,7 +40,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_Id} = @Id";
         }
 
-        public static string Delete_OfferItemByOfferId(SQLHelper SQLHelper, long OfferId)
+        public static string Delete_OfferItemsByOfferId(SQLHelper SQLHelper, long OfferId)
         {
             SQLHelper.Parameters["@OfferId"] = OfferId;
             return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_OfferId} = @OfferId";

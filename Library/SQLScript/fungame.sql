@@ -272,8 +272,6 @@ CREATE TABLE `Users` (
  `IsAdmin` int(1) NOT NULL DEFAULT '0',
  `IsOperator` int(1) NOT NULL DEFAULT '0',
  `IsEnable` int(1) NOT NULL DEFAULT '1',
- `Credits` double(20,0) NOT NULL DEFAULT '0',
- `Materials` double(20,0) NOT NULL DEFAULT '0',
  `GameTime` double(20,0) NOT NULL DEFAULT '0',
  `AutoKey` varchar(255) NOT NULL DEFAULT '',
  PRIMARY KEY (`Id`,`Username`,`Email`)

@@ -73,4 +73,3 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
         }
     }
 }
-

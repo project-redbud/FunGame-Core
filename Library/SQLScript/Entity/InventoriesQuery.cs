@@ -18,6 +18,12 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             SQLHelper.Parameters["@UserId"] = UserId;
             return $"{Select_Inventories} {Command_Where} {Column_UserId} = @UserId";
         }
+        
+        public static string Select_MainCharacterByUserId(SQLHelper SQLHelper, long UserId)
+        {
+            SQLHelper.Parameters["@UserId"] = UserId;
+            return $"{Command_Select} {Column_MainCharacter} {Command_From} {TableName} {Command_Where} {Column_UserId} = @UserId";
+        }
 
         public static string Insert_Inventory(SQLHelper SQLHelper, long UserId, string Name, decimal Credits, decimal Materials, long MainCharacter)
         {
