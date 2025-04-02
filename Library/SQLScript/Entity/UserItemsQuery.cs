@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Api.Transmittal;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
 {
@@ -50,22 +51,22 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
         }
 
         public static string Insert_UserItem(SQLHelper SQLHelper, long ItemId, long UserId, long CharacterId, string ItemName,
-            int IsLock, int Equipable, int Unequipable, int EquipSlotType, int Key, int Enable, double Price, int IsSellable, int IsTradable,
+            bool IsLock, bool Equipable, bool Unequipable, EquipSlotType EquipSlotType, int Key, bool Enable, double Price, bool IsSellable, bool IsTradable,
             DateTime? NextSellableTime, DateTime? NextTradableTime, int RemainUseTimes)
         {
             SQLHelper.Parameters["@ItemId"] = ItemId;
             SQLHelper.Parameters["@UserId"] = UserId;
             SQLHelper.Parameters["@CharacterId"] = CharacterId;
             SQLHelper.Parameters["@ItemName"] = ItemName;
-            SQLHelper.Parameters["@IsLock"] = IsLock;
-            SQLHelper.Parameters["@Equipable"] = Equipable;
-            SQLHelper.Parameters["@Unequipable"] = Unequipable;
-            SQLHelper.Parameters["@EquipSlotType"] = EquipSlotType;
+            SQLHelper.Parameters["@IsLock"] = IsLock ? 1 : 0;
+            SQLHelper.Parameters["@Equipable"] = Equipable ? 1 : 0;
+            SQLHelper.Parameters["@Unequipable"] = Unequipable ? 1 : 0;
+            SQLHelper.Parameters["@EquipSlotType"] = (int)EquipSlotType;
             SQLHelper.Parameters["@Key"] = Key;
-            SQLHelper.Parameters["@Enable"] = Enable;
+            SQLHelper.Parameters["@Enable"] = Enable ? 1 : 0;
             SQLHelper.Parameters["@Price"] = Price;
-            SQLHelper.Parameters["@IsSellable"] = IsSellable;
-            SQLHelper.Parameters["@IsTradable"] = IsTradable;
+            SQLHelper.Parameters["@IsSellable"] = IsSellable ? 1 : 0;
+            SQLHelper.Parameters["@IsTradable"] = IsTradable ? 1 : 0;
             if (NextSellableTime.HasValue) SQLHelper.Parameters["@NextSellableTime"] = NextSellableTime;
             if (NextTradableTime.HasValue) SQLHelper.Parameters["@NextTradableTime"] = NextTradableTime;
             SQLHelper.Parameters["@RemainUseTimes"] = RemainUseTimes;
@@ -81,7 +82,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
         }
 
         public static string Update_UserItem(SQLHelper SQLHelper, long Id, long ItemId, long UserId, long CharacterId, string ItemName,
-            int IsLock, int Equipable, int Unequipable, int EquipSlotType, int Key, int Enable, double Price, int IsSellable, int IsTradable,
+            bool IsLock, bool Equipable, bool Unequipable, EquipSlotType EquipSlotType, int Key, bool Enable, double Price, bool IsSellable, bool IsTradable,
             DateTime? NextSellableTime, DateTime? NextTradableTime, int RemainUseTimes)
         {
             SQLHelper.Parameters["@Id"] = Id;
@@ -89,15 +90,15 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             SQLHelper.Parameters["@UserId"] = UserId;
             SQLHelper.Parameters["@CharacterId"] = CharacterId;
             SQLHelper.Parameters["@ItemName"] = ItemName;
-            SQLHelper.Parameters["@IsLock"] = IsLock;
-            SQLHelper.Parameters["@Equipable"] = Equipable;
-            SQLHelper.Parameters["@Unequipable"] = Unequipable;
-            SQLHelper.Parameters["@EquipSlotType"] = EquipSlotType;
+            SQLHelper.Parameters["@IsLock"] = IsLock ? 1 : 0;
+            SQLHelper.Parameters["@Equipable"] = Equipable ? 1 : 0;
+            SQLHelper.Parameters["@Unequipable"] = Unequipable ? 1 : 0;
+            SQLHelper.Parameters["@EquipSlotType"] = (int)EquipSlotType;
             SQLHelper.Parameters["@Key"] = Key;
-            SQLHelper.Parameters["@Enable"] = Enable;
+            SQLHelper.Parameters["@Enable"] = Enable ? 1 : 0;
             SQLHelper.Parameters["@Price"] = Price;
-            SQLHelper.Parameters["@IsSellable"] = IsSellable;
-            SQLHelper.Parameters["@IsTradable"] = IsTradable;
+            SQLHelper.Parameters["@IsSellable"] = IsSellable ? 1 : 0;
+            SQLHelper.Parameters["@IsTradable"] = IsTradable ? 1 : 0;
             if (NextSellableTime.HasValue) SQLHelper.Parameters["@NextSellableTime"] = NextSellableTime;
             if (NextTradableTime.HasValue) SQLHelper.Parameters["@NextTradableTime"] = NextTradableTime;
             SQLHelper.Parameters["@RemainUseTimes"] = RemainUseTimes;
@@ -125,7 +126,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_Id} = @Id";
         }
 
-        public static string Delete_UserItemByUserId(SQLHelper SQLHelper, long UserId)
+        public static string Delete_UserItemsByUserId(SQLHelper SQLHelper, long UserId)
         {
             SQLHelper.Parameters["@UserId"] = UserId;
             return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_UserId} = @UserId";

@@ -212,6 +212,8 @@ CREATE TABLE `UserCharacters` (
  `InitialSPD` double(20,0) NOT NULL DEFAULT '0',
  `InitialHR` double(20,0) NOT NULL DEFAULT '0',
  `InitialMR` double(20,0) NOT NULL DEFAULT '0',
+ `Level` int(10) NOT NULL DEFAULT '0',
+ `LevelBreak` int(10) NOT NULL DEFAULT '0',
  `InSquad` int(1) NOT NULL DEFAULT '0',
  `TrainingTime` datetime DEFAULT NULL,
  PRIMARY KEY (`Id`,`CharacterId`,`UserId`)

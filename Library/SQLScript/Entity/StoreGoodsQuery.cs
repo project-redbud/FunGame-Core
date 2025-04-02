@@ -30,32 +30,32 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             return $"{Select_StoreGoods} {Command_Where} {Column_StoreId} = @StoreId {Command_And} {Column_GoodsId} = @GoodsId";
         }
 
-        public static string Insert_StoreGood(SQLHelper SQLHelper, long StoreId, long GoodsId)
+        public static string Insert_StoreGoods(SQLHelper SQLHelper, long StoreId, long GoodsId)
         {
             SQLHelper.Parameters["@StoreId"] = StoreId;
             SQLHelper.Parameters["@GoodsId"] = GoodsId;
             return $"{Command_Insert} {Command_Into} {TableName} ({Column_StoreId}, {Column_GoodsId}) {Command_Values} (@StoreId, @GoodsId)";
         }
 
-        public static string Delete_StoreGood(SQLHelper SQLHelper, long Id)
+        public static string Delete_StoreGoods(SQLHelper SQLHelper, long Id)
         {
             SQLHelper.Parameters["@Id"] = Id;
             return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_Id} = @Id";
         }
 
-        public static string Delete_StoreGoodByStoreId(SQLHelper SQLHelper, long StoreId)
+        public static string Delete_StoreGoodsByStoreId(SQLHelper SQLHelper, long StoreId)
         {
             SQLHelper.Parameters["@StoreId"] = StoreId;
             return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_StoreId} = @StoreId";
         }
 
-        public static string Delete_StoreGoodByGoodsId(SQLHelper SQLHelper, long GoodsId)
+        public static string Delete_StoreGoodsByGoodsId(SQLHelper SQLHelper, long GoodsId)
         {
             SQLHelper.Parameters["@GoodsId"] = GoodsId;
             return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_GoodsId} = @GoodsId";
         }
 
-        public static string Delete_StoreGoodByStoreIdAndGoodsId(SQLHelper SQLHelper, long StoreId, long GoodsId)
+        public static string Delete_StoreGoodsByStoreIdAndGoodsId(SQLHelper SQLHelper, long StoreId, long GoodsId)
         {
             SQLHelper.Parameters["@StoreId"] = StoreId;
             SQLHelper.Parameters["@GoodsId"] = GoodsId;

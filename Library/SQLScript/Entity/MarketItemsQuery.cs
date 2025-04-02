@@ -100,19 +100,19 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             if (ItemId != 0)
             {
                 SQLHelper.Parameters["@ItemId"] = ItemId;
-                whereClause += $"{Command_And} {Column_ItemId} = @ItemId";
+                whereClause += $"{Command_And} {Column_ItemId} = @ItemId\r\n";
             }
 
             if (UserId != 0)
             {
                 SQLHelper.Parameters["@UserId"] = UserId;
-                whereClause += $"{Command_And} {Column_UserId} = @UserId";
+                whereClause += $"{Command_And} {Column_UserId} = @UserId\r\n";
             }
 
             if (state.HasValue)
             {
                 SQLHelper.Parameters["@Status"] = (int)state.Value;
-                whereClause += $"{Command_And} {Column_Status} = @Status";
+                whereClause += $"{Command_And} {Column_Status} = @Status\r\n";
             }
 
             if (!string.IsNullOrEmpty(whereClause))
@@ -120,7 +120,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
                 sql += $" {Command_Where} {whereClause[Command_And.Length..]}";
             }
 
-            return sql;
+            return sql.Trim();
         }
     }
 }

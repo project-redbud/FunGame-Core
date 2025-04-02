@@ -25,7 +25,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             return $"{Command_Select} {Column_MainCharacter} {Command_From} {TableName} {Command_Where} {Column_UserId} = @UserId";
         }
 
-        public static string Insert_Inventory(SQLHelper SQLHelper, long UserId, string Name, decimal Credits, decimal Materials, long MainCharacter)
+        public static string Insert_Inventory(SQLHelper SQLHelper, long UserId, string Name, double Credits, double Materials, long MainCharacter)
         {
             SQLHelper.Parameters["@UserId"] = UserId;
             SQLHelper.Parameters["@Name"] = Name;
@@ -37,7 +37,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
                 $"{Command_Values} (@UserId, @Name, @Credits, @Materials, @MainCharacter)";
         }
 
-        public static string Update_Inventory(SQLHelper SQLHelper, long UserId, string Name, decimal Credits, decimal Materials, long MainCharacter)
+        public static string Update_Inventory(SQLHelper SQLHelper, long UserId, string Name, double Credits, double Materials, long MainCharacter)
         {
             SQLHelper.Parameters["@UserId"] = UserId;
             SQLHelper.Parameters["@Name"] = Name;
@@ -48,14 +48,14 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             return $"{Command_Update} {TableName} {Command_Set} {Column_Name} = @Name, {Column_Credits} = @Credits, {Column_Materials} = @Materials, {Column_MainCharacter} = @MainCharacter {Command_Where} {Column_UserId} = @UserId";
         }
 
-        public static string Update_InventoryCredits(SQLHelper SQLHelper, long UserId, decimal Credits)
+        public static string Update_InventoryCredits(SQLHelper SQLHelper, long UserId, double Credits)
         {
             SQLHelper.Parameters["@UserId"] = UserId;
             SQLHelper.Parameters["@Credits"] = Credits;
             return $"{Command_Update} {TableName} {Command_Set} {Column_Credits} = @Credits {Command_Where} {Column_UserId} = @UserId";
         }
 
-        public static string Update_InventoryMaterials(SQLHelper SQLHelper, long UserId, decimal Materials)
+        public static string Update_InventoryMaterials(SQLHelper SQLHelper, long UserId, double Materials)
         {
             SQLHelper.Parameters["@UserId"] = UserId;
             SQLHelper.Parameters["@Materials"] = Materials;

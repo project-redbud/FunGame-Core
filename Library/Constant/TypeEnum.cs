@@ -105,7 +105,24 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Room_GetRoomSettings,
         Room_GetRoomPlayerCount,
         Room_UpdateRoomMaster,
-        Gaming
+        UserCenter_GetUserProfile,
+        UserCenter_GetUserStatistics,
+        UserCenter_UpdateUser,
+        UserCenter_UpdatePassword,
+        UserCenter_DailySignIn,
+        Inventory_GetStore,
+        Inventory_GetMarket,
+        Inventory_StoreBuy,
+        Inventory_MarketBuy,
+        Inventory_GetInventory,
+        Inventory_Use,
+        Inventory_StoreSell,
+        Inventory_MarketSell,
+        Inventory_UpdateMarketPrice,
+        Inventory_GetOffer,
+        Inventory_MakeOffer,
+        Inventory_ReviseOffer,
+        Inventory_RespondOffer,
     }
 
     /// <summary>
