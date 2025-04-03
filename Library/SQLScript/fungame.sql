@@ -112,6 +112,18 @@ CREATE TABLE `OfferItems` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
+-- Table structure for OfferItemsBackup
+-- ----------------------------
+DROP TABLE IF EXISTS `OfferItemsBackup`;
+CREATE TABLE `OfferItemsBackup` (
+ `Id` bigint(20) NOT NULL AUTO_INCREMENT,
+ `OfferId` bigint(20) NOT NULL DEFAULT '0',
+ `UserId` bigint(20) NOT NULL DEFAULT '0',
+ `ItemId` bigint(20) NOT NULL DEFAULT '0',
+ PRIMARY KEY (`Id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ----------------------------
 -- Table structure for Offers
 -- ----------------------------
 DROP TABLE IF EXISTS `Offers`;

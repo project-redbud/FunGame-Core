@@ -108,10 +108,13 @@ namespace Milimoe.FunGame.Core.Library.Constant
     {
         Created,
         Cancelled,
-        PendingConfirmation,
-        Confirmed,
+        PendingOfferorConfirmation,
+        PendingOffereeConfirmation,
+        OfferorConfirmed,
+        OffereeConfirmed,
         Sent,
         Negotiating,
+        NegotiationAccepted,
         Rejected,
         Completed,
         Expired

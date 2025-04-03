@@ -107,6 +107,17 @@ CREATE TABLE OfferItems (
 );
 
 -- ----------------------------
+-- Table structure for OfferItemsBackup
+-- ----------------------------
+DROP TABLE IF EXISTS "main"."OfferItemsBackup";
+CREATE TABLE OfferItemsBackup (
+ Id INTEGER PRIMARY KEY AUTOINCREMENT,
+ OfferId INTEGER NOT NULL DEFAULT 0,
+ UserId INTEGER NOT NULL DEFAULT 0,
+ ItemId INTEGER NOT NULL DEFAULT 0
+);
+
+-- ----------------------------
 -- Table structure for Offers
 -- ----------------------------
 DROP TABLE IF EXISTS "main"."Offers";
