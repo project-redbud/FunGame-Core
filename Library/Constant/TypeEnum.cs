@@ -105,7 +105,24 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Room_GetRoomSettings,
         Room_GetRoomPlayerCount,
         Room_UpdateRoomMaster,
-        Gaming
+        UserCenter_GetUserProfile,
+        UserCenter_GetUserStatistics,
+        UserCenter_UpdateUser,
+        UserCenter_UpdatePassword,
+        UserCenter_DailySignIn,
+        Inventory_GetStore,
+        Inventory_GetMarket,
+        Inventory_StoreBuy,
+        Inventory_MarketBuy,
+        Inventory_GetInventory,
+        Inventory_Use,
+        Inventory_StoreSell,
+        Inventory_MarketSell,
+        Inventory_UpdateMarketPrice,
+        Inventory_GetOffer,
+        Inventory_MakeOffer,
+        Inventory_ReviseOffer,
+        Inventory_RespondOffer,
     }
 
     /// <summary>
@@ -819,5 +836,60 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Warning,
         Error,
         Critical
+    }
+
+    public enum OfferActionType
+    {
+        /// <summary>
+        /// 报价发起方修改报价，
+        /// 如果当前状态为 <see cref="OfferState.Created"/>（已创建） 和 <see cref="OfferState.Negotiating"/>（协商中），
+        /// 则状态转为 <see cref="OfferState.PendingOfferorConfirmation"/>（等待发起方确认）
+        /// </summary>
+        OfferorRevise,
+
+        /// <summary>
+        /// 报价发起方确认报价，状态转为 <see cref="OfferState.OfferorConfirmed"/>（发起方已确认）
+        /// </summary>
+        OfferorConfirm,
+
+        /// <summary>
+        /// 报价发起方发送报价，状态转为 <see cref="OfferState.Sent"/>（已发送）
+        /// </summary>
+        OfferorSend,
+
+        /// <summary>
+        /// 报价接收方修改报价，状态转为 <see cref="OfferState.PendingOffereeConfirmation"/>（等待接收方确认）
+        /// </summary>
+        OffereeRevise,
+
+        /// <summary>
+        /// 报价接收方确认报价，状态转为 <see cref="OfferState.OffereeConfirmed"/>（接收方已确认）
+        /// </summary>
+        OffereeConfirm,
+
+        /// <summary>
+        /// 报价接收方发送报价，状态转为 <see cref="OfferState.Negotiating"/>（协商中）
+        /// </summary>
+        OffereeSend,
+
+        /// <summary>
+        /// 报价发起方同意接收方的协商，状态转为 <see cref="OfferState.NegotiationAccepted"/>（协商已接受）
+        /// </summary>
+        OfferorAccept,
+
+        /// <summary>
+        /// 报价发起方手动取消了报价，状态转为 <see cref="OfferState.Cancelled"/>（已取消）
+        /// </summary>
+        OfferorCancel,
+
+        /// <summary>
+        /// 报价接收方同意报价，状态转为 <see cref="OfferState.Completed"/>（已完成）
+        /// </summary>
+        OffereeAccept,
+
+        /// <summary>
+        /// 报价接收方拒绝报价，状态转为 <see cref="OfferState.Rejected"/>（已拒绝）
+        /// </summary>
+        OffereeReject
     }
 }

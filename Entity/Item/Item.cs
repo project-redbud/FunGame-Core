@@ -56,6 +56,11 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 锁定后无法被出售和交易且不能被手动移出库存
+        /// </summary>
+        public bool IsLock { get; set; } = false;
+
+        /// <summary>
         /// 是否允许装备
         /// [ 注意：这个不是用来判断是不是装备类型的，判断装备类型时，请判断他们的 <see cref="IsEquipment"/> ]
         /// </summary>
@@ -95,7 +100,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 快捷键
         /// </summary>
-        public char Key { get; set; } = '/';
+        public int Key { get; set; } = '/';
 
         /// <summary>
         /// 是否是主动物品
@@ -590,6 +595,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="newbyFactory"></param>
         public void SetPropertyToItemModuleNew(Item newbyFactory)
         {
+            newbyFactory.IsLock = IsLock;
             newbyFactory.WeaponType = WeaponType;
             newbyFactory.EquipSlotType = EquipSlotType;
             newbyFactory.Equipable = Equipable;

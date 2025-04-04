@@ -103,4 +103,27 @@ namespace Milimoe.FunGame.Core.Library.Constant
         InProgress,
         Ended
     }
+
+    public enum OfferState
+    {
+        Created,
+        Cancelled,
+        PendingOfferorConfirmation,
+        PendingOffereeConfirmation,
+        OfferorConfirmed,
+        OffereeConfirmed,
+        Sent,
+        Negotiating,
+        NegotiationAccepted,
+        Rejected,
+        Completed,
+        Expired
+    }
+
+    public enum MarketItemState
+    {
+        Listed,
+        Delisted,
+        Purchased
+    }
 }

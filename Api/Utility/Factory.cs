@@ -458,7 +458,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     User roomMaster = General.UnknownUserInstance;
                     if (dsUser != null && dsUser.Tables.Count > 0)
                     {
-                        DataRow[] rows = dsUser.Tables[0].Select($"{UserQuery.Column_UID} = {(long)drRoom[RoomQuery.Column_RoomMaster]}");
+                        DataRow[] rows = dsUser.Tables[0].Select($"{UserQuery.Column_Id} = {(long)drRoom[RoomQuery.Column_RoomMaster]}");
                         if (rows.Length > 0)
                         {
                             roomMaster = GetUser(rows[0]);
@@ -537,7 +537,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         {
             if (dr != null)
             {
-                long Id = (long)dr[UserQuery.Column_UID];
+                long Id = (long)dr[UserQuery.Column_Id];
                 string Username = (string)dr[UserQuery.Column_Username];
                 if (!DateTime.TryParse(dr[UserQuery.Column_RegTime].ToString(), out DateTime RegTime))
                 {

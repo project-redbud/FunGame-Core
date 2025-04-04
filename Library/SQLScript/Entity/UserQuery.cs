@@ -5,7 +5,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
     public class UserQuery : Constant
     {
         public const string TableName = "Users";
-        public const string Column_UID = "UID";
+        public const string Column_Id = "Id";
         public const string Column_Username = "Username";
         public const string Column_Password = "Password";
         public const string Column_RegTime = "RegTime";
@@ -27,6 +27,12 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             return $"{Select_Users} {Command_Where} {Column_Username} = @Username and {Column_Password} = @Password";
         }
 
+        public static string Select_UserById(SQLHelper SQLHelper, long id)
+        {
+            SQLHelper.Parameters["@Id"] = id;
+            return $"{Select_Users} {Command_Where} {Column_Id} = @Id";
+        }
+        
         public static string Select_IsExistEmail(SQLHelper SQLHelper, string Email)
         {
             SQLHelper.Parameters["@Email"] = Email;

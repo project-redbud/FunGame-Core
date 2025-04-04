@@ -1,4 +1,6 @@
-﻿using Milimoe.FunGame.Core.Api.Transmittal;
+﻿using System.Text;
+using Milimoe.FunGame.Core.Api.Transmittal;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
 {
@@ -19,60 +21,130 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
         public const string Column_Password = "Password";
         public const string Column_MaxUsers = "MaxUsers";
         public const string Select_Rooms = $"{Command_Select} {TableName}.{Command_All}, {UserQuery.TableName}.{UserQuery.Column_Username} {Command_As} {Column_RoomMasterName} " +
-            $"{Command_From} {TableName} {Command_LeftJoin} {UserQuery.TableName} {Command_On} {UserQuery.TableName}.{UserQuery.Column_UID} = {TableName}.{Column_RoomMaster}";
+            $"{Command_From} {TableName} {Command_LeftJoin} {UserQuery.TableName} {Command_On} {UserQuery.TableName}.{UserQuery.Column_Id} = {TableName}.{Column_RoomMaster}";
 
-        public static string Insert_CreateRoom(SQLHelper SQLHelper, string roomid, long roomMaster, Library.Constant.RoomType roomType, string gameModule, string gameMap, bool isRank, string password, int maxUsers)
+        public static string Select_IsExistRoom(SQLHelper SQLHelper, string Roomid)
+        {
+            SQLHelper.Parameters["@Roomid"] = Roomid;
+            return $"{Command_Select} {Command_All} {Command_From} {TableName} {Command_Where} {Column_RoomID} = @Roomid";
+        }
+
+        public static string Select_RoomsByRoomState(SQLHelper SQLHelper, params RoomState[] States)
+        {
+            RoomState[] states = [.. States.Distinct()];
+            if (states.Length == 0)
+            {
+                return $"{Select_Rooms} {Command_Where} 1 = 0";
+            }
+            StringBuilder builder = new();
+            builder.Append($" {Command_Where} {Column_RoomState} {Command_In} (");
+            for (int i = 0; i < states.Length; i++)
+            {
+                if (i > 0) builder.Append(", ");
+                builder.Append($"@s{i}");
+                SQLHelper.Parameters[$"@s{i}"] = states[i];
+            }
+            builder.Append(')');
+            return $"{Select_Rooms} {Command_Where} {builder}";
+        }
+        
+        public static string Select_RoomsByGameModuleAndRoomState(SQLHelper SQLHelper, string GameModule = "", params RoomState[] States)
+        {
+            string sql = Select_Rooms;
+            string whereClause = "";
+
+            if (!string.IsNullOrEmpty(GameModule))
+            {
+                SQLHelper.Parameters["@GameModule"] = GameModule;
+                whereClause += $"{Command_And} {Column_GameModule} = @GameModule\r\n";
+            }
+
+            RoomState[] states = [.. States.Distinct()];
+            if (states.Length > 0)
+            {
+                StringBuilder builder = new();
+                builder.Append($"{Command_And} {Column_RoomState} {Command_In} (");
+                for (int i = 0; i < states.Length; i++)
+                {
+                    if (i > 0) builder.Append(", ");
+                    builder.Append($"@s{i}");
+                    SQLHelper.Parameters[$"@s{i}"] = states[i];
+                }
+                builder.AppendLine(")");
+            }
+
+            if (!string.IsNullOrEmpty(whereClause))
+            {
+                sql += $" {Command_Where} {whereClause[Command_And.Length..]}";
+            }
+
+            return sql.Trim();
+        }
+
+        public static string Insert_CreateRoom(SQLHelper SQLHelper, string Roomid, long RoomMaster, RoomType RoomType, string GameModule, string GameMap, bool IsRank, string Password, int MaxUsers)
         {
             Library.Constant.RoomState RoomState = Library.Constant.RoomState.Created;
             DateTime NowTime = DateTime.Now;
-            bool HasPass = password.Trim() != "";
+            bool HasPass = Password.Trim() != "";
 
-            SQLHelper.Parameters["@roomid"] = roomid;
+            SQLHelper.Parameters["@Roomid"] = Roomid;
             SQLHelper.Parameters["@CreateTime"] = NowTime;
-            SQLHelper.Parameters["@roomMaster"] = roomMaster;
-            SQLHelper.Parameters["@roomType"] = (int)roomType;
-            SQLHelper.Parameters["@gameModule"] = gameModule;
-            SQLHelper.Parameters["@gameMap"] = gameMap;
+            SQLHelper.Parameters["@RoomMaster"] = RoomMaster;
+            SQLHelper.Parameters["@RoomType"] = (int)RoomType;
+            SQLHelper.Parameters["@GameModule"] = GameModule;
+            SQLHelper.Parameters["@GameMap"] = GameMap;
             SQLHelper.Parameters["@RoomState"] = (int)RoomState;
-            SQLHelper.Parameters["@isRank"] = isRank ? 1 : 0;
+            SQLHelper.Parameters["@IsRank"] = IsRank ? 1 : 0;
             SQLHelper.Parameters["@HasPass"] = HasPass ? 1 : 0;
-            SQLHelper.Parameters["@password"] = password;
-            SQLHelper.Parameters["@maxUsers"] = maxUsers;
+            SQLHelper.Parameters["@Password"] = Password;
+            SQLHelper.Parameters["@MaxUsers"] = MaxUsers;
 
             return $"{Command_Insert} {Command_Into} {TableName} ({Column_RoomID}, {Column_CreateTime}, {Column_RoomMaster}, {Column_RoomType}, {Column_GameModule}, {Column_GameMap}, {Column_RoomState}, {Column_IsRank}, {Column_HasPass}, {Column_Password}, {Column_MaxUsers})" +
-                $" {Command_Values} (@roomid, @CreateTime, @roomMaster, @roomType, @gameModule, @gameMap, @RoomState, @isRank, @HasPass, @password, @maxUsers)";
+                $" {Command_Values} (@Roomid, @CreateTime, @RoomMaster, @RoomType, @GameModule, @GameMap, @RoomState, @IsRank, @HasPass, @Password, @MaxUsers)";
         }
 
-        public static string Delete_Rooms(SQLHelper SQLHelper, params string[] roomids)
+        public static string Delete_Rooms(SQLHelper SQLHelper, params string[] RoomIDs)
         {
-            if (roomids.Length != 0)
+            if (RoomIDs.Length != 0)
             {
-                string where = string.Join("', '", roomids);
-                SQLHelper.Parameters["@roomids"] = where;
-                return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_RoomID} {Command_In} (@roomids)";
+                string[] roomids = [.. RoomIDs.Distinct()];
+                if (roomids.Length > 0)
+                {
+                    StringBuilder builder = new();
+                    builder.Append($"{Command_Where} {Column_RoomState} {Command_In} (");
+                    for (int i = 0; i < roomids.Length; i++)
+                    {
+                        if (i > 0) builder.Append(", ");
+                        builder.Append($"@room{i}");
+                        SQLHelper.Parameters[$"@room{i}"] = roomids[i];
+                    }
+                    builder.AppendLine(")");
+                    return $"{Command_Delete} {Command_From} {TableName} {builder}";
+                }
             }
-            return $"{Command_Delete} {Command_From} {TableName}";
+            return $"{Command_Delete} {Command_From} {TableName} {Command_Where} 1 = 0";
         }
 
-        public static string Delete_QuitRoom(SQLHelper SQLHelper, string roomID, long roomMaster)
+        public static string Delete_QuitRoom(SQLHelper SQLHelper, string RoomID, long RoomMaster)
         {
-            SQLHelper.Parameters["@roomID"] = roomID;
-            SQLHelper.Parameters["@roomMaster"] = roomMaster;
-            return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_RoomID} = @roomID {Command_And} {Column_RoomMaster} = @roomMaster";
+            SQLHelper.Parameters["@RoomID"] = RoomID;
+            SQLHelper.Parameters["@RoomMaster"] = RoomMaster;
+            return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_RoomID} = @RoomID {Command_And} {Column_RoomMaster} = @RoomMaster";
         }
 
-        public static string Update_QuitRoom(SQLHelper SQLHelper, string roomid, long oldRoomMaster, long newRoomMaster)
+        public static string Update_QuitRoom(SQLHelper SQLHelper, string RoomID, long OldRoomMaster, long NewRoomMaster)
         {
-            SQLHelper.Parameters["@roomid"] = roomid;
-            SQLHelper.Parameters["@oldRoomMaster"] = oldRoomMaster;
-            SQLHelper.Parameters["@newRoomMaster"] = newRoomMaster;
-            return $"{Command_Update} {TableName} {Command_Set} {Column_RoomMaster} = @newRoomMaster {Command_Where} {Column_RoomID} = @roomid {Command_And} {Column_RoomMaster} = @oldRoomMaster";
+            SQLHelper.Parameters["@RoomID"] = RoomID;
+            SQLHelper.Parameters["@OldRoomMaster"] = OldRoomMaster;
+            SQLHelper.Parameters["@NewRoomMaster"] = NewRoomMaster;
+            return $"{Command_Update} {TableName} {Command_Set} {Column_RoomMaster} = @NewRoomMaster {Command_Where} {Column_RoomID} = @Roomid {Command_And} {Column_RoomMaster} = @OldRoomMaster";
         }
-
-        public static string Select_IsExistRoom(SQLHelper SQLHelper, string roomid)
+        
+        public static string Update_UpdateRoomMaster(SQLHelper SQLHelper, string RoomID, long NewRoomMaster)
         {
-            SQLHelper.Parameters["@roomid"] = roomid;
-            return $"{Command_Select} {Command_All} {Command_From} {TableName} {Command_Where} {Column_RoomID} = @roomid";
+            SQLHelper.Parameters["@RoomID"] = RoomID;
+            SQLHelper.Parameters["@NewRoomMaster"] = NewRoomMaster;
+            return $"{Command_Update} {TableName} {Command_Set} {Column_RoomMaster} = @NewRoomMaster {Command_Where} {Column_RoomID} = @RoomID";
         }
     }
 }
