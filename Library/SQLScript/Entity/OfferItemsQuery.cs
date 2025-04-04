@@ -9,47 +9,43 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
         public const string Column_Id = "Id";
         public const string Column_OfferId = "OfferId";
         public const string Column_UserId = "UserId";
-        public const string Column_ItemId = "ItemId";
+        public const string Column_ItemGuid = "ItemGuid";
 
         public const string Select_OfferItems = $"{Command_Select} {Command_All} {Command_From} {TableName}";
         public const string Select_OfferItemsBackup = $"{Command_Select} {Command_All} {Command_From} {TableName_Backup}";
 
-        public static string Select_OfferItemsByOfferId(SQLHelper SQLHelper, long OfferId)
+        public static string Select_OfferItemsByOfferIdAndUserId(SQLHelper SQLHelper, long OfferId, long UserId)
         {
             SQLHelper.Parameters["@OfferId"] = OfferId;
-            return $"{Select_OfferItems} {Command_Where} {Column_OfferId} = @OfferId";
+            SQLHelper.Parameters["@UserId"] = UserId;
+            return $"{Select_OfferItems} {Command_Where} {Column_OfferId} = @OfferId {Command_And} {Column_UserId} = @UserId";
         }
         
-        public static string Select_OfferItemsBackupByOfferId(SQLHelper SQLHelper, long OfferId)
-        {
-            SQLHelper.Parameters["@OfferId"] = OfferId;
-            return $"{Select_OfferItemsBackup} {Command_Where} {Column_OfferId} = @OfferId";
-        }
-
-        public static string Select_OfferItemsByUserId(SQLHelper SQLHelper, long UserId)
-        {
-            SQLHelper.Parameters["@UserId"] = UserId;
-            return $"{Select_OfferItems} {Command_Where} {Column_UserId} = @UserId";
-        }
-
-        public static string Insert_OfferItem(SQLHelper SQLHelper, long OfferId, long UserId, long ItemId)
+        public static string Select_OfferItemsBackupByOfferIdAndUserId(SQLHelper SQLHelper, long OfferId, long UserId)
         {
             SQLHelper.Parameters["@OfferId"] = OfferId;
             SQLHelper.Parameters["@UserId"] = UserId;
-            SQLHelper.Parameters["@ItemId"] = ItemId;
+            return $"{Select_OfferItemsBackup} {Command_Where} {Column_OfferId} = @OfferId {Command_And} {Column_UserId} = @UserId";
+        }
 
-            return $"{Command_Insert} {Command_Into} {TableName} ({Column_OfferId}, {Column_UserId}, {Column_ItemId}) " +
-                   $"{Command_Values} (@OfferId, @UserId, @ItemId)";
+        public static string Insert_OfferItem(SQLHelper SQLHelper, long OfferId, long UserId, Guid ItemGuid)
+        {
+            SQLHelper.Parameters["@OfferId"] = OfferId;
+            SQLHelper.Parameters["@UserId"] = UserId;
+            SQLHelper.Parameters["@ItemGuid"] = ItemGuid.ToString();
+
+            return $"{Command_Insert} {Command_Into} {TableName} ({Column_OfferId}, {Column_UserId}, {Column_ItemGuid}) " +
+                   $"{Command_Values} (@OfferId, @UserId, @ItemGuid)";
         }
         
-        public static string Insert_OfferItemBackup(SQLHelper SQLHelper, long OfferId, long UserId, long ItemId)
+        public static string Insert_OfferItemBackup(SQLHelper SQLHelper, long OfferId, long UserId, Guid ItemGuid)
         {
             SQLHelper.Parameters["@OfferId"] = OfferId;
             SQLHelper.Parameters["@UserId"] = UserId;
-            SQLHelper.Parameters["@ItemId"] = ItemId;
+            SQLHelper.Parameters["@ItemGuid"] = ItemGuid.ToString();
 
-            return $"{Command_Insert} {Command_Into} {TableName_Backup} ({Column_OfferId}, {Column_UserId}, {Column_ItemId}) " +
-                   $"{Command_Values} (@OfferId, @UserId, @ItemId)";
+            return $"{Command_Insert} {Command_Into} {TableName_Backup} ({Column_OfferId}, {Column_UserId}, {Column_ItemGuid}) " +
+                   $"{Command_Values} (@OfferId, @UserId, @ItemGuid)";
         }
 
         public static string Delete_OfferItem(SQLHelper SQLHelper, long Id)

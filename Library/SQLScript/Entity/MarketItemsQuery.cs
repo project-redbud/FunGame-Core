@@ -7,7 +7,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
     {
         public const string TableName = "MarketItems";
         public const string Column_Id = "Id";
-        public const string Column_ItemId = "ItemId";
+        public const string Column_ItemGuid = "ItemGuid";
         public const string Column_UserId = "UserId";
         public const string Column_Price = "Price";
         public const string Column_CreateTime = "CreateTime";
@@ -23,10 +23,10 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             return $"{Select_MarketItems} {Command_Where} {Column_Id} = @Id";
         }
 
-        public static string Select_MarketItemsByItemId(SQLHelper SQLHelper, long ItemId)
+        public static string Select_MarketItemsByItemId(SQLHelper SQLHelper, Guid ItemGuid)
         {
-            SQLHelper.Parameters["@ItemId"] = ItemId;
-            return $"{Select_MarketItems} {Command_Where} {Column_ItemId} = @ItemId";
+            SQLHelper.Parameters["@ItemGuid"] = ItemGuid.ToString();
+            return $"{Select_MarketItems} {Command_Where} {Column_ItemGuid} = @ItemGuid";
         }
 
         public static string Select_MarketItemsByUserId(SQLHelper SQLHelper, long UserId)
@@ -41,14 +41,14 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             return $"{Select_MarketItems} {Command_Where} {Column_Status} = @Status";
         }
 
-        public static string Insert_MarketItem(SQLHelper SQLHelper, long ItemId, long UserId, double Price, MarketItemState state = MarketItemState.Listed)
+        public static string Insert_MarketItem(SQLHelper SQLHelper, Guid ItemGuid, long UserId, double Price, MarketItemState state = MarketItemState.Listed)
         {
-            SQLHelper.Parameters["@ItemId"] = ItemId;
+            SQLHelper.Parameters["@ItemGuid"] = ItemGuid.ToString();
             SQLHelper.Parameters["@UserId"] = UserId;
             SQLHelper.Parameters["@Price"] = Price;
             SQLHelper.Parameters["@Status"] = (int)state;
 
-            return $"{Command_Insert} {Command_Into} {TableName} ({Column_ItemId}, {Column_UserId}, {Column_Price}, {Column_Status}) {Command_Values} (@ItemId, @UserId, @Price, @Status)";
+            return $"{Command_Insert} {Command_Into} {TableName} ({Column_ItemGuid}, {Column_UserId}, {Column_Price}, {Column_Status}) {Command_Values} (@ItemId, @UserId, @Price, @Status)";
         }
 
         public static string Update_MarketItemPrice(SQLHelper SQLHelper, long Id, double Price)
@@ -92,16 +92,10 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_Id} = @UserId";
         }
 
-        public static string Select_AllMarketItems(SQLHelper SQLHelper, long ItemId = 0, long UserId = 0, MarketItemState? state = null)
+        public static string Select_AllMarketItems(SQLHelper SQLHelper, long UserId = 0, MarketItemState? state = null)
         {
             string sql = Select_MarketItems;
             string whereClause = "";
-
-            if (ItemId != 0)
-            {
-                SQLHelper.Parameters["@ItemId"] = ItemId;
-                whereClause += $"{Command_And} {Column_ItemId} = @ItemId\r\n";
-            }
 
             if (UserId != 0)
             {

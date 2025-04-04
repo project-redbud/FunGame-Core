@@ -15,5 +15,14 @@
         {
             return Encryption.HmacSha512(text, key.ToLower());
         }
+
+        public static bool EqualsGuid(this string str, object? value)
+        {
+            if (str.ToLower().Replace("-", "").Equals(value?.ToString()?.ToLower().Replace("-", "")))
+            {
+                return true;
+            }
+            return false;
+        }
     }
 }

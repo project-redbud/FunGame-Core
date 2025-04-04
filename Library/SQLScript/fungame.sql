@@ -89,8 +89,8 @@ CREATE TABLE `Inventories` (
 DROP TABLE IF EXISTS `MarketItems`;
 CREATE TABLE `MarketItems` (
  `Id` bigint(20) NOT NULL AUTO_INCREMENT,
- `ItemId` bigint(255) NOT NULL DEFAULT '0',
- `UserId` bigint(255) NOT NULL DEFAULT '0',
+ `ItemGuid` varchar(255) NOT NULL DEFAULT '',
+ `UserId` bigint(20) NOT NULL DEFAULT '0',
  `Price` double(20,0) NOT NULL DEFAULT '0',
  `CreateTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
  `FinishTime` datetime DEFAULT NULL,
@@ -107,7 +107,7 @@ CREATE TABLE `OfferItems` (
  `Id` bigint(20) NOT NULL AUTO_INCREMENT,
  `OfferId` bigint(20) NOT NULL DEFAULT '0',
  `UserId` bigint(20) NOT NULL DEFAULT '0',
- `ItemId` bigint(20) NOT NULL DEFAULT '0',
+ `ItemGuid` varchar(255) NOT NULL DEFAULT '0',
  PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -119,7 +119,7 @@ CREATE TABLE `OfferItemsBackup` (
  `Id` bigint(20) NOT NULL AUTO_INCREMENT,
  `OfferId` bigint(20) NOT NULL DEFAULT '0',
  `UserId` bigint(20) NOT NULL DEFAULT '0',
- `ItemId` bigint(20) NOT NULL DEFAULT '0',
+ `ItemGuid` varchar(255) NOT NULL DEFAULT '0',
  PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -238,6 +238,7 @@ DROP TABLE IF EXISTS `UserItems`;
 CREATE TABLE `UserItems` (
  `Id` bigint(20) NOT NULL AUTO_INCREMENT,
  `ItemId` bigint(20) NOT NULL DEFAULT '0',
+ `Guid` varchar(255) NOT NULL DEFAULT '',
  `UserId` bigint(20) NOT NULL DEFAULT '0',
  `CharacterId` bigint(20) NOT NULL DEFAULT '0',
  `ItemName` varchar(255) NOT NULL DEFAULT '',
