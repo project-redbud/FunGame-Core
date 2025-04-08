@@ -3,6 +3,14 @@
  */
 namespace Milimoe.FunGame.Core.Library.Constant
 {
+    public enum EntityState
+    {
+        Unchanged,
+        Added,
+        Modified,
+        Deleted
+    }
+
     public enum StartMatchState
     {
         Matching,

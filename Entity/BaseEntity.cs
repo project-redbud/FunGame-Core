@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Interface.Entity;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Entity
 {
@@ -18,6 +19,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 实体的名称
         /// </summary>
         public virtual string Name { get; set; } = "";
+        
+        /// <summary>
+        /// 实体的当前状态（关联数据库操作）
+        /// </summary>
+        public EntityState EntityState { get; set; } = EntityState.Unchanged;
 
         /// <summary>
         /// 比较两个实体是否相同

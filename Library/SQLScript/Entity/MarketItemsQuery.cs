@@ -17,13 +17,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
 
         public const string Select_MarketItems = $"{Command_Select} {Command_All} {Command_From} {TableName}";
 
-        public static string Select_MarketItemById(SQLHelper SQLHelper, long Id)
-        {
-            SQLHelper.Parameters["@Id"] = Id;
-            return $"{Select_MarketItems} {Command_Where} {Column_Id} = @Id";
-        }
-
-        public static string Select_MarketItemsByItemId(SQLHelper SQLHelper, Guid ItemGuid)
+        public static string Select_MarketItemsByItemGuid(SQLHelper SQLHelper, Guid ItemGuid)
         {
             SQLHelper.Parameters["@ItemGuid"] = ItemGuid.ToString();
             return $"{Select_MarketItems} {Command_Where} {Column_ItemGuid} = @ItemGuid";
@@ -51,45 +45,45 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             return $"{Command_Insert} {Command_Into} {TableName} ({Column_ItemGuid}, {Column_UserId}, {Column_Price}, {Column_Status}) {Command_Values} (@ItemId, @UserId, @Price, @Status)";
         }
 
-        public static string Update_MarketItemPrice(SQLHelper SQLHelper, long Id, double Price)
+        public static string Update_MarketItemPrice(SQLHelper SQLHelper, Guid ItemGuid, double Price)
         {
-            SQLHelper.Parameters["@Id"] = Id;
+            SQLHelper.Parameters["@ItemGuid"] = ItemGuid.ToString();
             SQLHelper.Parameters["@Price"] = Price;
-            return $"{Command_Update} {TableName} {Command_Set} {Column_Price} = @Price {Command_Where} {Column_Id} = @Id";
+            return $"{Command_Update} {TableName} {Command_Set} {Column_Price} = @Price {Command_Where} {Column_ItemGuid} = @ItemGuid";
         }
 
-        public static string Update_MarketItemState(SQLHelper SQLHelper, long Id, MarketItemState state)
+        public static string Update_MarketItemState(SQLHelper SQLHelper, Guid ItemGuid, MarketItemState state)
         {
-            SQLHelper.Parameters["@Id"] = Id;
+            SQLHelper.Parameters["@ItemGuid"] = ItemGuid.ToString();
             SQLHelper.Parameters["@Status"] = (int)state;
-            return $"{Command_Update} {TableName} {Command_Set} {Column_Status} = @Status {Command_Where} {Column_Id} = @Id";
+            return $"{Command_Update} {TableName} {Command_Set} {Column_Status} = @Status {Command_Where} {Column_ItemGuid} = @ItemGuid";
         }
 
-        public static string Update_MarketItemBuyer(SQLHelper SQLHelper, long Id, long Buyer)
+        public static string Update_Buy(SQLHelper SQLHelper, Guid ItemGuid, long Buyer)
         {
-            SQLHelper.Parameters["@Id"] = Id;
+            SQLHelper.Parameters["@ItemGuid"] = ItemGuid.ToString();
             SQLHelper.Parameters["@Buyer"] = Buyer;
             SQLHelper.Parameters["@Status"] = (int)MarketItemState.Purchased;
-            return $"{Command_Update} {TableName} {Command_Set} {Column_Buyer} = @Buyer, {Column_Status} = @Status {Command_Where} {Column_Id} = @Id";
+            return $"{Command_Update} {TableName} {Command_Set} {Column_Buyer} = @Buyer, {Column_Status} = @Status {Command_Where} {Column_ItemGuid} = @ItemGuid";
         }
 
-        public static string Update_MarketItemFinishTime(SQLHelper SQLHelper, long Id, DateTime FinishTime)
+        public static string Update_MarketItemFinishTime(SQLHelper SQLHelper, Guid ItemGuid, DateTime FinishTime)
         {
-            SQLHelper.Parameters["@Id"] = Id;
+            SQLHelper.Parameters["@ItemGuid"] = ItemGuid.ToString();
             SQLHelper.Parameters["@FinishTime"] = FinishTime;
-            return $"{Command_Update} {TableName} {Command_Set} {Column_FinishTime} = @FinishTime {Command_Where} {Column_Id} = @Id";
+            return $"{Command_Update} {TableName} {Command_Set} {Column_FinishTime} = @FinishTime {Command_Where} {Column_ItemGuid} = @ItemGuid";
         }
 
-        public static string Delete_MarketItem(SQLHelper SQLHelper, long Id)
+        public static string Delete_MarketItem(SQLHelper SQLHelper, Guid ItemGuid)
         {
-            SQLHelper.Parameters["@Id"] = Id;
-            return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_Id} = @Id";
+            SQLHelper.Parameters["@ItemGuid"] = ItemGuid.ToString();
+            return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_ItemGuid} = @ItemGuid";
         }
         
         public static string Delete_MarketItemByUserId(SQLHelper SQLHelper, long UserId)
         {
             SQLHelper.Parameters["@UserId"] = UserId;
-            return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_Id} = @UserId";
+            return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_UserId} = @UserId";
         }
 
         public static string Select_AllMarketItems(SQLHelper SQLHelper, long UserId = 0, MarketItemState? state = null)

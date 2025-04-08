@@ -12,6 +12,11 @@ namespace Milimoe.FunGame.Core.Entity
     public class Character : BaseEntity
     {
         /// <summary>
+        /// 唯一标识符
+        /// </summary>
+        public override Guid Guid { get; set; } = Guid.NewGuid();
+
+        /// <summary>
         /// 角色的姓
         /// </summary>
         public override string Name { get; set; } = "";
