@@ -1,5 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Interface.Base
 {
@@ -8,6 +9,11 @@ namespace Milimoe.FunGame.Core.Interface.Base
     /// </summary>
     public interface IGamingQueue
     {
+        /// <summary>
+        /// 使用的游戏平衡常数
+        /// </summary>
+        public EquilibriumConstant GameplayEquilibriumConstant { get; }
+
         /// <summary>
         /// 用于文本输出
         /// </summary>
@@ -125,15 +131,24 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public void InterruptCasting(Character caster, Character interrupter);
 
         /// <summary>
+        /// 使用物品
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="caster"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <returns></returns>
+        public bool UseItem(Item item, Character caster, List<Character> enemys, List<Character> teammates);
+
+        /// <summary>
         /// 选取技能目标
         /// </summary>
         /// <param name="caster"></param>
         /// <param name="skill"></param>
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
-        /// <param name="cancel"></param>
         /// <returns></returns>
-        public List<Character> SelectTargets(Character caster, Skill skill, List<Character> enemys, List<Character> teammates, out bool cancel);
+        public List<Character> SelectTargets(Character caster, Skill skill, List<Character> enemys, List<Character> teammates);
 
         /// <summary>
         /// 选取普通攻击目标
@@ -142,8 +157,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="attack"></param>
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
-        /// <param name="cancel"></param>
         /// <returns></returns>
-        public List<Character> SelectTargets(Character character, NormalAttack attack, List<Character> enemys, List<Character> teammates, out bool cancel);
+        public List<Character> SelectTargets(Character character, NormalAttack attack, List<Character> enemys, List<Character> teammates);
     }
 }

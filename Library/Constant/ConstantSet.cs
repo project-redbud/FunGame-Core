@@ -1,4 +1,7 @@
-﻿/**
+﻿
+using Milimoe.FunGame.Core.Model;
+
+/**
  * 此文件用于保存字符串常量（String Set）
  */
 namespace Milimoe.FunGame.Core.Library.Constant
@@ -619,15 +622,16 @@ namespace Milimoe.FunGame.Core.Library.Constant
             };
         }
 
-        public static int GetSkillMaxLevel(SkillType type)
+        public static int GetSkillMaxLevel(SkillType type, EquilibriumConstant? gameplayConstant = null)
         {
+            gameplayConstant ??= General.GameplayEquilibriumConstant;
             return type switch
             {
-                SkillType.Magic => General.GameplayEquilibriumConstant.MaxMagicLevel,
-                SkillType.Skill => General.GameplayEquilibriumConstant.MaxSkillLevel,
-                SkillType.SuperSkill => General.GameplayEquilibriumConstant.MaxSuperSkillLevel,
-                SkillType.Item => General.GameplayEquilibriumConstant.MaxSkillLevel,
-                _ => General.GameplayEquilibriumConstant.MaxPassiveSkillLevel
+                SkillType.Magic => gameplayConstant.MaxMagicLevel,
+                SkillType.Skill => gameplayConstant.MaxSkillLevel,
+                SkillType.SuperSkill => gameplayConstant.MaxSuperSkillLevel,
+                SkillType.Item => gameplayConstant.MaxSkillLevel,
+                _ => gameplayConstant.MaxPassiveSkillLevel
             };
         }
 

@@ -248,7 +248,7 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 foreach (Skill skill in Skills.Passives)
                 {
-                    List<Effect> effects = Character.Effects.Where(e => e.Skill == skill && e.Level > 0).ToList();
+                    List<Effect> effects = [.. Character.Effects.Where(e => e.Skill == skill && e.Level > 0)];
                     foreach (Effect e in effects)
                     {
                         Character.Effects.Remove(e);
@@ -304,7 +304,7 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 局内使用物品触发 对某个角色使用
+        /// 局内使用物品触发
         /// </summary>
         /// <returns></returns>
         public bool UseItem(IGamingQueue queue, Character character, List<Character> enemys, List<Character> teammates)
@@ -318,13 +318,7 @@ namespace Milimoe.FunGame.Core.Entity
             }
             if (result && Skills.Active != null)
             {
-                Skill skill = Skills.Active;
-                List<Character> targets = queue.SelectTargets(character, skill, enemys, teammates, out cancel);
-                if (!cancel)
-                {
-                    skill.OnSkillCasted(queue, character, targets);
-                    used = true;
-                }
+                used = queue.UseItem(this, character, enemys, teammates);
             }
             if (used)
             {
@@ -332,7 +326,7 @@ namespace Milimoe.FunGame.Core.Entity
             }
             return result && used;
         }
-
+        
         /// <summary>
         /// 局外（库存）使用物品触发
         /// </summary>
@@ -448,11 +442,11 @@ namespace Milimoe.FunGame.Core.Entity
 
             if (isShowInStore && Price > 0)
             {
-                builder.AppendLine($"售价：{Price} {General.GameplayEquilibriumConstant.InGameCurrency}");
+                builder.AppendLine($"售价：{Price} {GameplayEquilibriumConstant.InGameCurrency}");
             }
             else if (Price > 0)
             {
-                builder.AppendLine($"回收价：{Price} {General.GameplayEquilibriumConstant.InGameCurrency}");
+                builder.AppendLine($"回收价：{Price} {GameplayEquilibriumConstant.InGameCurrency}");
             }
 
             if (RemainUseTimes > 0)

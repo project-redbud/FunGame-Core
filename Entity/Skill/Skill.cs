@@ -48,7 +48,7 @@ namespace Milimoe.FunGame.Core.Entity
             }
             set
             {
-                int max = SkillSet.GetSkillMaxLevel(SkillType);
+                int max = SkillSet.GetSkillMaxLevel(SkillType, GameplayEquilibriumConstant);
                 _Level = Math.Min(Math.Max(0, value), max);
                 OnLevelUp();
             }
@@ -126,7 +126,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 实际魔法消耗 [ 魔法 ]
         /// </summary>
-        public double RealMPCost => Math.Max(0, MPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * General.GameplayEquilibriumConstant.INTtoCastMPReduce)));
+        public double RealMPCost => Math.Max(0, MPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * GameplayEquilibriumConstant.INTtoCastMPReduce)));
 
         /// <summary>
         /// 魔法消耗 [ 魔法 ]
@@ -148,7 +148,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 实际能量消耗 [ 战技 ]
         /// </summary>
-        public double RealEPCost => CostAllEP ? Math.Max(MinCostEP, Character?.EP ?? MinCostEP) : (IsSuperSkill ? EPCost : Math.Max(0, EPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * General.GameplayEquilibriumConstant.INTtoCastEPReduce))));
+        public double RealEPCost => CostAllEP ? Math.Max(MinCostEP, Character?.EP ?? MinCostEP) : (IsSuperSkill ? EPCost : Math.Max(0, EPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * GameplayEquilibriumConstant.INTtoCastEPReduce))));
 
         /// <summary>
         /// 能量消耗 [ 战技 ]

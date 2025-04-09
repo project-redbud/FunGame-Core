@@ -1,21 +1,22 @@
 ﻿using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Entity
 {
-    public class Inventory
+    public class Inventory : BaseEntity
     {
         /// <summary>
         /// 库存 ID 与用户 ID 绑定
         /// </summary>
-        public long Id => User.Id;
+        public override long Id => User.Id;
 
         /// <summary>
         /// 库存的名称，默认为 “<see cref="User.Username"/>的库存”；可更改
         /// </summary>
-        public string Name
+        public override string Name
         {
             get
             {
@@ -105,8 +106,8 @@ namespace Milimoe.FunGame.Core.Entity
             StringBuilder builder = new();
 
             builder.AppendLine($"☆★☆ {Name} ☆★☆");
-            builder.AppendLine($"{General.GameplayEquilibriumConstant.InGameCurrency}：{Credits:0.00}");
-            builder.AppendLine($"{General.GameplayEquilibriumConstant.InGameMaterial}：{Materials:0.00}");
+            builder.AppendLine($"{GameplayEquilibriumConstant.InGameCurrency}：{Credits:0.00}");
+            builder.AppendLine($"{GameplayEquilibriumConstant.InGameMaterial}：{Materials:0.00}");
 
             builder.AppendLine($"======= 角色 =======");
             Character[] characters = [.. Characters];
@@ -142,6 +143,11 @@ namespace Milimoe.FunGame.Core.Entity
             }
 
             return builder.ToString();
+        }
+
+        public override bool Equals(IBaseEntity? other)
+        {
+            return other is Inventory && other.GetIdName() == GetIdName();
         }
     }
 }
