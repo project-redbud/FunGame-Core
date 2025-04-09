@@ -20,6 +20,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Character.Id):
                     result.Id = reader.GetInt64();
                     break;
+                case nameof(Character.Guid):
+                    result.Guid = reader.GetGuid();
+                    break;
                 case nameof(Character.Name):
                     result.Name = reader.GetString() ?? "";
                     break;
@@ -230,6 +233,8 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
         {
             writer.WriteStartObject();
             writer.WriteNumber(nameof(Character.Id), value.Id);
+            writer.WritePropertyName(nameof(Character.Guid));
+            JsonSerializer.Serialize(writer, value.Guid, options);
             writer.WriteString(nameof(Character.Name), value.Name);
             writer.WriteString(nameof(Character.FirstName), value.FirstName);
             writer.WriteString(nameof(Character.NickName), value.NickName);

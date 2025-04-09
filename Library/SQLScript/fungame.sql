@@ -96,7 +96,7 @@ CREATE TABLE `MarketItems` (
  `FinishTime` datetime DEFAULT NULL,
  `Status` int(10) NOT NULL DEFAULT '0',
  `Buyer` bigint(20) NOT NULL DEFAULT '0',
- PRIMARY KEY (`Id`,`ItemId`,`UserId`)
+ PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
@@ -107,7 +107,7 @@ CREATE TABLE `OfferItems` (
  `Id` bigint(20) NOT NULL AUTO_INCREMENT,
  `OfferId` bigint(20) NOT NULL DEFAULT '0',
  `UserId` bigint(20) NOT NULL DEFAULT '0',
- `ItemGuid` varchar(255) NOT NULL DEFAULT '0',
+ `ItemGuid` varchar(255) NOT NULL DEFAULT '',
  PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -119,7 +119,7 @@ CREATE TABLE `OfferItemsBackup` (
  `Id` bigint(20) NOT NULL AUTO_INCREMENT,
  `OfferId` bigint(20) NOT NULL DEFAULT '0',
  `UserId` bigint(20) NOT NULL DEFAULT '0',
- `ItemGuid` varchar(255) NOT NULL DEFAULT '0',
+ `ItemGuid` varchar(255) NOT NULL DEFAULT '',
  PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -166,7 +166,7 @@ CREATE TABLE `Rooms` (
  `HasPass` int(1) NOT NULL DEFAULT '0',
  `Password` varchar(255) NOT NULL DEFAULT '',
  `MaxUsers` int(8) NOT NULL DEFAULT '0',
- PRIMARY KEY (`Id`,`Roomid`)
+ PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
@@ -209,6 +209,7 @@ DROP TABLE IF EXISTS `UserCharacters`;
 CREATE TABLE `UserCharacters` (
  `Id` bigint(20) NOT NULL AUTO_INCREMENT,
  `CharacterId` bigint(20) NOT NULL DEFAULT '0',
+ `CharacterGuid` varchar(255) NOT NULL DEFAULT '',
  `UserId` bigint(20) NOT NULL DEFAULT '0',
  `Name` varchar(255) NOT NULL DEFAULT '',
  `FirstName` varchar(255) NOT NULL DEFAULT '',
@@ -228,7 +229,7 @@ CREATE TABLE `UserCharacters` (
  `LevelBreak` int(10) NOT NULL DEFAULT '0',
  `InSquad` int(1) NOT NULL DEFAULT '0',
  `TrainingTime` datetime DEFAULT NULL,
- PRIMARY KEY (`Id`,`CharacterId`,`UserId`)
+ PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
@@ -238,9 +239,9 @@ DROP TABLE IF EXISTS `UserItems`;
 CREATE TABLE `UserItems` (
  `Id` bigint(20) NOT NULL AUTO_INCREMENT,
  `ItemId` bigint(20) NOT NULL DEFAULT '0',
- `Guid` varchar(255) NOT NULL DEFAULT '',
+ `ItemGuid` varchar(255) NOT NULL DEFAULT '',
  `UserId` bigint(20) NOT NULL DEFAULT '0',
- `CharacterId` bigint(20) NOT NULL DEFAULT '0',
+ `CharacterGuid` varchar(255) NOT NULL DEFAULT '',
  `ItemName` varchar(255) NOT NULL DEFAULT '',
  `IsLock` int(1) NOT NULL DEFAULT '0',
  `Equipable` int(1) NOT NULL DEFAULT '0',
@@ -289,7 +290,7 @@ CREATE TABLE `Users` (
  `IsEnable` int(1) NOT NULL DEFAULT '1',
  `GameTime` double(20,0) NOT NULL DEFAULT '0',
  `AutoKey` varchar(255) NOT NULL DEFAULT '',
- PRIMARY KEY (`Id`,`Username`,`Email`)
+ PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
