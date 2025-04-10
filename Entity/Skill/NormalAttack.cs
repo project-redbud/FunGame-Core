@@ -38,7 +38,7 @@ namespace Milimoe.FunGame.Core.Entity
             }
             set
             {
-                _Level = Math.Min(Math.Max(1, value), General.GameplayEquilibriumConstant.MaxNormalAttackLevel);
+                _Level = Math.Min(Math.Max(1, value), GameplayEquilibriumConstant.MaxNormalAttackLevel);
             }
         }
 
@@ -63,7 +63,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="queue"></param>
         /// <param name="attacker"></param>
         /// <param name="enemys"></param>
-        public void Attack(IGamingQueue queue, Character attacker, params Character[] enemys)
+        public void Attack(IGamingQueue queue, Character attacker, params IEnumerable<Character> enemys)
         {
             foreach (Character enemy in enemys)
             {

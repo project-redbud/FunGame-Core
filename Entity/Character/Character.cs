@@ -73,31 +73,31 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                if (Promotion > General.GameplayEquilibriumConstant.PromotionsUpperLimit["S"])
+                if (Promotion > GameplayEquilibriumConstant.PromotionsUpperLimit["S"])
                 {
                     return RoleRating.X;
                 }
-                else if (Promotion > General.GameplayEquilibriumConstant.PromotionsUpperLimit["A+"] && Promotion <= General.GameplayEquilibriumConstant.PromotionsUpperLimit["S"])
+                else if (Promotion > GameplayEquilibriumConstant.PromotionsUpperLimit["A+"] && Promotion <= GameplayEquilibriumConstant.PromotionsUpperLimit["S"])
                 {
                     return RoleRating.S;
                 }
-                else if (Promotion > General.GameplayEquilibriumConstant.PromotionsUpperLimit["A"] && Promotion <= General.GameplayEquilibriumConstant.PromotionsUpperLimit["A+"])
+                else if (Promotion > GameplayEquilibriumConstant.PromotionsUpperLimit["A"] && Promotion <= GameplayEquilibriumConstant.PromotionsUpperLimit["A+"])
                 {
                     return RoleRating.APlus;
                 }
-                else if (Promotion > General.GameplayEquilibriumConstant.PromotionsUpperLimit["B"] && Promotion <= General.GameplayEquilibriumConstant.PromotionsUpperLimit["A"])
+                else if (Promotion > GameplayEquilibriumConstant.PromotionsUpperLimit["B"] && Promotion <= GameplayEquilibriumConstant.PromotionsUpperLimit["A"])
                 {
                     return RoleRating.A;
                 }
-                else if (Promotion > General.GameplayEquilibriumConstant.PromotionsUpperLimit["C"] && Promotion <= General.GameplayEquilibriumConstant.PromotionsUpperLimit["B"])
+                else if (Promotion > GameplayEquilibriumConstant.PromotionsUpperLimit["C"] && Promotion <= GameplayEquilibriumConstant.PromotionsUpperLimit["B"])
                 {
                     return RoleRating.B;
                 }
-                else if (Promotion > General.GameplayEquilibriumConstant.PromotionsUpperLimit["D"] && Promotion <= General.GameplayEquilibriumConstant.PromotionsUpperLimit["C"])
+                else if (Promotion > GameplayEquilibriumConstant.PromotionsUpperLimit["D"] && Promotion <= GameplayEquilibriumConstant.PromotionsUpperLimit["C"])
                 {
                     return RoleRating.C;
                 }
-                else if (Promotion > General.GameplayEquilibriumConstant.PromotionsUpperLimit["E"] && Promotion <= General.GameplayEquilibriumConstant.PromotionsUpperLimit["D"])
+                else if (Promotion > GameplayEquilibriumConstant.PromotionsUpperLimit["E"] && Promotion <= GameplayEquilibriumConstant.PromotionsUpperLimit["D"])
                 {
                     return RoleRating.D;
                 }
@@ -129,7 +129,7 @@ namespace Milimoe.FunGame.Core.Entity
             }
             set
             {
-                _Level = Math.Min(Math.Max(1, value), General.GameplayEquilibriumConstant.MaxLevel);
+                _Level = Math.Min(Math.Max(1, value), GameplayEquilibriumConstant.MaxLevel);
                 OnAttributeChanged();
                 Recovery();
             }
@@ -174,17 +174,17 @@ namespace Milimoe.FunGame.Core.Entity
         /// 初始生命值 [ 初始设定 ]
         /// </summary>
         [InitRequired]
-        public double InitialHP { get; set; } = General.GameplayEquilibriumConstant.InitialHP;
+        public double InitialHP { get; set; } = 0;
 
         /// <summary>
         /// 基础生命值 [ 与初始设定和等级相关 ] [ 与基础力量相关 ]
         /// </summary>
-        public double BaseHP => InitialHP + (Level - 1) * (General.GameplayEquilibriumConstant.LevelToHPFactor + General.GameplayEquilibriumConstant.HPGrowthFactor * InitialHP) + BaseSTR * General.GameplayEquilibriumConstant.STRtoHPFactor;
+        public double BaseHP => InitialHP + (Level - 1) * (GameplayEquilibriumConstant.LevelToHPFactor + GameplayEquilibriumConstant.HPGrowthFactor * InitialHP) + BaseSTR * GameplayEquilibriumConstant.STRtoHPFactor;
 
         /// <summary>
         /// 额外生命值 [ 与额外力量相关 ]
         /// </summary>
-        public double ExHP => ExSTR * General.GameplayEquilibriumConstant.STRtoHPFactor;
+        public double ExHP => ExSTR * GameplayEquilibriumConstant.STRtoHPFactor;
 
         /// <summary>
         /// 额外生命值2 [ 与技能和物品相关 ]
@@ -227,17 +227,17 @@ namespace Milimoe.FunGame.Core.Entity
         /// 初始魔法值 [ 初始设定 ]
         /// </summary>
         [InitRequired]
-        public double InitialMP { get; set; } = General.GameplayEquilibriumConstant.InitialMP;
+        public double InitialMP { get; set; } = 0;
 
         /// <summary>
         /// 基础魔法值 [ 与初始设定和等级相关 ] [ 与基础智力相关 ]
         /// </summary>
-        public double BaseMP => InitialMP + (Level - 1) * (General.GameplayEquilibriumConstant.LevelToMPFactor + General.GameplayEquilibriumConstant.MPGrowthFactor * InitialMP) + BaseINT * General.GameplayEquilibriumConstant.INTtoMPFactor;
+        public double BaseMP => InitialMP + (Level - 1) * (GameplayEquilibriumConstant.LevelToMPFactor + GameplayEquilibriumConstant.MPGrowthFactor * InitialMP) + BaseINT * GameplayEquilibriumConstant.INTtoMPFactor;
 
         /// <summary>
         /// 额外魔法值 [ 与额外智力相关 ]
         /// </summary>
-        public double ExMP => ExINT * General.GameplayEquilibriumConstant.INTtoMPFactor;
+        public double ExMP => ExINT * GameplayEquilibriumConstant.INTtoMPFactor;
 
         /// <summary>
         /// 额外魔法值2 [ 与技能和物品相关 ]
@@ -283,12 +283,12 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                return _EP < 0 ? 0 : (_EP > General.GameplayEquilibriumConstant.MaxEP ? General.GameplayEquilibriumConstant.MaxEP : _EP);
+                return _EP < 0 ? 0 : (_EP > GameplayEquilibriumConstant.MaxEP ? GameplayEquilibriumConstant.MaxEP : _EP);
             }
             set
             {
                 _EP = value;
-                if (_EP > General.GameplayEquilibriumConstant.MaxEP) _EP = General.GameplayEquilibriumConstant.MaxEP;
+                if (_EP > GameplayEquilibriumConstant.MaxEP) _EP = GameplayEquilibriumConstant.MaxEP;
                 else if (_EP < 0) _EP = 0;
             }
         }
@@ -297,7 +297,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 初始攻击力 [ 初始设定 ]
         /// </summary>
         [InitRequired]
-        public double InitialATK { get; set; } = General.GameplayEquilibriumConstant.InitialATK;
+        public double InitialATK { get; set; } = 0;
 
         /// <summary>
         /// 基础攻击力 [ 与初始设定和等级相关 ] [ 与核心属性相关 ]
@@ -306,7 +306,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                double atk = InitialATK + (Level - 1) * (General.GameplayEquilibriumConstant.LevelToATKFactor + General.GameplayEquilibriumConstant.ATKGrowthFactor * InitialATK);
+                double atk = InitialATK + (Level - 1) * (GameplayEquilibriumConstant.LevelToATKFactor + GameplayEquilibriumConstant.ATKGrowthFactor * InitialATK);
                 if (PrimaryAttribute == PrimaryAttribute.AGI)
                 {
                     return atk + BaseAGI;
@@ -368,17 +368,17 @@ namespace Milimoe.FunGame.Core.Entity
         /// 初始物理护甲 [ 初始设定 ]
         /// </summary>
         [InitRequired]
-        public double InitialDEF { get; set; } = General.GameplayEquilibriumConstant.InitialDEF;
+        public double InitialDEF { get; set; } = 0;
 
         /// <summary>
         /// 基础物理护甲 [ 与初始设定相关 ] [ 与基础力量相关 ]
         /// </summary>
-        public double BaseDEF => InitialDEF + BaseSTR * General.GameplayEquilibriumConstant.STRtoDEFFactor;
+        public double BaseDEF => InitialDEF + BaseSTR * GameplayEquilibriumConstant.STRtoDEFFactor;
 
         /// <summary>
         /// 额外物理护甲 [ 与额外力量相关 ]
         /// </summary>
-        public double ExDEF => ExSTR * General.GameplayEquilibriumConstant.STRtoDEFFactor;
+        public double ExDEF => ExSTR * GameplayEquilibriumConstant.STRtoDEFFactor;
 
         /// <summary>
         /// 额外物理护甲2 [ 与技能和物品相关 ]
@@ -407,7 +407,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                double value = (DEF / (DEF + General.GameplayEquilibriumConstant.DEFReductionFactor)) + ExPDR;
+                double value = (DEF / (DEF + GameplayEquilibriumConstant.DEFReductionFactor)) + ExPDR;
                 return Calculation.PercentageCheck(value);
             }
         }
@@ -461,7 +461,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 生命回复力 = [ 与初始设定相关 ] [ 与力量相关 ] + 额外生命回复力
         /// </summary>
-        public double HR => InitialHR + STR * General.GameplayEquilibriumConstant.STRtoHRFactor + ExHR;
+        public double HR => InitialHR + STR * GameplayEquilibriumConstant.STRtoHRFactor + ExHR;
 
         /// <summary>
         /// 额外生命回复力 [ 与技能和物品相关 ]
@@ -477,7 +477,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 魔法回复力 = [ 与初始设定相关 ] [ 与智力相关 ] + 额外魔法回复力
         /// </summary>
-        public double MR => InitialMR + INT * General.GameplayEquilibriumConstant.INTtoMRFactor + ExMR;
+        public double MR => InitialMR + INT * GameplayEquilibriumConstant.INTtoMRFactor + ExMR;
 
         /// <summary>
         /// 额外魔法回复力 [ 与技能和物品相关 ]
@@ -672,7 +672,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 行动速度 = [ 与初始设定相关 ][ 与敏捷相关 ] + 额外行动速度
         /// </summary>
-        public double SPD => InitialSPD + AGI * General.GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
+        public double SPD => InitialSPD + AGI * GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
 
         /// <summary>
         /// 额外行动速度 [ 与技能和物品相关 ]
@@ -686,7 +686,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                double value = SPD / General.GameplayEquilibriumConstant.SPDUpperLimit + ExActionCoefficient;
+                double value = SPD / GameplayEquilibriumConstant.SPDUpperLimit + ExActionCoefficient;
                 return Calculation.PercentageCheck(value);
             }
         }
@@ -703,7 +703,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                double value = INT * General.GameplayEquilibriumConstant.INTtoAccelerationCoefficientMultiplier + ExAccelerationCoefficient;
+                double value = INT * GameplayEquilibriumConstant.INTtoAccelerationCoefficientMultiplier + ExAccelerationCoefficient;
                 return Calculation.PercentageCheck(value);
             }
         }
@@ -720,7 +720,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                double value = INT * General.GameplayEquilibriumConstant.INTtoCDRMultiplier + ExCDR;
+                double value = INT * GameplayEquilibriumConstant.INTtoCDRMultiplier + ExCDR;
                 return Calculation.PercentageCheck(value);
             }
         }
@@ -743,7 +743,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                double value = General.GameplayEquilibriumConstant.CritRate + AGI * General.GameplayEquilibriumConstant.AGItoCritRateMultiplier + ExCritRate;
+                double value = GameplayEquilibriumConstant.CritRate + AGI * GameplayEquilibriumConstant.AGItoCritRateMultiplier + ExCritRate;
                 return Calculation.PercentageCheck(value);
             }
         }
@@ -760,7 +760,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                return General.GameplayEquilibriumConstant.CritDMG + STR * General.GameplayEquilibriumConstant.STRtoCritDMGMultiplier + ExCritDMG;
+                return GameplayEquilibriumConstant.CritDMG + STR * GameplayEquilibriumConstant.STRtoCritDMGMultiplier + ExCritDMG;
             }
         }
 
@@ -776,7 +776,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                double value = General.GameplayEquilibriumConstant.EvadeRate + AGI * General.GameplayEquilibriumConstant.AGItoEvadeRateMultiplier + ExEvadeRate;
+                double value = GameplayEquilibriumConstant.EvadeRate + AGI * GameplayEquilibriumConstant.AGItoEvadeRateMultiplier + ExEvadeRate;
                 return Calculation.PercentageCheck(value);
             }
         }
@@ -844,6 +844,10 @@ namespace Milimoe.FunGame.Core.Entity
         {
             User = General.UnknownUserInstance;
             Profile = new(Name, FirstName, NickName);
+            InitialHP = GameplayEquilibriumConstant.InitialHP;
+            InitialMP = GameplayEquilibriumConstant.InitialMP;
+            InitialATK = GameplayEquilibriumConstant.InitialATK;
+            InitialDEF = GameplayEquilibriumConstant.InitialDEF;
             EquipSlot = new();
             MDF = new();
             NormalAttack = new(this);
@@ -1136,10 +1140,10 @@ namespace Milimoe.FunGame.Core.Entity
                 {
                     break;
                 }
-                if (General.GameplayEquilibriumConstant.UseLevelBreak && checkLevelBreak)
+                if (GameplayEquilibriumConstant.UseLevelBreak && checkLevelBreak)
                 {
                     // 检查角色突破进度
-                    int[] breaks = [.. General.GameplayEquilibriumConstant.LevelBreakList];
+                    int[] breaks = [.. GameplayEquilibriumConstant.LevelBreakList];
                     int nextBreak = LevelBreak + 1;
                     if (nextBreak < breaks.Length && Level >= breaks[nextBreak])
                     {
@@ -1147,7 +1151,7 @@ namespace Milimoe.FunGame.Core.Entity
                         break;
                     }
                 }
-                if (Level > 0 && Level < General.GameplayEquilibriumConstant.MaxLevel && General.GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) && EXP >= need)
+                if (Level > 0 && Level < GameplayEquilibriumConstant.MaxLevel && GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) && EXP >= need)
                 {
                     EXP -= need;
                     Level++;
@@ -1166,10 +1170,10 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         public void OnLevelBreak()
         {
-            if (General.GameplayEquilibriumConstant.UseLevelBreak)
+            if (GameplayEquilibriumConstant.UseLevelBreak)
             {
                 // 检查角色突破进度
-                int[] levels = [.. General.GameplayEquilibriumConstant.LevelBreakList];
+                int[] levels = [.. GameplayEquilibriumConstant.LevelBreakList];
                 while (LevelBreak + 1 < levels.Length && Level >= levels[LevelBreak + 1])
                 {
                     LevelBreak++;
@@ -1313,14 +1317,14 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine(showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser());
             if (showEXP)
             {
-                builder.AppendLine($"等级：{Level} / {General.GameplayEquilibriumConstant.MaxLevel}（突破进度：{LevelBreak + 1} / {General.GameplayEquilibriumConstant.LevelBreakList.Count}）");
-                builder.AppendLine($"经验值：{EXP}{(Level != General.GameplayEquilibriumConstant.MaxLevel && General.GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) ? " / " + need : "")}");
+                builder.AppendLine($"等级：{Level} / {GameplayEquilibriumConstant.MaxLevel}（突破进度：{LevelBreak + 1} / {GameplayEquilibriumConstant.LevelBreakList.Count}）");
+                builder.AppendLine($"经验值：{EXP}{(Level != GameplayEquilibriumConstant.MaxLevel && GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) ? " / " + need : "")}");
             }
             double exHP = ExHP + ExHP2 + ExHP3;
             builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : ""));
             double exMP = ExMP + ExMP2 + ExMP3;
             builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
-            builder.AppendLine($"能量值：{EP:0.##} / {General.GameplayEquilibriumConstant.MaxEP:0.##}");
+            builder.AppendLine($"能量值：{EP:0.##} / {GameplayEquilibriumConstant.MaxEP:0.##}");
             double exATK = ExATK + ExATK2 + ExATK3;
             builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
             double exDEF = ExDEF + ExDEF2 + ExDEF3;
@@ -1329,7 +1333,7 @@ namespace Milimoe.FunGame.Core.Entity
                 MDF.Bright + MDF.Shadow + MDF.Element + MDF.Fleabane + MDF.Particle) / 9) * 100;
             if (Calculation.IsApproximatelyZero(mdf)) mdf = 0;
             builder.AppendLine($"魔法抗性：{mdf:0.##}%（平均）");
-            double exSPD = AGI * General.GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
+            double exSPD = AGI * GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
             builder.AppendLine($"行动速度：{SPD:0.##}" + (exSPD != 0 ? $" [{InitialSPD:0.##} {(exSPD >= 0 ? "+" : "-")} {Math.Abs(exSPD):0.##}]" : "") + $" ({ActionCoefficient * 100:0.##}%)");
             builder.AppendLine($"核心属性：{CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)}");
             double exSTR = ExSTR + ExSTR2;
@@ -1338,8 +1342,8 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"敏捷：{AGI:0.##}" + (exAGI != 0 ? $" [{BaseAGI:0.##} {(exAGI >= 0 ? "+" : "-")} {Math.Abs(exAGI):0.##}]" : "") + (showGrowth ? $"（{(AGIGrowth >= 0 ? "+" : "-")}{Math.Abs(AGIGrowth)}/Lv）" : ""));
             double exINT = ExINT + ExINT2;
             builder.AppendLine($"智力：{INT:0.##}" + (exINT != 0 ? $" [{BaseINT:0.##} {(exINT >= 0 ? "+" : "-")} {Math.Abs(exINT):0.##}]" : "") + (showGrowth ? $"（{(INTGrowth >= 0 ? "+" : "-")}{Math.Abs(INTGrowth)}/Lv）" : ""));
-            builder.AppendLine($"生命回复：{HR:0.##}" + (ExHR != 0 ? $" [{InitialHR + STR * General.GameplayEquilibriumConstant.STRtoHRFactor:0.##} {(ExHR >= 0 ? "+" : "-")} {Math.Abs(ExHR):0.##}]" : ""));
-            builder.AppendLine($"魔法回复：{MR:0.##}" + (ExMR != 0 ? $" [{InitialMR + INT * General.GameplayEquilibriumConstant.INTtoMRFactor:0.##} {(ExMR >= 0 ? "+" : "-")} {Math.Abs(ExMR):0.##}]" : ""));
+            builder.AppendLine($"生命回复：{HR:0.##}" + (ExHR != 0 ? $" [{InitialHR + STR * GameplayEquilibriumConstant.STRtoHRFactor:0.##} {(ExHR >= 0 ? "+" : "-")} {Math.Abs(ExHR):0.##}]" : ""));
+            builder.AppendLine($"魔法回复：{MR:0.##}" + (ExMR != 0 ? $" [{InitialMR + INT * GameplayEquilibriumConstant.INTtoMRFactor:0.##} {(ExMR >= 0 ? "+" : "-")} {Math.Abs(ExMR):0.##}]" : ""));
             builder.AppendLine($"暴击率：{CritRate * 100:0.##}%");
             builder.AppendLine($"暴击伤害：{CritDMG * 100:0.##}%");
             builder.AppendLine($"闪避率：{EvadeRate * 100:0.##}%");
@@ -1347,8 +1351,8 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"加速系数：{AccelerationCoefficient * 100:0.##}%");
             builder.AppendLine($"物理穿透：{PhysicalPenetration * 100:0.##}%");
             builder.AppendLine($"魔法穿透：{MagicalPenetration * 100:0.##}%");
-            builder.AppendLine($"魔法消耗减少：{INT * General.GameplayEquilibriumConstant.INTtoCastMPReduce * 100:0.##}%");
-            builder.AppendLine($"能量消耗减少：{INT * General.GameplayEquilibriumConstant.INTtoCastEPReduce * 100:0.##}%");
+            builder.AppendLine($"魔法消耗减少：{INT * GameplayEquilibriumConstant.INTtoCastMPReduce * 100:0.##}%");
+            builder.AppendLine($"能量消耗减少：{INT * GameplayEquilibriumConstant.INTtoCastEPReduce * 100:0.##}%");
 
             if (CharacterState != CharacterState.Actionable)
             {
@@ -1444,14 +1448,14 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine(showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser());
             if (showEXP)
             {
-                builder.AppendLine($"等级：{Level} / {General.GameplayEquilibriumConstant.MaxLevel}（突破进度：{LevelBreak + 1} / {General.GameplayEquilibriumConstant.LevelBreakList.Count}）");
-                builder.AppendLine($"经验值：{EXP}{(Level != General.GameplayEquilibriumConstant.MaxLevel && General.GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) ? " / " + need : "")}");
+                builder.AppendLine($"等级：{Level} / {GameplayEquilibriumConstant.MaxLevel}（突破进度：{LevelBreak + 1} / {GameplayEquilibriumConstant.LevelBreakList.Count}）");
+                builder.AppendLine($"经验值：{EXP}{(Level != GameplayEquilibriumConstant.MaxLevel && GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) ? " / " + need : "")}");
             }
             double exHP = ExHP + ExHP2 + ExHP3;
             builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : ""));
             double exMP = ExMP + ExMP2 + ExMP3;
             builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
-            builder.AppendLine($"能量值：{EP:0.##} / {General.GameplayEquilibriumConstant.MaxEP:0.##}");
+            builder.AppendLine($"能量值：{EP:0.##} / {GameplayEquilibriumConstant.MaxEP:0.##}");
             double exATK = ExATK + ExATK2 + ExATK3;
             builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
             double exDEF = ExDEF + ExDEF2 + ExDEF3;
@@ -1466,7 +1470,7 @@ namespace Milimoe.FunGame.Core.Entity
             }
             else
             {
-                double exSPD = AGI * General.GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
+                double exSPD = AGI * GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
                 builder.AppendLine($"行动速度：{SPD:0.##}" + (exSPD != 0 ? $" [{InitialSPD:0.##} {(exSPD >= 0 ? "+" : "-")} {Math.Abs(exSPD):0.##}]" : "") + $" ({ActionCoefficient * 100:0.##}%)");
                 builder.AppendLine($"核心属性：{CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)}");
                 double exSTR = ExSTR + ExSTR2;
@@ -1476,8 +1480,8 @@ namespace Milimoe.FunGame.Core.Entity
                 double exINT = ExINT + ExINT2;
                 builder.AppendLine($"智力：{INT:0.##}" + (exINT != 0 ? $" [{BaseINT:0.##} {(exINT >= 0 ? "+" : "-")} {Math.Abs(exINT):0.##}]" : "") + (showGrowth ? $"（{(INTGrowth >= 0 ? "+" : "-")}{Math.Abs(INTGrowth)}/Lv）" : ""));
             }
-            builder.AppendLine($"生命回复：{HR:0.##}" + (ExHR != 0 ? $" [{InitialHR + STR * General.GameplayEquilibriumConstant.STRtoHRFactor:0.##} {(ExHR >= 0 ? "+" : "-")} {Math.Abs(ExHR):0.##}]" : ""));
-            builder.AppendLine($"魔法回复：{MR:0.##}" + (ExMR != 0 ? $" [{InitialMR + INT * General.GameplayEquilibriumConstant.INTtoMRFactor:0.##} {(ExMR >= 0 ? "+" : "-")} {Math.Abs(ExMR):0.##}]" : ""));
+            builder.AppendLine($"生命回复：{HR:0.##}" + (ExHR != 0 ? $" [{InitialHR + STR * GameplayEquilibriumConstant.STRtoHRFactor:0.##} {(ExHR >= 0 ? "+" : "-")} {Math.Abs(ExHR):0.##}]" : ""));
+            builder.AppendLine($"魔法回复：{MR:0.##}" + (ExMR != 0 ? $" [{InitialMR + INT * GameplayEquilibriumConstant.INTtoMRFactor:0.##} {(ExMR >= 0 ? "+" : "-")} {Math.Abs(ExMR):0.##}]" : ""));
 
             if (!showBasicOnly)
             {
@@ -1557,7 +1561,7 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : ""));
             double exMP = ExMP + ExMP2 + ExMP3;
             builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
-            builder.AppendLine($"能量值：{EP:0.##} / {General.GameplayEquilibriumConstant.MaxEP:0.##}");
+            builder.AppendLine($"能量值：{EP:0.##} / {GameplayEquilibriumConstant.MaxEP:0.##}");
             double exATK = ExATK + ExATK2 + ExATK3;
             builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
             builder.AppendLine($"核心属性：{PrimaryAttributeValue:0.##}" + (ExPrimaryAttributeValue != 0 ? $" [{BasePrimaryAttributeValue:0.##} {(ExPrimaryAttributeValue >= 0 ? "+" : "-")} {Math.Abs(ExPrimaryAttributeValue):0.##}]" : ""));
@@ -1605,7 +1609,7 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : ""));
             double exMP = ExMP + ExMP2 + ExMP3;
             builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
-            builder.AppendLine($"能量值：{EP:0.##} / {General.GameplayEquilibriumConstant.MaxEP:0.##}");
+            builder.AppendLine($"能量值：{EP:0.##} / {GameplayEquilibriumConstant.MaxEP:0.##}");
             double exATK = ExATK + ExATK2 + ExATK3;
             builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
             builder.AppendLine($"核心属性：{PrimaryAttributeValue:0.##}" + (ExPrimaryAttributeValue != 0 ? $" [{BasePrimaryAttributeValue:0.##} {(ExPrimaryAttributeValue >= 0 ? "+" : "-")} {Math.Abs(ExPrimaryAttributeValue):0.##}]" : ""));
@@ -1680,14 +1684,14 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine(showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser());
             if (showEXP)
             {
-                builder.AppendLine($"等级：{Level} / {General.GameplayEquilibriumConstant.MaxLevel}（突破进度：{LevelBreak + 1} / {General.GameplayEquilibriumConstant.LevelBreakList.Count}）");
-                builder.AppendLine($"经验值：{EXP}{(Level != General.GameplayEquilibriumConstant.MaxLevel && General.GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) ? " / " + need : "")}");
+                builder.AppendLine($"等级：{Level} / {GameplayEquilibriumConstant.MaxLevel}（突破进度：{LevelBreak + 1} / {GameplayEquilibriumConstant.LevelBreakList.Count}）");
+                builder.AppendLine($"经验值：{EXP}{(Level != GameplayEquilibriumConstant.MaxLevel && GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) ? " / " + need : "")}");
             }
             double exHP = ExHP + ExHP2 + ExHP3;
             builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : ""));
             double exMP = ExMP + ExMP2 + ExMP3;
             builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
-            builder.AppendLine($"能量值：{EP:0.##} / {General.GameplayEquilibriumConstant.MaxEP:0.##}");
+            builder.AppendLine($"能量值：{EP:0.##} / {GameplayEquilibriumConstant.MaxEP:0.##}");
             double exATK = ExATK + ExATK2 + ExATK3;
             builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
             double exDEF = ExDEF + ExDEF2 + ExDEF3;
@@ -1696,7 +1700,7 @@ namespace Milimoe.FunGame.Core.Entity
                 MDF.Bright + MDF.Shadow + MDF.Element + MDF.Fleabane + MDF.Particle) / 9) * 100;
             if (Calculation.IsApproximatelyZero(mdf)) mdf = 0;
             builder.AppendLine($"魔法抗性：{mdf:0.##}%（平均）");
-            double exSPD = AGI * General.GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
+            double exSPD = AGI * GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
             builder.AppendLine($"行动速度：{SPD:0.##}" + (exSPD != 0 ? $" [{InitialSPD:0.##} {(exSPD >= 0 ? "+" : "-")} {Math.Abs(exSPD):0.##}]" : "") + $" ({ActionCoefficient * 100:0.##}%)");
             builder.AppendLine($"核心属性：{CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)}");
             double exSTR = ExSTR + ExSTR2;
@@ -1705,8 +1709,8 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"敏捷：{AGI:0.##}" + (exAGI != 0 ? $" [{BaseAGI:0.##} {(exAGI >= 0 ? "+" : "-")} {Math.Abs(exAGI):0.##}]" : "") + (showGrowth ? $"（{(AGIGrowth >= 0 ? "+" : "-")}{Math.Abs(AGIGrowth)}/Lv）" : ""));
             double exINT = ExINT + ExINT2;
             builder.AppendLine($"智力：{INT:0.##}" + (exINT != 0 ? $" [{BaseINT:0.##} {(exINT >= 0 ? "+" : "-")} {Math.Abs(exINT):0.##}]" : "") + (showGrowth ? $"（{(INTGrowth >= 0 ? "+" : "-")}{Math.Abs(INTGrowth)}/Lv）" : ""));
-            builder.AppendLine($"生命回复：{HR:0.##}" + (ExHR != 0 ? $" [{InitialHR + STR * General.GameplayEquilibriumConstant.STRtoHRFactor:0.##} {(ExHR >= 0 ? "+" : "-")} {Math.Abs(ExHR):0.##}]" : ""));
-            builder.AppendLine($"魔法回复：{MR:0.##}" + (ExMR != 0 ? $" [{InitialMR + INT * General.GameplayEquilibriumConstant.INTtoMRFactor:0.##} {(ExMR >= 0 ? "+" : "-")} {Math.Abs(ExMR):0.##}]" : ""));
+            builder.AppendLine($"生命回复：{HR:0.##}" + (ExHR != 0 ? $" [{InitialHR + STR * GameplayEquilibriumConstant.STRtoHRFactor:0.##} {(ExHR >= 0 ? "+" : "-")} {Math.Abs(ExHR):0.##}]" : ""));
+            builder.AppendLine($"魔法回复：{MR:0.##}" + (ExMR != 0 ? $" [{InitialMR + INT * GameplayEquilibriumConstant.INTtoMRFactor:0.##} {(ExMR >= 0 ? "+" : "-")} {Math.Abs(ExMR):0.##}]" : ""));
             builder.AppendLine($"暴击率：{CritRate * 100:0.##}%");
             builder.AppendLine($"暴击伤害：{CritDMG * 100:0.##}%");
             builder.AppendLine($"闪避率：{EvadeRate * 100:0.##}%");
@@ -1714,8 +1718,8 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"加速系数：{AccelerationCoefficient * 100:0.##}%");
             builder.AppendLine($"物理穿透：{PhysicalPenetration * 100:0.##}%");
             builder.AppendLine($"魔法穿透：{MagicalPenetration * 100:0.##}%");
-            builder.AppendLine($"魔法消耗减少：{INT * General.GameplayEquilibriumConstant.INTtoCastMPReduce * 100:0.##}%");
-            builder.AppendLine($"能量消耗减少：{INT * General.GameplayEquilibriumConstant.INTtoCastEPReduce * 100:0.##}%");
+            builder.AppendLine($"魔法消耗减少：{INT * GameplayEquilibriumConstant.INTtoCastMPReduce * 100:0.##}%");
+            builder.AppendLine($"能量消耗减少：{INT * GameplayEquilibriumConstant.INTtoCastEPReduce * 100:0.##}%");
 
             if (EquipSlot.Any())
             {
@@ -1915,8 +1919,8 @@ namespace Milimoe.FunGame.Core.Entity
             Item? s = UnEquip(EquipSlotType.Shoes);
             Item? ac1 = UnEquip(EquipSlotType.Accessory1);
             Item? ac2 = UnEquip(EquipSlotType.Accessory2);
-            List<Skill> skills = new(Skills);
-            List<Item> items = new(Items);
+            List<Skill> skills = [.. Skills];
+            List<Item> items = [.. Items];
             Character c = original.Copy();
             List<Effect> effects = [.. Effects];
             foreach (Effect e in effects)

@@ -1,3 +1,5 @@
+using Milimoe.FunGame.Core.Entity;
+
 namespace Milimoe.FunGame.Core.Model
 {
     /// <summary>
@@ -14,6 +16,11 @@ namespace Milimoe.FunGame.Core.Model
         /// 游戏材料名称（第二货币）
         /// </summary>
         public string InGameMaterial { get; set; } = "材料";
+        
+        /// <summary>
+        /// 游戏时间名称（如技能冷却、硬直）
+        /// </summary>
+        public string InGameTime { get; set; } = "时间";
 
         /// <summary>
         /// 晋升点数上限
@@ -258,5 +265,37 @@ namespace Milimoe.FunGame.Core.Model
         /// 每 1 点敏捷增加闪避率
         /// </summary>
         public double AGItoEvadeRateMultiplier { get; set; } = 0.00175;
+
+        /// <summary>
+        /// 造成伤害获得能量值因子
+        /// </summary>
+        public double DamageGetEPFactor { get; set; } = 0.03;
+
+        /// <summary>
+        /// 造成伤害获得能量值上限
+        /// </summary>
+        public double DamageGetEPMax { get; set; } = 30;
+
+        /// <summary>
+        /// 受到伤害获得能量值因子
+        /// </summary>
+        public double TakenDamageGetEPFactor { get; set; } = 0.015;
+
+        /// <summary>
+        /// 受到伤害获得能量值上限
+        /// </summary>
+        public double TakenDamageGetEPMax { get; set; } = 15;
+
+        /// <summary>
+        /// 应用此游戏平衡常数给实体
+        /// </summary>
+        /// <param name="entities"></param>
+        public void SetEquilibriumConstant(params BaseEntity[] entities)
+        {
+            foreach (BaseEntity entity in entities)
+            {
+                entity.GameplayEquilibriumConstant = this;
+            }
+        }
     }
 }

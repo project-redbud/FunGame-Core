@@ -62,7 +62,7 @@ namespace Milimoe.FunGame.Core.Entity
                 description = item.Description;
             }
             Goods goods = new(id, item, stock, name, description);
-            goods.SetPrice(General.GameplayEquilibriumConstant.InGameCurrency, item.Price);
+            goods.SetPrice(GameplayEquilibriumConstant.InGameCurrency, item.Price);
             Goods.Add(id, goods);
         }
 
@@ -97,7 +97,7 @@ namespace Milimoe.FunGame.Core.Entity
             double price = 0;
             if (Goods.TryGetValue(id, out Goods? goods) && goods != null)
             {
-                goods.GetPrice(General.GameplayEquilibriumConstant.InGameCurrency, out price);
+                goods.GetPrice(GameplayEquilibriumConstant.InGameCurrency, out price);
             }
             return price;
         }

@@ -20,11 +20,11 @@ namespace Milimoe.FunGame.Core.Entity
                 List<string> awards = [];
                 if (CreditsAward > 0)
                 {
-                    awards.Add($"{General.GameplayEquilibriumConstant.InGameCurrency} * {CreditsAward}");
+                    awards.Add($"{GameplayEquilibriumConstant.InGameCurrency} * {CreditsAward}");
                 }
                 if (MaterialsAward > 0)
                 {
-                    awards.Add($"{General.GameplayEquilibriumConstant.InGameMaterial} * {MaterialsAward}");
+                    awards.Add($"{GameplayEquilibriumConstant.InGameMaterial} * {MaterialsAward}");
                 }
                 foreach (Item item in Awards)
                 {

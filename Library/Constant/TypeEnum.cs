@@ -680,7 +680,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
         PreCastSkill,
         CastSkill,
         CastSuperSkill,
-        UseItem
+        UseItem,
+        EndTurn
     }
 
     public enum VerifyCodeType

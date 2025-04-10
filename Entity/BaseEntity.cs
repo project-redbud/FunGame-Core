@@ -1,5 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Entity
 {
@@ -24,6 +25,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 实体的当前状态（关联数据库操作）
         /// </summary>
         public EntityState EntityState { get; set; } = EntityState.Unchanged;
+
+        /// <summary>
+        /// 实体所用的游戏平衡常数
+        /// </summary>
+        public EquilibriumConstant GameplayEquilibriumConstant { get; set; } = General.GameplayEquilibriumConstant;
 
         /// <summary>
         /// 比较两个实体是否相同
