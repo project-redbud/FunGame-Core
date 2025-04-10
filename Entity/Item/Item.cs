@@ -307,7 +307,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 局内使用物品触发
         /// </summary>
         /// <returns></returns>
-        public bool UseItem(IGamingQueue queue, Character character, List<Character> enemys, List<Character> teammates)
+        public async Task<bool> UseItem(IGamingQueue queue, Character character, List<Character> enemys, List<Character> teammates)
         {
             bool cancel = false;
             bool used = false;
@@ -318,7 +318,7 @@ namespace Milimoe.FunGame.Core.Entity
             }
             if (result && Skills.Active != null)
             {
-                used = queue.UseItem(this, character, enemys, teammates);
+                used = await queue.UseItemAsync(this, character, enemys, teammates);
             }
             if (used)
             {
