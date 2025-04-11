@@ -70,7 +70,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// </summary>
         /// <param name="character"></param>
         /// <returns></returns>
-        public bool ProcessTurn(Character character);
+        public Task<bool> ProcessTurnAsync(Character character);
 
         /// <summary>
         /// 造成伤害
@@ -82,8 +82,8 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="isMagicDamage"></param>
         /// <param name="magicType"></param>
         /// <param name="damageResult"></param>
-        public void DamageToEnemy(Character actor, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage = false, MagicType magicType = MagicType.None, DamageResult damageResult = DamageResult.Normal);
-
+        public Task DamageToEnemyAsync(Character actor, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage = false, MagicType magicType = MagicType.None, DamageResult damageResult = DamageResult.Normal);
+        
         /// <summary>
         /// 治疗一个目标
         /// </summary>
@@ -91,8 +91,8 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="target"></param>
         /// <param name="heal"></param>
         /// <param name="canRespawn"></param>
-        public void HealToTarget(Character actor, Character target, double heal, bool canRespawn = false);
-
+        public Task HealToTargetAsync(Character actor, Character target, double heal, bool canRespawn = false);
+        
         /// <summary>
         /// 计算物理伤害
         /// </summary>
@@ -121,14 +121,14 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// </summary>
         /// <param name="killer"></param>
         /// <param name="death"></param>
-        public void DeathCalculation(Character killer, Character death);
+        public Task DeathCalculationAsync(Character killer, Character death);
 
         /// <summary>
         /// 打断施法
         /// </summary>
         /// <param name="caster"></param>
         /// <param name="interrupter"></param>
-        public void InterruptCasting(Character caster, Character interrupter);
+        public Task InterruptCastingAsync(Character caster, Character interrupter);
 
         /// <summary>
         /// 使用物品
@@ -138,7 +138,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
         /// <returns></returns>
-        public bool UseItem(Item item, Character caster, List<Character> enemys, List<Character> teammates);
+        public Task<bool> UseItemAsync(Item item, Character caster, List<Character> enemys, List<Character> teammates);
 
         /// <summary>
         /// 选取技能目标
@@ -148,7 +148,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
         /// <returns></returns>
-        public List<Character> SelectTargets(Character caster, Skill skill, List<Character> enemys, List<Character> teammates);
+        public Task<List<Character>> SelectTargetsAsync(Character caster, Skill skill, List<Character> enemys, List<Character> teammates);
 
         /// <summary>
         /// 选取普通攻击目标
@@ -158,6 +158,6 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
         /// <returns></returns>
-        public List<Character> SelectTargets(Character character, NormalAttack attack, List<Character> enemys, List<Character> teammates);
+        public Task<List<Character>> SelectTargetsAsync(Character character, NormalAttack attack, List<Character> enemys, List<Character> teammates);
     }
 }

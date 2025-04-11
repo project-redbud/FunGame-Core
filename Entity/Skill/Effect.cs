@@ -420,7 +420,7 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 对敌人造成技能伤害 [ 强烈建议使用此方法造成伤害而不是自行调用 <see cref="IGamingQueue.DamageToEnemy"/> ]
+        /// 对敌人造成技能伤害 [ 强烈建议使用此方法造成伤害而不是自行调用 <see cref="IGamingQueue.DamageToEnemyAsync"/> ]
         /// </summary>
         /// <param name="actor"></param>
         /// <param name="enemy"></param>
@@ -432,12 +432,12 @@ namespace Milimoe.FunGame.Core.Entity
         {
             if (GamingQueue is null) return DamageResult.Evaded;
             DamageResult result = !isMagic ? GamingQueue.CalculatePhysicalDamage(actor, enemy, false, expectedDamage, out double damage) : GamingQueue.CalculateMagicalDamage(actor, enemy, false, MagicType, expectedDamage, out damage);
-            GamingQueue.DamageToEnemy(actor, enemy, damage, false, isMagic, magicType, result);
+            GamingQueue.DamageToEnemyAsync(actor, enemy, damage, false, isMagic, magicType, result);
             return result;
         }
 
         /// <summary>
-        /// 治疗一个目标 [ 强烈建议使用此方法而不是自行调用 <see cref="IGamingQueue.HealToTarget"/> ]
+        /// 治疗一个目标 [ 强烈建议使用此方法而不是自行调用 <see cref="IGamingQueue.HealToTargetAsync"/> ]
         /// </summary>
         /// <param name="actor"></param>
         /// <param name="target"></param>
@@ -445,17 +445,17 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="canRespawn"></param>
         public void HealToTarget(Character actor, Character target, double heal, bool canRespawn = false)
         {
-            GamingQueue?.HealToTarget(actor, target, heal, canRespawn);
+            GamingQueue?.HealToTargetAsync(actor, target, heal, canRespawn);
         }
 
         /// <summary>
-        /// 打断施法 [ 尽可能的调用此方法而不是直接调用 <see cref="IGamingQueue.InterruptCasting"/>，以防止中断性变更 ]
+        /// 打断施法 [ 尽可能的调用此方法而不是直接调用 <see cref="IGamingQueue.InterruptCastingAsync"/>，以防止中断性变更 ]
         /// </summary>
         /// <param name="caster"></param>
         /// <param name="interrupter"></param>
         public void InterruptCasting(Character caster, Character interrupter)
         {
-            GamingQueue?.InterruptCasting(caster, interrupter);
+            GamingQueue?.InterruptCastingAsync(caster, interrupter);
         }
 
         /// <summary>
