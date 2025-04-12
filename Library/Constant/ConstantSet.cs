@@ -151,8 +151,6 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /**
          * UserCenter
          */
-        public const string UserCenter_GetUserProfile = "UserCenter::GetUserProfile";
-        public const string UserCenter_GetUserStatistics = "UserCenter::GetUserStatistics";
         public const string UserCenter_UpdateUser = "UserCenter::UpdateUser";
         public const string UserCenter_UpdatePassword = "UserCenter::UpdatePassword";
         public const string UserCenter_DailySignIn = "UserCenter::DailySignIn";
@@ -163,7 +161,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string Inventory_GetMarket = "Inventory::GetMarket";
         public const string Inventory_StoreBuy = "Inventory::StoreBuy";
         public const string Inventory_MarketBuy = "Inventory::MarketBuy";
-        public const string Inventory_GetInventory = "Inventory::GetInventory";
+        public const string Inventory_UpdateInventory = "Inventory::UpdateInventory";
         public const string Inventory_Use = "Inventory::Use";
         public const string Inventory_StoreSell = "Inventory::StoreSell";
         public const string Inventory_MarketSell = "Inventory::MarketSell";
@@ -200,8 +198,6 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 DataRequestType.Room_UpdateRoomSettings => Room_UpdateRoomSettings,
                 DataRequestType.Room_GetRoomPlayerCount => Room_GetRoomPlayerCount,
                 DataRequestType.Room_UpdateRoomMaster => Room_UpdateRoomMaster,
-                DataRequestType.UserCenter_GetUserProfile => UserCenter_GetUserProfile,
-                DataRequestType.UserCenter_GetUserStatistics => UserCenter_GetUserStatistics,
                 DataRequestType.UserCenter_UpdateUser => UserCenter_UpdateUser,
                 DataRequestType.UserCenter_UpdatePassword => UserCenter_UpdatePassword,
                 DataRequestType.UserCenter_DailySignIn => UserCenter_DailySignIn,
@@ -209,7 +205,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 DataRequestType.Inventory_GetMarket => Inventory_GetMarket,
                 DataRequestType.Inventory_StoreBuy => Inventory_StoreBuy,
                 DataRequestType.Inventory_MarketBuy => Inventory_MarketBuy,
-                DataRequestType.Inventory_GetInventory => Inventory_GetInventory,
+                DataRequestType.Inventory_UpdateInventory => Inventory_UpdateInventory,
                 DataRequestType.Inventory_Use => Inventory_Use,
                 DataRequestType.Inventory_StoreSell => Inventory_StoreSell,
                 DataRequestType.Inventory_MarketSell => Inventory_MarketSell,

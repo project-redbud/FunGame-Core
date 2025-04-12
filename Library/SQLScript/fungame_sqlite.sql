@@ -260,6 +260,23 @@ CREATE TABLE UserLogs (
 );
 
 -- ----------------------------
+-- Table structure for UserProfiles
+-- ----------------------------
+DROP TABLE IF EXISTS "main"."UserProfiles";
+CREATE TABLE UserProfile (
+ UserId INTEGER NOT NULL DEFAULT 0,
+ AvatarUrl TEXT NOT NULL DEFAULT '',
+ Signature TEXT NOT NULL DEFAULT '',
+ Gender TEXT NOT NULL DEFAULT '',
+ BirthDay DATETIME DEFAULT NULL,
+ Followers INTEGER NOT NULL DEFAULT 0,
+ Following INTEGER NOT NULL DEFAULT 0,
+ Title TEXT NOT NULL DEFAULT '',
+ UserGroup TEXT NOT NULL DEFAULT '',
+ PRIMARY KEY (UserId)
+);
+
+-- ----------------------------
 -- Table structure for Users
 -- ----------------------------
 DROP TABLE IF EXISTS "main"."Users";

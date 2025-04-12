@@ -273,6 +273,23 @@ CREATE TABLE `UserLogs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
+-- Table structure for UserProfiles
+-- ----------------------------
+DROP TABLE IF EXISTS `UserProfiles`;
+CREATE TABLE `UserProfile` (
+ `UserId` bigint(20) NOT NULL DEFAULT '0',
+ `AvatarUrl` varchar(255) NOT NULL DEFAULT '',
+ `Signature` varchar(255) NOT NULL DEFAULT '',
+ `Gender` varchar(255) NOT NULL DEFAULT '',
+ `BirthDay` datetime DEFAULT NULL,
+ `Followers` int(11) NOT NULL DEFAULT '0',
+ `Following` int(11) NOT NULL DEFAULT '0',
+ `Title` varchar(255) NOT NULL DEFAULT '',
+ `UserGroup` varchar(255) NOT NULL DEFAULT '',
+ PRIMARY KEY (`UserId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ----------------------------
 -- Table structure for Users
 -- ----------------------------
 DROP TABLE IF EXISTS `Users`;
