@@ -102,7 +102,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Login_Login,
         Login_GetFindPasswordVerifyCode,
         Login_UpdatePassword,
-        Room_GetRoomSettings,
+        Room_UpdateRoomSettings,
         Room_GetRoomPlayerCount,
         Room_UpdateRoomMaster,
         UserCenter_GetUserProfile,
@@ -892,5 +892,14 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// 报价接收方拒绝报价，状态转为 <see cref="OfferState.Rejected"/>（已拒绝）
         /// </summary>
         OffereeReject
+    }
+
+    public enum QueueUpdatedReason
+    {
+        None,
+        Action,
+        Special,
+        PreCastSuperSkill,
+        Respawn
     }
 }

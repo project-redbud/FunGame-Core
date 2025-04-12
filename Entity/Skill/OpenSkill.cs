@@ -110,7 +110,7 @@ namespace Milimoe.FunGame.Core.Entity
             }
         }
 
-        public override IEnumerable<Effect> AddInactiveEffectToCharacter()
+        public override IEnumerable<Effect> AddPassiveEffectToCharacter()
         {
             return Effects;
         }

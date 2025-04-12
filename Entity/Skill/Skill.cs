@@ -9,7 +9,7 @@ namespace Milimoe.FunGame.Core.Entity
     /// <summary>
     /// 与 <see cref="Character"/> 不同，构造技能时，建议继承此类再构造
     /// </summary>
-    public class Skill : BaseEntity, IActiveEnable
+    public class Skill : BaseEntity, ISkill, IActiveEnable
     {
         /// <summary>
         /// 唯一标识符 [ 只有物品技能需要赋值，用于表示与其关联的物品：<see cref="Item.Guid"/> ]
@@ -253,7 +253,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             if (!IsActive && Level > 0)
             {
-                foreach (Effect e in AddInactiveEffectToCharacter())
+                foreach (Effect e in AddPassiveEffectToCharacter())
                 {
                     e.GamingQueue = GamingQueue;
                     if (Character != null && !Character.Effects.Contains(e))
@@ -374,7 +374,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 被动技能，需要重写此方法，返回被动特效给角色 [ 此方法会在技能学习时触发 ]
         /// </summary>
         /// <returns></returns>
-        public virtual IEnumerable<Effect> AddInactiveEffectToCharacter()
+        public virtual IEnumerable<Effect> AddPassiveEffectToCharacter()
         {
             return [];
         }

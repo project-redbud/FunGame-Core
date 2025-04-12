@@ -145,7 +145,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /**
          * Room
          */
-        public const string Room_GetRoomSettings = "Room::GetRoomSettings";
+        public const string Room_UpdateRoomSettings = "Room::UpdateRoomSettings";
         public const string Room_GetRoomPlayerCount = "Room::GetRoomPlayerCount";
         public const string Room_UpdateRoomMaster = "Room::UpdateRoomMaster";
         /**
@@ -197,7 +197,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 DataRequestType.Login_Login => Login_Login,
                 DataRequestType.Login_GetFindPasswordVerifyCode => Login_GetFindPasswordVerifyCode,
                 DataRequestType.Login_UpdatePassword => Login_UpdatePassword,
-                DataRequestType.Room_GetRoomSettings => Room_GetRoomSettings,
+                DataRequestType.Room_UpdateRoomSettings => Room_UpdateRoomSettings,
                 DataRequestType.Room_GetRoomPlayerCount => Room_GetRoomPlayerCount,
                 DataRequestType.Room_UpdateRoomMaster => Room_UpdateRoomMaster,
                 DataRequestType.UserCenter_GetUserProfile => UserCenter_GetUserProfile,

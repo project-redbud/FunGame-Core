@@ -218,7 +218,7 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 if (!skill.IsActive && skill.Level > 0)
                 {
-                    foreach (Effect e in skill.AddInactiveEffectToCharacter())
+                    foreach (Effect e in skill.AddPassiveEffectToCharacter())
                     {
                         e.GamingQueue = skill.GamingQueue;
                         if (Character != null && !Character.Effects.Contains(e))

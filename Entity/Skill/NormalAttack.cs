@@ -5,7 +5,7 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Entity
 {
-    public class NormalAttack(Character character, bool isMagic = false, MagicType magicType = MagicType.None) : BaseEntity
+    public class NormalAttack(Character character, bool isMagic = false, MagicType magicType = MagicType.None) : BaseEntity, ISkill
     {
         /// <summary>
         /// 普通攻击名称
@@ -56,6 +56,31 @@ namespace Milimoe.FunGame.Core.Entity
         /// 硬直时间
         /// </summary>
         public double HardnessTime { get; set; } = 10;
+
+        /// <summary>
+        /// 可选取自身
+        /// </summary>
+        public bool CanSelectSelf { get; set; } = false;
+
+        /// <summary>
+        /// 可选取敌对角色
+        /// </summary>
+        public bool CanSelectEnemy { get; set; } = true;
+
+        /// <summary>
+        /// 可选取友方角色
+        /// </summary>
+        public bool CanSelectTeammate { get; set; } = false;
+
+        /// <summary>
+        /// 可选取的作用目标数量
+        /// </summary>
+        public int CanSelectTargetCount { get; set; } = 1;
+
+        /// <summary>
+        /// 可选取的作用范围
+        /// </summary>
+        public double CanSelectTargetRange { get; set; } = 0;
 
         /// <summary>
         /// 对目标（或多个目标）发起普通攻击
