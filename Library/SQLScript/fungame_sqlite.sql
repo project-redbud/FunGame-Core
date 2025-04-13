@@ -263,7 +263,7 @@ CREATE TABLE UserLogs (
 -- Table structure for UserProfiles
 -- ----------------------------
 DROP TABLE IF EXISTS "main"."UserProfiles";
-CREATE TABLE UserProfile (
+CREATE TABLE UserProfiles (
  UserId INTEGER NOT NULL DEFAULT 0,
  AvatarUrl TEXT NOT NULL DEFAULT '',
  Signature TEXT NOT NULL DEFAULT '',

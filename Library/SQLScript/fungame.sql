@@ -276,7 +276,7 @@ CREATE TABLE `UserLogs` (
 -- Table structure for UserProfiles
 -- ----------------------------
 DROP TABLE IF EXISTS `UserProfiles`;
-CREATE TABLE `UserProfile` (
+CREATE TABLE `UserProfiles` (
  `UserId` bigint(20) NOT NULL DEFAULT '0',
  `AvatarUrl` varchar(255) NOT NULL DEFAULT '',
  `Signature` varchar(255) NOT NULL DEFAULT '',

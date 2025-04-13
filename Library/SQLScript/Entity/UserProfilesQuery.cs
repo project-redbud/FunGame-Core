@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Api.Transmittal;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
 {
@@ -23,20 +24,13 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             return $"{Select_UserProfiles} {Command_Where} {Column_UserId} = @UserId";
         }
 
-        public static string Insert_UserProfile(SQLHelper SQLHelper, long UserId, string AvatarUrl, string Signature, string Gender, DateTime BirthDay, int Followers, int Following, string Title, string UserGroup)
+        public static string Insert_UserProfile(SQLHelper SQLHelper, long UserId)
         {
             SQLHelper.Parameters["@UserId"] = UserId;
-            SQLHelper.Parameters["@AvatarUrl"] = AvatarUrl;
-            SQLHelper.Parameters["@Signature"] = Signature;
-            SQLHelper.Parameters["@Gender"] = Gender;
-            SQLHelper.Parameters["@BirthDay"] = BirthDay;
-            SQLHelper.Parameters["@Followers"] = Followers;
-            SQLHelper.Parameters["@Following"] = Following;
-            SQLHelper.Parameters["@Title"] = Title;
-            SQLHelper.Parameters["@UserGroup"] = UserGroup;
+            SQLHelper.Parameters["@BirthDay"] = General.DefaultTime;
 
-            return $"{Command_Insert} {Command_Into} {TableName} ({Column_UserId}, {Column_AvatarUrl}, {Column_Signature}, {Column_Gender}, {Column_BirthDay}, {Column_Followers}, {Column_Following}, {Column_Title}, {Column_UserGroup}) " +
-                   $"{Command_Values} (@UserId, @AvatarUrl, @Signature, @Gender, @BirthDay, @Followers, @Following, @Title, @UserGroup)";
+            return $"{Command_Insert} {Command_Into} {TableName} ({Column_UserId}, {Column_BirthDay}) " +
+                   $"{Command_Values} (@UserId, @BirthDay)";
         }
 
         public static string Update_UserProfile(SQLHelper SQLHelper, long UserId, string AvatarUrl, string Signature, string Gender, DateTime BirthDay, int Followers, int Following, string Title, string UserGroup)
