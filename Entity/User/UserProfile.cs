@@ -42,6 +42,6 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 用户组
         /// </summary>
-        public string Group { get; set; } = "";
+        public string UserGroup { get; set; } = "";
     }
 }

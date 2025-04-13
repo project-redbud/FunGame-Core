@@ -415,7 +415,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             if (drRoom != null)
             {
                 long id = (long)drRoom[RoomQuery.Column_ID];
-                string roomid = (string)drRoom[RoomQuery.Column_RoomID];
+                string roomid = (string)drRoom[RoomQuery.Column_Roomid];
                 if (!DateTime.TryParse(drRoom[RoomQuery.Column_CreateTime].ToString(), out DateTime createTime))
                 {
                     createTime = General.DefaultTime;
@@ -450,7 +450,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 foreach (DataRow drRoom in dsRoom.Tables[0].Rows)
                 {
                     long Id = (long)drRoom[RoomQuery.Column_ID];
-                    string Roomid = (string)drRoom[RoomQuery.Column_RoomID];
+                    string Roomid = (string)drRoom[RoomQuery.Column_Roomid];
                     if (!DateTime.TryParse(drRoom[RoomQuery.Column_CreateTime].ToString(), out DateTime createTime))
                     {
                         createTime = General.DefaultTime;

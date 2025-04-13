@@ -21,7 +21,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case RoomQuery.Column_ID:
                     result.Id = reader.GetInt64();
                     break;
-                case RoomQuery.Column_RoomID:
+                case RoomQuery.Column_Roomid:
                     result.Roomid = reader.GetString() ?? "";
                     break;
                 case RoomQuery.Column_CreateTime:
@@ -60,7 +60,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
         {
             writer.WriteStartObject();
             writer.WriteNumber(RoomQuery.Column_ID, value.Id);
-            writer.WriteString(RoomQuery.Column_RoomID, value.Roomid);
+            writer.WriteString(RoomQuery.Column_Roomid, value.Roomid);
             writer.WriteString(RoomQuery.Column_CreateTime, value.CreateTime.ToString(General.GeneralDateTimeFormat));
             writer.WritePropertyName(RoomQuery.Column_RoomMaster);
             JsonSerializer.Serialize(writer, value.RoomMaster, options);
