@@ -49,8 +49,8 @@ namespace Milimoe.FunGame.Core.Model
             Gaming instance = new(module, room, user, users);
             // 读取模组的依赖集合
             module.GameModuleDepend.GetDependencies(loader);
-            // 新建线程来启动模组的界面
-            TaskUtility.NewTask(() => module.StartUI());
+            // 启动模组的界面
+            module.StartUI();
             // 启动模组主线程
             module.StartGame(instance, args);
             return instance;
