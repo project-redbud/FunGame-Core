@@ -573,12 +573,6 @@ namespace Milimoe.FunGame.Core.Model
                 return _isGameEnd;
             }
 
-            List<Effect> effects = [.. character.Effects.Where(e => e.Level > 0)];
-            foreach (Effect effect in effects)
-            {
-                effect.OnTurnStart(character);
-            }
-
             // 基础硬直时间
             double baseTime = 10;
             bool isCheckProtected = true;
@@ -598,9 +592,21 @@ namespace Milimoe.FunGame.Core.Model
                 i.Skills.Active.SkillType == SkillType.Item && i.Skills.Active.Enable && !i.Skills.Active.IsInEffect && i.Skills.Active.CurrentCD == 0 && i.Skills.Active.RealMPCost <= character.MP && i.Skills.Active.RealEPCost <= character.EP)];
 
             // 回合开始事件，允许事件返回 false 接管回合操作
+            // 如果事件全程接管回合操作，需要注意触发特效
             if (!await OnTurnStartAsync(character, enemys, teammates, skills, items))
             {
                 return _isGameEnd;
+            }
+
+            foreach (Skill skillTurnStart in skills)
+            {
+                skillTurnStart.OnTurnStart(character, enemys, teammates, skills, items);
+            }
+
+            List<Effect> effects = [.. character.Effects.Where(e => e.Level > 0)];
+            foreach (Effect effect in effects)
+            {
+                effect.OnTurnStart(character, enemys, teammates, skills, items);
             }
 
             // 此变量用于在取消选择时，能够重新行动
@@ -648,77 +654,84 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     if (character.CharacterState != CharacterState.NotActionable && character.CharacterState != CharacterState.Casting && character.CharacterState != CharacterState.PreCastSuperSkill)
                     {
-                        // 模组可以通过以下事件来决定角色的行动
+                        // 根据角色状态，设置一些参数
+                        if (character.CharacterState == CharacterState.Actionable)
+                        {
+                            // 可以任意行动
+                            if (canUseItem && canCastSkill)
+                            {
+                                // 不做任何处理
+                            }
+                            else if (canUseItem && !canCastSkill)
+                            {
+                                pCastSkill = 0;
+                            }
+                            else if (!canUseItem && canCastSkill)
+                            {
+                                pUseItem = 0;
+                            }
+                            else
+                            {
+                                pUseItem = 0;
+                                pCastSkill = 0;
+                            }
+                        }
+                        else if (character.CharacterState == CharacterState.ActionRestricted)
+                        {
+                            // 行动受限，只能使用特殊物品
+                            if (canUseItem)
+                            {
+                                pCastSkill = 0;
+                                pNormalAttack = 0;
+                            }
+                            else
+                            {
+                                pUseItem = 0;
+                                pCastSkill = 0;
+                                pNormalAttack = 0;
+                            }
+                        }
+                        else if (character.CharacterState == CharacterState.BattleRestricted)
+                        {
+                            // 战斗不能，只能使用物品
+                            enemys.Clear();
+                            teammates.Clear();
+                            skills.Clear();
+                            if (canUseItem)
+                            {
+                                pCastSkill = 0;
+                                pNormalAttack = 0;
+                            }
+                            else
+                            {
+                                pUseItem = 0;
+                                pCastSkill = 0;
+                                pNormalAttack = 0;
+                            }
+                        }
+                        else if (character.CharacterState == CharacterState.SkillRestricted)
+                        {
+                            // 技能受限，无法使用技能，可以普通攻击，可以使用物品
+                            skills.Clear();
+                            if (canUseItem)
+                            {
+                                pCastSkill = 0;
+                            }
+                            else
+                            {
+                                pUseItem = 0;
+                                pCastSkill = 0;
+                            }
+                        }
+
+                        // 模组可以通过此事件来决定角色的行动
                         type = await OnDecideActionAsync(character, enemys, teammates, skills, items);
+                        // 若事件未完成决策，则将通过概率对角色进行自动化决策
                         if (type == CharacterActionType.None)
                         {
-                            // 若事件未完成决策，则将通过概率对角色进行自动化决策
-                            if (character.CharacterState == CharacterState.Actionable)
-                            {
-                                // 可以任意行动
-                                if (canUseItem && canCastSkill)
-                                {
-                                    // 不做任何处理
-                                }
-                                else if (canUseItem && !canCastSkill)
-                                {
-                                    pCastSkill = 0;
-                                }
-                                else if (!canUseItem && canCastSkill)
-                                {
-                                    pUseItem = 0;
-                                }
-                                else
-                                {
-                                    pUseItem = 0;
-                                    pCastSkill = 0;
-                                }
-                            }
-                            else if (character.CharacterState == CharacterState.ActionRestricted)
-                            {
-                                // 行动受限，只能使用特殊物品
-                                if (canUseItem)
-                                {
-                                    pCastSkill = 0;
-                                    pNormalAttack = 0;
-                                }
-                                else
-                                {
-                                    pUseItem = 0;
-                                    pCastSkill = 0;
-                                    pNormalAttack = 0;
-                                }
-                            }
-                            else if (character.CharacterState == CharacterState.BattleRestricted)
-                            {
-                                // 战斗不能，只能使用物品
-                                if (canUseItem)
-                                {
-                                    pCastSkill = 0;
-                                    pNormalAttack = 0;
-                                }
-                                else
-                                {
-                                    pUseItem = 0;
-                                    pCastSkill = 0;
-                                    pNormalAttack = 0;
-                                }
-                            }
-                            else if (character.CharacterState == CharacterState.SkillRestricted)
-                            {
-                                // 技能受限，无法使用技能，可以使用物品
-                                if (canUseItem)
-                                {
-                                    pCastSkill = 0;
-                                }
-                                else
-                                {
-                                    pUseItem = 0;
-                                    pCastSkill = 0;
-                                }
-                            }
                             type = GetActionType(pUseItem, pCastSkill, pNormalAttack);
                         }
+
                         _stats[character].ActionTurn += 1;
                     }
                     else if (character.CharacterState == CharacterState.Casting)
@@ -733,7 +746,7 @@ namespace Milimoe.FunGame.Core.Model
                     }
                     else
                     {
-                        WriteLine("[ " + character + $" ] 完全行动不能！");
+                        // 完全行动不能
                         type = CharacterActionType.None;
                     }
                 }
@@ -768,7 +781,7 @@ namespace Milimoe.FunGame.Core.Model
                         LastRound.Targets = [.. targets];
                         decided = true;
 
-                        await OnCharacterActingAsync(character, CharacterActionType.NormalAttack, targets);
+                        await OnCharacterNormalAttackAsync(character, targets);
 
                         character.NormalAttack.Attack(this, character, targets);
                         baseTime = character.NormalAttack.HardnessTime;
@@ -805,7 +818,7 @@ namespace Milimoe.FunGame.Core.Model
 
                                 character.CharacterState = CharacterState.Casting;
                                 SkillTarget skillTarget = new(skill, targets);
-                                await OnCharacterActingAsync(character, CharacterActionType.PreCastSkill, skillTarget);
+                                await OnCharacterPreCastSkillAsync(character, skillTarget);
 
                                 _castingSkills.Add(character, skillTarget);
                                 baseTime = skill.CastTime;
@@ -829,7 +842,7 @@ namespace Milimoe.FunGame.Core.Model
                                     decided = true;
 
                                     SkillTarget skillTarget = new(skill, targets);
-                                    await OnCharacterActingAsync(character, CharacterActionType.PreCastSkill, skillTarget);
+                                    await OnCharacterPreCastSkillAsync(character, skillTarget);
 
                                     skill.OnSkillCasting(this, character, targets);
                                     skill.BeforeSkillCasted();
@@ -841,7 +854,7 @@ namespace Milimoe.FunGame.Core.Model
                                     LastRound.SkillCost = $"{-cost:0.##} EP";
                                     WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
 
-                                    await OnCharacterActingAsync(character, CharacterActionType.CastSkill, skillTarget, cost);
+                                    await OnCharacterCastSkillAsync(character, skillTarget, cost);
 
                                     skill.OnSkillCasted(this, character, targets);
                                     effects = [.. character.Effects.Where(e => e.Level > 0)];
@@ -879,7 +892,7 @@ namespace Milimoe.FunGame.Core.Model
                         LastRound.SkillCost = $"{-cost:0.##} MP";
                         WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点魔法值，释放了魔法 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
 
-                        await OnCharacterActingAsync(character, CharacterActionType.CastSkill, skillTarget, cost);
+                        await OnCharacterCastSkillAsync(character, skillTarget, cost);
 
                         skill.OnSkillCasted(this, character, targets);
                     }
@@ -922,7 +935,7 @@ namespace Milimoe.FunGame.Core.Model
                         WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量值，释放了爆发技 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
 
                         SkillTarget skillTarget = new(skill, targets);
-                        await OnCharacterActingAsync(character, CharacterActionType.CastSkill, skillTarget, cost);
+                        await OnCharacterCastSkillAsync(character, skillTarget, cost);
 
                         skill.OnSkillCasted(this, character, targets);
                     }
@@ -968,14 +981,19 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     decided = true;
                     WriteLine("[ " + character + $" ] 结束了回合！");
-                    await OnCharacterActingAsync(character, CharacterActionType.EndTurn);
+                    await OnCharacterDoNothingAsync(character);
+                }
+                else
+                {
+                    decided = true;
+                    WriteLine("[ " + character + $" ] 完全行动不能！");
                 }
             }
 
-            if (!decided || type == CharacterActionType.None)
+            if (type == CharacterActionType.None)
             {
                 WriteLine("[ " + character + $" ] 放弃了行动！");
-                await OnCharacterActingAsync(character, CharacterActionType.None);
+                await OnCharacterGiveUpAsync(character);
             }
 
             LastRound.ActionType = type;
@@ -1002,7 +1020,7 @@ namespace Milimoe.FunGame.Core.Model
                 LastRound.CastTime = newHardnessTime;
             }
             AddCharacter(character, newHardnessTime, isCheckProtected);
-            await OnQueueUpdatedAsync(_queue, character, QueueUpdatedReason.Action, "设置角色行动后的硬直时间。");
+            await OnQueueUpdatedAsync(_queue, character, newHardnessTime, QueueUpdatedReason.Action, "设置角色行动后的硬直时间。");
             LastRound.HardnessTime = newHardnessTime;
 
             effects = [.. character.Effects.Where(e => e.Level > 0)];
@@ -1107,19 +1125,19 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     character.HP += reallyReHP;
                     character.MP += reallyReMP;
-                    WriteLine($"角色 {character.Name} 回血：{recoveryHP:0.##} [{character.HP:0.##} / {character.MaxHP:0.##}] / 回蓝：{recoveryMP:0.##} [{character.MP:0.##} / {character.MaxMP:0.##}]");
+                    WriteLine($"角色 {character.Name} 回血：{recoveryHP:0.##} [{character.HP:0.##} / {character.MaxHP:0.##}] / 回蓝：{recoveryMP:0.##} [{character.MP:0.##} / {character.MaxMP:0.##}] / 当前能量：{character.EP:0.##}");
                 }
                 else
                 {
                     if (reallyReHP > 0)
                     {
                         character.HP += reallyReHP;
-                        WriteLine($"角色 {character.Name} 回血：{recoveryHP:0.##} [{character.HP:0.##} / {character.MaxHP:0.##}]");
+                        WriteLine($"角色 {character.Name} 回血：{recoveryHP:0.##} [{character.HP:0.##} / {character.MaxHP:0.##}] / 当前能量：{character.EP:0.##}");
                     }
                     if (reallyReMP > 0)
                     {
                         character.MP += reallyReMP;
-                        WriteLine($"角色 {character.Name} 回蓝：{recoveryMP:0.##} [{character.MP:0.##} / {character.MaxMP:0.##}]");
+                        WriteLine($"角色 {character.Name} 回蓝：{recoveryMP:0.##} [{character.MP:0.##} / {character.MaxMP:0.##}] / 当前能量：{character.EP:0.##}");
                     }
                 }
 
@@ -2013,7 +2031,7 @@ namespace Milimoe.FunGame.Core.Model
         }
 
         /// <summary>
-        /// 是否在回合外释放爆发技插队（仅自动化）
+        /// 是否在回合外释放爆发技插队（仅自动化，手动设置请调用：<see cref="SetCharacterPreCastSuperSkill"/>）
         /// </summary>
         /// <param name="character">当前正在行动的角色</param>
         /// <returns></returns>
@@ -2218,7 +2236,7 @@ namespace Milimoe.FunGame.Core.Model
                     {
                         LastRound.Targets = [.. targets];
 
-                        await OnCharacterActingAsync(character, CharacterActionType.UseItem, item, targets);
+                        await OnCharacterUseItemAsync(character, item, targets);
 
                         string line = $"[ {character} ] 使用了物品 [ {item.Name} ]！\r\n[ {character} ] ";
 
@@ -2247,7 +2265,7 @@ namespace Milimoe.FunGame.Core.Model
                         WriteLine(line);
 
                         SkillTarget skillTarget = new(skill, targets);
-                        await OnCharacterActingAsync(character, CharacterActionType.CastSkill, skillTarget, costMP, costEP);
+                        await OnCharacterCastItemSkillAsync(character, item, skillTarget, costMP, costEP);
 
                         skill.OnSkillCasted(this, character, targets);
                         return true;
@@ -2267,7 +2285,7 @@ namespace Milimoe.FunGame.Core.Model
             character.Respawn(_original[character.Guid]);
             WriteLine($"[ {character} ] 已复活！获得 {hardnessTime} {GameplayEquilibriumConstant.InGameTime}的硬直时间。");
             AddCharacter(character, hardnessTime, false);
-            await OnQueueUpdatedAsync(_queue, character, QueueUpdatedReason.Respawn, "设置角色复活后的硬直时间。");
+            await OnQueueUpdatedAsync(_queue, character, hardnessTime, QueueUpdatedReason.Respawn, "设置角色复活后的硬直时间。");
             LastRound.Respawns.Add(character);
             _respawnCountdown.Remove(character);
             if (!_respawnTimes.TryAdd(character, 1))
@@ -2290,7 +2308,7 @@ namespace Milimoe.FunGame.Core.Model
                 _queue.Remove(character);
                 _cutCount.Remove(character);
                 AddCharacter(character, 0, false);
-                await OnQueueUpdatedAsync(_queue, character, QueueUpdatedReason.PreCastSuperSkill, "设置角色预释放爆发技的硬直时间。");
+                await OnQueueUpdatedAsync(_queue, character, 0, QueueUpdatedReason.PreCastSuperSkill, "设置角色预释放爆发技的硬直时间。");
                 WriteLine("[ " + character + " ] 预释放了爆发技！！");
                 foreach (Character c in _hardnessTimes.Keys)
                 {
@@ -2566,21 +2584,119 @@ namespace Milimoe.FunGame.Core.Model
             await (DamageToEnemy?.Invoke(this, actor, enemy, damage, isNormalAttack, isMagicDamage, magicType, damageResult) ?? Task.CompletedTask);
         }
 
-        public delegate Task CharacterActingEventHandler(ActionQueue queue, Character actor, CharacterActionType type, params object[] args);
+        public delegate Task CharacterNormalAttackEventHandler(ActionQueue queue, Character actor, List<Character> targets);
         /// <summary>
-        /// 角色行动事件
+        /// 角色普通攻击事件
         /// </summary>
-        public event CharacterActingEventHandler? CharacterActing;
+        public event CharacterNormalAttackEventHandler? CharacterNormalAttack;
         /// <summary>
-        /// 角色行动事件
+        /// 角色普通攻击事件
         /// </summary>
         /// <param name="actor"></param>
-        /// <param name="type"></param>
-        /// <param name="args"></param>
+        /// <param name="targets"></param>
         /// <returns></returns>
-        protected async Task OnCharacterActingAsync(Character actor, CharacterActionType type, params object[] args)
+        protected async Task OnCharacterNormalAttackAsync(Character actor, List<Character> targets)
         {
-            await (CharacterActing?.Invoke(this, actor, type, args) ?? Task.CompletedTask);
+            await (CharacterNormalAttack?.Invoke(this, actor, targets) ?? Task.CompletedTask);
+        }
+        
+        public delegate Task CharacterPreCastSkillEventHandler(ActionQueue queue, Character actor, SkillTarget skillTarget);
+        /// <summary>
+        /// 角色吟唱技能事件（包括直接释放战技）
+        /// </summary>
+        public event CharacterPreCastSkillEventHandler? CharacterPreCastSkill;
+        /// <summary>
+        /// 角色吟唱技能事件（包括直接释放战技）
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="skillTarget"></param>
+        /// <returns></returns>
+        protected async Task OnCharacterPreCastSkillAsync(Character actor, SkillTarget skillTarget)
+        {
+            await (CharacterPreCastSkill?.Invoke(this, actor, skillTarget) ?? Task.CompletedTask);
+        }
+        
+        public delegate Task CharacterCastSkillEventHandler(ActionQueue queue, Character actor, SkillTarget skillTarget, double cost);
+        /// <summary>
+        /// 角色释放技能事件
+        /// </summary>
+        public event CharacterCastSkillEventHandler? CharacterCastSkill;
+        /// <summary>
+        /// 角色释放技能事件
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="skillTarget"></param>
+        /// <param name="cost"></param>
+        /// <returns></returns>
+        protected async Task OnCharacterCastSkillAsync(Character actor, SkillTarget skillTarget, double cost)
+        {
+            await (CharacterCastSkill?.Invoke(this, actor, skillTarget, cost) ?? Task.CompletedTask);
+        }
+        
+        public delegate Task CharacterUseItemEventHandler(ActionQueue queue, Character actor, Item item, List<Character> targets);
+        /// <summary>
+        /// 角色使用物品事件
+        /// </summary>
+        public event CharacterUseItemEventHandler? CharacterUseItem;
+        /// <summary>
+        /// 角色使用物品事件
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="item"></param>
+        /// <param name="targets"></param>
+        /// <returns></returns>
+        protected async Task OnCharacterUseItemAsync(Character actor, Item item, List<Character> targets)
+        {
+            await (CharacterUseItem?.Invoke(this, actor, item, targets) ?? Task.CompletedTask);
+        }
+        
+        public delegate Task CharacterCastItemSkillEventHandler(ActionQueue queue, Character actor, Item item, SkillTarget skillTarget, double costMP, double costEP);
+        /// <summary>
+        /// 角色释放物品的技能事件
+        /// </summary>
+        public event CharacterCastItemSkillEventHandler? CharacterCastItemSkill;
+        /// <summary>
+        /// 角色释放物品的技能事件
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="item"></param>
+        /// <param name="skillTarget"></param>
+        /// <param name="costMP"></param>
+        /// <param name="costEP"></param>
+        /// <returns></returns>
+        protected async Task OnCharacterCastItemSkillAsync(Character actor, Item item, SkillTarget skillTarget, double costMP, double costEP)
+        {
+            await (CharacterCastItemSkill?.Invoke(this, actor, item, skillTarget, costMP, costEP) ?? Task.CompletedTask);
+        }
+        
+        public delegate Task CharacterDoNothingEventHandler(ActionQueue queue, Character actor);
+        /// <summary>
+        /// 角色主动结束回合事件（区别于放弃行动，这个是主动的）
+        /// </summary>
+        public event CharacterDoNothingEventHandler? CharacterDoNothing;
+        /// <summary>
+        /// 角色主动结束回合事件（区别于放弃行动，这个是主动的）
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <returns></returns>
+        protected async Task OnCharacterDoNothingAsync(Character actor)
+        {
+            await (CharacterDoNothing?.Invoke(this, actor) ?? Task.CompletedTask);
+        }
+        
+        public delegate Task CharacterGiveUpEventHandler(ActionQueue queue, Character actor);
+        /// <summary>
+        /// 角色放弃行动事件
+        /// </summary>
+        public event CharacterGiveUpEventHandler? CharacterGiveUp;
+        /// <summary>
+        /// 角色放弃行动事件
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <returns></returns>
+        protected async Task OnCharacterGiveUpAsync(Character actor)
+        {
+            await (CharacterGiveUp?.Invoke(this, actor) ?? Task.CompletedTask);
         }
 
         public delegate Task<bool> GameEndEventHandler(ActionQueue queue, Character winner);
@@ -2613,7 +2729,7 @@ namespace Milimoe.FunGame.Core.Model
             return await (GameEndTeam?.Invoke(this, winner) ?? Task.FromResult(true));
         }
 
-        public delegate Task QueueUpdatedEventHandler(ActionQueue queue, List<Character> characters, Character character, QueueUpdatedReason reason, string msg);
+        public delegate Task QueueUpdatedEventHandler(ActionQueue queue, List<Character> characters, Character character, double hardnessTime, QueueUpdatedReason reason, string msg);
         /// <summary>
         /// 行动顺序表更新事件
         /// </summary>
@@ -2623,12 +2739,13 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         /// <param name="characters"></param>
         /// <param name="character"></param>
+        /// <param name="hardnessTime"></param>
         /// <param name="reason"></param>
         /// <param name="msg"></param>
         /// <returns></returns>
-        protected async Task OnQueueUpdatedAsync(List<Character> characters, Character character, QueueUpdatedReason reason, string msg = "")
+        protected async Task OnQueueUpdatedAsync(List<Character> characters, Character character, double hardnessTime, QueueUpdatedReason reason, string msg = "")
         {
-            await (QueueUpdated?.Invoke(this, characters, character, reason, msg) ?? Task.CompletedTask);
+            await (QueueUpdated?.Invoke(this, characters, character, hardnessTime, reason, msg) ?? Task.CompletedTask);
         }
 
         #endregion

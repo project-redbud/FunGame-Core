@@ -276,6 +276,47 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 在技能持有者的回合开始前
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <param name="skills"></param>
+        /// <param name="items"></param>
+        public virtual void OnTurnStart(Character character, List<Character> enemys, List<Character> teammates, List<Skill> skills, List<Item> items)
+        {
+
+        }
+
+        /// <summary>
+        /// 获取可选择的目标列表
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <returns></returns>
+        public virtual List<Character> GetSelectableTargets(Character caster, List<Character> enemys, List<Character> teammates)
+        {
+            List<Character> selectable = [];
+
+            if (CanSelectSelf)
+            {
+                selectable.Add(caster);
+            }
+
+            if (CanSelectEnemy)
+            {
+                selectable.AddRange(enemys);
+            }
+            if (CanSelectTeammate)
+            {
+                selectable.AddRange(teammates);
+            }
+
+            return selectable;
+        }
+
+        /// <summary>
         /// 选取技能目标
         /// </summary>
         /// <param name="caster"></param>
@@ -284,21 +325,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <returns></returns>
         public virtual List<Character> SelectTargets(Character caster, List<Character> enemys, List<Character> teammates)
         {
-            List<Character> tobeSelected = [];
-
-            if (CanSelectSelf)
-            {
-                tobeSelected.Add(caster);
-            }
-
-            if (CanSelectEnemy)
-            {
-                tobeSelected.AddRange(enemys);
-            }
-            if (CanSelectTeammate)
-            {
-                tobeSelected.AddRange(teammates);
-            }
+            List<Character> tobeSelected = GetSelectableTargets(caster, enemys, teammates);
 
             // 筛选出符合条件的角色
             tobeSelected = [.. tobeSelected.Where(c => SelectTargetPredicates.All(f => f(c)))];

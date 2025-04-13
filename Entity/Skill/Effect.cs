@@ -288,7 +288,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 在特效持有者的回合开始前
         /// </summary>
         /// <param name="character"></param>
-        public virtual void OnTurnStart(Character character)
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <param name="skills"></param>
+        /// <param name="items"></param>
+        public virtual void OnTurnStart(Character character, List<Character> enemys, List<Character> teammates, List<Skill> skills, List<Item> items)
         {
 
         }

@@ -83,6 +83,34 @@ namespace Milimoe.FunGame.Core.Entity
         public double CanSelectTargetRange { get; set; } = 0;
 
         /// <summary>
+        /// 获取可选择的目标列表
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <returns></returns>
+        public List<Character> GetSelectableTargets(Character caster, List<Character> enemys, List<Character> teammates)
+        {
+            List<Character> selectable = [];
+
+            if (CanSelectSelf)
+            {
+                selectable.Add(caster);
+            }
+
+            if (CanSelectEnemy)
+            {
+                selectable.AddRange(enemys);
+            }
+            if (CanSelectTeammate)
+            {
+                selectable.AddRange(teammates);
+            }
+
+            return selectable;
+        }
+
+        /// <summary>
         /// 对目标（或多个目标）发起普通攻击
         /// </summary>
         /// <param name="queue"></param>

@@ -1,4 +1,6 @@
-﻿namespace Milimoe.FunGame.Core.Interface.Entity
+﻿using Milimoe.FunGame.Core.Entity;
+
+namespace Milimoe.FunGame.Core.Interface.Entity
 {
     public interface ISkill
     {
@@ -26,5 +28,13 @@
         /// </summary>
         public double CanSelectTargetRange { get; }
 
+        /// <summary>
+        /// 获取可选择的目标列表
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <returns></returns>
+        public List<Character> GetSelectableTargets(Character caster, List<Character> enemys, List<Character> teammates);
     }
 }
