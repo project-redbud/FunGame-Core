@@ -109,6 +109,11 @@ namespace Milimoe.FunGame.Core.Model
         public List<RoundRecord> Rounds { get; } = [];
 
         /// <summary>
+        /// 回合奖励
+        /// </summary>
+        public Dictionary<int, List<Skill>> RoundRewards => _roundRewards;
+
+        /// <summary>
         /// 自定义数据
         /// </summary>
         public Dictionary<string, object> CustomData { get; } = [];
@@ -207,6 +212,16 @@ namespace Milimoe.FunGame.Core.Model
         /// 当前回合死亡角色
         /// </summary>
         protected readonly List<Character> _roundDeaths = [];
+
+        /// <summary>
+        /// 回合奖励
+        /// </summary>
+        protected readonly Dictionary<int, List<Skill>> _roundRewards = [];
+
+        /// <summary>
+        /// 回合奖励的特效工厂
+        /// </summary>
+        protected Func<long, Dictionary<string, object>> _factoryRoundRewardEffects = id => [];
 
         /// <summary>
         /// 是否是团队模式
@@ -573,6 +588,9 @@ namespace Milimoe.FunGame.Core.Model
                 return _isGameEnd;
             }
 
+            // 获取回合奖励
+            List<Skill> rewards = GetRoundRewards(TotalRound, character);
+
             // 基础硬直时间
             double baseTime = 10;
             bool isCheckProtected = true;
@@ -820,7 +838,7 @@ namespace Milimoe.FunGame.Core.Model
                                 SkillTarget skillTarget = new(skill, targets);
                                 await OnCharacterPreCastSkillAsync(character, skillTarget);
 
-                                _castingSkills.Add(character, skillTarget);
+                                _castingSkills[character] = skillTarget;
                                 baseTime = skill.CastTime;
                                 skill.OnSkillCasting(this, character, targets);
                             }
@@ -852,7 +870,7 @@ namespace Milimoe.FunGame.Core.Model
                                     skill.CurrentCD = skill.RealCD;
                                     skill.Enable = false;
                                     LastRound.SkillCost = $"{-cost:0.##} EP";
-                                    WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
+                                    WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
 
                                     await OnCharacterCastSkillAsync(character, skillTarget, cost);
 
@@ -870,43 +888,51 @@ namespace Milimoe.FunGame.Core.Model
                 }
                 else if (type == CharacterActionType.CastSkill)
                 {
-                    decided = true;
-                    // 使用技能逻辑，结束吟唱状态
-                    character.CharacterState = CharacterState.Actionable;
-                    SkillTarget skillTarget = _castingSkills[character];
-                    Skill skill = skillTarget.Skill;
-                    List<Character> targets = skillTarget.Targets;
-                    LastRound.Targets = [.. targets];
-                    LastRound.Skill = skill;
-                    _castingSkills.Remove(character);
-
-                    // 判断是否能够释放技能
-                    if (CheckCanCast(character, skill, out double cost))
+                    if (_castingSkills.TryGetValue(character, out SkillTarget skillTarget))
                     {
-                        skill.BeforeSkillCasted();
+                        // 使用技能逻辑，结束吟唱状态
+                        character.CharacterState = CharacterState.Actionable;
+                        Skill skill = skillTarget.Skill;
+                        List<Character> targets = [.. skillTarget.Targets.Where(c => !c.IsUnselectable)];
 
-                        character.MP -= cost;
-                        baseTime = skill.HardnessTime;
-                        skill.CurrentCD = skill.RealCD;
-                        skill.Enable = false;
-                        LastRound.SkillCost = $"{-cost:0.##} MP";
-                        WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点魔法值，释放了魔法 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
+                        // 判断是否能够释放技能
+                        if (targets.Count > 0 && CheckCanCast(character, skill, out double cost))
+                        {
+                            decided = true;
+                            LastRound.Targets = [.. targets];
+                            LastRound.Skill = skill;
+                            _castingSkills.Remove(character);
 
-                        await OnCharacterCastSkillAsync(character, skillTarget, cost);
+                            skill.BeforeSkillCasted();
 
-                        skill.OnSkillCasted(this, character, targets);
+                            character.MP -= cost;
+                            baseTime = skill.HardnessTime;
+                            skill.CurrentCD = skill.RealCD;
+                            skill.Enable = false;
+                            LastRound.SkillCost = $"{-cost:0.##} MP";
+                            WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点魔法值，释放了魔法 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
+
+                            await OnCharacterCastSkillAsync(character, skillTarget, cost);
+
+                            skill.OnSkillCasted(this, character, targets);
+                        }
+                        else
+                        {
+                            WriteLine($"[ {character} ] 放弃释放技能！");
+                            // 放弃释放技能会获得3的硬直时间
+                            baseTime = 3;
+                        }
+
+                        effects = [.. character.Effects.Where(e => e.Level > 0)];
+                        foreach (Effect effect in effects)
+                        {
+                            effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
+                        }
                     }
                     else
                     {
-                        WriteLine("[ " + character + $" ] 放弃释放技能！");
-                        // 放弃释放技能会获得3的硬直时间
-                        baseTime = 3;
-                    }
-
-                    effects = [.. character.Effects.Where(e => e.Level > 0)];
-                    foreach (Effect effect in effects)
-                    {
-                        effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
+                        // 原吟唱的技能丢失（被打断或者被取消），允许角色再次决策
+                        character.CharacterState = CharacterState.Actionable;
                     }
                 }
                 else if (type == CharacterActionType.CastSuperSkill)
@@ -932,7 +958,7 @@ namespace Milimoe.FunGame.Core.Model
                         skill.CurrentCD = skill.RealCD;
                         skill.Enable = false;
                         LastRound.SkillCost = $"{-cost:0.##} EP";
-                        WriteLine("[ " + character + $" ] 消耗了 {cost:0.##} 点能量值，释放了爆发技 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
+                        WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点能量值，释放了爆发技 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
 
                         SkillTarget skillTarget = new(skill, targets);
                         await OnCharacterCastSkillAsync(character, skillTarget, cost);
@@ -941,7 +967,7 @@ namespace Milimoe.FunGame.Core.Model
                     }
                     else
                     {
-                        WriteLine("[ " + character + $" ] 因能量不足放弃释放爆发技！");
+                        WriteLine($"[ {character} ] 因能量不足放弃释放爆发技！");
                         // 放弃释放技能会获得3的硬直时间
                         baseTime = 3;
                     }
@@ -980,19 +1006,19 @@ namespace Milimoe.FunGame.Core.Model
                 else if (type == CharacterActionType.EndTurn)
                 {
                     decided = true;
-                    WriteLine("[ " + character + $" ] 结束了回合！");
+                    WriteLine($"[ {character} ] 结束了回合！");
                     await OnCharacterDoNothingAsync(character);
                 }
                 else
                 {
                     decided = true;
-                    WriteLine("[ " + character + $" ] 完全行动不能！");
+                    WriteLine($"[ {character} ] 完全行动不能！");
                 }
             }
 
             if (type == CharacterActionType.None)
             {
-                WriteLine("[ " + character + $" ] 放弃了行动！");
+                WriteLine($"[ {character} ] 放弃了行动！");
                 await OnCharacterGiveUpAsync(character);
             }
 
@@ -1047,6 +1073,9 @@ namespace Milimoe.FunGame.Core.Model
                     }
                 }
             }
+
+            // 移除回合奖励
+            RemoveRoundRewards(TotalRound, character, rewards);
 
             // 有人想要插队吗？
             await WillPreCastSuperSkill(character);
@@ -1793,7 +1822,7 @@ namespace Milimoe.FunGame.Core.Model
             foreach (Character caster in castingSkills)
             {
                 SkillTarget st = _castingSkills[caster];
-                if (st.Targets.Remove(death))
+                if (st.Targets.Remove(death) && st.Targets.Count == 0)
                 {
                     _castingSkills.Remove(caster);
                     if (caster.CharacterState == CharacterState.Casting)
@@ -2037,8 +2066,8 @@ namespace Milimoe.FunGame.Core.Model
         /// <returns></returns>
         public async Task WillPreCastSuperSkill(Character character)
         {
-            // 选取除了回合内角色之外的 AI 控制角色
-            foreach (Character other in _queue.Where(c => c != character && c.CharacterState == CharacterState.Actionable && _charactersInAI.Contains(c)).ToList())
+            // 选取所有 AI 控制角色
+            foreach (Character other in _queue.Where(c => c.CharacterState == CharacterState.Actionable && _charactersInAI.Contains(c)).ToList())
             {
                 // 有 65% 欲望插队
                 if (Random.Shared.NextDouble() < 0.65)
@@ -2303,7 +2332,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             if (character.CharacterState == CharacterState.Actionable)
             {
-                _castingSuperSkills.Add(character, skill);
+                _castingSuperSkills[character] = skill;
                 character.CharacterState = CharacterState.PreCastSuperSkill;
                 _queue.Remove(character);
                 _cutCount.Remove(character);
@@ -2338,6 +2367,107 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     _charactersInAI.Add(character);
                 }
+            }
+        }
+
+        /// <summary>
+        /// 初始化回合奖励
+        /// </summary>
+        /// <param name="maxRound">最大回合数</param>
+        /// <param name="maxRewardsInRound">每个奖励回合生成多少技能</param>
+        /// <param name="effects">key: 特效的数字标识符；value: 是否是主动技能的特效</param>
+        /// <param name="factoryEffects">通过数字标识符来获取构造特效的参数</param>
+        /// <returns></returns>
+        public virtual void InitRoundRewards(int maxRound, int maxRewardsInRound, Dictionary<long, bool> effects, Func<long, Dictionary<string, object>>? factoryEffects = null)
+        {
+            _roundRewards.Clear();
+            int currentRound = 1;
+            long[] effectIDs = [.. effects.Keys];
+            while (currentRound <= maxRound)
+            {
+                currentRound += Random.Shared.Next(1, 9);
+
+                if (currentRound <= maxRound)
+                {
+                    List<Skill> skills = [];
+                    if (maxRewardsInRound <= 0) maxRewardsInRound = 1;
+
+                    do
+                    {
+                        long effectID = effectIDs[Random.Shared.Next(effects.Count)];
+                        Dictionary<string, object> args = [];
+                        if (effects[effectID])
+                        {
+                            args.Add("active", true);
+                            args.Add("self", true);
+                            args.Add("enemy", false);
+                        }
+                        Skill skill = Factory.OpenFactory.GetInstance<Skill>(effectID, "", args);
+                        Dictionary<string, object> effectArgs = factoryEffects != null ? factoryEffects(effectID) : [];
+                        args.Clear();
+                        args.Add("skill", skill);
+                        args.Add("values", effectArgs);
+                        Effect effect = Factory.OpenFactory.GetInstance<Effect>(effectID, "", args);
+                        skill.Effects.Add(effect);
+                        skill.Name = $"[R] {effect.Name}";
+                        skills.Add(skill);
+                    }
+                    while (skills.Count < maxRewardsInRound);
+
+                    _roundRewards[currentRound] = skills;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 获取回合奖励
+        /// </summary>
+        /// <param name="round"></param>
+        /// <param name="character"></param>
+        /// <returns></returns>
+        public virtual List<Skill> GetRoundRewards(int round, Character character)
+        {
+            if (_roundRewards.TryGetValue(round, out List<Skill>? value) && value is List<Skill> list && list.Count > 0)
+            {
+                foreach (Skill skill in list)
+                {
+                    skill.GamingQueue = this;
+                    skill.Character = character;
+                    skill.Level = 1;
+                    LastRound.RoundRewards.Add(skill);
+                    WriteLine($"[ {character} ] 获得了回合奖励！{skill.Description}".Trim());
+                    if (skill.IsActive)
+                    {
+                        LastRound.Targets.Add(character);
+                        skill.OnSkillCasted(this, character, [character]);
+                    }
+                    else
+                    {
+                        character.Skills.Add(skill);
+                    }
+                }
+                return list;
+            }
+            return [];
+        }
+
+        /// <summary>
+        /// 移除回合奖励
+        /// </summary>
+        /// <param name="round"></param>
+        /// <param name="character"></param>
+        /// <param name="skills"></param>
+        public virtual void RemoveRoundRewards(int round, Character character, List<Skill> skills)
+        {
+            foreach (Skill skill in skills)
+            {
+                foreach (Effect e in skill.Effects)
+                {
+                    e.OnEffectLost(character);
+                    character.Effects.Remove(e);
+                }
+                character.Skills.Remove(skill);
+                skill.Character = null;
             }
         }
 
