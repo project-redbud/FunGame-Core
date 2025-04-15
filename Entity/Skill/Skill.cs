@@ -370,7 +370,7 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 触发技能效果
+        /// 触发技能效果 [ 局内版 ]
         /// </summary>
         /// <param name="queue"></param>
         /// <param name="caster"></param>
@@ -395,6 +395,16 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 e.OnSkillCasted(targets, Values);
             }
+        }
+
+        /// <summary>
+        /// 检查角色是否在 AI 控制状态
+        /// </summary>
+        /// <param name="character"></param>
+        /// <returns></returns>
+        public bool IsCharacterInAIControlling(Character character)
+        {
+            return GamingQueue?.IsCharacterInAIControlling(character) ?? false;
         }
 
         /// <summary>

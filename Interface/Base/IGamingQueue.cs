@@ -159,5 +159,11 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="teammates"></param>
         /// <returns></returns>
         public Task<List<Character>> SelectTargetsAsync(Character character, NormalAttack attack, List<Character> enemys, List<Character> teammates);
+
+        /// <summary>
+        /// 检查角色是否在 AI 控制状态
+        /// </summary>
+        /// <returns></returns>
+        public bool IsCharacterInAIControlling(Character character);
     }
 }

@@ -122,7 +122,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
                     return $"{Command_Delete} {Command_From} {TableName} {builder}";
                 }
             }
-            return $"{Command_Delete} {Command_From} {TableName} {Command_Where} 1 = 0";
+            return $"{Command_Delete} {Command_From} {TableName}";
         }
 
         public static string Delete_QuitRoom(SQLHelper SQLHelper, string Roomid, long RoomMaster)

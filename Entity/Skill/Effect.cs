@@ -341,10 +341,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 闪避检定前触发
         /// </summary>
-        /// <param name="character"></param>
+        /// <param name="actor"></param>
+        /// <param name="enemy"></param>
         /// <param name="throwingBonus"></param>
         /// <returns>返回 false 表示不进行闪避检定</returns>
-        public virtual bool BeforeEvadeCheck(Character character, ref double throwingBonus)
+        public virtual bool BeforeEvadeCheck(Character actor, Character enemy, ref double throwingBonus)
         {
             return true;
         }
@@ -352,11 +353,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 在触发闪避时
         /// </summary>
-        /// <param name="attacker"></param>
-        /// <param name="evader"></param>
+        /// <param name="actor"></param>
+        /// <param name="enemy"></param>
         /// <param name="dice"></param>
         /// <returns>返回 true 表示无视闪避</returns>
-        public virtual bool OnEvadedTriggered(Character attacker, Character evader, double dice)
+        public virtual bool OnEvadedTriggered(Character actor, Character enemy, double dice)
         {
             return false;
         }
@@ -364,10 +365,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 暴击检定前触发
         /// </summary>
-        /// <param name="character"></param>
+        /// <param name="actor"></param>
+        /// <param name="enemy"></param>
         /// <param name="throwingBonus"></param>
         /// <returns>返回 false 表示不进行暴击检定</returns>
-        public virtual bool BeforeCriticalCheck(Character character, ref double throwingBonus)
+        public virtual bool BeforeCriticalCheck(Character actor, Character enemy, ref double throwingBonus)
         {
             return true;
         }
@@ -375,9 +377,10 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 在触发暴击时
         /// </summary>
-        /// <param name="character"></param>
+        /// <param name="actor"></param>
+        /// <param name="enemy"></param>
         /// <param name="dice"></param>
-        public virtual void OnCriticalDamageTriggered(Character character, double dice)
+        public virtual void OnCriticalDamageTriggered(Character actor, Character enemy, double dice)
         {
 
         }
@@ -401,10 +404,22 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="skills"></param>
         /// <param name="continuousKilling"></param>
         /// <param name="earnedMoney"></param>
-        /// <returns>返回 true 表示更改生效</returns>
-        public virtual bool AlterEnemyListBeforeAction(Character character, List<Character> enemys, List<Character> teammates, List<Skill> skills, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney)
+        public virtual void AlterSelectListBeforeAction(Character character, List<Character> enemys, List<Character> teammates, List<Skill> skills, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney)
         {
-            return false;
+
+        }
+
+        /// <summary>
+        /// 开始选择目标前，修改可选择的 <paramref name="enemys"/>, <paramref name="teammates"/> 列表<para/>
+        /// <see cref="ISkill"/> 有两种，使用时注意判断是 <see cref="Entity.Skill"/> 还是 <see cref="NormalAttack"/>
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="skill"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        public virtual void AlterSelectListBeforeSelection(Character character, ISkill skill, List<Character> enemys, List<Character> teammates)
+        {
+
         }
 
         /// <summary>
@@ -460,6 +475,16 @@ namespace Milimoe.FunGame.Core.Entity
         public void InterruptCasting(Character caster, Character interrupter)
         {
             GamingQueue?.InterruptCastingAsync(caster, interrupter);
+        }
+
+        /// <summary>
+        /// 检查角色是否在 AI 控制状态
+        /// </summary>
+        /// <param name="character"></param>
+        /// <returns></returns>
+        public bool IsCharacterInAIControlling(Character character)
+        {
+            return GamingQueue?.IsCharacterInAIControlling(character) ?? false;
         }
 
         /// <summary>
