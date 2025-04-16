@@ -57,6 +57,11 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// 技能受限 [ 战斗相关 ]
         /// </summary>
         SkillRestricted,
+        
+        /// <summary>
+        /// 攻击受限 [ 战斗相关 ]
+        /// </summary>
+        AttackRestricted,
 
         /// <summary>
         /// 处于吟唱中 [ 战斗相关 ] [ 技能相关 ]

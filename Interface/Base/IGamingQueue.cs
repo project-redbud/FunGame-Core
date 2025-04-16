@@ -131,6 +131,12 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public Task InterruptCastingAsync(Character caster, Character interrupter);
 
         /// <summary>
+        /// 打断施法 [ 用于使敌人目标丢失 ]
+        /// </summary>
+        /// <param name="interrupter"></param>
+        public Task InterruptCastingAsync(Character interrupter);
+
+        /// <summary>
         /// 使用物品
         /// </summary>
         /// <param name="item"></param>

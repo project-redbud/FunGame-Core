@@ -1778,6 +1778,7 @@ namespace Milimoe.FunGame.Core.Entity
             bool isActionRestricted = false;
             bool isBattleRestricted = false;
             bool isSkillRestricted = false;
+            bool isAttackRestricted = false;
 
             IEnumerable<CharacterState> states = CharacterEffectStates.Values.SelectMany(list => list);
             // 根据持有的特效判断角色所处的状态
@@ -1785,12 +1786,13 @@ namespace Milimoe.FunGame.Core.Entity
             isActionRestricted = states.Any(state => state == CharacterState.ActionRestricted);
             isBattleRestricted = states.Any(state => state == CharacterState.BattleRestricted);
             isSkillRestricted = states.Any(state => state == CharacterState.SkillRestricted);
+            isAttackRestricted = states.Any(state => state == CharacterState.AttackRestricted);
 
             IEnumerable<EffectType> types = CharacterEffectTypes.Values.SelectMany(list => list);
             // 判断角色的控制效果
             IsUnselectable = types.Any(type => type == EffectType.Unselectable);
 
-            bool isControl = isNotActionable || isActionRestricted || isBattleRestricted || isSkillRestricted;
+            bool isControl = isNotActionable || isActionRestricted || isBattleRestricted || isSkillRestricted || isAttackRestricted;
             bool isCasting = CharacterState == CharacterState.Casting;
             bool isPreCastSuperSkill = CharacterState == CharacterState.PreCastSuperSkill;
 
@@ -1809,6 +1811,10 @@ namespace Milimoe.FunGame.Core.Entity
             else if (isSkillRestricted)
             {
                 CharacterState = CharacterState.SkillRestricted;
+            }
+            else if (isAttackRestricted)
+            {
+                CharacterState = CharacterState.AttackRestricted;
             }
 
             if (!isControl && !isCasting && !isPreCastSuperSkill)

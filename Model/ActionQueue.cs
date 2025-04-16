@@ -741,6 +741,15 @@ namespace Milimoe.FunGame.Core.Model
                                 pCastSkill = 0;
                             }
                         }
+                        else if (character.CharacterState == CharacterState.AttackRestricted)
+                        {
+                            // 攻击受限，无法普通攻击，可以使用技能，可以使用物品
+                            pNormalAttack = 0;
+                            if (!canUseItem)
+                            {
+                                pUseItem = 0;
+                            }
+                        }
 
                         // 模组可以通过此事件来决定角色的行动
                         type = await OnDecideActionAsync(character, enemys, teammates, skills, items);
@@ -779,29 +788,39 @@ namespace Milimoe.FunGame.Core.Model
 
                 if (type == CharacterActionType.NormalAttack)
                 {
-                    // 使用普通攻击逻辑
-                    List<Character> targets = await SelectTargetsAsync(character, character.NormalAttack, enemys, teammates);
-                    if (targets.Count == 0 && _charactersInAI.Contains(character))
+                    if (character.CharacterState == CharacterState.NotActionable ||
+                        character.CharacterState == CharacterState.ActionRestricted ||
+                        character.CharacterState == CharacterState.BattleRestricted ||
+                        character.CharacterState == CharacterState.AttackRestricted)
                     {
-                        // 如果没有选取目标，且角色在 AI 控制下，则随机选取目标
-                        if (enemys.Count > character.NormalAttack.CanSelectTargetCount)
-                            targets = [.. enemys.OrderBy(o => Random.Shared.Next(enemys.Count)).Take(character.NormalAttack.CanSelectTargetCount)];
-                        else
-                            targets = [.. enemys];
+                        WriteLine($"角色 [ {character} ] 状态为：{CharacterSet.GetCharacterState(character.CharacterState)}，无法使用普通攻击！");
                     }
-                    if (targets.Count > 0)
+                    else
                     {
-                        LastRound.Targets = [.. targets];
-                        decided = true;
-
-                        await OnCharacterNormalAttackAsync(character, targets);
-
-                        character.NormalAttack.Attack(this, character, targets);
-                        baseTime = character.NormalAttack.HardnessTime;
-                        effects = [.. character.Effects.Where(e => e.Level > 0)];
-                        foreach (Effect effect in effects)
+                        // 使用普通攻击逻辑
+                        List<Character> targets = await SelectTargetsAsync(character, character.NormalAttack, enemys, teammates);
+                        if (targets.Count == 0 && _charactersInAI.Contains(character))
                         {
-                            effect.AlterHardnessTimeAfterNormalAttack(character, ref baseTime, ref isCheckProtected);
+                            // 如果没有选取目标，且角色在 AI 控制下，则随机选取目标
+                            if (enemys.Count > character.NormalAttack.CanSelectTargetCount)
+                                targets = [.. enemys.OrderBy(o => Random.Shared.Next(enemys.Count)).Take(character.NormalAttack.CanSelectTargetCount)];
+                            else
+                                targets = [.. enemys];
+                        }
+                        if (targets.Count > 0)
+                        {
+                            LastRound.Targets = [.. targets];
+                            decided = true;
+
+                            await OnCharacterNormalAttackAsync(character, targets);
+
+                            character.NormalAttack.Attack(this, character, targets);
+                            baseTime = character.NormalAttack.HardnessTime;
+                            effects = [.. character.Effects.Where(e => e.Level > 0)];
+                            foreach (Effect effect in effects)
+                            {
+                                effect.AlterHardnessTimeAfterNormalAttack(character, ref baseTime, ref isCheckProtected);
+                            }
                         }
                     }
                 }
@@ -1022,8 +1041,16 @@ namespace Milimoe.FunGame.Core.Model
             // 统一在回合结束时处理角色的死亡
             await ProcessCharacterDeathAsync(character);
 
+            // 移除回合奖励
+            RemoveRoundRewards(TotalRound, character, rewards);
+
             if (_isGameEnd)
             {
+                // 回合结束事件
+                await OnTurnEndAsync(character);
+
+                await AfterTurnAsync(character);
+
                 return _isGameEnd;
             }
 
@@ -1068,9 +1095,6 @@ namespace Milimoe.FunGame.Core.Model
                     }
                 }
             }
-
-            // 移除回合奖励
-            RemoveRoundRewards(TotalRound, character, rewards);
 
             // 有人想要插队吗？
             await WillPreCastSuperSkill();
@@ -1895,6 +1919,7 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         public async Task EndGameInfo(Team winner)
         {
+            winner.IsWinner = true;
             WriteLine("[ " + winner + " ] 是胜利者。");
 
             if (!await OnGameEndTeamAsync(winner))
@@ -2095,19 +2120,37 @@ namespace Milimoe.FunGame.Core.Model
             }
             if (skill != null)
             {
-                WriteLine($"[ {caster} ] 的施法被 [ {interrupter} ] 打断了！！");
-                List<Effect> effects = [.. caster.Effects.Where(e => e.Level > 0)];
+                WriteLine($"[ {caster} ] 的{(skill.IsSuperSkill ? "预释放爆发技" : "施法")}被 [ {interrupter} ] 打断了！！");
+                List<Effect> effects = [.. caster.Effects.Union(interrupter.Effects).Where(e => e.Level > 0)];
                 foreach (Effect effect in effects)
                 {
                     effect.OnSkillCastInterrupted(caster, skill, interrupter);
                 }
-                effects = [.. interrupter.Effects.Where(e => e.Level > 0)];
-                foreach (Effect effect in effects)
+                await OnInterruptCastingAsync(caster, skill, interrupter);
+            }
+        }
+        
+        /// <summary>
+        /// 打断施法 [ 用于使敌人目标丢失 ]
+        /// </summary>
+        /// <param name="interrupter"></param>
+        public async Task InterruptCastingAsync(Character interrupter)
+        {
+            foreach (Character caster in _castingSkills.Keys)
+            {
+                SkillTarget skillTarget = _castingSkills[caster];
+                if (skillTarget.Targets.Contains(interrupter))
                 {
-                    effect.OnSkillCastInterrupted(caster, skill, interrupter);
+                    Skill skill = skillTarget.Skill;
+                    WriteLine($"[ {interrupter} ] 打断了 [ {caster} ] 的施法！！");
+                    List<Effect> effects = [.. caster.Effects.Union(interrupter.Effects).Where(e => e.Level > 0)];
+                    foreach (Effect effect in effects)
+                    {
+                        effect.OnSkillCastInterrupted(caster, skill, interrupter);
+                    }
+                    await OnInterruptCastingAsync(caster, skill, interrupter);
                 }
             }
-            await OnInterruptCastingAsync(caster, skill, interrupter);
         }
 
         /// <summary>
@@ -2657,7 +2700,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="skill"></param>
         /// <param name="interrupter"></param>
         /// <returns></returns>
-        protected async Task OnInterruptCastingAsync(Character cast, Skill? skill, Character interrupter)
+        protected async Task OnInterruptCastingAsync(Character cast, Skill skill, Character interrupter)
         {
             await (InterruptCasting?.Invoke(this, cast, skill, interrupter) ?? Task.CompletedTask);
         }

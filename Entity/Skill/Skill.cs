@@ -308,6 +308,7 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 selectable.AddRange(enemys);
             }
+
             if (CanSelectTeammate)
             {
                 selectable.AddRange(teammates);
@@ -430,7 +431,7 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine("技能描述：" + (Level == 0 && GeneralDescription.Trim() != "" ? GeneralDescription : Description));
             if (CurrentCD > 0)
             {
-                builder.AppendLine($"正在冷却：剩余 {CurrentCD:0.##} 时间");
+                builder.AppendLine($"正在冷却：剩余 {CurrentCD:0.##} {GameplayEquilibriumConstant.InGameTime}");
             }
             if (!Enable)
             {
