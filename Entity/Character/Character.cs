@@ -151,12 +151,13 @@ namespace Milimoe.FunGame.Core.Entity
         public CharacterState CharacterState { get; set; } = CharacterState.Actionable;
 
         /// <summary>
-        /// 角色目前被特效施加的状态 [ 用于设置角色是否被控制的状态 ]
+        /// 角色目前被特效施加的状态 [ 用于设置角色的状态，这些状态会影响角色的行动 ]
         /// </summary>
         public Dictionary<Effect, List<CharacterState>> CharacterEffectStates { get; } = [];
 
         /// <summary>
-        /// 角色目前被特效施加的控制效果 [ 用于特效判断是否需要在移除特效时更改角色状态 ]
+        /// 角色目前被特效施加的控制效果 [ 用于特效在不同的钩子中更改角色的行为 ]
+        /// <para/>我们需要明确控制效果不一定能造成角色的状态改变（影响角色的行动），但是这些控制状态需要由特效在不同的地方改变角色的行为
         /// </summary>
         public Dictionary<Effect, List<EffectType>> CharacterEffectTypes { get; } = [];
 
@@ -1769,7 +1770,7 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 更新角色的状态
+        /// 更新角色的状态，参见 <see cref="CharacterEffectStates"/>、<see cref="CharacterEffectTypes"/> 用法
         /// </summary>
         /// <returns></returns>
         public CharacterState UpdateCharacterState()
@@ -1804,7 +1805,7 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 CharacterState = CharacterState.ActionRestricted;
             }
-            else if (isBattleRestricted)
+            else if (isBattleRestricted || (isSkillRestricted && isAttackRestricted))
             {
                 CharacterState = CharacterState.BattleRestricted;
             }

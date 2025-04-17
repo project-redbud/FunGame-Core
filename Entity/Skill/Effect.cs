@@ -468,13 +468,64 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 打断施法 [ 尽可能的调用此方法而不是直接调用 <see cref="IGamingQueue.InterruptCastingAsync"/>，以防止中断性变更 ]
+        /// 打断施法 [ 尽可能的调用此方法而不是直接调用 <see cref="IGamingQueue.InterruptCastingAsync(Character, Character)"/>，以防止中断性变更 ]
         /// </summary>
         /// <param name="caster"></param>
         /// <param name="interrupter"></param>
         public void InterruptCasting(Character caster, Character interrupter)
         {
             GamingQueue?.InterruptCastingAsync(caster, interrupter);
+        }
+
+        /// <summary>
+        /// 打断施法 [ 用于使敌人目标丢失 ] [ 尽可能的调用此方法而不是直接调用 <see cref="IGamingQueue.InterruptCastingAsync(Character)"/>，以防止中断性变更 ]
+        /// </summary>
+        /// <param name="interrupter"></param>
+        public void InterruptCasting(Character interrupter)
+        {
+            GamingQueue?.InterruptCastingAsync(interrupter);
+        }
+
+        /// <summary>
+        /// 将特效状态设置到角色上 [ 尽可能的调用此方法而不是自己实现 ]
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="states"></param>
+        public void AddEffectStatesToCharacter(Character character, List<CharacterState> states)
+        {
+            character.CharacterEffectStates.Add(this, states);
+            character.UpdateCharacterState();
+        }
+        
+        /// <summary>
+        /// 将特效状态从角色身上移除 [ 尽可能的调用此方法而不是自己实现 ]
+        /// </summary>
+        /// <param name="character"></param>
+        public void RemoveEffectStatesFromCharacter(Character character)
+        {
+            character.CharacterEffectStates.Remove(this);
+            character.UpdateCharacterState();
+        }
+        
+        /// <summary>
+        /// 将特效控制效果设置到角色上 [ 尽可能的调用此方法而不是自己实现 ]
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="types"></param>
+        public void AddEffectTypeToCharacter(Character character, List<EffectType> types)
+        {
+            character.CharacterEffectTypes.Add(this, types);
+            character.UpdateCharacterState();
+        }
+
+        /// <summary>
+        /// 将特效控制效果从角色身上移除 [ 尽可能的调用此方法而不是自己实现 ]
+        /// </summary>
+        /// <param name="character"></param>
+        public void RemoveEffectTypesFromCharacter(Character character)
+        {
+            character.CharacterEffectTypes.Remove(this);
+            character.UpdateCharacterState();
         }
 
         /// <summary>
