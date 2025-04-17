@@ -442,10 +442,39 @@ namespace Milimoe.FunGame.Core.Api.Utility
             byte[] text_bytes = General.DefaultEncoding.GetBytes(text);
             key = Convert.ToBase64String(General.DefaultEncoding.GetBytes(key));
             byte[] key_bytes = General.DefaultEncoding.GetBytes(key);
-            HMACSHA512 hmacsha512 = new(key_bytes);
+            using HMACSHA512 hmacsha512 = new(key_bytes);
             byte[] hash_bytes = hmacsha512.ComputeHash(text_bytes);
             string hmac = Convert.ToHexString(hash_bytes);
             return hmac.ToLower();
+        }
+
+        /// <summary>
+        /// 使用 HMAC-SHA256 算法对文本进行加密
+        /// </summary>
+        /// <param name="text">需要加密的文本</param>
+        /// <param name="key">用于加密的秘钥</param>
+        /// <returns>加密后的 HMAC-SHA256 哈希值</returns>
+        public static string HmacSha256(string text, string key)
+        {
+            byte[] text_bytes = General.DefaultEncoding.GetBytes(text);
+            key = Convert.ToBase64String(General.DefaultEncoding.GetBytes(key));
+            byte[] key_bytes = General.DefaultEncoding.GetBytes(key);
+            using HMACSHA256 hmacsha256 = new(key_bytes);
+            byte[] hash_bytes = hmacsha256.ComputeHash(text_bytes);
+            string hmac = Convert.ToHexString(hash_bytes);
+            return hmac.ToLower();
+        }
+        
+        /// <summary>
+        /// 使用 SHA256 算法对文本进行加密
+        /// </summary>
+        /// <param name="text">需要加密的文本</param>
+        /// <returns>加密后的 SHA256 哈希值</returns>
+        public static string Sha256(string text)
+        {
+            byte[] textBytes = Encoding.UTF8.GetBytes(text);
+            byte[] hashBytes = SHA256.HashData(textBytes);
+            return Convert.ToHexString(hashBytes).ToLower();
         }
 
         /// <summary>
