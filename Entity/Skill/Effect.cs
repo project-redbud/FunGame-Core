@@ -66,6 +66,11 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual DispelType DispelledType { get; set; } = DispelType.Weak;
 
         /// <summary>
+        /// 是否是负面效果
+        /// </summary>
+        public virtual bool IsDebuff { get; set; } = false;
+
+        /// <summary>
         /// 效果描述
         /// </summary>
         public virtual string Description { get; set; } = "";
