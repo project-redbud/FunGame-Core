@@ -89,9 +89,54 @@ namespace Milimoe.FunGame.Core.Entity
         public bool IsMagic => SkillType == SkillType.Magic;
 
         /// <summary>
-        /// 是否属于 Debuff
+        /// 驱散类型 [ 可以驱散什么特效，只有三种：强驱散、弱驱散和无驱散，默认无驱散 ] 只取特效中最高级别的
         /// </summary>
-        public bool IsDebuff { get; set; } = false;
+        public DispelType DispelType
+        {
+            get
+            {
+                bool isStrong = Effects.Any(e => e.DispelType == DispelType.Strong);
+                bool isWeak = Effects.Any(e => e.DispelType == DispelType.Weak);
+
+                DispelType type = DispelType.None;
+                if (isStrong)
+                {
+                    type = DispelType.Strong;
+                }
+                else if (isWeak)
+                {
+                    type = DispelType.Weak;
+                }
+                return type;
+            }
+        }
+
+        /// <summary>
+        /// 被驱散类型 [ 可以被什么特效驱散，只有三种：不可驱散、需强驱散和可弱驱散，默认弱驱散 ] 只取特效中最高级别的，但如果特效很多，这个值可能会有歧义
+        /// </summary>
+        public DispelType DispelledType
+        {
+            get
+            {
+                bool isStrong = Effects.Any(e => e.DispelledType == DispelType.Strong);
+                bool isCannot = Effects.Any(e => e.DispelledType == DispelType.CannotBeDispel);
+
+                DispelType type = DispelType.None;
+                if (isCannot)
+                {
+                    type = DispelType.CannotBeDispel;
+                }
+                else if (isStrong)
+                {
+                    type = DispelType.Strong;
+                }
+                else
+                {
+                    type = DispelType.Weak;
+                }
+                return type;
+            }
+        }
 
         /// <summary>
         /// 可选取自身
@@ -440,6 +485,12 @@ namespace Milimoe.FunGame.Core.Entity
             if (IsInEffect)
             {
                 builder.AppendLine("效果结束前不可用");
+            }
+            string[] dispel = [SkillSet.GetDispelType(DispelType), SkillSet.GetDispelledType(DispelledType)];
+            string dispelstr = string.Join(" ", dispel);
+            if (dispelstr.Trim() != "")
+            {
+                builder.AppendLine($"{dispelstr.Trim()}");
             }
             if (IsActive && (Item?.IsInGameItem ?? true))
             {

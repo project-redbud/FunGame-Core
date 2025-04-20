@@ -56,6 +56,16 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual MagicType MagicType { get; set; } = MagicType.None;
 
         /// <summary>
+        /// 驱散类型 [ 能驱散什么特效，默认无驱散 ]
+        /// </summary>
+        public virtual DispelType DispelType { get; set; } = DispelType.None;
+        
+        /// <summary>
+        /// 被驱散类型 [ 能被什么驱散类型驱散，默认弱驱散 ]
+        /// </summary>
+        public virtual DispelType DispelledType { get; set; } = DispelType.Weak;
+
+        /// <summary>
         /// 效果描述
         /// </summary>
         public virtual string Description { get; set; } = "";
@@ -529,6 +539,16 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 修改角色的硬直时间 [ 尽可能的调用此方法而不是自己实现 ]
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="addValue"></param>
+        public void ChangeCharacterHardnessTime(Character character, double addValue)
+        {
+            GamingQueue?.ChangeCharacterHardnessTime(character, addValue);
+        }
+
+        /// <summary>
         /// 检查角色是否在 AI 控制状态
         /// </summary>
         /// <param name="character"></param>
@@ -549,12 +569,13 @@ namespace Milimoe.FunGame.Core.Entity
             string isDurative = "";
             if (Durative)
             {
-                isDurative = $"（剩余：{RemainDuration:0.##} 时间）";
+                isDurative = $"（剩余：{RemainDuration:0.##} {GameplayEquilibriumConstant.InGameTime}）";
             }
             else if (DurationTurn > 0)
             {
-                isDurative = "（剩余：" + RemainDurationTurn + " 回合）";
+                isDurative = $"（剩余：{RemainDurationTurn} 回合）";
             }
+
             builder.AppendLine("【" + Name + " - 等级 " + Level + "】" + Description + isDurative);
 
             return builder.ToString();

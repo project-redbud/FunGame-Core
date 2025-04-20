@@ -901,4 +901,27 @@ namespace Milimoe.FunGame.Core.Library.Constant
         PreCastSuperSkill,
         Respawn
     }
+
+    public enum DispelType
+    {
+        /// <summary>
+        /// 弱驱散
+        /// </summary>
+        Weak,
+
+        /// <summary>
+        /// 强驱散
+        /// </summary>
+        Strong,
+
+        /// <summary>
+        /// 不可驱散 [ 最高优先级 ]
+        /// </summary>
+        CannotBeDispel,
+
+        /// <summary>
+        /// 无驱散 [ 区别于 <see cref="CannotBeDispel"/>，表示不能驱散其他特效 ]
+        /// </summary>
+        None
+    }
 }

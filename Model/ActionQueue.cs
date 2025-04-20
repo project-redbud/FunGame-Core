@@ -530,13 +530,13 @@ namespace Milimoe.FunGame.Core.Model
         /// 从行动顺序表取出第一个角色
         /// </summary>
         /// <returns></returns>
-        public Character? NextCharacter()
+        public async Task<Character?> NextCharacterAsync()
         {
             if (_queue.Count == 0) return null;
 
             // 硬直时间为0的角色将执行行动
-            Character? character = _queue.FirstOrDefault(c => _hardnessTimes[c] == 0);
-            if (character != null)
+            Character character = _queue[0];
+            if (_hardnessTimes[character] == 0)
             {
                 _queue.Remove(character);
                 _cutCount.Remove(character);
@@ -548,8 +548,11 @@ namespace Milimoe.FunGame.Core.Model
 
                 return character;
             }
-
-            return null;
+            else
+            {
+                await TimeLapse();
+                return await NextCharacterAsync();
+            }
         }
 
         /// <summary>
@@ -2486,10 +2489,7 @@ namespace Milimoe.FunGame.Core.Model
                     skill.GamingQueue = this;
                     skill.Character = character;
                     skill.Level = 1;
-                    Skill record = skill.Copy();
-                    record.Character = character;
-                    record.Level = skill.Level;
-                    LastRound.RoundRewards.Add(record);
+                    LastRound.RoundRewards.Add(skill);
                     WriteLine($"[ {character} ] 获得了回合奖励！{skill.Description}".Trim());
                     if (skill.IsActive)
                     {
@@ -2522,8 +2522,21 @@ namespace Milimoe.FunGame.Core.Model
                     character.Effects.Remove(e);
                 }
                 character.Skills.Remove(skill);
-                skill.Character = null;
             }
+        }
+
+        /// <summary>
+        /// 修改角色的硬直时间
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="addValue"></param>
+        public void ChangeCharacterHardnessTime(Character character, double addValue)
+        {
+            double hardnessTime = _hardnessTimes[character];
+            hardnessTime += addValue;
+            if (hardnessTime <= 0) hardnessTime = 0;
+            _queue.Remove(character);
+            AddCharacter(character, hardnessTime, false);
         }
 
         /// <summary>

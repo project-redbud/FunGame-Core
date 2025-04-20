@@ -680,5 +680,25 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 _ => "未知效果"
             };
         }
+
+        public static string GetDispelType(DispelType type)
+        {
+            return type switch
+            {
+                DispelType.Weak => "弱驱散",
+                DispelType.Strong => "强驱散",
+                _ => ""
+            };
+        }
+
+        public static string GetDispelledType(DispelType type)
+        {
+            return type switch
+            {
+                DispelType.Strong => "需强驱散",
+                DispelType.CannotBeDispel => "不可驱散",
+                _ => ""
+            };
+        }
     }
 }

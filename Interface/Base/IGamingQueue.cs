@@ -171,5 +171,12 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// </summary>
         /// <returns></returns>
         public bool IsCharacterInAIControlling(Character character);
+
+        /// <summary>
+        /// 修改角色的硬直时间
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="addValue"></param>
+        public void ChangeCharacterHardnessTime(Character character, double addValue);
     }
 }
