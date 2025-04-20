@@ -2486,7 +2486,10 @@ namespace Milimoe.FunGame.Core.Model
                     skill.GamingQueue = this;
                     skill.Character = character;
                     skill.Level = 1;
-                    LastRound.RoundRewards.Add(skill);
+                    Skill record = skill.Copy();
+                    record.Character = character;
+                    record.Level = skill.Level;
+                    LastRound.RoundRewards.Add(record);
                     WriteLine($"[ {character} ] 获得了回合奖励！{skill.Description}".Trim());
                     if (skill.IsActive)
                     {

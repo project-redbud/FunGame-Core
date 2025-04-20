@@ -115,6 +115,7 @@ namespace Milimoe.FunGame.Core.Controller
                 _sqlPolling = null;
             }
             _cts?.Dispose();
+            _cts = null;
         }
     }
 }

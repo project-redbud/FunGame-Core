@@ -165,6 +165,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string Inventory_Use = "Inventory::Use";
         public const string Inventory_StoreSell = "Inventory::StoreSell";
         public const string Inventory_MarketSell = "Inventory::MarketSell";
+        public const string Inventory_MarketDelist = "Inventory::MarketDelist";
         public const string Inventory_UpdateMarketPrice = "Inventory::UpdateMarketPrice";
         public const string Inventory_GetOffer = "Inventory::GetOffer";
         public const string Inventory_MakeOffer = "Inventory::MakeOffer";
@@ -209,6 +210,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 DataRequestType.Inventory_Use => Inventory_Use,
                 DataRequestType.Inventory_StoreSell => Inventory_StoreSell,
                 DataRequestType.Inventory_MarketSell => Inventory_MarketSell,
+                DataRequestType.Inventory_MarketDelist => Inventory_MarketDelist,
                 DataRequestType.Inventory_UpdateMarketPrice => Inventory_UpdateMarketPrice,
                 DataRequestType.Inventory_GetOffer => Inventory_GetOffer,
                 DataRequestType.Inventory_MakeOffer => Inventory_MakeOffer,

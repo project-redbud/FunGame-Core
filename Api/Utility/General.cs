@@ -537,7 +537,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="length"></param>
         /// <returns></returns>
-        public static string GenerateRandomString(int length = 18)
+        public static string GenerateRandomString(int length = 32)
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+=-`~[]\\{}|;':\",./<>?";
             byte[] data = RandomNumberGenerator.GetBytes(length);

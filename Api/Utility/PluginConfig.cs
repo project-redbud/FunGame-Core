@@ -6,15 +6,20 @@ namespace Milimoe.FunGame.Core.Api.Utility
     /// <summary>
     /// 简易的插件配置文件生成器<para/>
     /// 仅支持部分基本类型（<see cref="long"/>, <see cref="double"/>, <see cref="decimal"/>, <see cref="string"/>, <see cref="bool"/>）及其数组（<see cref="List{T}">List&lt;long&gt;, List&lt;double&gt;, List&lt;decimal&gt;, List&lt;string&gt;, List&lt;bool&gt;</see>和<see cref="Array">long[], double[], decimal[], string[], bool[]</see>）
-    /// <para/>文件会保存为：程序目录/configs/<see cref="PluginName"/>/<see cref="FileName"/>.json
+    /// <para/>文件会保存为：程序目录/<see cref="RootPath"/>(通常是 configs)/<see cref="PluginName"/>/<see cref="FileName"/>.json
     /// </summary>
     /// <remarks>
-    /// 新建一个配置文件，文件会保存为：程序目录/configs/<paramref name="plugin_name"/>/<paramref name="file_name"/>.json
+    /// 新建一个配置文件，文件会保存为：程序目录/<see cref="RootPath"/>(通常是 configs)/<paramref name="plugin_name"/>/<paramref name="file_name"/>.json
     /// </remarks>
     /// <param name="plugin_name"></param>
     /// <param name="file_name"></param>
     public class PluginConfig(string plugin_name, string file_name) : Dictionary<string, object>
     {
+        /// <summary>
+        /// 配置文件存放的根目录
+        /// </summary>
+        public static string RootPath { get; set; } = "configs";
+
         /// <summary>
         /// 插件的名称
         /// </summary>
@@ -105,7 +110,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         public void LoadConfig()
         {
-            string dpath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/{PluginName}";
+            string dpath = $@"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, RootPath)}/{PluginName}";
             string fpath = $@"{dpath}/{FileName}.json";
             if (!Directory.Exists(dpath))
             {
@@ -130,7 +135,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         public void SaveConfig()
         {
             string json = NetworkUtility.JsonSerialize((Dictionary<string, object>)this);
-            string dpath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/{PluginName}";
+            string dpath = $@"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, RootPath)}/{PluginName}";
             string fpath = $@"{dpath}/{FileName}.json";
             if (!Directory.Exists(dpath))
             {

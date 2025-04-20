@@ -87,15 +87,27 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             return $"{Command_Update} {TableName} {Command_Set} {Column_GameTime} = {Column_GameTime} + @GameTimeMinutes {Command_Where} {Column_Username} = @Username";
         }
 
+        public static string Update_User(SQLHelper SQLHelper, string Username, string NickName, string Email, bool IsAdmin, bool IsOperator, bool IsEnable, string AutoKey)
+        {
+            SQLHelper.Parameters["@Username"] = Username;
+            SQLHelper.Parameters["@Nickname"] = NickName;
+            SQLHelper.Parameters["@Email"] = Email;
+            SQLHelper.Parameters["@IsAdmin"] = IsAdmin ? 1 : 0;
+            SQLHelper.Parameters["@IsOperator"] = IsOperator ? 1 : 0;
+            SQLHelper.Parameters["@IsEnable"] = IsEnable ? 1 : 0;
+            SQLHelper.Parameters["@AutoKey"] = AutoKey;
+            return $"{Command_Update} {TableName} {Command_Set} {Column_Nickname} = @Nickname, {Column_Email} = @Email, {Column_IsAdmin} = @IsAdmin, {Column_IsOperator} = @IsOperator, {Column_IsEnable} = @IsEnable, {Column_AutoKey} = @AutoKey WHERE {Column_Username} = @Username";
+        }
+
         public static string Insert_Register(SQLHelper SQLHelper, string Username, string Password, string Email, string IP, string AutoKey = "")
         {
-            DateTime Now = DateTime.Now;
+            DateTime now = DateTime.Now;
             SQLHelper.Parameters["@Username"] = Username;
             SQLHelper.Parameters["@Nickname"] = Username;
             SQLHelper.Parameters["@Password"] = Password;
             SQLHelper.Parameters["@Email"] = Email;
-            SQLHelper.Parameters["@RegTime"] = Now;
-            SQLHelper.Parameters["@LastTime"] = Now;
+            SQLHelper.Parameters["@RegTime"] = now;
+            SQLHelper.Parameters["@LastTime"] = now;
             SQLHelper.Parameters["@LastIP"] = IP;
             SQLHelper.Parameters["@AutoKey"] = AutoKey;
             return $"{Command_Insert} {Command_Into} {TableName} ({Column_Username}, {Column_Nickname}, {Column_Password}, {Column_Email}, {Column_RegTime}, {Column_LastTime}, {Column_LastIP}, {Column_AutoKey}) {Command_Values} (@Username, @Nickname, @Password, @Email, @RegTime, @LastTime, @LastIP, @AutoKey)";

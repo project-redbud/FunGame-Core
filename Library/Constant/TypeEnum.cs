@@ -116,6 +116,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Inventory_Use,
         Inventory_StoreSell,
         Inventory_MarketSell,
+        Inventory_MarketDelist,
         Inventory_UpdateMarketPrice,
         Inventory_GetOffer,
         Inventory_MakeOffer,

@@ -322,6 +322,7 @@ namespace Milimoe.FunGame.Core.Entity
             }
             if (used)
             {
+                EntityState = EntityState.Modified;
                 ReduceTimesAndRemove();
             }
             return result && used;
@@ -338,6 +339,7 @@ namespace Milimoe.FunGame.Core.Entity
                 bool result = OnItemUsed(args);
                 if (result)
                 {
+                    EntityState = EntityState.Modified;
                     ReduceTimesAndRemove();
                 }
                 return result;
@@ -356,7 +358,7 @@ namespace Milimoe.FunGame.Core.Entity
                 if (RemainUseTimes < 0) RemainUseTimes = 0;
                 if (IsRemoveAfterUse && RemainUseTimes == 0)
                 {
-                    User.Inventory.Items.Remove(this);
+                    EntityState = EntityState.Deleted;
                 }
             }
         }
