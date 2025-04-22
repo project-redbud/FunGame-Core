@@ -175,8 +175,9 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <summary>
         /// 修改角色的硬直时间
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="addValue"></param>
-        public void ChangeCharacterHardnessTime(Character character, double addValue);
+        /// <param name="character">角色</param>
+        /// <param name="addValue">加值</param>
+        /// <param name="isCheckProtected">是否使用插队保护机制</param>
+        public void ChangeCharacterHardnessTime(Character character, double addValue, bool isCheckProtected);
     }
 }

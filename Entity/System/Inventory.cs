@@ -93,7 +93,6 @@ namespace Milimoe.FunGame.Core.Entity
         internal Inventory(User user)
         {
             User = user;
-            Name = user.Username + "的库存";
         }
 
         public override string ToString()

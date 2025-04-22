@@ -686,17 +686,23 @@ namespace Milimoe.FunGame.Core.Library.Constant
             return type switch
             {
                 DispelType.Weak => "弱驱散",
+                DispelType.DurativeWeak => "持续性弱驱散",
+                DispelType.TemporaryWeak => "临时弱驱散",
                 DispelType.Strong => "强驱散",
+                DispelType.DurativeStrong => "持续性强驱散",
+                DispelType.TemporaryStrong => "临时强驱散",
+                DispelType.Special => "特殊驱散",
                 _ => ""
             };
         }
 
-        public static string GetDispelledType(DispelType type)
+        public static string GetDispelledType(DispelledType type)
         {
             return type switch
             {
-                DispelType.Strong => "需强驱散",
-                DispelType.CannotBeDispel => "不可驱散",
+                DispelledType.Strong => "需强驱散",
+                DispelledType.Special => "需特殊驱散",
+                DispelledType.CannotBeDispelled => "不可驱散",
                 _ => ""
             };
         }

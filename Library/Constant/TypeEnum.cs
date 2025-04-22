@@ -905,9 +905,24 @@ namespace Milimoe.FunGame.Core.Library.Constant
     public enum DispelType
     {
         /// <summary>
+        /// 无驱散 [ 默认，不能驱散其他特效 ]
+        /// </summary>
+        None,
+
+        /// <summary>
         /// 弱驱散
         /// </summary>
         Weak,
+
+        /// <summary>
+        /// 持续性弱驱散
+        /// </summary>
+        DurativeWeak,
+
+        /// <summary>
+        /// 临时弱驱散
+        /// </summary>
+        TemporaryWeak,
 
         /// <summary>
         /// 强驱散
@@ -915,13 +930,41 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Strong,
 
         /// <summary>
-        /// 不可驱散 [ 最高优先级 ]
+        /// 持续性强驱散
         /// </summary>
-        CannotBeDispel,
+        DurativeStrong,
 
         /// <summary>
-        /// 无驱散 [ 区别于 <see cref="CannotBeDispel"/>，表示不能驱散其他特效 ]
+        /// 临时强驱散
         /// </summary>
-        None
+        TemporaryStrong,
+
+        /// <summary>
+        /// 特殊驱散
+        /// </summary>
+        Special
+    }
+
+    public enum DispelledType
+    {
+        /// <summary>
+        /// 可弱驱散 [ 默认 ]
+        /// </summary>
+        Weak,
+
+        /// <summary>
+        /// 需强驱散
+        /// </summary>
+        Strong,
+        
+        /// <summary>
+        /// 需特殊驱散
+        /// </summary>
+        Special,
+
+        /// <summary>
+        /// 不可驱散 [ 最高优先级 ]
+        /// </summary>
+        CannotBeDispelled
     }
 }

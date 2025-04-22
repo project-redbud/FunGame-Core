@@ -56,19 +56,28 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual MagicType MagicType { get; set; } = MagicType.None;
 
         /// <summary>
-        /// 驱散类型 [ 能驱散什么特效，默认无驱散 ]
+        /// 驱散性 [ 能驱散什么特效，默认无驱散 ]
         /// </summary>
         public virtual DispelType DispelType { get; set; } = DispelType.None;
         
         /// <summary>
-        /// 被驱散类型 [ 能被什么驱散类型驱散，默认弱驱散 ]
+        /// 被驱散性 [ 能被什么驱散类型驱散，默认弱驱散 ]
         /// </summary>
-        public virtual DispelType DispelledType { get; set; } = DispelType.Weak;
+        public virtual DispelledType DispelledType { get; set; } = DispelledType.Weak;
 
         /// <summary>
         /// 是否是负面效果
         /// </summary>
         public virtual bool IsDebuff { get; set; } = false;
+
+        /// <summary>
+        /// 驱散性和被驱散性的具体说明
+        /// </summary>
+        public virtual string DispelDescription
+        {
+            get => GetDispelDescription("\r\n");
+            set => _dispelDescription = value;
+        }
 
         /// <summary>
         /// 效果描述
@@ -107,6 +116,11 @@ namespace Milimoe.FunGame.Core.Entity
             }
         }
 
+        /// <summary>
+        /// Values 构造动态特效参考这个构造函数
+        /// </summary>
+        /// <param name="skill"></param>
+        /// <param name="args"></param>
         protected Effect(Skill skill, Dictionary<string, object>? args = null)
         {
             Skill = skill;
@@ -546,11 +560,12 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 修改角色的硬直时间 [ 尽可能的调用此方法而不是自己实现 ]
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="addValue"></param>
-        public void ChangeCharacterHardnessTime(Character character, double addValue)
+        /// <param name="character">角色</param>
+        /// <param name="addValue">加值</param>
+        /// <param name="isCheckProtected">是否使用插队保护机制</param>
+        public void ChangeCharacterHardnessTime(Character character, double addValue, bool isCheckProtected)
         {
-            GamingQueue?.ChangeCharacterHardnessTime(character, addValue);
+            GamingQueue?.ChangeCharacterHardnessTime(character, addValue, isCheckProtected);
         }
 
         /// <summary>
@@ -581,7 +596,13 @@ namespace Milimoe.FunGame.Core.Entity
                 isDurative = $"（剩余：{RemainDurationTurn} 回合）";
             }
 
-            builder.AppendLine("【" + Name + " - 等级 " + Level + "】" + Description + isDurative);
+            builder.Append($"【{Name} - 等级 {Level}】{Description}{isDurative}");
+
+            string dispels = GetDispelDescription("，");
+            if (dispels != "")
+            {
+                builder.Append($"（{dispels}）");
+            }
 
             return builder.ToString();
         }
@@ -619,5 +640,37 @@ namespace Milimoe.FunGame.Core.Entity
         {
             return other is Effect c && c.Id + "." + Name == Id + "." + Name;
         }
+
+        /// <summary>
+        /// 获取驱散描述
+        /// </summary>
+        /// <param name="separator"></param>
+        /// <returns></returns>
+        private string GetDispelDescription(string separator)
+        {
+            if (_dispelDescription.Trim() != "")
+            {
+                return _dispelDescription;
+            }
+            else if (DispelType != DispelType.None || DispelledType != DispelledType.Weak)
+            {
+                List<string> dispels = [];
+                if (DispelType != DispelType.None)
+                {
+                    dispels.Add($"驱散性：{SkillSet.GetDispelType(DispelType)}");
+                }
+                if (DispelledType != DispelledType.Weak)
+                {
+                    dispels.Add($"被驱散性：{SkillSet.GetDispelledType(DispelledType)}");
+                }
+                return string.Join(separator, dispels);
+            }
+            return "";
+        }
+
+        /// <summary>
+        /// 驱散描述
+        /// </summary>
+        private string _dispelDescription = "";
     }
 }

@@ -534,9 +534,23 @@ namespace Milimoe.FunGame.Core.Model
         {
             if (_queue.Count == 0) return null;
 
-            // 硬直时间为0的角色将执行行动
-            Character character = _queue[0];
-            if (_hardnessTimes[character] == 0)
+            // 硬直时间为 0 的角色或预释放爆发技的角色先行动，取第一个
+            int couynt = _queue.Count(c => c.CharacterState == CharacterState.PreCastSuperSkill);
+            Character? character = _queue.FirstOrDefault(c => c.CharacterState == CharacterState.PreCastSuperSkill);
+            if (character is null)
+            {
+                Character temp = _queue[0];
+                if (_hardnessTimes[temp] == 0)
+                {
+                    character = temp;
+                }
+            }
+            else
+            {
+                _hardnessTimes[character] = 0;
+            }
+
+            if (character != null)
             {
                 _queue.Remove(character);
                 _cutCount.Remove(character);
@@ -909,6 +923,7 @@ namespace Milimoe.FunGame.Core.Model
                     {
                         // 使用技能逻辑，结束吟唱状态
                         character.CharacterState = CharacterState.Actionable;
+                        character.UpdateCharacterState();
                         Skill skill = skillTarget.Skill;
                         List<Character> targets = [.. skillTarget.Targets.Where(c => !c.IsUnselectable)];
 
@@ -950,6 +965,7 @@ namespace Milimoe.FunGame.Core.Model
                     {
                         // 原吟唱的技能丢失（被打断或者被取消），允许角色再次决策
                         character.CharacterState = CharacterState.Actionable;
+                        character.UpdateCharacterState();
                     }
                 }
                 else if (type == CharacterActionType.CastSuperSkill)
@@ -957,6 +973,7 @@ namespace Milimoe.FunGame.Core.Model
                     decided = true;
                     // 结束预释放爆发技的状态
                     character.CharacterState = CharacterState.Actionable;
+                    character.UpdateCharacterState();
                     Skill skill = _castingSuperSkills[character];
                     LastRound.Skill = skill;
                     _castingSuperSkills.Remove(character);
@@ -1143,19 +1160,11 @@ namespace Milimoe.FunGame.Core.Model
             TotalTime = Calculation.Round2Digits(TotalTime + timeToReduce);
             WriteLine("时间流逝：" + timeToReduce);
 
-            // 减少复活倒计时
-            foreach (Character character in _respawnCountdown.Keys)
-            {
-                _respawnCountdown[character] = Calculation.Round2Digits(_respawnCountdown[character] - timeToReduce);
-                if (_respawnCountdown[character] <= 0)
-                {
-                    await SetCharacterRespawn(character);
-                }
-            }
-
             foreach (Character character in _queue)
             {
                 // 减少所有角色的硬直时间
+                double h = _hardnessTimes[character];
+                double d = _hardnessTimes[character] - timeToReduce;
                 _hardnessTimes[character] = Calculation.Round2Digits(_hardnessTimes[character] - timeToReduce);
 
                 // 统计
@@ -1234,6 +1243,16 @@ namespace Milimoe.FunGame.Core.Model
                 }
             }
 
+            // 减少复活倒计时
+            foreach (Character character in _respawnCountdown.Keys)
+            {
+                _respawnCountdown[character] = Calculation.Round2Digits(_respawnCountdown[character] - timeToReduce);
+                if (_respawnCountdown[character] <= 0)
+                {
+                    await SetCharacterRespawn(character);
+                }
+            }
+
             WriteLine("\r\n");
 
             return timeToReduce;
@@ -1292,7 +1311,7 @@ namespace Milimoe.FunGame.Core.Model
                 CalculateCharacterDamageStatistics(actor, enemy, damage, isMagicDamage);
 
                 // 计算助攻
-                _assistDamage[actor][enemy] += damage;
+                _assistDamage[actor][enemy, TotalTime] += damage;
 
                 // 造成伤害和受伤都可以获得能量
                 double ep = GetEP(damage, GameplayEquilibriumConstant.DamageGetEPFactor, GameplayEquilibriumConstant.DamageGetEPMax);
@@ -1719,11 +1738,12 @@ namespace Milimoe.FunGame.Core.Model
             _stats[death].Deaths += 1;
             int money = Random.Shared.Next(250, 350);
 
-            Character[] assists = [.. _assistDamage.Keys.Where(c => c != death && _assistDamage[c].GetPercentage(death) > 0.10)];
+            // 按伤害比分配金钱 只有造成 10% 伤害以上并且是在 30 秒内造成的伤害才能参与
+            Character[] assists = [.. _assistDamage.Keys.Where(c => c != death && _assistDamage[c].GetPercentage(death) > 0.10 && _assistDamage[c].GetLastTime(death) - TotalTime <= 30)];
             double totalDamagePercentage = _assistDamage.Keys.Where(assists.Contains).Select(c => _assistDamage[c].GetPercentage(death)).Sum();
             int totalMoney = Math.Min(Convert.ToInt32(money * totalDamagePercentage), 425); // 防止刷伤害设置金钱上限
 
-            // 按伤害比分配金钱 只有造成10%伤害以上才能参与
+            // 分配金钱和累计助攻
             foreach (Character assist in assists)
             {
                 int cmoney = Convert.ToInt32(_assistDamage[assist].GetPercentage(death) / totalDamagePercentage * totalMoney);
@@ -1813,7 +1833,7 @@ namespace Milimoe.FunGame.Core.Model
             List<AssistDetail> ads = [.. _assistDamage.Values.Where(ad => ad.Character != death)];
             foreach (AssistDetail ad in ads)
             {
-                ad[death] = 0;
+                ad[death, 0] = 0;
             }
 
             _continuousKilling.Remove(death);
@@ -1829,7 +1849,7 @@ namespace Milimoe.FunGame.Core.Model
             else
             {
                 // 进入复活倒计时
-                double respawnTime = Calculation.Round2Digits(Math.Min(90, death.Level * 0.15 + times * 2.77 + coefficient * Random.Shared.Next(1, 3)));
+                double respawnTime = Calculation.Round2Digits(Math.Min(30, death.Level * 0.15 + times * 0.87 + coefficient));
                 _respawnCountdown.TryAdd(death, respawnTime);
                 LastRound.RespawnCountdowns.TryAdd(death, respawnTime);
                 WriteLine($"[ {death} ] 进入复活倒计时：{respawnTime:0.##} {GameplayEquilibriumConstant.InGameTime}！");
@@ -2117,13 +2137,13 @@ namespace Milimoe.FunGame.Core.Model
                 skill = target.Skill;
                 _castingSkills.Remove(caster);
             }
-            else if (_castingSuperSkills.TryGetValue(caster, out skill))
+            if (skill is null && caster.CharacterState == CharacterState.PreCastSuperSkill)
             {
-                _castingSuperSkills.Remove(caster);
+                WriteLine($"因 [ {caster} ] 的预释放爆发技状态不可驱散，[ {interrupter} ] 打断失败！！");
             }
             if (skill != null)
             {
-                WriteLine($"[ {caster} ] 的{(skill.IsSuperSkill ? "预释放爆发技" : "施法")}被 [ {interrupter} ] 打断了！！");
+                WriteLine($"[ {caster} ] 的施法被 [ {interrupter} ] 打断了！！");
                 List<Effect> effects = [.. caster.Effects.Union(interrupter.Effects).Where(e => e.Level > 0)];
                 foreach (Effect effect in effects)
                 {
@@ -2381,16 +2401,26 @@ namespace Milimoe.FunGame.Core.Model
                 character.CharacterState = CharacterState.PreCastSuperSkill;
                 _queue.Remove(character);
                 _cutCount.Remove(character);
-                AddCharacter(character, 0, false);
-                await OnQueueUpdatedAsync(_queue, character, 0, QueueUpdatedReason.PreCastSuperSkill, "设置角色预释放爆发技的硬直时间。");
                 WriteLine("[ " + character + " ] 预释放了爆发技！！");
+                int preCastSSCount = 0;
+                double baseHardnessTime = 0;
                 foreach (Character c in _hardnessTimes.Keys)
                 {
-                    if (_hardnessTimes[c] != 0)
+                    if (c.CharacterState != CharacterState.PreCastSuperSkill)
                     {
                         _hardnessTimes[c] = Calculation.Round2Digits(_hardnessTimes[c] + 0.01);
                     }
+                    else if (c != character)
+                    {
+                        if (preCastSSCount == 0)
+                        {
+                            baseHardnessTime = _hardnessTimes[c];
+                        }
+                        preCastSSCount++;
+                    }
                 }
+                AddCharacter(character, Calculation.Round2Digits(baseHardnessTime + preCastSSCount * 0.01), false);
+                await OnQueueUpdatedAsync(_queue, character, 0, QueueUpdatedReason.PreCastSuperSkill, "设置角色预释放爆发技的硬直时间。");
                 skill.OnSkillCasting(this, character, []);
             }
         }
@@ -2528,15 +2558,16 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 修改角色的硬直时间
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="addValue"></param>
-        public void ChangeCharacterHardnessTime(Character character, double addValue)
+        /// <param name="character">角色</param>
+        /// <param name="addValue">加值</param>
+        /// <param name="isCheckProtected">是否使用插队保护机制</param>
+        public void ChangeCharacterHardnessTime(Character character, double addValue, bool isCheckProtected)
         {
             double hardnessTime = _hardnessTimes[character];
             hardnessTime += addValue;
             if (hardnessTime <= 0) hardnessTime = 0;
             _queue.Remove(character);
-            AddCharacter(character, hardnessTime, false);
+            AddCharacter(character, hardnessTime, isCheckProtected);
         }
 
         /// <summary>

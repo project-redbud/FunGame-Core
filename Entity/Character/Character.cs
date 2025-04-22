@@ -1797,30 +1797,34 @@ namespace Milimoe.FunGame.Core.Entity
             bool isCasting = CharacterState == CharacterState.Casting;
             bool isPreCastSuperSkill = CharacterState == CharacterState.PreCastSuperSkill;
 
-            if (isNotActionable)
+            // 预释放爆发技不可驱散，保持原状态
+            if (!isPreCastSuperSkill)
             {
-                CharacterState = CharacterState.NotActionable;
-            }
-            else if (isActionRestricted)
-            {
-                CharacterState = CharacterState.ActionRestricted;
-            }
-            else if (isBattleRestricted || (isSkillRestricted && isAttackRestricted))
-            {
-                CharacterState = CharacterState.BattleRestricted;
-            }
-            else if (isSkillRestricted)
-            {
-                CharacterState = CharacterState.SkillRestricted;
-            }
-            else if (isAttackRestricted)
-            {
-                CharacterState = CharacterState.AttackRestricted;
-            }
+                if (isNotActionable)
+                {
+                    CharacterState = CharacterState.NotActionable;
+                }
+                else if (isActionRestricted)
+                {
+                    CharacterState = CharacterState.ActionRestricted;
+                }
+                else if (isBattleRestricted || (isSkillRestricted && isAttackRestricted))
+                {
+                    CharacterState = CharacterState.BattleRestricted;
+                }
+                else if (isSkillRestricted)
+                {
+                    CharacterState = CharacterState.SkillRestricted;
+                }
+                else if (isAttackRestricted)
+                {
+                    CharacterState = CharacterState.AttackRestricted;
+                }
 
-            if (!isControl && !isCasting && !isPreCastSuperSkill)
-            {
-                CharacterState = CharacterState.Actionable;
+                if (!isControl && !isCasting)
+                {
+                    CharacterState = CharacterState.Actionable;
+                }
             }
 
             return CharacterState;
