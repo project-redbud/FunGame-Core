@@ -33,6 +33,11 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual string GeneralDescription { get; set; } = "";
 
         /// <summary>
+        /// 驱散性和被驱散性的描述
+        /// </summary>
+        public virtual string DispelDescription { get; set; } = "";
+
+        /// <summary>
         /// 释放技能时的口号
         /// </summary>
         public virtual string Slogan { get; set; } = "";
@@ -87,11 +92,6 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         [InitRequired]
         public bool IsMagic => SkillType == SkillType.Magic;
-
-        /// <summary>
-        /// 驱散性和被驱散性的描述
-        /// </summary>
-        public string DispelDescription { get; set; } = "";
 
         /// <summary>
         /// 可选取自身
