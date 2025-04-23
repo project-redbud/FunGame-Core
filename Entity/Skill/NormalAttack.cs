@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -56,6 +57,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 硬直时间
         /// </summary>
         public double HardnessTime { get; set; } = 10;
+
+        /// <summary>
+        /// 实际硬直时间
+        /// </summary>
+        public double RealHardnessTime => Math.Max(0, HardnessTime * Calculation.PercentageCheck(1 - Character?.ActionCoefficient ?? 0));
 
         /// <summary>
         /// 可选取自身
@@ -141,21 +147,37 @@ namespace Milimoe.FunGame.Core.Entity
             _MagicType = magicType;
         }
 
+        /// <summary>
+        /// 比较两个普攻对象
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public override bool Equals(IBaseEntity? other)
         {
             return other is NormalAttack c && c.Name == Name;
         }
 
-        public override string ToString()
+        /// <summary>
+        /// 输出信息
+        /// </summary>
+        /// <param name="showOriginal"></param>
+        /// <returns></returns>
+        public string GetInfo(bool showOriginal = false)
         {
             StringBuilder builder = new();
 
-            builder.AppendLine(Name + " - 等级 " + Level);
-            builder.AppendLine("描述：" + Description);
-            builder.AppendLine("硬直时间：" + HardnessTime);
+            builder.AppendLine($"{Name} - 等级 {Level}");
+            builder.AppendLine($"描述：{Description}");
+            builder.AppendLine($"硬直时间：{RealHardnessTime:0.##}{(showOriginal && RealHardnessTime != HardnessTime ? $"（原始值：{HardnessTime}）" : "")}");
 
             return builder.ToString();
         }
+
+        /// <summary>
+        /// 输出信息
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString() => GetInfo(true);
 
         /// <summary>
         /// 等级

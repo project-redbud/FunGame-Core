@@ -18,12 +18,16 @@
         public double AvgTakenPhysicalDamage { get; set; } = 0;
         public double AvgTakenMagicDamage { get; set; } = 0;
         public double AvgTakenRealDamage { get; set; } = 0;
+        public double TotalHeal { get; set; } = 0;
+        public double AvgHeal { get; set; } = 0;
         public int LiveRound { get; set; } = 0;
         public int AvgLiveRound { get; set; } = 0;
         public int ActionTurn { get; set; } = 0;
         public int AvgActionTurn { get; set; } = 0;
         public double LiveTime { get; set; } = 0;
         public double AvgLiveTime { get; set; } = 0;
+        public double ControlTime { get; set; } = 0;
+        public double AvgControlTime { get; set; } = 0;
         public double DamagePerRound { get; set; } = 0;
         public double DamagePerTurn { get; set; } = 0;
         public double DamagePerSecond { get; set; } = 0;

@@ -135,15 +135,15 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual double MPCost { get; set; } = 0;
 
         /// <summary>
-        /// 实际吟唱时间 [ 魔法 ]
-        /// </summary>
-        public double RealCastTime => Math.Max(0, CastTime * (1 - Calculation.PercentageCheck(Character?.AccelerationCoefficient ?? 0)));
-
-        /// <summary>
         /// 吟唱时间 [ 魔法 ]
         /// </summary>
         [InitOptional]
         public virtual double CastTime { get; set; } = 0;
+
+        /// <summary>
+        /// 实际吟唱时间 [ 魔法 ]
+        /// </summary>
+        public double RealCastTime => Math.Max(0, CastTime * (1 - Calculation.PercentageCheck(Character?.AccelerationCoefficient ?? 0)));
 
         /// <summary>
         /// 实际能量消耗 [ 战技 ]
@@ -197,6 +197,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         [InitRequired]
         public virtual double HardnessTime { get; set; } = 0;
+
+        /// <summary>
+        /// 实际硬直时间
+        /// </summary>
+        public double RealHardnessTime => Math.Max(0, HardnessTime * Calculation.PercentageCheck(1 - Character?.ActionCoefficient ?? 0));
 
         /// <summary>
         /// 效果列表
@@ -420,8 +425,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 返回技能的详细说明
         /// </summary>
+        /// <param name="showOriginal"></param>
         /// <returns></returns>
-        public override string ToString()
+        public string GetInfo(bool showOriginal = false)
         {
             StringBuilder builder = new();
 
@@ -451,38 +457,44 @@ namespace Milimoe.FunGame.Core.Entity
                 {
                     if (RealMPCost > 0)
                     {
-                        builder.AppendLine($"魔法消耗：{RealMPCost:0.##}");
+                        builder.AppendLine($"魔法消耗：{RealMPCost:0.##}{(showOriginal && RealMPCost != MPCost ? $"（原始值：{MPCost}）" : "")}");
                     }
                     if (RealEPCost > 0)
                     {
-                        builder.AppendLine($"能量消耗：{RealEPCost:0.##}");
+                        builder.AppendLine($"能量消耗：{RealEPCost:0.##}{(showOriginal && RealEPCost != EPCost ? $"（原始值：{EPCost}）" : "")}");
                     }
                 }
                 else
                 {
                     if (IsSuperSkill)
                     {
-                        builder.AppendLine($"能量消耗：{RealEPCost:0.##}");
+                        builder.AppendLine($"能量消耗：{RealEPCost:0.##}{(showOriginal && RealEPCost != EPCost ? $"（原始值：{EPCost}）" : "")}");
                     }
                     else
                     {
                         if (IsMagic)
                         {
-                            builder.AppendLine($"魔法消耗：{RealMPCost:0.##}");
-                            builder.AppendLine($"吟唱时间：{RealCastTime:0.##}");
+                            builder.AppendLine($"魔法消耗：{RealMPCost:0.##}{(showOriginal && RealMPCost != MPCost ? $"（原始值：{MPCost}）" : "")}");
+                            builder.AppendLine($"吟唱时间：{RealCastTime:0.##}{(showOriginal && RealCastTime != CastTime ? $"（原始值：{CastTime}）" : "")}");
                         }
                         else
                         {
-                            builder.AppendLine($"能量消耗：{RealEPCost:0.##}");
+                            builder.AppendLine($"能量消耗：{RealEPCost:0.##}{(showOriginal && RealEPCost != EPCost ? $"（原始值：{EPCost}）" : "")}");
                         }
                     }
                 }
-                builder.AppendLine($"冷却时间：{RealCD:0.##}");
-                builder.AppendLine($"硬直时间：{HardnessTime:0.##}");
+                builder.AppendLine($"冷却时间：{RealCD:0.##}{(showOriginal && RealCD != CD ? $"（原始值：{CD}）" : "")}");
+                builder.AppendLine($"硬直时间：{RealHardnessTime:0.##}{(showOriginal && RealHardnessTime != HardnessTime ? $"（原始值：{HardnessTime}）" : "")}");
             }
 
             return builder.ToString();
         }
+
+        /// <summary>
+        /// 返回技能的详细说明
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString() => GetInfo(true);
 
         /// <summary>
         /// 判断两个技能是否相同 检查Id.Name

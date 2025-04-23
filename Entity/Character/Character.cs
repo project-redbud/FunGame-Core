@@ -195,7 +195,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 额外生命值3 [ 额外生命值% ]
         /// </summary>
-        public double ExHP3 => (BaseHP + ExHP + ExHP2) * ExHPPercentage;
+        public double ExHP3 => BaseHP * ExHPPercentage;
 
         /// <summary>
         /// 额外生命值% [ 与技能和物品相关 ]
@@ -248,7 +248,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 额外魔法值3 [ 额外魔法值% ]
         /// </summary>
-        public double ExMP3 => (BaseMP + ExMP + ExMP2) * ExMPPercentage;
+        public double ExMP3 => BaseMP * ExMPPercentage;
 
         /// <summary>
         /// 额外魔法值% [ 与技能和物品相关 ]
@@ -353,7 +353,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 额外攻击力3 [ 额外攻击力% ]
         /// </summary>
-        public double ExATK3 => (BaseATK + ExATK + ExATK2) * ExATKPercentage;
+        public double ExATK3 => BaseATK * ExATKPercentage;
 
         /// <summary>
         /// 额外攻击力% [ 与技能和物品相关 ]
@@ -389,7 +389,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 额外物理护甲3 [ 额外物理护甲% ]
         /// </summary>
-        public double ExDEF3 => (BaseDEF + ExDEF + ExDEF2) * ExDEFPercentage;
+        public double ExDEF3 => BaseDEF * ExDEFPercentage;
 
         /// <summary>
         /// 额外物理护甲% [ 与技能和物品相关 ]
@@ -607,17 +607,17 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 额外力量2 [ 额外力量% ]
         /// </summary>
-        public double ExSTR2 => (BaseSTR + ExSTR) * ExSTRPercentage;
+        public double ExSTR2 => BaseSTR * ExSTRPercentage;
 
         /// <summary>
         /// 额外敏捷2 [ 额外敏捷% ]
         /// </summary>
-        public double ExAGI2 => (BaseAGI + ExAGI) * ExAGIPercentage;
+        public double ExAGI2 => BaseAGI * ExAGIPercentage;
 
         /// <summary>
         /// 额外智力2 [ 额外智力% ]
         /// </summary>
-        public double ExINT2 => (BaseINT + ExINT) * ExINTPercentage;
+        public double ExINT2 => BaseINT * ExINTPercentage;
 
         /// <summary>
         /// 额外力量% [ 与技能和物品相关 ]

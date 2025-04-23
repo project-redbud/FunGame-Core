@@ -21,6 +21,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 最后一次造成伤害的时间
         /// </summary>
         public Dictionary<Character, double> DamageLastTime { get; } = [];
+        
+        /// <summary>
+        /// 对某角色最后一次友方非伤害辅助的时间
+        /// </summary>
+        public Dictionary<Character, double> NotDamageAssistLastTime { get; } = [];
 
         /// <summary>
         /// 初始化一个助攻详情类
@@ -76,6 +81,20 @@ namespace Milimoe.FunGame.Core.Entity
         public double GetLastTime(Character enemy)
         {
             if (DamageLastTime.TryGetValue(enemy, out double time))
+            {
+                return time;
+            }
+            return -1;
+        }
+
+        /// <summary>
+        /// 获取对某角色友方非伤害辅助的最后时间
+        /// </summary>
+        /// <param name="character"></param>
+        /// <returns>-1 意味着没有时间</returns>
+        public double GetNotDamageAssistLastTime(Character character)
+        {
+            if (NotDamageAssistLastTime.TryGetValue(character, out double time))
             {
                 return time;
             }

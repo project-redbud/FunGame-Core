@@ -16,6 +16,8 @@ namespace Milimoe.FunGame.Core.Entity
         public bool HasKill { get; set; } = false;
         public Dictionary<Character, double> Damages { get; set; } = [];
         public Dictionary<Character, bool> IsCritical { get; set; } = [];
+        public Dictionary<Character, bool> IsEvaded { get; set; } = [];
+        public Dictionary<Character, bool> IsImmune { get; set; } = [];
         public Dictionary<Character, double> Heals { get; set; } = [];
         public Dictionary<Character, EffectType> Effects { get; set; } = [];
         public List<string> ActorContinuousKilling { get; set; } = [];
@@ -112,11 +114,18 @@ namespace Milimoe.FunGame.Core.Entity
                 {
                     hasEffect = $"施加：{SkillSet.GetEffectTypeName(effectType)}";
                 }
-                if (ActionType == CharacterActionType.NormalAttack && hasDamage == "")
+                if (IsEvaded.ContainsKey(target))
                 {
-                    hasDamage = "完美闪避";
+                    if (ActionType == CharacterActionType.NormalAttack)
+                    {
+                        hasDamage = "完美闪避";
+                    }
+                    else if ((ActionType == CharacterActionType.PreCastSkill || ActionType == CharacterActionType.CastSkill || ActionType == CharacterActionType.CastSuperSkill))
+                    {
+                        hasDamage = "技能免疫";
+                    }
                 }
-                if ((ActionType == CharacterActionType.PreCastSkill || ActionType == CharacterActionType.CastSkill || ActionType == CharacterActionType.CastSuperSkill) && hasDamage == "" && target != Actor)
+                if (IsImmune.ContainsKey(target) && hasDamage != "" && target != Actor)
                 {
                     hasDamage = "免疫";
                 }

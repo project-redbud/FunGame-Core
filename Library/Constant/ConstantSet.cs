@@ -680,6 +680,124 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 _ => "未知效果"
             };
         }
+        
+        public static DispelledType GetDispelledTypeByEffectType(EffectType type)
+        {
+            return type switch
+            {
+                EffectType.None => DispelledType.CannotBeDispelled,
+                EffectType.Item => DispelledType.CannotBeDispelled,
+                EffectType.Knockback => DispelledType.CannotBeDispelled,
+                EffectType.Unselectable => DispelledType.CannotBeDispelled,
+                EffectType.Doom => DispelledType.CannotBeDispelled,
+                EffectType.Stun => DispelledType.Strong,
+                EffectType.Freeze => DispelledType.Strong,
+                EffectType.Silence => DispelledType.Strong,
+                EffectType.Root => DispelledType.Strong,
+                EffectType.Fear => DispelledType.Strong,
+                EffectType.Sleep => DispelledType.Strong,
+                EffectType.Knockdown => DispelledType.Strong,
+                EffectType.Taunt => DispelledType.Strong,
+                EffectType.Invulnerable => DispelledType.Strong,
+                EffectType.Charm => DispelledType.Strong,
+                EffectType.Disarm => DispelledType.Strong,
+                EffectType.Confusion => DispelledType.Strong,
+                EffectType.Petrify => DispelledType.Strong,
+                EffectType.SilenceMagic => DispelledType.Strong,
+                EffectType.Banish => DispelledType.Strong,
+                EffectType.Mark => DispelledType.Weak,
+                EffectType.Slow => DispelledType.Weak,
+                EffectType.Weaken => DispelledType.Weak,
+                EffectType.Poison => DispelledType.Weak,
+                EffectType.Burn => DispelledType.Weak,
+                EffectType.Bleed => DispelledType.Weak,
+                EffectType.Blind => DispelledType.Weak,
+                EffectType.Cripple => DispelledType.Weak,
+                EffectType.Shield => DispelledType.Weak,
+                EffectType.HealOverTime => DispelledType.Weak,
+                EffectType.Haste => DispelledType.Weak,
+                EffectType.DamageBoost => DispelledType.Weak,
+                EffectType.DefenseBoost => DispelledType.Weak,
+                EffectType.CritBoost => DispelledType.Weak,
+                EffectType.ManaRegen => DispelledType.Weak,
+                EffectType.ArmorBreak => DispelledType.Weak,
+                EffectType.MagicResistBreak => DispelledType.Weak,
+                EffectType.Curse => DispelledType.Weak,
+                EffectType.Exhaustion => DispelledType.Weak,
+                EffectType.ManaBurn => DispelledType.Weak,
+                _ => DispelledType.Weak
+            };
+        }
+        
+        public static bool GetIsDebuffByEffectType(EffectType type)
+        {
+            return type switch
+            {
+                EffectType.None => false,
+                EffectType.Item => false,
+                EffectType.Knockback => true,
+                EffectType.Unselectable => false,
+                EffectType.Doom => true,
+                EffectType.Stun => true,
+                EffectType.Freeze => true,
+                EffectType.Silence => true,
+                EffectType.Root => true,
+                EffectType.Fear => true,
+                EffectType.Sleep => true,
+                EffectType.Knockdown => true,
+                EffectType.Taunt => true,
+                EffectType.Invulnerable => false,
+                EffectType.Charm => true,
+                EffectType.Disarm => true,
+                EffectType.Confusion => true,
+                EffectType.Petrify => true,
+                EffectType.SilenceMagic => true,
+                EffectType.Banish => true,
+                EffectType.Mark => true,
+                EffectType.Slow => true,
+                EffectType.Weaken => true,
+                EffectType.Poison => true,
+                EffectType.Burn => true,
+                EffectType.Bleed => true,
+                EffectType.Blind => true,
+                EffectType.Cripple => true,
+                EffectType.Shield => false,
+                EffectType.HealOverTime => false,
+                EffectType.Haste => false,
+                EffectType.DamageBoost => false,
+                EffectType.DefenseBoost => false,
+                EffectType.CritBoost => false,
+                EffectType.ManaRegen => false,
+                EffectType.ArmorBreak => true,
+                EffectType.MagicResistBreak => true,
+                EffectType.Curse => true,
+                EffectType.Exhaustion => true,
+                EffectType.ManaBurn => true,
+                _ => false
+            };
+        }
+
+        public static CharacterState GetCharacterStateByEffectType(EffectType type)
+        {
+            return type switch
+            {
+                EffectType.Stun => CharacterState.NotActionable,
+                EffectType.Freeze => CharacterState.NotActionable,
+                EffectType.Sleep => CharacterState.NotActionable,
+                EffectType.Knockdown => CharacterState.NotActionable,
+                EffectType.Petrify => CharacterState.NotActionable,
+                EffectType.Banish => CharacterState.NotActionable,
+                EffectType.Root => CharacterState.ActionRestricted,
+                EffectType.Fear => CharacterState.ActionRestricted,
+                EffectType.Taunt => CharacterState.ActionRestricted,
+                EffectType.Charm => CharacterState.ActionRestricted,
+                EffectType.Confusion => CharacterState.ActionRestricted,
+                EffectType.Silence => CharacterState.SkillRestricted,
+                EffectType.SilenceMagic => CharacterState.SkillRestricted,
+                EffectType.Disarm => CharacterState.AttackRestricted,
+                _ => CharacterState.Actionable,
+            };
+        }
 
         public static string GetDispelType(DispelType type)
         {
