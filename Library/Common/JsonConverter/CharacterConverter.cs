@@ -71,6 +71,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Character.IsUnselectable):
                     result.IsUnselectable = reader.GetBoolean();
                     break;
+                case nameof(Character.ImmuneType):
+                    result.ImmuneType = (ImmuneType)reader.GetInt32();
+                    break;
                 case nameof(Character.InitialHP):
                     result.InitialHP = reader.GetDouble();
                     break;
@@ -206,6 +209,12 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Character.ExEvadeRate):
                     result.ExEvadeRate = reader.GetDouble();
                     break;
+                case nameof(Character.Lifesteal):
+                    result.Lifesteal = reader.GetDouble();
+                    break;
+                case nameof(Character.Shield):
+                    result.Shield = NetworkUtility.JsonDeserialize<Shield>(ref reader, options) ?? new();
+                    break;
                 case nameof(Character.NormalAttack):
                     NormalAttack normalAttack = NetworkUtility.JsonDeserialize<NormalAttack>(ref reader, options) ?? new NormalAttack(result);
                     result.NormalAttack.Level = normalAttack.Level;
@@ -253,6 +262,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Character.EXP), value.EXP);
             writer.WriteBoolean(nameof(Character.IsNeutral), value.IsNeutral);
             writer.WriteBoolean(nameof(Character.IsUnselectable), value.IsUnselectable);
+            writer.WriteNumber(nameof(Character.ImmuneType), (int)value.ImmuneType);
             writer.WriteNumber(nameof(Character.CharacterState), (int)value.CharacterState);
             writer.WriteNumber(nameof(Character.InitialHP), value.InitialHP);
             writer.WriteNumber(nameof(Character.ExHP2), value.ExHP2);
@@ -299,6 +309,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Character.ExCritRate), value.ExCritRate);
             writer.WriteNumber(nameof(Character.ExCritDMG), value.ExCritDMG);
             writer.WriteNumber(nameof(Character.ExEvadeRate), value.ExEvadeRate);
+            writer.WriteNumber(nameof(Character.Lifesteal), value.Lifesteal);
+            writer.WritePropertyName(nameof(Character.Shield));
+            JsonSerializer.Serialize(writer, value.Shield, options);
             writer.WritePropertyName(nameof(Character.NormalAttack));
             JsonSerializer.Serialize(writer, value.NormalAttack, options);
             writer.WritePropertyName(nameof(Character.Skills));

@@ -677,6 +677,10 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.SilenceMagic => "法术沉默",
                 EffectType.Banish => "放逐",
                 EffectType.Doom => "毁灭",
+                EffectType.PhysicalImmune => "物理免疫",
+                EffectType.MagicalImmune => "魔法免疫",
+                EffectType.SkilledImmune => "技能免疫",
+                EffectType.AllImmune => "完全免疫",
                 _ => "未知效果"
             };
         }
@@ -725,6 +729,10 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.Curse => DispelledType.Weak,
                 EffectType.Exhaustion => DispelledType.Weak,
                 EffectType.ManaBurn => DispelledType.Weak,
+                EffectType.PhysicalImmune => DispelledType.Weak,
+                EffectType.MagicalImmune => DispelledType.Weak,
+                EffectType.SkilledImmune => DispelledType.Weak,
+                EffectType.AllImmune => DispelledType.Strong,
                 _ => DispelledType.Weak
             };
         }
@@ -773,6 +781,10 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.Curse => true,
                 EffectType.Exhaustion => true,
                 EffectType.ManaBurn => true,
+                EffectType.PhysicalImmune => false,
+                EffectType.MagicalImmune => false,
+                EffectType.SkilledImmune => false,
+                EffectType.AllImmune => false,
                 _ => false
             };
         }

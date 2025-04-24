@@ -867,16 +867,22 @@ namespace Milimoe.FunGame.Core.Model
                             }
                             if (targets.Count > 0)
                             {
-                                LastRound.Targets = [.. targets];
-                                decided = true;
+                                // 免疫检定
+                                await CheckSkilledImmuneAsync(character, targets, skill);
 
-                                character.CharacterState = CharacterState.Casting;
-                                SkillTarget skillTarget = new(skill, targets);
-                                await OnCharacterPreCastSkillAsync(character, skillTarget);
+                                if (targets.Count > 0)
+                                {
+                                    LastRound.Targets = [.. targets];
+                                    decided = true;
 
-                                _castingSkills[character] = skillTarget;
-                                baseTime = skill.RealCastTime;
-                                skill.OnSkillCasting(this, character, targets);
+                                    character.CharacterState = CharacterState.Casting;
+                                    SkillTarget skillTarget = new(skill, targets);
+                                    await OnCharacterPreCastSkillAsync(character, skillTarget);
+
+                                    _castingSkills[character] = skillTarget;
+                                    baseTime = skill.RealCastTime;
+                                    skill.OnSkillCasting(this, character, targets);
+                                }
                             }
                         }
                         else
@@ -892,29 +898,35 @@ namespace Milimoe.FunGame.Core.Model
                                 }
                                 if (targets.Count > 0)
                                 {
-                                    LastRound.Targets = [.. targets];
-                                    decided = true;
+                                    // 免疫检定
+                                    await CheckSkilledImmuneAsync(character, targets, skill);
 
-                                    SkillTarget skillTarget = new(skill, targets);
-                                    await OnCharacterPreCastSkillAsync(character, skillTarget);
-
-                                    skill.OnSkillCasting(this, character, targets);
-                                    skill.BeforeSkillCasted();
-
-                                    character.EP -= cost;
-                                    baseTime = skill.RealHardnessTime;
-                                    skill.CurrentCD = skill.RealCD;
-                                    skill.Enable = false;
-                                    LastRound.SkillCost = $"{-cost:0.##} EP";
-                                    WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
-
-                                    await OnCharacterCastSkillAsync(character, skillTarget, cost);
-
-                                    skill.OnSkillCasted(this, character, targets);
-                                    effects = [.. character.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
-                                    foreach (Effect effect in effects)
+                                    if (targets.Count > 0)
                                     {
-                                        effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
+                                        LastRound.Targets = [.. targets];
+                                        decided = true;
+
+                                        SkillTarget skillTarget = new(skill, targets);
+                                        await OnCharacterPreCastSkillAsync(character, skillTarget);
+
+                                        skill.OnSkillCasting(this, character, targets);
+                                        skill.BeforeSkillCasted();
+
+                                        character.EP -= cost;
+                                        baseTime = skill.RealHardnessTime;
+                                        skill.CurrentCD = skill.RealCD;
+                                        skill.Enable = false;
+                                        LastRound.SkillCost = $"{-cost:0.##} EP";
+                                        WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
+
+                                        await OnCharacterCastSkillAsync(character, skillTarget, cost);
+
+                                        skill.OnSkillCasted(this, character, targets);
+                                        effects = [.. character.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+                                        foreach (Effect effect in effects)
+                                        {
+                                            effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
+                                        }
                                     }
                                 }
                             }
@@ -935,23 +947,29 @@ namespace Milimoe.FunGame.Core.Model
                         // 判断是否能够释放技能
                         if (targets.Count > 0 && CheckCanCast(character, skill, out double cost))
                         {
-                            decided = true;
-                            LastRound.Targets = [.. targets];
-                            LastRound.Skill = skill;
-                            _castingSkills.Remove(character);
+                            // 免疫检定
+                            await CheckSkilledImmuneAsync(character, targets, skill);
 
-                            skill.BeforeSkillCasted();
+                            if (targets.Count > 0)
+                            {
+                                decided = true;
+                                LastRound.Targets = [.. targets];
+                                LastRound.Skill = skill;
+                                _castingSkills.Remove(character);
 
-                            character.MP -= cost;
-                            baseTime = skill.RealHardnessTime;
-                            skill.CurrentCD = skill.RealCD;
-                            skill.Enable = false;
-                            LastRound.SkillCost = $"{-cost:0.##} MP";
-                            WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点魔法值，释放了魔法 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
+                                skill.BeforeSkillCasted();
 
-                            await OnCharacterCastSkillAsync(character, skillTarget, cost);
+                                character.MP -= cost;
+                                baseTime = skill.RealHardnessTime;
+                                skill.CurrentCD = skill.RealCD;
+                                skill.Enable = false;
+                                LastRound.SkillCost = $"{-cost:0.##} MP";
+                                WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点魔法值，释放了魔法 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
 
-                            skill.OnSkillCasted(this, character, targets);
+                                await OnCharacterCastSkillAsync(character, skillTarget, cost);
+
+                                skill.OnSkillCasted(this, character, targets);
+                            }
                         }
                         else
                         {
@@ -988,6 +1006,8 @@ namespace Milimoe.FunGame.Core.Model
                     {
                         // 预释放的爆发技不可取消
                         List<Character> targets = await SelectTargetsAsync(character, skill, enemys, teammates);
+                        // 免疫检定
+                        await CheckSkilledImmuneAsync(character, targets, skill);
                         LastRound.Targets = [.. targets];
 
                         skill.BeforeSkillCasted();
@@ -1224,9 +1244,6 @@ namespace Milimoe.FunGame.Core.Model
                     }
                 }
 
-                // 获取统计数据对象
-                _stats.TryGetValue(character, out CharacterStatistics? stats);
-
                 // 移除到时间的特效
                 List<Effect> effects = [.. character.Effects.Where(e => e.Level > 0)];
                 foreach (Effect effect in effects)
@@ -1248,9 +1265,10 @@ namespace Milimoe.FunGame.Core.Model
                     }
 
                     // 统计控制时长
-                    if (stats != null && SkillSet.GetCharacterStateByEffectType(effect.EffectType) != CharacterState.Actionable)
+                    if (effect.Source != null && SkillSet.GetCharacterStateByEffectType(effect.EffectType) != CharacterState.Actionable)
                     {
-                        stats.ControlTime += timeToReduce;
+                        _stats[effect.Source].ControlTime += timeToReduce;
+                        SetNotDamageAssistTime(effect.Source, character);
                     }
 
                     if (effect.Durative)
@@ -1304,9 +1322,10 @@ namespace Milimoe.FunGame.Core.Model
                 LastRound.IsCritical[enemy] = true;
             }
 
+            List<Character> characters = [actor, enemy];
             bool isEvaded = damageResult == DamageResult.Evaded;
             Dictionary<Effect, double> totalDamageBonus = [];
-            List<Effect> effects = [.. actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+            List<Effect> effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
             foreach (Effect effect in effects)
             {
                 double damageBonus = effect.AlterActualDamageAfterCalculation(actor, enemy, damage, isNormalAttack, isMagicDamage, magicType, damageResult, ref isEvaded, totalDamageBonus);
@@ -1321,36 +1340,119 @@ namespace Milimoe.FunGame.Core.Model
             // 闪避了就没伤害了
             if (!isEvaded)
             {
-                if (damage < 0) damage = 0;
-                if (isMagicDamage)
-                {
-                    string dmgType = CharacterSet.GetMagicDamageName(magicType);
-                    WriteLine("[ " + enemy + $" ] 受到了 {damage:0.##} 点{dmgType}！");
-                }
-                else WriteLine("[ " + enemy + $" ] 受到了 {damage:0.##} 点物理伤害！");
-                enemy.HP -= damage;
+                // 计算伤害免疫
+                bool ignore = false;
 
-                // 统计伤害
-                CalculateCharacterDamageStatistics(actor, enemy, damage, isMagicDamage);
-
-                // 计算助攻
-                _assistDetail[actor][enemy, TotalTime] += damage;
-
-                // 造成伤害和受伤都可以获得能量
-                double ep = GetEP(damage, GameplayEquilibriumConstant.DamageGetEPFactor, GameplayEquilibriumConstant.DamageGetEPMax);
-                effects = [.. actor.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+                // 技能免疫无法免疫普通攻击，但是魔法免疫和物理免疫可以
                 foreach (Effect effect in effects)
                 {
-                    effect.AlterEPAfterDamage(actor, ref ep);
+                    if (isNormalAttack && (enemy.ImmuneType == ImmuneType.All || enemy.ImmuneType == ImmuneType.Physical || enemy.ImmuneType == ImmuneType.Magical))
+                    {
+                        if (actor.NormalAttack.IgnoreImmune == ImmuneType.All ||
+                            (!isMagicDamage && actor.NormalAttack.IgnoreImmune == ImmuneType.Physical) ||
+                            (isMagicDamage && actor.NormalAttack.IgnoreImmune == ImmuneType.Magical) ||
+                            !effect.OnDamageImmuneCheck(actor, enemy, isNormalAttack, isMagicDamage, magicType, damage))
+                        {
+                            ignore = true;
+                        }
+                    }
+                    else if (!isNormalAttack && (enemy.ImmuneType == ImmuneType.All || enemy.ImmuneType == ImmuneType.Physical || enemy.ImmuneType == ImmuneType.Magical || enemy.ImmuneType == ImmuneType.Skilled))
+                    {
+                        if (!effect.OnDamageImmuneCheck(actor, enemy, isNormalAttack, isMagicDamage, magicType, damage))
+                        {
+                            ignore = true;
+                        }
+                    }
                 }
-                actor.EP += ep;
-                ep = GetEP(damage, GameplayEquilibriumConstant.TakenDamageGetEPFactor, GameplayEquilibriumConstant.TakenDamageGetEPMax);
-                effects = [.. enemy.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
-                foreach (Effect effect in effects)
+
+                if (ignore)
                 {
-                    effect.AlterEPAfterGetDamage(enemy, ref ep);
+                    // 无视免疫
+                    LastRound.IsImmune[enemy] = true;
+                    WriteLine($"[ {enemy} ] 免疫了此伤害！");
                 }
-                enemy.EP += ep;
+                else
+                {
+                    if (damage < 0) damage = 0;
+
+                    // 检查护盾
+                    double shield = enemy.Shield[isMagicDamage, magicType];
+                    string shield_str = "";
+                    if (shield > 0)
+                    {
+                        double remain = shield - damage;
+                        if (remain < 0)
+                        {
+                            remain = Math.Abs(remain);
+                            enemy.Shield[isMagicDamage, magicType] = 0;
+
+                            bool change = false;
+                            effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+                            foreach (Effect effect in effects)
+                            {
+                                if (!effect.AfterShieldBroken(actor, enemy, isMagicDamage, magicType, damage, shield, remain))
+                                {
+                                    change = true;
+                                }
+                            }
+
+                            if (!change)
+                            {
+                                enemy.HP -= remain;
+                                shield_str = $"（护盾抵消了 {shield:0.##} 点并破碎，角色承受了 {remain:0.##} 点）";
+                            }
+                            else
+                            {
+                                shield_str = $"（护盾抵消了 {shield:0.##} 点并破碎，角色没有承受伤害）";
+                            }
+                        }
+                        else
+                        {
+                            enemy.Shield[isMagicDamage, magicType] = remain;
+                            shield_str = $"（护盾抵消了 {damage:0.##} 点，剩余可用 {remain:0.##} 点）";
+                        }
+                    }
+                    else enemy.HP -= damage;
+
+                    if (isMagicDamage)
+                    {
+                        string dmgType = CharacterSet.GetMagicDamageName(magicType);
+                        WriteLine($"[ {enemy} ] 受到了 {damage:0.##} 点{dmgType}！{shield_str}");
+                    }
+                    else WriteLine($"[ {enemy} ] 受到了 {damage:0.##} 点物理伤害！{shield_str}");
+
+                    // 生命偷取
+                    double steal = damage * actor.Lifesteal;
+                    await HealToTargetAsync(actor, actor, steal, false);
+                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+                    foreach (Effect effect in effects)
+                    {
+                        effect.AfterLifesteal(actor, enemy, damage, steal);
+                    }
+
+                    // 造成伤害和受伤都可以获得能量
+                    double ep = GetEP(damage, GameplayEquilibriumConstant.DamageGetEPFactor, GameplayEquilibriumConstant.DamageGetEPMax);
+                    effects = [.. actor.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+                    foreach (Effect effect in effects)
+                    {
+                        effect.AlterEPAfterDamage(actor, ref ep);
+                    }
+                    actor.EP += ep;
+                    ep = GetEP(damage, GameplayEquilibriumConstant.TakenDamageGetEPFactor, GameplayEquilibriumConstant.TakenDamageGetEPMax);
+                    effects = [.. enemy.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+                    foreach (Effect effect in effects)
+                    {
+                        effect.AlterEPAfterGetDamage(enemy, ref ep);
+                    }
+                    enemy.EP += ep;
+
+                    // 统计伤害
+                    CalculateCharacterDamageStatistics(actor, enemy, damage, isMagicDamage);
+
+                    // 计算助攻
+                    _assistDetail[actor][enemy, TotalTime] += damage;
+                }
             }
             else
             {
@@ -1359,7 +1461,7 @@ namespace Milimoe.FunGame.Core.Model
 
             await OnDamageToEnemyAsync(actor, enemy, damage, isNormalAttack, isMagicDamage, magicType, damageResult);
 
-            effects = [.. actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+            effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
             foreach (Effect effect in effects)
             {
                 effect.AfterDamageCalculation(actor, enemy, damage, isNormalAttack, isMagicDamage, magicType, damageResult);
@@ -1410,7 +1512,7 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     WriteLine($"[ {target} ] 复苏了，并回复了 {heal:0.##} 点生命值！！");
                 }
-               await SetCharacterRespawn(target);
+                await SetCharacterRespawn(target);
             }
             else
             {
@@ -1428,7 +1530,7 @@ namespace Milimoe.FunGame.Core.Model
 
             await OnHealToTargetAsync(actor, target, heal, isRespawn);
 
-            List<Effect> effects = [.. actor.Effects.Union(target.Effects).Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+            List<Effect> effects = [.. actor.Effects.Union(target.Effects).Distinct().Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
             foreach (Effect effect in effects)
             {
                 effect.AfterHealToTarget(actor, target, heal, isRespawn);
@@ -1460,7 +1562,7 @@ namespace Milimoe.FunGame.Core.Model
             List<Character> characters = [actor, enemy];
             bool isMagic = false;
             MagicType magicType = MagicType.None;
-            List<Effect> effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled))];
+            List<Effect> effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
             foreach (Effect effect in effects)
             {
                 effect.AlterDamageTypeBeforeCalculation(actor, enemy, ref isNormalAttack, ref isMagic, ref magicType);
@@ -1471,7 +1573,7 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             Dictionary<Effect, double> totalDamageBonus = [];
-            effects = [.. actor.Effects.Union(enemy.Effects).Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+            effects = [.. actor.Effects.Union(enemy.Effects).Distinct().Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
             foreach (Effect effect in effects)
             {
                 double damageBonus = effect.AlterExpectedDamageBeforeCalculation(actor, enemy, expectedDamage, isNormalAttack, false, MagicType.None, totalDamageBonus);
@@ -1485,7 +1587,7 @@ namespace Milimoe.FunGame.Core.Model
             bool checkCritical = true;
             if (isNormalAttack)
             {
-                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled))];
+                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
                 foreach (Effect effect in effects)
                 {
                     checkEvade = effect.BeforeEvadeCheck(actor, enemy, ref throwingBonus);
@@ -1493,12 +1595,12 @@ namespace Milimoe.FunGame.Core.Model
 
                 if (checkEvade)
                 {
-                    // 闪避判定
+                    // 闪避检定
                     if (dice < (enemy.EvadeRate + throwingBonus))
                     {
                         finalDamage = 0;
                         bool isAlterEvaded = false;
-                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled))];
+                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
                         foreach (Effect effect in effects)
                         {
                             if (effect.OnEvadedTriggered(actor, enemy, dice))
@@ -1524,8 +1626,8 @@ namespace Milimoe.FunGame.Core.Model
             // 最终的物理伤害
             finalDamage = expectedDamage * (1 - Calculation.PercentageCheck(physicalDamageReduction + enemy.ExPDR));
 
-            // 暴击判定
-            effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled))];
+            // 暴击检定
+            effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
             foreach (Effect effect in effects)
             {
                 checkCritical = effect.BeforeCriticalCheck(actor, enemy, ref throwingBonus);
@@ -1538,7 +1640,7 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     finalDamage *= actor.CritDMG; // 暴击伤害倍率加成
                     WriteLine("暴击生效！！");
-                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled))];
+                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
                     foreach (Effect effect in effects)
                     {
                         effect.OnCriticalDamageTriggered(actor, enemy, dice);
@@ -1565,7 +1667,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             List<Character> characters = [actor, enemy];
             bool isMagic = true;
-            List<Effect> effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled))];
+            List<Effect> effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
             foreach (Effect effect in effects)
             {
                 effect.AlterDamageTypeBeforeCalculation(actor, enemy, ref isNormalAttack, ref isMagic, ref magicType);
@@ -1576,7 +1678,7 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             Dictionary<Effect, double> totalDamageBonus = [];
-            effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled))];
+            effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
             foreach (Effect effect in effects)
             {
                 double damageBonus = effect.AlterExpectedDamageBeforeCalculation(actor, enemy, expectedDamage, isNormalAttack, true, magicType, totalDamageBonus);
@@ -1590,7 +1692,7 @@ namespace Milimoe.FunGame.Core.Model
             bool checkCritical = true;
             if (isNormalAttack)
             {
-                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled))];
+                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
                 foreach (Effect effect in effects)
                 {
                     checkEvade = effect.BeforeEvadeCheck(actor, enemy, ref throwingBonus);
@@ -1598,12 +1700,12 @@ namespace Milimoe.FunGame.Core.Model
 
                 if (checkEvade)
                 {
-                    // 闪避判定
+                    // 闪避检定
                     if (dice < (enemy.EvadeRate + throwingBonus))
                     {
                         finalDamage = 0;
                         bool isAlterEvaded = false;
-                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled))];
+                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
                         foreach (Effect effect in effects)
                         {
                             if (effect.OnEvadedTriggered(actor, enemy, dice))
@@ -1620,18 +1722,7 @@ namespace Milimoe.FunGame.Core.Model
                 }
             }
 
-            double MDF = magicType switch
-            {
-                MagicType.Starmark => enemy.MDF.Starmark,
-                MagicType.PurityNatural => enemy.MDF.PurityNatural,
-                MagicType.PurityContemporary => enemy.MDF.PurityContemporary,
-                MagicType.Bright => enemy.MDF.Bright,
-                MagicType.Shadow => enemy.MDF.Shadow,
-                MagicType.Element => enemy.MDF.Element,
-                MagicType.Fleabane => enemy.MDF.Fleabane,
-                MagicType.Particle => enemy.MDF.Particle,
-                _ => enemy.MDF.None
-            };
+            double MDF = enemy.MDF[magicType];
 
             // 魔法穿透后的魔法抗性
             MDF = (1 - actor.MagicalPenetration) * MDF;
@@ -1639,8 +1730,8 @@ namespace Milimoe.FunGame.Core.Model
             // 最终的魔法伤害
             finalDamage = expectedDamage * (1 - MDF);
 
-            // 暴击判定
-            effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled))];
+            // 暴击检定
+            effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
             foreach (Effect effect in effects)
             {
                 checkCritical = effect.BeforeCriticalCheck(actor, enemy, ref throwingBonus);
@@ -1653,7 +1744,7 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     finalDamage *= actor.CritDMG; // 暴击伤害倍率加成
                     WriteLine("暴击生效！！");
-                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled))];
+                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
                     foreach (Effect effect in effects)
                     {
                         effect.OnCriticalDamageTriggered(actor, enemy, dice);
@@ -1674,7 +1765,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             foreach (Character death in _roundDeaths)
             {
-                if(!await OnCharacterDeathAsync(character, death))
+                if (!await OnCharacterDeathAsync(character, death))
                 {
                     continue;
                 }
@@ -1783,7 +1874,7 @@ namespace Milimoe.FunGame.Core.Model
             // 按伤害比分配金钱 只有造成 10% 伤害以上并且是在 30 秒内造成的伤害才能参与
             // 现在 20 秒内的非伤害类型辅助也能参与助攻了
             Character[] assists = [.. _assistDetail.Keys.Where(c => c != death && _assistDetail[c].GetPercentage(death) > 0.10 &&
-                _assistDetail[c].GetLastTime(death) - TotalTime <= 30 && _assistDetail[c].GetNotDamageAssistLastTime(killer) - TotalTime <= 20)];
+                (_assistDetail[c].GetLastTime(death) - TotalTime <= 30 || _assistDetail[c].GetNotDamageAssistLastTime(killer) - TotalTime <= 20))];
             double totalDamagePercentage = _assistDetail.Keys.Where(assists.Contains).Select(c => _assistDetail[c].GetPercentage(death)).Sum();
             int totalMoney = Math.Min(Convert.ToInt32(money * totalDamagePercentage), 425); // 防止刷伤害设置金钱上限
 
@@ -2106,7 +2197,7 @@ namespace Milimoe.FunGame.Core.Model
             }
             return false;
         }
-        
+
         /// <summary>
         /// 检查是否可以释放技能（物品版）
         /// </summary>
@@ -2190,7 +2281,7 @@ namespace Milimoe.FunGame.Core.Model
             if (skill != null)
             {
                 WriteLine($"[ {caster} ] 的施法被 [ {interrupter} ] 打断了！！");
-                List<Effect> effects = [.. caster.Effects.Union(interrupter.Effects).Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+                List<Effect> effects = [.. caster.Effects.Union(interrupter.Effects).Distinct().Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
                 foreach (Effect effect in effects)
                 {
                     effect.OnSkillCastInterrupted(caster, skill, interrupter);
@@ -2198,7 +2289,7 @@ namespace Milimoe.FunGame.Core.Model
                 await OnInterruptCastingAsync(caster, skill, interrupter);
             }
         }
-        
+
         /// <summary>
         /// 打断施法 [ 用于使敌人目标丢失 ]
         /// </summary>
@@ -2212,7 +2303,7 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     Skill skill = skillTarget.Skill;
                     WriteLine($"[ {interrupter} ] 打断了 [ {caster} ] 的施法！！");
-                    List<Effect> effects = [.. caster.Effects.Union(interrupter.Effects).Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+                    List<Effect> effects = [.. caster.Effects.Union(interrupter.Effects).Distinct().Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
                     foreach (Effect effect in effects)
                     {
                         effect.OnSkillCastInterrupted(caster, skill, interrupter);
@@ -2374,41 +2465,47 @@ namespace Milimoe.FunGame.Core.Model
                     }
                     if (targets.Count > 0)
                     {
-                        LastRound.Targets = [.. targets];
+                        // 免疫检定
+                        await CheckSkilledImmuneAsync(character, targets, skill, item);
 
-                        await OnCharacterUseItemAsync(character, item, targets);
-
-                        string line = $"[ {character} ] 使用了物品 [ {item.Name} ]！\r\n[ {character} ] ";
-
-                        skill.OnSkillCasting(this, character, targets);
-                        skill.BeforeSkillCasted();
-
-                        skill.CurrentCD = skill.RealCD;
-                        skill.Enable = false;
-
-                        if (costMP > 0)
+                        if (targets.Count > 0)
                         {
-                            character.MP -= costMP;
-                            LastRound.SkillCost = $"{-costMP:0.##} MP";
-                            line += $"消耗了 {costMP:0.##} 点魔法值，";
+                            LastRound.Targets = [.. targets];
+
+                            await OnCharacterUseItemAsync(character, item, targets);
+
+                            string line = $"[ {character} ] 使用了物品 [ {item.Name} ]！\r\n[ {character} ] ";
+
+                            skill.OnSkillCasting(this, character, targets);
+                            skill.BeforeSkillCasted();
+
+                            skill.CurrentCD = skill.RealCD;
+                            skill.Enable = false;
+
+                            if (costMP > 0)
+                            {
+                                character.MP -= costMP;
+                                LastRound.SkillCost = $"{-costMP:0.##} MP";
+                                line += $"消耗了 {costMP:0.##} 点魔法值，";
+                            }
+
+                            if (costEP > 0)
+                            {
+                                character.EP -= costEP;
+                                if (LastRound.SkillCost != "") LastRound.SkillCost += " / ";
+                                LastRound.SkillCost += $"{-costEP:0.##} EP";
+                                line += $"消耗了 {costEP:0.##} 点能量，";
+                            }
+
+                            line += $"释放了物品技能 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}";
+                            WriteLine(line);
+
+                            SkillTarget skillTarget = new(skill, targets);
+                            await OnCharacterCastItemSkillAsync(character, item, skillTarget, costMP, costEP);
+
+                            skill.OnSkillCasted(this, character, targets);
+                            return true;
                         }
-
-                        if (costEP > 0)
-                        {
-                            character.EP -= costEP;
-                            if (LastRound.SkillCost != "") LastRound.SkillCost += " / ";
-                            LastRound.SkillCost += $"{-costEP:0.##} EP";
-                            line += $"消耗了 {costEP:0.##} 点能量，";
-                        }
-
-                        line += $"释放了物品技能 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}";
-                        WriteLine(line);
-
-                        SkillTarget skillTarget = new(skill, targets);
-                        await OnCharacterCastItemSkillAsync(character, item, skillTarget, costMP, costEP);
-
-                        skill.OnSkillCasted(this, character, targets);
-                        return true;
                     }
                 }
             }
@@ -2671,6 +2768,44 @@ namespace Milimoe.FunGame.Core.Model
             }
         }
 
+        /// <summary>
+        /// 免疫检定
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="targets"></param>
+        /// <param name="skill"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public virtual async Task CheckSkilledImmuneAsync(Character character, List<Character> targets, Skill skill, Item? item = null)
+        {
+            Character[] loop = [.. targets];
+            foreach (Character target in loop)
+            {
+                bool ignore = false;
+                Character[] characters = [character, target];
+                Effect[] effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+                foreach (Effect effect in effects)
+                {
+                    // 自带无视免疫或者特效免疫检定不通过可无视免疫
+                    if (character.ImmuneType == ImmuneType.Magical || character.ImmuneType == ImmuneType.Skilled || character.ImmuneType == ImmuneType.All)
+                    {
+                        if (effect.IgnoreImmune == ImmuneType.All || effect.IgnoreImmune == ImmuneType.Skilled || (skill.IsMagic && effect.IgnoreImmune == ImmuneType.Magical) || !effect.OnImmuneCheck(character, target, skill, item))
+                        {
+                            ignore = true;
+                        }
+                    }
+                }
+                if (ignore)
+                {
+                    targets.Remove(target);
+                    WriteLine($"[ {target} ] 免疫了此技能！");
+                    await OnCharacterImmunedAsync(character, target, skill, item);
+                }
+            }
+            await Task.CompletedTask;
+            return;
+        }
+
         #region 事件
 
         public delegate Task<bool> TurnStartEventHandler(ActionQueue queue, Character character, List<Character> enemys, List<Character> teammates, List<Skill> skills, List<Item> items);
@@ -2826,7 +2961,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             return await (DeathCalculation?.Invoke(this, killer, death) ?? Task.FromResult(true));
         }
-        
+
         public delegate Task<bool> CharacterDeathEventHandler(ActionQueue queue, Character current, Character death);
         /// <summary>
         /// 角色死亡事件，此事件位于 <see cref="DeathCalculation"/> 之后
@@ -2881,7 +3016,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             await (DamageToEnemy?.Invoke(this, actor, enemy, damage, isNormalAttack, isMagicDamage, magicType, damageResult) ?? Task.CompletedTask);
         }
-        
+
         public delegate Task CharacterNormalAttackEventHandler(ActionQueue queue, Character actor, List<Character> targets);
         /// <summary>
         /// 角色普通攻击事件
@@ -2897,7 +3032,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             await (CharacterNormalAttack?.Invoke(this, actor, targets) ?? Task.CompletedTask);
         }
-        
+
         public delegate Task CharacterPreCastSkillEventHandler(ActionQueue queue, Character actor, SkillTarget skillTarget);
         /// <summary>
         /// 角色吟唱技能事件（包括直接释放战技）
@@ -2913,7 +3048,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             await (CharacterPreCastSkill?.Invoke(this, actor, skillTarget) ?? Task.CompletedTask);
         }
-        
+
         public delegate Task CharacterCastSkillEventHandler(ActionQueue queue, Character actor, SkillTarget skillTarget, double cost);
         /// <summary>
         /// 角色释放技能事件
@@ -2930,7 +3065,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             await (CharacterCastSkill?.Invoke(this, actor, skillTarget, cost) ?? Task.CompletedTask);
         }
-        
+
         public delegate Task CharacterUseItemEventHandler(ActionQueue queue, Character actor, Item item, List<Character> targets);
         /// <summary>
         /// 角色使用物品事件
@@ -2947,7 +3082,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             await (CharacterUseItem?.Invoke(this, actor, item, targets) ?? Task.CompletedTask);
         }
-        
+
         public delegate Task CharacterCastItemSkillEventHandler(ActionQueue queue, Character actor, Item item, SkillTarget skillTarget, double costMP, double costEP);
         /// <summary>
         /// 角色释放物品的技能事件
@@ -2966,7 +3101,25 @@ namespace Milimoe.FunGame.Core.Model
         {
             await (CharacterCastItemSkill?.Invoke(this, actor, item, skillTarget, costMP, costEP) ?? Task.CompletedTask);
         }
-        
+
+        public delegate Task CharacterImmunedEventHandler(ActionQueue queue, Character character, Character immune, ISkill skill, Item? item = null);
+        /// <summary>
+        /// 角色免疫事件
+        /// </summary>
+        public event CharacterImmunedEventHandler? CharacterImmuned;
+        /// <summary>
+        /// 角色免疫事件
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="immune"></param>
+        /// <param name="skill"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        protected async Task OnCharacterImmunedAsync(Character character, Character immune, ISkill skill, Item? item = null)
+        {
+            await (CharacterImmuned?.Invoke(this, character, immune, skill, item) ?? Task.CompletedTask);
+        }
+
         public delegate Task CharacterDoNothingEventHandler(ActionQueue queue, Character actor);
         /// <summary>
         /// 角色主动结束回合事件（区别于放弃行动，这个是主动的）
@@ -2981,7 +3134,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             await (CharacterDoNothing?.Invoke(this, actor) ?? Task.CompletedTask);
         }
-        
+
         public delegate Task CharacterGiveUpEventHandler(ActionQueue queue, Character actor);
         /// <summary>
         /// 角色放弃行动事件
@@ -3011,7 +3164,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             return await (GameEnd?.Invoke(this, winner) ?? Task.FromResult(true));
         }
-        
+
         public delegate Task<bool> GameEndTeamEventHandler(ActionQueue queue, Team winner);
         /// <summary>
         /// 游戏结束事件（团队版）

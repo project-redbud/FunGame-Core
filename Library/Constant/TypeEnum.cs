@@ -429,7 +429,27 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// <summary>
         /// 毁灭，目标在倒计时结束后受到大量伤害或死亡
         /// </summary>
-        Doom
+        Doom,
+
+        /// <summary>
+        /// 物理免疫
+        /// </summary>
+        PhysicalImmune,
+
+        /// <summary>
+        /// 魔法免疫
+        /// </summary>
+        MagicalImmune,
+
+        /// <summary>
+        /// 技能免疫
+        /// </summary>
+        SkilledImmune,
+
+        /// <summary>
+        /// 完全免疫：物理免疫 + 技能免疫
+        /// </summary>
+        AllImmune
     }
 
     public enum ItemType
@@ -966,5 +986,18 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// 不可驱散 [ 最高优先级 ]
         /// </summary>
         CannotBeDispelled
+    }
+
+    /// <summary>
+    /// 标准实现的免疫类型
+    /// </summary>
+    public enum ImmuneType
+    {
+        None,
+        Physical,
+        Magical,
+        Skilled,
+        All,
+        Special
     }
 }

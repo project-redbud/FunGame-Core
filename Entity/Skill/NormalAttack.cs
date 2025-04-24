@@ -54,6 +54,11 @@ namespace Milimoe.FunGame.Core.Entity
         public MagicType MagicType => _MagicType;
 
         /// <summary>
+        /// 无视免疫类型
+        /// </summary>
+        public ImmuneType IgnoreImmune { get; set; } = ImmuneType.None;
+
+        /// <summary>
         /// 硬直时间
         /// </summary>
         public double HardnessTime { get; set; } = 10;
@@ -61,7 +66,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 实际硬直时间
         /// </summary>
-        public double RealHardnessTime => Math.Max(0, HardnessTime * Calculation.PercentageCheck(1 - Character?.ActionCoefficient ?? 0));
+        public double RealHardnessTime => Math.Max(0, HardnessTime * (1 - Calculation.PercentageCheck(Character?.ActionCoefficient ?? 0)));
 
         /// <summary>
         /// 可选取自身

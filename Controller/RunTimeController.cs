@@ -552,7 +552,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// 获取服务器已发送的信息为SocketObject数组 [ Socket Only ]
         /// </summary>
         /// <returns></returns>
-        protected SocketObject[] GetServerMessage()
+        protected SocketObject[] GetServerMessages()
         {
             if (_Socket != null && _Socket.Connected)
             {
@@ -571,7 +571,7 @@ namespace Milimoe.FunGame.Core.Controller
             SocketMessageType result = SocketMessageType.Unknown;
             try
             {
-                SocketObject[] messages = GetServerMessage();
+                SocketObject[] messages = GetServerMessages();
 
                 foreach (SocketObject obj in messages)
                 {
@@ -660,14 +660,14 @@ namespace Milimoe.FunGame.Core.Controller
         /// <summary>
         /// 客户端接收服务器断开连接的通知
         /// </summary>
-        /// <param name="ServerMessage"></param>
-        protected abstract void SocketHandler_Disconnect(SocketObject ServerMessage);
+        /// <param name="obj"></param>
+        protected abstract void SocketHandler_Disconnect(SocketObject obj);
 
         /// <summary>
         /// 客户端接收并处理服务器系统消息
         /// </summary>
-        /// <param name="ServerMessage"></param>
-        protected virtual void SocketHandler_System(SocketObject ServerMessage)
+        /// <param name="obj"></param>
+        protected virtual void SocketHandler_System(SocketObject obj)
         {
 
         }
@@ -675,8 +675,8 @@ namespace Milimoe.FunGame.Core.Controller
         /// <summary>
         /// 客户端接收并处理服务器心跳
         /// </summary>
-        /// <param name="ServerMessage"></param>
-        protected virtual void SocketHandler_HeartBeat(SocketObject ServerMessage)
+        /// <param name="obj"></param>
+        protected virtual void SocketHandler_HeartBeat(SocketObject obj)
         {
 
         }
@@ -684,8 +684,8 @@ namespace Milimoe.FunGame.Core.Controller
         /// <summary>
         /// 客户端接收强制退出登录的通知
         /// </summary>
-        /// <param name="ServerMessage"></param>
-        protected virtual void SocketHandler_ForceLogout(SocketObject ServerMessage)
+        /// <param name="obj"></param>
+        protected virtual void SocketHandler_ForceLogout(SocketObject obj)
         {
 
         }
@@ -693,8 +693,8 @@ namespace Milimoe.FunGame.Core.Controller
         /// <summary>
         /// 客户端接收并处理聊天信息
         /// </summary>
-        /// <param name="ServerMessage"></param>
-        protected virtual void SocketHandler_Chat(SocketObject ServerMessage)
+        /// <param name="obj"></param>
+        protected virtual void SocketHandler_Chat(SocketObject obj)
         {
 
         }
@@ -702,8 +702,8 @@ namespace Milimoe.FunGame.Core.Controller
         /// <summary>
         /// 客户端接收并处理更换房主信息
         /// </summary>
-        /// <param name="ServerMessage"></param>
-        protected virtual void SocketHandler_UpdateRoomMaster(SocketObject ServerMessage)
+        /// <param name="obj"></param>
+        protected virtual void SocketHandler_UpdateRoomMaster(SocketObject obj)
         {
 
         }
@@ -711,8 +711,8 @@ namespace Milimoe.FunGame.Core.Controller
         /// <summary>
         /// 客户端接收并处理匹配房间成功信息
         /// </summary>
-        /// <param name="ServerMessage"></param>
-        protected virtual void SocketHandler_MatchRoom(SocketObject ServerMessage)
+        /// <param name="obj"></param>
+        protected virtual void SocketHandler_MatchRoom(SocketObject obj)
         {
 
         }
@@ -720,8 +720,8 @@ namespace Milimoe.FunGame.Core.Controller
         /// <summary>
         /// 客户端接收并处理开始游戏信息
         /// </summary>
-        /// <param name="ServerMessage"></param>
-        protected virtual void SocketHandler_StartGame(SocketObject ServerMessage)
+        /// <param name="obj"></param>
+        protected virtual void SocketHandler_StartGame(SocketObject obj)
         {
 
         }
@@ -729,8 +729,8 @@ namespace Milimoe.FunGame.Core.Controller
         /// <summary>
         /// 客户端接收并处理游戏结束信息
         /// </summary>
-        /// <param name="ServerMessage"></param>
-        protected virtual void SocketHandler_EndGame(SocketObject ServerMessage)
+        /// <param name="obj"></param>
+        protected virtual void SocketHandler_EndGame(SocketObject obj)
         {
 
         }
@@ -738,8 +738,8 @@ namespace Milimoe.FunGame.Core.Controller
         /// <summary>
         /// 客户端接收并处理局内消息
         /// </summary>
-        /// <param name="ServerMessage"></param>
-        protected virtual void SocketHandler_Gaming(SocketObject ServerMessage)
+        /// <param name="obj"></param>
+        protected virtual void SocketHandler_Gaming(SocketObject obj)
         {
 
         }
@@ -747,8 +747,8 @@ namespace Milimoe.FunGame.Core.Controller
         /// <summary>
         /// 客户端接收并处理匿名服务器的消息
         /// </summary>
-        /// <param name="ServerMessage"></param>
-        protected virtual void SocketHandler_AnonymousGameServer(SocketObject ServerMessage)
+        /// <param name="obj"></param>
+        protected virtual void SocketHandler_AnonymousGameServer(SocketObject obj)
         {
 
         }

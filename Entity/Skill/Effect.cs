@@ -95,6 +95,11 @@ namespace Milimoe.FunGame.Core.Entity
         public bool IsBeingTemporaryDispelled { get; set; } = false;
 
         /// <summary>
+        /// 无视免疫类型
+        /// </summary>
+        public virtual ImmuneType IgnoreImmune { get; set; } = ImmuneType.None;
+
+        /// <summary>
         /// 效果描述
         /// </summary>
         public virtual string Description { get; set; } = "";
@@ -583,6 +588,62 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="isEnemy"></param>
         /// <returns>返回 false 可以阻止驱散</returns>
         public virtual bool OnEffectIsBeingDispelled(Character dispeller, Character target, Effect dispellerEffect, bool isEnemy)
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// 当角色触发生命偷取后
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="enemy"></param>
+        /// <param name="damage"></param>
+        /// <param name="steal"></param>
+        public virtual void AfterLifesteal(Character character, Character enemy, double damage, double steal)
+        {
+
+        }
+        
+        /// <summary>
+        /// 当角色护盾破碎时
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="attacker"></param>
+        /// <param name="isMagic"></param>
+        /// <param name="magicType"></param>
+        /// <param name="damage"></param>
+        /// <param name="shield"></param>
+        /// <param name="overFlowing"></param>
+        /// <returns>返回 false 可以阻止后续扣除角色生命值</returns>
+        public virtual bool AfterShieldBroken(Character character, Character attacker, bool isMagic, MagicType magicType, double damage, double shield, double overFlowing)
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// 在免疫检定时
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="enemy"></param>
+        /// <param name="skill"></param>
+        /// <param name="item"></param>
+        /// <returns>false：免疫检定不通过</returns>
+        public virtual bool OnImmuneCheck(Character actor, Character enemy, ISkill skill, Item? item = null)
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// 在伤害免疫检定时
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="enemy"></param>
+        /// <param name="isNormalAttack"></param>
+        /// <param name="isMagic"></param>
+        /// <param name="magicType"></param>
+        /// <param name="damage"></param>
+        /// <returns>false：免疫检定不通过</returns>
+        public virtual bool OnDamageImmuneCheck(Character actor, Character enemy, bool isNormalAttack, bool isMagic, MagicType magicType, double damage)
         {
             return true;
         }
