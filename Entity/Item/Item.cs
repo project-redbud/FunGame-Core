@@ -248,7 +248,7 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 foreach (Skill skill in Skills.Passives)
                 {
-                    List<Effect> effects = [.. Character.Effects.Where(e => e.Skill == skill && e.Level > 0)];
+                    List<Effect> effects = [.. Character.Effects.Where(e => e.Skill == skill && e.Level > 0 && !e.IsBeingTemporaryDispelled)];
                     foreach (Effect e in effects)
                     {
                         Character.Effects.Remove(e);

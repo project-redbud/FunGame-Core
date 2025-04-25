@@ -337,7 +337,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         HealOverTime,
 
         /// <summary>
-        /// 加速，提升行动速度和攻击频率
+        /// 加速，提升行动速度
         /// </summary>
         Haste,
 
@@ -357,7 +357,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         DamageBoost,
 
         /// <summary>
-        /// 防御提升，减少所受伤害
+        /// 物理护甲/魔法抗性提升，减少所受伤害
         /// </summary>
         DefenseBoost,
 
@@ -369,12 +369,12 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// <summary>
         /// 魔法恢复，增加魔法值回复速度
         /// </summary>
-        ManaRegen,
+        MPRegen,
 
         /// <summary>
-        /// 破甲，降低目标的防御值
+        /// 破甲，提高物理/魔法穿透
         /// </summary>
-        ArmorBreak,
+        PenetrationBoost,
 
         /// <summary>
         /// 降低魔法抗性，目标更容易受到魔法伤害
@@ -429,7 +429,42 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// <summary>
         /// 毁灭，目标在倒计时结束后受到大量伤害或死亡
         /// </summary>
-        Doom
+        Doom,
+
+        /// <summary>
+        /// 物理免疫
+        /// </summary>
+        PhysicalImmune,
+
+        /// <summary>
+        /// 魔法免疫
+        /// </summary>
+        MagicalImmune,
+
+        /// <summary>
+        /// 技能免疫
+        /// </summary>
+        SkilledImmune,
+
+        /// <summary>
+        /// 完全免疫：物理免疫 + 技能免疫
+        /// </summary>
+        AllImmune,
+
+        /// <summary>
+        /// 闪避提升
+        /// </summary>
+        EvadeBoost,
+
+        /// <summary>
+        /// 生命偷取
+        /// </summary>
+        Lifesteal,
+
+        /// <summary>
+        /// 重伤，目标受到的治疗效果降低
+        /// </summary>
+        GrievousWound
     }
 
     public enum ItemType
@@ -900,5 +935,84 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Special,
         PreCastSuperSkill,
         Respawn
+    }
+
+    public enum DispelType
+    {
+        /// <summary>
+        /// 无驱散 [ 默认，不能驱散其他特效 ]
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// 弱驱散
+        /// </summary>
+        Weak,
+
+        /// <summary>
+        /// 持续性弱驱散
+        /// </summary>
+        DurativeWeak,
+
+        /// <summary>
+        /// 临时弱驱散
+        /// </summary>
+        TemporaryWeak,
+
+        /// <summary>
+        /// 强驱散
+        /// </summary>
+        Strong,
+
+        /// <summary>
+        /// 持续性强驱散
+        /// </summary>
+        DurativeStrong,
+
+        /// <summary>
+        /// 临时强驱散
+        /// </summary>
+        TemporaryStrong,
+
+        /// <summary>
+        /// 特殊驱散
+        /// </summary>
+        Special
+    }
+
+    public enum DispelledType
+    {
+        /// <summary>
+        /// 可弱驱散 [ 默认 ]
+        /// </summary>
+        Weak,
+
+        /// <summary>
+        /// 需强驱散
+        /// </summary>
+        Strong,
+        
+        /// <summary>
+        /// 需特殊驱散
+        /// </summary>
+        Special,
+
+        /// <summary>
+        /// 不可驱散 [ 最高优先级 ]
+        /// </summary>
+        CannotBeDispelled
+    }
+
+    /// <summary>
+    /// 标准实现的免疫类型
+    /// </summary>
+    public enum ImmuneType
+    {
+        None,
+        Physical,
+        Magical,
+        Skilled,
+        All,
+        Special
     }
 }

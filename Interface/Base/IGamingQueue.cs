@@ -92,7 +92,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="heal"></param>
         /// <param name="canRespawn"></param>
         public Task HealToTargetAsync(Character actor, Character target, double heal, bool canRespawn = false);
-        
+
         /// <summary>
         /// 计算物理伤害
         /// </summary>
@@ -101,8 +101,9 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="isNormalAttack"></param>
         /// <param name="expectedDamage"></param>
         /// <param name="finalDamage"></param>
+        /// <param name="changeCount"></param>
         /// <returns></returns>
-        public DamageResult CalculatePhysicalDamage(Character actor, Character enemy, bool isNormalAttack, double expectedDamage, out double finalDamage);
+        public DamageResult CalculatePhysicalDamage(Character actor, Character enemy, bool isNormalAttack, double expectedDamage, out double finalDamage, ref int changeCount);
 
         /// <summary>
         /// 计算魔法伤害
@@ -113,8 +114,9 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="magicType"></param>
         /// <param name="expectedDamage"></param>
         /// <param name="finalDamage"></param>
+        /// <param name="changeCount"></param>
         /// <returns></returns>
-        public DamageResult CalculateMagicalDamage(Character actor, Character enemy, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage);
+        public DamageResult CalculateMagicalDamage(Character actor, Character enemy, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage, ref int changeCount);
 
         /// <summary>
         /// 死亡结算
@@ -171,5 +173,13 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// </summary>
         /// <returns></returns>
         public bool IsCharacterInAIControlling(Character character);
+
+        /// <summary>
+        /// 修改角色的硬直时间
+        /// </summary>
+        /// <param name="character">角色</param>
+        /// <param name="addValue">加值</param>
+        /// <param name="isCheckProtected">是否使用插队保护机制</param>
+        public void ChangeCharacterHardnessTime(Character character, double addValue, bool isCheckProtected);
     }
 }

@@ -29,6 +29,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(NormalAttack.MagicType):
                     result.SetMagicType(result.IsMagic, (MagicType)reader.GetInt32());
                     break;
+                case nameof(NormalAttack.IgnoreImmune):
+                    result.IgnoreImmune = (ImmuneType)reader.GetInt32();
+                    break;
             }
         }
 
@@ -40,6 +43,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(NormalAttack.HardnessTime), value.HardnessTime);
             writer.WriteBoolean(nameof(NormalAttack.IsMagic), value.IsMagic);
             writer.WriteNumber(nameof(NormalAttack.MagicType), (int)value.MagicType);
+            writer.WriteNumber(nameof(NormalAttack.IgnoreImmune), (int)value.IgnoreImmune);
 
             writer.WriteEndObject();
         }

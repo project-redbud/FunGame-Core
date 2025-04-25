@@ -5,12 +5,27 @@ namespace Milimoe.FunGame.Core.Entity
     /// <summary>
     /// 用于记录对哪个角色造成了多少伤害
     /// </summary>
-    public class AssistDetail : Dictionary<Character, double>
+    public class AssistDetail
     {
         /// <summary>
         /// 此详情类属于哪个角色
         /// </summary>
         public Character Character { get; }
+
+        /// <summary>
+        /// 对敌人造成的伤害
+        /// </summary>
+        public Dictionary<Character, double> Damages { get; } = [];
+
+        /// <summary>
+        /// 最后一次造成伤害的时间
+        /// </summary>
+        public Dictionary<Character, double> DamageLastTime { get; } = [];
+        
+        /// <summary>
+        /// 对某角色最后一次友方非伤害辅助的时间
+        /// </summary>
+        public Dictionary<Character, double> NotDamageAssistLastTime { get; } = [];
 
         /// <summary>
         /// 初始化一个助攻详情类
@@ -27,21 +42,23 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 获取和设置对 <paramref name="enemy"/> 的伤害
+        /// 获取和设置对 <paramref name="enemy"/> 的伤害，并设置时间
         /// </summary>
         /// <param name="enemy"></param>
+        /// <param name="time"></param>
         /// <returns></returns>
-        public new double this[Character enemy]
+        public double this[Character enemy, double? time = null]
         {
             get
             {
-                return base[enemy];
+                return Damages[enemy];
             }
             set
             {
-                if (!base.TryAdd(enemy, Calculation.Round2Digits(value)))
+                Damages[enemy] = Calculation.Round2Digits(value);
+                if (time.HasValue)
                 {
-                    base[enemy] = Calculation.Round2Digits(value);
+                    DamageLastTime[enemy] = time.Value;
                 }
             }
         }
@@ -53,7 +70,35 @@ namespace Milimoe.FunGame.Core.Entity
         /// <returns>目标的 <see cref="Character.MaxHP"/> 的百分比形式</returns>
         public double GetPercentage(Character enemy)
         {
-            return Calculation.Round2Digits(base[enemy] / enemy.MaxHP);
+            return Calculation.Round2Digits(Damages[enemy] / enemy.MaxHP);
+        }
+
+        /// <summary>
+        /// 获取对 <paramref name="enemy"/> 造成伤害的最后时间
+        /// </summary>
+        /// <param name="enemy"></param>
+        /// <returns>-1 意味着没有时间</returns>
+        public double GetLastTime(Character enemy)
+        {
+            if (DamageLastTime.TryGetValue(enemy, out double time))
+            {
+                return time;
+            }
+            return -1;
+        }
+
+        /// <summary>
+        /// 获取对某角色友方非伤害辅助的最后时间
+        /// </summary>
+        /// <param name="character"></param>
+        /// <returns>-1 意味着没有时间</returns>
+        public double GetNotDamageAssistLastTime(Character character)
+        {
+            if (NotDamageAssistLastTime.TryGetValue(character, out double time))
+            {
+                return time;
+            }
+            return -1;
         }
     }
 }

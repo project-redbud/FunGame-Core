@@ -26,12 +26,6 @@ namespace Milimoe.FunGame.Core.Entity
                             SkillType = SkillType.Item;
                         }
                         break;
-                    case "debuff":
-                        if (bool.TryParse(args[str].ToString(), out bool isDebuff) && isDebuff)
-                        {
-                            IsDebuff = isDebuff;
-                        }
-                        break;
                     case "self":
                         if (bool.TryParse(args[str].ToString(), out bool self))
                         {

@@ -51,9 +51,64 @@ namespace Milimoe.FunGame.Core.Entity
         public int RemainDurationTurn { get; set; } = 0;
 
         /// <summary>
+        /// 是否是没有具体持续时间的持续性特效
+        /// </summary>
+        public virtual bool DurativeWithoutDuration { get; set; } = false;
+
+        /// <summary>
         /// 魔法类型
         /// </summary>
         public virtual MagicType MagicType { get; set; } = MagicType.None;
+
+        /// <summary>
+        /// 驱散性 [ 能驱散什么特效，默认无驱散 ]
+        /// </summary>
+        public virtual DispelType DispelType { get; set; } = DispelType.None;
+        
+        /// <summary>
+        /// 被驱散性 [ 能被什么驱散类型驱散，默认弱驱散 ]
+        /// </summary>
+        public virtual DispelledType DispelledType { get; set; } = DispelledType.Weak;
+
+        /// <summary>
+        /// 是否是负面效果
+        /// </summary>
+        public virtual bool IsDebuff { get; set; } = false;
+
+        /// <summary>
+        /// 驱散性和被驱散性的具体说明
+        /// </summary>
+        public virtual string DispelDescription
+        {
+            get => GetDispelDescription("\r\n");
+            set => _dispelDescription = value;
+        }
+
+        /// <summary>
+        /// 是否具备弱驱散功能（强驱散包含在内）
+        /// </summary>
+        public bool CanWeakDispel => DispelType == DispelType.Weak || DispelType == DispelType.DurativeWeak || DispelType == DispelType.TemporaryWeak || CanStrongDispel;
+
+        /// <summary>
+        /// 是否具备强驱散功能
+        /// </summary>
+        public bool CanStrongDispel => DispelType == DispelType.Strong || DispelType == DispelType.DurativeStrong || DispelType == DispelType.TemporaryStrong;
+
+        /// <summary>
+        /// 是否是临时驱散 [ 需注意持续性驱散是在持续时间内将特效无效化而不是移除，适用临时驱散机制 ]
+        /// </summary>
+        public bool IsTemporaryDispel => DispelType == DispelType.DurativeWeak || DispelType == DispelType.TemporaryWeak || DispelType == DispelType.DurativeStrong || DispelType == DispelType.TemporaryStrong;
+
+        /// <summary>
+        /// 是否处于临时被驱散状态 [ 如果使用后不手动恢复为 false，那么行动顺序表会在时间流逝时恢复它 ]
+        /// <para/>注意看标准实现，需要配合 <see cref="OnEffectLost"/> 和 <see cref="OnEffectGained"/> 使用
+        /// </summary>
+        public bool IsBeingTemporaryDispelled { get; set; } = false;
+
+        /// <summary>
+        /// 无视免疫类型
+        /// </summary>
+        public virtual ImmuneType IgnoreImmune { get; set; } = ImmuneType.None;
 
         /// <summary>
         /// 效果描述
@@ -92,6 +147,11 @@ namespace Milimoe.FunGame.Core.Entity
             }
         }
 
+        /// <summary>
+        /// Values 构造动态特效参考这个构造函数
+        /// </summary>
+        /// <param name="skill"></param>
+        /// <param name="args"></param>
         protected Effect(Skill skill, Dictionary<string, object>? args = null)
         {
             Skill = skill;
@@ -285,6 +345,20 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 在治疗结算前修改治疗值
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="target"></param>
+        /// <param name="heal"></param>
+        /// <param name="canRespawn"></param>
+        /// <param name="totalHealBonus"></param>
+        /// <returns>返回治疗增减值</returns>
+        public virtual double AlterHealValueBeforeHealToTarget(Character actor, Character target, double heal, ref bool canRespawn, Dictionary<Effect, double> totalHealBonus)
+        {
+            return 0;
+        }
+
+        /// <summary>
         /// 在特效持有者的回合开始前
         /// </summary>
         /// <param name="character"></param>
@@ -439,6 +513,178 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 可重写对某个特效的驱散实现，适用于特殊驱散类型
+        /// </summary>
+        /// <param name="dispeller"></param>
+        /// <param name="target"></param>
+        /// <param name="effect"></param>
+        /// <param name="isEnemy"></param>
+        public virtual void OnDispellingEffect(Character dispeller, Character target, Effect effect, bool isEnemy)
+        {
+            bool isDispel = false;
+            // 先看特效整体是不是能被驱散的
+            switch (effect.DispelledType)
+            {
+                case DispelledType.Weak:
+                    if (CanWeakDispel)
+                    {
+                        isDispel = true;
+                    }
+                    break;
+                case DispelledType.Strong:
+                    if (CanStrongDispel)
+                    {
+                        isDispel = true;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            if (isDispel)
+            {
+                bool removeEffectTypes = false;
+                bool removeEffectStates = false;
+                // 接下来再看看特效给角色施加的特效类型和改变状态是不是能被驱散的
+                // 检查特效持续性
+                if (effect.DurativeWithoutDuration || (effect.Durative && effect.Duration > 0) || effect.DurationTurn > 0)
+                {
+                    // 先从角色身上移除特效类型
+                    if (target.CharacterEffectTypes.TryGetValue(effect, out List<EffectType>? types) && types != null)
+                    {
+                        RemoveEffectTypesByDispel(types, isEnemy);
+                        if (types.Count == 0)
+                        {
+                            target.CharacterEffectTypes.Remove(effect);
+                            removeEffectTypes = true;
+                        }
+                    }
+                    else
+                    {
+                        removeEffectTypes = true;
+                    }
+                    // 友方移除控制状态
+                    if (!isEnemy && effect.IsDebuff)
+                    {
+                        if (target.CharacterEffectStates.TryGetValue(effect, out List<CharacterState>? states) && states != null)
+                        {
+                            RemoveEffectStatesByDispel(states);
+                            if (states.Count == 0)
+                            {
+                                target.CharacterEffectStates.Remove(effect);
+                                removeEffectStates = true;
+                            }
+                        }
+                        else
+                        {
+                            removeEffectStates = true;
+                        }
+                    }
+                    target.UpdateCharacterState();
+                }
+                // 移除整个特效
+                if (removeEffectTypes && removeEffectStates)
+                {
+                    if (IsTemporaryDispel)
+                    {
+                        effect.IsBeingTemporaryDispelled = true;
+                    }
+                    else
+                    {
+                        effect.RemainDuration = 0;
+                        effect.RemainDurationTurn = 0;
+                        target.Effects.Remove(effect);
+                    }
+                    effect.OnEffectLost(target);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 当特效被驱散时的
+        /// </summary>
+        /// <param name="dispeller"></param>
+        /// <param name="target"></param>
+        /// <param name="dispellerEffect"></param>
+        /// <param name="isEnemy"></param>
+        /// <returns>返回 false 可以阻止驱散</returns>
+        public virtual bool OnEffectIsBeingDispelled(Character dispeller, Character target, Effect dispellerEffect, bool isEnemy)
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// 当角色触发生命偷取后
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="enemy"></param>
+        /// <param name="damage"></param>
+        /// <param name="steal"></param>
+        public virtual void AfterLifesteal(Character character, Character enemy, double damage, double steal)
+        {
+
+        }
+
+        /// <summary>
+        /// 在角色护盾结算前触发
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="attacker"></param>
+        /// <param name="isMagic"></param>
+        /// <param name="magicType"></param>
+        /// <param name="damage"></param>
+        /// <param name="shield"></param>
+        /// <param name="message"></param>
+        /// <returns>返回 false 可以阻止后续扣除角色护盾</returns>
+        public virtual bool BeforeShieldCalculation(Character character, Character attacker, bool isMagic, MagicType magicType, double damage, double shield, ref string message)
+        {
+            return true;
+        }
+        
+        /// <summary>
+        /// 当角色护盾破碎时
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="attacker"></param>
+        /// <param name="isMagic"></param>
+        /// <param name="magicType"></param>
+        /// <param name="damage"></param>
+        /// <param name="shield"></param>
+        /// <param name="overFlowing"></param>
+        /// <returns>返回 false 可以阻止后续扣除角色生命值</returns>
+        public virtual bool OnShieldBroken(Character character, Character attacker, bool isMagic, MagicType magicType, double damage, double shield, double overFlowing)
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// 在免疫检定时
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="enemy"></param>
+        /// <param name="skill"></param>
+        /// <param name="item"></param>
+        /// <returns>false：免疫检定不通过</returns>
+        public virtual bool OnImmuneCheck(Character actor, Character enemy, ISkill skill, Item? item = null)
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// 在伤害免疫检定时
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="enemy"></param>
+        /// <param name="isNormalAttack"></param>
+        /// <param name="isMagic"></param>
+        /// <param name="magicType"></param>
+        /// <param name="damage"></param>
+        /// <returns>false：免疫检定不通过</returns>
+        public virtual bool OnDamageImmuneCheck(Character actor, Character enemy, bool isNormalAttack, bool isMagic, MagicType magicType, double damage)
+        {
+            return true;
+        }
+
+        /// <summary>
         /// 对敌人造成技能伤害 [ 强烈建议使用此方法造成伤害而不是自行调用 <see cref="IGamingQueue.DamageToEnemyAsync"/> ]
         /// </summary>
         /// <param name="actor"></param>
@@ -450,7 +696,8 @@ namespace Milimoe.FunGame.Core.Entity
         public DamageResult DamageToEnemy(Character actor, Character enemy, bool isMagic, MagicType magicType, double expectedDamage)
         {
             if (GamingQueue is null) return DamageResult.Evaded;
-            DamageResult result = !isMagic ? GamingQueue.CalculatePhysicalDamage(actor, enemy, false, expectedDamage, out double damage) : GamingQueue.CalculateMagicalDamage(actor, enemy, false, MagicType, expectedDamage, out damage);
+            int changeCount = 0;
+            DamageResult result = !isMagic ? GamingQueue.CalculatePhysicalDamage(actor, enemy, false, expectedDamage, out double damage, ref changeCount) : GamingQueue.CalculateMagicalDamage(actor, enemy, false, MagicType, expectedDamage, out damage, ref changeCount);
             GamingQueue.DamageToEnemyAsync(actor, enemy, damage, false, isMagic, magicType, result);
             return result;
         }
@@ -493,10 +740,53 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="states"></param>
         public void AddEffectStatesToCharacter(Character character, List<CharacterState> states)
         {
-            character.CharacterEffectStates.Add(this, states);
+            if (character.CharacterEffectStates.TryGetValue(this, out List<CharacterState>? value) && value != null)
+            {
+                states.AddRange(value);
+            }
+            states = [.. states.Distinct()];
+            character.CharacterEffectStates[this] = states;
             character.UpdateCharacterState();
         }
-        
+
+        /// <summary>
+        /// 将特效控制效果设置到角色上 [ 尽可能的调用此方法而不是自己实现 ]
+        /// <para>施加 EffectType 的同时也会施加 CharacterState，参见 <see cref="AddEffectStatesToCharacter"/></para>
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="types"></param>
+        public void AddEffectTypeToCharacter(Character character, List<EffectType> types)
+        {
+            if (character.CharacterEffectTypes.TryGetValue(this, out List<EffectType>? value) && value != null)
+            {
+                types.AddRange(value);
+            }
+            types = [.. types.Distinct()];
+            character.CharacterEffectTypes[this] = types;
+            List<CharacterState> states = [];
+            foreach (EffectType type in types)
+            {
+                states.Add(SkillSet.GetCharacterStateByEffectType(type));
+            }
+            AddEffectStatesToCharacter(character, states);
+        }
+
+        /// <summary>
+        /// 将免疫状态设置到角色上 [ 尽可能的调用此方法而不是自己实现 ]
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="types"></param>
+        public void AddImmuneTypesToCharacter(Character character, List<ImmuneType> types)
+        {
+            if (character.CharacterImmuneTypes.TryGetValue(this, out List<ImmuneType>? value) && value != null)
+            {
+                types.AddRange(value);
+            }
+            types = [.. types.Distinct()];
+            character.CharacterImmuneTypes[this] = types;
+            character.UpdateCharacterState();
+        }
+
         /// <summary>
         /// 将特效状态从角色身上移除 [ 尽可能的调用此方法而不是自己实现 ]
         /// </summary>
@@ -504,17 +794,6 @@ namespace Milimoe.FunGame.Core.Entity
         public void RemoveEffectStatesFromCharacter(Character character)
         {
             character.CharacterEffectStates.Remove(this);
-            character.UpdateCharacterState();
-        }
-        
-        /// <summary>
-        /// 将特效控制效果设置到角色上 [ 尽可能的调用此方法而不是自己实现 ]
-        /// </summary>
-        /// <param name="character"></param>
-        /// <param name="types"></param>
-        public void AddEffectTypeToCharacter(Character character, List<EffectType> types)
-        {
-            character.CharacterEffectTypes.Add(this, types);
             character.UpdateCharacterState();
         }
 
@@ -526,6 +805,128 @@ namespace Milimoe.FunGame.Core.Entity
         {
             character.CharacterEffectTypes.Remove(this);
             character.UpdateCharacterState();
+        }
+        
+        /// <summary>
+        /// 将免疫状态从角色身上移除 [ 尽可能的调用此方法而不是自己实现 ]
+        /// </summary>
+        /// <param name="character"></param>
+        public void RemoveImmuneTypesFromCharacter(Character character)
+        {
+            character.CharacterImmuneTypes.Remove(this);
+            character.UpdateCharacterState();
+        }
+
+        /// <summary>
+        /// 从角色身上消除特效类型 [ 如果重写了 <see cref="OnDispellingEffect"/>，则尽可能的调用此方法而不是自己实现 ]
+        /// </summary>
+        /// <param name="types"></param>
+        /// <param name="isEnemy"></param>
+        public void RemoveEffectTypesByDispel(List<EffectType> types, bool isEnemy)
+        {
+            EffectType[] loop = [.. types];
+            foreach (EffectType type in loop)
+            {
+                bool isDebuff = SkillSet.GetIsDebuffByEffectType(type);
+                if (isEnemy == isDebuff)
+                {
+                    // 简单判断，敌方不考虑 debuff，友方只考虑 debuff
+                    continue;
+                }
+                DispelledType dispelledType = SkillSet.GetDispelledTypeByEffectType(type);
+                bool canDispel = false;
+                switch (dispelledType)
+                {
+                    case DispelledType.Weak:
+                        if (CanWeakDispel) canDispel = true;
+                        break;
+                    case DispelledType.Strong:
+                        if (CanStrongDispel) canDispel = true;
+                        break;
+                    default:
+                        break;
+                }
+                if (canDispel)
+                {
+                    types.Remove(type);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 从角色身上消除状态类型 [ 如果重写了 <see cref="OnDispellingEffect"/>，则尽可能的调用此方法而不是自己实现 ]
+        /// </summary>
+        /// <param name="states"></param>
+        public void RemoveEffectStatesByDispel(List<CharacterState> states)
+        {
+            CharacterState[] loop = [.. states];
+            foreach (CharacterState state in loop)
+            {
+                DispelledType dispelledType = DispelledType.Weak;
+                switch (state)
+                {
+                    case CharacterState.NotActionable:
+                    case CharacterState.ActionRestricted:
+                    case CharacterState.BattleRestricted:
+                        dispelledType = DispelledType.Strong;
+                        break;
+                    case CharacterState.SkillRestricted:
+                    case CharacterState.AttackRestricted:
+                        break;
+                    default:
+                        break;
+                }
+                bool canDispel = false;
+                switch (dispelledType)
+                {
+                    case DispelledType.Weak:
+                        if (CanWeakDispel) canDispel = true;
+                        break;
+                    case DispelledType.Strong:
+                        if (CanStrongDispel) canDispel = true;
+                        break;
+                    default:
+                        break;
+                }
+                if (canDispel)
+                {
+                    states.Remove(state);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 驱散目标 [ 尽可能的调用此方法而不是自己实现 ]
+        /// <para>此方法会触发 <see cref="OnDispellingEffect"/></para>
+        /// </summary>
+        /// <param name="dispeller"></param>
+        /// <param name="target"></param>
+        /// <param name="isEnemy"></param>
+        public void Dispel(Character dispeller, Character target, bool isEnemy)
+        {
+            if (DispelType == DispelType.None)
+            {
+                return;
+            }
+            Effect[] effects = [.. target.Effects.Where(e => e.Level > 0 && EffectType != EffectType.Item && !e.IsBeingTemporaryDispelled)];
+            foreach (Effect effect in effects)
+            {
+                if (effect.OnEffectIsBeingDispelled(dispeller, target, this, isEnemy))
+                {
+                    OnDispellingEffect(dispeller, target, effect, isEnemy);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 修改角色的硬直时间 [ 尽可能的调用此方法而不是自己实现 ]
+        /// </summary>
+        /// <param name="character">角色</param>
+        /// <param name="addValue">加值</param>
+        /// <param name="isCheckProtected">是否使用插队保护机制</param>
+        public void ChangeCharacterHardnessTime(Character character, double addValue, bool isCheckProtected)
+        {
+            GamingQueue?.ChangeCharacterHardnessTime(character, addValue, isCheckProtected);
         }
 
         /// <summary>
@@ -549,13 +950,20 @@ namespace Milimoe.FunGame.Core.Entity
             string isDurative = "";
             if (Durative)
             {
-                isDurative = $"（剩余：{RemainDuration:0.##} 时间）";
+                isDurative = $"（剩余：{RemainDuration:0.##} {GameplayEquilibriumConstant.InGameTime}）";
             }
             else if (DurationTurn > 0)
             {
-                isDurative = "（剩余：" + RemainDurationTurn + " 回合）";
+                isDurative = $"（剩余：{RemainDurationTurn} 回合）";
             }
-            builder.AppendLine("【" + Name + " - 等级 " + Level + "】" + Description + isDurative);
+
+            builder.Append($"【{Name} - 等级 {Level}】{Description}{isDurative}");
+
+            string dispels = GetDispelDescription("，");
+            if (dispels != "")
+            {
+                builder.Append($"（{dispels}）");
+            }
 
             return builder.ToString();
         }
@@ -575,7 +983,13 @@ namespace Milimoe.FunGame.Core.Entity
             copy.Id = Id;
             copy.Name = Name;
             copy.Description = Description;
+            copy.DispelDescription = DispelDescription;
             copy.EffectType = EffectType;
+            copy.DispelType = DispelType;
+            copy.DispelledType = DispelledType;
+            copy.IsDebuff = IsDebuff;
+            copy.IgnoreImmune = IgnoreImmune;
+            copy.DurativeWithoutDuration = DurativeWithoutDuration;
             copy.Durative = Durative;
             copy.Duration = Duration;
             copy.DurationTurn = DurationTurn;
@@ -593,5 +1007,37 @@ namespace Milimoe.FunGame.Core.Entity
         {
             return other is Effect c && c.Id + "." + Name == Id + "." + Name;
         }
+
+        /// <summary>
+        /// 获取驱散描述
+        /// </summary>
+        /// <param name="separator"></param>
+        /// <returns></returns>
+        private string GetDispelDescription(string separator)
+        {
+            if (_dispelDescription.Trim() != "")
+            {
+                return _dispelDescription;
+            }
+            else if (DispelType != DispelType.None || DispelledType != DispelledType.Weak)
+            {
+                List<string> dispels = [];
+                if (DispelType != DispelType.None)
+                {
+                    dispels.Add($"驱散性：{SkillSet.GetDispelType(DispelType)}");
+                }
+                if (DispelledType != DispelledType.Weak)
+                {
+                    dispels.Add($"被驱散性：{SkillSet.GetDispelledType(DispelledType)}");
+                }
+                return string.Join(separator, dispels);
+            }
+            return "";
+        }
+
+        /// <summary>
+        /// 驱散描述
+        /// </summary>
+        private string _dispelDescription = "";
     }
 }

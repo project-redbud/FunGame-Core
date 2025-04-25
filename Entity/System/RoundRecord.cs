@@ -16,8 +16,10 @@ namespace Milimoe.FunGame.Core.Entity
         public bool HasKill { get; set; } = false;
         public Dictionary<Character, double> Damages { get; set; } = [];
         public Dictionary<Character, bool> IsCritical { get; set; } = [];
+        public Dictionary<Character, bool> IsEvaded { get; set; } = [];
+        public Dictionary<Character, bool> IsImmune { get; set; } = [];
         public Dictionary<Character, double> Heals { get; set; } = [];
-        public Dictionary<Character, EffectType> Effects { get; set; } = [];
+        public Dictionary<Character, List<EffectType>> Effects { get; set; } = [];
         public List<string> ActorContinuousKilling { get; set; } = [];
         public List<string> DeathContinuousKilling { get; set; } = [];
         public double CastTime { get; set; } = 0;
@@ -108,15 +110,22 @@ namespace Milimoe.FunGame.Core.Entity
                 {
                     hasHeal = $"治疗：{heals:0.##}";
                 }
-                if (Effects.TryGetValue(target, out EffectType effectType))
+                if (Effects.TryGetValue(target, out List<EffectType>? effectTypes) && effectTypes != null)
                 {
-                    hasEffect = $"施加：{SkillSet.GetEffectTypeName(effectType)}";
+                    hasEffect = $"施加：{string.Join(" + ", effectTypes.Select(SkillSet.GetEffectTypeName))}";
                 }
-                if (ActionType == CharacterActionType.NormalAttack && hasDamage == "")
+                if (IsEvaded.ContainsKey(target))
                 {
-                    hasDamage = "完美闪避";
+                    if (ActionType == CharacterActionType.NormalAttack)
+                    {
+                        hasDamage = "完美闪避";
+                    }
+                    else if ((ActionType == CharacterActionType.PreCastSkill || ActionType == CharacterActionType.CastSkill || ActionType == CharacterActionType.CastSuperSkill))
+                    {
+                        hasDamage = "技能免疫";
+                    }
                 }
-                if ((ActionType == CharacterActionType.PreCastSkill || ActionType == CharacterActionType.CastSkill || ActionType == CharacterActionType.CastSuperSkill) && hasDamage == "" && target != Actor)
+                if (IsImmune.ContainsKey(target) && hasDamage != "" && target != Actor)
                 {
                     hasDamage = "免疫";
                 }

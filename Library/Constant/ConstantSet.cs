@@ -664,8 +664,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.DamageBoost => "伤害提升",
                 EffectType.DefenseBoost => "防御提升",
                 EffectType.CritBoost => "暴击提升",
-                EffectType.ManaRegen => "魔法恢复",
-                EffectType.ArmorBreak => "破甲",
+                EffectType.MPRegen => "魔法恢复",
+                EffectType.PenetrationBoost => "穿透提升",
                 EffectType.MagicResistBreak => "降低魔抗",
                 EffectType.Curse => "诅咒",
                 EffectType.Exhaustion => "疲劳",
@@ -677,7 +677,170 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.SilenceMagic => "法术沉默",
                 EffectType.Banish => "放逐",
                 EffectType.Doom => "毁灭",
+                EffectType.PhysicalImmune => "物理免疫",
+                EffectType.MagicalImmune => "魔法免疫",
+                EffectType.SkilledImmune => "技能免疫",
+                EffectType.AllImmune => "完全免疫",
+                EffectType.EvadeBoost => "闪避提升",
                 _ => "未知效果"
+            };
+        }
+        
+        public static DispelledType GetDispelledTypeByEffectType(EffectType type)
+        {
+            return type switch
+            {
+                EffectType.None => DispelledType.CannotBeDispelled,
+                EffectType.Item => DispelledType.CannotBeDispelled,
+                EffectType.Knockback => DispelledType.CannotBeDispelled,
+                EffectType.Unselectable => DispelledType.CannotBeDispelled,
+                EffectType.Doom => DispelledType.CannotBeDispelled,
+                EffectType.Stun => DispelledType.Strong,
+                EffectType.Freeze => DispelledType.Strong,
+                EffectType.Silence => DispelledType.Strong,
+                EffectType.Root => DispelledType.Strong,
+                EffectType.Fear => DispelledType.Strong,
+                EffectType.Sleep => DispelledType.Strong,
+                EffectType.Knockdown => DispelledType.Strong,
+                EffectType.Taunt => DispelledType.Strong,
+                EffectType.Invulnerable => DispelledType.Strong,
+                EffectType.Charm => DispelledType.Strong,
+                EffectType.Disarm => DispelledType.Strong,
+                EffectType.Confusion => DispelledType.Strong,
+                EffectType.Petrify => DispelledType.Strong,
+                EffectType.SilenceMagic => DispelledType.Strong,
+                EffectType.Banish => DispelledType.Strong,
+                EffectType.Mark => DispelledType.Weak,
+                EffectType.Slow => DispelledType.Weak,
+                EffectType.Weaken => DispelledType.Weak,
+                EffectType.Poison => DispelledType.Weak,
+                EffectType.Burn => DispelledType.Weak,
+                EffectType.Bleed => DispelledType.Weak,
+                EffectType.Blind => DispelledType.Weak,
+                EffectType.Cripple => DispelledType.Weak,
+                EffectType.Shield => DispelledType.Weak,
+                EffectType.HealOverTime => DispelledType.Weak,
+                EffectType.Haste => DispelledType.Weak,
+                EffectType.DamageBoost => DispelledType.Weak,
+                EffectType.DefenseBoost => DispelledType.Weak,
+                EffectType.CritBoost => DispelledType.Weak,
+                EffectType.MPRegen => DispelledType.Weak,
+                EffectType.PenetrationBoost => DispelledType.Weak,
+                EffectType.MagicResistBreak => DispelledType.Weak,
+                EffectType.Curse => DispelledType.Weak,
+                EffectType.Exhaustion => DispelledType.Weak,
+                EffectType.ManaBurn => DispelledType.Weak,
+                EffectType.PhysicalImmune => DispelledType.Weak,
+                EffectType.MagicalImmune => DispelledType.Weak,
+                EffectType.SkilledImmune => DispelledType.Weak,
+                EffectType.AllImmune => DispelledType.Strong,
+                EffectType.EvadeBoost => DispelledType.Weak,
+                EffectType.Lifesteal => DispelledType.Weak,
+                EffectType.GrievousWound => DispelledType.Weak,
+                _ => DispelledType.Weak
+            };
+        }
+        
+        public static bool GetIsDebuffByEffectType(EffectType type)
+        {
+            return type switch
+            {
+                EffectType.None => false,
+                EffectType.Item => false,
+                EffectType.Knockback => true,
+                EffectType.Unselectable => false,
+                EffectType.Doom => true,
+                EffectType.Stun => true,
+                EffectType.Freeze => true,
+                EffectType.Silence => true,
+                EffectType.Root => true,
+                EffectType.Fear => true,
+                EffectType.Sleep => true,
+                EffectType.Knockdown => true,
+                EffectType.Taunt => true,
+                EffectType.Invulnerable => false,
+                EffectType.Charm => true,
+                EffectType.Disarm => true,
+                EffectType.Confusion => true,
+                EffectType.Petrify => true,
+                EffectType.SilenceMagic => true,
+                EffectType.Banish => true,
+                EffectType.Mark => true,
+                EffectType.Slow => true,
+                EffectType.Weaken => true,
+                EffectType.Poison => true,
+                EffectType.Burn => true,
+                EffectType.Bleed => true,
+                EffectType.Blind => true,
+                EffectType.Cripple => true,
+                EffectType.Shield => false,
+                EffectType.HealOverTime => false,
+                EffectType.Haste => false,
+                EffectType.DamageBoost => false,
+                EffectType.DefenseBoost => false,
+                EffectType.CritBoost => false,
+                EffectType.MPRegen => false,
+                EffectType.PenetrationBoost => true,
+                EffectType.MagicResistBreak => true,
+                EffectType.Curse => true,
+                EffectType.Exhaustion => true,
+                EffectType.ManaBurn => true,
+                EffectType.PhysicalImmune => false,
+                EffectType.MagicalImmune => false,
+                EffectType.SkilledImmune => false,
+                EffectType.AllImmune => false,
+                EffectType.EvadeBoost => false,
+                EffectType.Lifesteal => false,
+                EffectType.GrievousWound => false,
+                _ => false
+            };
+        }
+
+        public static CharacterState GetCharacterStateByEffectType(EffectType type)
+        {
+            return type switch
+            {
+                EffectType.Stun => CharacterState.NotActionable,
+                EffectType.Freeze => CharacterState.NotActionable,
+                EffectType.Sleep => CharacterState.NotActionable,
+                EffectType.Knockdown => CharacterState.NotActionable,
+                EffectType.Petrify => CharacterState.NotActionable,
+                EffectType.Banish => CharacterState.NotActionable,
+                EffectType.Root => CharacterState.ActionRestricted,
+                EffectType.Fear => CharacterState.ActionRestricted,
+                EffectType.Taunt => CharacterState.ActionRestricted,
+                EffectType.Charm => CharacterState.ActionRestricted,
+                EffectType.Confusion => CharacterState.ActionRestricted,
+                EffectType.Silence => CharacterState.SkillRestricted,
+                EffectType.SilenceMagic => CharacterState.SkillRestricted,
+                EffectType.Disarm => CharacterState.AttackRestricted,
+                _ => CharacterState.Actionable,
+            };
+        }
+
+        public static string GetDispelType(DispelType type)
+        {
+            return type switch
+            {
+                DispelType.Weak => "弱驱散",
+                DispelType.DurativeWeak => "持续性弱驱散",
+                DispelType.TemporaryWeak => "临时弱驱散",
+                DispelType.Strong => "强驱散",
+                DispelType.DurativeStrong => "持续性强驱散",
+                DispelType.TemporaryStrong => "临时强驱散",
+                DispelType.Special => "特殊驱散",
+                _ => ""
+            };
+        }
+
+        public static string GetDispelledType(DispelledType type)
+        {
+            return type switch
+            {
+                DispelledType.Strong => "需强驱散",
+                DispelledType.Special => "需特殊驱散",
+                DispelledType.CannotBeDispelled => "不可驱散",
+                _ => ""
             };
         }
     }

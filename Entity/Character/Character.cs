@@ -162,6 +162,11 @@ namespace Milimoe.FunGame.Core.Entity
         public Dictionary<Effect, List<EffectType>> CharacterEffectTypes { get; } = [];
 
         /// <summary>
+        /// 角色目前被特效施加的免疫状态 [ 战斗相关 ]
+        /// </summary>
+        public Dictionary<Effect, List<ImmuneType>> CharacterImmuneTypes { get; } = [];
+
+        /// <summary>
         /// 角色是否是中立的 [ 战斗相关 ]
         /// </summary>
         public bool IsNeutral { get; set; } = false;
@@ -170,6 +175,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 角色是否是不可选中的 [ 战斗相关 ]
         /// </summary>
         public bool IsUnselectable { get; set; } = false;
+
+        /// <summary>
+        /// 角色是否具备免疫状态 [ 战斗相关 ]
+        /// </summary>
+        public ImmuneType ImmuneType { get; set; } = ImmuneType.None;
 
         /// <summary>
         /// 初始生命值 [ 初始设定 ]
@@ -195,7 +205,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 额外生命值3 [ 额外生命值% ]
         /// </summary>
-        public double ExHP3 => (BaseHP + ExHP + ExHP2) * ExHPPercentage;
+        public double ExHP3 => BaseHP * ExHPPercentage;
 
         /// <summary>
         /// 额外生命值% [ 与技能和物品相关 ]
@@ -248,7 +258,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 额外魔法值3 [ 额外魔法值% ]
         /// </summary>
-        public double ExMP3 => (BaseMP + ExMP + ExMP2) * ExMPPercentage;
+        public double ExMP3 => BaseMP * ExMPPercentage;
 
         /// <summary>
         /// 额外魔法值% [ 与技能和物品相关 ]
@@ -353,7 +363,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 额外攻击力3 [ 额外攻击力% ]
         /// </summary>
-        public double ExATK3 => (BaseATK + ExATK + ExATK2) * ExATKPercentage;
+        public double ExATK3 => BaseATK * ExATKPercentage;
 
         /// <summary>
         /// 额外攻击力% [ 与技能和物品相关 ]
@@ -389,7 +399,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 额外物理护甲3 [ 额外物理护甲% ]
         /// </summary>
-        public double ExDEF3 => (BaseDEF + ExDEF + ExDEF2) * ExDEFPercentage;
+        public double ExDEF3 => BaseDEF * ExDEFPercentage;
 
         /// <summary>
         /// 额外物理护甲% [ 与技能和物品相关 ]
@@ -607,17 +617,17 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 额外力量2 [ 额外力量% ]
         /// </summary>
-        public double ExSTR2 => (BaseSTR + ExSTR) * ExSTRPercentage;
+        public double ExSTR2 => BaseSTR * ExSTRPercentage;
 
         /// <summary>
         /// 额外敏捷2 [ 额外敏捷% ]
         /// </summary>
-        public double ExAGI2 => (BaseAGI + ExAGI) * ExAGIPercentage;
+        public double ExAGI2 => BaseAGI * ExAGIPercentage;
 
         /// <summary>
         /// 额外智力2 [ 额外智力% ]
         /// </summary>
-        public double ExINT2 => (BaseINT + ExINT) * ExINTPercentage;
+        public double ExINT2 => BaseINT * ExINTPercentage;
 
         /// <summary>
         /// 额外力量% [ 与技能和物品相关 ]
@@ -788,6 +798,16 @@ namespace Milimoe.FunGame.Core.Entity
         public double ExEvadeRate { get; set; } = 0;
 
         /// <summary>
+        /// 生命偷取 [ 与技能和物品相关 ]
+        /// </summary>
+        public double Lifesteal { get; set; } = 0;
+
+        /// <summary>
+        /// 护盾值 [ 与技能和物品相关 ]
+        /// </summary>
+        public Shield Shield { get; set; }
+
+        /// <summary>
         /// 普通攻击对象
         /// </summary>
         public NormalAttack NormalAttack { get; }
@@ -851,6 +871,7 @@ namespace Milimoe.FunGame.Core.Entity
             InitialDEF = GameplayEquilibriumConstant.InitialDEF;
             EquipSlot = new();
             MDF = new();
+            Shield = new();
             NormalAttack = new(this);
         }
 
@@ -1187,7 +1208,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         public void OnAttributeChanged()
         {
-            List<Effect> effects = [.. Effects.Where(e => e.Level > 0)];
+            List<Effect> effects = [.. Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
             foreach (Effect effect in effects)
             {
                 effect.OnAttributeChanged(this);
@@ -1322,7 +1343,10 @@ namespace Milimoe.FunGame.Core.Entity
                 builder.AppendLine($"经验值：{EXP}{(Level != GameplayEquilibriumConstant.MaxLevel && GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) ? " / " + need : "")}");
             }
             double exHP = ExHP + ExHP2 + ExHP3;
-            builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : ""));
+            List<string> shield = [];
+            if (Shield.TotalPhysical > 0) shield.Add($"物理：{Shield.TotalPhysical:0.##}");
+            if (Shield.TotalMagicial > 0) shield.Add($"魔法：{Shield.TotalMagicial:0.##}");
+            builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : "") + (shield.Count > 0 ? $"（{string.Join("，", shield)}）" : ""));
             double exMP = ExMP + ExMP2 + ExMP3;
             builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
             builder.AppendLine($"能量值：{EP:0.##} / {GameplayEquilibriumConstant.MaxEP:0.##}");
@@ -1330,10 +1354,7 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
             double exDEF = ExDEF + ExDEF2 + ExDEF3;
             builder.AppendLine($"物理护甲：{DEF:0.##}" + (exDEF != 0 ? $" [{BaseDEF:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exDEF):0.##}]" : "") + $" ({PDR * 100:0.##}%)");
-            double mdf = Calculation.Round4Digits((MDF.None + MDF.Starmark + MDF.PurityNatural + MDF.PurityContemporary +
-                MDF.Bright + MDF.Shadow + MDF.Element + MDF.Fleabane + MDF.Particle) / 9) * 100;
-            if (Calculation.IsApproximatelyZero(mdf)) mdf = 0;
-            builder.AppendLine($"魔法抗性：{mdf:0.##}%（平均）");
+            builder.AppendLine($"魔法抗性：{MDF.Avg:0.##}%（平均）");
             double exSPD = AGI * GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
             builder.AppendLine($"行动速度：{SPD:0.##}" + (exSPD != 0 ? $" [{InitialSPD:0.##} {(exSPD >= 0 ? "+" : "-")} {Math.Abs(exSPD):0.##}]" : "") + $" ({ActionCoefficient * 100:0.##}%)");
             builder.AppendLine($"核心属性：{CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)}");
@@ -1348,6 +1369,7 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"暴击率：{CritRate * 100:0.##}%");
             builder.AppendLine($"暴击伤害：{CritDMG * 100:0.##}%");
             builder.AppendLine($"闪避率：{EvadeRate * 100:0.##}%");
+            builder.AppendLine($"生命偷取：{Lifesteal * 100:0.##}%");
             builder.AppendLine($"冷却缩减：{CDR * 100:0.##}%");
             builder.AppendLine($"加速系数：{AccelerationCoefficient * 100:0.##}%");
             builder.AppendLine($"物理穿透：{PhysicalPenetration * 100:0.##}%");
@@ -1453,7 +1475,10 @@ namespace Milimoe.FunGame.Core.Entity
                 builder.AppendLine($"经验值：{EXP}{(Level != GameplayEquilibriumConstant.MaxLevel && GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) ? " / " + need : "")}");
             }
             double exHP = ExHP + ExHP2 + ExHP3;
-            builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : ""));
+            List<string> shield = [];
+            if (Shield.TotalPhysical > 0) shield.Add($"物理：{Shield.TotalPhysical:0.##}");
+            if (Shield.TotalMagicial > 0) shield.Add($"魔法：{Shield.TotalMagicial:0.##}");
+            builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : "") + (shield.Count > 0 ? $"（{string.Join("，", shield)}）" : ""));
             double exMP = ExMP + ExMP2 + ExMP3;
             builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
             builder.AppendLine($"能量值：{EP:0.##} / {GameplayEquilibriumConstant.MaxEP:0.##}");
@@ -1461,10 +1486,7 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
             double exDEF = ExDEF + ExDEF2 + ExDEF3;
             builder.AppendLine($"物理护甲：{DEF:0.##}" + (exDEF != 0 ? $" [{BaseDEF:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exDEF):0.##}]" : "") + $" ({PDR * 100:0.##}%)");
-            double mdf = Calculation.Round4Digits((MDF.None + MDF.Starmark + MDF.PurityNatural + MDF.PurityContemporary +
-                MDF.Bright + MDF.Shadow + MDF.Element + MDF.Fleabane + MDF.Particle) / 9) * 100;
-            if (Calculation.IsApproximatelyZero(mdf)) mdf = 0;
-            builder.AppendLine($"魔法抗性：{mdf:0.##}%（平均）");
+            builder.AppendLine($"魔法抗性：{MDF.Avg:0.##}%（平均）");
             if (showBasicOnly)
             {
                 builder.AppendLine($"核心属性：{PrimaryAttributeValue:0.##}（{CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)}）");
@@ -1559,7 +1581,10 @@ namespace Milimoe.FunGame.Core.Entity
 
             builder.AppendLine(ToStringWithLevel());
             double exHP = ExHP + ExHP2 + ExHP3;
-            builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : ""));
+            List<string> shield = [];
+            if (Shield.TotalPhysical > 0) shield.Add($"物理：{Shield.TotalPhysical:0.##}");
+            if (Shield.TotalMagicial > 0) shield.Add($"魔法：{Shield.TotalMagicial:0.##}");
+            builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : "") + (shield.Count > 0 ? $"（{string.Join("，", shield)}）" : ""));
             double exMP = ExMP + ExMP2 + ExMP3;
             builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
             builder.AppendLine($"能量值：{EP:0.##} / {GameplayEquilibriumConstant.MaxEP:0.##}");
@@ -1607,7 +1632,10 @@ namespace Milimoe.FunGame.Core.Entity
 
             builder.AppendLine(ToStringWithLevel());
             double exHP = ExHP + ExHP2 + ExHP3;
-            builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : ""));
+            List<string> shield = [];
+            if (Shield.TotalPhysical > 0) shield.Add($"物理：{Shield.TotalPhysical:0.##}");
+            if (Shield.TotalMagicial > 0) shield.Add($"魔法：{Shield.TotalMagicial:0.##}");
+            builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : "") + (shield.Count > 0 ? $"（{string.Join("，", shield)}）" : ""));
             double exMP = ExMP + ExMP2 + ExMP3;
             builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
             builder.AppendLine($"能量值：{EP:0.##} / {GameplayEquilibriumConstant.MaxEP:0.##}");
@@ -1689,7 +1717,10 @@ namespace Milimoe.FunGame.Core.Entity
                 builder.AppendLine($"经验值：{EXP}{(Level != GameplayEquilibriumConstant.MaxLevel && GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) ? " / " + need : "")}");
             }
             double exHP = ExHP + ExHP2 + ExHP3;
-            builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : ""));
+            List<string> shield = [];
+            if (Shield.TotalPhysical > 0) shield.Add($"物理：{Shield.TotalPhysical:0.##}");
+            if (Shield.TotalMagicial > 0) shield.Add($"魔法：{Shield.TotalMagicial:0.##}");
+            builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : "") + (shield.Count > 0 ? $"（{string.Join("，", shield)}）" : ""));
             double exMP = ExMP + ExMP2 + ExMP3;
             builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
             builder.AppendLine($"能量值：{EP:0.##} / {GameplayEquilibriumConstant.MaxEP:0.##}");
@@ -1697,10 +1728,7 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
             double exDEF = ExDEF + ExDEF2 + ExDEF3;
             builder.AppendLine($"物理护甲：{DEF:0.##}" + (exDEF != 0 ? $" [{BaseDEF:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exDEF):0.##}]" : "") + $" ({PDR * 100:0.##}%)");
-            double mdf = Calculation.Round4Digits((MDF.None + MDF.Starmark + MDF.PurityNatural + MDF.PurityContemporary +
-                MDF.Bright + MDF.Shadow + MDF.Element + MDF.Fleabane + MDF.Particle) / 9) * 100;
-            if (Calculation.IsApproximatelyZero(mdf)) mdf = 0;
-            builder.AppendLine($"魔法抗性：{mdf:0.##}%（平均）");
+            builder.AppendLine($"魔法抗性：{MDF.Avg:0.##}%（平均）");
             double exSPD = AGI * GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
             builder.AppendLine($"行动速度：{SPD:0.##}" + (exSPD != 0 ? $" [{InitialSPD:0.##} {(exSPD >= 0 ? "+" : "-")} {Math.Abs(exSPD):0.##}]" : "") + $" ({ActionCoefficient * 100:0.##}%)");
             builder.AppendLine($"核心属性：{CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)}");
@@ -1715,6 +1743,7 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"暴击率：{CritRate * 100:0.##}%");
             builder.AppendLine($"暴击伤害：{CritDMG * 100:0.##}%");
             builder.AppendLine($"闪避率：{EvadeRate * 100:0.##}%");
+            builder.AppendLine($"生命偷取：{Lifesteal * 100:0.##}%");
             builder.AppendLine($"冷却缩减：{CDR * 100:0.##}%");
             builder.AppendLine($"加速系数：{AccelerationCoefficient * 100:0.##}%");
             builder.AppendLine($"物理穿透：{PhysicalPenetration * 100:0.##}%");
@@ -1775,52 +1804,77 @@ namespace Milimoe.FunGame.Core.Entity
         /// <returns></returns>
         public CharacterState UpdateCharacterState()
         {
-            bool isNotActionable = false;
-            bool isActionRestricted = false;
-            bool isBattleRestricted = false;
-            bool isSkillRestricted = false;
-            bool isAttackRestricted = false;
-
             IEnumerable<CharacterState> states = CharacterEffectStates.Values.SelectMany(list => list);
             // 根据持有的特效判断角色所处的状态
-            isNotActionable = states.Any(state => state == CharacterState.NotActionable);
-            isActionRestricted = states.Any(state => state == CharacterState.ActionRestricted);
-            isBattleRestricted = states.Any(state => state == CharacterState.BattleRestricted);
-            isSkillRestricted = states.Any(state => state == CharacterState.SkillRestricted);
-            isAttackRestricted = states.Any(state => state == CharacterState.AttackRestricted);
+            bool isNotActionable = states.Any(state => state == CharacterState.NotActionable);
+            bool isActionRestricted = states.Any(state => state == CharacterState.ActionRestricted);
+            bool isBattleRestricted = states.Any(state => state == CharacterState.BattleRestricted);
+            bool isSkillRestricted = states.Any(state => state == CharacterState.SkillRestricted);
+            bool isAttackRestricted = states.Any(state => state == CharacterState.AttackRestricted);
 
             IEnumerable<EffectType> types = CharacterEffectTypes.Values.SelectMany(list => list);
             // 判断角色的控制效果
             IsUnselectable = types.Any(type => type == EffectType.Unselectable);
 
+            IEnumerable<ImmuneType> immunes = CharacterImmuneTypes.Values.SelectMany(list => list);
+            // 判断角色的免疫状态
+            bool isAllImmune = immunes.Any(type => type == ImmuneType.All);
+            bool isPhysicalImmune = immunes.Any(type => type == ImmuneType.Physical);
+            bool isMagicalImmune = immunes.Any(type => type == ImmuneType.Magical);
+            bool isSkilledImmune = immunes.Any(type => type == ImmuneType.Skilled);
+            if (isAllImmune)
+            {
+                ImmuneType = ImmuneType.All;
+            }
+            else if (isPhysicalImmune)
+            {
+                ImmuneType = ImmuneType.Physical;
+            }
+            else if (isMagicalImmune)
+            {
+                ImmuneType = ImmuneType.Magical;
+            }
+            else if (isSkilledImmune)
+            {
+                ImmuneType = ImmuneType.Skilled;
+            }
+            else
+            {
+                ImmuneType = ImmuneType.None;
+            }
+
             bool isControl = isNotActionable || isActionRestricted || isBattleRestricted || isSkillRestricted || isAttackRestricted;
             bool isCasting = CharacterState == CharacterState.Casting;
             bool isPreCastSuperSkill = CharacterState == CharacterState.PreCastSuperSkill;
 
-            if (isNotActionable)
+            // 预释放爆发技不可驱散，保持原状态
+            if (!isPreCastSuperSkill)
             {
-                CharacterState = CharacterState.NotActionable;
-            }
-            else if (isActionRestricted)
-            {
-                CharacterState = CharacterState.ActionRestricted;
-            }
-            else if (isBattleRestricted || (isSkillRestricted && isAttackRestricted))
-            {
-                CharacterState = CharacterState.BattleRestricted;
-            }
-            else if (isSkillRestricted)
-            {
-                CharacterState = CharacterState.SkillRestricted;
-            }
-            else if (isAttackRestricted)
-            {
-                CharacterState = CharacterState.AttackRestricted;
-            }
+                if (isNotActionable)
+                {
+                    CharacterState = CharacterState.NotActionable;
+                }
+                else if (isActionRestricted)
+                {
+                    CharacterState = CharacterState.ActionRestricted;
+                }
+                else if (isBattleRestricted || (isSkillRestricted && isAttackRestricted))
+                {
+                    CharacterState = CharacterState.BattleRestricted;
+                }
+                else if (isSkillRestricted)
+                {
+                    CharacterState = CharacterState.SkillRestricted;
+                }
+                else if (isAttackRestricted)
+                {
+                    CharacterState = CharacterState.AttackRestricted;
+                }
 
-            if (!isControl && !isCasting && !isPreCastSuperSkill)
-            {
-                CharacterState = CharacterState.Actionable;
+                if (!isControl && !isCasting)
+                {
+                    CharacterState = CharacterState.Actionable;
+                }
             }
 
             return CharacterState;
@@ -1847,6 +1901,7 @@ namespace Milimoe.FunGame.Core.Entity
                 ThirdRoleType = ThirdRoleType,
                 Promotion = Promotion,
                 PrimaryAttribute = PrimaryAttribute,
+                ImmuneType = ImmuneType,
                 Level = Level,
                 LevelBreak = LevelBreak,
                 EXP = EXP,
@@ -1869,6 +1924,8 @@ namespace Milimoe.FunGame.Core.Entity
                 INTGrowth = INTGrowth,
                 InitialSPD = InitialSPD,
                 ATR = ATR,
+                Lifesteal = Lifesteal,
+                Shield = Shield.Copy()
             };
             if (copyEx)
             {

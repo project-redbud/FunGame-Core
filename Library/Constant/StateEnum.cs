@@ -34,42 +34,42 @@ namespace Milimoe.FunGame.Core.Library.Constant
     public enum CharacterState
     {
         /// <summary>
-        /// 可以行动 [ 战斗相关 ]
+        /// 可以行动 [ 战斗相关 ] [ 常态 ]
         /// </summary>
         Actionable,
 
         /// <summary>
-        /// 完全行动不能 [ 战斗相关 ]
+        /// 完全行动不能 [ 战斗相关 ] [ 控制态 ]
         /// </summary>
         NotActionable,
 
         /// <summary>
-        /// 行动受限 [ 战斗相关 ]
+        /// 行动受限 [ 战斗相关 ] [ 控制态 ]
         /// </summary>
         ActionRestricted,
 
         /// <summary>
-        /// 战斗不能 [ 战斗相关 ]
+        /// 战斗不能 [ 战斗相关 ] [ 控制态 ]
         /// </summary>
         BattleRestricted,
 
         /// <summary>
-        /// 技能受限 [ 战斗相关 ]
+        /// 技能受限 [ 战斗相关 ] [ 控制态 ]
         /// </summary>
         SkillRestricted,
-        
+
         /// <summary>
-        /// 攻击受限 [ 战斗相关 ]
+        /// 攻击受限 [ 战斗相关 ] [ 控制态 ]
         /// </summary>
         AttackRestricted,
 
         /// <summary>
-        /// 处于吟唱中 [ 战斗相关 ] [ 技能相关 ]
+        /// 处于吟唱中 [ 战斗相关 ] [ 技能相关 ] [ 吟唱态 ]
         /// </summary>
         Casting,
 
         /// <summary>
-        /// 预释放爆发技(插队) [ 战斗相关 ] [ 技能相关 ]
+        /// 预释放爆发技(插队) [ 战斗相关 ] [ 技能相关 ] [ 吟唱态 ]
         /// </summary>
         PreCastSuperSkill
     }
