@@ -19,7 +19,7 @@ namespace Milimoe.FunGame.Core.Entity
         public Dictionary<Character, bool> IsEvaded { get; set; } = [];
         public Dictionary<Character, bool> IsImmune { get; set; } = [];
         public Dictionary<Character, double> Heals { get; set; } = [];
-        public Dictionary<Character, EffectType> Effects { get; set; } = [];
+        public Dictionary<Character, List<EffectType>> Effects { get; set; } = [];
         public List<string> ActorContinuousKilling { get; set; } = [];
         public List<string> DeathContinuousKilling { get; set; } = [];
         public double CastTime { get; set; } = 0;
@@ -110,9 +110,9 @@ namespace Milimoe.FunGame.Core.Entity
                 {
                     hasHeal = $"治疗：{heals:0.##}";
                 }
-                if (Effects.TryGetValue(target, out EffectType effectType))
+                if (Effects.TryGetValue(target, out List<EffectType>? effectTypes) && effectTypes != null)
                 {
-                    hasEffect = $"施加：{SkillSet.GetEffectTypeName(effectType)}";
+                    hasEffect = $"施加：{string.Join(" + ", effectTypes.Select(SkillSet.GetEffectTypeName))}";
                 }
                 if (IsEvaded.ContainsKey(target))
                 {

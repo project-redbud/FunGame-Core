@@ -337,7 +337,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         HealOverTime,
 
         /// <summary>
-        /// 加速，提升行动速度和攻击频率
+        /// 加速，提升行动速度
         /// </summary>
         Haste,
 
@@ -357,7 +357,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         DamageBoost,
 
         /// <summary>
-        /// 防御提升，减少所受伤害
+        /// 物理护甲/魔法抗性提升，减少所受伤害
         /// </summary>
         DefenseBoost,
 
@@ -369,12 +369,12 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// <summary>
         /// 魔法恢复，增加魔法值回复速度
         /// </summary>
-        ManaRegen,
+        MPRegen,
 
         /// <summary>
-        /// 破甲，降低目标的防御值
+        /// 破甲，提高物理/魔法穿透
         /// </summary>
-        ArmorBreak,
+        PenetrationBoost,
 
         /// <summary>
         /// 降低魔法抗性，目标更容易受到魔法伤害
@@ -449,7 +449,12 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// <summary>
         /// 完全免疫：物理免疫 + 技能免疫
         /// </summary>
-        AllImmune
+        AllImmune,
+
+        /// <summary>
+        /// 闪避提升
+        /// </summary>
+        EvadeBoost
     }
 
     public enum ItemType

@@ -1,12 +1,8 @@
-﻿using System;
-using System.Numerics;
-using System.Reflection.PortableExecutable;
-using Milimoe.FunGame.Core.Api.Utility;
+﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Milimoe.FunGame.Core.Model
 {
@@ -1245,10 +1241,14 @@ namespace Milimoe.FunGame.Core.Model
                 }
 
                 // 移除到时间的特效
-                List<Effect> effects = [.. character.Effects.Where(e => e.Level > 0)];
+                List<Effect> effects = [.. character.Effects];
                 foreach (Effect effect in effects)
                 {
-                    effect.IsBeingTemporaryDispelled = false;
+                    if (effect.IsBeingTemporaryDispelled)
+                    {
+                        effect.IsBeingTemporaryDispelled = false;
+                        effect.OnEffectGained(character);
+                    }
 
                     if (effect.Level == 0)
                     {
@@ -1256,7 +1256,11 @@ namespace Milimoe.FunGame.Core.Model
                         continue;
                     }
 
-                    effect.OnTimeElapsed(character, timeToReduce);
+                    if (!effect.Durative)
+                    {
+                        // 防止特效在时间流逝后，持续时间已结束还能继续生效的情况
+                        effect.OnTimeElapsed(character, timeToReduce);
+                    }
 
                     // 自身被动不会考虑
                     if (effect.EffectType == EffectType.None && effect.Skill.SkillType == SkillType.Passive)
@@ -1279,6 +1283,10 @@ namespace Milimoe.FunGame.Core.Model
                             effect.RemainDuration = 0;
                             character.Effects.Remove(effect);
                             effect.OnEffectLost(character);
+                        }
+                        else
+                        {
+                            effect.OnTimeElapsed(character, timeToReduce);
                         }
                     }
                 }
@@ -1338,30 +1346,34 @@ namespace Milimoe.FunGame.Core.Model
             damage += totalDamageBonus.Sum(kv => kv.Value);
 
             // 闪避了就没伤害了
-            if (!isEvaded)
+            if (damageResult != DamageResult.Evaded)
             {
                 // 计算伤害免疫
                 bool ignore = false;
-
-                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
                 // 技能免疫无法免疫普通攻击，但是魔法免疫和物理免疫可以
-                foreach (Effect effect in effects)
+                bool isImmune = (isNormalAttack && (enemy.ImmuneType == ImmuneType.All || enemy.ImmuneType == ImmuneType.Physical || enemy.ImmuneType == ImmuneType.Magical)) ||
+                    (!isNormalAttack && (enemy.ImmuneType == ImmuneType.All || enemy.ImmuneType == ImmuneType.Physical || enemy.ImmuneType == ImmuneType.Magical || enemy.ImmuneType == ImmuneType.Skilled));
+                if (isImmune)
                 {
-                    if (isNormalAttack && (enemy.ImmuneType == ImmuneType.All || enemy.ImmuneType == ImmuneType.Physical || enemy.ImmuneType == ImmuneType.Magical))
+                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+                    foreach (Effect effect in effects)
                     {
-                        if (actor.NormalAttack.IgnoreImmune == ImmuneType.All ||
-                            (!isMagicDamage && actor.NormalAttack.IgnoreImmune == ImmuneType.Physical) ||
-                            (isMagicDamage && actor.NormalAttack.IgnoreImmune == ImmuneType.Magical) ||
-                            !effect.OnDamageImmuneCheck(actor, enemy, isNormalAttack, isMagicDamage, magicType, damage))
+                        if (isNormalAttack)
                         {
-                            ignore = true;
+                            if (actor.NormalAttack.IgnoreImmune == ImmuneType.All ||
+                                (!isMagicDamage && actor.NormalAttack.IgnoreImmune == ImmuneType.Physical) ||
+                                (isMagicDamage && actor.NormalAttack.IgnoreImmune == ImmuneType.Magical) ||
+                                !effect.OnDamageImmuneCheck(actor, enemy, isNormalAttack, isMagicDamage, magicType, damage))
+                            {
+                                ignore = true;
+                            }
                         }
-                    }
-                    else if (!isNormalAttack && (enemy.ImmuneType == ImmuneType.All || enemy.ImmuneType == ImmuneType.Physical || enemy.ImmuneType == ImmuneType.Magical || enemy.ImmuneType == ImmuneType.Skilled))
-                    {
-                        if (!effect.OnDamageImmuneCheck(actor, enemy, isNormalAttack, isMagicDamage, magicType, damage))
+                        else
                         {
-                            ignore = true;
+                            if (!effect.OnDamageImmuneCheck(actor, enemy, isNormalAttack, isMagicDamage, magicType, damage))
+                            {
+                                ignore = true;
+                            }
                         }
                     }
                 }
@@ -1369,6 +1381,12 @@ namespace Milimoe.FunGame.Core.Model
                 if (ignore)
                 {
                     // 无视免疫
+                    isImmune = false;
+                }
+
+                if (isImmune)
+                {
+                    // 免疫
                     LastRound.IsImmune[enemy] = true;
                     WriteLine($"[ {enemy} ] 免疫了此伤害！");
                 }
@@ -1378,39 +1396,58 @@ namespace Milimoe.FunGame.Core.Model
 
                     // 检查护盾
                     double shield = enemy.Shield[isMagicDamage, magicType];
-                    string shield_str = "";
+                    string shieldMsg = "";
                     if (shield > 0)
                     {
-                        double remain = shield - damage;
-                        if (remain < 0)
+                        bool change = false;
+
+                        // 看特效有没有特殊护盾逻辑
+                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+                        foreach (Effect effect in effects)
                         {
-                            remain = Math.Abs(remain);
-                            enemy.Shield[isMagicDamage, magicType] = 0;
-
-                            bool change = false;
-                            effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
-                            foreach (Effect effect in effects)
+                            if (!effect.BeforeShieldCalculation(actor, enemy, isMagicDamage, magicType, damage, shield, ref shieldMsg))
                             {
-                                if (!effect.AfterShieldBroken(actor, enemy, isMagicDamage, magicType, damage, shield, remain))
-                                {
-                                    change = true;
-                                }
+                                change = true;
                             }
+                        }
 
-                            if (!change)
+                        if (!change)
+                        {
+                            double remain = shield - damage;
+                            if (remain < 0)
                             {
-                                enemy.HP -= remain;
-                                shield_str = $"（护盾抵消了 {shield:0.##} 点并破碎，角色承受了 {remain:0.##} 点）";
+                                remain = Math.Abs(remain);
+                                enemy.Shield[isMagicDamage, magicType] = 0;
+
+                                change = false;
+                                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+                                foreach (Effect effect in effects)
+                                {
+                                    if (!effect.OnShieldBroken(actor, enemy, isMagicDamage, magicType, damage, shield, remain))
+                                    {
+                                        change = true;
+                                    }
+                                }
+
+                                if (!change)
+                                {
+                                    enemy.HP -= remain;
+                                    shieldMsg = $"（护盾抵消了 {shield:0.##} 点并破碎，角色承受了 {remain:0.##} 点）";
+                                }
+                                else
+                                {
+                                    shieldMsg = $"（护盾抵消了 {shield:0.##} 点并破碎，角色没有承受伤害）";
+                                }
                             }
                             else
                             {
-                                shield_str = $"（护盾抵消了 {shield:0.##} 点并破碎，角色没有承受伤害）";
+                                enemy.Shield[isMagicDamage, magicType] = remain;
+                                shieldMsg = $"（护盾抵消了 {damage:0.##} 点，剩余可用 {remain:0.##} 点）";
                             }
                         }
-                        else
+                        else if (shieldMsg.Trim() == "")
                         {
-                            enemy.Shield[isMagicDamage, magicType] = remain;
-                            shield_str = $"（护盾抵消了 {damage:0.##} 点，剩余可用 {remain:0.##} 点）";
+                            shieldMsg = $"（护盾已使其无效化）";
                         }
                     }
                     else enemy.HP -= damage;
@@ -1418,9 +1455,9 @@ namespace Milimoe.FunGame.Core.Model
                     if (isMagicDamage)
                     {
                         string dmgType = CharacterSet.GetMagicDamageName(magicType);
-                        WriteLine($"[ {enemy} ] 受到了 {damage:0.##} 点{dmgType}！{shield_str}");
+                        WriteLine($"[ {enemy} ] 受到了 {damage:0.##} 点{dmgType}！{shieldMsg}");
                     }
-                    else WriteLine($"[ {enemy} ] 受到了 {damage:0.##} 点物理伤害！{shield_str}");
+                    else WriteLine($"[ {enemy} ] 受到了 {damage:0.##} 点物理伤害！{shieldMsg}");
 
                     // 生命偷取
                     double steal = damage * actor.Lifesteal;
@@ -1491,7 +1528,24 @@ namespace Milimoe.FunGame.Core.Model
 
             bool isDead = target.HP <= 0;
 
-            if (heal < 0) heal = 0;
+            Dictionary<Effect, double> totalHealBonus = [];
+            List<Effect> effects = [.. actor.Effects.Union(target.Effects).Distinct().Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+            foreach (Effect effect in effects)
+            {
+                bool changeCanRespawn = false;
+                double healBonus = effect.AlterHealValueBeforeHealToTarget(actor, target, heal, ref changeCanRespawn, totalHealBonus);
+                if (changeCanRespawn && !canRespawn)
+                {
+                    canRespawn = true;
+                }
+            }
+            heal += totalHealBonus.Sum(kv => kv.Value);
+
+            if (heal <= 0)
+            {
+                return;
+            }
+
             if (target.HP > 0 || (isDead && canRespawn))
             {
                 target.HP += heal;
@@ -1529,12 +1583,6 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             await OnHealToTargetAsync(actor, target, heal, isRespawn);
-
-            List<Effect> effects = [.. actor.Effects.Union(target.Effects).Distinct().Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
-            foreach (Effect effect in effects)
-            {
-                effect.AfterHealToTarget(actor, target, heal, isRespawn);
-            }
         }
 
         /// <summary>
@@ -1556,20 +1604,25 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="isNormalAttack"></param>
         /// <param name="expectedDamage"></param>
         /// <param name="finalDamage"></param>
+        /// <param name="changeCount"></param>
         /// <returns></returns>
-        public DamageResult CalculatePhysicalDamage(Character actor, Character enemy, bool isNormalAttack, double expectedDamage, out double finalDamage)
+        public DamageResult CalculatePhysicalDamage(Character actor, Character enemy, bool isNormalAttack, double expectedDamage, out double finalDamage, ref int changeCount)
         {
             List<Character> characters = [actor, enemy];
             bool isMagic = false;
             MagicType magicType = MagicType.None;
             List<Effect> effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
-            foreach (Effect effect in effects)
+            if (changeCount < 3)
             {
-                effect.AlterDamageTypeBeforeCalculation(actor, enemy, ref isNormalAttack, ref isMagic, ref magicType);
-            }
-            if (isMagic)
-            {
-                return CalculateMagicalDamage(actor, enemy, isNormalAttack, magicType, expectedDamage, out finalDamage);
+                foreach (Effect effect in effects)
+                {
+                    effect.AlterDamageTypeBeforeCalculation(actor, enemy, ref isNormalAttack, ref isMagic, ref magicType);
+                }
+                if (isMagic)
+                {
+                    changeCount++;
+                    return CalculateMagicalDamage(actor, enemy, isNormalAttack, magicType, expectedDamage, out finalDamage, ref changeCount);
+                }
             }
 
             Dictionary<Effect, double> totalDamageBonus = [];
@@ -1662,19 +1715,24 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="magicType"></param>
         /// <param name="expectedDamage"></param>
         /// <param name="finalDamage"></param>
+        /// <param name="changeCount"></param>
         /// <returns></returns>
-        public DamageResult CalculateMagicalDamage(Character actor, Character enemy, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage)
+        public DamageResult CalculateMagicalDamage(Character actor, Character enemy, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage, ref int changeCount)
         {
             List<Character> characters = [actor, enemy];
             bool isMagic = true;
             List<Effect> effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
-            foreach (Effect effect in effects)
+            if (changeCount < 3)
             {
-                effect.AlterDamageTypeBeforeCalculation(actor, enemy, ref isNormalAttack, ref isMagic, ref magicType);
-            }
-            if (!isMagic)
-            {
-                return CalculatePhysicalDamage(actor, enemy, isNormalAttack, expectedDamage, out finalDamage);
+                foreach (Effect effect in effects)
+                {
+                    effect.AlterDamageTypeBeforeCalculation(actor, enemy, ref isNormalAttack, ref isMagic, ref magicType);
+                }
+                if (!isMagic)
+                {
+                    changeCount++;
+                    return CalculatePhysicalDamage(actor, enemy, isNormalAttack, expectedDamage, out finalDamage, ref changeCount);
+                }
             }
 
             Dictionary<Effect, double> totalDamageBonus = [];
@@ -2782,13 +2840,14 @@ namespace Milimoe.FunGame.Core.Model
             foreach (Character target in loop)
             {
                 bool ignore = false;
-                Character[] characters = [character, target];
-                Effect[] effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
-                foreach (Effect effect in effects)
+                bool isImmune = target.ImmuneType == ImmuneType.Magical || target.ImmuneType == ImmuneType.Skilled || target.ImmuneType == ImmuneType.All;
+                if (isImmune)
                 {
-                    // 自带无视免疫或者特效免疫检定不通过可无视免疫
-                    if (character.ImmuneType == ImmuneType.Magical || character.ImmuneType == ImmuneType.Skilled || character.ImmuneType == ImmuneType.All)
+                    Character[] characters = [character, target];
+                    Effect[] effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+                    foreach (Effect effect in effects)
                     {
+                        // 自带无视免疫或者特效免疫检定不通过可无视免疫
                         if (effect.IgnoreImmune == ImmuneType.All || effect.IgnoreImmune == ImmuneType.Skilled || (skill.IsMagic && effect.IgnoreImmune == ImmuneType.Magical) || !effect.OnImmuneCheck(character, target, skill, item))
                         {
                             ignore = true;
@@ -2797,7 +2856,11 @@ namespace Milimoe.FunGame.Core.Model
                 }
                 if (ignore)
                 {
+                    isImmune = false;
                     targets.Remove(target);
+                }
+                if (isImmune)
+                {
                     WriteLine($"[ {target} ] 免疫了此技能！");
                     await OnCharacterImmunedAsync(character, target, skill, item);
                 }

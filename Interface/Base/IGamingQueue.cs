@@ -92,7 +92,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="heal"></param>
         /// <param name="canRespawn"></param>
         public Task HealToTargetAsync(Character actor, Character target, double heal, bool canRespawn = false);
-        
+
         /// <summary>
         /// 计算物理伤害
         /// </summary>
@@ -101,8 +101,9 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="isNormalAttack"></param>
         /// <param name="expectedDamage"></param>
         /// <param name="finalDamage"></param>
+        /// <param name="changeCount"></param>
         /// <returns></returns>
-        public DamageResult CalculatePhysicalDamage(Character actor, Character enemy, bool isNormalAttack, double expectedDamage, out double finalDamage);
+        public DamageResult CalculatePhysicalDamage(Character actor, Character enemy, bool isNormalAttack, double expectedDamage, out double finalDamage, ref int changeCount);
 
         /// <summary>
         /// 计算魔法伤害
@@ -113,8 +114,9 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="magicType"></param>
         /// <param name="expectedDamage"></param>
         /// <param name="finalDamage"></param>
+        /// <param name="changeCount"></param>
         /// <returns></returns>
-        public DamageResult CalculateMagicalDamage(Character actor, Character enemy, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage);
+        public DamageResult CalculateMagicalDamage(Character actor, Character enemy, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage, ref int changeCount);
 
         /// <summary>
         /// 死亡结算

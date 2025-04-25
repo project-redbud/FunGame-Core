@@ -532,6 +532,7 @@ namespace Milimoe.FunGame.Core.Entity
             skill.Name = skillDefined.Name;
             skill.Description = skillDefined.Description;
             skill.GeneralDescription = skillDefined.GeneralDescription;
+            skill.DispelDescription = skillDefined.DispelDescription;
             skill.SkillType = skillDefined.SkillType;
             skill.MPCost = skillDefined.MPCost;
             skill.CastTime = skillDefined.CastTime;

@@ -1208,7 +1208,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         public void OnAttributeChanged()
         {
-            List<Effect> effects = [.. Effects.Where(e => e.Level > 0)];
+            List<Effect> effects = [.. Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
             foreach (Effect effect in effects)
             {
                 effect.OnAttributeChanged(this);
@@ -1901,6 +1901,7 @@ namespace Milimoe.FunGame.Core.Entity
                 ThirdRoleType = ThirdRoleType,
                 Promotion = Promotion,
                 PrimaryAttribute = PrimaryAttribute,
+                ImmuneType = ImmuneType,
                 Level = Level,
                 LevelBreak = LevelBreak,
                 EXP = EXP,
@@ -1923,6 +1924,8 @@ namespace Milimoe.FunGame.Core.Entity
                 INTGrowth = INTGrowth,
                 InitialSPD = InitialSPD,
                 ATR = ATR,
+                Lifesteal = Lifesteal,
+                Shield = Shield.Copy()
             };
             if (copyEx)
             {

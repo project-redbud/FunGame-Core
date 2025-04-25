@@ -664,8 +664,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.DamageBoost => "伤害提升",
                 EffectType.DefenseBoost => "防御提升",
                 EffectType.CritBoost => "暴击提升",
-                EffectType.ManaRegen => "魔法恢复",
-                EffectType.ArmorBreak => "破甲",
+                EffectType.MPRegen => "魔法恢复",
+                EffectType.PenetrationBoost => "穿透提升",
                 EffectType.MagicResistBreak => "降低魔抗",
                 EffectType.Curse => "诅咒",
                 EffectType.Exhaustion => "疲劳",
@@ -681,6 +681,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.MagicalImmune => "魔法免疫",
                 EffectType.SkilledImmune => "技能免疫",
                 EffectType.AllImmune => "完全免疫",
+                EffectType.EvadeBoost => "闪避提升",
                 _ => "未知效果"
             };
         }
@@ -723,8 +724,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.DamageBoost => DispelledType.Weak,
                 EffectType.DefenseBoost => DispelledType.Weak,
                 EffectType.CritBoost => DispelledType.Weak,
-                EffectType.ManaRegen => DispelledType.Weak,
-                EffectType.ArmorBreak => DispelledType.Weak,
+                EffectType.MPRegen => DispelledType.Weak,
+                EffectType.PenetrationBoost => DispelledType.Weak,
                 EffectType.MagicResistBreak => DispelledType.Weak,
                 EffectType.Curse => DispelledType.Weak,
                 EffectType.Exhaustion => DispelledType.Weak,
@@ -733,6 +734,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.MagicalImmune => DispelledType.Weak,
                 EffectType.SkilledImmune => DispelledType.Weak,
                 EffectType.AllImmune => DispelledType.Strong,
+                EffectType.EvadeBoost => DispelledType.Weak,
                 _ => DispelledType.Weak
             };
         }
@@ -775,8 +777,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.DamageBoost => false,
                 EffectType.DefenseBoost => false,
                 EffectType.CritBoost => false,
-                EffectType.ManaRegen => false,
-                EffectType.ArmorBreak => true,
+                EffectType.MPRegen => false,
+                EffectType.PenetrationBoost => true,
                 EffectType.MagicResistBreak => true,
                 EffectType.Curse => true,
                 EffectType.Exhaustion => true,
@@ -785,6 +787,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.MagicalImmune => false,
                 EffectType.SkilledImmune => false,
                 EffectType.AllImmune => false,
+                EffectType.EvadeBoost => false,
                 _ => false
             };
         }
