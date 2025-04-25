@@ -735,6 +735,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.SkilledImmune => DispelledType.Weak,
                 EffectType.AllImmune => DispelledType.Strong,
                 EffectType.EvadeBoost => DispelledType.Weak,
+                EffectType.Lifesteal => DispelledType.Weak,
+                EffectType.GrievousWound => DispelledType.Weak,
                 _ => DispelledType.Weak
             };
         }
@@ -788,6 +790,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.SkilledImmune => false,
                 EffectType.AllImmune => false,
                 EffectType.EvadeBoost => false,
+                EffectType.Lifesteal => false,
+                EffectType.GrievousWound => false,
                 _ => false
             };
         }

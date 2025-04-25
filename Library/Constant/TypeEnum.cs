@@ -454,7 +454,17 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// <summary>
         /// 闪避提升
         /// </summary>
-        EvadeBoost
+        EvadeBoost,
+
+        /// <summary>
+        /// 生命偷取
+        /// </summary>
+        Lifesteal,
+
+        /// <summary>
+        /// 重伤，目标受到的治疗效果降低
+        /// </summary>
+        GrievousWound
     }
 
     public enum ItemType
