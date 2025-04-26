@@ -83,7 +83,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="magicType"></param>
         /// <param name="damageResult"></param>
         public Task DamageToEnemyAsync(Character actor, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage = false, MagicType magicType = MagicType.None, DamageResult damageResult = DamageResult.Normal);
-        
+
         /// <summary>
         /// 治疗一个目标
         /// </summary>

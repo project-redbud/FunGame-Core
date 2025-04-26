@@ -47,7 +47,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             builder.Append(')');
             return $"{Select_Rooms} {Command_Where} {builder}";
         }
-        
+
         public static string Select_RoomsByGameModuleAndRoomState(SQLHelper SQLHelper, string GameModule = "", params RoomState[] States)
         {
             string sql = Select_Rooms;
@@ -139,7 +139,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             SQLHelper.Parameters["@NewRoomMaster"] = NewRoomMaster;
             return $"{Command_Update} {TableName} {Command_Set} {Column_RoomMaster} = @NewRoomMaster {Command_Where} {Column_Roomid} = @Roomid {Command_And} {Column_RoomMaster} = @OldRoomMaster";
         }
-        
+
         public static string Update_UpdateRoomMaster(SQLHelper SQLHelper, string Roomid, long NewRoomMaster)
         {
             SQLHelper.Parameters["@Roomid"] = Roomid;

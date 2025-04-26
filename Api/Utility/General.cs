@@ -464,7 +464,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             string hmac = Convert.ToHexString(hash_bytes);
             return hmac.ToLower();
         }
-        
+
         /// <summary>
         /// 使用 SHA256 算法对文本进行加密
         /// </summary>

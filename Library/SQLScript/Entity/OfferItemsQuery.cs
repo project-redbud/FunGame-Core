@@ -20,7 +20,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             SQLHelper.Parameters["@UserId"] = UserId;
             return $"{Select_OfferItems} {Command_Where} {Column_OfferId} = @OfferId {Command_And} {Column_UserId} = @UserId";
         }
-        
+
         public static string Select_OfferItemsBackupByOfferIdAndUserId(SQLHelper SQLHelper, long OfferId, long UserId)
         {
             SQLHelper.Parameters["@OfferId"] = OfferId;
@@ -37,7 +37,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             return $"{Command_Insert} {Command_Into} {TableName} ({Column_OfferId}, {Column_UserId}, {Column_ItemGuid}) " +
                    $"{Command_Values} (@OfferId, @UserId, @ItemGuid)";
         }
-        
+
         public static string Insert_OfferItemBackup(SQLHelper SQLHelper, long OfferId, long UserId, Guid ItemGuid)
         {
             SQLHelper.Parameters["@OfferId"] = OfferId;

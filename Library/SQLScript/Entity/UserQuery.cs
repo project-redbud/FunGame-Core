@@ -32,7 +32,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             SQLHelper.Parameters["@Id"] = id;
             return $"{Select_Users} {Command_Where} {Column_Id} = @Id";
         }
-        
+
         public static string Select_IsExistEmail(SQLHelper SQLHelper, string Email)
         {
             SQLHelper.Parameters["@Email"] = Email;

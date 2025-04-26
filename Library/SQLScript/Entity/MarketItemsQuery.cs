@@ -79,7 +79,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             SQLHelper.Parameters["@ItemGuid"] = ItemGuid.ToString();
             return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_ItemGuid} = @ItemGuid";
         }
-        
+
         public static string Delete_MarketItemByUserId(SQLHelper SQLHelper, long UserId)
         {
             SQLHelper.Parameters["@UserId"] = UserId;

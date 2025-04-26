@@ -16,13 +16,13 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             SQLHelper.Parameters["@StoreId"] = StoreId;
             return $"{Select_StoreGoods} {Command_Where} {Column_StoreId} = @StoreId";
         }
-        
+
         public static string Select_StoreGoodsByGoodsId(SQLHelper SQLHelper, long GoodsId)
         {
             SQLHelper.Parameters["@GoodsId"] = GoodsId;
             return $"{Select_StoreGoods} {Command_Where} {Column_GoodsId} = @GoodsId";
         }
-        
+
         public static string Select_StoreGoodsByStoreIdAndGoodsId(SQLHelper SQLHelper, long StoreId, long goodsId)
         {
             SQLHelper.Parameters["@StoreId"] = StoreId;

@@ -16,7 +16,7 @@ namespace Milimoe.FunGame.Core.Model
         /// 游戏材料名称（第二货币）
         /// </summary>
         public string InGameMaterial { get; set; } = "材料";
-        
+
         /// <summary>
         /// 游戏时间名称（如技能冷却、硬直）
         /// </summary>

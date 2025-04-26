@@ -20,7 +20,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 实体的名称
         /// </summary>
         public virtual string Name { get; set; } = "";
-        
+
         /// <summary>
         /// 实体的当前状态（关联数据库操作）
         /// </summary>

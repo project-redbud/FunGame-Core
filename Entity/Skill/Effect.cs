@@ -59,7 +59,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 是否显示在状态栏
         /// </summary>
         public bool ShowInStatusBar => Skill.Item is null || (Durative && Duration > 0) || DurationTurn > 0 || DurativeWithoutDuration;
-        
+
         /// <summary>
         /// 特效是否生效
         /// </summary>
@@ -74,7 +74,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 驱散性 [ 能驱散什么特效，默认无驱散 ]
         /// </summary>
         public virtual DispelType DispelType { get; set; } = DispelType.None;
-        
+
         /// <summary>
         /// 被驱散性 [ 能被什么驱散类型驱散，默认弱驱散 ]
         /// </summary>
@@ -649,7 +649,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             return true;
         }
-        
+
         /// <summary>
         /// 当角色护盾破碎时
         /// </summary>
@@ -816,7 +816,7 @@ namespace Milimoe.FunGame.Core.Entity
             character.CharacterEffectTypes.Remove(this);
             character.UpdateCharacterState();
         }
-        
+
         /// <summary>
         /// 将免疫状态从角色身上移除 [ 尽可能的调用此方法而不是自己实现 ]
         /// </summary>

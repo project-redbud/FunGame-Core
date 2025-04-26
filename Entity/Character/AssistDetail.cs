@@ -21,7 +21,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 最后一次造成伤害的时间
         /// </summary>
         public Dictionary<Character, double> DamageLastTime { get; } = [];
-        
+
         /// <summary>
         /// 对某角色最后一次友方非伤害辅助的时间
         /// </summary>

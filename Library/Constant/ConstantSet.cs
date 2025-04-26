@@ -685,7 +685,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 _ => "未知效果"
             };
         }
-        
+
         public static DispelledType GetDispelledTypeByEffectType(EffectType type)
         {
             return type switch
@@ -740,7 +740,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 _ => DispelledType.Weak
             };
         }
-        
+
         public static bool GetIsDebuffByEffectType(EffectType type)
         {
             return type switch
