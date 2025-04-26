@@ -639,7 +639,7 @@ namespace Milimoe.FunGame.Core.Model
                 skillTurnStart.OnTurnStart(character, enemys, teammates, skills, items);
             }
 
-            List<Effect> effects = [.. character.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+            List<Effect> effects = [.. character.Effects.Where(e => e.IsInEffect)];
             foreach (Effect effect in effects)
             {
                 effect.OnTurnStart(character, enemys, teammates, skills, items);
@@ -675,7 +675,7 @@ namespace Milimoe.FunGame.Core.Model
                 if (character.CharacterState != CharacterState.Casting && character.CharacterState != CharacterState.PreCastSuperSkill)
                 {
                     CharacterActionType actionTypeTemp = CharacterActionType.None;
-                    effects = [.. character.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+                    effects = [.. character.Effects.Where(e => e.IsInEffect)];
                     foreach (Effect effect in effects)
                     {
                         actionTypeTemp = effect.AlterActionTypeBeforeAction(character, character.CharacterState, ref canUseItem, ref canCastSkill, ref pUseItem, ref pCastSkill, ref pNormalAttack);
@@ -798,7 +798,7 @@ namespace Milimoe.FunGame.Core.Model
 
                 Dictionary<Character, int> continuousKillingTemp = new(_continuousKilling);
                 Dictionary<Character, int> earnedMoneyTemp = new(_earnedMoney);
-                effects = [.. character.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+                effects = [.. character.Effects.Where(e => e.IsInEffect)];
                 foreach (Effect effect in effects)
                 {
                     effect.AlterSelectListBeforeAction(character, enemys, teammates, skills, continuousKillingTemp, earnedMoneyTemp);
@@ -834,7 +834,7 @@ namespace Milimoe.FunGame.Core.Model
 
                             character.NormalAttack.Attack(this, character, targets);
                             baseTime = character.NormalAttack.RealHardnessTime;
-                            effects = [.. character.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+                            effects = [.. character.Effects.Where(e => e.IsInEffect)];
                             foreach (Effect effect in effects)
                             {
                                 effect.AlterHardnessTimeAfterNormalAttack(character, ref baseTime, ref isCheckProtected);
@@ -918,7 +918,7 @@ namespace Milimoe.FunGame.Core.Model
                                         await OnCharacterCastSkillAsync(character, skillTarget, cost);
 
                                         skill.OnSkillCasted(this, character, targets);
-                                        effects = [.. character.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+                                        effects = [.. character.Effects.Where(e => e.IsInEffect)];
                                         foreach (Effect effect in effects)
                                         {
                                             effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
@@ -974,7 +974,7 @@ namespace Milimoe.FunGame.Core.Model
                             baseTime = 3;
                         }
 
-                        effects = [.. character.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+                        effects = [.. character.Effects.Where(e => e.IsInEffect)];
                         foreach (Effect effect in effects)
                         {
                             effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
@@ -1027,7 +1027,7 @@ namespace Milimoe.FunGame.Core.Model
                         baseTime = 3;
                     }
 
-                    effects = [.. character.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+                    effects = [.. character.Effects.Where(e => e.IsInEffect)];
                     foreach (Effect effect in effects)
                     {
                         effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
@@ -1050,7 +1050,7 @@ namespace Milimoe.FunGame.Core.Model
                             decided = true;
                             LastRound.Item = item;
                             baseTime = skill.RealHardnessTime;
-                            effects = [.. character.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+                            effects = [.. character.Effects.Where(e => e.IsInEffect)];
                             foreach (Effect effect in effects)
                             {
                                 effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
@@ -1119,7 +1119,7 @@ namespace Milimoe.FunGame.Core.Model
             await OnQueueUpdatedAsync(_queue, character, newHardnessTime, QueueUpdatedReason.Action, "设置角色行动后的硬直时间。");
             LastRound.HardnessTime = newHardnessTime;
 
-            effects = [.. character.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+            effects = [.. character.Effects.Where(e => e.IsInEffect)];
             foreach (Effect effect in effects)
             {
                 effect.OnTurnEnd(character);
@@ -1333,7 +1333,7 @@ namespace Milimoe.FunGame.Core.Model
             List<Character> characters = [actor, enemy];
             bool isEvaded = damageResult == DamageResult.Evaded;
             Dictionary<Effect, double> totalDamageBonus = [];
-            List<Effect> effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+            List<Effect> effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
             foreach (Effect effect in effects)
             {
                 double damageBonus = effect.AlterActualDamageAfterCalculation(actor, enemy, damage, isNormalAttack, isMagicDamage, magicType, damageResult, ref isEvaded, totalDamageBonus);
@@ -1355,7 +1355,7 @@ namespace Milimoe.FunGame.Core.Model
                     (!isNormalAttack && (enemy.ImmuneType == ImmuneType.All || enemy.ImmuneType == ImmuneType.Physical || enemy.ImmuneType == ImmuneType.Magical || enemy.ImmuneType == ImmuneType.Skilled));
                 if (isImmune)
                 {
-                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                     foreach (Effect effect in effects)
                     {
                         if (isNormalAttack)
@@ -1402,7 +1402,7 @@ namespace Milimoe.FunGame.Core.Model
                         bool change = false;
 
                         // 看特效有没有特殊护盾逻辑
-                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                         foreach (Effect effect in effects)
                         {
                             if (!effect.BeforeShieldCalculation(actor, enemy, isMagicDamage, magicType, damage, shield, ref shieldMsg))
@@ -1420,7 +1420,7 @@ namespace Milimoe.FunGame.Core.Model
                                 enemy.Shield[isMagicDamage, magicType] = 0;
 
                                 change = false;
-                                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+                                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                                 foreach (Effect effect in effects)
                                 {
                                     if (!effect.OnShieldBroken(actor, enemy, isMagicDamage, magicType, damage, shield, remain))
@@ -1462,7 +1462,7 @@ namespace Milimoe.FunGame.Core.Model
                     // 生命偷取
                     double steal = damage * actor.Lifesteal;
                     await HealToTargetAsync(actor, actor, steal, false);
-                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                     foreach (Effect effect in effects)
                     {
                         effect.AfterLifesteal(actor, enemy, damage, steal);
@@ -1470,14 +1470,14 @@ namespace Milimoe.FunGame.Core.Model
 
                     // 造成伤害和受伤都可以获得能量
                     double ep = GetEP(damage, GameplayEquilibriumConstant.DamageGetEPFactor, GameplayEquilibriumConstant.DamageGetEPMax);
-                    effects = [.. actor.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+                    effects = [.. actor.Effects.Where(e => e.IsInEffect)];
                     foreach (Effect effect in effects)
                     {
                         effect.AlterEPAfterDamage(actor, ref ep);
                     }
                     actor.EP += ep;
                     ep = GetEP(damage, GameplayEquilibriumConstant.TakenDamageGetEPFactor, GameplayEquilibriumConstant.TakenDamageGetEPMax);
-                    effects = [.. enemy.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+                    effects = [.. enemy.Effects.Where(e => e.IsInEffect)];
                     foreach (Effect effect in effects)
                     {
                         effect.AlterEPAfterGetDamage(enemy, ref ep);
@@ -1498,7 +1498,7 @@ namespace Milimoe.FunGame.Core.Model
 
             await OnDamageToEnemyAsync(actor, enemy, damage, isNormalAttack, isMagicDamage, magicType, damageResult);
 
-            effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+            effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
             foreach (Effect effect in effects)
             {
                 effect.AfterDamageCalculation(actor, enemy, damage, isNormalAttack, isMagicDamage, magicType, damageResult);
@@ -1529,7 +1529,7 @@ namespace Milimoe.FunGame.Core.Model
             bool isDead = target.HP <= 0;
 
             Dictionary<Effect, double> totalHealBonus = [];
-            List<Effect> effects = [.. actor.Effects.Union(target.Effects).Distinct().Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+            List<Effect> effects = [.. actor.Effects.Union(target.Effects).Distinct().Where(e => e.IsInEffect)];
             foreach (Effect effect in effects)
             {
                 bool changeCanRespawn = false;
@@ -1611,7 +1611,7 @@ namespace Milimoe.FunGame.Core.Model
             List<Character> characters = [actor, enemy];
             bool isMagic = false;
             MagicType magicType = MagicType.None;
-            List<Effect> effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+            List<Effect> effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
             if (changeCount < 3)
             {
                 foreach (Effect effect in effects)
@@ -1626,7 +1626,7 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             Dictionary<Effect, double> totalDamageBonus = [];
-            effects = [.. actor.Effects.Union(enemy.Effects).Distinct().Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+            effects = [.. actor.Effects.Union(enemy.Effects).Distinct().Where(e => e.IsInEffect)];
             foreach (Effect effect in effects)
             {
                 double damageBonus = effect.AlterExpectedDamageBeforeCalculation(actor, enemy, expectedDamage, isNormalAttack, false, MagicType.None, totalDamageBonus);
@@ -1640,7 +1640,7 @@ namespace Milimoe.FunGame.Core.Model
             bool checkCritical = true;
             if (isNormalAttack)
             {
-                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                 foreach (Effect effect in effects)
                 {
                     checkEvade = effect.BeforeEvadeCheck(actor, enemy, ref throwingBonus);
@@ -1653,7 +1653,7 @@ namespace Milimoe.FunGame.Core.Model
                     {
                         finalDamage = 0;
                         bool isAlterEvaded = false;
-                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                         foreach (Effect effect in effects)
                         {
                             if (effect.OnEvadedTriggered(actor, enemy, dice))
@@ -1680,7 +1680,7 @@ namespace Milimoe.FunGame.Core.Model
             finalDamage = expectedDamage * (1 - Calculation.PercentageCheck(physicalDamageReduction + enemy.ExPDR));
 
             // 暴击检定
-            effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+            effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
             foreach (Effect effect in effects)
             {
                 checkCritical = effect.BeforeCriticalCheck(actor, enemy, ref throwingBonus);
@@ -1693,7 +1693,7 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     finalDamage *= actor.CritDMG; // 暴击伤害倍率加成
                     WriteLine("暴击生效！！");
-                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                     foreach (Effect effect in effects)
                     {
                         effect.OnCriticalDamageTriggered(actor, enemy, dice);
@@ -1721,7 +1721,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             List<Character> characters = [actor, enemy];
             bool isMagic = true;
-            List<Effect> effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+            List<Effect> effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
             if (changeCount < 3)
             {
                 foreach (Effect effect in effects)
@@ -1736,7 +1736,7 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             Dictionary<Effect, double> totalDamageBonus = [];
-            effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+            effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
             foreach (Effect effect in effects)
             {
                 double damageBonus = effect.AlterExpectedDamageBeforeCalculation(actor, enemy, expectedDamage, isNormalAttack, true, magicType, totalDamageBonus);
@@ -1750,7 +1750,7 @@ namespace Milimoe.FunGame.Core.Model
             bool checkCritical = true;
             if (isNormalAttack)
             {
-                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                 foreach (Effect effect in effects)
                 {
                     checkEvade = effect.BeforeEvadeCheck(actor, enemy, ref throwingBonus);
@@ -1763,7 +1763,7 @@ namespace Milimoe.FunGame.Core.Model
                     {
                         finalDamage = 0;
                         bool isAlterEvaded = false;
-                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                         foreach (Effect effect in effects)
                         {
                             if (effect.OnEvadedTriggered(actor, enemy, dice))
@@ -1789,7 +1789,7 @@ namespace Milimoe.FunGame.Core.Model
             finalDamage = expectedDamage * (1 - MDF);
 
             // 暴击检定
-            effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+            effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
             foreach (Effect effect in effects)
             {
                 checkCritical = effect.BeforeCriticalCheck(actor, enemy, ref throwingBonus);
@@ -1802,7 +1802,7 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     finalDamage *= actor.CritDMG; // 暴击伤害倍率加成
                     WriteLine("暴击生效！！");
-                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                     foreach (Effect effect in effects)
                     {
                         effect.OnCriticalDamageTriggered(actor, enemy, dice);
@@ -1829,7 +1829,7 @@ namespace Milimoe.FunGame.Core.Model
                 }
 
                 // 给所有角色的特效广播角色死亡结算
-                List<Effect> effects = [.. _queue.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled))];
+                List<Effect> effects = [.. _queue.SelectMany(c => c.Effects.Where(e => e.IsInEffect))];
                 foreach (Effect effect in effects)
                 {
                     effect.AfterDeathCalculation(death, character, _continuousKilling, _earnedMoney);
@@ -2339,7 +2339,7 @@ namespace Milimoe.FunGame.Core.Model
             if (skill != null)
             {
                 WriteLine($"[ {caster} ] 的施法被 [ {interrupter} ] 打断了！！");
-                List<Effect> effects = [.. caster.Effects.Union(interrupter.Effects).Distinct().Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+                List<Effect> effects = [.. caster.Effects.Union(interrupter.Effects).Distinct().Where(e => e.IsInEffect)];
                 foreach (Effect effect in effects)
                 {
                     effect.OnSkillCastInterrupted(caster, skill, interrupter);
@@ -2361,7 +2361,7 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     Skill skill = skillTarget.Skill;
                     WriteLine($"[ {interrupter} ] 打断了 [ {caster} ] 的施法！！");
-                    List<Effect> effects = [.. caster.Effects.Union(interrupter.Effects).Distinct().Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+                    List<Effect> effects = [.. caster.Effects.Union(interrupter.Effects).Distinct().Where(e => e.IsInEffect)];
                     foreach (Effect effect in effects)
                     {
                         effect.OnSkillCastInterrupted(caster, skill, interrupter);
@@ -2781,7 +2781,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <returns></returns>
         public virtual async Task<List<Character>> SelectTargetsAsync(Character caster, Skill skill, List<Character> enemys, List<Character> teammates)
         {
-            List<Effect> effects = [.. caster.Effects.Where(e => e.Level > 0)];
+            List<Effect> effects = [.. caster.Effects.Where(e => e.IsInEffect)];
             foreach (Effect effect in effects)
             {
                 effect.AlterSelectListBeforeSelection(caster, skill, enemys, teammates);
@@ -2804,7 +2804,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <returns></returns>
         public virtual async Task<List<Character>> SelectTargetsAsync(Character character, NormalAttack attack, List<Character> enemys, List<Character> teammates)
         {
-            List<Effect> effects = [.. character.Effects.Where(e => e.Level > 0)];
+            List<Effect> effects = [.. character.Effects.Where(e => e.IsInEffect)];
             foreach (Effect effect in effects)
             {
                 effect.AlterSelectListBeforeSelection(character, attack, enemys, teammates);
@@ -2844,7 +2844,7 @@ namespace Milimoe.FunGame.Core.Model
                 if (isImmune)
                 {
                     Character[] characters = [character, target];
-                    Effect[] effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)).Distinct()];
+                    Effect[] effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                     foreach (Effect effect in effects)
                     {
                         // 自带无视免疫或者特效免疫检定不通过可无视免疫

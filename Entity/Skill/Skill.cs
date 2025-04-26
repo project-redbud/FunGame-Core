@@ -544,7 +544,12 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 foreach (Effect e in skillDefined.Effects)
                 {
-                    Effect neweffect = e.Copy(skill);
+                    // 特效没法动态扩展，必须使用编程钩子实现，因此动态扩展的技能需要使用代码定义的特效
+                    Effect neweffect = e.Copy(skill, true);
+                    if (skill.GamingQueue != null)
+                    {
+                        neweffect.GamingQueue = skill.GamingQueue;
+                    }
                     skill.Effects.Add(neweffect);
                 }
             }

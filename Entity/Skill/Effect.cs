@@ -56,6 +56,16 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual bool DurativeWithoutDuration { get; set; } = false;
 
         /// <summary>
+        /// 是否显示在状态栏
+        /// </summary>
+        public bool ShowInStatusBar => Skill.Item is null || (Durative && Duration > 0) || DurationTurn > 0 || DurativeWithoutDuration;
+        
+        /// <summary>
+        /// 特效是否生效
+        /// </summary>
+        public bool IsInEffect => Level > 0 && !IsBeingTemporaryDispelled;
+
+        /// <summary>
         /// 魔法类型
         /// </summary>
         public virtual MagicType MagicType { get; set; } = MagicType.None;
@@ -908,7 +918,7 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 return;
             }
-            Effect[] effects = [.. target.Effects.Where(e => e.Level > 0 && EffectType != EffectType.Item && !e.IsBeingTemporaryDispelled)];
+            Effect[] effects = [.. target.Effects.Where(e => e.IsInEffect && e.ShowInStatusBar)];
             foreach (Effect effect in effects)
             {
                 if (effect.OnEffectIsBeingDispelled(dispeller, target, this, isEnemy))
@@ -972,7 +982,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 复制一个特效
         /// </summary>
         /// <returns></returns>
-        public Effect Copy(Skill skill)
+        public Effect Copy(Skill skill, bool copyByCode = false)
         {
             Dictionary<string, object> args = new()
             {
@@ -980,21 +990,24 @@ namespace Milimoe.FunGame.Core.Entity
                 { "values", Values }
             };
             Effect copy = Factory.OpenFactory.GetInstance<Effect>(Id, Name, args);
-            copy.Id = Id;
-            copy.Name = Name;
-            copy.Description = Description;
-            copy.DispelDescription = DispelDescription;
-            copy.EffectType = EffectType;
-            copy.DispelType = DispelType;
-            copy.DispelledType = DispelledType;
-            copy.IsDebuff = IsDebuff;
-            copy.IgnoreImmune = IgnoreImmune;
-            copy.DurativeWithoutDuration = DurativeWithoutDuration;
+            if (!copyByCode)
+            {
+                copy.Id = Id;
+                copy.Name = Name;
+                copy.Description = Description;
+                copy.DispelDescription = DispelDescription;
+                copy.EffectType = EffectType;
+                copy.DispelType = DispelType;
+                copy.DispelledType = DispelledType;
+                copy.IsDebuff = IsDebuff;
+                copy.IgnoreImmune = IgnoreImmune;
+                copy.DurativeWithoutDuration = DurativeWithoutDuration;
+                copy.MagicType = MagicType;
+                copy.GamingQueue = GamingQueue;
+            }
             copy.Durative = Durative;
             copy.Duration = Duration;
             copy.DurationTurn = DurationTurn;
-            copy.MagicType = MagicType;
-            copy.GamingQueue = GamingQueue;
             return copy;
         }
 

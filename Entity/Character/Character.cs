@@ -1208,7 +1208,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         public void OnAttributeChanged()
         {
-            List<Effect> effects = [.. Effects.Where(e => e.Level > 0 && !e.IsBeingTemporaryDispelled)];
+            List<Effect> effects = [.. Effects.Where(e => e.IsInEffect)];
             foreach (Effect effect in effects)
             {
                 effect.OnAttributeChanged(this);
@@ -1448,10 +1448,11 @@ namespace Milimoe.FunGame.Core.Entity
                 }
             }
 
-            if (Effects.Where(e => e.EffectType != EffectType.Item).Any())
+            Effect[] effects = [.. Effects.Where(e => e.ShowInStatusBar)];
+            if (effects.Length > 0)
             {
                 builder.AppendLine("== 状态栏 ==");
-                foreach (Effect effect in Effects.Where(e => e.EffectType != EffectType.Item))
+                foreach (Effect effect in effects)
                 {
                     builder.Append(effect.ToString());
                 }
@@ -1560,10 +1561,11 @@ namespace Milimoe.FunGame.Core.Entity
                     builder.AppendLine(string.Join("，", types.Select(ItemSet.GetEquipSlotTypeName)));
                 }
 
-                if (Effects.Where(e => e.EffectType != EffectType.Item).Any())
+                Effect[] effects = [.. Effects.Where(e => e.ShowInStatusBar)];
+                if (effects.Length > 0)
                 {
                     builder.AppendLine("== 状态栏 ==");
-                    builder.Append(string.Join("，", Effects.Where(e => e.EffectType != EffectType.Item).Select(e => e.Name)));
+                    builder.Append(string.Join("，", effects.Select(e => e.Name)));
                 }
             }
 
@@ -1609,10 +1611,11 @@ namespace Milimoe.FunGame.Core.Entity
 
             builder.AppendLine($"硬直时间：{hardnessTimes:0.##}");
 
-            if (Effects.Where(e => e.EffectType != EffectType.Item).Any())
+            Effect[] effects = [.. Effects.Where(e => e.ShowInStatusBar)];
+            if (effects.Length > 0)
             {
                 builder.AppendLine("== 状态栏 ==");
-                foreach (Effect effect in Effects.Where(e => e.EffectType != EffectType.Item))
+                foreach (Effect effect in effects)
                 {
                     builder.Append(effect.ToString());
                 }
@@ -1644,10 +1647,11 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"核心属性：{PrimaryAttributeValue:0.##}" + (ExPrimaryAttributeValue != 0 ? $" [{BasePrimaryAttributeValue:0.##} {(ExPrimaryAttributeValue >= 0 ? "+" : "-")} {Math.Abs(ExPrimaryAttributeValue):0.##}]" : ""));
             builder.AppendLine($"硬直时间：{hardnessTimes:0.##}");
 
-            if (Effects.Where(e => e.EffectType != EffectType.Item).Any())
+            Effect[] effects = [.. Effects.Where(e => e.ShowInStatusBar)];
+            if (effects.Length > 0)
             {
                 builder.AppendLine("== 状态栏 ==");
-                builder.Append(string.Join("，", Effects.Where(e => e.EffectType != EffectType.Item).Select(e => e.Name)));
+                builder.Append(string.Join("，", effects.Select(e => e.Name)));
             }
 
             return builder.ToString();
@@ -1690,10 +1694,11 @@ namespace Milimoe.FunGame.Core.Entity
                 }
             }
 
-            if (Effects.Where(e => e.EffectType != EffectType.Item).Any())
+            Effect[] effects = [.. Effects.Where(e => e.ShowInStatusBar)];
+            if (effects.Length > 0)
             {
                 builder.AppendLine("== 状态栏 ==");
-                foreach (Effect effect in Effects.Where(e => e.EffectType != EffectType.Item))
+                foreach (Effect effect in effects)
                 {
                     builder.Append(effect.ToString());
                 }

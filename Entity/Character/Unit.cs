@@ -148,10 +148,11 @@ namespace Milimoe.FunGame.Core.Entity
                 }
             }
 
-            if (Effects.Where(e => e.EffectType != EffectType.Item).Any())
+            Effect[] effects = [.. Effects.Where(e => e.ShowInStatusBar)];
+            if (effects.Length > 0)
             {
                 builder.AppendLine("== 状态栏 ==");
-                foreach (Effect effect in Effects.Where(e => e.EffectType != EffectType.Item))
+                foreach (Effect effect in effects)
                 {
                     builder.Append(effect.ToString());
                 }
@@ -249,10 +250,11 @@ namespace Milimoe.FunGame.Core.Entity
                     builder.AppendLine(string.Join("，", types.Select(ItemSet.GetEquipSlotTypeName)));
                 }
 
-                if (Effects.Where(e => e.EffectType != EffectType.Item).Any())
+                Effect[] effects = [.. Effects.Where(e => e.ShowInStatusBar)];
+                if (effects.Length > 0)
                 {
                     builder.AppendLine("== 状态栏 ==");
-                    builder.Append(string.Join("，", Effects.Where(e => e.EffectType != EffectType.Item).Select(e => e.Name)));
+                    builder.Append(string.Join("，", effects.Select(e => e.Name)));
                 }
             }
 
@@ -301,10 +303,11 @@ namespace Milimoe.FunGame.Core.Entity
 
             builder.AppendLine($"硬直时间：{hardnessTimes:0.##}");
 
-            if (Effects.Where(e => e.EffectType != EffectType.Item).Any())
+            Effect[] effects = [.. Effects.Where(e => e.ShowInStatusBar)];
+            if (effects.Length > 0)
             {
                 builder.AppendLine("== 状态栏 ==");
-                foreach (Effect effect in Effects.Where(e => e.EffectType != EffectType.Item))
+                foreach (Effect effect in effects)
                 {
                     builder.Append(effect.ToString());
                 }
@@ -331,10 +334,11 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
             builder.AppendLine($"硬直时间：{hardnessTimes:0.##}");
 
-            if (Effects.Where(e => e.EffectType != EffectType.Item).Any())
+            Effect[] effects = [.. Effects.Where(e => e.ShowInStatusBar)];
+            if (effects.Length > 0)
             {
                 builder.AppendLine("== 状态栏 ==");
-                builder.Append(string.Join("，", Effects.Where(e => e.EffectType != EffectType.Item).Select(e => e.Name)));
+                builder.Append(string.Join("，", effects.Select(e => e.Name)));
             }
 
             return builder.ToString();
@@ -377,10 +381,11 @@ namespace Milimoe.FunGame.Core.Entity
                 }
             }
 
-            if (Effects.Where(e => e.EffectType != EffectType.Item).Any())
+            Effect[] effects = [.. Effects.Where(e => e.ShowInStatusBar)];
+            if (effects.Length > 0)
             {
                 builder.AppendLine("== 状态栏 ==");
-                foreach (Effect effect in Effects.Where(e => e.EffectType != EffectType.Item))
+                foreach (Effect effect in effects)
                 {
                     builder.Append(effect.ToString());
                 }

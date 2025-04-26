@@ -21,6 +21,15 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Effect.Name):
                     result.Name = reader.GetString() ?? "";
                     break;
+                case nameof(Effect.Durative):
+                    result.Durative = reader.GetBoolean();
+                    break;
+                case nameof(Effect.Duration):
+                    result.Duration = reader.GetDouble();
+                    break;
+                case nameof(Effect.DurationTurn):
+                    result.DurationTurn = reader.GetInt32();
+                    break;
                 default:
                     if (reader.TokenType == JsonTokenType.Number)
                     {
@@ -42,8 +51,11 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
         {
             writer.WriteStartObject();
 
-            writer.WriteNumber(nameof(Effect.Id), (int)value.Id);
+            writer.WriteNumber(nameof(Effect.Id), value.Id);
             writer.WriteString(nameof(Effect.Name), value.Name);
+            writer.WriteBoolean(nameof(Effect.Durative), value.Durative);
+            writer.WriteNumber(nameof(Effect.Duration), value.Duration);
+            writer.WriteNumber(nameof(Effect.DurationTurn), value.DurationTurn);
 
             foreach (var kvp in value.Values)
             {
