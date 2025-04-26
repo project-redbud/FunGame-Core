@@ -2761,10 +2761,15 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         /// <param name="character">角色</param>
         /// <param name="addValue">加值</param>
+        /// <param name="isPercentage">是否是百分比</param>
         /// <param name="isCheckProtected">是否使用插队保护机制</param>
-        public void ChangeCharacterHardnessTime(Character character, double addValue, bool isCheckProtected)
+        public void ChangeCharacterHardnessTime(Character character, double addValue, bool isPercentage, bool isCheckProtected)
         {
             double hardnessTime = _hardnessTimes[character];
+            if (isPercentage)
+            {
+                addValue = hardnessTime * addValue;
+            }
             hardnessTime += addValue;
             if (hardnessTime <= 0) hardnessTime = 0;
             _queue.Remove(character);

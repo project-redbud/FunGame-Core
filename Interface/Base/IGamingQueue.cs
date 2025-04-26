@@ -179,7 +179,8 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// </summary>
         /// <param name="character">角色</param>
         /// <param name="addValue">加值</param>
+        /// <param name="isPercentage">是否是百分比</param>
         /// <param name="isCheckProtected">是否使用插队保护机制</param>
-        public void ChangeCharacterHardnessTime(Character character, double addValue, bool isCheckProtected);
+        public void ChangeCharacterHardnessTime(Character character, double addValue, bool isPercentage, bool isCheckProtected);
     }
 }
