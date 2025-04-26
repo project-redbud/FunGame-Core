@@ -71,6 +71,20 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public void SendSystemMessage(ShowMessageType showtype, string msg, string title, int autoclose, params string[] usernames);
 
         /// <summary>
+        /// 踢下线
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <returns></returns>
+        public Task Kick(string msg);
+
+        /// <summary>
+        /// 强制退出登录
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <returns></returns>
+        public Task ForceLogOut(string msg);
+
+        /// <summary>
         /// 获取客户端的名称，通常未登录时显示为客户端的IP地址，登录后显示为账号名
         /// </summary>
         /// <returns></returns>

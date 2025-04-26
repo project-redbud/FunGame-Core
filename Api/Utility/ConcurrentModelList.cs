@@ -85,6 +85,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
             return result;
         }
 
+        /// <summary>
+        /// 判断是否存在指定的Model
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public bool ContainsKey(string name)
         {
             return Models.ContainsKey(name);
