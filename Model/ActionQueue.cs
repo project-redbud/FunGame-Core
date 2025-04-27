@@ -1,4 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
@@ -456,6 +456,9 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="isCheckProtected"></param>
         public void AddCharacter(Character character, double hardnessTime, bool isCheckProtected = true)
         {
+            // 确保角色不在队列中
+            _queue.RemoveAll(c => c == character);
+
             // 插队机制：按硬直时间排序
             int insertIndex = _queue.FindIndex(c => _hardnessTimes[c] > hardnessTime);
 
@@ -536,7 +539,6 @@ namespace Milimoe.FunGame.Core.Model
             if (_queue.Count == 0) return null;
 
             // 硬直时间为 0 的角色或预释放爆发技的角色先行动，取第一个
-            int couynt = _queue.Count(c => c.CharacterState == CharacterState.PreCastSuperSkill);
             Character? character = _queue.FirstOrDefault(c => c.CharacterState == CharacterState.PreCastSuperSkill);
             if (character is null)
             {
@@ -1191,8 +1193,6 @@ namespace Milimoe.FunGame.Core.Model
             foreach (Character character in _queue)
             {
                 // 减少所有角色的硬直时间
-                double h = _hardnessTimes[character];
-                double d = _hardnessTimes[character] - timeToReduce;
                 _hardnessTimes[character] = Calculation.Round2Digits(_hardnessTimes[character] - timeToReduce);
 
                 // 统计
@@ -2069,7 +2069,7 @@ namespace Milimoe.FunGame.Core.Model
                     WriteLine($"[ {caster} ] 终止了 [ {st.Skill.Name} ] 的施法" + (_hardnessTimes[caster] > 3 ? $"，并获得了 3 {GameplayEquilibriumConstant.InGameTime}的硬直时间的补偿。" : "。"));
                     if (_hardnessTimes[caster] > 3)
                     {
-                        _hardnessTimes[caster] = 3;
+                        AddCharacter(caster, 3, false);
                     }
                 }
             }
@@ -2772,7 +2772,6 @@ namespace Milimoe.FunGame.Core.Model
             }
             hardnessTime += addValue;
             if (hardnessTime <= 0) hardnessTime = 0;
-            _queue.Remove(character);
             AddCharacter(character, hardnessTime, isCheckProtected);
         }
 
