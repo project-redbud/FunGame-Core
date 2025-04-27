@@ -1336,7 +1336,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             StringBuilder builder = new();
 
-            builder.AppendLine(showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser());
+            builder.AppendLine((HP == 0 ? "[ 死亡 ] " : "") + (showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser()));
             if (showEXP)
             {
                 builder.AppendLine($"等级：{Level} / {GameplayEquilibriumConstant.MaxLevel}（突破进度：{LevelBreak + 1} / {GameplayEquilibriumConstant.LevelBreakList.Count}）");
@@ -1454,11 +1454,11 @@ namespace Milimoe.FunGame.Core.Entity
                 builder.AppendLine("== 状态栏 ==");
                 foreach (Effect effect in effects)
                 {
-                    builder.Append(effect.ToString());
+                    builder.AppendLine(effect.ToString());
                 }
             }
 
-            return builder.ToString();
+            return builder.ToString().Trim();
         }
 
         /// <summary>
@@ -1469,7 +1469,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             StringBuilder builder = new();
 
-            builder.AppendLine(showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser());
+            builder.AppendLine((HP == 0 ? "[ 死亡 ] " : "") + (showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser()));
             if (showEXP)
             {
                 builder.AppendLine($"等级：{Level} / {GameplayEquilibriumConstant.MaxLevel}（突破进度：{LevelBreak + 1} / {GameplayEquilibriumConstant.LevelBreakList.Count}）");
@@ -1581,7 +1581,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             StringBuilder builder = new();
 
-            builder.AppendLine(ToStringWithLevel());
+            builder.AppendLine((HP == 0 ? "[ 死亡 ] " : "") + ToStringWithLevel());
             double exHP = ExHP + ExHP2 + ExHP3;
             List<string> shield = [];
             if (Shield.TotalPhysical > 0) shield.Add($"物理：{Shield.TotalPhysical:0.##}");
@@ -1617,11 +1617,11 @@ namespace Milimoe.FunGame.Core.Entity
                 builder.AppendLine("== 状态栏 ==");
                 foreach (Effect effect in effects)
                 {
-                    builder.Append(effect.ToString());
+                    builder.AppendLine(effect.ToString());
                 }
             }
 
-            return builder.ToString();
+            return builder.ToString().Trim();
         }
 
         /// <summary>
@@ -1633,7 +1633,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             StringBuilder builder = new();
 
-            builder.AppendLine(ToStringWithLevel());
+            builder.AppendLine((HP == 0 ? "[ 死亡 ] " : "") + ToStringWithLevel());
             double exHP = ExHP + ExHP2 + ExHP3;
             List<string> shield = [];
             if (Shield.TotalPhysical > 0) shield.Add($"物理：{Shield.TotalPhysical:0.##}");
@@ -1665,7 +1665,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             StringBuilder builder = new();
 
-            builder.AppendLine(showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser());
+            builder.AppendLine((HP == 0 ? "[ 死亡 ] " : "") + (showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser()));
 
             if (CharacterState != CharacterState.Actionable)
             {
@@ -1700,11 +1700,11 @@ namespace Milimoe.FunGame.Core.Entity
                 builder.AppendLine("== 状态栏 ==");
                 foreach (Effect effect in effects)
                 {
-                    builder.Append(effect.ToString());
+                    builder.AppendLine(effect.ToString());
                 }
             }
 
-            return builder.ToString();
+            return builder.ToString().Trim();
         }
 
         /// <summary>
@@ -1715,7 +1715,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             StringBuilder builder = new();
 
-            builder.AppendLine(showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser());
+            builder.AppendLine((HP == 0 ? "[ 死亡 ] " : "") + (showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser()));
             if (showEXP)
             {
                 builder.AppendLine($"等级：{Level} / {GameplayEquilibriumConstant.MaxLevel}（突破进度：{LevelBreak + 1} / {GameplayEquilibriumConstant.LevelBreakList.Count}）");
