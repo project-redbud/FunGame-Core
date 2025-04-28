@@ -20,14 +20,18 @@
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Copyright>Project Redbud and Contributors</Copyright>
 		<PackageId>ProjectRedbud.$(AssemblyName)</PackageId>
-		<RepositoryUrl>https://github.com/project-redbud/FunGame-Core</RepositoryUrl>
+    <Description>FunGame.Core: A C#.NET library for turn-based games.</Description>
+    <PackageTags>game;turn-based;server;framework;dotnet;csharp;gamedev</PackageTags>
+    <PackageReleaseNotes>
+      - Initial release candidate 1 (1.0.0-rc.1)
+    </PackageReleaseNotes>
+    <RepositoryUrl>https://github.com/project-redbud/FunGame-Core</RepositoryUrl>
 		<PackageProjectUrl>https://github.com/project-redbud</PackageProjectUrl>
 		<PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<VersionPrefix>1.0.0-rc.1</VersionPrefix>
-		<VersionSuffix Condition="'$(VersionSuffix)' == ''">$([System.DateTime]::Now.ToString("MMdd"))</VersionSuffix>
-		<Version>$(VersionPrefix)</Version>
+    <VersionPrefix>1.0.0-rc.1</VersionPrefix>
+    <VersionSuffix Condition="'$(VersionSuffix)' == ''">$([System.DateTime]::Now.ToString("MMdd"))</VersionSuffix>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

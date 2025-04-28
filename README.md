@@ -9,19 +9,25 @@
 
 ## 安装
 
+- [NuGet](https://www.nuget.org/packages/ProjectRedbud.FunGame.Core/)
+
+```
+dotnet add package ProjectRedbud.FunGame.Core --version 1.0.0-rc.1-0428
+```
+
+- 在 [Release](https://github.com/project-redbud/FunGame-Core/releases) 页面中下载最新发布版本。
+
 - 克隆本仓库。
 
 ```powershell
 git clone https://github.com/project-redbud/FunGame-Core.git
 ```
 
-- 克隆本仓库的 `latest` 分支。
+- 克隆本仓库的 `latest` 分支，此分支为开发版本的最新编译 DLL。
 
 ```powershell
 git clone -b latest https://github.com/project-redbud/FunGame-Core.git
 ```
-
-- 在 [Release](https://github.com/project-redbud/FunGame-Core/releases) 页面中下载最新发布版本。
 
 ## 使用
 
