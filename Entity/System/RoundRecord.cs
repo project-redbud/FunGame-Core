@@ -19,7 +19,8 @@ namespace Milimoe.FunGame.Core.Entity
         public Dictionary<Character, bool> IsEvaded { get; set; } = [];
         public Dictionary<Character, bool> IsImmune { get; set; } = [];
         public Dictionary<Character, double> Heals { get; set; } = [];
-        public Dictionary<Character, List<EffectType>> Effects { get; set; } = [];
+        public Dictionary<Character, Effect> Effects { get; set; } = [];
+        public Dictionary<Character, List<EffectType>> ApplyEffects { get; set; } = [];
         public List<string> ActorContinuousKilling { get; set; } = [];
         public List<string> DeathContinuousKilling { get; set; } = [];
         public double CastTime { get; set; } = 0;
@@ -27,6 +28,7 @@ namespace Milimoe.FunGame.Core.Entity
         public Dictionary<Character, double> RespawnCountdowns { get; set; } = [];
         public List<Character> Respawns { get; set; } = [];
         public List<Skill> RoundRewards { get; set; } = [];
+        public List<string> OtherMessages { get; set; } = [];
 
         public override string ToString()
         {
@@ -37,6 +39,12 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 builder.AppendLine($"[ {Actor} ] 回合奖励 -> {string.Join(" / ", RoundRewards.Select(s => s.Description)).Trim()}");
             }
+
+            if (Effects.Count > 0)
+            {
+                builder.AppendLine($"[ {Actor} ] 发动了技能：{string.Join("，", Effects.Where(kv => kv.Key == Actor).Select(e => e.Value.Name))}");
+            }
+
             if (ActionType == CharacterActionType.NormalAttack || ActionType == CharacterActionType.CastSkill || ActionType == CharacterActionType.CastSuperSkill)
             {
                 if (ActionType == CharacterActionType.NormalAttack)
@@ -110,7 +118,7 @@ namespace Milimoe.FunGame.Core.Entity
                 {
                     hasHeal = $"治疗：{heals:0.##}";
                 }
-                if (Effects.TryGetValue(target, out List<EffectType>? effectTypes) && effectTypes != null)
+                if (ApplyEffects.TryGetValue(target, out List<EffectType>? effectTypes) && effectTypes != null)
                 {
                     hasEffect = $"施加：{string.Join(" + ", effectTypes.Select(SkillSet.GetEffectTypeName))}";
                 }
