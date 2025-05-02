@@ -9,10 +9,10 @@
 
 ## 安装
 
-- [NuGet](https://www.nuget.org/packages/ProjectRedbud.FunGame.Core/)
+- [NuGet](https://www.nuget.org/packages/FunGame.Core/)
 
 ```
-dotnet add package ProjectRedbud.FunGame.Core --version 1.0.0-rc.1-0428
+dotnet add package FunGame.Core
 ```
 
 - 在 [Release](https://github.com/project-redbud/FunGame-Core/releases) 页面中下载最新发布版本。

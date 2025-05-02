@@ -19,7 +19,7 @@
 		<DocumentationFile></DocumentationFile>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Copyright>Project Redbud and Contributors</Copyright>
-		<PackageId>ProjectRedbud.$(AssemblyName)</PackageId>
+		<PackageId>$(AssemblyName)</PackageId>
     <Description>FunGame.Core: A C#.NET library for turn-based games.</Description>
     <PackageTags>game;turn-based;server;framework;dotnet;csharp;gamedev</PackageTags>
     <PackageReleaseNotes>
