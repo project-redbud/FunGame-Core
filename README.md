@@ -9,7 +9,7 @@
 
 ## 安装
 
-- [NuGet](https://www.nuget.org/packages/ProjectRedbud.FunGame.Core/)
+- [NuGet](https://www.nuget.org/packages/FunGame.Core/)
 
 ```
 dotnet add package FunGame.Core
