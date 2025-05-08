@@ -23,7 +23,9 @@
     <Description>FunGame.Core: A C#.NET library for turn-based games.</Description>
     <PackageTags>game;turn-based;server;framework;dotnet;csharp;gamedev</PackageTags>
     <PackageReleaseNotes>
-      - Initial release candidate 1 (1.0.0-rc.1)
+      - Initial release candidate 1 (1.0.0-rc.1-0428)
+      - Abstract ActionQueue as GamingQueue, and separate the original Mix / Team modes into two queue types: MixGamingQueue and TeamGamingQueue. (1.0.0-rc.1-0502)
+      - In the Effect class, added ParentEffect and ForceHideInStatusBar properties for more precise control of the status bar display. (1.0.0-rc.1-0509)
     </PackageReleaseNotes>
     <RepositoryUrl>https://github.com/project-redbud/FunGame-Core</RepositoryUrl>
 		<PackageProjectUrl>https://github.com/project-redbud</PackageProjectUrl>

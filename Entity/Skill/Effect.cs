@@ -56,14 +56,24 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual bool DurativeWithoutDuration { get; set; } = false;
 
         /// <summary>
+        /// 附属于某个特效
+        /// </summary>
+        public Effect? ParentEffect { get; set; } = null;
+        
+        /// <summary>
         /// 是否是某个特效的附属
         /// </summary>
-        public virtual bool IsSubsidiary { get; set; } = false;
+        public bool IsSubsidiary => ParentEffect != null;
+
+        /// <summary>
+        /// 是否强制在状态栏中隐藏
+        /// </summary>
+        public virtual bool ForceHideInStatusBar { get; set; } = false;
 
         /// <summary>
         /// 是否显示在状态栏
         /// </summary>
-        public bool ShowInStatusBar => Skill.Item is null || (Durative && Duration > 0) || DurationTurn > 0 || DurativeWithoutDuration || IsSubsidiary;
+        public bool ShowInStatusBar => !ForceHideInStatusBar && !IsSubsidiary && (Skill.Item is null || (Durative && Duration > 0) || DurationTurn > 0 || DurativeWithoutDuration);
 
         /// <summary>
         /// 特效是否生效
