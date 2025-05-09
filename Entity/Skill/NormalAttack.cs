@@ -19,6 +19,11 @@ namespace Milimoe.FunGame.Core.Entity
         public string Description => $"对目标敌人造成 {(1.0 + 0.05 * (Level - 1)) * 100:0.##}% 攻击力 [ {Damage:0.##} ] 点{(IsMagic ? CharacterSet.GetMagicDamageName(MagicType) : "物理伤害")}。";
 
         /// <summary>
+        /// 普通攻击的通用说明
+        /// </summary>
+        public string GeneralDescription => $"对目标敌人造成基于 100（+5/Lv）% 攻击力的{(IsMagic ? CharacterSet.GetMagicDamageName(MagicType) : "物理伤害")}。";
+
+        /// <summary>
         /// 所属的角色
         /// </summary>
         public Character Character { get; } = character;
@@ -52,6 +57,16 @@ namespace Milimoe.FunGame.Core.Entity
         /// 魔法伤害需要指定魔法类型
         /// </summary>
         public MagicType MagicType => _MagicType;
+
+        /// <summary>
+        /// 是否可用
+        /// </summary>
+        public bool Enable { get; set; } = true;
+
+        /// <summary>
+        /// 是否在持续生效，为 true 时不允许再次使用。普通攻击始终为 false
+        /// </summary>
+        public bool IsInEffect => false;
 
         /// <summary>
         /// 无视免疫类型
@@ -94,6 +109,31 @@ namespace Milimoe.FunGame.Core.Entity
         public double CanSelectTargetRange { get; set; } = 0;
 
         /// <summary>
+        /// 普通攻击没有魔法消耗
+        /// </summary>
+        public double RealMPCost => 0;
+
+        /// <summary>
+        /// 普通攻击没有吟唱时间
+        /// </summary>
+        public double RealCastTime => 0;
+
+        /// <summary>
+        /// 普通攻击没有能量消耗
+        /// </summary>
+        public double RealEPCost => 0;
+
+        /// <summary>
+        /// 普通攻击没有冷却时间
+        /// </summary>
+        public double RealCD => 0;
+
+        /// <summary>
+        /// 普通攻击没有冷却时间
+        /// </summary>
+        public double CurrentCD => 0;
+
+        /// <summary>
         /// 获取可选择的目标列表
         /// </summary>
         /// <param name="caster"></param>
@@ -129,6 +169,10 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="enemys"></param>
         public void Attack(IGamingQueue queue, Character attacker, params IEnumerable<Character> enemys)
         {
+            if (!Enable)
+            {
+                return;
+            }
             foreach (Character enemy in enemys)
             {
                 if (enemy.HP > 0)

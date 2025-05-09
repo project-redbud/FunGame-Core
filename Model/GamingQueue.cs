@@ -8,6 +8,7 @@ namespace Milimoe.FunGame.Core.Model
 {
     /// <summary>
     /// 提供一个基础的回合制游戏队列基类实现，可继承扩展
+    /// <para/>该默认实现为混战模式 <see cref="RoomType.Mix"/>
     /// </summary>
     public class GamingQueue : IGamingQueue
     {
@@ -577,12 +578,6 @@ namespace Milimoe.FunGame.Core.Model
                 List<Effect> effects = [.. character.Effects];
                 foreach (Effect effect in effects)
                 {
-                    if (effect.IsBeingTemporaryDispelled)
-                    {
-                        effect.IsBeingTemporaryDispelled = false;
-                        effect.OnEffectGained(character);
-                    }
-
                     if (effect.Level == 0)
                     {
                         character.Effects.Remove(effect);
@@ -593,6 +588,18 @@ namespace Milimoe.FunGame.Core.Model
                     {
                         // 防止特效在时间流逝后，持续时间已结束还能继续生效的情况
                         effect.OnTimeElapsed(character, timeToReduce);
+                    }
+
+                    if (effect.IsBeingTemporaryDispelled)
+                    {
+                        effect.IsBeingTemporaryDispelled = false;
+                        effect.OnEffectGained(character);
+                    }
+
+                    // 如果特效具备临时驱散或者持续性驱散的功能
+                    if (effect.Source != null && (effect.EffectType == EffectType.WeakDispelling || effect.EffectType == EffectType.StrongDispelling))
+                    {
+                        effect.Dispel(effect.Source, character, IsTeammate(character, effect.Source));
                     }
 
                     // 自身被动不会考虑
@@ -1179,10 +1186,13 @@ namespace Milimoe.FunGame.Core.Model
             await OnQueueUpdatedAsync(_queue, character, newHardnessTime, QueueUpdatedReason.Action, "设置角色行动后的硬直时间。");
             LastRound.HardnessTime = newHardnessTime;
 
-            effects = [.. character.Effects.Where(e => e.IsInEffect)];
+            effects = [.. character.Effects];
             foreach (Effect effect in effects)
             {
-                effect.OnTurnEnd(character);
+                if (effect.IsInEffect)
+                {
+                    effect.OnTurnEnd(character);
+                }
 
                 // 自身被动不会考虑
                 if (effect.EffectType == EffectType.None && effect.Skill.SkillType == SkillType.Passive)
@@ -1410,7 +1420,7 @@ namespace Milimoe.FunGame.Core.Model
                         effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                         foreach (Effect effect in effects)
                         {
-                            if (!effect.BeforeShieldCalculation(actor, enemy, isMagicDamage, magicType, damage, shield, ref shieldMsg))
+                            if (!effect.BeforeShieldCalculation(enemy, actor, isMagicDamage, magicType, damage, shield, ref shieldMsg))
                             {
                                 change = true;
                             }
@@ -1428,7 +1438,7 @@ namespace Milimoe.FunGame.Core.Model
                                 effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                                 foreach (Effect effect in effects)
                                 {
-                                    if (!effect.OnShieldBroken(actor, enemy, isMagicDamage, magicType, damage, shield, remain))
+                                    if (!effect.OnShieldBroken(enemy, actor, isMagicDamage, magicType, damage, shield, remain))
                                     {
                                         change = true;
                                     }
@@ -2035,7 +2045,10 @@ namespace Milimoe.FunGame.Core.Model
                 effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                 foreach (Effect effect in effects)
                 {
-                    checkEvade = effect.BeforeEvadeCheck(actor, enemy, ref throwingBonus);
+                    if (!effect.BeforeEvadeCheck(actor, enemy, ref throwingBonus))
+                    {
+                        checkEvade = false;
+                    }
                 }
 
                 if (checkEvade)
@@ -2075,7 +2088,10 @@ namespace Milimoe.FunGame.Core.Model
             effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
             foreach (Effect effect in effects)
             {
-                checkCritical = effect.BeforeCriticalCheck(actor, enemy, ref throwingBonus);
+                if (!effect.BeforeCriticalCheck(actor, enemy, ref throwingBonus))
+                {
+                    checkCritical = false;
+                }
             }
 
             if (checkCritical)
@@ -2145,7 +2161,10 @@ namespace Milimoe.FunGame.Core.Model
                 effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                 foreach (Effect effect in effects)
                 {
-                    checkEvade = effect.BeforeEvadeCheck(actor, enemy, ref throwingBonus);
+                    if (!effect.BeforeEvadeCheck(actor, enemy, ref throwingBonus))
+                    {
+                        checkEvade = false;
+                    }
                 }
 
                 if (checkEvade)
@@ -2184,7 +2203,10 @@ namespace Milimoe.FunGame.Core.Model
             effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
             foreach (Effect effect in effects)
             {
-                checkCritical = effect.BeforeCriticalCheck(actor, enemy, ref throwingBonus);
+                if (!effect.BeforeCriticalCheck(actor, enemy, ref throwingBonus))
+                {
+                    checkCritical = false;
+                }
             }
 
             if (checkCritical)
@@ -2216,6 +2238,35 @@ namespace Milimoe.FunGame.Core.Model
         public static double GetEP(double a, double b, double max)
         {
             return Math.Min((a + Random.Shared.Next(30)) * b, max);
+        }
+
+        /// <summary>
+        /// 判断目标对于某个角色是否是队友
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        public bool IsTeammate(Character character, Character target)
+        {
+            List<Character> teammates = GetTeammates(character);
+            return teammates.Contains(target);
+        }
+        
+        /// <summary>
+        /// 获取目标对于某个角色是否是友方的字典
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="targets"></param>
+        /// <returns></returns>
+        public Dictionary<Character, bool> GetIsTeammateDictionary(Character character, params IEnumerable<Character> targets)
+        {
+            Dictionary<Character, bool> dict = [];
+            List<Character> teammates = GetTeammates(character);
+            foreach (Character target in targets)
+            {
+                dict[target] = teammates.Contains(target);
+            }
+            return dict;
         }
 
         #endregion

@@ -228,6 +228,11 @@ namespace Milimoe.FunGame.Core.Library.Constant
 
     /// <summary>
     /// 注意：具有控制效果的特效，应该和技能本身的特效(一般此项为None)区分开来。此效果被赋值会改变一些判断的结果。
+    /// <para>关联方法：</para>
+    /// <para><see cref="SkillSet.GetCharacterStateByEffectType(EffectType)"/></para>
+    /// <para><see cref="SkillSet.GetDispelledTypeByEffectType(EffectType)"/></para>
+    /// <para><see cref="SkillSet.GetEffectTypeName(EffectType)"/></para>
+    /// <para><see cref="SkillSet.GetIsDebuffByEffectType(EffectType)"/></para>
     /// </summary>
     public enum EffectType
     {
@@ -464,7 +469,17 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// <summary>
         /// 重伤，目标受到的治疗效果降低
         /// </summary>
-        GrievousWound
+        GrievousWound,
+
+        /// <summary>
+        /// 持续性弱驱散
+        /// </summary>
+        WeakDispelling,
+
+        /// <summary>
+        /// 持续性强驱散
+        /// </summary>
+        StrongDispelling
     }
 
     public enum ItemType

@@ -682,6 +682,10 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.SkilledImmune => "技能免疫",
                 EffectType.AllImmune => "完全免疫",
                 EffectType.EvadeBoost => "闪避提升",
+                EffectType.Lifesteal => "生命偷取",
+                EffectType.GrievousWound => "重伤",
+                EffectType.WeakDispelling => "持续性弱驱散",
+                EffectType.StrongDispelling => "持续性强驱散",
                 _ => "未知效果"
             };
         }
@@ -710,6 +714,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.Petrify => DispelledType.Strong,
                 EffectType.SilenceMagic => DispelledType.Strong,
                 EffectType.Banish => DispelledType.Strong,
+                EffectType.AllImmune => DispelledType.Strong,
+                EffectType.StrongDispelling => DispelledType.Strong,
                 EffectType.Mark => DispelledType.Weak,
                 EffectType.Slow => DispelledType.Weak,
                 EffectType.Weaken => DispelledType.Weak,
@@ -733,10 +739,10 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.PhysicalImmune => DispelledType.Weak,
                 EffectType.MagicalImmune => DispelledType.Weak,
                 EffectType.SkilledImmune => DispelledType.Weak,
-                EffectType.AllImmune => DispelledType.Strong,
                 EffectType.EvadeBoost => DispelledType.Weak,
                 EffectType.Lifesteal => DispelledType.Weak,
                 EffectType.GrievousWound => DispelledType.Weak,
+                EffectType.WeakDispelling => DispelledType.Weak,
                 _ => DispelledType.Weak
             };
         }

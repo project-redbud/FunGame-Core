@@ -3,6 +3,9 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Model
 {
+    /// <summary>
+    /// 混战游戏队列，增强版混战模式 <see cref="RoomType.Mix"/>
+    /// </summary>
     public class MixGamingQueue : GamingQueue
     {
         /// <summary>
