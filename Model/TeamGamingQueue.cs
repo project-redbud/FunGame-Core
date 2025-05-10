@@ -3,6 +3,9 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Model
 {
+    /// <summary>
+    /// 团队游戏队列，团队模式 <see cref="RoomType.Team"/>
+    /// </summary>
     public class TeamGamingQueue : GamingQueue
     {
         /// <summary>

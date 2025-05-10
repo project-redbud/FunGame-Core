@@ -169,6 +169,22 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public Task<List<Character>> SelectTargetsAsync(Character character, NormalAttack attack, List<Character> enemys, List<Character> teammates);
 
         /// <summary>
+        /// 判断目标对于某个角色是否是队友
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        public bool IsTeammate(Character character, Character target);
+
+        /// <summary>
+        /// 获取目标对于某个角色是否是队友的字典
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="targets"></param>
+        /// <returns></returns>
+        public Dictionary<Character, bool> GetIsTeammateDictionary(Character character, IEnumerable<Character> targets);
+
+        /// <summary>
         /// 检查角色是否在 AI 控制状态
         /// </summary>
         /// <returns></returns>
