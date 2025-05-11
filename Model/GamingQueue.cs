@@ -1581,7 +1581,11 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     WriteLine($"[ {target} ] 复苏了，并回复了 {heal:0.##} 点生命值！！");
                 }
+                double hp = target.HP;
+                double mp = target.MP;
                 await SetCharacterRespawn(target);
+                target.HP = hp;
+                target.MP = mp;
             }
             else
             {
@@ -1717,14 +1721,14 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             _continuousKilling.Remove(death);
+            _eliminated.Add(death);
             if (MaxRespawnTimes == 0)
             {
-                _eliminated.Add(death);
+                // do nothing
             }
             else if (_respawnTimes.TryGetValue(death, out int times) && MaxRespawnTimes != -1 && times == MaxRespawnTimes)
             {
                 WriteLine($"[ {death} ] 已达到复活次数上限，将不能再复活！！");
-                _eliminated.Add(death);
             }
             else
             {
@@ -2462,15 +2466,16 @@ namespace Milimoe.FunGame.Core.Model
         {
             double hardnessTime = 5;
             character.Respawn(_original[character.Guid]);
+            _eliminated.Remove(character);
             WriteLine($"[ {character} ] 已复活！获得 {hardnessTime} {GameplayEquilibriumConstant.InGameTime}的硬直时间。");
             AddCharacter(character, hardnessTime, false);
-            await OnQueueUpdatedAsync(_queue, character, hardnessTime, QueueUpdatedReason.Respawn, "设置角色复活后的硬直时间。");
             LastRound.Respawns.Add(character);
             _respawnCountdown.Remove(character);
             if (!_respawnTimes.TryAdd(character, 1))
             {
                 _respawnTimes[character] += 1;
             }
+            await OnQueueUpdatedAsync(_queue, character, hardnessTime, QueueUpdatedReason.Respawn, "设置角色复活后的硬直时间。");
         }
 
         /// <summary>
@@ -2505,8 +2510,8 @@ namespace Milimoe.FunGame.Core.Model
                     }
                 }
                 AddCharacter(character, Calculation.Round2Digits(baseHardnessTime + preCastSSCount * 0.01), false);
-                await OnQueueUpdatedAsync(_queue, character, 0, QueueUpdatedReason.PreCastSuperSkill, "设置角色预释放爆发技的硬直时间。");
                 skill.OnSkillCasting(this, character, []);
+                await OnQueueUpdatedAsync(_queue, character, 0, QueueUpdatedReason.PreCastSuperSkill, "设置角色预释放爆发技的硬直时间。");
             }
         }
 
