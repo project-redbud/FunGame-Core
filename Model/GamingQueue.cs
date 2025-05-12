@@ -1132,6 +1132,7 @@ namespace Milimoe.FunGame.Core.Model
                 }
                 else if (type == CharacterActionType.EndTurn)
                 {
+                    baseTime = 3;
                     decided = true;
                     WriteLine($"[ {character} ] 结束了回合！");
                     await OnCharacterDoNothingAsync(character);
@@ -1183,8 +1184,8 @@ namespace Milimoe.FunGame.Core.Model
                 LastRound.CastTime = newHardnessTime;
             }
             AddCharacter(character, newHardnessTime, isCheckProtected);
-            await OnQueueUpdatedAsync(_queue, character, newHardnessTime, QueueUpdatedReason.Action, "设置角色行动后的硬直时间。");
             LastRound.HardnessTime = newHardnessTime;
+            await OnQueueUpdatedAsync(_queue, character, newHardnessTime, QueueUpdatedReason.Action, "设置角色行动后的硬直时间。");
 
             effects = [.. character.Effects];
             foreach (Effect effect in effects)
@@ -1340,8 +1341,10 @@ namespace Milimoe.FunGame.Core.Model
                 return;
             }
 
+            // 不管有没有暴击，都尝试往回合记录中添加目标，不暴击时不会修改原先值
             if (!LastRound.IsCritical.TryAdd(enemy, damageResult == DamageResult.Critical) && damageResult == DamageResult.Critical)
             {
+                // 暴击了修改目标对应的值为 true
                 LastRound.IsCritical[enemy] = true;
             }
 
@@ -1359,6 +1362,7 @@ namespace Milimoe.FunGame.Core.Model
                 }
             }
             damage += totalDamageBonus.Sum(kv => kv.Value);
+            double actualDamage = damage;
 
             // 闪避了就没伤害了
             if (damageResult != DamageResult.Evaded)
@@ -1402,6 +1406,7 @@ namespace Milimoe.FunGame.Core.Model
                 if (isImmune)
                 {
                     // 免疫
+                    damageResult = DamageResult.Immune;
                     LastRound.IsImmune[enemy] = true;
                     WriteLine($"[ {enemy} ] 免疫了此伤害！");
                 }
@@ -1448,21 +1453,31 @@ namespace Milimoe.FunGame.Core.Model
                                 {
                                     enemy.HP -= remain;
                                     shieldMsg = $"（护盾抵消了 {shield:0.##} 点并破碎，角色承受了 {remain:0.##} 点）";
+                                    actualDamage = remain;
                                 }
                                 else
                                 {
                                     shieldMsg = $"（护盾抵消了 {shield:0.##} 点并破碎，角色没有承受伤害）";
+                                    damageResult = DamageResult.Shield;
+                                    actualDamage = 0;
                                 }
                             }
                             else
                             {
                                 enemy.Shield[isMagicDamage, magicType] = remain;
                                 shieldMsg = $"（护盾抵消了 {damage:0.##} 点，剩余可用 {remain:0.##} 点）";
+                                damageResult = DamageResult.Shield;
+                                actualDamage = 0;
                             }
                         }
-                        else if (shieldMsg.Trim() == "")
+                        else
                         {
-                            shieldMsg = $"（护盾已使其无效化）";
+                            if (shieldMsg.Trim() == "")
+                            {
+                                shieldMsg = $"（护盾已使其无效化）";
+                            }
+                            damageResult = DamageResult.Shield;
+                            actualDamage = 0;
                         }
                     }
                     else enemy.HP -= damage;
@@ -1474,7 +1489,7 @@ namespace Milimoe.FunGame.Core.Model
                     }
                     else WriteLine($"[ {enemy} ] 受到了 {damage:0.##} 点物理伤害！{shieldMsg}");
 
-                    // 生命偷取
+                    // 生命偷取，攻击者为全额
                     double steal = damage * actor.Lifesteal;
                     await HealToTargetAsync(actor, actor, steal, false);
                     effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
@@ -1483,7 +1498,7 @@ namespace Milimoe.FunGame.Core.Model
                         effect.AfterLifesteal(actor, enemy, damage, steal);
                     }
 
-                    // 造成伤害和受伤都可以获得能量
+                    // 造成伤害和受伤都可以获得能量。攻击者为全额，被攻击者为 actualDamage，护盾抵消的伤害不算
                     double ep = GetEP(damage, GameplayEquilibriumConstant.DamageGetEPFactor, GameplayEquilibriumConstant.DamageGetEPMax);
                     effects = [.. actor.Effects.Where(e => e.IsInEffect)];
                     foreach (Effect effect in effects)
@@ -1491,7 +1506,7 @@ namespace Milimoe.FunGame.Core.Model
                         effect.AlterEPAfterDamage(actor, ref ep);
                     }
                     actor.EP += ep;
-                    ep = GetEP(damage, GameplayEquilibriumConstant.TakenDamageGetEPFactor, GameplayEquilibriumConstant.TakenDamageGetEPMax);
+                    ep = GetEP(actualDamage, GameplayEquilibriumConstant.TakenDamageGetEPFactor, GameplayEquilibriumConstant.TakenDamageGetEPMax);
                     effects = [.. enemy.Effects.Where(e => e.IsInEffect)];
                     foreach (Effect effect in effects)
                     {
@@ -1500,7 +1515,7 @@ namespace Milimoe.FunGame.Core.Model
                     enemy.EP += ep;
 
                     // 统计伤害
-                    CalculateCharacterDamageStatistics(actor, enemy, damage, isMagicDamage);
+                    CalculateCharacterDamageStatistics(actor, enemy, damage, isMagicDamage, actualDamage);
 
                     // 计算助攻
                     _assistDetail[actor][enemy, TotalTime] += damage;
@@ -1511,12 +1526,12 @@ namespace Milimoe.FunGame.Core.Model
                 LastRound.IsEvaded[enemy] = true;
             }
 
-            await OnDamageToEnemyAsync(actor, enemy, damage, isNormalAttack, isMagicDamage, magicType, damageResult);
+            await OnDamageToEnemyAsync(actor, enemy, damage, actualDamage, isNormalAttack, isMagicDamage, magicType, damageResult);
 
             effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
             foreach (Effect effect in effects)
             {
-                effect.AfterDamageCalculation(actor, enemy, damage, isNormalAttack, isMagicDamage, magicType, damageResult);
+                effect.AfterDamageCalculation(actor, enemy, damage, actualDamage, isNormalAttack, isMagicDamage, magicType, damageResult);
             }
 
             if (enemy.HP <= 0 && !_eliminated.Contains(enemy) && !_respawnCountdown.ContainsKey(enemy))
@@ -1639,6 +1654,7 @@ namespace Milimoe.FunGame.Core.Model
                 if (assist != killer)
                 {
                     if (!_earnedMoney.TryAdd(assist, cmoney)) _earnedMoney[assist] += cmoney;
+                    assist.User.Inventory.Credits += cmoney;
                     _stats[assist].Assists += 1;
                 }
                 else
@@ -1708,6 +1724,7 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             if (!_earnedMoney.TryAdd(killer, money)) _earnedMoney[killer] += money;
+            killer.User.Inventory.Credits += money;
 
             await OnDeathCalculation(death, killer);
 
@@ -2635,8 +2652,9 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 计算角色的数据
         /// </summary>
-        public void CalculateCharacterDamageStatistics(Character character, Character characterTaken, double damage, bool isMagic)
+        public void CalculateCharacterDamageStatistics(Character character, Character characterTaken, double damage, bool isMagic, double takenDamage = -1)
         {
+            if (takenDamage == -1) takenDamage = damage;
             if (_stats.TryGetValue(character, out CharacterStatistics? stats) && stats != null)
             {
                 if (isMagic)
@@ -2653,13 +2671,13 @@ namespace Milimoe.FunGame.Core.Model
             {
                 if (isMagic)
                 {
-                    statsTaken.TotalTakenMagicDamage = Calculation.Round2Digits(statsTaken.TotalTakenMagicDamage + damage);
+                    statsTaken.TotalTakenMagicDamage = Calculation.Round2Digits(statsTaken.TotalTakenMagicDamage + takenDamage);
                 }
                 else
                 {
-                    statsTaken.TotalTakenPhysicalDamage = Calculation.Round2Digits(statsTaken.TotalTakenPhysicalDamage + damage);
+                    statsTaken.TotalTakenPhysicalDamage = Calculation.Round2Digits(statsTaken.TotalTakenPhysicalDamage + takenDamage);
                 }
-                statsTaken.TotalTakenDamage = Calculation.Round2Digits(statsTaken.TotalTakenDamage + damage);
+                statsTaken.TotalTakenDamage = Calculation.Round2Digits(statsTaken.TotalTakenDamage + takenDamage);
             }
             if (LastRound.Damages.TryGetValue(characterTaken, out double damageTotal))
             {
@@ -2912,7 +2930,7 @@ namespace Milimoe.FunGame.Core.Model
             await (HealToTarget?.Invoke(this, actor, target, heal, isRespawn) ?? Task.CompletedTask);
         }
 
-        public delegate Task DamageToEnemyEventHandler(GamingQueue queue, Character actor, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult);
+        public delegate Task DamageToEnemyEventHandler(GamingQueue queue, Character actor, Character enemy, double damage, double actualDamage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult);
         /// <summary>
         /// 造成伤害事件
         /// </summary>
@@ -2923,14 +2941,15 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="actor"></param>
         /// <param name="enemy"></param>
         /// <param name="damage"></param>
+        /// <param name="actualDamage"></param>
         /// <param name="isNormalAttack"></param>
         /// <param name="isMagicDamage"></param>
         /// <param name="magicType"></param>
         /// <param name="damageResult"></param>
         /// <returns></returns>
-        protected async Task OnDamageToEnemyAsync(Character actor, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        protected async Task OnDamageToEnemyAsync(Character actor, Character enemy, double damage, double actualDamage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
         {
-            await (DamageToEnemy?.Invoke(this, actor, enemy, damage, isNormalAttack, isMagicDamage, magicType, damageResult) ?? Task.CompletedTask);
+            await (DamageToEnemy?.Invoke(this, actor, enemy, damage, actualDamage, isNormalAttack, isMagicDamage, magicType, damageResult) ?? Task.CompletedTask);
         }
 
         public delegate Task CharacterNormalAttackEventHandler(GamingQueue queue, Character actor, List<Character> targets);

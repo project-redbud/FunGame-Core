@@ -62,7 +62,9 @@ namespace Milimoe.FunGame.Core.Library.Constant
     {
         Normal,
         Critical,
-        Evaded
+        Evaded,
+        Shield,
+        Immune
     }
 
     public enum RedeemResult

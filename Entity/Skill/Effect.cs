@@ -360,11 +360,12 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="character"></param>
         /// <param name="enemy"></param>
         /// <param name="damage"></param>
+        /// <param name="actualDamage"></param>
         /// <param name="isNormalAttack"></param>
         /// <param name="isMagicDamage"></param>
         /// <param name="magicType"></param>
         /// <param name="damageResult"></param>
-        public virtual void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        public virtual void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
         {
 
         }
