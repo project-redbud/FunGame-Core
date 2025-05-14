@@ -14,6 +14,7 @@ namespace Milimoe.FunGame.Core.Entity
         public string SkillCost { get; set; } = "";
         public Item? Item { get; set; } = null;
         public bool HasKill { get; set; } = false;
+        public List<Character> Assists { get; set; } = [];
         public Dictionary<Character, double> Damages { get; set; } = [];
         public Dictionary<Character, bool> IsCritical { get; set; } = [];
         public Dictionary<Character, bool> IsEvaded { get; set; } = [];

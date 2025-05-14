@@ -25,6 +25,11 @@ namespace Milimoe.FunGame.Core.Model
         public Action<string> WriteLine { get; }
 
         /// <summary>
+        /// 参与本次游戏的所有角色列表
+        /// </summary>
+        public List<Character> AllCharacter => _allCharacter;
+
+        /// <summary>
         /// 原始的角色字典
         /// </summary>
         public Dictionary<Guid, Character> Original => _original;
@@ -117,10 +122,15 @@ namespace Milimoe.FunGame.Core.Model
         #region 保护变量
 
         /// <summary>
+        /// 参与本次游戏的所有角色列表
+        /// </summary>
+        protected readonly List<Character> _allCharacter = [];
+
+        /// <summary>
         /// 原始的角色字典
         /// </summary>
         protected readonly Dictionary<Guid, Character> _original = [];
-
+        
         /// <summary>
         /// 当前的行动顺序
         /// </summary>
@@ -261,6 +271,9 @@ namespace Milimoe.FunGame.Core.Model
             // 保存原始的角色信息。用于复活时还原状态
             foreach (Character character in characters)
             {
+                // 添加角色引用到所有角色列表
+                _allCharacter.Add(character);
+                // 复制原始角色对象
                 Character original = character.Copy();
                 original.Guid = Guid.NewGuid();
                 character.Guid = original.Guid;
@@ -612,7 +625,7 @@ namespace Milimoe.FunGame.Core.Model
                     if (effect.Source != null && SkillSet.GetCharacterStateByEffectType(effect.EffectType) != CharacterState.Actionable)
                     {
                         _stats[effect.Source].ControlTime += timeToReduce;
-                        SetNotDamageAssistTime(effect.Source, character);
+                        _assistDetail[effect.Source][character, TotalTime] += 1;
                     }
 
                     if (effect.Durative)
@@ -686,10 +699,12 @@ namespace Milimoe.FunGame.Core.Model
             bool isCheckProtected = true;
 
             // 队友列表
-            List<Character> teammates = [.. GetTeammates(character).Where(_queue.Contains)];
+            List<Character> allTeammates = GetTeammates(character);
+            List<Character> teammates = [.. allTeammates.Where(_queue.Contains)];
 
             // 敌人列表
-            List<Character> enemys = [.. _queue.Where(c => c != character && !c.IsUnselectable && !teammates.Contains(c))];
+            List<Character> allEnemys = [.. _allCharacter.Where(c => c != character && !teammates.Contains(c))];
+            List<Character> enemys = [.. allEnemys.Where(c => _queue.Contains(c) && !c.IsUnselectable)];
 
             // 技能列表
             List<Skill> skills = [.. character.Skills.Where(s => s.Level > 0 && s.SkillType != SkillType.Passive && s.Enable && !s.IsInEffect && s.CurrentCD == 0 &&
@@ -848,8 +863,6 @@ namespace Milimoe.FunGame.Core.Model
                         {
                             type = GetActionType(pUseItem, pCastSkill, pNormalAttack);
                         }
-
-                        _stats[character].ActionTurn += 1;
                     }
                     else if (character.CharacterState == CharacterState.Casting)
                     {
@@ -889,14 +902,6 @@ namespace Milimoe.FunGame.Core.Model
                     {
                         // 使用普通攻击逻辑
                         List<Character> targets = await SelectTargetsAsync(character, character.NormalAttack, enemys, teammates);
-                        if (targets.Count == 0 && _charactersInAI.Contains(character))
-                        {
-                            // 如果没有选取目标，且角色在 AI 控制下，则随机选取目标
-                            if (enemys.Count > character.NormalAttack.CanSelectTargetCount)
-                                targets = [.. enemys.OrderBy(o => Random.Shared.Next(enemys.Count)).Take(character.NormalAttack.CanSelectTargetCount)];
-                            else
-                                targets = [.. enemys];
-                        }
                         if (targets.Count > 0)
                         {
                             LastRound.Targets = [.. targets];
@@ -928,11 +933,6 @@ namespace Milimoe.FunGame.Core.Model
                         if (skill.SkillType == SkillType.Magic)
                         {
                             List<Character> targets = await SelectTargetsAsync(character, skill, enemys, teammates);
-                            if (targets.Count == 0 && _charactersInAI.Contains(character) && enemys.Count > 0)
-                            {
-                                // 如果没有选取目标，且角色在 AI 控制下，则随机选取一个目标
-                                targets = [enemys[Random.Shared.Next(enemys.Count)]];
-                            }
                             if (targets.Count > 0)
                             {
                                 // 免疫检定
@@ -959,11 +959,6 @@ namespace Milimoe.FunGame.Core.Model
                             if (CheckCanCast(character, skill, out double cost))
                             {
                                 List<Character> targets = await SelectTargetsAsync(character, skill, enemys, teammates);
-                                if (targets.Count == 0 && _charactersInAI.Contains(character) && enemys.Count > 0)
-                                {
-                                    // 如果没有选取目标，且角色在 AI 控制下，则随机选取一个目标
-                                    targets = [enemys[Random.Shared.Next(enemys.Count)]];
-                                }
                                 if (targets.Count > 0)
                                 {
                                     // 免疫检定
@@ -1150,6 +1145,7 @@ namespace Milimoe.FunGame.Core.Model
                 await OnCharacterGiveUpAsync(character);
             }
 
+            _stats[character].ActionTurn += 1;
             LastRound.ActionType = type;
 
             await AfterCharacterAction(character, type);
@@ -1638,24 +1634,73 @@ namespace Milimoe.FunGame.Core.Model
             }
             _stats[killer].Kills += 1;
             _stats[death].Deaths += 1;
-            int money = Random.Shared.Next(250, 350);
 
-            // 按伤害比分配金钱 只有造成 10% 伤害以上并且是在 30 秒内造成的伤害才能参与
-            // 现在 20 秒内的非伤害类型辅助也能参与助攻了
-            Character[] assists = [.. _assistDetail.Keys.Where(c => c != death && _assistDetail[c].GetPercentage(death) > 0.10 &&
-                (_assistDetail[c].GetLastTime(death) - TotalTime <= 30 || _assistDetail[c].GetNotDamageAssistLastTime(killer) - TotalTime <= 20))];
-            double totalDamagePercentage = _assistDetail.Keys.Where(assists.Contains).Select(c => _assistDetail[c].GetPercentage(death)).Sum();
-            int totalMoney = Math.Min(Convert.ToInt32(money * totalDamagePercentage), 425); // 防止刷伤害设置金钱上限
+            // 基础击杀奖励
+            int money = 300;
+
+            // 按伤害比分配金钱 只有在 30 时间内造成的伤害才能参与
+            // 现在 20 时间内的非伤害类型辅助也能参与助攻了
+            Character[] assists = [.. _assistDetail.Keys.Where(c => c != death &&
+                ((TotalTime - _assistDetail[c].GetLastTime(death) <= 30) || (TotalTime - _assistDetail[c].GetNotDamageAssistLastTime(killer) <= 20)))];
+
+            // 获取贡献百分比 以伤害为主，非伤害助攻贡献不足 10% 的按 10% 计算
+            double minPercentage = 0.1;
+            Dictionary<Character, double> assistPercentage = _assistDetail.Keys.Where(assists.Contains).ToDictionary(c => c,
+                c => _assistDetail[c].GetPercentage(death) < minPercentage &&
+                TotalTime - _assistDetail[c].GetNotDamageAssistLastTime(killer) <= 20 ? minPercentage : _assistDetail[c].GetPercentage(death));
+            double totalDamagePercentage = assistPercentage.Values.Sum();
+            if (totalDamagePercentage < 1)
+            {
+                // 归一化
+                foreach (Character assist in assistPercentage.Keys)
+                {
+                    if (totalDamagePercentage == 0) break;
+                    assistPercentage[assist] /= totalDamagePercentage;
+                }
+                totalDamagePercentage = assistPercentage.Values.Sum();
+                if (totalDamagePercentage == 0) totalDamagePercentage = 1;
+            }
+
+            // 如果算上助攻者总伤害贡献超过了100%，则会超过基础击杀奖励。防止刷伤害要设置金钱上限
+            int totalMoney = Math.Min(Convert.ToInt32(money * totalDamagePercentage), 425);
+
+            // 等级差和经济差补偿 d = death, koa = killer or assist
+            int calDiff(Character d, Character koa)
+            {
+                int moreMoney = 0;
+                int levelDiff = d.Level - koa.Level;
+                if (levelDiff > 0)
+                {
+                    moreMoney += levelDiff * 10;
+                }
+                if (_earnedMoney.TryGetValue(d, out int deathMoney))
+                {
+                    int moneyDiff = deathMoney;
+                    if (_earnedMoney.TryGetValue(koa, out int killerMoney))
+                    {
+                        moneyDiff = deathMoney - killerMoney;
+                    }
+                    if (moneyDiff > 0)
+                    {
+                        moreMoney += (int)Math.Min(moneyDiff * 0.25, 300);
+                    }
+                }
+                return moreMoney;
+            }
 
             // 分配金钱和累计助攻
-            foreach (Character assist in assists)
+            foreach (Character assist in assistPercentage.Keys)
             {
-                int cmoney = Convert.ToInt32(_assistDetail[assist].GetPercentage(death) / totalDamagePercentage * totalMoney);
+                int cmoney = Convert.ToInt32(assistPercentage[assist] / totalDamagePercentage * totalMoney);
+                if (cmoney > 320) cmoney = 320;
                 if (assist != killer)
                 {
+                    // 助攻者的等级差和经济差补偿
+                    cmoney += calDiff(death, assist);
                     if (!_earnedMoney.TryAdd(assist, cmoney)) _earnedMoney[assist] += cmoney;
                     assist.User.Inventory.Credits += cmoney;
                     _stats[assist].Assists += 1;
+                    if (!LastRound.Assists.Contains(assist)) LastRound.Assists.Add(assist);
                 }
                 else
                 {
@@ -1663,10 +1708,13 @@ namespace Milimoe.FunGame.Core.Model
                 }
             }
 
+            // 击杀者的等级差和经济差补偿
+            money += calDiff(death, killer);
+
             // 终结击杀的奖励仍然是全额的
             if (_continuousKilling.TryGetValue(death, out int coefficient) && coefficient > 1)
             {
-                money += (coefficient + 1) * Random.Shared.Next(50, 100);
+                money += (coefficient + 1) * 60;
                 string termination = CharacterSet.GetContinuousKilling(coefficient);
                 string msg = $"[ {killer} ] 终结了 [ {death} ]{(termination != "" ? " 的" + termination : "")}，获得 {money} {GameplayEquilibriumConstant.InGameCurrency}！";
                 LastRound.DeathContinuousKilling.Add(msg);
@@ -1698,6 +1746,9 @@ namespace Milimoe.FunGame.Core.Model
                 LastRound.ActorContinuousKilling.Add(firstKill);
             }
 
+            if (!_earnedMoney.TryAdd(killer, money)) _earnedMoney[killer] += money;
+            killer.User.Inventory.Credits += money;
+
             int kills = _continuousKilling[killer];
             string continuousKilling = CharacterSet.GetContinuousKilling(kills);
             string actorContinuousKilling = "";
@@ -1715,16 +1766,13 @@ namespace Milimoe.FunGame.Core.Model
             }
             else if (kills >= 10)
             {
-                actorContinuousKilling = "[ " + killer + " ] 已经" + continuousKilling + "！拜托谁去杀了他吧！！！";
+                actorContinuousKilling = "[ " + killer + " ] 已经" + continuousKilling + "，拜托谁去杀了他吧！！！";
             }
             if (actorContinuousKilling != "")
             {
                 LastRound.ActorContinuousKilling.Add(actorContinuousKilling);
                 WriteLine(actorContinuousKilling);
             }
-
-            if (!_earnedMoney.TryAdd(killer, money)) _earnedMoney[killer] += money;
-            killer.User.Inventory.Credits += money;
 
             await OnDeathCalculation(death, killer);
 
@@ -1801,11 +1849,6 @@ namespace Milimoe.FunGame.Core.Model
                 if (skill != null)
                 {
                     List<Character> targets = await SelectTargetsAsync(character, skill, enemys, teammates);
-                    if (targets.Count == 0 && _charactersInAI.Contains(character) && enemys.Count > 0)
-                    {
-                        // 如果没有选取目标，且角色在 AI 控制下，则随机选取一个目标
-                        targets = [enemys[Random.Shared.Next(enemys.Count)]];
-                    }
                     if (targets.Count > 0)
                     {
                         // 免疫检定
@@ -1939,6 +1982,14 @@ namespace Milimoe.FunGame.Core.Model
                 effect.AlterSelectListBeforeSelection(character, attack, enemys, teammates);
             }
             List<Character> targets = await OnSelectNormalAttackTargetsAsync(character, attack, enemys, teammates);
+            if (targets.Count == 0 && _charactersInAI.Contains(character))
+            {
+                targets = character.NormalAttack.GetSelectableTargets(character, enemys, teammates);
+                if (targets.Count > 0)
+                {
+                    targets = [targets[Random.Shared.Next(targets.Count)]];
+                }
+            }
             return targets;
         }
 
@@ -2541,6 +2592,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             foreach (Character target in targets)
             {
+                if (character == target) continue;
                 _assistDetail[character].NotDamageAssistLastTime[target] = TotalTime;
             }
         }

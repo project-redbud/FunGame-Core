@@ -77,28 +77,28 @@ namespace Milimoe.FunGame.Core.Entity
         /// 获取对 <paramref name="enemy"/> 造成伤害的最后时间
         /// </summary>
         /// <param name="enemy"></param>
-        /// <returns>-1 意味着没有时间</returns>
+        /// <returns><see cref="double.MinValue"/> 意味着没有时间</returns>
         public double GetLastTime(Character enemy)
         {
             if (DamageLastTime.TryGetValue(enemy, out double time))
             {
                 return time;
             }
-            return -1;
+            return double.MinValue;
         }
 
         /// <summary>
         /// 获取对某角色友方非伤害辅助的最后时间
         /// </summary>
         /// <param name="character"></param>
-        /// <returns>-1 意味着没有时间</returns>
+        /// <returns><see cref="double.MinValue"/> 意味着没有时间</returns>
         public double GetNotDamageAssistLastTime(Character character)
         {
             if (NotDamageAssistLastTime.TryGetValue(character, out double time))
             {
                 return time;
             }
-            return -1;
+            return double.MinValue;
         }
     }
 }
