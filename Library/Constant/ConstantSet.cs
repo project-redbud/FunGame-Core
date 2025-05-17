@@ -439,6 +439,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 CharacterState.ActionRestricted => "角色现在行动受限",
                 CharacterState.BattleRestricted => "角色现在战斗不能",
                 CharacterState.SkillRestricted => "角色现在技能受限",
+                CharacterState.AttackRestricted => "角色现在攻击受限",
                 _ => "角色现在完全行动不能"
             };
         }
@@ -797,7 +798,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.AllImmune => false,
                 EffectType.EvadeBoost => false,
                 EffectType.Lifesteal => false,
-                EffectType.GrievousWound => false,
+                EffectType.GrievousWound => true,
                 _ => false
             };
         }

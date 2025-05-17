@@ -1353,7 +1353,7 @@ namespace Milimoe.FunGame.Core.Entity
             double exATK = ExATK + ExATK2 + ExATK3;
             builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
             double exDEF = ExDEF + ExDEF2 + ExDEF3;
-            builder.AppendLine($"物理护甲：{DEF:0.##}" + (exDEF != 0 ? $" [{BaseDEF:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exDEF):0.##}]" : "") + $" ({PDR * 100:0.##}%)");
+            builder.AppendLine($"物理护甲：{DEF:0.##}" + (exDEF != 0 ? $" [{BaseDEF:0.##} {(exDEF >= 0 ? "+" : "-")} {Math.Abs(exDEF):0.##}]" : "") + $" ({PDR * 100:0.##}%)");
             builder.AppendLine($"魔法抗性：{MDF.Avg:0.##}%（平均）");
             double exSPD = AGI * GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
             builder.AppendLine($"行动速度：{SPD:0.##}" + (exSPD != 0 ? $" [{InitialSPD:0.##} {(exSPD >= 0 ? "+" : "-")} {Math.Abs(exSPD):0.##}]" : "") + $" ({ActionCoefficient * 100:0.##}%)");
@@ -1486,7 +1486,7 @@ namespace Milimoe.FunGame.Core.Entity
             double exATK = ExATK + ExATK2 + ExATK3;
             builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
             double exDEF = ExDEF + ExDEF2 + ExDEF3;
-            builder.AppendLine($"物理护甲：{DEF:0.##}" + (exDEF != 0 ? $" [{BaseDEF:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exDEF):0.##}]" : "") + $" ({PDR * 100:0.##}%)");
+            builder.AppendLine($"物理护甲：{DEF:0.##}" + (exDEF != 0 ? $" [{BaseDEF:0.##} {(exDEF >= 0 ? "+" : "-")} {Math.Abs(exDEF):0.##}]" : "") + $" ({PDR * 100:0.##}%)");
             builder.AppendLine($"魔法抗性：{MDF.Avg:0.##}%（平均）");
             if (showBasicOnly)
             {
@@ -1732,7 +1732,7 @@ namespace Milimoe.FunGame.Core.Entity
             double exATK = ExATK + ExATK2 + ExATK3;
             builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
             double exDEF = ExDEF + ExDEF2 + ExDEF3;
-            builder.AppendLine($"物理护甲：{DEF:0.##}" + (exDEF != 0 ? $" [{BaseDEF:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exDEF):0.##}]" : "") + $" ({PDR * 100:0.##}%)");
+            builder.AppendLine($"物理护甲：{DEF:0.##}" + (exDEF != 0 ? $" [{BaseDEF:0.##} {(exDEF >= 0 ? "+" : "-")} {Math.Abs(exDEF):0.##}]" : "") + $" ({PDR * 100:0.##}%)");
             builder.AppendLine($"魔法抗性：{MDF.Avg:0.##}%（平均）");
             double exSPD = AGI * GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
             builder.AppendLine($"行动速度：{SPD:0.##}" + (exSPD != 0 ? $" [{InitialSPD:0.##} {(exSPD >= 0 ? "+" : "-")} {Math.Abs(exSPD):0.##}]" : "") + $" ({ActionCoefficient * 100:0.##}%)");
@@ -2028,8 +2028,10 @@ namespace Milimoe.FunGame.Core.Entity
             EP = c.EP;
             InitialATK = c.InitialATK;
             ExATK2 = c.ExATK2;
+            ExATKPercentage = c.ExATKPercentage;
             InitialDEF = c.InitialDEF;
             ExDEF2 = c.ExDEF2;
+            ExDEFPercentage = c.ExDEFPercentage;
             MDF = c.MDF.Copy();
             PhysicalPenetration = c.PhysicalPenetration;
             MagicalPenetration = c.MagicalPenetration;
@@ -2042,8 +2044,11 @@ namespace Milimoe.FunGame.Core.Entity
             InitialAGI = c.InitialAGI;
             InitialINT = c.InitialINT;
             ExSTR = c.ExSTR;
+            ExSTRPercentage = c.ExSTRPercentage;
             ExAGI = c.ExAGI;
+            ExAGIPercentage = c.ExAGIPercentage;
             ExINT = c.ExINT;
+            ExINTPercentage = c.ExINTPercentage;
             STRGrowth = c.STRGrowth;
             AGIGrowth = c.AGIGrowth;
             INTGrowth = c.INTGrowth;
