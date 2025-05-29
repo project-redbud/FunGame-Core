@@ -1496,19 +1496,25 @@ namespace Milimoe.FunGame.Core.Model
 
                     // 造成伤害和受伤都可以获得能量。攻击者为全额，被攻击者为 actualDamage，护盾抵消的伤害不算
                     double ep = GetEP(damage, GameplayEquilibriumConstant.DamageGetEPFactor, GameplayEquilibriumConstant.DamageGetEPMax);
-                    effects = [.. actor.Effects.Where(e => e.IsInEffect)];
-                    foreach (Effect effect in effects)
+                    if (ep > 0)
                     {
-                        effect.AlterEPAfterDamage(actor, ref ep);
+                        effects = [.. actor.Effects.Where(e => e.IsInEffect)];
+                        foreach (Effect effect in effects)
+                        {
+                            effect.AlterEPAfterDamage(actor, ref ep);
+                        }
+                        actor.EP += ep;
                     }
-                    actor.EP += ep;
                     ep = GetEP(actualDamage, GameplayEquilibriumConstant.TakenDamageGetEPFactor, GameplayEquilibriumConstant.TakenDamageGetEPMax);
-                    effects = [.. enemy.Effects.Where(e => e.IsInEffect)];
-                    foreach (Effect effect in effects)
+                    if (ep > 0)
                     {
-                        effect.AlterEPAfterGetDamage(enemy, ref ep);
+                        effects = [.. enemy.Effects.Where(e => e.IsInEffect)];
+                        foreach (Effect effect in effects)
+                        {
+                            effect.AlterEPAfterGetDamage(enemy, ref ep);
+                        }
+                        enemy.EP += ep;
                     }
-                    enemy.EP += ep;
 
                     // 统计伤害
                     CalculateCharacterDamageStatistics(actor, enemy, damage, isMagicDamage, actualDamage);

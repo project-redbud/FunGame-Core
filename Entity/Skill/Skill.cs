@@ -109,6 +109,16 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual bool CanSelectTeammate { get; set; } = false;
 
         /// <summary>
+        /// 选取所有敌对角色，优先级大于 <see cref="CanSelectTargetCount"/>
+        /// </summary>
+        public virtual bool SelectAllEnemies { get; set; } = false;
+
+        /// <summary>
+        /// 选取所有友方角色，优先级大于 <see cref="CanSelectTargetCount"/>，默认包含自身
+        /// </summary>
+        public virtual bool SelectAllTeammates { get; set; } = false;
+
+        /// <summary>
         /// 可选取的作用目标数量
         /// </summary>
         public virtual int CanSelectTargetCount { get; set; } = 1;
@@ -319,6 +329,9 @@ namespace Milimoe.FunGame.Core.Entity
                 selectable.AddRange(teammates);
             }
 
+            // 其他条件
+            selectable = [.. selectable.Where(c => SelectTargetPredicates.All(f => f(c)))];
+
             return selectable;
         }
 
@@ -333,12 +346,20 @@ namespace Milimoe.FunGame.Core.Entity
         {
             List<Character> tobeSelected = GetSelectableTargets(caster, enemys, teammates);
 
-            // 筛选出符合条件的角色
-            tobeSelected = [.. tobeSelected.Where(c => SelectTargetPredicates.All(f => f(c)))];
-
             List<Character> targets = [];
 
-            if (tobeSelected.Count <= CanSelectTargetCount)
+            if (SelectAllTeammates || SelectAllEnemies)
+            {
+                if (SelectAllTeammates)
+                {
+                    targets.AddRange(tobeSelected.Where(c => c == caster || teammates.Contains(c)));
+                }
+                if (SelectAllEnemies)
+                {
+                    targets.AddRange(tobeSelected.Where(enemys.Contains));
+                }
+            }
+            else if (tobeSelected.Count <= CanSelectTargetCount)
             {
                 targets.AddRange(tobeSelected);
             }
