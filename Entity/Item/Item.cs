@@ -332,11 +332,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 局外（库存）使用物品触发
         /// </summary>
         /// <returns></returns>
-        public bool UseItem(Dictionary<string, object> args)
+        public bool UseItem(User user, Dictionary<string, object> args)
         {
             if (User != null)
             {
-                bool result = OnItemUsed(args);
+                bool result = OnItemUsed(user, args);
                 if (result)
                 {
                     EntityState = EntityState.Modified;
@@ -378,9 +378,10 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 当物品被玩家使用时
         /// </summary>
+        /// <param name="user"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        protected virtual bool OnItemUsed(Dictionary<string, object> args)
+        protected virtual bool OnItemUsed(User user, Dictionary<string, object> args)
         {
             return false;
         }
