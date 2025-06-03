@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Library.Exception;
 
 namespace Milimoe.FunGame.Core.Api.Utility
 {
@@ -180,7 +181,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 if (!Directory.Exists(path)) Directory.CreateDirectory(path);
                 path = Path.Combine(path, filename);
             }
-            else path = $@"{AppDomain.CurrentDomain.BaseDirectory}{filename}";
+            else path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filename);
             // 写入内容
             StreamWriter writer = File.Exists(path) ? new(path, !overwrite, General.DefaultEncoding) : new(path, false, General.DefaultEncoding);
             writer.WriteLine(content);
@@ -200,5 +201,11 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="msg"></param>
         public static void AppendErrorLog(string msg) => WriteTXT(DateTimeUtility.GetDateTimeToString(TimeType.General) + ": " + msg + "\r\n", DateTimeUtility.GetDateTimeToString("yyyy-MM-dd") + ".log", "logs");
+
+        /// <summary>
+        /// 追加错误日志 默认写入logs文件夹下的当日日期.log文件
+        /// </summary>
+        /// <param name="e"></param>
+        public static void AppendErrorLog(Exception e) => AppendErrorLog(e.GetErrorInfo());
     }
 }

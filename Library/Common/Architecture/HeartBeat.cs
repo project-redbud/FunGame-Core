@@ -77,10 +77,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
                     {
                         if (!SendingHeartBeat) _SendingHeartBeat = true;
                         // 发送心跳包
+                        _LastHeartbeatReceived = false;
                         if (await _HTTPClient.Send(SocketMessageType.HeartBeat) == SocketResult.Success)
                         {
                             await Task.Delay(4 * 1000);
-                            AddHeartBeatFaileds();
+                            if (!_LastHeartbeatReceived) AddHeartBeatFaileds();
                         }
                         else AddHeartBeatFaileds();
                         await Task.Delay(20 * 1000);
