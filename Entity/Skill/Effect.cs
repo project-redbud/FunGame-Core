@@ -337,9 +337,10 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 对目标触发技能效果
         /// </summary>
+        /// <param name="user"></param>
         /// <param name="targets"></param>
         /// <param name="others"></param>
-        public virtual void OnSkillCasted(List<Character> targets, Dictionary<string, object> others)
+        public virtual void OnSkillCasted(User user, List<Character> targets, Dictionary<string, object> others)
         {
 
         }
