@@ -921,42 +921,25 @@ namespace Milimoe.FunGame.Core.Model
                 }
                 else if (type == CharacterActionType.PreCastSkill)
                 {
-                    // 预使用技能，即开始吟唱逻辑
-                    Skill? skill = await OnSelectSkillAsync(character, skills);
-                    if (skill is null && _charactersInAI.Contains(character) && skills.Count > 0)
+                    if (character.CharacterState == CharacterState.NotActionable ||
+                        character.CharacterState == CharacterState.ActionRestricted ||
+                        character.CharacterState == CharacterState.BattleRestricted ||
+                        character.CharacterState == CharacterState.SkillRestricted)
                     {
-                        skill = skills[Random.Shared.Next(skills.Count)];
+                        WriteLine($"角色 [ {character} ] 状态为：{CharacterSet.GetCharacterState(character.CharacterState)}，无法释放技能！");
                     }
-                    if (skill != null)
+                    else
                     {
-                        // 吟唱前需要先选取目标
-                        if (skill.SkillType == SkillType.Magic)
+                        // 预使用技能，即开始吟唱逻辑
+                        Skill? skill = await OnSelectSkillAsync(character, skills);
+                        if (skill is null && _charactersInAI.Contains(character) && skills.Count > 0)
                         {
-                            List<Character> targets = await SelectTargetsAsync(character, skill, enemys, teammates);
-                            if (targets.Count > 0)
-                            {
-                                // 免疫检定
-                                await CheckSkilledImmuneAsync(character, targets, skill);
-
-                                if (targets.Count > 0)
-                                {
-                                    LastRound.Targets = [.. targets];
-                                    decided = true;
-
-                                    character.CharacterState = CharacterState.Casting;
-                                    SkillTarget skillTarget = new(skill, targets);
-                                    await OnCharacterPreCastSkillAsync(character, skillTarget);
-
-                                    _castingSkills[character] = skillTarget;
-                                    baseTime = skill.RealCastTime;
-                                    skill.OnSkillCasting(this, character, targets);
-                                }
-                            }
+                            skill = skills[Random.Shared.Next(skills.Count)];
                         }
-                        else
+                        if (skill != null)
                         {
-                            // 只有魔法需要吟唱，战技和爆发技直接释放
-                            if (CheckCanCast(character, skill, out double cost))
+                            // 吟唱前需要先选取目标
+                            if (skill.SkillType == SkillType.Magic)
                             {
                                 List<Character> targets = await SelectTargetsAsync(character, skill, enemys, teammates);
                                 if (targets.Count > 0)
@@ -969,32 +952,59 @@ namespace Milimoe.FunGame.Core.Model
                                         LastRound.Targets = [.. targets];
                                         decided = true;
 
+                                        character.CharacterState = CharacterState.Casting;
                                         SkillTarget skillTarget = new(skill, targets);
                                         await OnCharacterPreCastSkillAsync(character, skillTarget);
 
+                                        _castingSkills[character] = skillTarget;
+                                        baseTime = skill.RealCastTime;
                                         skill.OnSkillCasting(this, character, targets);
-                                        skill.BeforeSkillCasted();
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // 只有魔法需要吟唱，战技和爆发技直接释放
+                                if (CheckCanCast(character, skill, out double cost))
+                                {
+                                    List<Character> targets = await SelectTargetsAsync(character, skill, enemys, teammates);
+                                    if (targets.Count > 0)
+                                    {
+                                        // 免疫检定
+                                        await CheckSkilledImmuneAsync(character, targets, skill);
 
-                                        character.EP -= cost;
-                                        baseTime = skill.RealHardnessTime;
-                                        skill.CurrentCD = skill.RealCD;
-                                        skill.Enable = false;
-                                        LastRound.SkillCost = $"{-cost:0.##} EP";
-                                        WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
-
-                                        await OnCharacterCastSkillAsync(character, skillTarget, cost);
-
-                                        skill.OnSkillCasted(this, character, targets);
-                                        effects = [.. character.Effects.Where(e => e.IsInEffect)];
-                                        foreach (Effect effect in effects)
+                                        if (targets.Count > 0)
                                         {
-                                            effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
+                                            LastRound.Targets = [.. targets];
+                                            decided = true;
+
+                                            SkillTarget skillTarget = new(skill, targets);
+                                            await OnCharacterPreCastSkillAsync(character, skillTarget);
+
+                                            skill.OnSkillCasting(this, character, targets);
+                                            skill.BeforeSkillCasted();
+
+                                            character.EP -= cost;
+                                            baseTime = skill.RealHardnessTime;
+                                            skill.CurrentCD = skill.RealCD;
+                                            skill.Enable = false;
+                                            LastRound.SkillCost = $"{-cost:0.##} EP";
+                                            WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
+
+                                            await OnCharacterCastSkillAsync(character, skillTarget, cost);
+
+                                            skill.OnSkillCasted(this, character, targets);
+                                            effects = [.. character.Effects.Where(e => e.IsInEffect)];
+                                            foreach (Effect effect in effects)
+                                            {
+                                                effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
+                                            }
                                         }
                                     }
                                 }
                             }
+                            LastRound.Skill = skill;
                         }
-                        LastRound.Skill = skill;
                     }
                 }
                 else if (type == CharacterActionType.CastSkill)
@@ -1128,6 +1138,13 @@ namespace Milimoe.FunGame.Core.Model
                 else if (type == CharacterActionType.EndTurn)
                 {
                     baseTime = 3;
+                    if (character.CharacterState == CharacterState.NotActionable ||
+                        character.CharacterState == CharacterState.ActionRestricted ||
+                        character.CharacterState == CharacterState.BattleRestricted)
+                    {
+                        baseTime += 5;
+                        WriteLine($"角色 [ {character} ] 状态为：{CharacterSet.GetCharacterState(character.CharacterState)}，放弃行动将额外获得 5 {GameplayEquilibriumConstant.InGameTime}硬直时间！");
+                    }
                     decided = true;
                     WriteLine($"[ {character} ] 结束了回合！");
                     await OnCharacterDoNothingAsync(character);

@@ -39,11 +39,11 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Shield.Element):
                     result.Element = reader.GetDouble();
                     break;
-                case nameof(Shield.Fleabane):
-                    result.Fleabane = reader.GetDouble();
+                case nameof(Shield.Aster):
+                    result.Aster = reader.GetDouble();
                     break;
-                case nameof(Shield.Particle):
-                    result.Particle = reader.GetDouble();
+                case nameof(Shield.SpatioTemporal):
+                    result.SpatioTemporal = reader.GetDouble();
                     break;
             }
         }
@@ -60,8 +60,8 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Shield.Bright), value.Bright);
             writer.WriteNumber(nameof(Shield.Shadow), value.Shadow);
             writer.WriteNumber(nameof(Shield.Element), value.Element);
-            writer.WriteNumber(nameof(Shield.Fleabane), value.Fleabane);
-            writer.WriteNumber(nameof(Shield.Particle), value.Particle);
+            writer.WriteNumber(nameof(Shield.Aster), value.Aster);
+            writer.WriteNumber(nameof(Shield.SpatioTemporal), value.SpatioTemporal);
 
             writer.WriteEndObject();
         }

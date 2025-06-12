@@ -50,12 +50,12 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 紫宛护盾
         /// </summary>
-        public double Fleabane { get; set; } = 0;
+        public double Aster { get; set; } = 0;
 
         /// <summary>
         /// 时空护盾
         /// </summary>
-        public double Particle { get; set; } = 0;
+        public double SpatioTemporal { get; set; } = 0;
 
         /// <summary>
         /// 总计物理护盾
@@ -65,7 +65,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 总计魔法护盾
         /// </summary>
-        public double TotalMagicial => None + Starmark + PurityNatural + PurityContemporary + Bright + Shadow + Element + Fleabane + Particle;
+        public double TotalMagicial => None + Starmark + PurityNatural + PurityContemporary + Bright + Shadow + Element + Aster + SpatioTemporal;
 
         /// <summary>
         /// 获取或设置护盾值
@@ -87,8 +87,8 @@ namespace Milimoe.FunGame.Core.Entity
                         MagicType.Bright => Bright,
                         MagicType.Shadow => Shadow,
                         MagicType.Element => Element,
-                        MagicType.Fleabane => Fleabane,
-                        MagicType.Particle => Particle,
+                        MagicType.Aster => Aster,
+                        MagicType.SpatioTemporal => SpatioTemporal,
                         _ => None
                     };
                 }
@@ -118,11 +118,11 @@ namespace Milimoe.FunGame.Core.Entity
                         case MagicType.Element:
                             Element = value;
                             break;
-                        case MagicType.Fleabane:
-                            Fleabane = value;
+                        case MagicType.Aster:
+                            Aster = value;
                             break;
-                        case MagicType.Particle:
-                            Particle = value;
+                        case MagicType.SpatioTemporal:
+                            SpatioTemporal = value;
                             break;
                         default:
                             None = value;
@@ -152,8 +152,8 @@ namespace Milimoe.FunGame.Core.Entity
                 Bright = Bright,
                 Shadow = Shadow,
                 Element = Element,
-                Fleabane = Fleabane,
-                Particle = Particle
+                Aster = Aster,
+                SpatioTemporal = SpatioTemporal
             };
         }
     }

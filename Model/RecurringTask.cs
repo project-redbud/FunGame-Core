@@ -1,6 +1,6 @@
 ﻿namespace Milimoe.FunGame.Core.Model
 {
-    public class RecurringTask(string name, TimeSpan interval, Action action)
+    public class RecurringTask(string name, TimeSpan interval, Action action, Action<Exception>? error = null)
     {
         /// <summary>
         /// 任务名称
@@ -31,5 +31,10 @@
         /// 最后一次运行时发生的错误
         /// </summary>
         public Exception? Error { get; set; }
+
+        /// <summary>
+        /// 捕获异常后，触发的回调函数
+        /// </summary>
+        public Action<Exception>? ErrorHandler { get; set; } = error;
     }
 }

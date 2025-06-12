@@ -627,8 +627,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Bright,
         Shadow,
         Element,
-        Fleabane,
-        Particle
+        Aster,
+        SpatioTemporal
     }
 
     public enum PrimaryAttribute

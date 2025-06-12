@@ -35,11 +35,12 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="name"></param>
         /// <param name="timeOfDay"></param>
         /// <param name="action"></param>
-        public void AddTask(string name, TimeSpan timeOfDay, Action action)
+        /// <param name="error"></param>
+        public void AddTask(string name, TimeSpan timeOfDay, Action action, Action<Exception>? error = null)
         {
             lock (_lock)
             {
-                ScheduledTask task = new(name, timeOfDay, action);
+                ScheduledTask task = new(name, timeOfDay, action, error);
                 if (DateTime.Now > DateTime.Today.Add(timeOfDay))
                 {
                     task.LastRun = DateTime.Today.Add(timeOfDay);
@@ -55,14 +56,15 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="interval"></param>
         /// <param name="action"></param>
         /// <param name="startNow"></param>
-        public void AddRecurringTask(string name, TimeSpan interval, Action action, bool startNow = false)
+        /// <param name="error"></param>
+        public void AddRecurringTask(string name, TimeSpan interval, Action action, bool startNow = false, Action<Exception>? error = null)
         {
             lock (_lock)
             {
                 DateTime now = DateTime.Now;
                 now = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0);
                 DateTime nextRun = startNow ? now : now.Add(interval);
-                RecurringTask recurringTask = new(name, interval, action)
+                RecurringTask recurringTask = new(name, interval, action, error)
                 {
                     NextRun = nextRun
                 };
@@ -185,6 +187,8 @@ namespace Milimoe.FunGame.Core.Api.Utility
                                 catch (Exception ex)
                                 {
                                     task.Error = ex;
+                                    TXTHelper.AppendErrorLog(ex.ToString());
+                                    task.ErrorHandler?.Invoke(ex);
                                 }
                             });
                         }
@@ -206,6 +210,8 @@ namespace Milimoe.FunGame.Core.Api.Utility
                             catch (Exception ex)
                             {
                                 recurringTask.Error = ex;
+                                TXTHelper.AppendErrorLog(ex.ToString());
+                                recurringTask.ErrorHandler?.Invoke(ex);
                             }
                         });
                     }

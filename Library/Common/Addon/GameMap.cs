@@ -1,3 +1,4 @@
+using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Addons;
 
 namespace Milimoe.FunGame.Core.Library.Common.Addon
@@ -97,16 +98,14 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
                         }
                     }
                 }
-                // 如果加载后需要执行代码，请重写AfterLoad方法
-                AfterLoad();
             }
             return IsLoaded;
         }
 
         /// <summary>
-        /// 加载后需要做的事
+        /// 地图完全加载后需要做的事
         /// </summary>
-        protected virtual void AfterLoad()
+        public virtual void AfterLoad(GameModuleLoader loader, params object[] args)
         {
             // override
         }

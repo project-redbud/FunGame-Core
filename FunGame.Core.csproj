@@ -1,72 +1,54 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<OutputType>Library</OutputType>
-		<TargetFramework>net9.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<BaseOutputPath>bin\</BaseOutputPath>
-		<Company>$(Author)</Company>
-		<Authors>Project Redbud</Authors>
-		<AssemblyVersion>2.0.0</AssemblyVersion>
-		<FileVersion>2.0.0</FileVersion>
-		<PackageOutputPath>bin</PackageOutputPath>
-		<Title>FunGame Core</Title>
-		<RootNamespace>Milimoe.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
-		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<AssemblyName>$(MSBuildProjectName)</AssemblyName>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<DocumentationFile></DocumentationFile>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Copyright>©2023-Present Project Redbud and Contributors.</Copyright>
-		<PackageId>$(AssemblyName)</PackageId>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <BaseOutputPath>bin\</BaseOutputPath>
+    <Company>$(Author)</Company>
+    <Authors>Project Redbud</Authors>
+    <AssemblyVersion>2.0.0</AssemblyVersion>
+    <FileVersion>2.0.0</FileVersion>
+    <PackageOutputPath>bin</PackageOutputPath>
+    <Title>FunGame Core</Title>
+    <RootNamespace>Milimoe.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyName>$(MSBuildProjectName)</AssemblyName>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <DocumentationFile></DocumentationFile>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Copyright>©2023-Present Project Redbud and Contributors.</Copyright>
+    <PackageId>$(AssemblyName)</PackageId>
     <Description>FunGame.Core: A C#.NET library for turn-based games.</Description>
     <PackageTags>game;turn-based;server;framework;dotnet;csharp;gamedev</PackageTags>
     <PackageReleaseNotes>
-		We are excited to introduce the official version 1.0.0. Here are the key changes from the last release candidate:
-		- Fixed an issue of incorrect recording of non-damage assists. (1.0.0)
-		- Fixed an issue where applying a control effect to an enemy mistakenly resulted in an assist for the character when that enemy killed a teammate. (1.0.0)
-		- Removed the restriction of contributing 10% damage to get an assist. (1.0.0)
-		- Fixed an issue where the skill always defaults to selecting enemies when there is no suitable target, which could cause the character to mistakenly apply a buff state to the enemy. (1.0.0)
-		- Adjusted the basic reward and assist allocation rules for killing enemies. (1.0.0)
-		- Added monetary compensation based on the level and economic difference between the killer/assister and the victim. (1.0.0)
-		Update history of all release candidate versions:
-		- Initial release candidate 1 (1.0.0-rc.1-0428)
-		- Abstract ActionQueue as GamingQueue, and separate the original Mix / Team modes into two queue types: MixGamingQueue and TeamGamingQueue. (1.0.0-rc.1-0502)
-		- In the Effect class, added ParentEffect and ForceHideInStatusBar properties for more precise control of the status bar display. (1.0.0-rc.1-0509)
-		- Added helper methods IsTeammate and GetIsTeammateDictionary to GamingQueue and its interface IGamingQueue for determining if someone is a teammate. This facilitates the skill effects to determine whether the target is a teammate. (1.0.0-rc.1-0509)
-		- Added more properties (such as Name, RealCD) to the ISkill interface. Both NormalAttack and Skill inherit from ISkill, thus implementing these properties, although some properties are not meaningful for NormalAttack. (1.0.0-rc.1-0509)
-		- Added corresponding text for EffectTypes Lifesteal and GrievousWound. (1.0.0-rc.1-0509)
-		- Added EffectTypes: WeakDispelling and StrongDispelling, representing DurativeWeak and DurativeStrong of DispelType. (1.0.0-rc.1-0509)
-		- Added underlying processing support for continuous dispelling in the TimeLapse method. (1.0.0-rc.1-0509)
-		- Fixed an issue where the effect's shield hook provided incorrect parameters. (1.0.0-rc.1-0509)
-		- Fixed an issue where the result of pre-hooks for evade and critical hit checks always deferred to the result of the last effect. It should be that if any effect prevents the check, it is skipped. (1.0.0-rc.1-0509)
-		- Added comments for some code. (1.0.0-rc.1-0509)
-	</PackageReleaseNotes>
+      See github releases for details on the latest changes.
+    </PackageReleaseNotes>
     <RepositoryUrl>https://github.com/project-redbud/FunGame-Core</RepositoryUrl>
-		<PackageProjectUrl>https://github.com/project-redbud</PackageProjectUrl>
-		<PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
-		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<VersionPrefix>2.0.0-dev</VersionPrefix>
-		<VersionSuffix Condition="'$(VersionSuffix)' == ''">$([System.DateTime]::Now.ToString("MMdd"))</VersionSuffix>
-	</PropertyGroup>
+    <PackageProjectUrl>https://github.com/project-redbud</PackageProjectUrl>
+    <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <VersionPrefix>2.0.0-dev</VersionPrefix>
+    <VersionSuffix Condition="'$(VersionSuffix)' == ''">$([System.DateTime]::Now.ToString("MMdd"))</VersionSuffix>
+  </PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<DebugType>embedded</DebugType>
-		<NoWarn>1701;1702;CS1591;CS1587;IDE0130</NoWarn>
-	</PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>embedded</DebugType>
+    <NoWarn>1701;1702;CS1591;CS1587;IDE0130</NoWarn>
+  </PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<DebugType>embedded</DebugType>
-		<NoWarn>1701;1702;CS1591;CS1587;IDE0130</NoWarn>
-	</PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>embedded</DebugType>
+    <NoWarn>1701;1702;CS1591;CS1587;IDE0130</NoWarn>
+  </PropertyGroup>
 
-	<ItemGroup>
-	  <None Update="README.md">
-	    <Pack>True</Pack>
-	    <PackagePath>\</PackagePath>
-	  </None>
-	</ItemGroup>
+  <ItemGroup>
+    <None Update="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
 </Project>

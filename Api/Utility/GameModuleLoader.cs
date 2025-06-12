@@ -59,6 +59,10 @@ namespace Milimoe.FunGame.Core.Api.Utility
             if (runtime == FunGameInfo.FunGame.FunGame_Desktop)
             {
                 AddonManager.LoadGameMaps(loader.Maps, otherobjs);
+                foreach (GameMap map in loader.Maps.Values.ToList())
+                {
+                    map.AfterLoad(loader, otherobjs);
+                }
                 AddonManager.LoadGameModules(loader.Modules, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
                 foreach (GameModule module in loader.Modules.Values.ToList())
                 {
@@ -71,6 +75,10 @@ namespace Milimoe.FunGame.Core.Api.Utility
             else if (runtime == FunGameInfo.FunGame.FunGame_Server)
             {
                 AddonManager.LoadGameMaps(loader.Maps, otherobjs);
+                foreach (GameMap map in loader.Maps.Values.ToList())
+                {
+                    map.AfterLoad(loader, otherobjs);
+                }
                 AddonManager.LoadGameModulesForServer(loader.ModuleServers, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
                 foreach (GameModuleServer server in loader.ModuleServers.Values.ToList())
                 {

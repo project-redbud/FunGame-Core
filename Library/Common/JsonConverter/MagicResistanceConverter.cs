@@ -36,11 +36,11 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(MagicResistance.Element):
                     result.Element = reader.GetDouble();
                     break;
-                case nameof(MagicResistance.Fleabane):
-                    result.Fleabane = reader.GetDouble();
+                case nameof(MagicResistance.Aster):
+                    result.Aster = reader.GetDouble();
                     break;
-                case nameof(MagicResistance.Particle):
-                    result.Particle = reader.GetDouble();
+                case nameof(MagicResistance.SpatioTemporal):
+                    result.SpatioTemporal = reader.GetDouble();
                     break;
             }
         }
@@ -56,8 +56,8 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(MagicResistance.Bright), value.Bright);
             writer.WriteNumber(nameof(MagicResistance.Shadow), value.Shadow);
             writer.WriteNumber(nameof(MagicResistance.Element), value.Element);
-            writer.WriteNumber(nameof(MagicResistance.Fleabane), value.Fleabane);
-            writer.WriteNumber(nameof(MagicResistance.Particle), value.Particle);
+            writer.WriteNumber(nameof(MagicResistance.Aster), value.Aster);
+            writer.WriteNumber(nameof(MagicResistance.SpatioTemporal), value.SpatioTemporal);
 
             writer.WriteEndObject();
         }

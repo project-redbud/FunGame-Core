@@ -28,12 +28,12 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 是谁站在这格子上？
         /// </summary>
-        public Dictionary<string, Character> Characters { get; set; } = [];
+        public HashSet<Character> Characters { get; set; } = [];
 
         /// <summary>
-        /// 此格子目前受到了什么影响？或者它有什么技能…
+        /// 此格子目前受到了什么影响？
         /// </summary>
-        public Dictionary<string, Skill> Skills { get; set; } = [];
+        public HashSet<Effect> Effects { get; set; } = [];
 
         /// <summary>
         /// 此格子呈现的颜色（默认为 <see cref="Color.Gray"/> ）

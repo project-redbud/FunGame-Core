@@ -387,8 +387,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 MagicType.Bright => "光魔法伤害",
                 MagicType.Shadow => "影魔法伤害",
                 MagicType.Element => "元素魔法伤害",
-                MagicType.Fleabane => "紫宛魔法伤害",
-                MagicType.Particle => "时空魔法伤害",
+                MagicType.Aster => "紫宛魔法伤害",
+                MagicType.SpatioTemporal => "时空魔法伤害",
                 _ => "魔法伤害",
             };
         }
@@ -397,14 +397,14 @@ namespace Milimoe.FunGame.Core.Library.Constant
         {
             return type switch
             {
-                MagicType.Starmark => "星痕抗性",
-                MagicType.PurityNatural => "现代结晶抗性",
-                MagicType.PurityContemporary => "纯粹结晶抗性",
-                MagicType.Bright => "光抗性",
-                MagicType.Shadow => "影抗性",
-                MagicType.Element => "元素抗性",
-                MagicType.Fleabane => "紫宛抗性",
-                MagicType.Particle => "时空抗性",
+                MagicType.Starmark => "星痕魔法抗性",
+                MagicType.PurityNatural => "现代结晶魔法抗性",
+                MagicType.PurityContemporary => "纯粹结晶魔法抗性",
+                MagicType.Bright => "光魔法抗性",
+                MagicType.Shadow => "影魔法抗性",
+                MagicType.Element => "元素魔法抗性",
+                MagicType.Aster => "紫宛魔法抗性",
+                MagicType.SpatioTemporal => "时空魔法抗性",
                 _ => "魔法抗性",
             };
         }

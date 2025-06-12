@@ -46,12 +46,12 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 紫宛魔法抗性
         /// </summary>
-        public double Fleabane { get; set; } = 0;
+        public double Aster { get; set; } = 0;
 
         /// <summary>
         /// 时空魔法抗性
         /// </summary>
-        public double Particle { get; set; } = 0;
+        public double SpatioTemporal { get; set; } = 0;
 
         /// <summary>
         /// 平均魔法抗性
@@ -60,7 +60,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                double mdf = Calculation.Round4Digits((None + Starmark + PurityNatural + PurityContemporary + Bright + Shadow + Element + Fleabane + Particle) / 9) * 100;
+                double mdf = Calculation.Round4Digits((None + Starmark + PurityNatural + PurityContemporary + Bright + Shadow + Element + Aster + SpatioTemporal) / 9) * 100;
                 if (Calculation.IsApproximatelyZero(mdf)) mdf = 0;
                 return mdf;
             }
@@ -83,8 +83,8 @@ namespace Milimoe.FunGame.Core.Entity
                     MagicType.Bright => Bright,
                     MagicType.Shadow => Shadow,
                     MagicType.Element => Element,
-                    MagicType.Fleabane => Fleabane,
-                    MagicType.Particle => Particle,
+                    MagicType.Aster => Aster,
+                    MagicType.SpatioTemporal => SpatioTemporal,
                     _ => None
                 };
             }
@@ -110,11 +110,11 @@ namespace Milimoe.FunGame.Core.Entity
                     case MagicType.Element:
                         Element = value;
                         break;
-                    case MagicType.Fleabane:
-                        Fleabane = value;
+                    case MagicType.Aster:
+                        Aster = value;
                         break;
-                    case MagicType.Particle:
-                        Particle = value;
+                    case MagicType.SpatioTemporal:
+                        SpatioTemporal = value;
                         break;
                     default:
                         None = value;
@@ -133,8 +133,8 @@ namespace Milimoe.FunGame.Core.Entity
             if (assignment)
             {
                 None = value;
-                Particle = value;
-                Fleabane = value;
+                SpatioTemporal = value;
+                Aster = value;
                 Element = value;
                 Shadow = value;
                 Bright = value;
@@ -145,8 +145,8 @@ namespace Milimoe.FunGame.Core.Entity
             else
             {
                 None += value;
-                Particle += value;
-                Fleabane += value;
+                SpatioTemporal += value;
+                Aster += value;
                 Element += value;
                 Shadow += value;
                 Bright += value;
@@ -163,8 +163,8 @@ namespace Milimoe.FunGame.Core.Entity
         public void AddAllValue(double value)
         {
             None += value;
-            Particle += value;
-            Fleabane += value;
+            SpatioTemporal += value;
+            Aster += value;
             Element += value;
             Shadow += value;
             Bright += value;
@@ -188,8 +188,8 @@ namespace Milimoe.FunGame.Core.Entity
                 Bright = Bright,
                 Shadow = Shadow,
                 Element = Element,
-                Fleabane = Fleabane,
-                Particle = Particle
+                Aster = Aster,
+                SpatioTemporal = SpatioTemporal
             };
         }
     }
