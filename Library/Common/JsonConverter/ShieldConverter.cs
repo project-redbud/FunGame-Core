@@ -45,6 +45,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Shield.SpatioTemporal):
                     result.SpatioTemporal = reader.GetDouble();
                     break;
+                case nameof(Shield.Mix):
+                    result.Mix = reader.GetDouble();
+                    break;
             }
         }
 
@@ -62,6 +65,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Shield.Element), value.Element);
             writer.WriteNumber(nameof(Shield.Aster), value.Aster);
             writer.WriteNumber(nameof(Shield.SpatioTemporal), value.SpatioTemporal);
+            writer.WriteNumber(nameof(Shield.Mix), value.Mix);
 
             writer.WriteEndObject();
         }

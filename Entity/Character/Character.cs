@@ -1346,6 +1346,7 @@ namespace Milimoe.FunGame.Core.Entity
             List<string> shield = [];
             if (Shield.TotalPhysical > 0) shield.Add($"物理：{Shield.TotalPhysical:0.##}");
             if (Shield.TotalMagicial > 0) shield.Add($"魔法：{Shield.TotalMagicial:0.##}");
+            if (Shield.Mix > 0) shield.Add($"混合：{Shield.Mix:0.##}");
             builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : "") + (shield.Count > 0 ? $"（{string.Join("，", shield)}）" : ""));
             double exMP = ExMP + ExMP2 + ExMP3;
             builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
@@ -1479,6 +1480,7 @@ namespace Milimoe.FunGame.Core.Entity
             List<string> shield = [];
             if (Shield.TotalPhysical > 0) shield.Add($"物理：{Shield.TotalPhysical:0.##}");
             if (Shield.TotalMagicial > 0) shield.Add($"魔法：{Shield.TotalMagicial:0.##}");
+            if (Shield.Mix > 0) shield.Add($"混合：{Shield.Mix:0.##}");
             builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : "") + (shield.Count > 0 ? $"（{string.Join("，", shield)}）" : ""));
             double exMP = ExMP + ExMP2 + ExMP3;
             builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
@@ -1586,6 +1588,7 @@ namespace Milimoe.FunGame.Core.Entity
             List<string> shield = [];
             if (Shield.TotalPhysical > 0) shield.Add($"物理：{Shield.TotalPhysical:0.##}");
             if (Shield.TotalMagicial > 0) shield.Add($"魔法：{Shield.TotalMagicial:0.##}");
+            if (Shield.Mix > 0) shield.Add($"混合：{Shield.Mix:0.##}");
             builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : "") + (shield.Count > 0 ? $"（{string.Join("，", shield)}）" : ""));
             double exMP = ExMP + ExMP2 + ExMP3;
             builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
@@ -1638,6 +1641,7 @@ namespace Milimoe.FunGame.Core.Entity
             List<string> shield = [];
             if (Shield.TotalPhysical > 0) shield.Add($"物理：{Shield.TotalPhysical:0.##}");
             if (Shield.TotalMagicial > 0) shield.Add($"魔法：{Shield.TotalMagicial:0.##}");
+            if (Shield.Mix > 0) shield.Add($"混合：{Shield.Mix:0.##}");
             builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : "") + (shield.Count > 0 ? $"（{string.Join("，", shield)}）" : ""));
             double exMP = ExMP + ExMP2 + ExMP3;
             builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
@@ -1725,6 +1729,7 @@ namespace Milimoe.FunGame.Core.Entity
             List<string> shield = [];
             if (Shield.TotalPhysical > 0) shield.Add($"物理：{Shield.TotalPhysical:0.##}");
             if (Shield.TotalMagicial > 0) shield.Add($"魔法：{Shield.TotalMagicial:0.##}");
+            if (Shield.Mix > 0) shield.Add($"混合：{Shield.Mix:0.##}");
             builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : "") + (shield.Count > 0 ? $"（{string.Join("，", shield)}）" : ""));
             double exMP = ExMP + ExMP2 + ExMP3;
             builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));

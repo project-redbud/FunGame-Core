@@ -659,26 +659,50 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="isMagic"></param>
         /// <param name="magicType"></param>
         /// <param name="damage"></param>
-        /// <param name="shield"></param>
+        /// <param name="damageReduce"></param>
         /// <param name="message"></param>
-        /// <returns>返回 false 可以阻止后续扣除角色护盾</returns>
-        public virtual bool BeforeShieldCalculation(Character character, Character attacker, bool isMagic, MagicType magicType, double damage, double shield, ref string message)
+        /// <returns>返回 false 可以跳过护盾结算</returns>
+        public virtual bool BeforeShieldCalculation(Character character, Character attacker, bool isMagic, MagicType magicType, double damage, ref double damageReduce, ref string message)
         {
             return true;
         }
 
         /// <summary>
-        /// 当角色护盾破碎时
+        /// 在角色护盾有效防御时 [ 破碎本身不会触发此钩子，但破碎后化解可触发 ]
         /// </summary>
         /// <param name="character"></param>
         /// <param name="attacker"></param>
         /// <param name="isMagic"></param>
         /// <param name="magicType"></param>
         /// <param name="damage"></param>
-        /// <param name="shield"></param>
+        /// <param name="shieldType"></param>
+        public virtual void OnShieldNeutralizeDamage(Character character, Character attacker, bool isMagic, MagicType magicType, double damage, ShieldType shieldType)
+        {
+
+        }
+
+        /// <summary>
+        /// 当角色护盾破碎时 [ 非绑定特效，只有同种类型的总护盾值小于等于 0 时触发 ]
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="attacker"></param>
+        /// <param name="type"></param>
         /// <param name="overFlowing"></param>
         /// <returns>返回 false 可以阻止后续扣除角色生命值</returns>
-        public virtual bool OnShieldBroken(Character character, Character attacker, bool isMagic, MagicType magicType, double damage, double shield, double overFlowing)
+        public virtual bool OnShieldBroken(Character character, Character attacker, ShieldType type, double overFlowing)
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// 当角色护盾破碎时 [ 绑定特效的护盾值小于等于 0 时便会触发 ]
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="attacker"></param>
+        /// <param name="effect"></param>
+        /// <param name="overFlowing"></param>
+        /// <returns>返回 false 可以阻止后续扣除角色生命值</returns>
+        public virtual bool OnShieldBroken(Character character, Character attacker, Effect effect, double overFlowing)
         {
             return true;
         }

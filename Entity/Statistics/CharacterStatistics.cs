@@ -20,6 +20,8 @@
         public double AvgTakenRealDamage { get; set; } = 0;
         public double TotalHeal { get; set; } = 0;
         public double AvgHeal { get; set; } = 0;
+        public double TotalShield { get; set; } = 0;
+        public double AvgShield { get; set; } = 0;
         public int LiveRound { get; set; } = 0;
         public int AvgLiveRound { get; set; } = 0;
         public int ActionTurn { get; set; } = 0;
