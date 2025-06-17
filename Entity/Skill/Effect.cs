@@ -73,7 +73,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 是否显示在状态栏
         /// </summary>
-        public bool ShowInStatusBar => !ForceHideInStatusBar && !IsSubsidiary && (Skill.Item is null || (Durative && Duration > 0) || DurationTurn > 0 || DurativeWithoutDuration);
+        public bool ShowInStatusBar => !ForceHideInStatusBar && (Skill.Item is null || (Durative && Duration > 0) || DurationTurn > 0 || DurativeWithoutDuration);
 
         /// <summary>
         /// 特效是否生效
