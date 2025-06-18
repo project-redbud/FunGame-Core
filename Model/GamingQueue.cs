@@ -591,6 +591,11 @@ namespace Milimoe.FunGame.Core.Model
                 List<Effect> effects = [.. character.Effects];
                 foreach (Effect effect in effects)
                 {
+                    if (!character.Shield.ShieldOfEffects.ContainsKey(effect))
+                    {
+                        character.Shield.RemoveShieldOfEffect(effect);
+                    }
+
                     if (effect.Level == 0)
                     {
                         character.Effects.Remove(effect);
@@ -1380,7 +1385,8 @@ namespace Milimoe.FunGame.Core.Model
             // 闪避了就没伤害了
             if (damageResult != DamageResult.Evaded)
             {
-                // 计算伤害免疫
+                // 开始计算伤害免疫
+                // 此变量为是否无视免疫
                 bool ignore = false;
                 // 技能免疫无法免疫普通攻击，但是魔法免疫和物理免疫可以
                 bool isImmune = (isNormalAttack && (enemy.ImmuneType == ImmuneType.All || enemy.ImmuneType == ImmuneType.Physical || enemy.ImmuneType == ImmuneType.Magical)) ||
@@ -1422,85 +1428,163 @@ namespace Milimoe.FunGame.Core.Model
                     damageResult = DamageResult.Immune;
                     LastRound.IsImmune[enemy] = true;
                     WriteLine($"[ {enemy} ] 免疫了此伤害！");
+                    actualDamage = 0;
                 }
                 else
                 {
                     if (damage < 0) damage = 0;
 
-                    // 检查护盾
-                    double shield = enemy.Shield[isMagicDamage, magicType];
-                    string shieldMsg = "";
-                    if (shield > 0)
-                    {
-                        bool change = false;
+                    string damageType = isMagicDamage ? CharacterSet.GetMagicDamageName(magicType) : "物理伤害";
 
-                        // 看特效有没有特殊护盾逻辑
-                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+                    // 在护盾结算前，特效可以有自己的逻辑
+                    bool change = false;
+                    string shieldMsg = "";
+                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+                    foreach (Effect effect in effects)
+                    {
+                        double damageReduce = 0;
+                        if (!effect.BeforeShieldCalculation(enemy, actor, isMagicDamage, magicType, damage, ref damageReduce, ref shieldMsg))
+                        {
+                            change = true;
+                        }
+                        if (damageReduce != 0)
+                        {
+                            actualDamage -= damageReduce;
+                            if (actualDamage < 0) actualDamage = 0;
+                        }
+                    }
+
+                    // 检查护盾
+                    if (!change)
+                    {
+                        double remain = actualDamage;
+
+                        // 检查特效护盾
+                        effects = [.. enemy.Shield.ShieldOfEffects.Keys];
                         foreach (Effect effect in effects)
                         {
-                            if (!effect.BeforeShieldCalculation(enemy, actor, isMagicDamage, magicType, damage, shield, ref shieldMsg))
+                            ShieldOfEffect soe = enemy.Shield.ShieldOfEffects[effect];
+                            if (soe.IsMagic == isMagicDamage && (!isMagicDamage || soe.MagicType == magicType) && soe.Shield > 0)
                             {
-                                change = true;
-                            }
-                        }
-
-                        if (!change)
-                        {
-                            double remain = shield - damage;
-                            if (remain < 0)
-                            {
-                                remain = Math.Abs(remain);
-                                enemy.Shield[isMagicDamage, magicType] = 0;
-
-                                change = false;
-                                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
-                                foreach (Effect effect in effects)
+                                double effectShield = soe.Shield;
+                                // 判断护盾余额
+                                if (enemy.Shield.CalculateShieldOfEffect(effect, remain) > 0)
                                 {
-                                    if (!effect.OnShieldBroken(enemy, actor, isMagicDamage, magicType, damage, shield, remain))
-                                    {
-                                        change = true;
-                                    }
-                                }
-
-                                if (!change)
-                                {
-                                    enemy.HP -= remain;
-                                    shieldMsg = $"（护盾抵消了 {shield:0.##} 点并破碎，角色承受了 {remain:0.##} 点）";
-                                    actualDamage = remain;
+                                    WriteLine($"[ {enemy} ] 发动了 [ {effect.Skill.Name} ] 的护盾效果，抵消了 {remain:0.##} 点{damageType}！");
+                                    remain = 0;
                                 }
                                 else
                                 {
-                                    shieldMsg = $"（护盾抵消了 {shield:0.##} 点并破碎，角色没有承受伤害）";
-                                    damageResult = DamageResult.Shield;
-                                    actualDamage = 0;
+                                    WriteLine($"[ {enemy} ] 发动了 [ {effect.Skill.Name} ] 的护盾效果，抵消了 {effectShield:0.##} 点{damageType}，护盾已破碎！");
+                                    remain -= effectShield;
+                                    Effect[] effects2 = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+                                    foreach (Effect effect2 in effects2)
+                                    {
+                                        if (!effect2.OnShieldBroken(enemy, actor, effect, remain))
+                                        {
+                                            WriteLine($"[ {(enemy.Effects.Contains(effect2) ? enemy : actor)} ] 因护盾破碎而发动了 [ {effect2.Skill.Name} ]，化解了本次伤害！");
+                                            remain = 0;
+                                        }
+                                    }
+                                }
+                                if (remain <= 0)
+                                {
+                                    Effect[] effects2 = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+                                    foreach (Effect effect2 in effects2)
+                                    {
+                                        effect2.OnShieldNeutralizeDamage(enemy, actor, isMagicDamage, magicType, damage, ShieldType.Effect);
+                                    }
+                                    break;
                                 }
                             }
-                            else
-                            {
-                                enemy.Shield[isMagicDamage, magicType] = remain;
-                                shieldMsg = $"（护盾抵消了 {damage:0.##} 点，剩余可用 {remain:0.##} 点）";
-                                damageResult = DamageResult.Shield;
-                                actualDamage = 0;
-                            }
                         }
-                        else
-                        {
-                            if (shieldMsg.Trim() == "")
-                            {
-                                shieldMsg = $"（护盾已使其无效化）";
-                            }
-                            damageResult = DamageResult.Shield;
-                            actualDamage = 0;
-                        }
-                    }
-                    else enemy.HP -= damage;
 
-                    if (isMagicDamage)
-                    {
-                        string dmgType = CharacterSet.GetMagicDamageName(magicType);
-                        WriteLine($"[ {enemy} ] 受到了 {damage:0.##} 点{dmgType}！{shieldMsg}");
+                        // 如果伤害仍然大于0，继续检查护盾
+                        if (remain > 0)
+                        {
+                            // 检查指定类型的护盾值
+                            double shield = enemy.Shield[isMagicDamage, magicType];
+                            if (shield > 0)
+                            {
+                                shield -= remain;
+                                string shieldTypeString = isMagicDamage ? "魔法" : "物理";
+                                ShieldType shieldType = isMagicDamage ? ShieldType.Magical : ShieldType.Physical;
+                                if (shield > 0)
+                                {
+                                    WriteLine($"[ {enemy} ] 的{shieldTypeString}护盾抵消了 {remain:0.##} 点{damageType}！");
+                                    enemy.Shield[isMagicDamage, magicType] -= remain;
+                                    remain = 0;
+                                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+                                    foreach (Effect effect in effects)
+                                    {
+                                        effect.OnShieldNeutralizeDamage(enemy, actor, isMagicDamage, magicType, damage, shieldType);
+                                    }
+                                }
+                                else
+                                {
+                                    WriteLine($"[ {enemy} ] 的{shieldTypeString}护盾抵消了 {enemy.Shield[isMagicDamage, magicType]:0.##} 点{damageType}并破碎！");
+                                    remain -= enemy.Shield[isMagicDamage, magicType];
+                                    enemy.Shield[isMagicDamage, magicType] = 0;
+                                    if (isMagicDamage && enemy.Shield.TotalMagicial <= 0 || !isMagicDamage && enemy.Shield.TotalPhysical <= 0)
+                                    {
+                                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+                                        foreach (Effect effect in effects)
+                                        {
+                                            if (!effect.OnShieldBroken(enemy, actor, shieldType, remain))
+                                            {
+                                                WriteLine($"[ {(enemy.Effects.Contains(effect) ? enemy : actor)} ] 因护盾破碎而发动了 [ {effect.Skill.Name} ]，化解了本次伤害！");
+                                                remain = 0;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // 检查混合护盾
+                            if (remain > 0 && enemy.Shield.Mix > 0)
+                            {
+                                shield = enemy.Shield.Mix;
+                                shield -= remain;
+                                if (shield > 0)
+                                {
+                                    WriteLine($"[ {enemy} ] 的混合护盾抵消了 {remain:0.##} 点{damageType}！");
+                                    enemy.Shield.Mix -= remain;
+                                    remain = 0;
+                                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+                                    foreach (Effect effect in effects)
+                                    {
+                                        effect.OnShieldNeutralizeDamage(enemy, actor, isMagicDamage, magicType, damage, ShieldType.Mix);
+                                    }
+                                }
+                                else
+                                {
+                                    WriteLine($"[ {enemy} ] 的混合护盾抵消了 {enemy.Shield.Mix:0.##} 点{damageType}并破碎！");
+                                    remain -= enemy.Shield.Mix;
+                                    enemy.Shield.Mix = 0;
+                                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+                                    foreach (Effect effect in effects)
+                                    {
+                                        if (!effect.OnShieldBroken(enemy, actor, ShieldType.Mix, remain))
+                                        {
+                                            WriteLine($"[ {(enemy.Effects.Contains(effect) ? enemy : actor)} ] 因护盾破碎而发动了 [ {effect.Skill.Name} ]，化解了本次伤害！");
+                                            remain = 0;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        actualDamage = remain;
                     }
-                    else WriteLine($"[ {enemy} ] 受到了 {damage:0.##} 点物理伤害！{shieldMsg}");
+
+                    // 统计护盾
+                    if (damage > actualDamage && _stats.TryGetValue(actor, out CharacterStatistics? stats) && stats != null)
+                    {
+                        stats.TotalShield += damage - actualDamage;
+                    }
+
+                    enemy.HP -= actualDamage;
+                    WriteLine($"[ {enemy} ] 受到了 {actualDamage:0.##} 点{damageType}！{shieldMsg}");
 
                     // 生命偷取，攻击者为全额
                     double steal = damage * actor.Lifesteal;
@@ -1543,6 +1627,7 @@ namespace Milimoe.FunGame.Core.Model
             else
             {
                 LastRound.IsEvaded[enemy] = true;
+                actualDamage = 0;
             }
 
             await OnDamageToEnemyAsync(actor, enemy, damage, actualDamage, isNormalAttack, isMagicDamage, magicType, damageResult);

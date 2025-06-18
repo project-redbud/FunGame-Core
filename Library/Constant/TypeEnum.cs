@@ -1030,4 +1030,13 @@ namespace Milimoe.FunGame.Core.Library.Constant
         All,
         Special
     }
+
+    public enum ShieldType
+    {
+        None,
+        Physical,
+        Magical,
+        Mix,
+        Effect
+    }
 }
