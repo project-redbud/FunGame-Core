@@ -154,7 +154,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             ShieldOfEffects[soe.Effect] = soe;
         }
-        
+
         /// <summary>
         /// 移除某个特效的护盾
         /// </summary>

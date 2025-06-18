@@ -79,10 +79,10 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="enemy"></param>
         /// <param name="damage"></param>
         /// <param name="isNormalAttack"></param>
-        /// <param name="isMagicDamage"></param>
+        /// <param name="damageType"></param>
         /// <param name="magicType"></param>
         /// <param name="damageResult"></param>
-        public Task DamageToEnemyAsync(Character actor, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage = false, MagicType magicType = MagicType.None, DamageResult damageResult = DamageResult.Normal);
+        public Task DamageToEnemyAsync(Character actor, Character enemy, double damage, bool isNormalAttack, DamageType damageType = DamageType.Physical, MagicType magicType = MagicType.None, DamageResult damageResult = DamageResult.Normal);
 
         /// <summary>
         /// 治疗一个目标
@@ -198,5 +198,15 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="isPercentage">是否是百分比</param>
         /// <param name="isCheckProtected">是否使用插队保护机制</param>
         public void ChangeCharacterHardnessTime(Character character, double addValue, bool isPercentage, bool isCheckProtected);
+
+        /// <summary>
+        /// 计算角色的数据
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="characterTaken"></param>
+        /// <param name="damage"></param>
+        /// <param name="damageType"></param>
+        /// <param name="takenDamage"></param>
+        public void CalculateCharacterDamageStatistics(Character character, Character characterTaken, double damage, DamageType damageType, double takenDamage = -1);
     }
 }

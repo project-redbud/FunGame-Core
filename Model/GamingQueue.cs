@@ -130,7 +130,7 @@ namespace Milimoe.FunGame.Core.Model
         /// 原始的角色字典
         /// </summary>
         protected readonly Dictionary<Guid, Character> _original = [];
-        
+
         /// <summary>
         /// 当前的行动顺序
         /// </summary>
@@ -225,6 +225,11 @@ namespace Milimoe.FunGame.Core.Model
         /// 游戏是否结束
         /// </summary>
         protected bool _isGameEnd = false;
+
+        /// <summary>
+        /// 是否在回合内
+        /// </summary>
+        protected bool _isInRound = false;
 
         #endregion
 
@@ -537,7 +542,8 @@ namespace Milimoe.FunGame.Core.Model
             TotalTime = Calculation.Round2Digits(TotalTime + timeToReduce);
             WriteLine("时间流逝：" + timeToReduce);
 
-            foreach (Character character in _queue)
+            Character[] characters = [.. _queue];
+            foreach (Character character in characters)
             {
                 // 减少所有角色的硬直时间
                 _hardnessTimes[character] = Calculation.Round2Digits(_hardnessTimes[character] - timeToReduce);
@@ -635,15 +641,17 @@ namespace Milimoe.FunGame.Core.Model
 
                     if (effect.Durative)
                     {
-                        effect.RemainDuration -= timeToReduce;
-                        if (effect.RemainDuration <= 0)
+                        if (effect.RemainDuration < timeToReduce)
                         {
+                            // 移除特效前也完成剩余时间内的效果
+                            effect.OnTimeElapsed(character, effect.RemainDuration);
                             effect.RemainDuration = 0;
                             character.Effects.Remove(effect);
                             effect.OnEffectLost(character);
                         }
                         else
                         {
+                            effect.RemainDuration -= timeToReduce;
                             effect.OnTimeElapsed(character, timeToReduce);
                         }
                     }
@@ -688,11 +696,13 @@ namespace Milimoe.FunGame.Core.Model
         /// <returns>是否结束游戏</returns>
         public async Task<bool> ProcessTurnAsync(Character character)
         {
+            _isInRound = true;
             LastRound.Actor = character;
             _roundDeaths.Clear();
 
             if (!await BeforeTurnAsync(character))
             {
+                _isInRound = false;
                 return _isGameEnd;
             }
 
@@ -723,6 +733,7 @@ namespace Milimoe.FunGame.Core.Model
             // 如果事件全程接管回合操作，需要注意触发特效
             if (!await OnTurnStartAsync(character, enemys, teammates, skills, items))
             {
+                _isInRound = false;
                 return _isGameEnd;
             }
 
@@ -806,7 +817,9 @@ namespace Milimoe.FunGame.Core.Model
                         }
                         else if (character.CharacterState == CharacterState.ActionRestricted)
                         {
-                            // 行动受限，只能使用特殊物品
+                            // 行动受限，只能使用消耗品
+                            items = [.. items.Where(i => i.ItemType == ItemType.Consumable)];
+                            canUseItem = items.Count > 0;
                             if (canUseItem)
                             {
                                 pCastSkill = 0;
@@ -1131,7 +1144,7 @@ namespace Milimoe.FunGame.Core.Model
                         {
                             decided = true;
                             LastRound.Item = item;
-                            baseTime = skill.RealHardnessTime;
+                            baseTime = skill.RealHardnessTime > 0 ? skill.RealHardnessTime : 5;
                             effects = [.. character.Effects.Where(e => e.IsInEffect)];
                             foreach (Effect effect in effects)
                             {
@@ -1148,7 +1161,7 @@ namespace Milimoe.FunGame.Core.Model
                         character.CharacterState == CharacterState.BattleRestricted)
                     {
                         baseTime += 5;
-                        WriteLine($"角色 [ {character} ] 状态为：{CharacterSet.GetCharacterState(character.CharacterState)}，放弃行动将额外获得 5 {GameplayEquilibriumConstant.InGameTime}硬直时间！");
+                        WriteLine($"[ {character} ] {CharacterSet.GetCharacterState(character.CharacterState)}，放弃行动将额外获得 5 {GameplayEquilibriumConstant.InGameTime}硬直时间！");
                     }
                     decided = true;
                     WriteLine($"[ {character} ] 结束了回合！");
@@ -1185,6 +1198,7 @@ namespace Milimoe.FunGame.Core.Model
 
                 await AfterTurnAsync(character);
 
+                _isInRound = false;
                 return _isGameEnd;
             }
 
@@ -1242,6 +1256,7 @@ namespace Milimoe.FunGame.Core.Model
             await AfterTurnAsync(character);
 
             WriteLine("");
+            _isInRound = false;
             return _isGameEnd;
         }
 
@@ -1348,10 +1363,10 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="enemy"></param>
         /// <param name="damage"></param>
         /// <param name="isNormalAttack"></param>
-        /// <param name="isMagicDamage"></param>
+        /// <param name="damageType"></param>
         /// <param name="magicType"></param>
         /// <param name="damageResult"></param>
-        public async Task DamageToEnemyAsync(Character actor, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage = false, MagicType magicType = MagicType.None, DamageResult damageResult = DamageResult.Normal)
+        public async Task DamageToEnemyAsync(Character actor, Character enemy, double damage, bool isNormalAttack, DamageType damageType = DamageType.Physical, MagicType magicType = MagicType.None, DamageResult damageResult = DamageResult.Normal)
         {
             // 如果敌人在结算伤害之前就已经死亡，将不会继续下去
             if (enemy.HP <= 0)
@@ -1368,169 +1383,220 @@ namespace Milimoe.FunGame.Core.Model
 
             List<Character> characters = [actor, enemy];
             bool isEvaded = damageResult == DamageResult.Evaded;
-            Dictionary<Effect, double> totalDamageBonus = [];
-            List<Effect> effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
-            foreach (Effect effect in effects)
+            List<Effect> effects = [];
+
+            // 真实伤害跳过伤害加成区间
+            if (damageType != DamageType.True)
             {
-                double damageBonus = effect.AlterActualDamageAfterCalculation(actor, enemy, damage, isNormalAttack, isMagicDamage, magicType, damageResult, ref isEvaded, totalDamageBonus);
-                totalDamageBonus[effect] = damageBonus;
-                if (isEvaded)
+                Dictionary<Effect, double> totalDamageBonus = [];
+                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+                foreach (Effect effect in effects)
                 {
-                    damageResult = DamageResult.Evaded;
+                    double damageBonus = effect.AlterActualDamageAfterCalculation(actor, enemy, damage, isNormalAttack, damageType, magicType, damageResult, ref isEvaded, totalDamageBonus);
+                    totalDamageBonus[effect] = damageBonus;
+                    if (isEvaded)
+                    {
+                        damageResult = DamageResult.Evaded;
+                    }
                 }
+                damage += totalDamageBonus.Sum(kv => kv.Value);
             }
-            damage += totalDamageBonus.Sum(kv => kv.Value);
             double actualDamage = damage;
 
             // 闪避了就没伤害了
             if (damageResult != DamageResult.Evaded)
             {
                 // 开始计算伤害免疫
-                // 此变量为是否无视免疫
-                bool ignore = false;
-                // 技能免疫无法免疫普通攻击，但是魔法免疫和物理免疫可以
-                bool isImmune = (isNormalAttack && (enemy.ImmuneType == ImmuneType.All || enemy.ImmuneType == ImmuneType.Physical || enemy.ImmuneType == ImmuneType.Magical)) ||
-                    (!isNormalAttack && (enemy.ImmuneType == ImmuneType.All || enemy.ImmuneType == ImmuneType.Physical || enemy.ImmuneType == ImmuneType.Magical || enemy.ImmuneType == ImmuneType.Skilled));
-                if (isImmune)
+                bool isImmune = false;
+                // 真实伤害跳过免疫
+                if (damageType != DamageType.True)
                 {
-                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
-                    foreach (Effect effect in effects)
+                    // 此变量为是否无视免疫
+                    bool ignore = false;
+                    // 技能免疫无法免疫普通攻击，但是魔法免疫和物理免疫可以
+                    isImmune = (isNormalAttack && (enemy.ImmuneType == ImmuneType.All || enemy.ImmuneType == ImmuneType.Physical || enemy.ImmuneType == ImmuneType.Magical)) ||
+                        (!isNormalAttack && (enemy.ImmuneType == ImmuneType.All || enemy.ImmuneType == ImmuneType.Physical || enemy.ImmuneType == ImmuneType.Magical || enemy.ImmuneType == ImmuneType.Skilled));
+                    if (isImmune)
                     {
-                        if (isNormalAttack)
+                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+                        foreach (Effect effect in effects)
                         {
-                            if (actor.NormalAttack.IgnoreImmune == ImmuneType.All ||
-                                (!isMagicDamage && actor.NormalAttack.IgnoreImmune == ImmuneType.Physical) ||
-                                (isMagicDamage && actor.NormalAttack.IgnoreImmune == ImmuneType.Magical) ||
-                                !effect.OnDamageImmuneCheck(actor, enemy, isNormalAttack, isMagicDamage, magicType, damage))
+                            if (isNormalAttack)
                             {
-                                ignore = true;
+                                if (actor.NormalAttack.IgnoreImmune == ImmuneType.All ||
+                                    (damageType == DamageType.Physical && actor.NormalAttack.IgnoreImmune == ImmuneType.Physical) ||
+                                    (damageType == DamageType.Magical && actor.NormalAttack.IgnoreImmune == ImmuneType.Magical) ||
+                                    !effect.OnDamageImmuneCheck(actor, enemy, isNormalAttack, damageType, magicType, damage))
+                                {
+                                    ignore = true;
+                                }
                             }
-                        }
-                        else
-                        {
-                            if (!effect.OnDamageImmuneCheck(actor, enemy, isNormalAttack, isMagicDamage, magicType, damage))
+                            else
                             {
-                                ignore = true;
+                                if (!effect.OnDamageImmuneCheck(actor, enemy, isNormalAttack, damageType, magicType, damage))
+                                {
+                                    ignore = true;
+                                }
                             }
                         }
                     }
+
+                    if (ignore)
+                    {
+                        // 无视免疫
+                        isImmune = false;
+                    }
+
+                    if (isImmune)
+                    {
+                        // 免疫
+                        damageResult = DamageResult.Immune;
+                        LastRound.IsImmune[enemy] = true;
+                        WriteLine($"[ {enemy} ] 免疫了此伤害！");
+                        actualDamage = 0;
+                    }
                 }
 
-                if (ignore)
-                {
-                    // 无视免疫
-                    isImmune = false;
-                }
-
-                if (isImmune)
-                {
-                    // 免疫
-                    damageResult = DamageResult.Immune;
-                    LastRound.IsImmune[enemy] = true;
-                    WriteLine($"[ {enemy} ] 免疫了此伤害！");
-                    actualDamage = 0;
-                }
-                else
+                // 继续计算伤害
+                if (!isImmune)
                 {
                     if (damage < 0) damage = 0;
 
-                    string damageType = isMagicDamage ? CharacterSet.GetMagicDamageName(magicType) : "物理伤害";
-
-                    // 在护盾结算前，特效可以有自己的逻辑
-                    bool change = false;
+                    string damageTypeString = CharacterSet.GetDamageTypeName(damageType, magicType);
                     string shieldMsg = "";
-                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
-                    foreach (Effect effect in effects)
-                    {
-                        double damageReduce = 0;
-                        if (!effect.BeforeShieldCalculation(enemy, actor, isMagicDamage, magicType, damage, ref damageReduce, ref shieldMsg))
-                        {
-                            change = true;
-                        }
-                        if (damageReduce != 0)
-                        {
-                            actualDamage -= damageReduce;
-                            if (actualDamage < 0) actualDamage = 0;
-                        }
-                    }
 
-                    // 检查护盾
-                    if (!change)
+                    // 真实伤害跳过护盾结算
+                    if (damageType != DamageType.True)
                     {
-                        double remain = actualDamage;
-
-                        // 检查特效护盾
-                        effects = [.. enemy.Shield.ShieldOfEffects.Keys];
+                        // 在护盾结算前，特效可以有自己的逻辑
+                        bool change = false;
+                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                         foreach (Effect effect in effects)
                         {
-                            ShieldOfEffect soe = enemy.Shield.ShieldOfEffects[effect];
-                            if (soe.IsMagic == isMagicDamage && (!isMagicDamage || soe.MagicType == magicType) && soe.Shield > 0)
+                            double damageReduce = 0;
+                            if (!effect.BeforeShieldCalculation(enemy, actor, damageType, magicType, damage, ref damageReduce, ref shieldMsg))
                             {
-                                double effectShield = soe.Shield;
-                                // 判断护盾余额
-                                if (enemy.Shield.CalculateShieldOfEffect(effect, remain) > 0)
-                                {
-                                    WriteLine($"[ {enemy} ] 发动了 [ {effect.Skill.Name} ] 的护盾效果，抵消了 {remain:0.##} 点{damageType}！");
-                                    remain = 0;
-                                }
-                                else
-                                {
-                                    WriteLine($"[ {enemy} ] 发动了 [ {effect.Skill.Name} ] 的护盾效果，抵消了 {effectShield:0.##} 点{damageType}，护盾已破碎！");
-                                    remain -= effectShield;
-                                    Effect[] effects2 = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
-                                    foreach (Effect effect2 in effects2)
-                                    {
-                                        if (!effect2.OnShieldBroken(enemy, actor, effect, remain))
-                                        {
-                                            WriteLine($"[ {(enemy.Effects.Contains(effect2) ? enemy : actor)} ] 因护盾破碎而发动了 [ {effect2.Skill.Name} ]，化解了本次伤害！");
-                                            remain = 0;
-                                        }
-                                    }
-                                }
-                                if (remain <= 0)
-                                {
-                                    Effect[] effects2 = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
-                                    foreach (Effect effect2 in effects2)
-                                    {
-                                        effect2.OnShieldNeutralizeDamage(enemy, actor, isMagicDamage, magicType, damage, ShieldType.Effect);
-                                    }
-                                    break;
-                                }
+                                change = true;
+                            }
+                            if (damageReduce != 0)
+                            {
+                                actualDamage -= damageReduce;
+                                if (actualDamage < 0) actualDamage = 0;
                             }
                         }
 
-                        // 如果伤害仍然大于0，继续检查护盾
-                        if (remain > 0)
+                        // 检查护盾
+                        if (!change)
                         {
-                            // 检查指定类型的护盾值
-                            double shield = enemy.Shield[isMagicDamage, magicType];
-                            if (shield > 0)
+                            double remain = actualDamage;
+
+                            // 检查特效护盾
+                            effects = [.. enemy.Shield.ShieldOfEffects.Keys];
+                            foreach (Effect effect in effects)
                             {
-                                shield -= remain;
-                                string shieldTypeString = isMagicDamage ? "魔法" : "物理";
-                                ShieldType shieldType = isMagicDamage ? ShieldType.Magical : ShieldType.Physical;
-                                if (shield > 0)
+                                ShieldOfEffect soe = enemy.Shield.ShieldOfEffects[effect];
+                                if (soe.IsMagic == (damageType == DamageType.Magical) && (damageType == DamageType.Physical || soe.MagicType == magicType) && soe.Shield > 0)
                                 {
-                                    WriteLine($"[ {enemy} ] 的{shieldTypeString}护盾抵消了 {remain:0.##} 点{damageType}！");
-                                    enemy.Shield[isMagicDamage, magicType] -= remain;
-                                    remain = 0;
-                                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
-                                    foreach (Effect effect in effects)
+                                    double effectShield = soe.Shield;
+                                    // 判断护盾余额
+                                    if (enemy.Shield.CalculateShieldOfEffect(effect, remain) > 0)
                                     {
-                                        effect.OnShieldNeutralizeDamage(enemy, actor, isMagicDamage, magicType, damage, shieldType);
+                                        WriteLine($"[ {enemy} ] 发动了 [ {effect.Skill.Name} ] 的护盾效果，抵消了 {remain:0.##} 点{damageTypeString}！");
+                                        remain = 0;
+                                    }
+                                    else
+                                    {
+                                        WriteLine($"[ {enemy} ] 发动了 [ {effect.Skill.Name} ] 的护盾效果，抵消了 {effectShield:0.##} 点{damageTypeString}，护盾已破碎！");
+                                        remain -= effectShield;
+                                        Effect[] effects2 = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+                                        foreach (Effect effect2 in effects2)
+                                        {
+                                            if (!effect2.OnShieldBroken(enemy, actor, effect, remain))
+                                            {
+                                                WriteLine($"[ {(enemy.Effects.Contains(effect2) ? enemy : actor)} ] 因护盾破碎而发动了 [ {effect2.Skill.Name} ]，化解了本次伤害！");
+                                                remain = 0;
+                                            }
+                                        }
+                                    }
+                                    if (remain <= 0)
+                                    {
+                                        Effect[] effects2 = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+                                        foreach (Effect effect2 in effects2)
+                                        {
+                                            effect2.OnShieldNeutralizeDamage(enemy, actor, damageType, magicType, damage, ShieldType.Effect);
+                                        }
+                                        break;
                                     }
                                 }
-                                else
+                            }
+
+                            // 如果伤害仍然大于0，继续检查护盾
+                            if (remain > 0)
+                            {
+                                // 检查指定类型的护盾值
+                                bool isMagicDamage = damageType == DamageType.Magical;
+                                double shield = enemy.Shield[isMagicDamage, magicType];
+                                if (shield > 0)
                                 {
-                                    WriteLine($"[ {enemy} ] 的{shieldTypeString}护盾抵消了 {enemy.Shield[isMagicDamage, magicType]:0.##} 点{damageType}并破碎！");
-                                    remain -= enemy.Shield[isMagicDamage, magicType];
-                                    enemy.Shield[isMagicDamage, magicType] = 0;
-                                    if (isMagicDamage && enemy.Shield.TotalMagicial <= 0 || !isMagicDamage && enemy.Shield.TotalPhysical <= 0)
+                                    shield -= remain;
+                                    string shieldTypeString = isMagicDamage ? "魔法" : "物理";
+                                    ShieldType shieldType = isMagicDamage ? ShieldType.Magical : ShieldType.Physical;
+                                    if (shield > 0)
                                     {
+                                        WriteLine($"[ {enemy} ] 的{shieldTypeString}护盾抵消了 {remain:0.##} 点{damageTypeString}！");
+                                        enemy.Shield[isMagicDamage, magicType] -= remain;
+                                        remain = 0;
                                         effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                                         foreach (Effect effect in effects)
                                         {
-                                            if (!effect.OnShieldBroken(enemy, actor, shieldType, remain))
+                                            effect.OnShieldNeutralizeDamage(enemy, actor, damageType, magicType, damage, shieldType);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        WriteLine($"[ {enemy} ] 的{shieldTypeString}护盾抵消了 {enemy.Shield[isMagicDamage, magicType]:0.##} 点{damageTypeString}并破碎！");
+                                        remain -= enemy.Shield[isMagicDamage, magicType];
+                                        enemy.Shield[isMagicDamage, magicType] = 0;
+                                        if (isMagicDamage && enemy.Shield.TotalMagicial <= 0 || !isMagicDamage && enemy.Shield.TotalPhysical <= 0)
+                                        {
+                                            effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+                                            foreach (Effect effect in effects)
+                                            {
+                                                if (!effect.OnShieldBroken(enemy, actor, shieldType, remain))
+                                                {
+                                                    WriteLine($"[ {(enemy.Effects.Contains(effect) ? enemy : actor)} ] 因护盾破碎而发动了 [ {effect.Skill.Name} ]，化解了本次伤害！");
+                                                    remain = 0;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // 检查混合护盾
+                                if (remain > 0 && enemy.Shield.Mix > 0)
+                                {
+                                    shield = enemy.Shield.Mix;
+                                    shield -= remain;
+                                    if (shield > 0)
+                                    {
+                                        WriteLine($"[ {enemy} ] 的混合护盾抵消了 {remain:0.##} 点{damageTypeString}！");
+                                        enemy.Shield.Mix -= remain;
+                                        remain = 0;
+                                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+                                        foreach (Effect effect in effects)
+                                        {
+                                            effect.OnShieldNeutralizeDamage(enemy, actor, damageType, magicType, damage, ShieldType.Mix);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        WriteLine($"[ {enemy} ] 的混合护盾抵消了 {enemy.Shield.Mix:0.##} 点{damageTypeString}并破碎！");
+                                        remain -= enemy.Shield.Mix;
+                                        enemy.Shield.Mix = 0;
+                                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+                                        foreach (Effect effect in effects)
+                                        {
+                                            if (!effect.OnShieldBroken(enemy, actor, ShieldType.Mix, remain))
                                             {
                                                 WriteLine($"[ {(enemy.Effects.Contains(effect) ? enemy : actor)} ] 因护盾破碎而发动了 [ {effect.Skill.Name} ]，化解了本次伤害！");
                                                 remain = 0;
@@ -1540,51 +1606,18 @@ namespace Milimoe.FunGame.Core.Model
                                 }
                             }
 
-                            // 检查混合护盾
-                            if (remain > 0 && enemy.Shield.Mix > 0)
-                            {
-                                shield = enemy.Shield.Mix;
-                                shield -= remain;
-                                if (shield > 0)
-                                {
-                                    WriteLine($"[ {enemy} ] 的混合护盾抵消了 {remain:0.##} 点{damageType}！");
-                                    enemy.Shield.Mix -= remain;
-                                    remain = 0;
-                                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
-                                    foreach (Effect effect in effects)
-                                    {
-                                        effect.OnShieldNeutralizeDamage(enemy, actor, isMagicDamage, magicType, damage, ShieldType.Mix);
-                                    }
-                                }
-                                else
-                                {
-                                    WriteLine($"[ {enemy} ] 的混合护盾抵消了 {enemy.Shield.Mix:0.##} 点{damageType}并破碎！");
-                                    remain -= enemy.Shield.Mix;
-                                    enemy.Shield.Mix = 0;
-                                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
-                                    foreach (Effect effect in effects)
-                                    {
-                                        if (!effect.OnShieldBroken(enemy, actor, ShieldType.Mix, remain))
-                                        {
-                                            WriteLine($"[ {(enemy.Effects.Contains(effect) ? enemy : actor)} ] 因护盾破碎而发动了 [ {effect.Skill.Name} ]，化解了本次伤害！");
-                                            remain = 0;
-                                        }
-                                    }
-                                }
-                            }
+                            actualDamage = remain;
                         }
 
-                        actualDamage = remain;
-                    }
-
-                    // 统计护盾
-                    if (damage > actualDamage && _stats.TryGetValue(actor, out CharacterStatistics? stats) && stats != null)
-                    {
-                        stats.TotalShield += damage - actualDamage;
+                        // 统计护盾
+                        if (damage > actualDamage && _stats.TryGetValue(actor, out CharacterStatistics? stats) && stats != null)
+                        {
+                            stats.TotalShield += damage - actualDamage;
+                        }
                     }
 
                     enemy.HP -= actualDamage;
-                    WriteLine($"[ {enemy} ] 受到了 {actualDamage:0.##} 点{damageType}！{shieldMsg}");
+                    WriteLine($"[ {enemy} ] 受到了 {actualDamage:0.##} 点{damageTypeString}！{shieldMsg}");
 
                     // 生命偷取，攻击者为全额
                     double steal = damage * actor.Lifesteal;
@@ -1618,7 +1651,7 @@ namespace Milimoe.FunGame.Core.Model
                     }
 
                     // 统计伤害
-                    CalculateCharacterDamageStatistics(actor, enemy, damage, isMagicDamage, actualDamage);
+                    CalculateCharacterDamageStatistics(actor, enemy, damage, damageType, actualDamage);
 
                     // 计算助攻
                     _assistDetail[actor][enemy, TotalTime] += damage;
@@ -1630,12 +1663,12 @@ namespace Milimoe.FunGame.Core.Model
                 actualDamage = 0;
             }
 
-            await OnDamageToEnemyAsync(actor, enemy, damage, actualDamage, isNormalAttack, isMagicDamage, magicType, damageResult);
+            await OnDamageToEnemyAsync(actor, enemy, damage, actualDamage, isNormalAttack, damageType, magicType, damageResult);
 
             effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
             foreach (Effect effect in effects)
             {
-                effect.AfterDamageCalculation(actor, enemy, damage, actualDamage, isNormalAttack, isMagicDamage, magicType, damageResult);
+                effect.AfterDamageCalculation(actor, enemy, damage, actualDamage, isNormalAttack, damageType, magicType, damageResult);
             }
 
             if (enemy.HP <= 0 && !_eliminated.Contains(enemy) && !_respawnCountdown.ContainsKey(enemy))
@@ -1680,8 +1713,14 @@ namespace Milimoe.FunGame.Core.Model
                 return;
             }
 
+            double realHeal = heal;
             if (target.HP > 0 || (isDead && canRespawn))
             {
+                // 用于数据统计，不能是全额，溢出的部分需要扣除
+                if (target.HP + heal > target.MaxHP)
+                {
+                    realHeal = target.MaxHP - target.HP;
+                }
                 target.HP += heal;
                 if (!LastRound.Heals.TryAdd(target, heal))
                 {
@@ -1717,7 +1756,7 @@ namespace Milimoe.FunGame.Core.Model
             // 统计数据
             if (_stats.TryGetValue(actor, out CharacterStatistics? stats) && stats != null)
             {
-                stats.TotalHeal += heal;
+                stats.TotalHeal += realHeal;
             }
 
             await OnHealToTargetAsync(actor, target, heal, isRespawn);
@@ -1928,8 +1967,8 @@ namespace Milimoe.FunGame.Core.Model
                     {
                         caster.CharacterState = CharacterState.Actionable;
                     }
-                    WriteLine($"[ {caster} ] 终止了 [ {st.Skill.Name} ] 的施法" + (_hardnessTimes[caster] > 3 ? $"，并获得了 3 {GameplayEquilibriumConstant.InGameTime}的硬直时间的补偿。" : "。"));
-                    if (_hardnessTimes[caster] > 3)
+                    WriteLine($"[ {caster} ] 终止了 [ {st.Skill.Name} ] 的施法" + (_hardnessTimes[caster] > 3 && _isInRound ? $"，并获得了 3 {GameplayEquilibriumConstant.InGameTime}的硬直时间的补偿。" : "。"));
+                    if (_hardnessTimes[caster] > 3 && _isInRound)
                     {
                         AddCharacter(caster, 3, false);
                     }
@@ -1966,9 +2005,13 @@ namespace Milimoe.FunGame.Core.Model
                         {
                             LastRound.Targets = [.. targets];
 
+                            WriteLine($"[ {character} ] 使用了物品 [ {item.Name} ]！");
+                            item.ReduceTimesAndRemove();
+                            if (item.IsReduceTimesAfterUse && item.RemainUseTimes == 0)
+                            {
+                                character.Items.Remove(item);
+                            }
                             await OnCharacterUseItemAsync(character, item, targets);
-
-                            string line = $"[ {character} ] 使用了物品 [ {item.Name} ]！\r\n[ {character} ] ";
 
                             skill.OnSkillCasting(this, character, targets);
                             skill.BeforeSkillCasted();
@@ -1976,6 +2019,7 @@ namespace Milimoe.FunGame.Core.Model
                             skill.CurrentCD = skill.RealCD;
                             skill.Enable = false;
 
+                            string line = $"[ {character} ] ";
                             if (costMP > 0)
                             {
                                 character.MP -= costMP;
@@ -2017,7 +2061,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             if (pUseItem == 0 && pCastSkill == 0 && pNormalAttack == 0)
             {
-                return CharacterActionType.None;
+                return CharacterActionType.EndTurn;
             }
 
             double total = pUseItem + pCastSkill + pNormalAttack;
@@ -2048,7 +2092,7 @@ namespace Milimoe.FunGame.Core.Model
                 return CharacterActionType.NormalAttack;
             }
 
-            return CharacterActionType.None;
+            return CharacterActionType.EndTurn;
         }
 
         /// <summary>
@@ -2113,7 +2157,7 @@ namespace Milimoe.FunGame.Core.Model
             if (skill.SkillType == SkillType.Magic)
             {
                 cost = skill.RealMPCost;
-                if (cost > 0 && cost <= caster.MP)
+                if (cost >= 0 && cost <= caster.MP)
                 {
                     return true;
                 }
@@ -2125,7 +2169,7 @@ namespace Milimoe.FunGame.Core.Model
             else
             {
                 cost = skill.RealEPCost;
-                if (cost > 0 && cost <= caster.EP)
+                if (cost >= 0 && cost <= caster.EP)
                 {
                     return true;
                 }
@@ -2158,7 +2202,7 @@ namespace Milimoe.FunGame.Core.Model
             costEP = skill.RealEPCost;
             bool isMPOk = false;
             bool isEPOk = false;
-            if (costMP > 0 && costMP <= caster.MP)
+            if (costMP >= 0 && costMP <= caster.MP)
             {
                 isMPOk = true;
             }
@@ -2167,7 +2211,7 @@ namespace Milimoe.FunGame.Core.Model
                 WriteLine("[ " + caster + $" ] 魔法不足！");
             }
             costEP = skill.RealEPCost;
-            if (costEP > 0 && costEP <= caster.EP)
+            if (costEP >= 0 && costEP <= caster.EP)
             {
                 isEPOk = true;
             }
@@ -2191,16 +2235,16 @@ namespace Milimoe.FunGame.Core.Model
         public DamageResult CalculatePhysicalDamage(Character actor, Character enemy, bool isNormalAttack, double expectedDamage, out double finalDamage, ref int changeCount)
         {
             List<Character> characters = [actor, enemy];
-            bool isMagic = false;
+            DamageType damageType = DamageType.Physical;
             MagicType magicType = MagicType.None;
             List<Effect> effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
             if (changeCount < 3)
             {
                 foreach (Effect effect in effects)
                 {
-                    effect.AlterDamageTypeBeforeCalculation(actor, enemy, ref isNormalAttack, ref isMagic, ref magicType);
+                    effect.AlterDamageTypeBeforeCalculation(actor, enemy, ref isNormalAttack, ref damageType, ref magicType);
                 }
-                if (isMagic)
+                if (damageType == DamageType.Magical)
                 {
                     changeCount++;
                     return CalculateMagicalDamage(actor, enemy, isNormalAttack, magicType, expectedDamage, out finalDamage, ref changeCount);
@@ -2211,7 +2255,7 @@ namespace Milimoe.FunGame.Core.Model
             effects = [.. actor.Effects.Union(enemy.Effects).Distinct().Where(e => e.IsInEffect)];
             foreach (Effect effect in effects)
             {
-                double damageBonus = effect.AlterExpectedDamageBeforeCalculation(actor, enemy, expectedDamage, isNormalAttack, false, MagicType.None, totalDamageBonus);
+                double damageBonus = effect.AlterExpectedDamageBeforeCalculation(actor, enemy, expectedDamage, isNormalAttack, DamageType.Physical, MagicType.None, totalDamageBonus);
                 totalDamageBonus[effect] = damageBonus;
             }
             expectedDamage += totalDamageBonus.Sum(kv => kv.Value);
@@ -2308,15 +2352,15 @@ namespace Milimoe.FunGame.Core.Model
         public DamageResult CalculateMagicalDamage(Character actor, Character enemy, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage, ref int changeCount)
         {
             List<Character> characters = [actor, enemy];
-            bool isMagic = true;
+            DamageType damageType = DamageType.Magical;
             List<Effect> effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
             if (changeCount < 3)
             {
                 foreach (Effect effect in effects)
                 {
-                    effect.AlterDamageTypeBeforeCalculation(actor, enemy, ref isNormalAttack, ref isMagic, ref magicType);
+                    effect.AlterDamageTypeBeforeCalculation(actor, enemy, ref isNormalAttack, ref damageType, ref magicType);
                 }
-                if (!isMagic)
+                if (damageType == DamageType.Physical)
                 {
                     changeCount++;
                     return CalculatePhysicalDamage(actor, enemy, isNormalAttack, expectedDamage, out finalDamage, ref changeCount);
@@ -2327,7 +2371,7 @@ namespace Milimoe.FunGame.Core.Model
             effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
             foreach (Effect effect in effects)
             {
-                double damageBonus = effect.AlterExpectedDamageBeforeCalculation(actor, enemy, expectedDamage, isNormalAttack, true, magicType, totalDamageBonus);
+                double damageBonus = effect.AlterExpectedDamageBeforeCalculation(actor, enemy, expectedDamage, isNormalAttack, DamageType.Magical, magicType, totalDamageBonus);
                 totalDamageBonus[effect] = damageBonus;
             }
             expectedDamage += totalDamageBonus.Sum(kv => kv.Value);
@@ -2431,7 +2475,7 @@ namespace Milimoe.FunGame.Core.Model
             List<Character> teammates = GetTeammates(character);
             return teammates.Contains(target);
         }
-        
+
         /// <summary>
         /// 获取目标对于某个角色是否是友方的字典
         /// </summary>
@@ -2812,12 +2856,16 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 计算角色的数据
         /// </summary>
-        public void CalculateCharacterDamageStatistics(Character character, Character characterTaken, double damage, bool isMagic, double takenDamage = -1)
+        public void CalculateCharacterDamageStatistics(Character character, Character characterTaken, double damage, DamageType damageType, double takenDamage = -1)
         {
             if (takenDamage == -1) takenDamage = damage;
             if (_stats.TryGetValue(character, out CharacterStatistics? stats) && stats != null)
             {
-                if (isMagic)
+                if (damageType == DamageType.True)
+                {
+                    stats.TotalTrueDamage += damage;
+                }
+                if (damageType == DamageType.Magical)
                 {
                     stats.TotalMagicDamage += damage;
                 }
@@ -2829,7 +2877,11 @@ namespace Milimoe.FunGame.Core.Model
             }
             if (_stats.TryGetValue(characterTaken, out CharacterStatistics? statsTaken) && statsTaken != null)
             {
-                if (isMagic)
+                if (damageType == DamageType.True)
+                {
+                    statsTaken.TotalTakenTrueDamage = Calculation.Round2Digits(statsTaken.TotalTakenTrueDamage + takenDamage);
+                }
+                if (damageType == DamageType.Magical)
                 {
                     statsTaken.TotalTakenMagicDamage = Calculation.Round2Digits(statsTaken.TotalTakenMagicDamage + takenDamage);
                 }
@@ -3090,7 +3142,7 @@ namespace Milimoe.FunGame.Core.Model
             await (HealToTarget?.Invoke(this, actor, target, heal, isRespawn) ?? Task.CompletedTask);
         }
 
-        public delegate Task DamageToEnemyEventHandler(GamingQueue queue, Character actor, Character enemy, double damage, double actualDamage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult);
+        public delegate Task DamageToEnemyEventHandler(GamingQueue queue, Character actor, Character enemy, double damage, double actualDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult);
         /// <summary>
         /// 造成伤害事件
         /// </summary>
@@ -3103,13 +3155,13 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="damage"></param>
         /// <param name="actualDamage"></param>
         /// <param name="isNormalAttack"></param>
-        /// <param name="isMagicDamage"></param>
+        /// <param name="damageType"></param>
         /// <param name="magicType"></param>
         /// <param name="damageResult"></param>
         /// <returns></returns>
-        protected async Task OnDamageToEnemyAsync(Character actor, Character enemy, double damage, double actualDamage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        protected async Task OnDamageToEnemyAsync(Character actor, Character enemy, double damage, double actualDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult)
         {
-            await (DamageToEnemy?.Invoke(this, actor, enemy, damage, actualDamage, isNormalAttack, isMagicDamage, magicType, damageResult) ?? Task.CompletedTask);
+            await (DamageToEnemy?.Invoke(this, actor, enemy, damage, actualDamage, isNormalAttack, damageType, magicType, damageResult) ?? Task.CompletedTask);
         }
 
         public delegate Task CharacterNormalAttackEventHandler(GamingQueue queue, Character actor, List<Character> targets);
