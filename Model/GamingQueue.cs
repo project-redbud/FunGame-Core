@@ -285,8 +285,22 @@ namespace Milimoe.FunGame.Core.Model
                 _original.Add(original.Guid, original);
             }
 
+            // 获取 HP 小于等于 0 的角色
+            List<Character> deadCharacters = [.. characters.Where(c => c.HP <= 0)];
+            foreach (Character death in deadCharacters)
+            {
+                if (MaxRespawnTimes != 0 || (MaxRespawnTimes != -1 && _respawnTimes.TryGetValue(death, out int times) && times < MaxRespawnTimes))
+                {
+                    // 进入复活倒计时
+                    double respawnTime = 5;
+                    _respawnCountdown.TryAdd(death, respawnTime);
+                    WriteLine($"[ {death} ] 进入复活倒计时：{respawnTime:0.##} {GameplayEquilibriumConstant.InGameTime}！");
+                }
+            }
+
             // 初始排序：按速度排序
             List<IGrouping<double, Character>> groupedBySpeed = [.. characters
+                .Where(c => c.HP > 0)
                 .GroupBy(c => c.SPD)
                 .OrderByDescending(g => g.Key)];
 
@@ -623,7 +637,7 @@ namespace Milimoe.FunGame.Core.Model
                     // 如果特效具备临时驱散或者持续性驱散的功能
                     if (effect.Source != null && (effect.EffectType == EffectType.WeakDispelling || effect.EffectType == EffectType.StrongDispelling))
                     {
-                        effect.Dispel(effect.Source, character, IsTeammate(character, effect.Source));
+                        effect.Dispel(effect.Source, character, !IsTeammate(character, effect.Source) && character != effect.Source);
                     }
 
                     // 自身被动不会考虑
@@ -1495,7 +1509,19 @@ namespace Milimoe.FunGame.Core.Model
                             foreach (Effect effect in effects)
                             {
                                 ShieldOfEffect soe = enemy.Shield.ShieldOfEffects[effect];
-                                if (soe.IsMagic == (damageType == DamageType.Magical) && (damageType == DamageType.Physical || soe.MagicType == magicType) && soe.Shield > 0)
+                                bool checkType = false;
+                                switch (damageType)
+                                {
+                                    case DamageType.Physical:
+                                        checkType = soe.ShieldType == ShieldType.Physical || soe.ShieldType == ShieldType.Mix;
+                                        break;
+                                    case DamageType.Magical:
+                                        checkType = (soe.ShieldType == ShieldType.Magical && soe.MagicType == magicType) || soe.ShieldType == ShieldType.Mix;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                if (checkType && soe.Shield > 0)
                                 {
                                     double effectShield = soe.Shield;
                                     // 判断护盾余额
@@ -1573,9 +1599,9 @@ namespace Milimoe.FunGame.Core.Model
                                 }
 
                                 // 检查混合护盾
-                                if (remain > 0 && enemy.Shield.Mix > 0)
+                                if (remain > 0 && enemy.Shield.TotalMix > 0)
                                 {
-                                    shield = enemy.Shield.Mix;
+                                    shield = enemy.Shield.TotalMix;
                                     shield -= remain;
                                     if (shield > 0)
                                     {
@@ -1590,8 +1616,8 @@ namespace Milimoe.FunGame.Core.Model
                                     }
                                     else
                                     {
-                                        WriteLine($"[ {enemy} ] 的混合护盾抵消了 {enemy.Shield.Mix:0.##} 点{damageTypeString}并破碎！");
-                                        remain -= enemy.Shield.Mix;
+                                        WriteLine($"[ {enemy} ] 的混合护盾抵消了 {enemy.Shield.TotalMix:0.##} 点{damageTypeString}并破碎！");
+                                        remain -= enemy.Shield.TotalMix;
                                         enemy.Shield.Mix = 0;
                                         effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                                         foreach (Effect effect in effects)
@@ -2465,7 +2491,7 @@ namespace Milimoe.FunGame.Core.Model
         }
 
         /// <summary>
-        /// 判断目标对于某个角色是否是队友
+        /// 判断目标对于某个角色是否是队友（不包括自己）
         /// </summary>
         /// <param name="character"></param>
         /// <param name="target"></param>
@@ -2477,7 +2503,7 @@ namespace Milimoe.FunGame.Core.Model
         }
 
         /// <summary>
-        /// 获取目标对于某个角色是否是友方的字典
+        /// 获取目标对于某个角色是否是友方的字典（包括自己）
         /// </summary>
         /// <param name="character"></param>
         /// <param name="targets"></param>
@@ -2488,7 +2514,8 @@ namespace Milimoe.FunGame.Core.Model
             List<Character> teammates = GetTeammates(character);
             foreach (Character target in targets)
             {
-                dict[target] = teammates.Contains(target);
+                if (character == target) dict[target] = true;
+                else dict[target] = teammates.Contains(target);
             }
             return dict;
         }

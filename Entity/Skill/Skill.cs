@@ -448,8 +448,10 @@ namespace Milimoe.FunGame.Core.Entity
         /// 返回技能的详细说明
         /// </summary>
         /// <param name="showOriginal"></param>
+        /// <param name="showCD"></param>
+        /// <param name="showHardness"></param>
         /// <returns></returns>
-        public string GetInfo(bool showOriginal = false)
+        public string GetInfo(bool showOriginal = false, bool showCD = true, bool showHardness = true)
         {
             StringBuilder builder = new();
 
@@ -505,8 +507,14 @@ namespace Milimoe.FunGame.Core.Entity
                         }
                     }
                 }
-                builder.AppendLine($"冷却时间：{RealCD:0.##}{(showOriginal && RealCD != CD ? $"（原始值：{CD}）" : "")}");
-                builder.AppendLine($"硬直时间：{RealHardnessTime:0.##}{(showOriginal && RealHardnessTime != HardnessTime ? $"（原始值：{HardnessTime}）" : "")}");
+                if (showCD && CD > 0)
+                {
+                    builder.AppendLine($"冷却时间：{RealCD:0.##}{(showOriginal && RealCD != CD ? $"（原始值：{CD}）" : "")}");
+                }
+                if (showHardness && HardnessTime > 0)
+                {
+                    builder.AppendLine($"硬直时间：{RealHardnessTime:0.##}{(showOriginal && RealHardnessTime != HardnessTime ? $"（原始值：{HardnessTime}）" : "")}");
+                }
             }
 
             return builder.ToString();
@@ -517,6 +525,18 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <returns></returns>
         public override string ToString() => GetInfo(true);
+
+        /// <summary>
+        /// 返回技能的详细说明，有选项
+        /// </summary>
+        /// <param name="showOriginal"></param>
+        /// <param name="showCD"></param>
+        /// <param name="showHardness"></param>
+        /// <returns></returns>
+        public string ToString(bool showOriginal, bool showCD, bool showHardness)
+        {
+            return GetInfo(showOriginal, showCD, showHardness);
+        }
 
         /// <summary>
         /// 判断两个技能是否相同 检查Id.Name

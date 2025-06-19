@@ -347,19 +347,19 @@ namespace Milimoe.FunGame.Core.Entity
             return false;
         }
 
+        /// <summary>
+        /// 使用后减少使用次数或删除物品
+        /// </summary>
         public void ReduceTimesAndRemove()
         {
-            if (User != null)
+            if (IsReduceTimesAfterUse)
             {
-                if (IsReduceTimesAfterUse)
-                {
-                    RemainUseTimes--;
-                }
-                if (RemainUseTimes < 0) RemainUseTimes = 0;
-                if (IsRemoveAfterUse && RemainUseTimes == 0)
-                {
-                    EntityState = EntityState.Deleted;
-                }
+                RemainUseTimes--;
+            }
+            if (RemainUseTimes < 0) RemainUseTimes = 0;
+            if (IsRemoveAfterUse && RemainUseTimes == 0)
+            {
+                EntityState = EntityState.Deleted;
             }
         }
 

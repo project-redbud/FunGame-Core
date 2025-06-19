@@ -66,16 +66,21 @@ namespace Milimoe.FunGame.Core.Entity
         /// 混合护盾
         /// </summary>
         public double Mix { get; set; } = 0;
+        
+        /// <summary>
+        /// 总计混合护盾
+        /// </summary>
+        public double TotalMix => Mix + ShieldOfEffects.Values.Where(soe => soe.ShieldType == ShieldType.Mix && soe.Shield > 0).Sum(soe => soe.Shield);
 
         /// <summary>
         /// 总计物理护盾
         /// </summary>
-        public double TotalPhysical => Physical + ShieldOfEffects.Values.Where(soe => !soe.IsMagic && soe.Shield > 0).Sum(soe => soe.Shield);
+        public double TotalPhysical => Physical + ShieldOfEffects.Values.Where(soe => soe.ShieldType == ShieldType.Physical && soe.Shield > 0).Sum(soe => soe.Shield);
 
         /// <summary>
         /// 总计魔法护盾
         /// </summary>
-        public double TotalMagicial => None + Starmark + PurityNatural + PurityContemporary + Bright + Shadow + Element + Aster + SpatioTemporal + ShieldOfEffects.Values.Where(soe => soe.IsMagic && soe.Shield > 0).Sum(soe => soe.Shield);
+        public double TotalMagicial => None + Starmark + PurityNatural + PurityContemporary + Bright + Shadow + Element + Aster + SpatioTemporal + ShieldOfEffects.Values.Where(soe => soe.ShieldType == ShieldType.Magical && soe.Shield > 0).Sum(soe => soe.Shield);
 
         /// <summary>
         /// 获取或设置护盾值
@@ -212,13 +217,13 @@ namespace Milimoe.FunGame.Core.Entity
     /// </summary>
     /// <param name="effect"></param>
     /// <param name="shield"></param>
-    /// <param name="isMagic"></param>
-    /// <param name="type"></param>
-    public class ShieldOfEffect(Effect effect, double shield, bool isMagic = false, MagicType type = MagicType.None)
+    /// <param name="shieldType"></param>
+    /// <param name="magicType"></param>
+    public class ShieldOfEffect(Effect effect, double shield, ShieldType shieldType, MagicType magicType = MagicType.None)
     {
         public Effect Effect { get; } = effect;
-        public bool IsMagic { get; set; } = isMagic;
-        public MagicType MagicType { get; set; } = type;
+        public ShieldType ShieldType { get; set; } = shieldType;
+        public MagicType MagicType { get; set; } = magicType;
         public double Shield { get; set; } = shield;
 
         public double Calculate(double damage)
