@@ -1,15 +1,15 @@
 ﻿namespace Milimoe.FunGame.Core.Entity
 {
-    public class GameStatistics
+    public class GameStatistics(Room Room)
     {
         public long Id => Room.Id;
-        public Room Room { get; }
+        public Room Room { get; } = Room;
         public DateTime RecordTime { get; set; } = DateTime.Now;
         public string Record { get; set; } = "";
-        public Dictionary<User, double> DamageStats { get; set; } = new();
-        public Dictionary<User, double> PhysicalDamageStats { get; } = new();
-        public Dictionary<User, double> MagicDamageStats { get; } = new();
-        public Dictionary<User, double> RealDamageStats { get; } = new();
+        public Dictionary<User, double> DamageStats { get; set; } = [];
+        public Dictionary<User, double> PhysicalDamageStats { get; } = [];
+        public Dictionary<User, double> MagicDamageStats { get; } = [];
+        public Dictionary<User, double> TrueDamageStats { get; } = [];
         public double AvgDamageStats
         {
             get
@@ -46,30 +46,25 @@
                 return Math.Round(total / MagicDamageStats.Count, 2);
             }
         }
-        public double AvgRealDamageStats
+        public double AvgTrueDamageStats
         {
             get
             {
                 double total = 0;
-                foreach (User user in RealDamageStats.Keys)
+                foreach (User user in TrueDamageStats.Keys)
                 {
-                    total += RealDamageStats[user];
+                    total += TrueDamageStats[user];
                 }
-                return Math.Round(total / RealDamageStats.Count, 2);
+                return Math.Round(total / TrueDamageStats.Count, 2);
             }
         }
-        public Dictionary<User, double> KillStats { get; } = new();
-        public Dictionary<User, Dictionary<User, int>> KillDetailStats { get; } = new(); // 子字典记录的是被击杀者以及被击杀次数
-        public Dictionary<User, double> DeathStats { get; } = new();
-        public Dictionary<User, Dictionary<User, int>> DeathDetailStats { get; } = new(); // 子字典记录的是击杀者以及击杀次数
-        public Dictionary<User, long> AssistStats { get; } = new();
-        public Dictionary<User, double> RatingStats { get; } = new(); // 结算后的Rating
-        public Dictionary<User, double> EloStats { get; } = new(); // Elo分数变化(+/-)
-        public Dictionary<User, string> RankStats { get; } = new(); // 结算后的Rank（非比赛前）
-
-        public GameStatistics(Room Room)
-        {
-            this.Room = Room;
-        }
+        public Dictionary<User, double> KillStats { get; } = [];
+        public Dictionary<User, Dictionary<User, int>> KillDetailStats { get; } = []; // 子字典记录的是被击杀者以及被击杀次数
+        public Dictionary<User, double> DeathStats { get; } = [];
+        public Dictionary<User, Dictionary<User, int>> DeathDetailStats { get; } = []; // 子字典记录的是击杀者以及击杀次数
+        public Dictionary<User, long> AssistStats { get; } = [];
+        public Dictionary<User, double> RatingStats { get; } = []; // 结算后的Rating
+        public Dictionary<User, double> EloStats { get; } = []; // Elo分数变化(+/-)
+        public Dictionary<User, string> RankStats { get; } = []; // 结算后的Rank（非比赛前）
     }
 }

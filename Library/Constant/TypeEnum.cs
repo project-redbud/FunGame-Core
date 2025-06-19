@@ -312,12 +312,12 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Poison,
 
         /// <summary>
-        /// 燃烧，目标受到火焰伤害，持续一段时间
+        /// 燃烧，目标受到伤害，持续一段时间
         /// </summary>
         Burn,
 
         /// <summary>
-        /// 流血，目标持续受到物理伤害
+        /// 流血，目标持续受到伤害
         /// </summary>
         Bleed,
 
@@ -1038,5 +1038,12 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Magical,
         Mix,
         Effect
+    }
+
+    public enum DamageType
+    {
+        Physical,
+        Magical,
+        True
     }
 }

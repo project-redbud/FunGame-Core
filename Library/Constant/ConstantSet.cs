@@ -455,6 +455,16 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 _ => "★"
             };
         }
+
+        public static string GetDamageTypeName(DamageType damageType, MagicType magicType = MagicType.None)
+        {
+            return damageType switch
+            {
+                DamageType.Magical => GetMagicDamageName(magicType),
+                DamageType.True => "真实伤害",
+                _ => "物理伤害"
+            };
+        }
     }
 
     public class ItemSet

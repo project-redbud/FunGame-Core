@@ -129,9 +129,13 @@ namespace Milimoe.FunGame.Core.Entity
             }
             set
             {
+                int past = _Level;
                 _Level = Math.Min(Math.Max(1, value), GameplayEquilibriumConstant.MaxLevel);
-                OnAttributeChanged();
-                Recovery();
+                if (past != _Level)
+                {
+                    OnAttributeChanged();
+                    Recovery();
+                }
             }
         }
 
@@ -900,8 +904,8 @@ namespace Milimoe.FunGame.Core.Entity
         {
             if (time > 0)
             {
-                HP = Math.Min(MaxHP, HP + HR * time);
-                MP = Math.Min(MaxMP, MP + MR * time);
+                HP += HR * time;
+                MP += MR * time;
                 if (EP != -1) this.EP = EP;
             }
         }
@@ -915,10 +919,16 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="pastMaxMP"></param>
         public void Recovery(double pastHP, double pastMP, double pastMaxHP, double pastMaxMP)
         {
-            double pHP = pastHP / pastMaxHP;
-            double pMP = pastMP / pastMaxMP;
-            HP = MaxHP * pHP;
-            MP = MaxMP * pMP;
+            if (pastHP > 0 && pastMaxHP > 0)
+            {
+                double pHP = pastHP / pastMaxHP;
+                HP = MaxHP * pHP;
+            }
+            if (pastMP > 0 && pastMaxMP > 0)
+            {
+                double pMP = pastMP / pastMaxMP;
+                MP = MaxMP * pMP;
+            }
         }
 
         /// <summary>
@@ -1145,6 +1155,32 @@ namespace Milimoe.FunGame.Core.Entity
                 Recovery(pastHP, pastMP, pastMaxHP, pastMaxMP);
             }
             return result;
+        }
+
+        /// <summary>
+        /// 设置角色等级，并默认完全回复状态
+        /// </summary>
+        /// <param name="level">新的等级</param>
+        /// <param name="recovery">false 为按百分比回复</param>
+        public void SetLevel(int level, bool recovery = true)
+        {
+            if (!recovery)
+            {
+                double pastHP = HP;
+                double pastMP = MP;
+                double pastMaxHP = MaxHP;
+                double pastMaxMP = MaxMP;
+                int pastLevel = Level;
+                Level = level;
+                if (pastLevel != Level)
+                {
+                    Recovery(pastHP, pastMP, pastMaxHP, pastMaxMP);
+                }
+            }
+            else
+            {
+                Level = level;
+            }
         }
 
         /// <summary>

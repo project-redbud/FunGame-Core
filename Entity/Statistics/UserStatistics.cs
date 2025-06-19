@@ -11,7 +11,7 @@ namespace Milimoe.FunGame.Core.Entity
         public Dictionary<long, double> DamageStats { get; } = [];
         public Dictionary<long, double> PhysicalDamageStats { get; } = [];
         public Dictionary<long, double> MagicDamageStats { get; } = [];
-        public Dictionary<long, double> RealDamageStats { get; } = [];
+        public Dictionary<long, double> TrueDamageStats { get; } = [];
         public Dictionary<long, double> AvgDamageStats
         {
             get
@@ -66,7 +66,7 @@ namespace Milimoe.FunGame.Core.Entity
                 return avgdamage;
             }
         }
-        public Dictionary<long, double> AvgRealDamageStats
+        public Dictionary<long, double> AvgTrueDamageStats
         {
             get
             {
@@ -75,9 +75,9 @@ namespace Milimoe.FunGame.Core.Entity
                 {
                     long plays = Plays[key];
                     double total = 0;
-                    if (RealDamageStats.ContainsKey(key))
+                    if (TrueDamageStats.ContainsKey(key))
                     {
-                        total = RealDamageStats.Values.Sum();
+                        total = TrueDamageStats.Values.Sum();
                     }
                     avgdamage.Add(key, Math.Round(total / plays, 2));
                 }

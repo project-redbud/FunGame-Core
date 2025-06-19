@@ -59,7 +59,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 附属于某个特效
         /// </summary>
         public Effect? ParentEffect { get; set; } = null;
-        
+
         /// <summary>
         /// 是否是某个特效的附属
         /// </summary>
@@ -218,9 +218,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="character"></param>
         /// <param name="enemy"></param>
         /// <param name="isNormalAttack"></param>
-        /// <param name="isMagicDamage"></param>
+        /// <param name="damageType"></param>
         /// <param name="magicType"></param>
-        public virtual void AlterDamageTypeBeforeCalculation(Character character, Character enemy, ref bool isNormalAttack, ref bool isMagicDamage, ref MagicType magicType)
+        public virtual void AlterDamageTypeBeforeCalculation(Character character, Character enemy, ref bool isNormalAttack, ref DamageType damageType, ref MagicType magicType)
         {
 
         }
@@ -232,11 +232,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="enemy"></param>
         /// <param name="damage"></param>
         /// <param name="isNormalAttack"></param>
-        /// <param name="isMagicDamage"></param>
+        /// <param name="damageType"></param>
         /// <param name="magicType"></param>
         /// <param name="totalDamageBonus"></param>
         /// <returns>返回伤害增减值</returns>
-        public virtual double AlterExpectedDamageBeforeCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, Dictionary<Effect, double> totalDamageBonus)
+        public virtual double AlterExpectedDamageBeforeCalculation(Character character, Character enemy, double damage, bool isNormalAttack, DamageType damageType, MagicType magicType, Dictionary<Effect, double> totalDamageBonus)
         {
             return 0;
         }
@@ -248,13 +248,13 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="enemy"></param>
         /// <param name="damage"></param>
         /// <param name="isNormalAttack"></param>
-        /// <param name="isMagicDamage"></param>
+        /// <param name="damageType"></param>
         /// <param name="magicType"></param>
         /// <param name="damageResult"></param>
         /// <param name="isEvaded"></param>
         /// <param name="totalDamageBonus"></param>
         /// <returns>返回伤害增减值</returns>
-        public virtual double AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult, ref bool isEvaded, Dictionary<Effect, double> totalDamageBonus)
+        public virtual double AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult, ref bool isEvaded, Dictionary<Effect, double> totalDamageBonus)
         {
             return 0;
         }
@@ -335,7 +335,7 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 对目标触发技能效果
+        /// 对目标触发技能效果（局外）
         /// </summary>
         /// <param name="user"></param>
         /// <param name="targets"></param>
@@ -363,10 +363,10 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="damage"></param>
         /// <param name="actualDamage"></param>
         /// <param name="isNormalAttack"></param>
-        /// <param name="isMagicDamage"></param>
+        /// <param name="damageType"></param>
         /// <param name="magicType"></param>
         /// <param name="damageResult"></param>
-        public virtual void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        public virtual void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult)
         {
 
         }
@@ -656,13 +656,13 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="character"></param>
         /// <param name="attacker"></param>
-        /// <param name="isMagic"></param>
+        /// <param name="damageType"></param>
         /// <param name="magicType"></param>
         /// <param name="damage"></param>
         /// <param name="damageReduce"></param>
         /// <param name="message"></param>
         /// <returns>返回 false 可以跳过护盾结算</returns>
-        public virtual bool BeforeShieldCalculation(Character character, Character attacker, bool isMagic, MagicType magicType, double damage, ref double damageReduce, ref string message)
+        public virtual bool BeforeShieldCalculation(Character character, Character attacker, DamageType damageType, MagicType magicType, double damage, ref double damageReduce, ref string message)
         {
             return true;
         }
@@ -672,11 +672,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="character"></param>
         /// <param name="attacker"></param>
-        /// <param name="isMagic"></param>
+        /// <param name="damageType"></param>
         /// <param name="magicType"></param>
         /// <param name="damage"></param>
         /// <param name="shieldType"></param>
-        public virtual void OnShieldNeutralizeDamage(Character character, Character attacker, bool isMagic, MagicType magicType, double damage, ShieldType shieldType)
+        public virtual void OnShieldNeutralizeDamage(Character character, Character attacker, DamageType damageType, MagicType magicType, double damage, ShieldType shieldType)
         {
 
         }
@@ -726,11 +726,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="actor"></param>
         /// <param name="enemy"></param>
         /// <param name="isNormalAttack"></param>
-        /// <param name="isMagic"></param>
+        /// <param name="damageType"></param>
         /// <param name="magicType"></param>
         /// <param name="damage"></param>
         /// <returns>false：免疫检定不通过</returns>
-        public virtual bool OnDamageImmuneCheck(Character actor, Character enemy, bool isNormalAttack, bool isMagic, MagicType magicType, double damage)
+        public virtual bool OnDamageImmuneCheck(Character actor, Character enemy, bool isNormalAttack, DamageType damageType, MagicType magicType, double damage)
         {
             return true;
         }
@@ -740,16 +740,21 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="actor"></param>
         /// <param name="enemy"></param>
-        /// <param name="isMagic"></param>
+        /// <param name="damageType"></param>
         /// <param name="magicType"></param>
         /// <param name="expectedDamage"></param>
         /// <returns></returns>
-        public DamageResult DamageToEnemy(Character actor, Character enemy, bool isMagic, MagicType magicType, double expectedDamage)
+        public DamageResult DamageToEnemy(Character actor, Character enemy, DamageType damageType, MagicType magicType, double expectedDamage)
         {
             if (GamingQueue is null) return DamageResult.Evaded;
             int changeCount = 0;
-            DamageResult result = !isMagic ? GamingQueue.CalculatePhysicalDamage(actor, enemy, false, expectedDamage, out double damage, ref changeCount) : GamingQueue.CalculateMagicalDamage(actor, enemy, false, MagicType, expectedDamage, out damage, ref changeCount);
-            GamingQueue.DamageToEnemyAsync(actor, enemy, damage, false, isMagic, magicType, result);
+            DamageResult result = DamageResult.Normal;
+            double damage = expectedDamage;
+            if (damageType != DamageType.True)
+            {
+                result = damageType == DamageType.Physical ? GamingQueue.CalculatePhysicalDamage(actor, enemy, false, expectedDamage, out damage, ref changeCount) : GamingQueue.CalculateMagicalDamage(actor, enemy, false, MagicType, expectedDamage, out damage, ref changeCount);
+            }
+            GamingQueue.DamageToEnemyAsync(actor, enemy, damage, false, damageType, magicType, result);
             return result;
         }
 
