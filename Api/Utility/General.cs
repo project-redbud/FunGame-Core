@@ -780,7 +780,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns></returns>
         public static double Round(double value, int digits)
         {
-            return Math.Round(value, digits, MidpointRounding.AwayFromZero);
+            value = Math.Round(value, digits, MidpointRounding.AwayFromZero);
+            if (IsApproximatelyZero(value)) value = 0;
+            return value;
         }
 
         /// <summary>

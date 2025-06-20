@@ -471,6 +471,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             FirstKiller = null;
             CustomData.Clear();
+            _allCharacter.Clear();
             _original.Clear();
             _queue.Clear();
             _hardnessTimes.Clear();

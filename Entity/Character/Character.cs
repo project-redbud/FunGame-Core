@@ -1249,6 +1249,7 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 effect.OnAttributeChanged(this);
             }
+            NormalAttack.ResolveMagicType();
         }
 
         /// <summary>
@@ -1391,7 +1392,7 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
             double exDEF = ExDEF + ExDEF2 + ExDEF3;
             builder.AppendLine($"物理护甲：{DEF:0.##}" + (exDEF != 0 ? $" [{BaseDEF:0.##} {(exDEF >= 0 ? "+" : "-")} {Math.Abs(exDEF):0.##}]" : "") + $" ({PDR * 100:0.##}%)");
-            builder.AppendLine($"魔法抗性：{MDF.Avg:0.##}%（平均）");
+            builder.AppendLine(GetMagicResistanceInfo().Trim());
             double exSPD = AGI * GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
             builder.AppendLine($"行动速度：{SPD:0.##}" + (exSPD != 0 ? $" [{InitialSPD:0.##} {(exSPD >= 0 ? "+" : "-")} {Math.Abs(exSPD):0.##}]" : "") + $" ({ActionCoefficient * 100:0.##}%)");
             builder.AppendLine($"核心属性：{CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)}");
@@ -1443,46 +1444,12 @@ namespace Milimoe.FunGame.Core.Entity
 
             if (EquipSlot.Any())
             {
-                builder.AppendLine("== 装备栏 ==");
-                if (EquipSlot.MagicCardPack != null)
-                {
-                    builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.MagicCardPack.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.MagicCardPack) + "：" + EquipSlot.MagicCardPack.Name);
-                    builder.AppendLine(EquipSlot.MagicCardPack.Description);
-                }
-                if (EquipSlot.Weapon != null)
-                {
-                    builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.Weapon.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.Weapon) + "：" + EquipSlot.Weapon.Name);
-                    builder.AppendLine(EquipSlot.Weapon.Description);
-                }
-                if (EquipSlot.Armor != null)
-                {
-                    builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.Armor.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.Armor) + "：" + EquipSlot.Armor.Name);
-                    builder.AppendLine(EquipSlot.Armor.Description);
-                }
-                if (EquipSlot.Shoes != null)
-                {
-                    builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.Shoes.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.Shoes) + "：" + EquipSlot.Shoes.Name);
-                    builder.AppendLine(EquipSlot.Shoes.Description);
-                }
-                if (EquipSlot.Accessory1 != null)
-                {
-                    builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.Accessory1.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.Accessory1) + "：" + EquipSlot.Accessory1.Name);
-                    builder.AppendLine(EquipSlot.Accessory1.Description);
-                }
-                if (EquipSlot.Accessory2 != null)
-                {
-                    builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.Accessory2.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.Accessory2) + "：" + EquipSlot.Accessory2.Name);
-                    builder.AppendLine(EquipSlot.Accessory2.Description);
-                }
+                builder.AppendLine(GetEquipSlotInfo().Trim());
             }
 
             if (Items.Count > 0)
             {
-                builder.AppendLine("== 角色背包 ==");
-                foreach (Item item in Items)
-                {
-                    builder.Append(item.ToString());
-                }
+                builder.AppendLine(GetBackpackItemsInfo().Trim());
             }
 
             Effect[] effects = [.. Effects.Where(e => e.ShowInStatusBar)];
@@ -1525,7 +1492,7 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
             double exDEF = ExDEF + ExDEF2 + ExDEF3;
             builder.AppendLine($"物理护甲：{DEF:0.##}" + (exDEF != 0 ? $" [{BaseDEF:0.##} {(exDEF >= 0 ? "+" : "-")} {Math.Abs(exDEF):0.##}]" : "") + $" ({PDR * 100:0.##}%)");
-            builder.AppendLine($"魔法抗性：{MDF.Avg:0.##}%（平均）");
+            builder.AppendLine(GetMagicResistanceInfo().Trim());
             if (showBasicOnly)
             {
                 builder.AppendLine($"核心属性：{PrimaryAttributeValue:0.##}（{CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)}）");
@@ -1774,7 +1741,7 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
             double exDEF = ExDEF + ExDEF2 + ExDEF3;
             builder.AppendLine($"物理护甲：{DEF:0.##}" + (exDEF != 0 ? $" [{BaseDEF:0.##} {(exDEF >= 0 ? "+" : "-")} {Math.Abs(exDEF):0.##}]" : "") + $" ({PDR * 100:0.##}%)");
-            builder.AppendLine($"魔法抗性：{MDF.Avg:0.##}%（平均）");
+            builder.AppendLine(GetMagicResistanceInfo().Trim());
             double exSPD = AGI * GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
             builder.AppendLine($"行动速度：{SPD:0.##}" + (exSPD != 0 ? $" [{InitialSPD:0.##} {(exSPD >= 0 ? "+" : "-")} {Math.Abs(exSPD):0.##}]" : "") + $" ({ActionCoefficient * 100:0.##}%)");
             builder.AppendLine($"核心属性：{CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)}");
@@ -1799,47 +1766,105 @@ namespace Milimoe.FunGame.Core.Entity
 
             if (EquipSlot.Any())
             {
-                builder.AppendLine("== 装备栏 ==");
-                if (EquipSlot.MagicCardPack != null)
-                {
-                    builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.MagicCardPack.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.MagicCardPack) + "：" + EquipSlot.MagicCardPack.Name);
-                    builder.AppendLine(EquipSlot.MagicCardPack.Description);
-                }
-                if (EquipSlot.Weapon != null)
-                {
-                    builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.Weapon.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.Weapon) + "：" + EquipSlot.Weapon.Name);
-                    builder.AppendLine(EquipSlot.Weapon.Description);
-                }
-                if (EquipSlot.Armor != null)
-                {
-                    builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.Armor.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.Armor) + "：" + EquipSlot.Armor.Name);
-                    builder.AppendLine(EquipSlot.Armor.Description);
-                }
-                if (EquipSlot.Shoes != null)
-                {
-                    builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.Shoes.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.Shoes) + "：" + EquipSlot.Shoes.Name);
-                    builder.AppendLine(EquipSlot.Shoes.Description);
-                }
-                if (EquipSlot.Accessory1 != null)
-                {
-                    builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.Accessory1.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.Accessory1) + "：" + EquipSlot.Accessory1.Name);
-                    builder.AppendLine(EquipSlot.Accessory1.Description);
-                }
-                if (EquipSlot.Accessory2 != null)
-                {
-                    builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.Accessory2.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.Accessory2) + "：" + EquipSlot.Accessory2.Name);
-                    builder.AppendLine(EquipSlot.Accessory2.Description);
-                }
+                builder.AppendLine(GetEquipSlotInfo().Trim());
             }
 
             if (Items.Count > 0)
             {
-                builder.AppendLine("== 角色背包 ==");
-                foreach (Item item in Items)
+                builder.AppendLine(GetBackpackItemsInfo().Trim());
+            }
+
+            return builder.ToString();
+        }
+
+        /// <summary>
+        /// 获取角色装备栏信息
+        /// </summary>
+        /// <returns></returns>
+        public string GetEquipSlotInfo()
+        {
+            StringBuilder builder = new();
+
+            builder.AppendLine("== 装备栏 ==");
+            if (EquipSlot.MagicCardPack != null)
+            {
+                builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.MagicCardPack.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.MagicCardPack) + "：" + EquipSlot.MagicCardPack.Name);
+                builder.AppendLine(EquipSlot.MagicCardPack.Description);
+            }
+            if (EquipSlot.Weapon != null)
+            {
+                builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.Weapon.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.Weapon) + "：" + EquipSlot.Weapon.Name);
+                builder.AppendLine(EquipSlot.Weapon.Description);
+            }
+            if (EquipSlot.Armor != null)
+            {
+                builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.Armor.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.Armor) + "：" + EquipSlot.Armor.Name);
+                builder.AppendLine(EquipSlot.Armor.Description);
+            }
+            if (EquipSlot.Shoes != null)
+            {
+                builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.Shoes.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.Shoes) + "：" + EquipSlot.Shoes.Name);
+                builder.AppendLine(EquipSlot.Shoes.Description);
+            }
+            if (EquipSlot.Accessory1 != null)
+            {
+                builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.Accessory1.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.Accessory1) + "：" + EquipSlot.Accessory1.Name);
+                builder.AppendLine(EquipSlot.Accessory1.Description);
+            }
+            if (EquipSlot.Accessory2 != null)
+            {
+                builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.Accessory2.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.Accessory2) + "：" + EquipSlot.Accessory2.Name);
+                builder.AppendLine(EquipSlot.Accessory2.Description);
+            }
+
+            return builder.ToString();
+        }
+        
+        /// <summary>
+        /// 获取角色背包信息
+        /// </summary>
+        /// <returns></returns>
+        public string GetBackpackItemsInfo()
+        {
+            StringBuilder builder = new();
+
+            builder.AppendLine("== 角色背包 ==");
+            foreach (Item item in Items)
+            {
+                builder.AppendLine($"[{ItemSet.GetQualityTypeName(item.QualityType)}]" + ItemSet.GetItemTypeName(item.ItemType) + "：" + item.Name);
+                builder.AppendLine(item.Description);
+                if (item.Skills.Active != null)
                 {
-                    builder.Append(item.ToString());
+                    Skill skill = item.Skills.Active;
+                    List<string> strings = [];
+                    if (skill.RealMPCost > 0) strings.Add($"魔法消耗：{skill.RealMPCost}");
+                    if (skill.RealEPCost > 0) strings.Add($"能量消耗：{skill.RealEPCost}");
+                    if (skill.RealCD > 0) strings.Add($"冷却时间：{skill.RealCD}{(skill.CurrentCD > 0 ? $"（正在冷却：剩余 {skill.CurrentCD} {GameplayEquilibriumConstant.InGameTime}）" : "")}");
+                    if (skill.RealHardnessTime > 0) strings.Add($"硬直时间：{skill.RealHardnessTime}");
+                    builder.AppendLine($"技能【{skill.Name}】描述：{skill.Description.Trim()}{(strings.Count > 0 ? $"（{string.Join("；", strings)}）" : "")}");
                 }
             }
+
+            return builder.ToString();
+        }
+
+        /// <summary>
+        /// 获取魔法抗性信息
+        /// </summary>
+        /// <returns></returns>
+        public string GetMagicResistanceInfo()
+        {
+            StringBuilder builder = new();
+
+            if (GameplayEquilibriumConstant.UseMagicType.Count > 0)
+            {
+                foreach (MagicType magicType in GameplayEquilibriumConstant.UseMagicType)
+                {
+                    builder.Append(CharacterSet.GetMagicResistanceName(magicType));
+                    builder.AppendLine($"：{Calculation.Round4Digits(MDF[magicType] * 100):0.##}%");
+                }
+            }
+            else builder.AppendLine($"魔法抗性：{Calculation.Round4Digits(MDF.Avg * 100):0.##}%（平均）");
 
             return builder.ToString();
         }

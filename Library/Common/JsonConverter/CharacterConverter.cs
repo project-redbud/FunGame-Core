@@ -218,7 +218,10 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Character.NormalAttack):
                     NormalAttack normalAttack = NetworkUtility.JsonDeserialize<NormalAttack>(ref reader, options) ?? new NormalAttack(result);
                     result.NormalAttack.Level = normalAttack.Level;
-                    result.NormalAttack.HardnessTime = normalAttack.HardnessTime;
+                    result.NormalAttack.ExDamage = normalAttack.ExDamage;
+                    result.NormalAttack.ExDamage2 = normalAttack.ExDamage2;
+                    result.NormalAttack.ExHardnessTime = normalAttack.ExHardnessTime;
+                    result.NormalAttack.ExHardnessTime2 = normalAttack.ExHardnessTime2;
                     result.NormalAttack.SetMagicType(normalAttack.IsMagic, normalAttack.MagicType);
                     break;
                 case nameof(Character.Skills):

@@ -60,7 +60,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                double mdf = Calculation.Round4Digits((None + Starmark + PurityNatural + PurityContemporary + Bright + Shadow + Element + Aster + SpatioTemporal) / 9) * 100;
+                double mdf = Calculation.Round4Digits((None + Starmark + PurityNatural + PurityContemporary + Bright + Shadow + Element + Aster + SpatioTemporal) / 9);
                 if (Calculation.IsApproximatelyZero(mdf)) mdf = 0;
                 return mdf;
             }
@@ -124,53 +124,20 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 对所有抗性赋值
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="assignment"></param>
-        public void SetAllValue(double value, bool assignment = true)
-        {
-            if (assignment)
-            {
-                None = value;
-                SpatioTemporal = value;
-                Aster = value;
-                Element = value;
-                Shadow = value;
-                Bright = value;
-                PurityContemporary = value;
-                PurityNatural = value;
-                Starmark = value;
-            }
-            else
-            {
-                None += value;
-                SpatioTemporal += value;
-                Aster += value;
-                Element += value;
-                Shadow += value;
-                Bright += value;
-                PurityContemporary += value;
-                PurityNatural += value;
-                Starmark += value;
-            }
-        }
-
-        /// <summary>
         /// 增加所有抗性，传入负数来减少
         /// </summary>
         /// <param name="value"></param>
         public void AddAllValue(double value)
         {
             None += value;
-            SpatioTemporal += value;
-            Aster += value;
-            Element += value;
-            Shadow += value;
-            Bright += value;
-            PurityContemporary += value;
-            PurityNatural += value;
             Starmark += value;
+            PurityNatural += value;
+            PurityContemporary += value;
+            Element += value;
+            Bright += value;
+            Shadow += value;
+            Aster += value;
+            SpatioTemporal += value;
         }
 
         /// <summary>

@@ -481,39 +481,39 @@ namespace Milimoe.FunGame.Core.Entity
                 {
                     if (RealMPCost > 0)
                     {
-                        builder.AppendLine($"魔法消耗：{RealMPCost:0.##}{(showOriginal && RealMPCost != MPCost ? $"（原始值：{MPCost}）" : "")}");
+                        builder.AppendLine($"魔法消耗：{RealMPCost:0.##}{(showOriginal && RealMPCost != MPCost ? $"（原始值：{MPCost:0.##}）" : "")}");
                     }
                     if (RealEPCost > 0)
                     {
-                        builder.AppendLine($"能量消耗：{RealEPCost:0.##}{(showOriginal && RealEPCost != EPCost ? $"（原始值：{EPCost}）" : "")}");
+                        builder.AppendLine($"能量消耗：{RealEPCost:0.##}{(showOriginal && RealEPCost != EPCost ? $"（原始值：{EPCost:0.##}）" : "")}");
                     }
                 }
                 else
                 {
                     if (IsSuperSkill)
                     {
-                        builder.AppendLine($"能量消耗：{RealEPCost:0.##}{(showOriginal && RealEPCost != EPCost ? $"（原始值：{EPCost}）" : "")}");
+                        builder.AppendLine($"能量消耗：{RealEPCost:0.##}{(showOriginal && RealEPCost != EPCost ? $"（原始值：{EPCost:0.##}）" : "")}");
                     }
                     else
                     {
                         if (IsMagic)
                         {
-                            builder.AppendLine($"魔法消耗：{RealMPCost:0.##}{(showOriginal && RealMPCost != MPCost ? $"（原始值：{MPCost}）" : "")}");
-                            builder.AppendLine($"吟唱时间：{RealCastTime:0.##}{(showOriginal && RealCastTime != CastTime ? $"（原始值：{CastTime}）" : "")}");
+                            builder.AppendLine($"魔法消耗：{RealMPCost:0.##}{(showOriginal && RealMPCost != MPCost ? $"（原始值：{MPCost:0.##}）" : "")}");
+                            builder.AppendLine($"吟唱时间：{RealCastTime:0.##}{(showOriginal && RealCastTime != CastTime ? $"（原始值：{CastTime:0.##}）" : "")}");
                         }
                         else
                         {
-                            builder.AppendLine($"能量消耗：{RealEPCost:0.##}{(showOriginal && RealEPCost != EPCost ? $"（原始值：{EPCost}）" : "")}");
+                            builder.AppendLine($"能量消耗：{RealEPCost:0.##}{(showOriginal && RealEPCost != EPCost ? $"（原始值：{EPCost:0.##}）" : "")}");
                         }
                     }
                 }
                 if (showCD && CD > 0)
                 {
-                    builder.AppendLine($"冷却时间：{RealCD:0.##}{(showOriginal && RealCD != CD ? $"（原始值：{CD}）" : "")}");
+                    builder.AppendLine($"冷却时间：{RealCD:0.##}{(showOriginal && RealCD != CD ? $"（原始值：{CD:0.##}）" : "")}");
                 }
                 if (showHardness && HardnessTime > 0)
                 {
-                    builder.AppendLine($"硬直时间：{RealHardnessTime:0.##}{(showOriginal && RealHardnessTime != HardnessTime ? $"（原始值：{HardnessTime}）" : "")}");
+                    builder.AppendLine($"硬直时间：{RealHardnessTime:0.##}{(showOriginal && RealHardnessTime != HardnessTime ? $"（原始值：{HardnessTime:0.##}）" : "")}");
                 }
             }
 

@@ -20,8 +20,17 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(NormalAttack.Level):
                     result.Level = reader.GetInt32();
                     break;
-                case nameof(NormalAttack.HardnessTime):
-                    result.HardnessTime = reader.GetDouble();
+                case nameof(NormalAttack.ExDamage):
+                    result.ExDamage = reader.GetDouble();
+                    break;
+                case nameof(NormalAttack.ExDamage2):
+                    result.ExDamage2 = reader.GetDouble();
+                    break;
+                case nameof(NormalAttack.ExHardnessTime):
+                    result.ExHardnessTime = reader.GetDouble();
+                    break;
+                case nameof(NormalAttack.ExHardnessTime2):
+                    result.ExHardnessTime2 = reader.GetDouble();
                     break;
                 case nameof(NormalAttack.IsMagic):
                     result.SetMagicType(reader.GetBoolean(), result.MagicType);

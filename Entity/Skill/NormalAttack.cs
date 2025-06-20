@@ -16,12 +16,12 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 普通攻击说明
         /// </summary>
-        public string Description => $"对目标敌人造成 {(1.0 + 0.05 * (Level - 1)) * 100:0.##}% 攻击力 [ {Damage:0.##} ] 点{(IsMagic ? CharacterSet.GetMagicDamageName(MagicType) : "物理伤害")}。";
+        public string Description => $"对目标敌人造成 {BaseDamageMultiplier * 100:0.##}% 攻击力 [ {Damage:0.##} ] 点{(IsMagic ? CharacterSet.GetMagicDamageName(MagicType) : "物理伤害")}。";
 
         /// <summary>
         /// 普通攻击的通用说明
         /// </summary>
-        public string GeneralDescription => $"对目标敌人造成基于 100（+5/Lv）% 攻击力的{(IsMagic ? CharacterSet.GetMagicDamageName(MagicType) : "物理伤害")}。";
+        public string GeneralDescription => $"对目标敌人造成基于总攻击力的{(IsMagic ? CharacterSet.GetMagicDamageName(MagicType) : "物理伤害")}。";
 
         /// <summary>
         /// 所属的角色
@@ -29,9 +29,61 @@ namespace Milimoe.FunGame.Core.Entity
         public Character Character { get; } = character;
 
         /// <summary>
+        /// 基础普通攻击伤害倍率 [ 武器类型相关 ]
+        /// </summary>
+        private double BaseDamageMultiplier
+        {
+            get
+            {
+                double baseMultiplier = 1.0 + 0.05 * (Level - 1);
+                if (Character.EquipSlot.Weapon != null)
+                {
+                    baseMultiplier = Character.EquipSlot.Weapon.WeaponType switch
+                    {
+                        WeaponType.OneHandedSword => 1.0,
+                        WeaponType.TwoHandedSword => 1.2,
+                        WeaponType.Bow => 0.9,
+                        WeaponType.Pistol => 0.8,
+                        WeaponType.Rifle => 1.1,
+                        WeaponType.DualDaggers => 0.85,
+                        WeaponType.Talisman => 1.0,
+                        WeaponType.Staff => 1.15,
+                        WeaponType.Polearm => 0.95,
+                        WeaponType.Gauntlet => 1.05,
+                        WeaponType.HiddenWeapon => 0.9,
+                        _ => 1.0
+                    };
+                    double levelBonus = Character.EquipSlot.Weapon.WeaponType switch
+                    {
+                        WeaponType.TwoHandedSword => 0.06,
+                        WeaponType.Staff => 0.056,
+                        WeaponType.Bow => 0.045,
+                        WeaponType.Pistol => 0.0375,
+                        WeaponType.DualDaggers => 0.0375,
+                        WeaponType.Polearm => 0.044,
+                        WeaponType.HiddenWeapon => 0.044,
+                        _ => 0.05
+                    };
+                    baseMultiplier += levelBonus * (Level - 1);
+                }
+                return baseMultiplier;
+            }
+        }
+
+        /// <summary>
         /// 普通攻击的伤害
         /// </summary>
-        public double Damage => Character.ATK * (1.0 + 0.05 * (Level - 1));
+        public double Damage => Character.ATK * BaseDamageMultiplier * (1 + ExDamage2) + ExDamage;
+
+        /// <summary>
+        /// 额外普通攻击伤害 [ 技能和物品相关 ]
+        /// </summary>
+        public double ExDamage { get; set; } = 0;
+
+        /// <summary>
+        /// 额外普通攻击伤害% [ 技能和物品相关 ]
+        /// </summary>
+        public double ExDamage2 { get; set; } = 0;
 
         /// <summary>
         /// 普通攻击等级
@@ -74,9 +126,44 @@ namespace Milimoe.FunGame.Core.Entity
         public ImmuneType IgnoreImmune { get; set; } = ImmuneType.None;
 
         /// <summary>
-        /// 硬直时间
+        /// 硬直时间 [ 武器类型相关 ]
         /// </summary>
-        public double HardnessTime { get; set; } = 10;
+        public double HardnessTime
+        {
+            get
+            {
+                double ht = 10;
+                if (Character.EquipSlot.Weapon != null)
+                {
+                    ht = Character.EquipSlot.Weapon.WeaponType switch
+                    {
+                        WeaponType.OneHandedSword => 8,
+                        WeaponType.TwoHandedSword => 12,
+                        WeaponType.Bow => 9,
+                        WeaponType.Pistol => 6,
+                        WeaponType.Rifle => 11,
+                        WeaponType.DualDaggers => 7,
+                        WeaponType.Talisman => 10,
+                        WeaponType.Staff => 12,
+                        WeaponType.Polearm => 10,
+                        WeaponType.Gauntlet => 8,
+                        WeaponType.HiddenWeapon => 7,
+                        _ => 10,
+                    };
+                }
+                return ht * (1 + ExHardnessTime2) + ExHardnessTime;
+            }
+        }
+
+        /// <summary>
+        /// 额外硬直时间 [ 技能和物品相关 ]
+        /// </summary>
+        public double ExHardnessTime { get; set; } = 0;
+        
+        /// <summary>
+        /// 额外硬直时间% [ 技能和物品相关 ]
+        /// </summary>
+        public double ExHardnessTime2 { get; set; } = 0;
 
         /// <summary>
         /// 实际硬直时间
@@ -134,6 +221,11 @@ namespace Milimoe.FunGame.Core.Entity
         public double CurrentCD => 0;
 
         /// <summary>
+        /// 绑定到特效的普通攻击扩展。键为特效，值为对应的普攻扩展对象。
+        /// </summary>
+        public Dictionary<Effect, NormalAttackOfEffect> NormalAttackOfEffects { get; } = [];
+
+        /// <summary>
         /// 获取可选择的目标列表
         /// </summary>
         /// <param name="caster"></param>
@@ -177,7 +269,7 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 if (enemy.HP > 0)
                 {
-                    queue.WriteLine("[ " + Character + $" ] 对 [ {enemy} ] 发起了普通攻击！");
+                    queue.WriteLine($"[ {Character} ] 对 [ {enemy} ] 发起了普通攻击！");
                     double expected = Damage;
                     int changeCount = 0;
                     DamageResult result = IsMagic ? queue.CalculateMagicalDamage(attacker, enemy, true, MagicType, expected, out double damage, ref changeCount) : queue.CalculatePhysicalDamage(attacker, enemy, true, expected, out damage, ref changeCount);
@@ -187,14 +279,81 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 修改伤害类型
+        /// 修改基础伤害类型。不一定转换成功，要看是否有特效覆盖
         /// </summary>
         /// <param name="isMagic"></param>
         /// <param name="magicType"></param>
-        public void SetMagicType(bool isMagic, MagicType magicType)
+        /// <param name="queue"></param>
+        public void SetMagicType(bool? isMagic, MagicType? magicType = null, IGamingQueue? queue = null)
         {
-            _IsMagic = isMagic;
-            _MagicType = magicType;
+            _ExIsMagic = isMagic;
+            if (isMagic.HasValue && isMagic.Value)
+            {
+                magicType ??= MagicType.None;
+            }
+            _ExMagicType = magicType;
+            ResolveMagicType(queue);
+        }
+
+        /// <summary>
+        /// 修改伤害类型。不一定转换成功，要看是否有其他特效覆盖
+        /// </summary>
+        /// <param name="naoe"></param>
+        /// <param name="queue"></param>
+        public void SetMagicType(NormalAttackOfEffect naoe, IGamingQueue? queue = null)
+        {
+            NormalAttackOfEffects[naoe.Effect] = naoe;
+            ResolveMagicType(queue);
+        }
+
+        /// <summary>
+        /// 移除特效对伤害类型的更改
+        /// </summary>
+        /// <param name="effect"></param>
+        /// <param name="queue"></param>
+        public void UnsetMagicType(Effect effect, IGamingQueue? queue = null)
+        {
+            NormalAttackOfEffects.Remove(effect);
+            ResolveMagicType(queue);
+        }
+
+        /// <summary>
+        /// 计算是否是魔法伤害和当前的魔法类型
+        /// </summary>
+        internal void ResolveMagicType(IGamingQueue? queue = null)
+        {
+            bool past = _IsMagic;
+            MagicType pastType = _MagicType;
+            if (NormalAttackOfEffects.Count > 0)
+            {
+                if (NormalAttackOfEffects.Values.OrderByDescending(n => n.Priority).FirstOrDefault() is NormalAttackOfEffect naoe)
+                {
+                    _IsMagic = naoe.IsMagic;
+                    _MagicType = naoe.MagicType;
+                }
+            }
+            else if (_ExIsMagic.HasValue && _ExMagicType.HasValue)
+            {
+                _IsMagic = _ExIsMagic.Value;
+                _MagicType = _ExMagicType.Value;
+            }
+            else
+            {
+                _IsMagic = false;
+                _MagicType = MagicType.None;
+                if (Character.EquipSlot.Weapon != null)
+                {
+                    WeaponType type = Character.EquipSlot.Weapon.WeaponType;
+                    if (type == WeaponType.Talisman || type == WeaponType.Staff)
+                    {
+                        _IsMagic = true;
+                    }
+                }
+            }
+            if (queue != null && (past != _IsMagic || pastType != _MagicType))
+            {
+                queue.WriteLine($"[ {Character} ] 的普通攻击类型已转变为：{(_IsMagic ? CharacterSet.GetMagicDamageName(_MagicType) : "物理伤害")}！");
+            }
         }
 
         /// <summary>
@@ -235,13 +394,34 @@ namespace Milimoe.FunGame.Core.Entity
         private int _Level = 0;
 
         /// <summary>
-        /// 是否是魔法伤害
+        /// 是否是魔法伤害 [ 生效型 ]
         /// </summary>
         private bool _IsMagic = isMagic;
 
         /// <summary>
-        /// 魔法类型
+        /// 魔法类型 [ 生效型 ]
         /// </summary>
         private MagicType _MagicType = magicType;
+
+        /// <summary>
+        /// 是否是魔法伤害 [ 修改型 ]
+        /// </summary>
+        private bool? _ExIsMagic = null;
+
+        /// <summary>
+        /// 魔法类型 [ 修改型 ]
+        /// </summary>
+        private MagicType? _ExMagicType = null;
+    }
+
+    /// <summary>
+    /// 绑定到特效的普通攻击扩展。这个类没有 JSON 转换器支持。
+    /// </summary>
+    public class NormalAttackOfEffect(Effect effect, bool isMagic, MagicType type, int priority)
+    {
+        public Effect Effect { get; set; } = effect;
+        public bool IsMagic { get; set; } = isMagic;
+        public MagicType MagicType { get; set; } = type;
+        public int Priority { get; set; } = priority;
     }
 }

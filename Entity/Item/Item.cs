@@ -176,18 +176,10 @@ namespace Milimoe.FunGame.Core.Entity
                 foreach (Skill skill in Skills.Passives)
                 {
                     skill.Character = _character;
-                    foreach (Effect e in skill.Effects)
-                    {
-                        e.Source = _character;
-                    }
                 }
                 foreach (Skill skill in Skills.Magics)
                 {
                     skill.Character = _character;
-                    foreach (Effect e in skill.Effects)
-                    {
-                        e.Source = _character;
-                    }
                 }
             }
         }

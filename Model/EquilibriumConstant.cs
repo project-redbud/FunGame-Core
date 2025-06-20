@@ -1,4 +1,5 @@
 using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Model
 {
@@ -36,6 +37,14 @@ namespace Milimoe.FunGame.Core.Model
             { "D", 300 },
             { "E", 200 },
         };
+
+        /// <summary>
+        /// 使用的魔法类型
+        /// </summary>
+        public HashSet<MagicType> UseMagicType { get; set; } = [
+            MagicType.None, MagicType.Starmark, MagicType.PurityNatural, MagicType.PurityContemporary,
+            MagicType.Element, MagicType.Bright, MagicType.Shadow, MagicType.Aster, MagicType.SpatioTemporal
+        ];
 
         /// <summary>
         /// 初始生命值
