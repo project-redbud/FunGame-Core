@@ -576,18 +576,21 @@ namespace Milimoe.FunGame.Core.Entity
                 if (effect.DurativeWithoutDuration || (effect.Durative && effect.Duration > 0) || effect.DurationTurn > 0)
                 {
                     // 先从角色身上移除特效类型
-                    if (target.CharacterEffectTypes.TryGetValue(effect, out List<EffectType>? types) && types != null)
+                    if (isEnemy != effect.IsDebuff)
                     {
-                        RemoveEffectTypesByDispel(types, isEnemy);
-                        if (types.Count == 0)
+                        if (target.CharacterEffectTypes.TryGetValue(effect, out List<EffectType>? types) && types != null)
                         {
-                            target.CharacterEffectTypes.Remove(effect);
+                            RemoveEffectTypesByDispel(types, isEnemy);
+                            if (types.Count == 0)
+                            {
+                                target.CharacterEffectTypes.Remove(effect);
+                                removeEffectTypes = true;
+                            }
+                        }
+                        else
+                        {
                             removeEffectTypes = true;
                         }
-                    }
-                    else
-                    {
-                        removeEffectTypes = true;
                     }
                     // 友方移除控制状态
                     if (!isEnemy && effect.IsDebuff)
@@ -1020,6 +1023,11 @@ namespace Milimoe.FunGame.Core.Entity
             if (dispels != "")
             {
                 builder.Append($"（{dispels}）");
+            }
+
+            if (IsBeingTemporaryDispelled)
+            {
+                builder.Append("（已被临时驱散）");
             }
 
             return builder.ToString();

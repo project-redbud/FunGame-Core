@@ -288,7 +288,7 @@ namespace Milimoe.FunGame.Core.Model
         }
 
         /// <summary>
-        /// 创建一个团队游戏队列并初始化行动顺序表
+        /// 创建一个团队游戏队列并初始化角色
         /// </summary>
         /// <param name="characters"></param>
         /// <param name="writer"></param>

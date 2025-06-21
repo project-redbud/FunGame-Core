@@ -22,8 +22,8 @@ namespace Milimoe.FunGame.Core.Model
             characters ??= [];
             return type switch
             {
-                RoomType.Team => new TeamGamingQueue(writer),
-                _ => new MixGamingQueue(writer)
+                RoomType.Team => new TeamGamingQueue(characters, writer),
+                _ => new MixGamingQueue(characters, writer)
             };
         }
     }

@@ -27,7 +27,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 参与本次游戏的所有角色列表
         /// </summary>
-        public List<Character> AllCharacter => _allCharacter;
+        public List<Character> AllCharacters => _allCharacters;
 
         /// <summary>
         /// 原始的角色字典
@@ -124,7 +124,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 参与本次游戏的所有角色列表
         /// </summary>
-        protected readonly List<Character> _allCharacter = [];
+        protected readonly List<Character> _allCharacters = [];
 
         /// <summary>
         /// 原始的角色字典
@@ -249,7 +249,7 @@ namespace Milimoe.FunGame.Core.Model
         }
 
         /// <summary>
-        /// 新建一个基础回合制游戏队列并初始化
+        /// 新建一个基础回合制游戏队列并初始化角色
         /// </summary>
         /// <param name="characters">参与本次游戏的角色列表</param>
         /// <param name="writer">用于文本输出</param>
@@ -260,7 +260,7 @@ namespace Milimoe.FunGame.Core.Model
                 WriteLine = writer;
             }
             WriteLine ??= new Action<string>(Console.WriteLine);
-            InitCharacterQueue(characters);
+            InitCharacters(characters);
         }
 
         #endregion
@@ -268,16 +268,16 @@ namespace Milimoe.FunGame.Core.Model
         #region 队列框架
 
         /// <summary>
-        /// 初始化基础回合制游戏队列
+        /// 初始化角色表
         /// </summary>
         /// <param name="characters"></param>
-        public void InitCharacterQueue(List<Character> characters)
+        public void InitCharacters(List<Character> characters)
         {
             // 保存原始的角色信息。用于复活时还原状态
             foreach (Character character in characters)
             {
                 // 添加角色引用到所有角色列表
-                _allCharacter.Add(character);
+                _allCharacters.Add(character);
                 // 复制原始角色对象
                 Character original = character.Copy();
                 original.Guid = Guid.NewGuid();
@@ -289,6 +289,7 @@ namespace Milimoe.FunGame.Core.Model
             List<Character> deadCharacters = [.. characters.Where(c => c.HP <= 0)];
             foreach (Character death in deadCharacters)
             {
+                _eliminated.Add(death);
                 if (MaxRespawnTimes != 0 || (MaxRespawnTimes != -1 && _respawnTimes.TryGetValue(death, out int times) && times < MaxRespawnTimes))
                 {
                     // 进入复活倒计时
@@ -297,9 +298,15 @@ namespace Milimoe.FunGame.Core.Model
                     WriteLine($"[ {death} ] 进入复活倒计时：{respawnTime:0.##} {GameplayEquilibriumConstant.InGameTime}！");
                 }
             }
+        }
 
+        /// <summary>
+        /// 初始化行动顺序表
+        /// </summary>
+        public void InitActionQueue()
+        {
             // 初始排序：按速度排序
-            List<IGrouping<double, Character>> groupedBySpeed = [.. characters
+            List<IGrouping<double, Character>> groupedBySpeed = [.. _allCharacters
                 .Where(c => c.HP > 0)
                 .GroupBy(c => c.SPD)
                 .OrderByDescending(g => g.Key)];
@@ -313,7 +320,7 @@ namespace Milimoe.FunGame.Core.Model
                     // 如果只有一个角色，直接加入队列
                     Character character = group.First();
                     AddCharacter(character, Calculation.Round2Digits(_queue.Count * 0.1), false);
-                    _assistDetail.Add(character, new AssistDetail(character, characters.Where(c => c != character)));
+                    _assistDetail.Add(character, new AssistDetail(character, _allCharacters.Where(c => c != character)));
                     _stats.Add(character, new());
                     // 初始化技能
                     foreach (Skill skill in character.Skills)
@@ -367,7 +374,7 @@ namespace Milimoe.FunGame.Core.Model
                         if (selectedCharacter != null)
                         {
                             AddCharacter(selectedCharacter, Calculation.Round2Digits(_queue.Count * 0.1), false);
-                            _assistDetail.Add(selectedCharacter, new AssistDetail(selectedCharacter, characters.Where(c => c != selectedCharacter)));
+                            _assistDetail.Add(selectedCharacter, new AssistDetail(selectedCharacter, _allCharacters.Where(c => c != selectedCharacter)));
                             _stats.Add(selectedCharacter, new());
                             // 初始化技能
                             foreach (Skill skill in selectedCharacter.Skills)
@@ -471,7 +478,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             FirstKiller = null;
             CustomData.Clear();
-            _allCharacter.Clear();
+            _allCharacters.Clear();
             _original.Clear();
             _queue.Clear();
             _hardnessTimes.Clear();
@@ -733,7 +740,7 @@ namespace Milimoe.FunGame.Core.Model
             List<Character> teammates = [.. allTeammates.Where(_queue.Contains)];
 
             // 敌人列表
-            List<Character> allEnemys = [.. _allCharacter.Where(c => c != character && !teammates.Contains(c))];
+            List<Character> allEnemys = [.. _allCharacters.Where(c => c != character && !teammates.Contains(c))];
             List<Character> enemys = [.. allEnemys.Where(c => _queue.Contains(c) && !c.IsUnselectable)];
 
             // 技能列表
