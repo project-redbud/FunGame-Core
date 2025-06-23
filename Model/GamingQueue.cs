@@ -52,7 +52,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 角色是否在 AI 控制下
         /// </summary>
-        public HashSet<Character> CharactersInAI => _charactersInAI;
+        public List<Character> CharactersInAI => [.. _charactersInAIBySystem.Union(_charactersInAIByUser).Distinct()];
 
         /// <summary>
         /// 角色数据
@@ -142,9 +142,14 @@ namespace Milimoe.FunGame.Core.Model
         protected readonly List<Character> _eliminated = [];
 
         /// <summary>
-        /// 角色是否在 AI 控制下
+        /// 角色是否在 AI 控制下 [ 系统控制 ]
         /// </summary>
-        protected readonly HashSet<Character> _charactersInAI = [];
+        protected readonly HashSet<Character> _charactersInAIBySystem = [];
+        
+        /// <summary>
+        /// 角色是否在 AI 控制下 [ 玩家手动设置 ]
+        /// </summary>
+        protected readonly HashSet<Character> _charactersInAIByUser = [];
 
         /// <summary>
         /// 硬直时间表
@@ -492,7 +497,8 @@ namespace Milimoe.FunGame.Core.Model
             _continuousKilling.Clear();
             _earnedMoney.Clear();
             _eliminated.Clear();
-            _charactersInAI.Clear();
+            _charactersInAIBySystem.Clear();
+            _charactersInAIByUser.Clear();
         }
 
         #endregion
@@ -775,17 +781,26 @@ namespace Milimoe.FunGame.Core.Model
             // 最大取消次数
             int cancelTimes = 3;
 
+            // 行动开始前，可以修改可选取的角色列表
+            Dictionary<Character, int> continuousKillingTemp = new(_continuousKilling);
+            Dictionary<Character, int> earnedMoneyTemp = new(_earnedMoney);
+            effects = [.. character.Effects.Where(e => e.IsInEffect)];
+            foreach (Effect effect in effects)
+            {
+                effect.AlterSelectListBeforeAction(character, enemys, teammates, skills, continuousKillingTemp, earnedMoneyTemp);
+            }
+
             // 作出了什么行动
             CharacterActionType type = CharacterActionType.None;
 
             // 循环条件：
             // AI 控制下：未决策、取消次数大于0
             // 手动控制下：未决策
-            bool isAI = _charactersInAI.Contains(character);
+            bool isAI = CharactersInAI.Contains(character);
             while (!decided && (!isAI || cancelTimes > 0))
             {
                 type = CharacterActionType.None;
-
+                
                 // 是否能使用物品和释放技能
                 bool canUseItem = items.Count > 0;
                 bool canCastSkill = skills.Count > 0;
@@ -921,14 +936,6 @@ namespace Milimoe.FunGame.Core.Model
                     }
                 }
 
-                Dictionary<Character, int> continuousKillingTemp = new(_continuousKilling);
-                Dictionary<Character, int> earnedMoneyTemp = new(_earnedMoney);
-                effects = [.. character.Effects.Where(e => e.IsInEffect)];
-                foreach (Effect effect in effects)
-                {
-                    effect.AlterSelectListBeforeAction(character, enemys, teammates, skills, continuousKillingTemp, earnedMoneyTemp);
-                }
-
                 if (type == CharacterActionType.NormalAttack)
                 {
                     if (character.CharacterState == CharacterState.NotActionable ||
@@ -972,7 +979,7 @@ namespace Milimoe.FunGame.Core.Model
                     {
                         // 预使用技能，即开始吟唱逻辑
                         Skill? skill = await OnSelectSkillAsync(character, skills);
-                        if (skill is null && _charactersInAI.Contains(character) && skills.Count > 0)
+                        if (skill is null && CharactersInAI.Contains(character) && skills.Count > 0)
                         {
                             skill = skills[Random.Shared.Next(skills.Count)];
                         }
@@ -1154,7 +1161,7 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     // 使用物品逻辑
                     Item? item = await OnSelectItemAsync(character, items);
-                    if (item is null && _charactersInAI.Contains(character) && items.Count > 0)
+                    if (item is null && CharactersInAI.Contains(character) && items.Count > 0)
                     {
                         // AI 控制下随机选取一个物品
                         item = items[Random.Shared.Next(items.Count)];
@@ -1357,6 +1364,18 @@ namespace Milimoe.FunGame.Core.Model
         }
 
         /// <summary>
+        /// 获取复活时间
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="times"></param>
+        /// <returns></returns>
+        protected virtual double GetRespawnTime(Character character, int times)
+        {
+            _continuousKilling.TryGetValue(character, out int coefficient);
+            return Calculation.Round2Digits(Math.Min(30, character.Level * 0.15 + times * 0.87 + coefficient));
+        }
+
+        /// <summary>
         /// 回合开始前触发
         /// </summary>
         /// <returns></returns>
@@ -1422,6 +1441,17 @@ namespace Milimoe.FunGame.Core.Model
                     }
                 }
                 damage += totalDamageBonus.Sum(kv => kv.Value);
+            }
+            else
+            {
+                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+                foreach (Effect effect in effects)
+                {
+                    if (effect.BeforeApplyTrueDamage(actor, enemy, damage, isNormalAttack, damageResult))
+                    {
+                        damageResult = DamageResult.Evaded;
+                    }
+                }
             }
             double actualDamage = damage;
 
@@ -1651,7 +1681,13 @@ namespace Milimoe.FunGame.Core.Model
                     }
 
                     enemy.HP -= actualDamage;
-                    WriteLine($"[ {enemy} ] 受到了 {actualDamage:0.##} 点{damageTypeString}！{shieldMsg}");
+                    string strDamageMessage = $"[ {enemy} ] 受到了 {actualDamage:0.##} 点{damageTypeString}！{shieldMsg}";
+                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+                    foreach (Effect effect in effects)
+                    {
+                        effect.OnApplyDamage(enemy, actor, damage, actualDamage, isNormalAttack, damageType, magicType, damageResult, shieldMsg, ref strDamageMessage);
+                    }
+                    WriteLine(strDamageMessage);
 
                     // 生命偷取，攻击者为全额
                     double steal = damage * actor.Lifesteal;
@@ -1714,97 +1750,28 @@ namespace Milimoe.FunGame.Core.Model
         }
 
         /// <summary>
-        /// 治疗一个目标
-        /// </summary>
-        /// <param name="actor"></param>
-        /// <param name="target"></param>
-        /// <param name="heal"></param>
-        /// <param name="canRespawn"></param>
-        public async Task HealToTargetAsync(Character actor, Character target, double heal, bool canRespawn = false)
-        {
-            if (target.HP == target.MaxHP)
-            {
-                return;
-            }
-
-            bool isDead = target.HP <= 0;
-
-            Dictionary<Effect, double> totalHealBonus = [];
-            List<Effect> effects = [.. actor.Effects.Union(target.Effects).Distinct().Where(e => e.IsInEffect)];
-            foreach (Effect effect in effects)
-            {
-                bool changeCanRespawn = false;
-                double healBonus = effect.AlterHealValueBeforeHealToTarget(actor, target, heal, ref changeCanRespawn, totalHealBonus);
-                if (changeCanRespawn && !canRespawn)
-                {
-                    canRespawn = true;
-                }
-            }
-            heal += totalHealBonus.Sum(kv => kv.Value);
-
-            if (heal <= 0)
-            {
-                return;
-            }
-
-            double realHeal = heal;
-            if (target.HP > 0 || (isDead && canRespawn))
-            {
-                // 用于数据统计，不能是全额，溢出的部分需要扣除
-                if (target.HP + heal > target.MaxHP)
-                {
-                    realHeal = target.MaxHP - target.HP;
-                }
-                target.HP += heal;
-                if (!LastRound.Heals.TryAdd(target, heal))
-                {
-                    LastRound.Heals[target] += heal;
-                }
-            }
-
-            bool isRespawn = isDead && canRespawn;
-            if (isRespawn)
-            {
-                if (target != actor)
-                {
-                    WriteLine($"[ {target} ] 被 [ {actor} ] 复苏了，并回复了 {heal:0.##} 点生命值！！");
-                }
-                else
-                {
-                    WriteLine($"[ {target} ] 复苏了，并回复了 {heal:0.##} 点生命值！！");
-                }
-                double hp = target.HP;
-                double mp = target.MP;
-                await SetCharacterRespawn(target);
-                target.HP = hp;
-                target.MP = mp;
-            }
-            else
-            {
-                WriteLine($"[ {target} ] 回复了 {heal:0.##} 点生命值！");
-            }
-
-            // 添加助攻
-            SetNotDamageAssistTime(actor, target);
-
-            // 统计数据
-            if (_stats.TryGetValue(actor, out CharacterStatistics? stats) && stats != null)
-            {
-                stats.TotalHeal += realHeal;
-            }
-
-            await OnHealToTargetAsync(actor, target, heal, isRespawn);
-        }
-
-        /// <summary>
         /// 死亡结算
         /// </summary>
         /// <param name="killer"></param>
         /// <param name="death"></param>
         public async Task DeathCalculationAsync(Character killer, Character death)
         {
+            if (IsTeammate(killer, death))
+            {
+                await DeathCalculationByTeammateAsync(killer, death);
+                return;
+            }
+
             if (!await OnDeathCalculationAsync(killer, death))
             {
+                return;
+            }
+
+            if (killer == death)
+            {
+                _stats[death].Deaths += 1;
+                WriteLine($"[ {death} ] 自杀了！");
+                await DealWithCharacterDied(killer, death);
                 return;
             }
 
@@ -1955,6 +1922,125 @@ namespace Milimoe.FunGame.Core.Model
                 WriteLine(actorContinuousKilling);
             }
 
+            await DealWithCharacterDied(killer, death);
+        }
+
+        /// <summary>
+        /// 死亡结算，击杀队友的情况
+        /// </summary>
+        /// <param name="killer"></param>
+        /// <param name="death"></param>
+        /// <returns></returns>
+        public async Task DeathCalculationByTeammateAsync(Character killer, Character death)
+        {
+            if (!await OnDeathCalculationByTeammateAsync(killer, death))
+            {
+                return;
+            }
+
+            _stats[death].Deaths += 1;
+            string msg = $"[ {killer} ] 反补了 [ {death} ]！";
+            LastRound.DeathContinuousKilling.Add(msg);
+            WriteLine(msg);
+
+            await DealWithCharacterDied(killer, death);
+        }
+
+        /// <summary>
+        /// 治疗一个目标
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="target"></param>
+        /// <param name="heal"></param>
+        /// <param name="canRespawn"></param>
+        public async Task HealToTargetAsync(Character actor, Character target, double heal, bool canRespawn = false)
+        {
+            if (target.HP == target.MaxHP)
+            {
+                return;
+            }
+
+            bool isDead = target.HP <= 0;
+
+            Dictionary<Effect, double> totalHealBonus = [];
+            List<Effect> effects = [.. actor.Effects.Union(target.Effects).Distinct().Where(e => e.IsInEffect)];
+            foreach (Effect effect in effects)
+            {
+                bool changeCanRespawn = false;
+                double healBonus = effect.AlterHealValueBeforeHealToTarget(actor, target, heal, ref changeCanRespawn, totalHealBonus);
+                if (changeCanRespawn && !canRespawn)
+                {
+                    canRespawn = true;
+                }
+            }
+            heal += totalHealBonus.Sum(kv => kv.Value);
+
+            if (heal <= 0)
+            {
+                return;
+            }
+
+            double realHeal = heal;
+            if (target.HP > 0 || (isDead && canRespawn))
+            {
+                // 用于数据统计，不能是全额，溢出的部分需要扣除
+                if (target.HP + heal > target.MaxHP)
+                {
+                    realHeal = target.MaxHP - target.HP;
+                }
+                target.HP += heal;
+                if (!LastRound.Heals.TryAdd(target, heal))
+                {
+                    LastRound.Heals[target] += heal;
+                }
+            }
+
+            bool isRespawn = isDead && canRespawn;
+            if (isRespawn)
+            {
+                if (target != actor)
+                {
+                    WriteLine($"[ {target} ] 被 [ {actor} ] 复苏了，并回复了 {heal:0.##} 点生命值！！");
+                }
+                else
+                {
+                    WriteLine($"[ {target} ] 复苏了，并回复了 {heal:0.##} 点生命值！！");
+                }
+                double hp = target.HP;
+                double mp = target.MP;
+                await SetCharacterRespawn(target);
+                target.HP = hp;
+                target.MP = mp;
+            }
+            else
+            {
+                WriteLine($"[ {target} ] 回复了 {heal:0.##} 点生命值！");
+            }
+
+            // 添加助攻
+            SetNotDamageAssistTime(actor, target);
+
+            // 统计数据
+            if (_stats.TryGetValue(actor, out CharacterStatistics? stats) && stats != null)
+            {
+                stats.TotalHeal += realHeal;
+            }
+
+            await OnHealToTargetAsync(actor, target, heal, isRespawn);
+        }
+
+        #endregion
+
+        #region 回合内-辅助方法
+
+        /// <summary>
+        /// 需要处理复活和解除施法等
+        /// </summary>
+        /// <param name="killer"></param>
+        /// <param name="death"></param>
+        /// <returns></returns>
+        public async Task DealWithCharacterDied(Character killer, Character death)
+        {
             await OnDeathCalculation(death, killer);
 
             death.EP = 0;
@@ -1979,7 +2065,7 @@ namespace Milimoe.FunGame.Core.Model
             else
             {
                 // 进入复活倒计时
-                double respawnTime = Calculation.Round2Digits(Math.Min(30, death.Level * 0.15 + times * 0.87 + coefficient));
+                double respawnTime = GetRespawnTime(death, times);
                 _respawnCountdown.TryAdd(death, respawnTime);
                 LastRound.RespawnCountdowns.TryAdd(death, respawnTime);
                 WriteLine($"[ {death} ] 进入复活倒计时：{respawnTime:0.##} {GameplayEquilibriumConstant.InGameTime}！");
@@ -2009,10 +2095,6 @@ namespace Milimoe.FunGame.Core.Model
                 }
             }
         }
-
-        #endregion
-
-        #region 回合内-辅助方法
 
         /// <summary>
         /// 使用物品实际逻辑
@@ -2145,7 +2227,7 @@ namespace Milimoe.FunGame.Core.Model
                 effect.AlterSelectListBeforeSelection(caster, skill, enemys, teammates);
             }
             List<Character> targets = await OnSelectSkillTargetsAsync(caster, skill, enemys, teammates);
-            if (targets.Count == 0 && _charactersInAI.Contains(caster))
+            if (targets.Count == 0 && CharactersInAI.Contains(caster))
             {
                 targets = skill.SelectTargets(caster, enemys, teammates);
             }
@@ -2168,7 +2250,7 @@ namespace Milimoe.FunGame.Core.Model
                 effect.AlterSelectListBeforeSelection(character, attack, enemys, teammates);
             }
             List<Character> targets = await OnSelectNormalAttackTargetsAsync(character, attack, enemys, teammates);
-            if (targets.Count == 0 && _charactersInAI.Contains(character))
+            if (targets.Count == 0 && CharactersInAI.Contains(character))
             {
                 targets = character.NormalAttack.GetSelectableTargets(character, enemys, teammates);
                 if (targets.Count > 0)
@@ -2642,7 +2724,7 @@ namespace Milimoe.FunGame.Core.Model
         protected async Task WillPreCastSuperSkill()
         {
             // 选取所有 AI 控制角色
-            foreach (Character other in _queue.Where(c => c.CharacterState == CharacterState.Actionable && _charactersInAI.Contains(c)).ToList())
+            foreach (Character other in _queue.Where(c => c.CharacterState == CharacterState.Actionable && CharactersInAI.Contains(c)).ToList())
             {
                 // 有 65% 欲望插队
                 if (Random.Shared.NextDouble() < 0.65)
@@ -2810,23 +2892,48 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 设置角色为 AI 控制
         /// </summary>
+        /// <param name="bySystem"></param>
         /// <param name="cancel"></param>
         /// <param name="characters"></param>
-        public void SetCharactersToAIControl(bool cancel = false, params IEnumerable<Character> characters)
+        public void SetCharactersToAIControl(bool bySystem = true, bool cancel = false, params IEnumerable<Character> characters)
         {
             foreach (Character character in characters)
             {
                 if (cancel)
                 {
-                    _charactersInAI.Remove(character);
+                    if (bySystem)
+                    {
+                        _charactersInAIBySystem.Remove(character);
+                    }
+                    else
+                    {
+                        _charactersInAIByUser.Remove(character);
+                    }
                 }
                 else
                 {
-                    _charactersInAI.Add(character);
+                    if (bySystem)
+                    {
+                        _charactersInAIBySystem.Add(character);
+                    }
+                    else
+                    {
+                        _charactersInAIByUser.Add(character);
+                    }
                 }
             }
         }
-
+        
+        /// <summary>
+        /// 设置角色为 AI 控制 [ 玩家手动设置 ]
+        /// </summary>
+        /// <param name="cancel"></param>
+        /// <param name="characters"></param>
+        public void SetCharactersToAIControl(bool cancel = false, params IEnumerable<Character> characters)
+        {
+            SetCharactersToAIControl(false, cancel, characters);
+        }
+        
         /// <summary>
         /// 检查角色是否在 AI 控制状态
         /// </summary>
@@ -2834,7 +2941,27 @@ namespace Milimoe.FunGame.Core.Model
         /// <returns></returns>
         public bool IsCharacterInAIControlling(Character character)
         {
-            return _charactersInAI.Contains(character);
+            return CharactersInAI.Contains(character);
+        }
+
+        /// <summary>
+        /// 检查角色是否在 AI 控制状态 [ 系统控制 ]
+        /// </summary>
+        /// <param name="character"></param>
+        /// <returns></returns>
+        public bool IsCharacterInAIControllingBySystem(Character character)
+        {
+            return _charactersInAIBySystem.Contains(character);
+        }
+
+        /// <summary>
+        /// 检查角色是否在 AI 控制状态 [ 玩家手动设置 ]
+        /// </summary>
+        /// <param name="character"></param>
+        /// <returns></returns>
+        public bool IsCharacterInAIControllingByUser(Character character)
+        {
+            return _charactersInAIByUser.Contains(character);
         }
 
         #endregion
@@ -3141,6 +3268,22 @@ namespace Milimoe.FunGame.Core.Model
         protected async Task<bool> OnDeathCalculationAsync(Character killer, Character death)
         {
             return await (DeathCalculation?.Invoke(this, killer, death) ?? Task.FromResult(true));
+        }
+        
+        public delegate Task<bool> DeathCalculationByTeammateEventHandler(GamingQueue queue, Character killer, Character death);
+        /// <summary>
+        /// 死亡结算（击杀队友）事件
+        /// </summary>
+        public event DeathCalculationEventHandler? DeathCalculationByTeammate;
+        /// <summary>
+        /// 死亡结算（击杀队友）事件
+        /// </summary>
+        /// <param name="killer"></param>
+        /// <param name="death"></param>
+        /// <returns></returns>
+        protected async Task<bool> OnDeathCalculationByTeammateAsync(Character killer, Character death)
+        {
+            return await (DeathCalculationByTeammate?.Invoke(this, killer, death) ?? Task.FromResult(true));
         }
 
         public delegate Task<bool> CharacterDeathEventHandler(GamingQueue queue, Character current, Character death);

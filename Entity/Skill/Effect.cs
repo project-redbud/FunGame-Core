@@ -258,6 +258,38 @@ namespace Milimoe.FunGame.Core.Entity
         {
             return 0;
         }
+        
+        /// <summary>
+        /// 在应用真实伤害前修改伤害 [ 允许取消伤害 ]
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="enemy"></param>
+        /// <param name="damage"></param>
+        /// <param name="isNormalAttack"></param>
+        /// <param name="damageResult"></param>
+        /// <returns>返回 true 取消伤害</returns>
+        public virtual bool BeforeApplyTrueDamage(Character character, Character enemy, double damage, bool isNormalAttack, DamageResult damageResult)
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// 伤害应用时触发
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="enemy"></param>
+        /// <param name="damage"></param>
+        /// <param name="actualDamage"></param>
+        /// <param name="isNormalAttack"></param>
+        /// <param name="damageType"></param>
+        /// <param name="magicType"></param>
+        /// <param name="damageResult"></param>
+        /// <param name="shieldMessage"></param>
+        /// <param name="originalMessage"></param>
+        public virtual void OnApplyDamage(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult, string shieldMessage, ref string originalMessage)
+        {
+
+        }
 
         /// <summary>
         /// 在完成普通攻击动作之后修改硬直时间
@@ -989,6 +1021,17 @@ namespace Milimoe.FunGame.Core.Entity
             GamingQueue?.ChangeCharacterHardnessTime(character, addValue, isPercentage, isCheckProtected);
         }
 
+        /// <summary>
+        /// 设置角色为 AI 控制 [ 系统控制 ]
+        /// </summary>
+        /// <param name="cancel"></param>
+        /// <param name="characters"></param>
+        /// <returns></returns>
+        public void SetCharactersToAIControl(bool cancel = false, params IEnumerable<Character> characters)
+        {
+            GamingQueue?.SetCharactersToAIControl(true, cancel, characters);
+        }
+        
         /// <summary>
         /// 检查角色是否在 AI 控制状态
         /// </summary>

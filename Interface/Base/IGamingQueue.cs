@@ -185,6 +185,12 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public Dictionary<Character, bool> GetIsTeammateDictionary(Character character, IEnumerable<Character> targets);
 
         /// <summary>
+        /// 设置角色为 AI 控制
+        /// </summary>
+        /// <returns></returns>
+        public void SetCharactersToAIControl(bool bySystem = true, bool cancel = false, params IEnumerable<Character> characters);
+        
+        /// <summary>
         /// 检查角色是否在 AI 控制状态
         /// </summary>
         /// <returns></returns>
