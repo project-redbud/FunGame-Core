@@ -1062,7 +1062,7 @@ namespace Milimoe.FunGame.Core.Model
                         character.CharacterState = CharacterState.Actionable;
                         character.UpdateCharacterState();
                         Skill skill = skillTarget.Skill;
-                        List<Character> targets = [.. skillTarget.Targets.Where(c => !c.IsUnselectable)];
+                        List<Character> targets = [.. skillTarget.Targets.Where(c => c == character || !c.IsUnselectable)];
 
                         // 判断是否能够释放技能
                         if (targets.Count > 0 && CheckCanCast(character, skill, out double cost))
