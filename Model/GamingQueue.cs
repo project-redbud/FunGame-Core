@@ -290,6 +290,15 @@ namespace Milimoe.FunGame.Core.Model
                 _original.Add(original.Guid, original);
             }
 
+            // 完全初始化
+            foreach (Character character in _allCharacters)
+            {
+                // 添加统计数据
+                _stats[character] = new();
+                // 添加助攻对象
+                _assistDetail[character] = new AssistDetail(character, _allCharacters.Where(c => c != character));
+            }
+
             // 获取 HP 小于等于 0 的角色
             List<Character> deadCharacters = [.. characters.Where(c => c.HP <= 0)];
             foreach (Character death in deadCharacters)
@@ -325,8 +334,6 @@ namespace Milimoe.FunGame.Core.Model
                     // 如果只有一个角色，直接加入队列
                     Character character = group.First();
                     AddCharacter(character, Calculation.Round2Digits(_queue.Count * 0.1), false);
-                    _assistDetail.Add(character, new AssistDetail(character, _allCharacters.Where(c => c != character)));
-                    _stats.Add(character, new());
                     // 初始化技能
                     foreach (Skill skill in character.Skills)
                     {
@@ -379,8 +386,6 @@ namespace Milimoe.FunGame.Core.Model
                         if (selectedCharacter != null)
                         {
                             AddCharacter(selectedCharacter, Calculation.Round2Digits(_queue.Count * 0.1), false);
-                            _assistDetail.Add(selectedCharacter, new AssistDetail(selectedCharacter, _allCharacters.Where(c => c != selectedCharacter)));
-                            _stats.Add(selectedCharacter, new());
                             // 初始化技能
                             foreach (Skill skill in selectedCharacter.Skills)
                             {

@@ -188,7 +188,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 所属的玩家
         /// </summary>
         public User? User { get; set; } = null;
-
+        
         /// <summary>
         /// 物品拥有的技能
         /// </summary>
@@ -649,6 +649,10 @@ namespace Milimoe.FunGame.Core.Entity
                     newskill.Guid = item.Guid;
                     item.Skills.Magics.Add(newskill);
                 }
+            }
+            foreach (string key in itemDefined.Others.Keys)
+            {
+                item.Others[key] = itemDefined.Others[key];
             }
             return item;
         }

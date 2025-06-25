@@ -11,6 +11,7 @@ namespace Milimoe.FunGame.Core.Entity
         public HashSet<Character> Characters { get; } = [];
         public HashSet<Unit> Units { get; } = [];
         public HashSet<Item> Crops { get; } = [];
+        public HashSet<Item> Items { get; } = [];
         public string Weather { get; set; } = "";
         public int Temperature { get; set; } = 15;
         public Dictionary<string, int> Weathers { get; } = [];
@@ -53,19 +54,31 @@ namespace Milimoe.FunGame.Core.Entity
             if (Characters.Count > 0)
             {
                 builder.AppendLine($"== 头目 ==");
-                builder.AppendLine(string.Join("，", Characters.Select(o => o.Name)));
+                builder.AppendLine(string.Join("，", Characters.Select(c => c.Name)));
             }
 
             if (Units.Count > 0)
             {
                 builder.AppendLine($"== 生物 ==");
-                builder.AppendLine(string.Join("，", Units.Select(o => o.Name)));
+                builder.AppendLine(string.Join("，", Units.Select(u => u.Name)));
             }
 
             if (Crops.Count > 0)
             {
                 builder.AppendLine($"== 作物 ==");
-                builder.AppendLine(string.Join("，", Crops.Select(c => c.Name)));
+                builder.AppendLine(string.Join("，", Crops.Select(c => c.Name + (c.Description != "" ? $"：{c.Description}" : "") + (c.BackgroundStory != "" ? $"\"{c.BackgroundStory}\"" : ""))));
+            }
+
+            if (Items.Count > 0)
+            {
+                builder.AppendLine($"== 掉落 ==");
+                builder.AppendLine(string.Join("，", Items.Select(i =>
+                {
+                    string itemquality = ItemSet.GetQualityTypeName(i.QualityType);
+                    string itemtype = ItemSet.GetItemTypeName(i.ItemType) + (i.ItemType == ItemType.Weapon && i.WeaponType != WeaponType.None ? "-" + ItemSet.GetWeaponTypeName(i.WeaponType) : "");
+                    if (itemtype != "") itemtype = $"|{itemtype}";
+                    return $"[{itemquality + itemtype}]{i.Name}";
+                })));
             }
 
             builder.AppendLine($"探索难度：{CharacterSet.GetRarityTypeName(Difficulty)}");
