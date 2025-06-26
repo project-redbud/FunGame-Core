@@ -86,6 +86,12 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Skill.HardnessTime):
                     result.HardnessTime = reader.GetDouble();
                     break;
+                case nameof(Skill.ExHardnessTime):
+                    result.ExHardnessTime = reader.GetDouble();
+                    break;
+                case nameof(Skill.ExHardnessTime2):
+                    result.ExHardnessTime2 = reader.GetDouble();
+                    break;
                 case nameof(Skill.Effects):
                     HashSet<Effect> effects = NetworkUtility.JsonDeserialize<HashSet<Effect>>(ref reader, options) ?? [];
                     foreach (Effect effect in effects)
@@ -134,6 +140,8 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             if (value.CD > 0) writer.WriteNumber(nameof(Skill.CD), value.CD);
             if (value.CurrentCD > 0) writer.WriteNumber(nameof(Skill.CurrentCD), value.CurrentCD);
             if (value.HardnessTime > 0) writer.WriteNumber(nameof(Skill.HardnessTime), value.HardnessTime);
+            if (value.ExHardnessTime != 0) writer.WriteNumber(nameof(Skill.ExHardnessTime), value.ExHardnessTime);
+            if (value.ExHardnessTime2 != 0) writer.WriteNumber(nameof(Skill.ExHardnessTime2), value.ExHardnessTime2);
             writer.WritePropertyName(nameof(Skill.Effects));
             JsonSerializer.Serialize(writer, value.Effects, options);
             writer.WritePropertyName(nameof(Skill.Values));

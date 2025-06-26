@@ -1021,14 +1021,15 @@ namespace Milimoe.FunGame.Core.Library.Constant
     /// <summary>
     /// 标准实现的免疫类型
     /// </summary>
+    [Flags]
     public enum ImmuneType
     {
-        None,
-        Physical,
-        Magical,
-        Skilled,
-        All,
-        Special
+        None = 0,
+        Physical = 1 << 0,
+        Magical = 1 << 1,
+        Skilled = 1 << 2,
+        All = 1 << 3,
+        Special = 1 << 4
     }
 
     public enum ShieldType

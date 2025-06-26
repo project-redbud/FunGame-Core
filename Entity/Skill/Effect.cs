@@ -565,8 +565,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="pUseItem"></param>
         /// <param name="pCastSkill"></param>
         /// <param name="pNormalAttack"></param>
+        /// <param name="forceAction"></param>
         /// <returns></returns>
-        public virtual CharacterActionType AlterActionTypeBeforeAction(Character character, CharacterState state, ref bool canUseItem, ref bool canCastSkill, ref double pUseItem, ref double pCastSkill, ref double pNormalAttack)
+        public virtual CharacterActionType AlterActionTypeBeforeAction(Character character, CharacterState state, ref bool canUseItem, ref bool canCastSkill, ref double pUseItem, ref double pCastSkill, ref double pNormalAttack, ref bool forceAction)
         {
             return CharacterActionType.None;
         }
@@ -745,12 +746,12 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 在免疫检定时
         /// </summary>
-        /// <param name="actor"></param>
-        /// <param name="enemy"></param>
+        /// <param name="character"></param>
+        /// <param name="target"></param>
         /// <param name="skill"></param>
         /// <param name="item"></param>
         /// <returns>false：免疫检定不通过</returns>
-        public virtual bool OnImmuneCheck(Character actor, Character enemy, ISkill skill, Item? item = null)
+        public virtual bool OnImmuneCheck(Character character, Character target, ISkill skill, Item? item = null)
         {
             return true;
         }

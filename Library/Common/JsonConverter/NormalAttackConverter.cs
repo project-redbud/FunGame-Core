@@ -49,7 +49,10 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteStartObject();
 
             writer.WriteNumber(nameof(NormalAttack.Level), value.Level);
-            writer.WriteNumber(nameof(NormalAttack.HardnessTime), value.HardnessTime);
+            writer.WriteNumber(nameof(NormalAttack.ExDamage), value.ExDamage);
+            writer.WriteNumber(nameof(NormalAttack.ExDamage2), value.ExDamage2);
+            writer.WriteNumber(nameof(NormalAttack.ExHardnessTime), value.ExHardnessTime);
+            writer.WriteNumber(nameof(NormalAttack.ExHardnessTime2), value.ExHardnessTime2);
             writer.WriteBoolean(nameof(NormalAttack.IsMagic), value.IsMagic);
             writer.WriteNumber(nameof(NormalAttack.MagicType), (int)value.MagicType);
             writer.WriteNumber(nameof(NormalAttack.IgnoreImmune), (int)value.IgnoreImmune);

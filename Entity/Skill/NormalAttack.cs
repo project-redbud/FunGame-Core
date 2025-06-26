@@ -241,13 +241,20 @@ namespace Milimoe.FunGame.Core.Entity
                 selectable.Add(caster);
             }
 
-            if (CanSelectEnemy)
+            foreach (Character character in enemys)
             {
-                selectable.AddRange(enemys);
+                if (CanSelectEnemy && ((character.ImmuneType & ImmuneType.All) != ImmuneType.All || IgnoreImmune == ImmuneType.All))
+                {
+                    selectable.Add(character);
+                }
             }
-            if (CanSelectTeammate)
+            
+            foreach (Character character in teammates)
             {
-                selectable.AddRange(teammates);
+                if (CanSelectTeammate && ((character.ImmuneType & ImmuneType.All) != ImmuneType.All || IgnoreImmune == ImmuneType.All))
+                {
+                    selectable.Add(character);
+                }
             }
 
             return selectable;

@@ -114,10 +114,20 @@ namespace Milimoe.FunGame.Core.Model
         /// <returns></returns>
         protected override async Task OnDeathCalculation(Character death, Character killer)
         {
+            if (killer == death)
+            {
+                return;
+            }
             Team? team = GetTeam(killer);
             if (team != null)
             {
-                team.Score++;
+                Team? team2 = GetTeam(death);
+                if (team == team2)
+                {
+                    WriteLine($"[ {team} ] 受到了击杀队友惩罚！减少死亡竞赛得分！！");
+                    team.Score--;
+                }
+                else team.Score++;
             }
             else await Task.CompletedTask;
         }

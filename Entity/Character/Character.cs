@@ -1415,20 +1415,7 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"魔法消耗减少：{INT * GameplayEquilibriumConstant.INTtoCastMPReduce * 100:0.##}%");
             builder.AppendLine($"能量消耗减少：{INT * GameplayEquilibriumConstant.INTtoCastEPReduce * 100:0.##}%");
 
-            if (CharacterState != CharacterState.Actionable)
-            {
-                builder.AppendLine(CharacterSet.GetCharacterState(CharacterState));
-            }
-
-            if (IsNeutral)
-            {
-                builder.AppendLine("角色是无敌的");
-            }
-
-            if (IsUnselectable)
-            {
-                builder.AppendLine("角色是不可选中的");
-            }
+            GetStatusInfo(builder);
 
             builder.AppendLine("== 普通攻击 ==");
             builder.Append(NormalAttack.ToString());
@@ -1514,20 +1501,7 @@ namespace Milimoe.FunGame.Core.Entity
 
             if (!showBasicOnly)
             {
-                if (CharacterState != CharacterState.Actionable)
-                {
-                    builder.AppendLine(CharacterSet.GetCharacterState(CharacterState));
-                }
-
-                if (IsNeutral)
-                {
-                    builder.AppendLine("角色是无敌的");
-                }
-
-                if (IsUnselectable)
-                {
-                    builder.AppendLine("角色是不可选中的");
-                }
+                GetStatusInfo(builder);
 
                 if (Skills.Count > 0)
                 {
@@ -1600,20 +1574,7 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
             builder.AppendLine($"核心属性：{PrimaryAttributeValue:0.##}" + (ExPrimaryAttributeValue != 0 ? $" [{BasePrimaryAttributeValue:0.##} {(ExPrimaryAttributeValue >= 0 ? "+" : "-")} {Math.Abs(ExPrimaryAttributeValue):0.##}]" : ""));
 
-            if (CharacterState != CharacterState.Actionable)
-            {
-                builder.AppendLine(CharacterSet.GetCharacterState(CharacterState));
-            }
-
-            if (IsNeutral)
-            {
-                builder.AppendLine("角色是中立单位，处于无敌状态");
-            }
-
-            if (IsUnselectable)
-            {
-                builder.AppendLine("角色是不可选中的");
-            }
+            GetStatusInfo(builder);
 
             builder.AppendLine($"硬直时间：{hardnessTimes:0.##}");
 
@@ -1674,20 +1635,7 @@ namespace Milimoe.FunGame.Core.Entity
 
             builder.AppendLine((HP == 0 ? "[ 死亡 ] " : "") + (showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser()));
 
-            if (CharacterState != CharacterState.Actionable)
-            {
-                builder.AppendLine(CharacterSet.GetCharacterState(CharacterState));
-            }
-
-            if (IsNeutral)
-            {
-                builder.AppendLine("角色是无敌的");
-            }
-
-            if (IsUnselectable)
-            {
-                builder.AppendLine("角色是不可选中的");
-            }
+            GetStatusInfo(builder);
 
             builder.AppendLine("== 普通攻击 ==");
             builder.Append(NormalAttack.ToString());
@@ -1775,6 +1723,44 @@ namespace Milimoe.FunGame.Core.Entity
             }
 
             return builder.ToString();
+        }
+
+        private void GetStatusInfo(StringBuilder builder)
+        {
+            if (CharacterState != CharacterState.Actionable)
+            {
+                builder.AppendLine(CharacterSet.GetCharacterState(CharacterState));
+            }
+
+            if ((ImmuneType & ImmuneType.Physical) != ImmuneType.None)
+            {
+                builder.AppendLine("角色现在物理免疫");
+            }
+
+            if ((ImmuneType & ImmuneType.Magical) != ImmuneType.None)
+            {
+                builder.AppendLine("角色现在魔法免疫");
+            }
+
+            if ((ImmuneType & ImmuneType.Skilled) != ImmuneType.None)
+            {
+                builder.AppendLine("角色现在技能免疫");
+            }
+
+            if ((ImmuneType & ImmuneType.All) != ImmuneType.None)
+            {
+                builder.AppendLine("角色现在完全免疫");
+            }
+
+            if (IsNeutral)
+            {
+                builder.AppendLine("角色是无敌的");
+            }
+
+            if (IsUnselectable)
+            {
+                builder.AppendLine("角色是不可选中的");
+            }
         }
 
         /// <summary>
@@ -1888,30 +1874,27 @@ namespace Milimoe.FunGame.Core.Entity
             IsUnselectable = types.Any(type => type == EffectType.Unselectable);
 
             IEnumerable<ImmuneType> immunes = CharacterImmuneTypes.Values.SelectMany(list => list);
-            // 判断角色的免疫状态
+            // 判断角色的免疫状态，需要注意的是 All 不会覆盖任何其他类型，因为它是一种独立的类型
             bool isAllImmune = immunes.Any(type => type == ImmuneType.All);
             bool isPhysicalImmune = immunes.Any(type => type == ImmuneType.Physical);
             bool isMagicalImmune = immunes.Any(type => type == ImmuneType.Magical);
             bool isSkilledImmune = immunes.Any(type => type == ImmuneType.Skilled);
+            ImmuneType = ImmuneType.None;
             if (isAllImmune)
             {
-                ImmuneType = ImmuneType.All;
+                ImmuneType |= ImmuneType.All;
             }
-            else if (isPhysicalImmune)
+            if (isPhysicalImmune)
             {
-                ImmuneType = ImmuneType.Physical;
+                ImmuneType |= ImmuneType.Physical;
             }
-            else if (isMagicalImmune)
+            if (isMagicalImmune)
             {
-                ImmuneType = ImmuneType.Magical;
+                ImmuneType |= ImmuneType.Magical;
             }
-            else if (isSkilledImmune)
+            if (isSkilledImmune)
             {
-                ImmuneType = ImmuneType.Skilled;
-            }
-            else
-            {
-                ImmuneType = ImmuneType.None;
+                ImmuneType |= ImmuneType.Skilled;
             }
 
             bool isControl = isNotActionable || isActionRestricted || isBattleRestricted || isSkillRestricted || isAttackRestricted;

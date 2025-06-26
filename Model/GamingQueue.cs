@@ -804,6 +804,7 @@ namespace Milimoe.FunGame.Core.Model
             bool isAI = CharactersInAI.Contains(character);
             while (!decided && (!isAI || cancelTimes > 0))
             {
+                cancelTimes--;
                 type = CharacterActionType.None;
                 
                 // 是否能使用物品和释放技能
@@ -815,7 +816,9 @@ namespace Milimoe.FunGame.Core.Model
                 double pCastSkill = 0.33;
                 double pNormalAttack = 0.34;
 
-                cancelTimes--;
+                // 是否强制执行（跳过状态检查等）
+                bool forceAction = false;
+
                 // 不允许在吟唱和预释放状态下，修改角色的行动
                 if (character.CharacterState != CharacterState.Casting && character.CharacterState != CharacterState.PreCastSuperSkill)
                 {
@@ -823,7 +826,7 @@ namespace Milimoe.FunGame.Core.Model
                     effects = [.. character.Effects.Where(e => e.IsInEffect)];
                     foreach (Effect effect in effects)
                     {
-                        actionTypeTemp = effect.AlterActionTypeBeforeAction(character, character.CharacterState, ref canUseItem, ref canCastSkill, ref pUseItem, ref pCastSkill, ref pNormalAttack);
+                        actionTypeTemp = effect.AlterActionTypeBeforeAction(character, character.CharacterState, ref canUseItem, ref canCastSkill, ref pUseItem, ref pCastSkill, ref pNormalAttack, ref forceAction);
                     }
                     if (actionTypeTemp != CharacterActionType.None && actionTypeTemp != CharacterActionType.CastSkill && actionTypeTemp != CharacterActionType.CastSuperSkill)
                     {
@@ -943,10 +946,10 @@ namespace Milimoe.FunGame.Core.Model
 
                 if (type == CharacterActionType.NormalAttack)
                 {
-                    if (character.CharacterState == CharacterState.NotActionable ||
+                    if (!forceAction && (character.CharacterState == CharacterState.NotActionable ||
                         character.CharacterState == CharacterState.ActionRestricted ||
                         character.CharacterState == CharacterState.BattleRestricted ||
-                        character.CharacterState == CharacterState.AttackRestricted)
+                        character.CharacterState == CharacterState.AttackRestricted))
                     {
                         WriteLine($"角色 [ {character} ] 状态为：{CharacterSet.GetCharacterState(character.CharacterState)}，无法使用普通攻击！");
                     }
@@ -973,10 +976,10 @@ namespace Milimoe.FunGame.Core.Model
                 }
                 else if (type == CharacterActionType.PreCastSkill)
                 {
-                    if (character.CharacterState == CharacterState.NotActionable ||
+                    if (!forceAction && (character.CharacterState == CharacterState.NotActionable ||
                         character.CharacterState == CharacterState.ActionRestricted ||
                         character.CharacterState == CharacterState.BattleRestricted ||
-                        character.CharacterState == CharacterState.SkillRestricted)
+                        character.CharacterState == CharacterState.SkillRestricted))
                     {
                         WriteLine($"角色 [ {character} ] 状态为：{CharacterSet.GetCharacterState(character.CharacterState)}，无法释放技能！");
                     }
@@ -1471,29 +1474,27 @@ namespace Milimoe.FunGame.Core.Model
                     // 此变量为是否无视免疫
                     bool ignore = false;
                     // 技能免疫无法免疫普通攻击，但是魔法免疫和物理免疫可以
-                    isImmune = (isNormalAttack && (enemy.ImmuneType == ImmuneType.All || enemy.ImmuneType == ImmuneType.Physical || enemy.ImmuneType == ImmuneType.Magical)) ||
-                        (!isNormalAttack && (enemy.ImmuneType == ImmuneType.All || enemy.ImmuneType == ImmuneType.Physical || enemy.ImmuneType == ImmuneType.Magical || enemy.ImmuneType == ImmuneType.Skilled));
+                    isImmune = (enemy.ImmuneType & ImmuneType.All) == ImmuneType.All ||
+                        (!isNormalAttack && (enemy.ImmuneType & ImmuneType.Skilled) == ImmuneType.Skilled) ||
+                        (damageType == DamageType.Physical && (enemy.ImmuneType & ImmuneType.Physical) == ImmuneType.Physical) ||
+                        (damageType == DamageType.Magical && (enemy.ImmuneType & ImmuneType.Magical) == ImmuneType.Magical);
                     if (isImmune)
                     {
+                        if (isNormalAttack)
+                        {
+                            if (actor.NormalAttack.IgnoreImmune == ImmuneType.All ||
+                                (damageType == DamageType.Physical && actor.NormalAttack.IgnoreImmune == ImmuneType.Physical) ||
+                                (damageType == DamageType.Magical && actor.NormalAttack.IgnoreImmune == ImmuneType.Magical))
+                            {
+                                ignore = true;
+                            }
+                        }
                         effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                         foreach (Effect effect in effects)
                         {
-                            if (isNormalAttack)
+                            if (!effect.OnDamageImmuneCheck(actor, enemy, isNormalAttack, damageType, magicType, damage))
                             {
-                                if (actor.NormalAttack.IgnoreImmune == ImmuneType.All ||
-                                    (damageType == DamageType.Physical && actor.NormalAttack.IgnoreImmune == ImmuneType.Physical) ||
-                                    (damageType == DamageType.Magical && actor.NormalAttack.IgnoreImmune == ImmuneType.Magical) ||
-                                    !effect.OnDamageImmuneCheck(actor, enemy, isNormalAttack, damageType, magicType, damage))
-                                {
-                                    ignore = true;
-                                }
-                            }
-                            else
-                            {
-                                if (!effect.OnDamageImmuneCheck(actor, enemy, isNormalAttack, damageType, magicType, damage))
-                                {
-                                    ignore = true;
-                                }
+                                ignore = true;
                             }
                         }
                     }
@@ -1944,7 +1945,15 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             _stats[death].Deaths += 1;
-            string msg = $"[ {killer} ] 反补了 [ {death} ]！";
+            string msg = $"[ {killer} ] 反补了 [ {death} ]！[ {killer} ] 受到了击杀队友惩罚，扣除 200 {GameplayEquilibriumConstant.InGameCurrency}并且当前连杀计数减少一次！！";
+            if (!_earnedMoney.TryAdd(killer, -200))
+            {
+                _earnedMoney[killer] -= 200;
+            }
+            if (_continuousKilling.TryGetValue(killer, out int times) && times > 0)
+            {
+                _continuousKilling[killer] -= 1;
+            }
             LastRound.DeathContinuousKilling.Add(msg);
             WriteLine(msg);
 
@@ -2987,7 +2996,8 @@ namespace Milimoe.FunGame.Core.Model
             foreach (Character target in loop)
             {
                 bool ignore = false;
-                bool isImmune = target.ImmuneType == ImmuneType.Magical || target.ImmuneType == ImmuneType.Skilled || target.ImmuneType == ImmuneType.All;
+                bool isImmune = (skill.IsMagic && (target.ImmuneType & ImmuneType.Magical) == ImmuneType.Magical) ||
+                    (target.ImmuneType & ImmuneType.Skilled) == ImmuneType.Skilled || (target.ImmuneType & ImmuneType.All) == ImmuneType.All;
                 if (isImmune)
                 {
                     Character[] characters = [character, target];
@@ -3004,11 +3014,11 @@ namespace Milimoe.FunGame.Core.Model
                 if (ignore)
                 {
                     isImmune = false;
-                    targets.Remove(target);
                 }
                 if (isImmune)
                 {
-                    WriteLine($"[ {target} ] 免疫了此技能！");
+                    targets.Remove(target);
+                    WriteLine($"[ {character} ] 想要对 [ {target} ] 释放技能 [ {skill.Name} ]，但是被 [ {target} ] 免疫了！");
                     await OnCharacterImmunedAsync(character, target, skill, item);
                 }
             }

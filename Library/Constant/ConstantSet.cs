@@ -465,6 +465,18 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 _ => "物理伤害"
             };
         }
+
+        public static string GetImmuneTypeName(ImmuneType type)
+        {
+            return type switch
+            {
+                ImmuneType.Physical => "物理免疫",
+                ImmuneType.Magical => "魔法免疫",
+                ImmuneType.Skilled => "技能免疫",
+                ImmuneType.All => "完全免疫",
+                _ => ""
+            };
+        }
     }
 
     public class ItemSet

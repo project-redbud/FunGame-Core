@@ -209,9 +209,19 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual double HardnessTime { get; set; } = 0;
 
         /// <summary>
+        /// 额外硬直时间 [ 技能和物品相关 ]
+        /// </summary>
+        public double ExHardnessTime { get; set; } = 0;
+
+        /// <summary>
+        /// 额外硬直时间% [ 技能和物品相关 ]
+        /// </summary>
+        public double ExHardnessTime2 { get; set; } = 0;
+
+        /// <summary>
         /// 实际硬直时间
         /// </summary>
-        public double RealHardnessTime => Math.Max(0, HardnessTime * (1 - Calculation.PercentageCheck(Character?.ActionCoefficient ?? 0)));
+        public double RealHardnessTime => Math.Max(0, (HardnessTime + ExHardnessTime) * (1 + ExHardnessTime2) * (1 - Calculation.PercentageCheck(Character?.ActionCoefficient ?? 0)));
 
         /// <summary>
         /// 效果列表
@@ -319,14 +329,30 @@ namespace Milimoe.FunGame.Core.Entity
                 selectable.Add(caster);
             }
 
-            if (CanSelectEnemy)
+            ImmuneType checkType = ImmuneType.Skilled | ImmuneType.All;
+            if (IsMagic)
             {
-                selectable.AddRange(enemys);
+                checkType |= ImmuneType.Magical;
             }
 
-            if (CanSelectTeammate)
+            foreach (Character character in enemys)
             {
-                selectable.AddRange(teammates);
+                IEnumerable<Effect> effects = character.Effects.Where(e => e.IsInEffect);
+                if (CanSelectEnemy && ((character.ImmuneType & checkType) == ImmuneType.None ||
+                    effects.Any(e => e.IgnoreImmune == ImmuneType.All || e.IgnoreImmune == ImmuneType.Skilled || (IsMagic && e.IgnoreImmune == ImmuneType.Magical))))
+                {
+                    selectable.Add(character);
+                }
+            }
+            
+            foreach (Character character in teammates)
+            {
+                IEnumerable<Effect> effects = character.Effects.Where(e => e.IsInEffect);
+                if (CanSelectTeammate && ((character.ImmuneType & checkType) == ImmuneType.None ||
+                    effects.Any(e => e.IgnoreImmune == ImmuneType.All || e.IgnoreImmune == ImmuneType.Skilled || (IsMagic && e.IgnoreImmune == ImmuneType.Magical))))
+                {
+                    selectable.Add(character);
+                }
             }
 
             // 其他条件
