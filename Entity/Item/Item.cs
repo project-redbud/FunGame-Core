@@ -400,6 +400,14 @@ namespace Milimoe.FunGame.Core.Entity
 
         }
 
+        /// <summary>
+        /// 物品完成复制后触发
+        /// </summary>
+        protected virtual void AfterCopy()
+        {
+
+        }
+
         protected Item(ItemType type, bool isInGame = true)
         {
             ItemType = type;
@@ -602,7 +610,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 复制一个物品
         /// </summary>
         /// <returns></returns>
-        public Item Copy(bool copyLevel = false, bool copyGuid = false, bool copyProperty = true, IEnumerable<Item>? itemsDefined = null, IEnumerable<Skill>? skillsDefined = null)
+        public Item Copy(bool copyLevel = false, bool copyGuid = false, bool copyProperty = true, bool copyOthers = true, IEnumerable<Item>? itemsDefined = null, IEnumerable<Skill>? skillsDefined = null)
         {
             Item item = Factory.OpenFactory.GetInstance<Item>(Id, Name, []);
             Item? itemDefined = null;
@@ -654,6 +662,14 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 item.Others[key] = itemDefined.Others[key];
             }
+            if (copyOthers)
+            {
+                foreach (string key in Others.Keys)
+                {
+                    item.Others[key] = Others[key];
+                }
+            }
+            item.AfterCopy();
             return item;
         }
 

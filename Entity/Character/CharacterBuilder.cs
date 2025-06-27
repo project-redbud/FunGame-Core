@@ -147,12 +147,12 @@ namespace Milimoe.FunGame.Core.Entity
                 Item newitem;
                 if (itemsDefined != null && itemsDefined.FirstOrDefault(i => i.GetIdName() == item.GetIdName()) is Item itemDefined)
                 {
-                    newitem = itemDefined.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
+                    newitem = itemDefined.Copy(true, !newItemGuid, true, true, itemsDefined, skillsDefined);
                     item.SetPropertyToItemModuleNew(newitem);
                 }
                 else
                 {
-                    newitem = item.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
+                    newitem = item.Copy(true, !newItemGuid, true, true, itemsDefined, skillsDefined);
                 }
                 newitem.Character = character;
                 character.Items.Add(newitem);
@@ -196,32 +196,32 @@ namespace Milimoe.FunGame.Core.Entity
                 {
                     if (mcp != null)
                     {
-                        mcp = mcp.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
+                        mcp = mcp.Copy(true, !newItemGuid, true, true, itemsDefined, skillsDefined);
                         character.Equip(mcp);
                     }
                     if (w != null)
                     {
-                        w = w.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
+                        w = w.Copy(true, !newItemGuid, true, true, itemsDefined, skillsDefined);
                         character.Equip(w);
                     }
                     if (a != null)
                     {
-                        a = a.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
+                        a = a.Copy(true, !newItemGuid, true, true, itemsDefined, skillsDefined);
                         character.Equip(a);
                     }
                     if (s != null)
                     {
-                        s = s.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
+                        s = s.Copy(true, !newItemGuid, true, true, itemsDefined, skillsDefined);
                         character.Equip(s);
                     }
                     if (ac1 != null)
                     {
-                        ac1 = ac1.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
+                        ac1 = ac1.Copy(true, !newItemGuid, true, true, itemsDefined, skillsDefined);
                         character.Equip(ac1);
                     }
                     if (ac2 != null)
                     {
-                        ac2 = ac2.Copy(true, !newItemGuid, true, itemsDefined, skillsDefined);
+                        ac2 = ac2.Copy(true, !newItemGuid, true, true, itemsDefined, skillsDefined);
                         character.Equip(ac2);
                     }
                 }
