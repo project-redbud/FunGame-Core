@@ -1,5 +1,4 @@
-﻿
-using Milimoe.FunGame.Core.Model;
+﻿using Milimoe.FunGame.Core.Model;
 
 /**
  * 此文件用于保存字符串常量（String Set）
@@ -31,6 +30,17 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 QuestState.Settled => "已结算",
                 QuestState.Missed => "未完成",
                 _ => "未开始"
+            };
+        }
+
+        public static string GetActivityStatus(ActivityState status)
+        {
+            return status switch
+            {
+                ActivityState.Future => "预告中",
+                ActivityState.Upcoming => "即将开始",
+                ActivityState.InProgress => "进行中",
+                _ => "已结束"
             };
         }
     }

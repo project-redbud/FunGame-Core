@@ -38,7 +38,7 @@ namespace Milimoe.FunGame.Core.Model
 
         public void AddOrUpdateEvent(string name, IEnumerable<Activity> activities)
         {
-            Events[name] = new(activities);
+            Events[name] = [.. activities];
         }
 
         public bool RemoveEvent(string name)

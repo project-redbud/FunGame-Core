@@ -9,8 +9,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Event
         public long QuestId { get; } = questId;
         public Activity Activity { get; } = activity;
         public ActivityState ActivityState { get; } = activity.Status;
-        public DateTime StartTime { get; } = activity.StartTime;
-        public DateTime EndTime { get; } = activity.EndTime;
+        public DateTime? StartTime { get; } = activity.StartTime;
+        public DateTime? EndTime { get; } = activity.EndTime;
         public bool AllowAccess { get; set; } = false;
     }
 }

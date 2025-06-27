@@ -6,7 +6,7 @@ namespace Milimoe.FunGame.Core.Entity
     public class Quest : BaseEntity
     {
         public string Description { get; set; } = "";
-        public QuestState Status { get; set; } = 0;
+        public QuestState Status { get; set; } = QuestState.NotStarted;
         public long CharacterId { get; set; } = 0;
         public long RegionId { get; set; } = 0;
         public double CreditsAward { get; set; } = 0;
@@ -28,7 +28,12 @@ namespace Milimoe.FunGame.Core.Entity
                 }
                 foreach (Item item in Awards)
                 {
-                    awards.Add($"[{ItemSet.GetQualityTypeName(item.QualityType)}|{ItemSet.GetItemTypeName(item.ItemType)}] {item.Name} * {AwardsCount[item.Name]}");
+                    int count = 1;
+                    if (AwardsCount.TryGetValue(item.Name, out int value))
+                    {
+                        count = value;
+                    }
+                    awards.Add($"[{ItemSet.GetQualityTypeName(item.QualityType)}|{ItemSet.GetItemTypeName(item.ItemType)}] {item.Name} * {count}");
                 }
                 return string.Join("，", awards);
             }
