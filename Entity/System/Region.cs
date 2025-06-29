@@ -16,6 +16,8 @@ namespace Milimoe.FunGame.Core.Entity
         public int Temperature { get; set; } = 15;
         public Dictionary<string, int> Weathers { get; } = [];
         public RarityType Difficulty { get; set; } = RarityType.OneStar;
+        public List<string> NPCs { get; set; } = [];
+        public List<string> Areas { get; set; } = [];
 
         public bool ChangeWeather(string weather)
         {
