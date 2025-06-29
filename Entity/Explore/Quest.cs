@@ -9,6 +9,7 @@ namespace Milimoe.FunGame.Core.Entity
         public QuestState Status { get; set; } = QuestState.NotStarted;
         public long CharacterId { get; set; } = 0;
         public long RegionId { get; set; } = 0;
+        public string NeedyExploreItemName { get; set; } = "";
         public double CreditsAward { get; set; } = 0;
         public double MaterialsAward { get; set; } = 0;
         public HashSet<Item> Awards { get; set; } = [];

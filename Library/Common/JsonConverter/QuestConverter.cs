@@ -38,6 +38,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Quest.RegionId):
                     result.RegionId = reader.GetInt64();
                     break;
+                case nameof(Quest.NeedyExploreItemName):
+                    result.NeedyExploreItemName = reader.GetString() ?? "";
+                    break;
                 case nameof(Quest.CreditsAward):
                     result.CreditsAward = reader.GetDouble();
                     break;
@@ -102,6 +105,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Quest.Status), (int)value.Status);
             writer.WriteNumber(nameof(Quest.CharacterId), value.CharacterId);
             writer.WriteNumber(nameof(Quest.RegionId), value.RegionId);
+            writer.WriteString(nameof(Quest.NeedyExploreItemName), value.NeedyExploreItemName);
             writer.WriteNumber(nameof(Quest.CreditsAward), value.CreditsAward);
             writer.WriteNumber(nameof(Quest.MaterialsAward), value.MaterialsAward);
             writer.WritePropertyName(nameof(Quest.Awards));
