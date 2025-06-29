@@ -85,6 +85,18 @@ namespace Milimoe.FunGame.Core.Api.Utility
         {
             if (TryGetValue(key, out object? value) && value != null)
             {
+                if (value is T typeValue)
+                {
+                    return typeValue;
+                }
+                if (value is List<object> listValue)
+                {
+                    return NetworkUtility.JsonDeserialize<T>(NetworkUtility.JsonSerialize(listValue));
+                }
+                if (value is Dictionary<object, object> dictValue)
+                {
+                    return NetworkUtility.JsonDeserialize<T>(NetworkUtility.JsonSerialize(dictValue));
+                }
                 return NetworkUtility.JsonDeserialize<T>(value.ToString() ?? "");
             }
             return default;
@@ -186,10 +198,10 @@ namespace Milimoe.FunGame.Core.Api.Utility
         }
 
         /// <summary>
-        /// Json数组反序列化的方法。不支持<see cref="object"/>数组。
+        /// JSON 数组反序列化的方法，支持特定类型数组和混合类型数组（包括嵌套对象和数组）。
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="obj"></param>
+        /// <param name="key">字典的键</param>
+        /// <param name="obj">JSON 数组的枚举器</param>
         private void AddValues(string key, JsonElement.ArrayEnumerator obj)
         {
             List<long> longList = [];
@@ -197,34 +209,162 @@ namespace Milimoe.FunGame.Core.Api.Utility
             List<decimal> decList = [];
             List<string> strList = [];
             List<bool> bolList = [];
-            foreach (JsonElement array_e in obj)
+            List<object> resultList = [];
+            // 标记是否为混合类型
+            bool isMixed = false;
+            // 记录第一个非 null 元素的类型
+            JsonValueKind? firstValueKind = null;
+
+            foreach (JsonElement arrayElement in obj)
             {
-                if (array_e.ValueKind == JsonValueKind.Number && array_e.TryGetInt64(out long longValue))
+                switch (arrayElement.ValueKind)
                 {
-                    longList.Add(longValue);
-                }
-                else if (array_e.ValueKind == JsonValueKind.Number && array_e.TryGetDouble(out double douValue))
-                {
-                    douList.Add(douValue);
-                }
-                else if (array_e.ValueKind == JsonValueKind.Number && array_e.TryGetDecimal(out decimal decValue))
-                {
-                    decList.Add(decValue);
-                }
-                else if (array_e.ValueKind == JsonValueKind.String)
-                {
-                    strList.Add(array_e.GetString() ?? "");
-                }
-                else if (array_e.ValueKind == JsonValueKind.True || array_e.ValueKind == JsonValueKind.False)
-                {
-                    bolList.Add(array_e.GetBoolean());
+                    case JsonValueKind.Number when arrayElement.TryGetInt64(out long longValue):
+                        longList.Add(longValue);
+                        resultList.Add(longValue);
+                        firstValueKind ??= JsonValueKind.Number;
+                        if (firstValueKind != JsonValueKind.Number) isMixed = true;
+                        break;
+
+                    case JsonValueKind.Number when arrayElement.TryGetDouble(out double doubleValue):
+                        douList.Add(doubleValue);
+                        resultList.Add(doubleValue);
+                        firstValueKind ??= JsonValueKind.Number;
+                        if (firstValueKind != JsonValueKind.Number) isMixed = true;
+                        break;
+
+                    case JsonValueKind.Number when arrayElement.TryGetDecimal(out decimal decimalValue):
+                        decList.Add(decimalValue);
+                        resultList.Add(decimalValue);
+                        firstValueKind ??= JsonValueKind.Number;
+                        if (firstValueKind != JsonValueKind.Number) isMixed = true;
+                        break;
+
+                    case JsonValueKind.String:
+                        string strValue = arrayElement.GetString() ?? "";
+                        strList.Add(strValue);
+                        resultList.Add(strValue);
+                        firstValueKind ??= JsonValueKind.String;
+                        if (firstValueKind != JsonValueKind.String) isMixed = true;
+                        break;
+
+                    case JsonValueKind.True:
+                    case JsonValueKind.False:
+                        bool boolValue = arrayElement.GetBoolean();
+                        bolList.Add(boolValue);
+                        resultList.Add(boolValue);
+                        firstValueKind ??= arrayElement.ValueKind;
+                        if (firstValueKind != arrayElement.ValueKind) isMixed = true;
+                        break;
+
+                    case JsonValueKind.Null:
+                        break;
+
+                    case JsonValueKind.Object:
+                        Dictionary<string, object> objValue = ParseObject(arrayElement);
+                        resultList.Add(objValue);
+                        isMixed = true;
+                        break;
+
+                    case JsonValueKind.Array:
+                        List<object> arrayValue = ParseArray(arrayElement);
+                        resultList.Add(arrayValue);
+                        isMixed = true;
+                        break;
+
+                    default:
+                        isMixed = true;
+                        break;
                 }
             }
-            if (longList.Count > 0) base.Add(key, longList);
-            if (douList.Count > 0) base.Add(key, douList);
-            if (decList.Count > 0) base.Add(key, decList);
-            if (strList.Count > 0) base.Add(key, strList);
-            if (bolList.Count > 0) base.Add(key, bolList);
+
+            // 根据类型一致性选择存储的列表
+            if (resultList.Count > 0)
+            {
+                if (!isMixed)
+                {
+                    // 所有元素类型一致，存储到对应的特定类型列表
+                    switch (firstValueKind)
+                    {
+                        case JsonValueKind.Number when longList.Count == resultList.Count:
+                            base.Add(key, longList);
+                            break;
+                        case JsonValueKind.Number when douList.Count == resultList.Count:
+                            base.Add(key, douList);
+                            break;
+                        case JsonValueKind.Number when decList.Count == resultList.Count:
+                            base.Add(key, decList);
+                            break;
+                        case JsonValueKind.String:
+                            base.Add(key, strList);
+                            break;
+                        case JsonValueKind.True:
+                        case JsonValueKind.False:
+                            base.Add(key, bolList);
+                            break;
+                        default:
+                            base.Add(key, resultList); // 包含 null 或未知情况
+                            break;
+                    }
+                }
+                else
+                {
+                    // 混合类型或包含对象/数组，存储为 List<object>
+                    base.Add(key, resultList);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 递归解析 JSON 对象
+        /// </summary>
+        private Dictionary<string, object> ParseObject(JsonElement element)
+        {
+            Dictionary<string, object> dict = [];
+            foreach (JsonProperty property in element.EnumerateObject())
+            {
+                object? value = property.Value.ValueKind switch
+                {
+                    JsonValueKind.Number when property.Value.TryGetInt64(out long longValue) => longValue,
+                    JsonValueKind.Number when property.Value.TryGetDouble(out double doubleValue) => doubleValue,
+                    JsonValueKind.Number when property.Value.TryGetDecimal(out decimal decimalValue) => decimalValue,
+                    JsonValueKind.String => property.Value.GetString() ?? "",
+                    JsonValueKind.True => true,
+                    JsonValueKind.False => false,
+                    JsonValueKind.Null => null,
+                    JsonValueKind.Object => ParseObject(property.Value),
+                    JsonValueKind.Array => ParseArray(property.Value),
+                    _ => null
+                };
+                if (value != null) dict.Add(property.Name, value);
+            }
+            return dict;
+        }
+
+        /// <summary>
+        /// 递归解析 JSON 数组
+        /// </summary>
+        private List<object> ParseArray(JsonElement element)
+        {
+            List<object> list = [];
+            foreach (JsonElement arrayElement in element.EnumerateArray())
+            {
+                object? value = arrayElement.ValueKind switch
+                {
+                    JsonValueKind.Number when arrayElement.TryGetInt64(out long longValue) => longValue,
+                    JsonValueKind.Number when arrayElement.TryGetDouble(out double doubleValue) => doubleValue,
+                    JsonValueKind.Number when arrayElement.TryGetDecimal(out decimal decimalValue) => decimalValue,
+                    JsonValueKind.String => arrayElement.GetString() ?? "",
+                    JsonValueKind.True => true,
+                    JsonValueKind.False => false,
+                    JsonValueKind.Null => null,
+                    JsonValueKind.Object => ParseObject(arrayElement),
+                    JsonValueKind.Array => ParseArray(arrayElement),
+                    _ => null
+                };
+                if (value != null) list.Add(value);
+            }
+            return list;
         }
     }
 }
