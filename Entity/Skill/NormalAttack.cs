@@ -40,28 +40,31 @@ namespace Milimoe.FunGame.Core.Entity
                 {
                     baseMultiplier = Character.EquipSlot.Weapon.WeaponType switch
                     {
-                        WeaponType.OneHandedSword => 1.0,
-                        WeaponType.TwoHandedSword => 1.2,
-                        WeaponType.Bow => 0.9,
-                        WeaponType.Pistol => 0.8,
-                        WeaponType.Rifle => 1.1,
-                        WeaponType.DualDaggers => 0.85,
-                        WeaponType.Talisman => 1.0,
-                        WeaponType.Staff => 1.15,
-                        WeaponType.Polearm => 0.95,
-                        WeaponType.Gauntlet => 1.05,
-                        WeaponType.HiddenWeapon => 0.9,
+                        WeaponType.OneHandedSword => GameplayEquilibriumConstant.OneHandedSwordBaseMultiplier,
+                        WeaponType.TwoHandedSword => GameplayEquilibriumConstant.TwoHandedSwordBaseMultiplier,
+                        WeaponType.Bow => GameplayEquilibriumConstant.BowBaseMultiplier,
+                        WeaponType.Pistol => GameplayEquilibriumConstant.PistolBaseMultiplier,
+                        WeaponType.Rifle => GameplayEquilibriumConstant.RifleBaseMultiplier,
+                        WeaponType.DualDaggers => GameplayEquilibriumConstant.DualDaggersBaseMultiplier,
+                        WeaponType.Talisman => GameplayEquilibriumConstant.TalismanBaseMultiplier,
+                        WeaponType.Staff => GameplayEquilibriumConstant.StaffBaseMultiplier,
+                        WeaponType.Polearm => GameplayEquilibriumConstant.PolearmBaseMultiplier,
+                        WeaponType.Gauntlet => GameplayEquilibriumConstant.GauntletBaseMultiplier,
+                        WeaponType.HiddenWeapon => GameplayEquilibriumConstant.HiddenWeaponBaseMultiplier,
                         _ => 1.0
                     };
                     double levelBonus = Character.EquipSlot.Weapon.WeaponType switch
                     {
-                        WeaponType.TwoHandedSword => 0.06,
-                        WeaponType.Staff => 0.056,
-                        WeaponType.Bow => 0.045,
-                        WeaponType.Pistol => 0.0375,
-                        WeaponType.DualDaggers => 0.0375,
-                        WeaponType.Polearm => 0.044,
-                        WeaponType.HiddenWeapon => 0.044,
+                        WeaponType.OneHandedSword => GameplayEquilibriumConstant.OneHandedSwordLevelBonus,
+                        WeaponType.TwoHandedSword => GameplayEquilibriumConstant.TwoHandedSwordLevelBonus,
+                        WeaponType.Bow => GameplayEquilibriumConstant.BowLevelBonus,
+                        WeaponType.Pistol => GameplayEquilibriumConstant.PistolLevelBonus,
+                        WeaponType.Rifle => GameplayEquilibriumConstant.RifleLevelBonus,
+                        WeaponType.DualDaggers => GameplayEquilibriumConstant.DualDaggersLevelBonus,
+                        WeaponType.Staff => GameplayEquilibriumConstant.StaffLevelBonus,
+                        WeaponType.Polearm => GameplayEquilibriumConstant.PolearmLevelBonus,
+                        WeaponType.Gauntlet => GameplayEquilibriumConstant.GauntletLevelBonus,
+                        WeaponType.HiddenWeapon => GameplayEquilibriumConstant.HiddenWeaponLevelBonus,
                         _ => 0.05
                     };
                     baseMultiplier += levelBonus * (Level - 1);
@@ -137,17 +140,17 @@ namespace Milimoe.FunGame.Core.Entity
                 {
                     ht = Character.EquipSlot.Weapon.WeaponType switch
                     {
-                        WeaponType.OneHandedSword => 8,
-                        WeaponType.TwoHandedSword => 12,
-                        WeaponType.Bow => 9,
-                        WeaponType.Pistol => 6,
-                        WeaponType.Rifle => 11,
-                        WeaponType.DualDaggers => 7,
-                        WeaponType.Talisman => 10,
-                        WeaponType.Staff => 12,
-                        WeaponType.Polearm => 10,
-                        WeaponType.Gauntlet => 8,
-                        WeaponType.HiddenWeapon => 7,
+                        WeaponType.OneHandedSword => GameplayEquilibriumConstant.OneHandedSwordHardness,
+                        WeaponType.TwoHandedSword => GameplayEquilibriumConstant.TwoHandedSwordHardness,
+                        WeaponType.Bow => GameplayEquilibriumConstant.BowHardness,
+                        WeaponType.Pistol => GameplayEquilibriumConstant.PistolHardness,
+                        WeaponType.Rifle => GameplayEquilibriumConstant.RifleHardness,
+                        WeaponType.DualDaggers => GameplayEquilibriumConstant.DualDaggersHardness,
+                        WeaponType.Talisman => GameplayEquilibriumConstant.TalismanHardness,
+                        WeaponType.Staff => GameplayEquilibriumConstant.StaffHardness,
+                        WeaponType.Polearm => GameplayEquilibriumConstant.PolearmHardness,
+                        WeaponType.Gauntlet => GameplayEquilibriumConstant.GauntletHardness,
+                        WeaponType.HiddenWeapon => GameplayEquilibriumConstant.HiddenWeaponHardness,
                         _ => 10,
                     };
                 }

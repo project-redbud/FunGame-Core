@@ -38,15 +38,13 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="error"></param>
         public void AddTask(string name, TimeSpan timeOfDay, Action action, Action<Exception>? error = null)
         {
-            lock (_lock)
+            using Lock.Scope scope = _lock.EnterScope();
+            ScheduledTask task = new(name, timeOfDay, action, error);
+            if (DateTime.Now > DateTime.Today.Add(timeOfDay))
             {
-                ScheduledTask task = new(name, timeOfDay, action, error);
-                if (DateTime.Now > DateTime.Today.Add(timeOfDay))
-                {
-                    task.LastRun = DateTime.Today.Add(timeOfDay);
-                }
-                _tasks.Add(task);
+                task.LastRun = DateTime.Today.Add(timeOfDay);
             }
+            _tasks.Add(task);
         }
 
         /// <summary>
@@ -59,17 +57,15 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="error"></param>
         public void AddRecurringTask(string name, TimeSpan interval, Action action, bool startNow = false, Action<Exception>? error = null)
         {
-            lock (_lock)
+            using Lock.Scope scope = _lock.EnterScope();
+            DateTime now = DateTime.Now;
+            now = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0);
+            DateTime nextRun = startNow ? now : now.Add(interval);
+            RecurringTask recurringTask = new(name, interval, action, error)
             {
-                DateTime now = DateTime.Now;
-                now = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0);
-                DateTime nextRun = startNow ? now : now.Add(interval);
-                RecurringTask recurringTask = new(name, interval, action, error)
-                {
-                    NextRun = nextRun
-                };
-                _recurringTasks.Add(recurringTask);
-            }
+                NextRun = nextRun
+            };
+            _recurringTasks.Add(recurringTask);
         }
 
         /// <summary>
@@ -78,11 +74,9 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="name"></param>
         public void RemoveTask(string name)
         {
-            lock (_lock)
-            {
-                int removeTasks = _tasks.RemoveAll(t => t.Name == name);
-                int removeRecurringTasks = _recurringTasks.RemoveAll(t => t.Name == name);
-            }
+            using Lock.Scope scope = _lock.EnterScope();
+            int removeTasks = _tasks.RemoveAll(t => t.Name == name);
+            int removeRecurringTasks = _recurringTasks.RemoveAll(t => t.Name == name);
         }
 
         /// <summary>
@@ -167,54 +161,52 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         private void CheckAndRunTasks()
         {
-            lock (_lock)
+            using Lock.Scope scope = _lock.EnterScope();
+            DateTime now = DateTime.Now;
+
+            foreach (ScheduledTask task in _tasks)
             {
-                DateTime now = DateTime.Now;
-
-                foreach (ScheduledTask task in _tasks)
+                if (!task.IsTodayRun)
                 {
-                    if (!task.IsTodayRun)
+                    if (now.TimeOfDay >= task.TimeOfDay && now.TimeOfDay < task.TimeOfDay.Add(TimeSpan.FromSeconds(10)))
                     {
-                        if (now.TimeOfDay >= task.TimeOfDay && now.TimeOfDay < task.TimeOfDay.Add(TimeSpan.FromSeconds(10)))
-                        {
-                            task.LastRun = now;
-                            Task.Run(() =>
-                            {
-                                try
-                                {
-                                    task.Action();
-                                }
-                                catch (Exception ex)
-                                {
-                                    task.Error = ex;
-                                    TXTHelper.AppendErrorLog(ex.ToString());
-                                    task.ErrorHandler?.Invoke(ex);
-                                }
-                            });
-                        }
-                    }
-                }
-
-                foreach (RecurringTask recurringTask in _recurringTasks)
-                {
-                    if (now >= recurringTask.NextRun)
-                    {
-                        recurringTask.LastRun = now;
-                        recurringTask.NextRun = recurringTask.NextRun.Add(recurringTask.Interval);
+                        task.LastRun = now;
                         Task.Run(() =>
                         {
                             try
                             {
-                                recurringTask.Action();
+                                task.Action();
                             }
                             catch (Exception ex)
                             {
-                                recurringTask.Error = ex;
+                                task.Error = ex;
                                 TXTHelper.AppendErrorLog(ex.ToString());
-                                recurringTask.ErrorHandler?.Invoke(ex);
+                                task.ErrorHandler?.Invoke(ex);
                             }
                         });
                     }
+                }
+            }
+
+            foreach (RecurringTask recurringTask in _recurringTasks)
+            {
+                if (now >= recurringTask.NextRun)
+                {
+                    recurringTask.LastRun = now;
+                    recurringTask.NextRun = recurringTask.NextRun.Add(recurringTask.Interval);
+                    Task.Run(() =>
+                    {
+                        try
+                        {
+                            recurringTask.Action();
+                        }
+                        catch (Exception ex)
+                        {
+                            recurringTask.Error = ex;
+                            TXTHelper.AppendErrorLog(ex.ToString());
+                            recurringTask.ErrorHandler?.Invoke(ex);
+                        }
+                    });
                 }
             }
         }

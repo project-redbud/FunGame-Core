@@ -1730,7 +1730,10 @@ namespace Milimoe.FunGame.Core.Model
                     CalculateCharacterDamageStatistics(actor, enemy, damage, damageType, actualDamage);
 
                     // 计算助攻
-                    _assistDetail[actor][enemy, TotalTime] += damage;
+                    if (actor != enemy && !IsTeammate(actor, enemy))
+                    {
+                        _assistDetail[actor][enemy, TotalTime] += damage;
+                    }
                 }
             }
             else
@@ -2875,7 +2878,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             foreach (Character target in targets)
             {
-                if (character == target) continue;
+                if (character == target || IsTeammate(character, target)) continue;
                 _assistDetail[character].NotDamageAssistLastTime[target] = TotalTime;
             }
         }

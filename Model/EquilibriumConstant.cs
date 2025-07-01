@@ -296,6 +296,171 @@ namespace Milimoe.FunGame.Core.Model
         public double TakenDamageGetEPMax { get; set; } = 15;
 
         /// <summary>
+        /// 单手剑的基础伤害倍率
+        /// </summary>
+        public double OneHandedSwordBaseMultiplier { get; set; } = 1.0;
+        
+        /// <summary>
+        /// 单手剑的基础伤害倍率成长
+        /// </summary>
+        public double OneHandedSwordLevelBonus { get; set; } = 0.05;
+
+        /// <summary>
+        /// 双手剑的基础伤害倍率
+        /// </summary>
+        public double TwoHandedSwordBaseMultiplier { get; set; } = 1.2;
+
+        /// <summary>
+        /// 双手剑的基础伤害倍率成长
+        /// </summary>
+        public double TwoHandedSwordLevelBonus { get; set; } = 0.06;
+
+        /// <summary>
+        /// 弓的基础伤害倍率
+        /// </summary>
+        public double BowBaseMultiplier { get; set; } = 0.9;
+
+        /// <summary>
+        /// 弓的基础伤害倍率成长
+        /// </summary>
+        public double BowLevelBonus { get; set; } = 0.04;
+
+        /// <summary>
+        /// 手枪的基础伤害倍率
+        /// </summary>
+        public double PistolBaseMultiplier { get; set; } = 0.9;
+
+        /// <summary>
+        /// 手枪的基础伤害倍率成长
+        /// </summary>
+        public double PistolLevelBonus { get; set; } = 0.03;
+
+        /// <summary>
+        /// 步枪的基础伤害倍率
+        /// </summary>
+        public double RifleBaseMultiplier { get; set; } = 1.1;
+
+        /// <summary>
+        /// 步枪的基础伤害倍率成长
+        /// </summary>
+        public double RifleLevelBonus { get; set; } = 0.05;
+
+        /// <summary>
+        /// 双持短刀的基础伤害倍率
+        /// </summary>
+        public double DualDaggersBaseMultiplier { get; set; } = 0.85;
+
+        /// <summary>
+        /// 双持短刀的基础伤害倍率成长
+        /// </summary>
+        public double DualDaggersLevelBonus { get; set; } = 0.04;
+
+        /// <summary>
+        /// 法器的基础伤害倍率
+        /// </summary>
+        public double TalismanBaseMultiplier { get; set; } = 1.0;
+
+        /// <summary>
+        /// 法器的基础伤害倍率成长
+        /// </summary>
+        public double TalismanLevelBonus { get; set; } = 0.05;
+
+        /// <summary>
+        /// 法杖的基础伤害倍率
+        /// </summary>
+        public double StaffBaseMultiplier { get; set; } = 1.15;
+
+        /// <summary>
+        /// 法杖的基础伤害倍率成长
+        /// </summary>
+        public double StaffLevelBonus { get; set; } = 0.04;
+
+        /// <summary>
+        /// 长柄武器的基础伤害倍率
+        /// </summary>
+        public double PolearmBaseMultiplier { get; set; } = 0.95;
+
+        /// <summary>
+        /// 长柄武器的基础伤害倍率成长
+        /// </summary>
+        public double PolearmLevelBonus { get; set; } = 0.05;
+
+        /// <summary>
+        /// 拳套的基础伤害倍率
+        /// </summary>
+        public double GauntletBaseMultiplier { get; set; } = 1.05;
+
+        /// <summary>
+        /// 拳套的基础伤害倍率成长
+        /// </summary>
+        public double GauntletLevelBonus { get; set; } = 0.05;
+
+        /// <summary>
+        /// 暗器的基础伤害倍率
+        /// </summary>
+        public double HiddenWeaponBaseMultiplier { get; set; } = 0.9;
+
+        /// <summary>
+        /// 暗器的基础伤害倍率成长
+        /// </summary>
+        public double HiddenWeaponLevelBonus { get; set; } = 0.05;
+
+        /// <summary>
+        /// 单手剑的硬直时间
+        /// </summary>
+        public double OneHandedSwordHardness { get; set; } = 8;
+
+        /// <summary>
+        /// 双手剑的硬直时间
+        /// </summary>
+        public double TwoHandedSwordHardness { get; set; } = 12;
+
+        /// <summary>
+        /// 弓的硬直时间
+        /// </summary>
+        public double BowHardness { get; set; } = 9;
+
+        /// <summary>
+        /// 手枪的硬直时间
+        /// </summary>
+        public double PistolHardness { get; set; } = 6;
+
+        /// <summary>
+        /// 步枪的硬直时间
+        /// </summary>
+        public double RifleHardness { get; set; } = 11;
+
+        /// <summary>
+        /// 双持短刀的硬直时间
+        /// </summary>
+        public double DualDaggersHardness { get; set; } = 7;
+
+        /// <summary>
+        /// 法器的硬直时间
+        /// </summary>
+        public double TalismanHardness { get; set; } = 10;
+
+        /// <summary>
+        /// 法杖的硬直时间
+        /// </summary>
+        public double StaffHardness { get; set; } = 12;
+
+        /// <summary>
+        /// 长柄武器的硬直时间
+        /// </summary>
+        public double PolearmHardness { get; set; } = 10;
+
+        /// <summary>
+        /// 拳套的硬直时间
+        /// </summary>
+        public double GauntletHardness { get; set; } = 8;
+
+        /// <summary>
+        /// 暗器的硬直时间
+        /// </summary>
+        public double HiddenWeaponHardness { get; set; } = 7;
+
+        /// <summary>
         /// 应用此游戏平衡常数给实体
         /// </summary>
         /// <param name="entities"></param>

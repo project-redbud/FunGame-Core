@@ -719,6 +719,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.GrievousWound => "重伤",
                 EffectType.WeakDispelling => "持续性弱驱散",
                 EffectType.StrongDispelling => "持续性强驱散",
+                EffectType.Recovery => "恢复",
                 _ => "未知效果"
             };
         }
@@ -776,6 +777,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.Lifesteal => DispelledType.Weak,
                 EffectType.GrievousWound => DispelledType.Weak,
                 EffectType.WeakDispelling => DispelledType.Weak,
+                EffectType.Recovery => DispelledType.Weak,
                 _ => DispelledType.Weak
             };
         }
@@ -831,6 +833,9 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.EvadeBoost => false,
                 EffectType.Lifesteal => false,
                 EffectType.GrievousWound => true,
+                EffectType.WeakDispelling => false,
+                EffectType.StrongDispelling => false,
+                EffectType.Recovery => false,
                 _ => false
             };
         }

@@ -68,7 +68,7 @@ namespace Milimoe.FunGame.Core.Entity
                 if (ActorContinuousKilling.Count > 0) builder.AppendLine($"{string.Join("\r\n", ActorContinuousKilling)}");
                 if (Assists.Count > 0) builder.AppendLine($"本回合助攻：[ {string.Join(" ] / [ ", Assists)} ]");
             }
-
+            
             if (ActionType == CharacterActionType.PreCastSkill && Skill != null)
             {
                 if (Skill.IsMagic)
@@ -77,10 +77,16 @@ namespace Milimoe.FunGame.Core.Entity
                 }
                 else
                 {
-                    builder.AppendLine($"[ {Actor} ]：{Skill.Name}（{SkillCost}）-> ");
+                    builder.Append($"[ {Actor} ] {Skill.Name}（{SkillCost}）-> ");
                     builder.AppendLine(string.Join(" / ", GetTargetsState()));
                     builder.AppendLine($"[ {Actor} ] 回合结束，硬直时间：{HardnessTime:0.##}");
                 }
+            }
+            else if (ActionType == CharacterActionType.UseItem && Item != null)
+            {
+                builder.Append($"[ {Actor} ] {Item.Name}{(SkillCost != "" ? $"（{SkillCost}）" : " ")}-> ");
+                builder.AppendLine(string.Join(" / ", GetTargetsState()));
+                builder.AppendLine($"[ {Actor} ] 回合结束，硬直时间：{HardnessTime:0.##}");
             }
             else
             {
@@ -140,7 +146,9 @@ namespace Milimoe.FunGame.Core.Entity
                     hasDamage = "免疫";
                 }
                 string[] strs = [hasDamage, hasHeal, hasEffect];
-                strings.Add($"[ {target}（{string.Join(" / ", strs.Where(s => s != ""))}）]）");
+                strs = [.. strs.Where(s => s != "")];
+                if (strs.Length == 0) strings.Add($"[ {target} ]）");
+                else strings.Add($"[ {target}（{string.Join(" / ", strs)}）]）");
             }
             return strings;
         }

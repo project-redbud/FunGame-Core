@@ -479,7 +479,12 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// <summary>
         /// 持续性强驱散
         /// </summary>
-        StrongDispelling
+        StrongDispelling,
+
+        /// <summary>
+        /// 恢复
+        /// </summary>
+        Recovery
     }
 
     public enum ItemType
