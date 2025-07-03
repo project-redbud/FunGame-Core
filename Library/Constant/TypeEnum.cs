@@ -297,7 +297,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Taunt,
 
         /// <summary>
-        /// 减速，目标行动速度和攻击频率降低
+        /// 减速，目标行动速度或加速系数降低
         /// </summary>
         Slow,
 
@@ -417,7 +417,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Confusion,
 
         /// <summary>
-        /// 石化，目标无法行动，并大幅增加受到的伤害
+        /// 石化，目标无法行动
         /// </summary>
         Petrify,
 
@@ -489,7 +489,12 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// <summary>
         /// 易伤
         /// </summary>
-        Vulnerable
+        Vulnerable,
+
+        /// <summary>
+        /// 迟滞，硬直时间延长
+        /// </summary>
+        Delay
     }
 
     public enum ItemType

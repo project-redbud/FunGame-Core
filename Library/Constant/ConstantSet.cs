@@ -721,6 +721,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.StrongDispelling => "持续性强驱散",
                 EffectType.Recovery => "恢复",
                 EffectType.Vulnerable => "易伤",
+                EffectType.Delay => "迟滞",
                 _ => "未知效果"
             };
         }
@@ -780,6 +781,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.WeakDispelling => DispelledType.Weak,
                 EffectType.Recovery => DispelledType.Weak,
                 EffectType.Vulnerable => DispelledType.Weak,
+                EffectType.Delay => DispelledType.Weak,
                 _ => DispelledType.Weak
             };
         }
@@ -839,6 +841,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.StrongDispelling => false,
                 EffectType.Recovery => false,
                 EffectType.Vulnerable => true,
+                EffectType.Delay => true,
                 _ => false
             };
         }
