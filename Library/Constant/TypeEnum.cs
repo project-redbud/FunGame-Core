@@ -484,7 +484,12 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// <summary>
         /// 恢复
         /// </summary>
-        Recovery
+        Recovery,
+
+        /// <summary>
+        /// 易伤
+        /// </summary>
+        Vulnerable
     }
 
     public enum ItemType
