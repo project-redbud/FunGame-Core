@@ -56,6 +56,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Item.IsInGameItem):
                     result.IsInGameItem = reader.GetBoolean();
                     break;
+                case nameof(Item.IsLock):
+                    result.IsLock = reader.GetBoolean();
+                    break;
                 case nameof(Item.Equipable):
                     result.Equipable = reader.GetBoolean();
                     break;
@@ -133,6 +136,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Item.RarityType), (int)value.RarityType);
             writer.WriteNumber(nameof(Item.RankType), (int)value.RankType);
             writer.WriteBoolean(nameof(Item.IsInGameItem), value.IsInGameItem);
+            writer.WriteBoolean(nameof(Item.IsLock), value.IsLock);
             writer.WriteBoolean(nameof(Item.Equipable), value.Equipable);
             writer.WriteBoolean(nameof(Item.Unequipable), value.Unequipable);
             writer.WriteNumber(nameof(Item.RemainUseTimes), value.RemainUseTimes);

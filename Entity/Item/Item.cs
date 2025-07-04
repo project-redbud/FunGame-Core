@@ -435,7 +435,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             StringBuilder builder = new();
 
-            builder.AppendLine($"【{Name}】");
+            builder.AppendLine($"【{Name}】{(IsLock ? " [锁定]" : "")}");
 
             string itemquality = ItemSet.GetQualityTypeName(QualityType);
             string itemtype = ItemSet.GetItemTypeName(ItemType) + (ItemType == ItemType.Weapon && WeaponType != WeaponType.None ? "-" + ItemSet.GetWeaponTypeName(WeaponType) : "");
@@ -566,6 +566,11 @@ namespace Milimoe.FunGame.Core.Entity
                 else if (!IsTradable)
                 {
                     sellandtrade.Add("不可交易");
+                }
+
+                if (IsLock)
+                {
+                    builder.AppendLine("此物品已锁定");
                 }
 
                 if (sellandtrade.Count > 0) builder.AppendLine(string.Join(" ", sellandtrade).Trim());

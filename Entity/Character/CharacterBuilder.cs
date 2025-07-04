@@ -237,7 +237,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="reference"></param>
         /// <param name="newItemGuid"></param>
         /// <param name="copyLevel"></param>
-        /// <param name="inventory"></param>
+        /// <param name="inventory">高危数据警告：传入此项会修改库存中物品的角色引用</param>
         /// <param name="itemsDefined">对于动态扩展的物品而言，传入已定义的物品表，不使用被复制物品的数据</param>
         /// <param name="skillsDefined">对于动态扩展的技能而言，传入已定义的技能表，不使用被复制技能的数据</param>
         /// <param name="recovery"></param>
