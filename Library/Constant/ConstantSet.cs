@@ -43,6 +43,25 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 _ => "已结束"
             };
         }
+
+        public static string GetOfferStatus(OfferState status)
+        {
+            return status switch
+            {
+                OfferState.Created => "已创建",
+                OfferState.Cancelled => "已取消",
+                OfferState.PendingOfferorConfirmation => "等待发起方确认",
+                OfferState.PendingOffereeConfirmation => "等待接收方确认",
+                OfferState.OfferorConfirmed => "发起方已确认",
+                OfferState.OffereeConfirmed => "接收方已确认",
+                OfferState.Sent => "已发送",
+                OfferState.Negotiating => "协商中",
+                OfferState.NegotiationAccepted => "协商已接受",
+                OfferState.Rejected => "已拒绝",
+                OfferState.Completed => "已完成",
+                _ => "已过期"
+            };
+        }
     }
 
     /// <summary>

@@ -324,11 +324,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 局外（库存）使用物品触发
         /// </summary>
         /// <returns></returns>
-        public bool UseItem(User user, Dictionary<string, object> args)
+        public bool UseItem(User user, int times, Dictionary<string, object> args)
         {
             if (User != null)
             {
-                bool result = OnItemUsed(user, args);
+                bool result = OnItemUsed(user, times, args);
                 if (result)
                 {
                     EntityState = EntityState.Modified;
@@ -342,11 +342,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 使用后减少使用次数或删除物品
         /// </summary>
-        public void ReduceTimesAndRemove()
+        public void ReduceTimesAndRemove(int times = 1)
         {
             if (IsReduceTimesAfterUse)
             {
-                RemainUseTimes--;
+                RemainUseTimes -= times;
             }
             if (RemainUseTimes < 0) RemainUseTimes = 0;
             if (IsRemoveAfterUse && RemainUseTimes == 0)
@@ -371,9 +371,10 @@ namespace Milimoe.FunGame.Core.Entity
         /// 当物品被玩家使用时
         /// </summary>
         /// <param name="user"></param>
+        /// <param name="times"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        protected virtual bool OnItemUsed(User user, Dictionary<string, object> args)
+        protected virtual bool OnItemUsed(User user, int times, Dictionary<string, object> args)
         {
             return false;
         }
