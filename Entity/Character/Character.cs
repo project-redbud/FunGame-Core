@@ -1939,7 +1939,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// [ 推荐从模组中复制后使用对象 ]
         /// </summary>
         /// <returns></returns>
-        public Character Copy(bool copyEx = false)
+        public Character Copy(bool copyEx = false, bool copyMagic = false, bool copyItem = false)
         {
             Character c = new()
             {
@@ -1949,13 +1949,11 @@ namespace Milimoe.FunGame.Core.Entity
                 FirstName = FirstName,
                 NickName = NickName,
                 Profile = Profile.Copy(),
-                MagicType = MagicType,
                 FirstRoleType = FirstRoleType,
                 SecondRoleType = SecondRoleType,
                 ThirdRoleType = ThirdRoleType,
                 Promotion = Promotion,
                 PrimaryAttribute = PrimaryAttribute,
-                ImmuneType = ImmuneType,
                 Level = Level,
                 LevelBreak = LevelBreak,
                 EXP = EXP,
@@ -1964,9 +1962,6 @@ namespace Milimoe.FunGame.Core.Entity
                 EP = EP,
                 InitialATK = InitialATK,
                 InitialDEF = InitialDEF,
-                MDF = MDF.Copy(),
-                PhysicalPenetration = PhysicalPenetration,
-                MagicalPenetration = MagicalPenetration,
                 InitialHR = InitialHR,
                 InitialMR = InitialMR,
                 ER = ER,
@@ -1976,10 +1971,7 @@ namespace Milimoe.FunGame.Core.Entity
                 STRGrowth = STRGrowth,
                 AGIGrowth = AGIGrowth,
                 INTGrowth = INTGrowth,
-                InitialSPD = InitialSPD,
-                ATR = ATR,
-                Lifesteal = Lifesteal,
-                Shield = Shield.Copy()
+                InitialSPD = InitialSPD
             };
             if (copyEx)
             {
@@ -2006,18 +1998,32 @@ namespace Milimoe.FunGame.Core.Entity
                 c.ExCritRate = ExCritRate;
                 c.ExCritDMG = ExCritDMG;
                 c.ExEvadeRate = ExEvadeRate;
+                c.PhysicalPenetration = PhysicalPenetration;
+                c.MagicalPenetration = MagicalPenetration;
+                c.MDF = MDF.Copy();
+                c.Lifesteal = Lifesteal;
+                c.Shield = Shield.Copy();
+                c.ATR = ATR;
+                c.MagicType = MagicType;
+                c.ImmuneType = ImmuneType;
             }
             foreach (Skill skill in Skills)
             {
-                Skill newskill = skill.Copy();
-                newskill.Character = c;
-                c.Skills.Add(newskill);
+                if (skill.SkillType != SkillType.Magic || copyMagic)
+                {
+                    Skill newskill = skill.Copy();
+                    newskill.Character = c;
+                    c.Skills.Add(newskill);
+                }
             }
-            foreach (Item item in Items)
+            if (copyItem)
             {
-                Item newitem = item.Copy();
-                newitem.Character = c;
-                c.Items.Add(newitem);
+                foreach (Item item in Items)
+                {
+                    Item newitem = item.Copy();
+                    newitem.Character = c;
+                    c.Items.Add(newitem);
+                }
             }
             c.Recovery();
             return c;

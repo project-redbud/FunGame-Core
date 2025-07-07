@@ -65,5 +65,19 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             SQLHelper.Parameters["@OfferId"] = OfferId;
             return $"{Command_Delete} {Command_From} {TableName_Backup} {Command_Where} {Column_OfferId} = @OfferId";
         }
+
+        public static string Delete_OfferItemsByOfferIdAndItemGuid(SQLHelper SQLHelper, long OfferId, Guid ItemGuid)
+        {
+            SQLHelper.Parameters["@OfferId"] = OfferId;
+            SQLHelper.Parameters["@ItemGuid"] = ItemGuid.ToString();
+            return $"{Command_Delete} {Command_From} {TableName} {Command_Where} {Column_OfferId} = @OfferId {Command_And} {Column_ItemGuid} = @ItemGuid";
+        }
+
+        public static string Delete_OfferItemsBackupByOfferIdAndItemGuid(SQLHelper SQLHelper, long OfferId, Guid ItemGuid)
+        {
+            SQLHelper.Parameters["@OfferId"] = OfferId;
+            SQLHelper.Parameters["@ItemGuid"] = ItemGuid.ToString();
+            return $"{Command_Delete} {Command_From} {TableName_Backup} {Command_Where} {Column_OfferId} = @OfferId {Command_And} {Column_ItemGuid} = @ItemGuid";
+        }
     }
 }
