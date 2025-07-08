@@ -288,6 +288,14 @@ namespace Milimoe.FunGame.Core.Entity
                     }
                 }
             }
+            if (Level > 0 && Character != null)
+            {
+                Effect[] effects = [.. Character.Effects.Where(e => e.IsInEffect)];
+                foreach (Effect e in effects)
+                {
+                    e.OnSkillLevelUp(Character, Level);
+                }
+            }
         }
 
         /// <summary>

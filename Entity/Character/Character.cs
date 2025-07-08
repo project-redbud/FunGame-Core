@@ -1190,6 +1190,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="checkLevelBreak"></param>
         public void OnLevelUp(int level = 0, bool checkLevelBreak = true)
         {
+            bool isUp = false;
             int count = 0;
             while (true)
             {
@@ -1213,12 +1214,21 @@ namespace Milimoe.FunGame.Core.Entity
                 {
                     EXP -= need;
                     Level++;
+                    isUp = true;
                     OnAttributeChanged();
                     Recovery();
                 }
                 else
                 {
                     break;
+                }
+            }
+            if (isUp)
+            {
+                Effect[] effects = [.. Effects.Where(e => e.IsInEffect)];
+                foreach (Effect e in effects)
+                {
+                    e.OnOwnerLevelUp(this, Level);
                 }
             }
         }
