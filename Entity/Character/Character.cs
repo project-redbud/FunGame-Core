@@ -666,16 +666,19 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 力量成长值(+BaseSTR/Lv)
         /// </summary>
+        [InitOptional]
         public double STRGrowth { get; set; } = 0;
 
         /// <summary>
         /// 敏捷成长值(+BaseAGI/Lv)
         /// </summary>
+        [InitOptional]
         public double AGIGrowth { get; set; } = 0;
 
         /// <summary>
         /// 智力成长值(+BaseINT/Lv)
         /// </summary>
+        [InitOptional]
         public double INTGrowth { get; set; } = 0;
 
         /// <summary>
@@ -687,7 +690,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 行动速度 = [ 与初始设定相关 ][ 与敏捷相关 ] + 额外行动速度
         /// </summary>
-        public double SPD => InitialSPD + AGI * GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
+        public double SPD => Math.Max(0, InitialSPD + AGI * GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD);
 
         /// <summary>
         /// 额外行动速度 [ 与技能和物品相关 ]
@@ -719,7 +722,7 @@ namespace Milimoe.FunGame.Core.Entity
             get
             {
                 double value = INT * GameplayEquilibriumConstant.INTtoAccelerationCoefficientMultiplier + ExAccelerationCoefficient;
-                return Calculation.PercentageCheck(value);
+                return Math.Min(1, value);
             }
         }
 
@@ -736,7 +739,7 @@ namespace Milimoe.FunGame.Core.Entity
             get
             {
                 double value = INT * GameplayEquilibriumConstant.INTtoCDRMultiplier + ExCDR;
-                return Calculation.PercentageCheck(value);
+                return Math.Min(1, value);
             }
         }
 
