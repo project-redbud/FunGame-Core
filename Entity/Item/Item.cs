@@ -446,11 +446,11 @@ namespace Milimoe.FunGame.Core.Entity
 
             if (isShowInStore && Price > 0)
             {
-                builder.AppendLine($"售价：{Price} {GameplayEquilibriumConstant.InGameCurrency}");
+                builder.AppendLine($"售价：{Price:0.##} {GameplayEquilibriumConstant.InGameCurrency}");
             }
             else if (Price > 0)
             {
-                builder.AppendLine($"回收价：{Price} {GameplayEquilibriumConstant.InGameCurrency}");
+                builder.AppendLine($"回收价：{Price:0.##} {GameplayEquilibriumConstant.InGameCurrency}");
             }
 
             if (RemainUseTimes > 0)

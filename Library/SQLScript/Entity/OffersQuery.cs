@@ -39,10 +39,11 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             SQLHelper.Parameters["@Offeror"] = Offeror;
             SQLHelper.Parameters["@Offeree"] = Offeree;
             SQLHelper.Parameters["@Status"] = (int)Status;
+            SQLHelper.Parameters["@CreateTime"] = DateTime.Now;
             SQLHelper.Parameters["@NegotiatedTimes"] = NegotiatedTimes;
 
-            return $"{Command_Insert} {Command_Into} {TableName} ({Column_Offeror}, {Column_Offeree}, {Column_Status}, {Column_NegotiatedTimes}) " +
-                   $"{Command_Values} (@Offeror, @Offeree, @Status, @NegotiatedTimes)";
+            return $"{Command_Insert} {Command_Into} {TableName} ({Column_Offeror}, {Column_Offeree}, {Column_Status}, {Column_CreateTime}), {Column_NegotiatedTimes}) " +
+                   $"{Command_Values} (@Offeror, @Offeree, @Status, @CreateTime, @NegotiatedTimes)";
         }
 
         public static string Update_OfferStatus(SQLHelper SQLHelper, long Id, OfferState Status)

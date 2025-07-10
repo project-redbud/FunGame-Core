@@ -1390,7 +1390,7 @@ namespace Milimoe.FunGame.Core.Entity
             if (showEXP)
             {
                 builder.AppendLine($"等级：{Level} / {GameplayEquilibriumConstant.MaxLevel}（突破进度：{LevelBreak + 1} / {GameplayEquilibriumConstant.LevelBreakList.Count}）");
-                builder.AppendLine($"经验值：{EXP}{(Level != GameplayEquilibriumConstant.MaxLevel && GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) ? " / " + need : "")}");
+                builder.AppendLine($"经验值：{EXP:0.##}{(Level != GameplayEquilibriumConstant.MaxLevel && GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) ? " / " + need : "")}");
             }
             double exHP = ExHP + ExHP2 + ExHP3;
             List<string> shield = [];
@@ -1477,7 +1477,7 @@ namespace Milimoe.FunGame.Core.Entity
             if (showEXP)
             {
                 builder.AppendLine($"等级：{Level} / {GameplayEquilibriumConstant.MaxLevel}（突破进度：{LevelBreak + 1} / {GameplayEquilibriumConstant.LevelBreakList.Count}）");
-                builder.AppendLine($"经验值：{EXP}{(Level != GameplayEquilibriumConstant.MaxLevel && GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) ? " / " + need : "")}");
+                builder.AppendLine($"经验值：{EXP:0.##}{(Level != GameplayEquilibriumConstant.MaxLevel && GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) ? " / " + need : "")}");
             }
             double exHP = ExHP + ExHP2 + ExHP3;
             List<string> shield = [];
@@ -1687,7 +1687,7 @@ namespace Milimoe.FunGame.Core.Entity
             if (showEXP)
             {
                 builder.AppendLine($"等级：{Level} / {GameplayEquilibriumConstant.MaxLevel}（突破进度：{LevelBreak + 1} / {GameplayEquilibriumConstant.LevelBreakList.Count}）");
-                builder.AppendLine($"经验值：{EXP}{(Level != GameplayEquilibriumConstant.MaxLevel && GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) ? " / " + need : "")}");
+                builder.AppendLine($"经验值：{EXP:0.##}{(Level != GameplayEquilibriumConstant.MaxLevel && GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) ? " / " + need : "")}");
             }
             double exHP = ExHP + ExHP2 + ExHP3;
             List<string> shield = [];
