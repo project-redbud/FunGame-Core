@@ -98,6 +98,15 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         {
             return true;
         }
+        
+        /// <summary>
+        /// 当 Web API 服务启动完成后触发
+        /// </summary>
+        /// <returns></returns>
+        public virtual void OnWebAPIStarted(params object[] objs)
+        {
+
+        }
 
         /// <summary>
         /// 绑定事件。在<see cref="BeforeLoad"/>后触发

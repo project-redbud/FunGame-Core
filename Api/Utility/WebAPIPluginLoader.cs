@@ -52,6 +52,14 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
         }
 
+        public void OnWebAPIStarted(params object[] objs)
+        {
+            Parallel.ForEach(Plugins.Values, plugin =>
+             {
+                 plugin.OnWebAPIStarted(objs);
+             });
+        }
+
         public void OnBeforeConnectEvent(object sender, ConnectEventArgs e)
         {
             Parallel.ForEach(Plugins.Values, plugin =>
