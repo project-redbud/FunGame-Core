@@ -117,6 +117,11 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         public Dictionary<string, object> CustomData { get; } = [];
 
+        /// <summary>
+        /// 金币奖励记录
+        /// </summary>
+        public Dictionary<Character, int> EarnedMoney => _earnedMoney;
+
         #endregion
 
         #region 保护变量

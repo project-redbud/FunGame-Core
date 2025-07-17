@@ -473,36 +473,47 @@ namespace Milimoe.FunGame.Core.Entity
             else
             {
                 List<string> sellandtrade = [];
+                bool useRN = false;
 
-                if (IsSellable)
-                {
-                    sellandtrade.Add("可出售");
-                }
-
-                if (!IsSellable && NextSellableTime != DateTime.MinValue)
-                {
-                    sellandtrade.Add($"此物品将在 {NextSellableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可出售");
-                }
-                else if (!IsSellable)
+                if (IsLock)
                 {
                     sellandtrade.Add("不可出售");
-                }
-
-                if (IsTradable)
-                {
-                    sellandtrade.Add("可交易");
-                }
-
-                if (!IsTradable && NextTradableTime != DateTime.MinValue)
-                {
-                    sellandtrade.Add($"此物品将在 {NextTradableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可交易");
-                }
-                else if (!IsTradable)
-                {
                     sellandtrade.Add("不可交易");
                 }
+                else
+                {
+                    if (IsSellable)
+                    {
+                        sellandtrade.Add("可出售");
+                    }
 
-                if (sellandtrade.Count > 0) builder.AppendLine(string.Join(" ", sellandtrade).Trim());
+                    if (!IsSellable && NextSellableTime != DateTime.MinValue)
+                    {
+                        useRN = true;
+                        sellandtrade.Add($"此物品将在 {NextSellableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可出售");
+                    }
+                    else if (!IsSellable)
+                    {
+                        sellandtrade.Add("不可出售");
+                    }
+
+                    if (IsTradable)
+                    {
+                        sellandtrade.Add("可交易");
+                    }
+
+                    if (!IsTradable && NextTradableTime != DateTime.MinValue)
+                    {
+                        useRN = true;
+                        sellandtrade.Add($"此物品将在 {NextTradableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可交易");
+                    }
+                    else if (!IsTradable)
+                    {
+                        sellandtrade.Add("不可交易");
+                    }
+                }
+
+                if (sellandtrade.Count > 0) builder.AppendLine(string.Join(useRN ? "\r\n" : " ", sellandtrade).Trim());
             }
 
             if (isShowGeneralDescription && GeneralDescription != "")

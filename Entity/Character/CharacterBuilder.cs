@@ -241,8 +241,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="itemsDefined">对于动态扩展的物品而言，传入已定义的物品表，不使用被复制物品的数据</param>
         /// <param name="skillsDefined">对于动态扩展的技能而言，传入已定义的技能表，不使用被复制技能的数据</param>
         /// <param name="recovery"></param>
+        /// <param name="copyEP"></param>
         /// <returns>构建的新角色</returns>
-        public static Character Build(Character reference, bool newItemGuid = true, bool copyLevel = true, Inventory? inventory = null, IEnumerable<Item>? itemsDefined = null, IEnumerable<Skill>? skillsDefined = null, bool recovery = true)
+        public static Character Build(Character reference, bool newItemGuid = true, bool copyLevel = true, Inventory? inventory = null, IEnumerable<Item>? itemsDefined = null, IEnumerable<Skill>? skillsDefined = null, bool recovery = true, bool copyEP = true)
         {
             Character character = new CharacterBuilder(reference).Build(reference.Skills, reference.Items, newItemGuid, reference.EquipSlot, inventory, itemsDefined, skillsDefined);
             if (copyLevel)
@@ -262,6 +263,7 @@ namespace Milimoe.FunGame.Core.Entity
                 character.HP = reference.HP;
                 character.MP = reference.MP;
             }
+            if (copyEP) character.EP = reference.EP;
             return character;
         }
     }
