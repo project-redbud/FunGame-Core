@@ -589,9 +589,9 @@ namespace Milimoe.FunGame.Core.Model
                 // 统计
                 _stats[character].LiveRound += 1;
                 _stats[character].LiveTime += timeToReduce;
-                _stats[character].DamagePerRound = _stats[character].TotalDamage / _stats[character].LiveRound;
-                _stats[character].DamagePerTurn = _stats[character].TotalDamage / _stats[character].ActionTurn;
-                _stats[character].DamagePerSecond = _stats[character].TotalDamage / _stats[character].LiveTime;
+                _stats[character].DamagePerRound = _stats[character].LiveRound == 0 ? 0 : _stats[character].TotalDamage / _stats[character].LiveRound;
+                _stats[character].DamagePerTurn = _stats[character].ActionTurn == 0 ? 0 : _stats[character].TotalDamage / _stats[character].ActionTurn;
+                _stats[character].DamagePerSecond = _stats[character].LiveTime == 0 ? 0 : _stats[character].TotalDamage / _stats[character].LiveTime;
 
                 // 回血回蓝
                 double recoveryHP = character.HR * timeToReduce;
