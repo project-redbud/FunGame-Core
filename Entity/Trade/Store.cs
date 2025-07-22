@@ -7,12 +7,19 @@ namespace Milimoe.FunGame.Core.Entity
     public class Store : BaseEntity
     {
         public User User { get; set; } = General.UnknownUserInstance;
+        public string Description { get; set; } = "";
         public DateTime? StartTime { get; set; } = null;
         public DateTime? EndTime { get; set; } = null;
+        public DateTime? StartTimeOfDay { get; set; } = null;
+        public DateTime? EndTimeOfDay { get; set; } = null;
         public Dictionary<long, Goods> Goods { get; } = [];
         public bool AutoRefresh { get; set; } = false;
         public DateTime NextRefreshDate { get; set; } = DateTime.MinValue;
+        public Dictionary<long, Goods> NextRefreshGoods { get; } = [];
         public int RefreshInterval { get; set; } = 1; // Days
+        public bool GetNewerGoodsOnVisiting { get; set; } = false;
+        public bool GlobalStock { get; set; } = false;
+        public DateTime? ExpireTime { get; set; } = null;
 
         public Store(string name, User? user = null)
         {
@@ -28,24 +35,36 @@ namespace Milimoe.FunGame.Core.Entity
             StringBuilder builder = new();
 
             builder.AppendLine($"☆★☆ {Name} ☆★☆");
+            if (Description != "") builder.AppendLine($"{Description}");
             if (StartTime.HasValue && EndTime.HasValue)
             {
-                builder.AppendLine($"营业时间：{StartTime.Value.ToString(General.GeneralDateTimeFormatChinese)} 至 {EndTime.Value.ToString(General.GeneralDateTimeFormatChinese)}");
+                builder.AppendLine($"开放时间：{StartTime.Value.ToString(General.GeneralDateTimeFormatChinese)} 至 {EndTime.Value.ToString(General.GeneralDateTimeFormatChinese)}");
             }
             else if (StartTime.HasValue && !EndTime.HasValue)
             {
-                builder.AppendLine($"开始营业时间：{StartTime.Value.ToString(General.GeneralDateTimeFormatChinese)}");
+                builder.AppendLine($"开始开放时间：{StartTime.Value.ToString(General.GeneralDateTimeFormatChinese)}");
             }
             else if (!StartTime.HasValue && EndTime.HasValue)
             {
-                builder.AppendLine($"停止营业时间：{EndTime.Value.ToString(General.GeneralDateTimeFormatChinese)}");
+                builder.AppendLine($"停止开放时间：{EndTime.Value.ToString(General.GeneralDateTimeFormatChinese)}");
             }
             else
             {
-                builder.AppendLine($"[ 24H ] 全年无休，永久开放");
+                builder.AppendLine($"开放时间：全年无休，永久开放");
+            }
+            if (StartTimeOfDay.HasValue && EndTimeOfDay.HasValue)
+            {
+                builder.AppendLine($"每日营业时间：{StartTimeOfDay.Value.ToString(General.GeneralDateTimeFormatTimeOnly)} 至 {EndTimeOfDay.Value.ToString(General.GeneralDateTimeFormatTimeOnly)}");
+                DateTime now = DateTime.Now;
+                if (StartTimeOfDay.Value > now || EndTimeOfDay.Value < now) builder.AppendLine($"商店现在还未开始营业。");
+            }
+            else
+            {
+                builder.AppendLine($"[ 24H ] 全天营业");
             }
             builder.AppendLine($"☆--- 商品列表 ---☆");
-            foreach (Goods goods in Goods.Values)
+            Goods[] goodsValid = [.. Goods.Values.Where(g => !g.ExpireTime.HasValue || g.ExpireTime.Value > DateTime.Now)];
+            foreach (Goods goods in goodsValid)
             {
                 builder.AppendLine(goods.ToString());
             }
@@ -114,12 +133,25 @@ namespace Milimoe.FunGame.Core.Entity
         {
             if (AutoRefresh)
             {
-                time ??= DateTime.Now;
-                NextRefreshDate = time.Value.AddDays(RefreshInterval);
+                DateTime now = DateTime.Now;
+                time ??= NextRefreshDate;
+                if (now > time)
+                {
+                    NextRefreshDate = time.Value.AddDays(RefreshInterval);
+                }
             }
             else
             {
                 NextRefreshDate = DateTime.MinValue;
+            }
+        }
+
+        public void CopyGoodsToNextRefreshGoods()
+        {
+            NextRefreshGoods.Clear();
+            foreach (long goodsId in Goods.Keys)
+            {
+                NextRefreshGoods.Add(goodsId, Goods[goodsId]);
             }
         }
 
