@@ -32,6 +32,11 @@ namespace Milimoe.FunGame.Core.Entity
 
         public override string ToString()
         {
+            return ToString(null);
+        }
+
+        public string ToString(User? user = null)
+        {
             StringBuilder builder = new();
 
             builder.AppendLine($"☆★☆ {Name} ☆★☆");
@@ -66,7 +71,7 @@ namespace Milimoe.FunGame.Core.Entity
             Goods[] goodsValid = [.. Goods.Values.Where(g => !g.ExpireTime.HasValue || g.ExpireTime.Value > DateTime.Now)];
             foreach (Goods goods in goodsValid)
             {
-                builder.AppendLine(goods.ToString());
+                builder.AppendLine(goods.ToString(user));
             }
             builder.AppendLine("提示：使用【商店查看+序号】查看物品详细信息，使用【商店购买+序号】购买物品（指令在 2 分钟内可用）。");
             if (AutoRefresh)
