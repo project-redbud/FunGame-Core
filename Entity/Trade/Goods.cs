@@ -52,15 +52,15 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"商品描述：{Description}");
             builder.AppendLine($"商品售价：{(Prices.Count > 0 ? string.Join("、", Prices.Select(kv => $"{kv.Value} {kv.Key}")) : "免费")}");
             builder.AppendLine($"包含物品：{string.Join("、", Items.Select(i => $"[{ItemSet.GetQualityTypeName(i.QualityType)}|{ItemSet.GetItemTypeName(i.ItemType)}] {i.Name}"))}");
-            builder.AppendLine($"剩余库存：{(Stock == -1 ? "不限" : Stock)}");
+            int buyCount = 0;
+            if (user != null)
+            {
+                UsersBuyCount.TryGetValue(user.Id, out buyCount);
+            }
+            builder.AppendLine($"剩余库存：{(Stock == -1 ? "不限" : Stock)}（已购：{buyCount}）");
             if (Quota > 0)
             {
-                int buyCount = 0;
-                if (user != null)
-                {
-                    UsersBuyCount.TryGetValue(user.Id, out buyCount);
-                }
-                builder.AppendLine($"限购数量：{Quota}（已购：{buyCount}）");
+                builder.AppendLine($"限购数量：{Quota}");
             }
             return builder.ToString().Trim();
         }

@@ -151,12 +151,13 @@ namespace Milimoe.FunGame.Core.Entity
             }
         }
 
-        public void CopyGoodsToNextRefreshGoods()
+        public void CopyGoodsToNextRefreshGoods(Dictionary<long, Goods>? goods = null)
         {
+            goods ??= Goods;
             NextRefreshGoods.Clear();
-            foreach (long goodsId in Goods.Keys)
+            foreach (long goodsId in goods.Keys)
             {
-                NextRefreshGoods.Add(goodsId, Goods[goodsId]);
+                NextRefreshGoods.Add(goodsId, goods[goodsId]);
             }
         }
 
