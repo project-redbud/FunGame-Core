@@ -69,11 +69,18 @@ namespace Milimoe.FunGame.Core.Entity
             }
             builder.AppendLine($"☆--- 商品列表 ---☆");
             Goods[] goodsValid = [.. Goods.Values.Where(g => !g.ExpireTime.HasValue || g.ExpireTime.Value > DateTime.Now)];
-            foreach (Goods goods in goodsValid)
+            if (goodsValid.Length == 0)
             {
-                builder.AppendLine(goods.ToString(user));
+                builder.AppendLine("当前没有商品可供购买，过一段时间再来吧。");
             }
-            builder.AppendLine("提示：使用【商店查看+序号】查看物品详细信息，使用【商店购买+序号】购买物品（指令在 2 分钟内可用）。");
+            else
+            {
+                foreach (Goods goods in goodsValid)
+                {
+                    builder.AppendLine(goods.ToString(user));
+                }
+                builder.AppendLine("提示：使用【商店查看+序号】查看物品详细信息，使用【商店购买+序号】购买物品（指令在 2 分钟内可用）。");
+            }
             if (AutoRefresh)
             {
                 builder.AppendLine($"商品将在 {NextRefreshDate.ToString(General.GeneralDateTimeFormatChinese)} 刷新。");
