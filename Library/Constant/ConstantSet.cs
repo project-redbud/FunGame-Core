@@ -62,6 +62,16 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 _ => "已过期"
             };
         }
+
+        public static string GetMarketItemStatus(MarketItemState status)
+        {
+            return status switch
+            {
+                MarketItemState.Delisted => "已下架",
+                MarketItemState.Purchased => "已售罄",
+                _ => "已上架"
+            };
+        }
     }
 
     /// <summary>

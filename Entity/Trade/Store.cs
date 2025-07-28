@@ -60,16 +60,40 @@ namespace Milimoe.FunGame.Core.Entity
             if (StartTimeOfDay.HasValue && EndTimeOfDay.HasValue)
             {
                 builder.AppendLine($"每日营业时间：{StartTimeOfDay.Value.ToString(General.GeneralDateTimeFormatTimeOnly)} 至 {EndTimeOfDay.Value.ToString(General.GeneralDateTimeFormatTimeOnly)}");
-                DateTime now = DateTime.Now;
-                if (StartTimeOfDay.Value > now || EndTimeOfDay.Value < now) builder.AppendLine($"商店现在还未开始营业。");
             }
             else
             {
                 builder.AppendLine($"[ 24H ] 全天营业");
             }
+            DateTime now = DateTime.Now;
+            TimeSpan nowTimeOfDay = now.TimeOfDay;
+            bool isStoreOpen = true;
+            bool isStoreOpenInDate = true;
+            if (StartTime.HasValue && StartTime.Value > now || EndTime.HasValue && EndTime.Value < now)
+            {
+                isStoreOpen = false;
+                isStoreOpenInDate = false;
+            }
+            if (isStoreOpen && StartTimeOfDay.HasValue && EndTimeOfDay.HasValue)
+            {
+                TimeSpan startTimeSpan = StartTimeOfDay.Value.TimeOfDay;
+                TimeSpan endTimeSpan = EndTimeOfDay.Value.TimeOfDay;
+                if (startTimeSpan <= endTimeSpan)
+                {
+                    isStoreOpen = nowTimeOfDay >= startTimeSpan && nowTimeOfDay <= endTimeSpan;
+                }
+                else
+                {
+                    isStoreOpen = nowTimeOfDay >= startTimeSpan || nowTimeOfDay <= endTimeSpan;
+                }
+            }
+            if (!isStoreOpen)
+            {
+                builder.AppendLine($"商店现在不在营业时间内。");
+            }
             builder.AppendLine($"☆--- 商品列表 ---☆");
             Goods[] goodsValid = [.. Goods.Values.Where(g => !g.ExpireTime.HasValue || g.ExpireTime.Value > DateTime.Now)];
-            if (goodsValid.Length == 0)
+            if (!isStoreOpen || goodsValid.Length == 0)
             {
                 builder.AppendLine("当前没有商品可供购买，过一段时间再来吧。");
             }
@@ -79,9 +103,9 @@ namespace Milimoe.FunGame.Core.Entity
                 {
                     builder.AppendLine(goods.ToString(user));
                 }
-                builder.AppendLine("提示：使用【商店查看+序号】查看物品详细信息，使用【商店购买+序号】购买物品（指令在 2 分钟内可用）。");
+                builder.AppendLine("提示：使用【商店查看+序号】查看商品详细信息，使用【商店购买+序号】购买商品（指令在 2 分钟内可用）。");
             }
-            if (AutoRefresh)
+            if (isStoreOpenInDate && AutoRefresh)
             {
                 builder.AppendLine($"商品将在 {NextRefreshDate.ToString(General.GeneralDateTimeFormatChinese)} 刷新。");
             }

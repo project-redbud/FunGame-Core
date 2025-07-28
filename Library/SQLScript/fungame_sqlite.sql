@@ -92,7 +92,7 @@ CREATE TABLE MarketItems (
  CreateTime DATETIME NOT NULL DEFAULT (DATETIME('now')),
  FinishTime DATETIME DEFAULT NULL,
  Status INTEGER NOT NULL DEFAULT 0,
- Buyer INTEGER NOT NULL DEFAULT 0
+ Buyers TEXT NOT NULL DEFAULT ''
 );
 
 -- ----------------------------

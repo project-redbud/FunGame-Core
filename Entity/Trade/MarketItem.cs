@@ -6,13 +6,20 @@ namespace Milimoe.FunGame.Core.Entity
 {
     public class MarketItem : BaseEntity
     {
-        public User User { get; set; }
+        public long User { get; set; } = 0;
+        public string Username { get; set; } = "";
         public Item Item { get; set; }
         public double Price { get; set; } = 0;
+        public int Stock { get; set; } = 0;
         public DateTime CreateTime { get; set; } = DateTime.Now;
         public DateTime? FinishTime { get; set; } = null;
         public MarketItemState Status { get; set; } = MarketItemState.Listed;
-        public User? Buyer { get; set; } = null;
+        public HashSet<long> Buyers { get; set; } = [];
+
+        public override string ToString()
+        {
+            return Item.Name;
+        }
 
         public override bool Equals(IBaseEntity? other)
         {
@@ -21,7 +28,6 @@ namespace Milimoe.FunGame.Core.Entity
 
         public MarketItem()
         {
-            User = Factory.GetUser();
             Item = Factory.GetItem();
         }
     }

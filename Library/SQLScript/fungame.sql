@@ -95,7 +95,7 @@ CREATE TABLE `MarketItems` (
  `CreateTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
  `FinishTime` datetime DEFAULT NULL,
  `Status` int(10) NOT NULL DEFAULT '0',
- `Buyer` bigint(20) NOT NULL DEFAULT '0',
+ `Buyers` varchar(255) NOT NULL DEFAULT '',
  PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
