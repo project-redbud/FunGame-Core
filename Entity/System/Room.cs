@@ -42,6 +42,11 @@ namespace Milimoe.FunGame.Core.Entity
             Statistics = new(this);
         }
 
+        public override string ToString()
+        {
+            return $"[ {Roomid} ] {Name}";
+        }
+
         public override bool Equals(IBaseEntity? other)
         {
             return other is Room r && r.Roomid == Roomid;
