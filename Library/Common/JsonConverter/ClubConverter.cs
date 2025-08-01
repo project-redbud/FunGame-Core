@@ -73,6 +73,13 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                         result.Applicants[id] = new(id);
                     }
                     break;
+                case nameof(Club.Invitees):
+                    List<long> invitees = NetworkUtility.JsonDeserialize<List<long>>(ref reader, options) ?? [];
+                    foreach (long id in invitees)
+                    {
+                        result.Invitees[id] = new(id);
+                    }
+                    break;
                 case nameof(Club.MemberJoinTime):
                     Dictionary<long, DateTime> memberJoinTime = NetworkUtility.JsonDeserialize<Dictionary<long, DateTime>>(ref reader, options) ?? [];
                     foreach (long id in memberJoinTime.Keys)
@@ -85,6 +92,13 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     foreach (long id in applicationTime.Keys)
                     {
                         result.ApplicationTime[id] = applicationTime[id];
+                    }
+                    break;
+                case nameof(Club.InvitedTime):
+                    Dictionary<long, DateTime> invitedTime = NetworkUtility.JsonDeserialize<Dictionary<long, DateTime>>(ref reader, options) ?? [];
+                    foreach (long id in invitedTime.Keys)
+                    {
+                        result.InvitedTime[id] = invitedTime[id];
                     }
                     break;
             }
@@ -111,10 +125,14 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             JsonSerializer.Serialize(writer, value.Members.Keys, options);
             writer.WritePropertyName(nameof(Club.Applicants));
             JsonSerializer.Serialize(writer, value.Applicants.Keys, options);
+            writer.WritePropertyName(nameof(Club.Invitees));
+            JsonSerializer.Serialize(writer, value.Invitees.Keys, options);
             writer.WritePropertyName(nameof(Club.MemberJoinTime));
             JsonSerializer.Serialize(writer, value.MemberJoinTime, options);
             writer.WritePropertyName(nameof(Club.ApplicationTime));
             JsonSerializer.Serialize(writer, value.ApplicationTime, options);
+            writer.WritePropertyName(nameof(Club.InvitedTime));
+            JsonSerializer.Serialize(writer, value.InvitedTime, options);
 
             writer.WriteEndObject();
         }

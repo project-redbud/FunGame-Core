@@ -35,7 +35,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="characters"></param>
         public void AddTeam(string teamName, IEnumerable<Character> characters)
         {
-            if (teamName != "" && characters.Any())
+            if (teamName != "" && characters.Any(c => c.HP > 0))
             {
                 _teams.Add(teamName, new(teamName, characters));
             }
@@ -176,7 +176,6 @@ namespace Milimoe.FunGame.Core.Model
             if (killTeam != null)
             {
                 List<Character> actives = killTeam.GetActiveCharacters(this);
-                actives.Add(killer);
                 int remainCount = actives.Count;
                 if (remainCount > 0 && MaxRespawnTimes == 0)
                 {
