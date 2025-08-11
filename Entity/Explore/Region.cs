@@ -51,7 +51,7 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"☆--- {Name} ---☆");
             builder.AppendLine($"编号：{Id}");
             builder.AppendLine($"天气：{Weather}");
-            builder.AppendLine($"温度：{Temperature} °C");
+            builder.AppendLine($"温度：{Temperature} ℃");
             builder.AppendLine($"{Description}");
 
             if (Characters.Count > 0)
