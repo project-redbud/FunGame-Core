@@ -2,6 +2,7 @@
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
+using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Model
@@ -122,6 +123,11 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         public Dictionary<Character, int> EarnedMoney => _earnedMoney;
 
+        /// <summary>
+        /// 使用的地图
+        /// </summary>
+        public GameMap? Map => _map;
+
         #endregion
 
         #region 保护变量
@@ -241,6 +247,11 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         protected bool _isInRound = false;
 
+        /// <summary>
+        /// 使用的地图
+        /// </summary>
+        protected GameMap? _map = null;
+
         #endregion
 
         #region 构造函数
@@ -249,13 +260,18 @@ namespace Milimoe.FunGame.Core.Model
         /// 新建一个基础回合制游戏队列
         /// </summary>
         /// <param name="writer">用于文本输出</param>
-        public GamingQueue(Action<string>? writer = null)
+        /// <param name="map">游戏地图</param>
+        public GamingQueue(Action<string>? writer = null, GameMap? map = null)
         {
             if (writer != null)
             {
                 WriteLine = writer;
             }
             WriteLine ??= new Action<string>(Console.WriteLine);
+            if (map != null)
+            {
+                LoadGameMap(map);
+            }
         }
 
         /// <summary>
@@ -263,14 +279,32 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         /// <param name="characters">参与本次游戏的角色列表</param>
         /// <param name="writer">用于文本输出</param>
-        public GamingQueue(List<Character> characters, Action<string>? writer = null)
+        /// <param name="map">游戏地图</param>
+        public GamingQueue(List<Character> characters, Action<string>? writer = null, GameMap? map = null)
         {
             if (writer != null)
             {
                 WriteLine = writer;
             }
             WriteLine ??= new Action<string>(Console.WriteLine);
+            if (map != null)
+            {
+                LoadGameMap(map);
+            }
             InitCharacters(characters);
+        }
+
+        #endregion
+
+        #region 战棋地图（#TODO）
+
+        /// <summary>
+        /// 加载地图
+        /// </summary>
+        /// <param name="map"></param>
+        public void LoadGameMap(GameMap map)
+        {
+            _map = map;
         }
 
         #endregion
@@ -800,6 +834,10 @@ namespace Milimoe.FunGame.Core.Model
                 effect.AlterSelectListBeforeAction(character, enemys, teammates, skills, continuousKillingTemp, earnedMoneyTemp);
             }
 
+            // 这里筛掉重复角色
+            enemys = [.. enemys.Distinct()];
+            teammates = [.. teammates.Distinct()];
+
             // 作出了什么行动
             CharacterActionType type = CharacterActionType.None;
 
@@ -1208,6 +1246,13 @@ namespace Milimoe.FunGame.Core.Model
                     decided = true;
                     WriteLine($"[ {character} ] 结束了回合！");
                     await OnCharacterDoNothingAsync(character);
+                }
+                else if (type == CharacterActionType.Move)
+                {
+                    baseTime = 3;
+                    decided = true;
+                    WriteLine($"[ {character} ] 进行了移动，并结束了回合！");
+                    await OnCharacterMoveAsync(character);
                 }
                 else
                 {
@@ -3496,6 +3541,21 @@ namespace Milimoe.FunGame.Core.Model
         protected async Task OnCharacterGiveUpAsync(Character actor)
         {
             await (CharacterGiveUp?.Invoke(this, actor) ?? Task.CompletedTask);
+        }
+
+        public delegate Task CharacterMoveEventHandler(GamingQueue queue, Character actor);
+        /// <summary>
+        /// 角色移动事件
+        /// </summary>
+        public event CharacterMoveEventHandler? CharacterMove;
+        /// <summary>
+        /// 角色移动事件
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <returns></returns>
+        protected async Task OnCharacterMoveAsync(Character actor)
+        {
+            await (CharacterMove?.Invoke(this, actor) ?? Task.CompletedTask);
         }
 
         public delegate Task<bool> GameEndEventHandler(GamingQueue queue, Character winner);

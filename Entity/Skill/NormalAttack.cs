@@ -194,9 +194,9 @@ namespace Milimoe.FunGame.Core.Entity
         public int CanSelectTargetCount { get; set; } = 1;
 
         /// <summary>
-        /// 可选取的作用范围
+        /// 可选取的作用范围 [ 单位：格 ]
         /// </summary>
-        public double CanSelectTargetRange { get; set; } = 0;
+        public int CanSelectTargetRange { get; set; } = 0;
 
         /// <summary>
         /// 普通攻击没有魔法消耗

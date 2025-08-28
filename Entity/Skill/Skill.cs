@@ -68,7 +68,6 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 是否是主动技能 [ 此项为高优先级 ]
         /// </summary>
-        [InitRequired]
         public bool IsActive => SkillType != SkillType.Passive;
 
         /// <summary>
@@ -84,14 +83,18 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 是否是爆发技 [ 此项为高优先级 ]
         /// </summary>
-        [InitRequired]
         public bool IsSuperSkill => SkillType == SkillType.SuperSkill;
 
         /// <summary>
         /// 是否属于魔法 [ <see cref="IsActive"/> 必须为 true ]，反之为战技
         /// </summary>
-        [InitRequired]
         public bool IsMagic => SkillType == SkillType.Magic;
+
+        /// <summary>
+        /// 施法距离 [ 单位：格 ]
+        /// </summary>
+        [InitOptional]
+        public int CastRange { get; set; } = 5;
 
         /// <summary>
         /// 可选取自身
@@ -124,9 +127,9 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual int CanSelectTargetCount { get; set; } = 1;
 
         /// <summary>
-        /// 可选取的作用范围
+        /// 可选取的作用范围 [ 单位：格 ]
         /// </summary>
-        public virtual double CanSelectTargetRange { get; set; } = 0;
+        public virtual int CanSelectTargetRange { get; set; } = 0;
 
         /// <summary>
         /// 选取角色的条件

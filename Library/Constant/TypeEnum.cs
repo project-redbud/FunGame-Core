@@ -740,6 +740,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
     public enum CharacterActionType
     {
         None,
+        Move,
         NormalAttack,
         PreCastSkill,
         CastSkill,

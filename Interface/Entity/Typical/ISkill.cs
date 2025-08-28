@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Entity;
 
 namespace Milimoe.FunGame.Core.Interface.Entity
 {
@@ -57,9 +58,9 @@ namespace Milimoe.FunGame.Core.Interface.Entity
         public int CanSelectTargetCount { get; }
 
         /// <summary>
-        /// 可选取的作用范围
+        /// 可选取的作用范围 [ 单位：格 ]
         /// </summary>
-        public double CanSelectTargetRange { get; }
+        public int CanSelectTargetRange { get; }
 
         /// <summary>
         /// 实际魔法消耗 [ 魔法 ]

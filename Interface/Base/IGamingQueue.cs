@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
 
@@ -59,6 +60,11 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// 对于某角色而言，在其行动的回合叫 Turn，而所有角色行动的回合，都称之为 Round。
         /// </summary>
         public int TotalRound { get; }
+
+        /// <summary>
+        /// 使用的地图
+        /// </summary>
+        public GameMap? Map { get; }
 
         /// <summary>
         /// 显示队列信息
