@@ -198,7 +198,10 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.ExCDR = reader.GetDouble();
                     break;
                 case nameof(Character.ATR):
-                    result.ATR = reader.GetDouble();
+                    result.ATR = reader.GetInt32();
+                    break;
+                case nameof(Character.MOV):
+                    result.MOV = reader.GetInt32();
                     break;
                 case nameof(Character.ExCritRate):
                     result.ExCritRate = reader.GetDouble();
@@ -309,6 +312,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Character.ExAccelerationCoefficient), value.ExAccelerationCoefficient);
             writer.WriteNumber(nameof(Character.ExCDR), value.ExCDR);
             writer.WriteNumber(nameof(Character.ATR), value.ATR);
+            writer.WriteNumber(nameof(Character.MOV), value.MOV);
             writer.WriteNumber(nameof(Character.ExCritRate), value.ExCritRate);
             writer.WriteNumber(nameof(Character.ExCritDMG), value.ExCritDMG);
             writer.WriteNumber(nameof(Character.ExEvadeRate), value.ExEvadeRate);

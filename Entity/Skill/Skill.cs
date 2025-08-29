@@ -91,6 +91,11 @@ namespace Milimoe.FunGame.Core.Entity
         public bool IsMagic => SkillType == SkillType.Magic;
 
         /// <summary>
+        /// 是否无视施法距离（全图施法），魔法默认为 true，战技默认为 false
+        /// </summary>
+        public bool CastAnyWhere { get; set; } = false;
+        
+        /// <summary>
         /// 施法距离 [ 单位：格 ]
         /// </summary>
         [InitOptional]
@@ -254,6 +259,7 @@ namespace Milimoe.FunGame.Core.Entity
         protected Skill(SkillType type, Character? character = null)
         {
             SkillType = type;
+            CastAnyWhere = SkillType == SkillType.Magic;
             Character = character;
         }
 

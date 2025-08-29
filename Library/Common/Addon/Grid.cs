@@ -3,8 +3,13 @@ using Milimoe.FunGame.Core.Entity;
 
 namespace Milimoe.FunGame.Core.Library.Common.Addon
 {
-    public struct Grid(int id, float x, float y, float z)
+    public class Grid(int id, int x, int y, int z)
     {
+        /// <summary>
+        /// 空格子
+        /// </summary>
+        public static Grid Empty { get; } = new Grid(-1, 0, 0, 0);
+
         /// <summary>
         /// 格子编号
         /// </summary>
@@ -13,17 +18,17 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 格子在地图中的x坐标
         /// </summary>
-        public float X { get; } = x;
+        public int X { get; } = x;
 
         /// <summary>
         /// 格子在地图中的y坐标
         /// </summary>
-        public float Y { get; } = y;
+        public int Y { get; } = y;
 
         /// <summary>
         /// 格子在地图中的z坐标
         /// </summary>
-        public float Z { get; } = z;
+        public int Z { get; } = z;
 
         /// <summary>
         /// 是谁站在这格子上？

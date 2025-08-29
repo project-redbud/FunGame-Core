@@ -41,6 +41,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Skill.Level):
                     result.Level = reader.GetInt32();
                     break;
+                case nameof(Skill.CastAnyWhere):
+                    result.CastAnyWhere = reader.GetBoolean();
+                    break;
                 case nameof(Skill.CastRange):
                     result.CastRange = reader.GetInt32();
                     break;
@@ -128,6 +131,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             if (value.GeneralDescription.Length > 0) writer.WriteString(nameof(Skill.GeneralDescription), value.GeneralDescription);
             if (value.Slogan.Length > 0) writer.WriteString(nameof(Skill.Slogan), value.Slogan);
             if (value.Level > 0) writer.WriteNumber(nameof(Skill.Level), value.Level);
+            writer.WriteBoolean(nameof(Skill.CastAnyWhere), value.CastAnyWhere);
             writer.WriteNumber(nameof(Skill.CastRange), value.CastRange);
             if (value.CanSelectSelf) writer.WriteBoolean(nameof(Skill.CanSelectSelf), value.CanSelectSelf);
             if (!value.CanSelectEnemy) writer.WriteBoolean(nameof(Skill.CanSelectEnemy), value.CanSelectEnemy);

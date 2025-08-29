@@ -155,6 +155,16 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public Task<bool> UseItemAsync(Item item, Character caster, List<Character> enemys, List<Character> teammates);
 
         /// <summary>
+        /// 选取移动目标
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <param name="map"></param>
+        /// <returns></returns>
+        public Task<Grid> SelectTargetGridAsync(Character character, List<Character> enemys, List<Character> teammates, GameMap map);
+
+        /// <summary>
         /// 选取技能目标
         /// </summary>
         /// <param name="caster"></param>

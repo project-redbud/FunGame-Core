@@ -749,11 +749,17 @@ namespace Milimoe.FunGame.Core.Entity
         public double ExCDR { get; set; } = 0;
 
         /// <summary>
-        /// 攻击距离 [ 与技能和物品相关 ] [ 单位：格 ]
+        /// 攻击距离 [ 与技能和物品相关 ] [ 单位：格（半径） ]
         /// </summary>
         [InitOptional]
-        public double ATR { get; set; } = 1;
-
+        public int ATR { get; set; } = 1;
+        
+        /// <summary>
+        /// 行动力/可移动距离 [ 与技能和物品相关 ] [ 单位：格（半径） ]
+        /// </summary>
+        [InitOptional]
+        public int MOV { get; set; } = 5;
+        
         /// <summary>
         /// 暴击率(%) = [ 与敏捷相关 ] + 额外暴击率(%)
         /// </summary>
@@ -2017,6 +2023,7 @@ namespace Milimoe.FunGame.Core.Entity
                 c.Lifesteal = Lifesteal;
                 c.Shield = Shield.Copy();
                 c.ATR = ATR;
+                c.MOV = MOV;
                 c.MagicType = MagicType;
                 c.ImmuneType = ImmuneType;
             }
@@ -2126,6 +2133,7 @@ namespace Milimoe.FunGame.Core.Entity
             ExAccelerationCoefficient = c.ExAccelerationCoefficient;
             ExCDR = c.ExCDR;
             ATR = c.ATR;
+            MOV = c.MOV;
             ExCritRate = c.ExCritRate;
             ExCritDMG = c.ExCritDMG;
             ExEvadeRate = c.ExEvadeRate;

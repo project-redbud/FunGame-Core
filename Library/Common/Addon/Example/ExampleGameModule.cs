@@ -319,13 +319,36 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
 
         public override string Author => "FunGamer";
 
-        public override float Length => 12.0f;
+        public override int Length => 12;
 
-        public override float Width => 12.0f;
+        public override int Width => 12;
 
-        public override float Height => 6.0f;
+        public override int Height => 6;
 
         public override float Size => 4.0f;
+
+        public override GameMap InitGamingQueue(IGamingQueue queue)
+        {
+            // 因为模组在模组管理器中都是单例的，所以每次游戏都需要返回一个新的地图对象给队列
+            GameMap map = new ExampleGameMap();
+
+            // 做一些绑定，以便介入游戏队列
+            /// 但是，传入的 queue 可能不是 <see cref="GamingQueue"/>，要做类型检查
+            // 不使用框架的实现时，需要地图作者与游戏队列的作者做好适配
+            if (queue is GamingQueue gq)
+            {
+                gq.SelectTargetGrid += Gq_SelectTargetGrid;
+            }
+
+            return map;
+        }
+
+        private async Task<Grid> Gq_SelectTargetGrid(GamingQueue queue, Character character, List<Character> enemys, List<Character> teammates, GameMap map)
+        {
+            // 介入选择，假设这里更新界面，让玩家选择目的地
+            await Task.CompletedTask;
+            return Grid.Empty;
+        }
     }
 
     /// <summary>

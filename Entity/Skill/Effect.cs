@@ -2,6 +2,7 @@
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
+using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Entity
@@ -388,6 +389,16 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 时间流逝时 [ 地图用 ]
+        /// </summary>
+        /// <param name="grid"></param>
+        /// <param name="elapsed"></param>
+        public virtual void OnTimeElapsed(Grid grid, double elapsed)
+        {
+
+        }
+
+        /// <summary>
         /// 在完成伤害结算后
         /// </summary>
         /// <param name="character"></param>
@@ -538,6 +549,18 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="continuousKilling"></param>
         /// <param name="earnedMoney"></param>
         public virtual void AlterSelectListBeforeAction(Character character, List<Character> enemys, List<Character> teammates, List<Skill> skills, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney)
+        {
+
+        }
+
+        /// <summary>
+        /// 开始选择移动目标前
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <param name="map"></param>
+        public virtual void BeforeSelectTargetGrid(Character character, List<Character> enemys, List<Character> teammates, GameMap map)
         {
 
         }

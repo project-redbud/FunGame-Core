@@ -296,7 +296,7 @@ namespace Milimoe.FunGame.Core.Model
 
         #endregion
 
-        #region 战棋地图（#TODO）
+        #region 战棋地图
 
         /// <summary>
         /// 加载地图
@@ -304,7 +304,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="map"></param>
         public void LoadGameMap(GameMap map)
         {
-            _map = map;
+            _map = map.InitGamingQueue(this);
         }
 
         #endregion
@@ -665,6 +665,9 @@ namespace Milimoe.FunGame.Core.Model
                     }
                 }
 
+                // 处理地图上的特效
+                _map?.OnTimeElapsed(timeToReduce);
+
                 // 移除到时间的特效
                 List<Effect> effects = [.. character.Effects];
                 foreach (Effect effect in effects)
@@ -782,7 +785,7 @@ namespace Milimoe.FunGame.Core.Model
             List<Skill> rewards = GetRoundRewards(TotalRound, character);
 
             // 基础硬直时间
-            double baseTime = 10;
+            double baseTime = 0;
             bool isCheckProtected = true;
 
             // 队友列表
@@ -824,6 +827,14 @@ namespace Milimoe.FunGame.Core.Model
             bool decided = false;
             // 最大取消次数
             int cancelTimes = 3;
+            // 此变量控制角色移动后可以继续选择其他的行动
+            bool moved = false;
+
+            Grid? currentGrid = null;
+            if (_map != null)
+            {
+                currentGrid = _map.GetCharacterCurrentGrid(character);
+            }
 
             // 行动开始前，可以修改可选取的角色列表
             Dictionary<Character, int> continuousKillingTemp = new(_continuousKilling);
@@ -847,7 +858,8 @@ namespace Milimoe.FunGame.Core.Model
             bool isAI = CharactersInAI.Contains(character);
             while (!decided && (!isAI || cancelTimes > 0))
             {
-                cancelTimes--;
+                if (moved) moved = false;
+                else cancelTimes--;
                 type = CharacterActionType.None;
                 
                 // 是否能使用物品和释放技能
@@ -1008,7 +1020,7 @@ namespace Milimoe.FunGame.Core.Model
                             await OnCharacterNormalAttackAsync(character, targets);
 
                             character.NormalAttack.Attack(this, character, targets);
-                            baseTime = character.NormalAttack.RealHardnessTime;
+                            baseTime += character.NormalAttack.RealHardnessTime;
                             effects = [.. character.Effects.Where(e => e.IsInEffect)];
                             foreach (Effect effect in effects)
                             {
@@ -1055,7 +1067,7 @@ namespace Milimoe.FunGame.Core.Model
                                         await OnCharacterPreCastSkillAsync(character, skillTarget);
 
                                         _castingSkills[character] = skillTarget;
-                                        baseTime = skill.RealCastTime;
+                                        baseTime += skill.RealCastTime;
                                         skill.OnSkillCasting(this, character, targets);
                                     }
                                 }
@@ -1083,7 +1095,7 @@ namespace Milimoe.FunGame.Core.Model
                                             skill.BeforeSkillCasted();
 
                                             character.EP -= cost;
-                                            baseTime = skill.RealHardnessTime;
+                                            baseTime += skill.RealHardnessTime;
                                             skill.CurrentCD = skill.RealCD;
                                             skill.Enable = false;
                                             LastRound.SkillCost = $"{-cost:0.##} EP";
@@ -1131,7 +1143,7 @@ namespace Milimoe.FunGame.Core.Model
                                 skill.BeforeSkillCasted();
 
                                 character.MP -= cost;
-                                baseTime = skill.RealHardnessTime;
+                                baseTime += skill.RealHardnessTime;
                                 skill.CurrentCD = skill.RealCD;
                                 skill.Enable = false;
                                 LastRound.SkillCost = $"{-cost:0.##} MP";
@@ -1146,7 +1158,7 @@ namespace Milimoe.FunGame.Core.Model
                         {
                             WriteLine($"[ {character} ] 放弃释放技能！");
                             // 放弃释放技能会获得3的硬直时间
-                            baseTime = 3;
+                            if (baseTime == 0) baseTime = 3;
                         }
 
                         effects = [.. character.Effects.Where(e => e.IsInEffect)];
@@ -1184,7 +1196,7 @@ namespace Milimoe.FunGame.Core.Model
                         skill.BeforeSkillCasted();
 
                         character.EP -= cost;
-                        baseTime = skill.RealHardnessTime;
+                        baseTime += skill.RealHardnessTime;
                         skill.CurrentCD = skill.RealCD;
                         skill.Enable = false;
                         LastRound.SkillCost = $"{-cost:0.##} EP";
@@ -1199,7 +1211,7 @@ namespace Milimoe.FunGame.Core.Model
                     {
                         WriteLine($"[ {character} ] 因能量不足放弃释放爆发技！");
                         // 放弃释放技能会获得3的硬直时间
-                        baseTime = 3;
+                        if (baseTime == 0) baseTime = 3;
                     }
 
                     effects = [.. character.Effects.Where(e => e.IsInEffect)];
@@ -1224,7 +1236,7 @@ namespace Milimoe.FunGame.Core.Model
                         {
                             decided = true;
                             LastRound.Item = item;
-                            baseTime = skill.RealHardnessTime > 0 ? skill.RealHardnessTime : 5;
+                            baseTime += skill.RealHardnessTime > 0 ? skill.RealHardnessTime : 5;
                             effects = [.. character.Effects.Where(e => e.IsInEffect)];
                             foreach (Effect effect in effects)
                             {
@@ -1235,7 +1247,7 @@ namespace Milimoe.FunGame.Core.Model
                 }
                 else if (type == CharacterActionType.EndTurn)
                 {
-                    baseTime = 3;
+                    baseTime += 3;
                     if (character.CharacterState == CharacterState.NotActionable ||
                         character.CharacterState == CharacterState.ActionRestricted ||
                         character.CharacterState == CharacterState.BattleRestricted)
@@ -1249,13 +1261,23 @@ namespace Milimoe.FunGame.Core.Model
                 }
                 else if (type == CharacterActionType.Move)
                 {
-                    baseTime = 3;
-                    decided = true;
-                    WriteLine($"[ {character} ] 进行了移动，并结束了回合！");
-                    await OnCharacterMoveAsync(character);
+                    if (_map != null)
+                    {
+                        baseTime += 4;
+                        Grid target = await SelectTargetGridAsync(character, enemys, teammates, _map);
+                        if (target.Id != -1)
+                        {
+                            int steps = _map.CharacterMove(character, currentGrid, target);
+                            if (steps > 4) baseTime += 0.7 * steps;
+                            moved = true;
+                            WriteLine($"[ {character} ] 移动了 {steps} 步！");
+                            await OnCharacterMoveAsync(character, target);
+                        }
+                    }
                 }
                 else
                 {
+                    if (baseTime == 0) baseTime += 10;
                     decided = true;
                     WriteLine($"[ {character} ] 完全行动不能！");
                 }
@@ -2279,6 +2301,37 @@ namespace Milimoe.FunGame.Core.Model
         }
 
         /// <summary>
+        /// 选取移动目标
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <param name="map"></param>
+        /// <returns></returns>
+        public async Task<Grid> SelectTargetGridAsync(Character character, List<Character> enemys, List<Character> teammates, GameMap map)
+        {
+            List<Effect> effects = [.. character.Effects.Where(e => e.IsInEffect)];
+            foreach (Effect effect in effects)
+            {
+                effect.BeforeSelectTargetGrid(character, enemys, teammates, map);
+            }
+            Grid target = await OnSelectTargetGridAsync(character, enemys, teammates, map);
+            if (target.Id != -1)
+            {
+                return target;
+            }
+            if (map.Characters.TryGetValue(character, out Grid? current) && current != null)
+            {
+                List<Grid> grids = map.GetGridsByRange(current, character.MOV);
+                if (grids.Count > 0)
+                {
+                    return grids[Random.Shared.Next(grids.Count)];
+                }
+            }
+            return Grid.Empty;
+        }
+
+        /// <summary>
         /// 选取技能目标
         /// </summary>
         /// <param name="caster"></param>
@@ -3269,6 +3322,24 @@ namespace Milimoe.FunGame.Core.Model
             return await (SelectItem?.Invoke(this, character, items) ?? Task.FromResult<Item?>(null));
         }
 
+        public delegate Task<Grid> SelectTargetGridEventHandler(GamingQueue queue, Character character, List<Character> enemys, List<Character> teammates, GameMap map);
+        /// <summary>
+        /// 选取移动目标事件
+        /// </summary>
+        public event SelectTargetGridEventHandler? SelectTargetGrid;
+        /// <summary>
+        /// 选取移动目标事件
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <param name="map"></param>
+        /// <returns></returns>
+        protected async Task<Grid> OnSelectTargetGridAsync(Character character, List<Character> enemys, List<Character> teammates, GameMap map)
+        {
+            return await (SelectTargetGrid?.Invoke(this, character, enemys, teammates, map) ?? Task.FromResult(Grid.Empty));
+        }
+        
         public delegate Task<List<Character>> SelectSkillTargetsEventHandler(GamingQueue queue, Character caster, Skill skill, List<Character> enemys, List<Character> teammates);
         /// <summary>
         /// 选取技能目标事件
@@ -3543,7 +3614,7 @@ namespace Milimoe.FunGame.Core.Model
             await (CharacterGiveUp?.Invoke(this, actor) ?? Task.CompletedTask);
         }
 
-        public delegate Task CharacterMoveEventHandler(GamingQueue queue, Character actor);
+        public delegate Task CharacterMoveEventHandler(GamingQueue queue, Character actor, Grid grid);
         /// <summary>
         /// 角色移动事件
         /// </summary>
@@ -3552,10 +3623,11 @@ namespace Milimoe.FunGame.Core.Model
         /// 角色移动事件
         /// </summary>
         /// <param name="actor"></param>
+        /// <param name="grid"></param>
         /// <returns></returns>
-        protected async Task OnCharacterMoveAsync(Character actor)
+        protected async Task OnCharacterMoveAsync(Character actor, Grid grid)
         {
-            await (CharacterMove?.Invoke(this, actor) ?? Task.CompletedTask);
+            await (CharacterMove?.Invoke(this, actor, grid) ?? Task.CompletedTask);
         }
 
         public delegate Task<bool> GameEndEventHandler(GamingQueue queue, Character winner);
