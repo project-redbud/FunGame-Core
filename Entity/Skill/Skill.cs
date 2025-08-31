@@ -93,7 +93,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 是否无视施法距离（全图施法），魔法默认为 true，战技默认为 false
         /// </summary>
-        public bool CastAnyWhere { get; set; } = false;
+        public bool CastAnywhere { get; set; } = false;
         
         /// <summary>
         /// 施法距离 [ 单位：格 ]
@@ -259,7 +259,7 @@ namespace Milimoe.FunGame.Core.Entity
         protected Skill(SkillType type, Character? character = null)
         {
             SkillType = type;
-            CastAnyWhere = SkillType == SkillType.Magic;
+            CastAnywhere = SkillType == SkillType.Magic;
             Character = character;
         }
 
