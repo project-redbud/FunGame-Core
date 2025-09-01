@@ -331,6 +331,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
         {
             // 因为模组在模组管理器中都是单例的，所以每次游戏都需要返回一个新的地图对象给队列
             GameMap map = new ExampleGameMap();
+            map.Load();
 
             // 做一些绑定，以便介入游戏队列
             /// 但是，传入的 queue 可能不是 <see cref="GamingQueue"/>，要做类型检查

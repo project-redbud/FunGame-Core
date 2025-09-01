@@ -1699,7 +1699,7 @@ namespace Milimoe.FunGame.Core.Model
                                         WriteLine($"[ {enemy} ] 的{shieldTypeString}护盾抵消了 {enemy.Shield[isMagicDamage, magicType]:0.##} 点{damageTypeString}并破碎！");
                                         remain -= enemy.Shield[isMagicDamage, magicType];
                                         enemy.Shield[isMagicDamage, magicType] = 0;
-                                        if (isMagicDamage && enemy.Shield.TotalMagicial <= 0 || !isMagicDamage && enemy.Shield.TotalPhysical <= 0)
+                                        if (isMagicDamage && enemy.Shield.TotalMagical <= 0 || !isMagicDamage && enemy.Shield.TotalPhysical <= 0)
                                         {
                                             effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                                             foreach (Effect effect in effects)

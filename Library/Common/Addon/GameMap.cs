@@ -154,6 +154,12 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         }
 
         /// <summary>
+        /// 初始化游戏队列，要求返回一个新的地图实例，而不是 this
+        /// </summary>
+        /// <param name="queue"></param>
+        public abstract GameMap InitGamingQueue(IGamingQueue queue);
+
+        /// <summary>
         /// 获取角色当前所在的格子
         /// </summary>
         /// <param name="character"></param>
@@ -216,9 +222,47 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
                     if (Math.Abs(dx) + Math.Abs(dy) <= range)
                     {
                         //检查是否在棋盘范围内
-                        int x = grid.X;
-                        int y = grid.Y;
+                        int x = grid.X + dx;
+                        int y = grid.Y + dy;
                         int z = grid.Z;
+                        if (GridsByCoordinate.TryGetValue((x, y, z), out Grid? select) && select != null)
+                        {
+                            grids.Add(select);
+                        }
+                    }
+                }
+            }
+            grids.RemoveAll(g => g.Id == grid.Id);
+
+            return grids;
+        }
+
+        /// <summary>
+        /// 获取以某个格子为中心，一定半径内的格子（圆形范围，欧几里得距离），只考虑同一平面的格子，不包含中心格子。
+        /// </summary>
+        /// <param name="grid"></param>
+        /// <param name="range"></param>
+        /// <returns></returns>
+        public virtual List<Grid> GetGridsByCircleRange(Grid grid, int range)
+        {
+            List<Grid> grids = [];
+
+            // 预计算半径的平方
+            int rangeSquared = range * range;
+
+            // 遍历以中心格子为中心的方形区域
+            // 范围从 -range 到 +range，覆盖所有可能的圆形区域内的格子
+            for (int dx = -range; dx <= range; ++dx)
+            {
+                for (int dy = -range; dy <= range; ++dy)
+                {
+                    // 计算当前格子与中心格子的欧几里得距离的平方
+                    if ((dx * dx) + (dy * dy) <= rangeSquared)
+                    {
+                        int x = grid.X + dx;
+                        int y = grid.Y + dy;
+                        int z = grid.Z;
+
                         if (GridsByCoordinate.TryGetValue((x, y, z), out Grid? select) && select != null)
                         {
                             grids.Add(select);
@@ -305,12 +349,107 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         }
 
         /// <summary>
-        /// 初始化游戏队列
+        /// 设置角色移动。如果不能达到目标格子，则移动到离目标格子最近的一个可达格子上。
         /// </summary>
-        /// <param name="queue"></param>
-        public virtual GameMap InitGamingQueue(IGamingQueue queue)
+        /// <param name="character"></param>
+        /// <param name="current"></param>
+        /// <param name="target"></param>
+        /// <returns>移动的步数，只算平面移动步数</returns>
+        public virtual int CharacterMoveToClosestReachable(Character character, Grid? current, Grid target)
         {
-            return this;
+            if (current is null || current.Id < 0 || target.Id < 0 || !Grids.ContainsValue(target))
+            {
+                return -1;
+            }
+
+            Grid? realGrid = GetCharacterCurrentGrid(character);
+
+            if (current.Id == target.Id)
+            {
+                SetCharacterCurrentGrid(character, current);
+                return 0;
+            }
+
+            // 使用 BFS 算法探索所有可达格子，并记录它们到起点的步数
+            Queue<(Grid grid, int steps)> queue = new();
+
+            // 记录已访问的格子ID
+            HashSet<long> visited = [];
+
+            // 初始化 BFS 队列，将起始格子加入，步数为0
+            queue.Enqueue((current, 0));
+            visited.Add(current.Id);
+
+            Grid? bestReachableGrid = current;
+            int minDistanceToTarget = CalculateManhattanDistance(current, target);
+            int stepsToBestReachable = 0;
+
+            // 定义平面移动的四个方向
+            (int dx, int dy)[] directions = [
+                (0, 1), (0, -1), (1, 0), (-1, 0)
+            ];
+
+            while (queue.Count > 0)
+            {
+                var (currentGrid, currentSteps) = queue.Dequeue();
+
+                // 计算当前可达格子到目标格子的曼哈顿距离
+                int distToTarget = CalculateManhattanDistance(currentGrid, target);
+
+                // 如果当前格子比之前找到的 bestReachableGrid 更接近目标
+                if (distToTarget < minDistanceToTarget)
+                {
+                    minDistanceToTarget = distToTarget;
+                    bestReachableGrid = currentGrid;
+                    stepsToBestReachable = currentSteps;
+                }
+                // 如果距离相同，优先选择到达步数更少的格子（作为一种 tie-breaking 规则）
+                else if (distToTarget == minDistanceToTarget && currentSteps < stepsToBestReachable)
+                {
+                    bestReachableGrid = currentGrid;
+                    stepsToBestReachable = currentSteps;
+                }
+
+                // 探索相邻格子
+                foreach (var (dx, dy) in directions)
+                {
+                    int nextX = currentGrid.X + dx;
+                    int nextY = currentGrid.Y + dy;
+                    int nextZ = currentGrid.Z;
+
+                    Grid? neighborGrid = this[nextX, nextY, nextZ];
+
+                    // 如果相邻格子存在且未被访问过
+                    if (neighborGrid != null && !visited.Contains(neighborGrid.Id))
+                    {
+                        visited.Add(neighborGrid.Id);
+                        queue.Enqueue((neighborGrid, currentSteps + 1));
+                    }
+                }
+            }
+
+            // 理论上 bestReachableGrid 不会是 null，因为 current 至少是可达的
+            if (bestReachableGrid == null)
+            {
+                return -1;
+            }
+
+            // 更新角色的实际位置
+            realGrid?.Characters.Remove(character);
+            SetCharacterCurrentGrid(character, bestReachableGrid);
+
+            return stepsToBestReachable;
+        }
+
+        /// <summary>
+        /// 计算两个格子之间的曼哈顿距离
+        /// </summary>
+        /// <param name="g1"></param>
+        /// <param name="g2"></param>
+        /// <returns>两个格子之间的曼哈顿距离</returns>
+        public static int CalculateManhattanDistance(Grid g1, Grid g2)
+        {
+            return Math.Abs(g1.X - g2.X) + Math.Abs(g1.Y - g2.Y) + Math.Abs(g1.Z - g2.Z);
         }
 
         /// <summary>

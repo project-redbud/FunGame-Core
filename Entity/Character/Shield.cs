@@ -80,7 +80,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 总计魔法护盾
         /// </summary>
-        public double TotalMagicial => None + Starmark + PurityNatural + PurityContemporary + Bright + Shadow + Element + Aster + SpatioTemporal + ShieldOfEffects.Values.Where(soe => soe.ShieldType == ShieldType.Magical && soe.Shield > 0).Sum(soe => soe.Shield);
+        public double TotalMagical => None + Starmark + PurityNatural + PurityContemporary + Bright + Shadow + Element + Aster + SpatioTemporal + ShieldOfEffects.Values.Where(soe => soe.ShieldType == ShieldType.Magical && soe.Shield > 0).Sum(soe => soe.Shield);
 
         /// <summary>
         /// 获取或设置护盾值
