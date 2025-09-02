@@ -1263,12 +1263,10 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     if (_map != null)
                     {
-                        baseTime += 4;
                         Grid target = await SelectTargetGridAsync(character, enemys, teammates, _map);
                         if (target.Id != -1)
                         {
                             int steps = _map.CharacterMove(character, currentGrid, target);
-                            if (steps > 4) baseTime += 0.7 * steps;
                             moved = true;
                             WriteLine($"[ {character} ] 移动了 {steps} 步！");
                             await OnCharacterMoveAsync(character, target);
@@ -2942,6 +2940,13 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="skill"></param>
         public async Task SetCharacterPreCastSuperSkill(Character character, Skill skill)
         {
+            if (character.CharacterState == CharacterState.Casting)
+            {
+                _castingSkills.Remove(character);
+                character.CharacterState = CharacterState.Actionable;
+                character.UpdateCharacterState();
+                WriteLine("[ " + character + " ] 取消吟唱。");
+            }
             if (character.CharacterState == CharacterState.Actionable)
             {
                 _castingSuperSkills[character] = skill;
