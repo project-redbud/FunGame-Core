@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 
 namespace Milimoe.FunGame.Core.Interface.Entity
 {
@@ -52,6 +51,17 @@ namespace Milimoe.FunGame.Core.Interface.Entity
         /// 可选取友方角色
         /// </summary>
         public bool CanSelectTeammate { get; }
+
+        /// <summary>
+        /// 选取所有敌对角色，优先级大于 <see cref="CanSelectTargetCount"/>
+        /// </summary>
+        public bool SelectAllEnemies { get; }
+
+        /// <summary>
+        /// 选取所有友方角色，优先级大于 <see cref="CanSelectTargetCount"/>，默认包含自身
+        /// </summary>
+        public bool SelectAllTeammates { get; }
+
         /// <summary>
         /// 可选取的作用目标数量
         /// </summary>

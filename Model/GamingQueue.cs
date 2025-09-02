@@ -2370,11 +2370,7 @@ namespace Milimoe.FunGame.Core.Model
             List<Character> targets = await OnSelectNormalAttackTargetsAsync(character, attack, enemys, teammates);
             if (targets.Count == 0 && CharactersInAI.Contains(character))
             {
-                targets = character.NormalAttack.GetSelectableTargets(character, enemys, teammates);
-                if (targets.Count > 0)
-                {
-                    targets = [targets[Random.Shared.Next(targets.Count)]];
-                }
+                targets = character.NormalAttack.SelectTargets(character, enemys, teammates);
             }
             return targets;
         }

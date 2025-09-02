@@ -189,6 +189,16 @@ namespace Milimoe.FunGame.Core.Entity
         public bool CanSelectTeammate { get; set; } = false;
 
         /// <summary>
+        /// 选取所有敌对角色，优先级大于 <see cref="CanSelectTargetCount"/>
+        /// </summary>
+        public bool SelectAllEnemies { get; set; } = false;
+
+        /// <summary>
+        /// 选取所有友方角色，优先级大于 <see cref="CanSelectTargetCount"/>，默认包含自身
+        /// </summary>
+        public bool SelectAllTeammates { get; set; } = false;
+
+        /// <summary>
         /// 可选取的作用目标数量
         /// </summary>
         public int CanSelectTargetCount { get; set; } = 1;
@@ -231,17 +241,17 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 获取可选择的目标列表
         /// </summary>
-        /// <param name="caster"></param>
+        /// <param name="attacker"></param>
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
         /// <returns></returns>
-        public List<Character> GetSelectableTargets(Character caster, List<Character> enemys, List<Character> teammates)
+        public List<Character> GetSelectableTargets(Character attacker, List<Character> enemys, List<Character> teammates)
         {
             List<Character> selectable = [];
 
             if (CanSelectSelf)
             {
-                selectable.Add(caster);
+                selectable.Add(attacker);
             }
 
             foreach (Character character in enemys)
@@ -261,6 +271,43 @@ namespace Milimoe.FunGame.Core.Entity
             }
 
             return selectable;
+        }
+
+
+        /// <summary>
+        /// 选取普攻目标
+        /// </summary>
+        /// <param name="attacker"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <returns></returns>
+        public List<Character> SelectTargets(Character attacker, List<Character> enemys, List<Character> teammates)
+        {
+            List<Character> tobeSelected = GetSelectableTargets(attacker, enemys, teammates);
+
+            List<Character> targets = [];
+
+            if (SelectAllTeammates || SelectAllEnemies)
+            {
+                if (SelectAllTeammates)
+                {
+                    targets.AddRange(tobeSelected.Where(c => c == attacker || teammates.Contains(c)));
+                }
+                if (SelectAllEnemies)
+                {
+                    targets.AddRange(tobeSelected.Where(enemys.Contains));
+                }
+            }
+            else if (tobeSelected.Count <= CanSelectTargetCount)
+            {
+                targets.AddRange(tobeSelected);
+            }
+            else
+            {
+                targets.AddRange(tobeSelected.OrderBy(x => Random.Shared.Next()).Take(CanSelectTargetCount));
+            }
+
+            return [.. targets.Distinct()];
         }
 
         /// <summary>
