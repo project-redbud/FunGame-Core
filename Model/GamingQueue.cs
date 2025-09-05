@@ -451,6 +451,16 @@ namespace Milimoe.FunGame.Core.Model
 
             // 插队机制：按硬直时间排序
             int insertIndex = _queue.FindIndex(c => _hardnessTimes[c] > hardnessTime);
+            double addHardnessTime = 0.01;
+            while (_hardnessTimes.Any(kv => kv.Key != character && kv.Value == hardnessTime))
+            {
+                insertIndex++;
+                if (insertIndex != 0 && _queue.Count > insertIndex)
+                {
+                    addHardnessTime += Calculation.Round2Digits(_hardnessTimes[_queue[insertIndex]] - _hardnessTimes[_queue[insertIndex - 1]]);
+                }
+                hardnessTime = Calculation.Round2Digits(hardnessTime + addHardnessTime);
+            }
 
             if (isCheckProtected)
             {
@@ -487,7 +497,15 @@ namespace Milimoe.FunGame.Core.Model
                     {
                         // 如果按硬直时间插入的位置在受保护角色之前或相同，则插入到受保护角色的后面一位
                         insertIndex = protectIndex + 1;
-                        hardnessTime = lastProtectedHardnessTime;
+                        hardnessTime = lastProtectedHardnessTime + 0.01;
+                        while (_hardnessTimes.Any(kv => kv.Key != character && kv.Value == hardnessTime))
+                        {
+                            if (insertIndex != 0 && _queue.Count > insertIndex)
+                            {
+                                addHardnessTime += Calculation.Round2Digits(_hardnessTimes[_queue[insertIndex]] - _hardnessTimes[_queue[insertIndex - 1]]);
+                            }
+                            hardnessTime = Calculation.Round2Digits(hardnessTime + addHardnessTime);
+                        }
 
                         // 列出受保护角色的名单
                         WriteLine($"由于 [ {string.Join(" ]，[ ", list.Select(x => x.Character))} ] 受到行动保护，因此角色 [ {character} ] 将插入至顺序表第 {insertIndex + 1} 位。");
@@ -618,7 +636,13 @@ namespace Milimoe.FunGame.Core.Model
             foreach (Character character in characters)
             {
                 // 减少所有角色的硬直时间
+                double past = _hardnessTimes[character];
                 _hardnessTimes[character] = Calculation.Round2Digits(_hardnessTimes[character] - timeToReduce);
+
+                if (_hardnessTimes[character] < 0)
+                {
+                    WriteLine($"异常的硬直时间警告，原时间：{past}，现时间：{_hardnessTimes[character]}，时间流逝：{timeToReduce}。");
+                }
 
                 // 统计
                 _stats[character].LiveRound += 1;
@@ -1068,6 +1092,7 @@ namespace Milimoe.FunGame.Core.Model
 
                                         _castingSkills[character] = skillTarget;
                                         baseTime += skill.RealCastTime;
+                                        isCheckProtected = false;
                                         skill.OnSkillCasting(this, character, targets);
                                     }
                                 }
@@ -2950,24 +2975,36 @@ namespace Milimoe.FunGame.Core.Model
                 _queue.Remove(character);
                 _cutCount.Remove(character);
                 WriteLine("[ " + character + " ] 预释放了爆发技！！");
+
                 int preCastSSCount = 0;
-                double baseHardnessTime = 0;
+                double maxPreCastTime = 0; // 当前最大预释放时间
+
+                // 计算预释放角色的数量和最大时间
+                foreach (Character c in _hardnessTimes.Keys)
+                {
+                    if (c.CharacterState == CharacterState.PreCastSuperSkill && c != character)
+                    {
+                        preCastSSCount++;
+                        if (_hardnessTimes[c] > maxPreCastTime)
+                        {
+                            maxPreCastTime = _hardnessTimes[c];
+                        }
+                    }
+                }
+
+                // 为非预释放角色增加偏移量
                 foreach (Character c in _hardnessTimes.Keys)
                 {
                     if (c.CharacterState != CharacterState.PreCastSuperSkill)
                     {
                         _hardnessTimes[c] = Calculation.Round2Digits(_hardnessTimes[c] + 0.01);
                     }
-                    else if (c != character)
-                    {
-                        if (preCastSSCount == 0)
-                        {
-                            baseHardnessTime = _hardnessTimes[c];
-                        }
-                        preCastSSCount++;
-                    }
                 }
-                AddCharacter(character, Calculation.Round2Digits(baseHardnessTime + preCastSSCount * 0.01), false);
+
+                // 计算新角色的硬直时间
+                double newHardnessTime = preCastSSCount > 0 ? Calculation.Round2Digits(maxPreCastTime + 0.01) : 0;
+
+                AddCharacter(character, newHardnessTime, false);
                 skill.OnSkillCasting(this, character, []);
                 await OnQueueUpdatedAsync(_queue, character, 0, QueueUpdatedReason.PreCastSuperSkill, "设置角色预释放爆发技的硬直时间。");
             }
