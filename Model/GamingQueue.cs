@@ -487,15 +487,34 @@ namespace Milimoe.FunGame.Core.Model
                     Character lastProtectedCharacter = list.Last().Character;
                     double lastProtectedHardnessTime = _hardnessTimes[lastProtectedCharacter];
 
-                    // 设置新的硬直时间大于保护角色的硬直时间
-                    hardnessTime = lastProtectedHardnessTime + 0.01;
-                    hardnessTime = ResolveConflict(hardnessTime, character);
+                    // 查找与最后一个受保护角色相同硬直时间的其他角色
+                    var sameHardnessList = _queue
+                        .Select((c, index) => new { Character = c, Index = index })
+                        .Where(x => _hardnessTimes[x.Character] == lastProtectedHardnessTime && x.Index > protectIndex);
 
-                    // 重新计算插入索引
-                    insertIndex = _queue.FindIndex(c => _hardnessTimes[c] > hardnessTime);
+                    // 如果找到了相同硬直时间的角色，更新 protectIndex 为它们中最后一个的索引
+                    if (sameHardnessList.Any())
+                    {
+                        protectIndex = sameHardnessList.Select(x => x.Index).Last();
+                    }
 
-                    // 列出受保护角色的名单
-                    WriteLine($"由于 [ {string.Join(" ]，[ ", list.Select(x => x.Character))} ] 受到行动保护，因此角色 [ {character} ] 将插入至顺序表第 {insertIndex + 1} 位。");
+                    // 判断是否需要插入到受保护角色的后面
+                    // 只有当插入位置在受保护角色之前或相同时才触发保护
+                    if (insertIndex != -1 && insertIndex <= protectIndex)
+                    {
+                        // 插入到受保护角色的后面一位
+                        insertIndex = protectIndex + 1;
+
+                        // 设置硬直时间为保护角色的硬直时间 + 0.01
+                        hardnessTime = lastProtectedHardnessTime + 0.01;
+                        hardnessTime = ResolveConflict(hardnessTime, character);
+
+                        // 重新计算插入索引
+                        insertIndex = _queue.FindIndex(c => _hardnessTimes[c] > hardnessTime);
+
+                        // 列出受保护角色的名单
+                        WriteLine($"由于 [ {string.Join(" ]，[ ", list.Select(x => x.Character))} ] 受到行动保护，因此角色 [ {character} ] 将插入至顺序表第 {insertIndex + 1} 位。");
+                    }
                 }
             }
 
