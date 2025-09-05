@@ -264,7 +264,7 @@ namespace Milimoe.FunGame.Core.Entity
             
             foreach (Character character in teammates)
             {
-                if (CanSelectTeammate && ((character.ImmuneType & ImmuneType.All) != ImmuneType.All || IgnoreImmune == ImmuneType.All))
+                if (CanSelectTeammate)
                 {
                     selectable.Add(character);
                 }

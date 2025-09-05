@@ -449,18 +449,24 @@ namespace Milimoe.FunGame.Core.Model
             // 确保角色不在队列中
             _queue.RemoveAll(c => c == character);
 
-            // 插队机制：按硬直时间排序
-            int insertIndex = _queue.FindIndex(c => _hardnessTimes[c] > hardnessTime);
-            double addHardnessTime = 0.01;
-            while (_hardnessTimes.Any(kv => kv.Key != character && kv.Value == hardnessTime))
+            // 增加硬直时间直到唯一
+            double ResolveConflict(double time, Character c)
             {
-                insertIndex++;
-                if (insertIndex != 0 && _queue.Count > insertIndex)
+                while (_hardnessTimes.Any(kv => kv.Key != c && kv.Value == time))
                 {
-                    addHardnessTime += Calculation.Round2Digits(_hardnessTimes[_queue[insertIndex]] - _hardnessTimes[_queue[insertIndex - 1]]);
+                    time = Calculation.Round2Digits(time + 0.01);
                 }
-                hardnessTime = Calculation.Round2Digits(hardnessTime + addHardnessTime);
+                return time;
             }
+
+            // 初始插入索引：第一个硬直时间大于当前值的角色位置
+            int insertIndex = _queue.FindIndex(c => _hardnessTimes[c] > hardnessTime);
+
+            // 调整硬直时间以避免冲突
+            hardnessTime = ResolveConflict(hardnessTime, character);
+
+            // 重新计算插入索引
+            insertIndex = _queue.FindIndex(c => _hardnessTimes[c] > hardnessTime);
 
             if (isCheckProtected)
             {
@@ -481,35 +487,15 @@ namespace Milimoe.FunGame.Core.Model
                     Character lastProtectedCharacter = list.Last().Character;
                     double lastProtectedHardnessTime = _hardnessTimes[lastProtectedCharacter];
 
-                    // 查找与最后一个受保护角色相同硬直时间的其他角色
-                    var sameHardnessList = _queue
-                        .Select((c, index) => new { Character = c, Index = index })
-                        .Where(x => _hardnessTimes[x.Character] == lastProtectedHardnessTime && x.Index > protectIndex);
+                    // 设置新的硬直时间大于保护角色的硬直时间
+                    hardnessTime = lastProtectedHardnessTime + 0.01;
+                    hardnessTime = ResolveConflict(hardnessTime, character);
 
-                    // 如果找到了相同硬直时间的角色，更新 protectIndex 为它们中最后一个的索引
-                    if (sameHardnessList.Any())
-                    {
-                        protectIndex = sameHardnessList.Select(x => x.Index).Last();
-                    }
+                    // 重新计算插入索引
+                    insertIndex = _queue.FindIndex(c => _hardnessTimes[c] > hardnessTime);
 
-                    // 判断是否需要插入到受保护角色的后面
-                    if (insertIndex != -1 && insertIndex <= protectIndex)
-                    {
-                        // 如果按硬直时间插入的位置在受保护角色之前或相同，则插入到受保护角色的后面一位
-                        insertIndex = protectIndex + 1;
-                        hardnessTime = lastProtectedHardnessTime + 0.01;
-                        while (_hardnessTimes.Any(kv => kv.Key != character && kv.Value == hardnessTime))
-                        {
-                            if (insertIndex != 0 && _queue.Count > insertIndex)
-                            {
-                                addHardnessTime += Calculation.Round2Digits(_hardnessTimes[_queue[insertIndex]] - _hardnessTimes[_queue[insertIndex - 1]]);
-                            }
-                            hardnessTime = Calculation.Round2Digits(hardnessTime + addHardnessTime);
-                        }
-
-                        // 列出受保护角色的名单
-                        WriteLine($"由于 [ {string.Join(" ]，[ ", list.Select(x => x.Character))} ] 受到行动保护，因此角色 [ {character} ] 将插入至顺序表第 {insertIndex + 1} 位。");
-                    }
+                    // 列出受保护角色的名单
+                    WriteLine($"由于 [ {string.Join(" ]，[ ", list.Select(x => x.Character))} ] 受到行动保护，因此角色 [ {character} ] 将插入至顺序表第 {insertIndex + 1} 位。");
                 }
             }
 

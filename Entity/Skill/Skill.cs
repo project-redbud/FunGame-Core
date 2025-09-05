@@ -365,8 +365,7 @@ namespace Milimoe.FunGame.Core.Entity
             foreach (Character character in teammates)
             {
                 IEnumerable<Effect> effects = character.Effects.Where(e => e.IsInEffect);
-                if (CanSelectTeammate && ((character.ImmuneType & checkType) == ImmuneType.None ||
-                    effects.Any(e => e.IgnoreImmune == ImmuneType.All || e.IgnoreImmune == ImmuneType.Skilled || (IsMagic && e.IgnoreImmune == ImmuneType.Magical))))
+                if (CanSelectTeammate)
                 {
                     selectable.Add(character);
                 }
