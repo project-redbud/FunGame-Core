@@ -110,5 +110,13 @@ namespace Milimoe.FunGame.Core.Interface.Entity
         /// <param name="teammates"></param>
         /// <returns></returns>
         public List<Character> GetSelectableTargets(Character caster, List<Character> enemys, List<Character> teammates);
+
+        /// <summary>
+        /// 实际可选取的目标数量
+        /// </summary>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <returns></returns>
+        public int RealCanSelectTargetCount(List<Character> enemys, List<Character> teammates);
     }
 }

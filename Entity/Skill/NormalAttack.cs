@@ -273,6 +273,22 @@ namespace Milimoe.FunGame.Core.Entity
             return selectable;
         }
 
+        /// <summary>
+        /// 实际可选取的目标数量
+        /// </summary>
+        public int RealCanSelectTargetCount(List<Character> enemys, List<Character> teammates)
+        {
+            int count = CanSelectTargetCount;
+            if (SelectAllTeammates)
+            {
+                return teammates.Count + 1;
+            }
+            if (SelectAllEnemies)
+            {
+                return enemys.Count;
+            }
+            return count;
+        }
 
         /// <summary>
         /// 选取普攻目标

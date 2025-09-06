@@ -580,19 +580,12 @@ namespace Milimoe.FunGame.Core.Model
         {
             if (_queue.Count == 0) return null;
 
-            // 硬直时间为 0 的角色或预释放爆发技的角色先行动，取第一个
-            Character? character = _queue.FirstOrDefault(c => c.CharacterState == CharacterState.PreCastSuperSkill);
-            if (character is null)
+            // 硬直时间为 0 的角色
+            Character? character = null;
+            Character temp = _queue[0];
+            if (_hardnessTimes[temp] == 0)
             {
-                Character temp = _queue[0];
-                if (_hardnessTimes[temp] == 0)
-                {
-                    character = temp;
-                }
-            }
-            else
-            {
-                _hardnessTimes[character] = 0;
+                character = temp;
             }
 
             if (character != null)
@@ -1282,8 +1275,8 @@ namespace Milimoe.FunGame.Core.Model
                         character.CharacterState == CharacterState.ActionRestricted ||
                         character.CharacterState == CharacterState.BattleRestricted)
                     {
-                        baseTime += 5;
-                        WriteLine($"[ {character} ] {CharacterSet.GetCharacterState(character.CharacterState)}，放弃行动将额外获得 5 {GameplayEquilibriumConstant.InGameTime}硬直时间！");
+                        baseTime += 3;
+                        WriteLine($"[ {character} ] {CharacterSet.GetCharacterState(character.CharacterState)}，放弃行动将额外获得 3 {GameplayEquilibriumConstant.InGameTime}硬直时间！");
                     }
                     decided = true;
                     WriteLine($"[ {character} ] 结束了回合！");
@@ -1305,7 +1298,7 @@ namespace Milimoe.FunGame.Core.Model
                 }
                 else
                 {
-                    if (baseTime == 0) baseTime += 10;
+                    if (baseTime == 0) baseTime += 8;
                     decided = true;
                     WriteLine($"[ {character} ] 完全行动不能！");
                 }
@@ -2228,6 +2221,7 @@ namespace Milimoe.FunGame.Core.Model
                 Skill? skill = item.Skills.Active;
                 if (skill != null)
                 {
+                    skill.GamingQueue = this;
                     List<Character> targets = await SelectTargetsAsync(character, skill, enemys, teammates);
                     if (targets.Count > 0)
                     {
