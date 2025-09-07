@@ -205,12 +205,13 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         }
 
         /// <summary>
-        /// 获取以某个格子为中心，一定范围内的格子（曼哈顿距离），只考虑同一平面的格子，不包含中心格子。
+        /// 获取以某个格子为中心，一定范围内的格子（曼哈顿距离），只考虑同一平面的格子。
         /// </summary>
         /// <param name="grid"></param>
         /// <param name="range"></param>
+        /// <param name="includeCharacter"></param>
         /// <returns></returns>
-        public virtual List<Grid> GetGridsByRange(Grid grid, int range)
+        public virtual List<Grid> GetGridsByRange(Grid grid, int range, bool includeCharacter = false)
         {
             List<Grid> grids = [];
 
@@ -227,23 +228,26 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
                         int z = grid.Z;
                         if (GridsByCoordinate.TryGetValue((x, y, z), out Grid? select) && select != null)
                         {
-                            grids.Add(select);
+                            if (includeCharacter || select.Characters.Count == 0)
+                            {
+                                grids.Add(select);
+                            }
                         }
                     }
                 }
             }
-            grids.RemoveAll(g => g.Id == grid.Id);
 
             return grids;
         }
 
         /// <summary>
-        /// 获取以某个格子为中心，一定半径内的格子（圆形范围，欧几里得距离），只考虑同一平面的格子，不包含中心格子。
+        /// 获取以某个格子为中心，一定半径内的格子（圆形范围，欧几里得距离），只考虑同一平面的格子。
         /// </summary>
         /// <param name="grid"></param>
         /// <param name="range"></param>
+        /// <param name="includeCharacter"></param>
         /// <returns></returns>
-        public virtual List<Grid> GetGridsByCircleRange(Grid grid, int range)
+        public virtual List<Grid> GetGridsByCircleRange(Grid grid, int range, bool includeCharacter = false)
         {
             List<Grid> grids = [];
 
@@ -265,12 +269,14 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
 
                         if (GridsByCoordinate.TryGetValue((x, y, z), out Grid? select) && select != null)
                         {
-                            grids.Add(select);
+                            if (includeCharacter || select.Characters.Count == 0)
+                            {
+                                grids.Add(select);
+                            }
                         }
                     }
                 }
             }
-            grids.RemoveAll(g => g.Id == grid.Id);
 
             return grids;
         }

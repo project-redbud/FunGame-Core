@@ -813,6 +813,7 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 result = damageType == DamageType.Physical ? GamingQueue.CalculatePhysicalDamage(actor, enemy, false, expectedDamage, out damage, ref changeCount) : GamingQueue.CalculateMagicalDamage(actor, enemy, false, MagicType, expectedDamage, out damage, ref changeCount);
             }
+            // 注意此方法在后台线程运行
             GamingQueue.DamageToEnemyAsync(actor, enemy, damage, false, damageType, magicType, result);
             return result;
         }

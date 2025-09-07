@@ -2342,7 +2342,7 @@ namespace Milimoe.FunGame.Core.Model
             {
                 return target;
             }
-            if (map.Characters.TryGetValue(character, out Grid? current) && current != null)
+            else if (target.Id == -2 && map.Characters.TryGetValue(character, out Grid? current) && current != null)
             {
                 List<Grid> grids = map.GetGridsByRange(current, character.MOV);
                 if (grids.Count > 0)

@@ -44,5 +44,14 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// 此格子呈现的颜色（默认为 <see cref="Color.Gray"/> ）
         /// </summary>
         public Color Color { get; set; } = Color.Gray;
+
+        /// <summary>
+        /// 默认的字符串表示形式
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return $"Grid: {Id} ({X}, {Y}, {Z})";
+        }
     }
 }
