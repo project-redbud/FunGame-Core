@@ -241,6 +241,50 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         }
 
         /// <summary>
+        /// 获取以某个格子为中心，最远距离的格子（曼哈顿距离），只考虑同一平面的格子。
+        /// </summary>
+        /// <param name="grid"></param>
+        /// <param name="range"></param>
+        /// <param name="includeCharacter"></param>
+        /// <returns></returns>
+        public virtual List<Grid> GetOuterGridsByRange(Grid grid, int range, bool includeCharacter = false)
+        {
+            List<Grid> grids = [];
+
+            if (range < 0)
+            {
+                return grids;
+            }
+
+            // 遍历以中心格子为中心的方形区域
+            // dx和dy的范围从 -range 到 +range
+            for (int dx = -range; dx <= range; ++dx)
+            {
+                for (int dy = -range; dy <= range; ++dy)
+                {
+                    // 只有当曼哈顿距离恰好等于 range 时，才认为是最远距离的格子
+                    if (Math.Abs(dx) + Math.Abs(dy) == range)
+                    {
+                        int x = grid.X + dx;
+                        int y = grid.Y + dy;
+                        int z = grid.Z; // 只考虑同一平面
+
+                        // 检查格子是否存在于地图中
+                        if (GridsByCoordinate.TryGetValue((x, y, z), out Grid? select) && select != null)
+                        {
+                            if (includeCharacter || select.Characters.Count == 0)
+                            {
+                                grids.Add(select);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return grids;
+        }
+
+        /// <summary>
         /// 获取以某个格子为中心，一定半径内的格子（圆形范围，欧几里得距离），只考虑同一平面的格子。
         /// </summary>
         /// <param name="grid"></param>
@@ -254,7 +298,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             // 预计算半径的平方
             int rangeSquared = range * range;
 
-            // 遍历以中心格子为中心的方形区域
+            // 遍历以中心格子为中心的区域
             // 范围从 -range 到 +range，覆盖所有可能的圆形区域内的格子
             for (int dx = -range; dx <= range; ++dx)
             {
@@ -262,6 +306,47 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
                 {
                     // 计算当前格子与中心格子的欧几里得距离的平方
                     if ((dx * dx) + (dy * dy) <= rangeSquared)
+                    {
+                        int x = grid.X + dx;
+                        int y = grid.Y + dy;
+                        int z = grid.Z;
+
+                        if (GridsByCoordinate.TryGetValue((x, y, z), out Grid? select) && select != null)
+                        {
+                            if (includeCharacter || select.Characters.Count == 0)
+                            {
+                                grids.Add(select);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return grids;
+        }
+
+        /// <summary>
+        /// 获取以某个格子为中心，最远距离的格子（圆形范围，欧几里得距离），只考虑同一平面的格子。
+        /// </summary>
+        /// <param name="grid"></param>
+        /// <param name="range"></param>
+        /// <param name="includeCharacter"></param>
+        /// <returns></returns>
+        public virtual List<Grid> GetOuterGridsByCircleRange(Grid grid, int range, bool includeCharacter = false)
+        {
+            List<Grid> grids = [];
+
+            // 预计算半径的平方
+            int rangeSquared = range * range;
+
+            // 遍历以中心格子为中心的区域
+            // 范围从 -range 到 +range，覆盖所有可能的圆形区域内的格子
+            for (int dx = -range; dx <= range; ++dx)
+            {
+                for (int dy = -range; dy <= range; ++dy)
+                {
+                    // 计算当前格子与中心格子的欧几里得距离的平方
+                    if ((dx * dx) + (dy * dy) == rangeSquared)
                     {
                         int x = grid.X + dx;
                         int y = grid.Y + dy;
@@ -296,9 +381,15 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             }
 
             Grid? realGrid = GetCharacterCurrentGrid(character);
-
-            if (current.Id == target.Id)
+            Grid startGrid = current;
+            if (realGrid != null && current.Id != realGrid.Id)
             {
+                startGrid = realGrid;
+            }
+
+            if (startGrid.Id == target.Id)
+            {
+                SetCharacterCurrentGrid(character, startGrid);
                 return 0;
             }
 
@@ -308,8 +399,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             HashSet<long> visited = [];
 
             // 将起始格子加入队列，步数为0，并标记为已访问
-            queue.Enqueue((current, 0));
-            visited.Add(current.Id);
+            queue.Enqueue((startGrid, 0));
+            visited.Add(startGrid.Id);
 
             while (queue.Count > 0)
             {
@@ -319,9 +410,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
                 if (currentGrid.Id == target.Id)
                 {
                     realGrid?.Characters.Remove(character);
-                    current.Characters.Remove(character);
-                    target.Characters.Add(character);
-                    Characters[character] = target;
+                    SetCharacterCurrentGrid(character, target);
                     return currentSteps;
                 }
 
@@ -369,10 +458,15 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             }
 
             Grid? realGrid = GetCharacterCurrentGrid(character);
-
-            if (current.Id == target.Id)
+            Grid startGrid = current;
+            if (realGrid != null && current.Id != realGrid.Id)
             {
-                SetCharacterCurrentGrid(character, current);
+                startGrid = realGrid;
+            }
+
+            if (startGrid.Id == target.Id)
+            {
+                SetCharacterCurrentGrid(character, startGrid);
                 return 0;
             }
 
@@ -383,11 +477,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             HashSet<long> visited = [];
 
             // 初始化 BFS 队列，将起始格子加入，步数为0
-            queue.Enqueue((current, 0));
-            visited.Add(current.Id);
+            queue.Enqueue((startGrid, 0));
+            visited.Add(startGrid.Id);
 
             Grid? bestReachableGrid = current;
-            int minDistanceToTarget = CalculateManhattanDistance(current, target);
+            int minDistanceToTarget = CalculateManhattanDistance(startGrid, target);
             int stepsToBestReachable = 0;
 
             // 定义平面移动的四个方向

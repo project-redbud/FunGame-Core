@@ -344,7 +344,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             return map;
         }
 
-        private async Task<Grid> Gq_SelectTargetGrid(GamingQueue queue, Character character, List<Character> enemys, List<Character> teammates, GameMap map)
+        private async Task<Grid> Gq_SelectTargetGrid(GamingQueue queue, Character character, List<Character> enemys, List<Character> teammates, GameMap map, List<Grid> canMoveGrids)
         {
             // 介入选择，假设这里更新界面，让玩家选择目的地
             await Task.CompletedTask;

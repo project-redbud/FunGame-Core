@@ -26,6 +26,11 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public Dictionary<Guid, Character> Original { get; }
 
         /// <summary>
+        /// 参与本次游戏的所有角色列表
+        /// </summary>
+        public List<Character> AllCharacters { get; }
+
+        /// <summary>
         /// 当前的行动顺序
         /// </summary>
         public List<Character> Queue { get; }
@@ -151,8 +156,19 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="caster"></param>
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
+        /// <param name="castRange"></param>
+        /// <param name="desiredTargets"></param>
         /// <returns></returns>
-        public Task<bool> UseItemAsync(Item item, Character caster, List<Character> enemys, List<Character> teammates);
+        public Task<bool> UseItemAsync(Item item, Character caster, List<Character> enemys, List<Character> teammates, List<Grid> castRange, List<Character>? desiredTargets = null);
+
+        /// <summary>
+        /// 角色移动
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="target"></param>
+        /// <param name="startGrid"></param>
+        /// <returns></returns>
+        public Task<bool> CharacterMoveAsync(Character character, Grid target, Grid? startGrid);
 
         /// <summary>
         /// 选取移动目标
@@ -161,8 +177,9 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
         /// <param name="map"></param>
+        /// <param name="moveRange"></param>
         /// <returns></returns>
-        public Task<Grid> SelectTargetGridAsync(Character character, List<Character> enemys, List<Character> teammates, GameMap map);
+        public Task<Grid> SelectTargetGridAsync(Character character, List<Character> enemys, List<Character> teammates, GameMap map, List<Grid> moveRange);
 
         /// <summary>
         /// 选取技能目标
@@ -171,8 +188,9 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="skill"></param>
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
+        /// <param name="castRange"></param>
         /// <returns></returns>
-        public Task<List<Character>> SelectTargetsAsync(Character caster, Skill skill, List<Character> enemys, List<Character> teammates);
+        public Task<List<Character>> SelectTargetsAsync(Character caster, Skill skill, List<Character> enemys, List<Character> teammates, List<Grid> castRange);
 
         /// <summary>
         /// 选取普通攻击目标
@@ -181,8 +199,9 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="attack"></param>
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
+        /// <param name="attackRange"></param>
         /// <returns></returns>
-        public Task<List<Character>> SelectTargetsAsync(Character character, NormalAttack attack, List<Character> enemys, List<Character> teammates);
+        public Task<List<Character>> SelectTargetsAsync(Character character, NormalAttack attack, List<Character> enemys, List<Character> teammates, List<Grid> attackRange);
 
         /// <summary>
         /// 判断目标对于某个角色是否是队友

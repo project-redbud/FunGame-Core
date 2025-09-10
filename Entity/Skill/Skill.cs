@@ -99,7 +99,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 施法距离 [ 单位：格 ]
         /// </summary>
         [InitOptional]
-        public int CastRange { get; set; } = 5;
+        public int CastRange
+        {
+            get => Math.Max(1, CastAnywhere ? (GamingQueue?.Map != null ? GamingQueue.Map.Grids.Count : 999) : _CastRange);
+            set => _CastRange = Math.Max(1, value);
+        }
 
         /// <summary>
         /// 可选取自身
@@ -135,6 +139,24 @@ namespace Milimoe.FunGame.Core.Entity
         /// 可选取的作用范围 [ 单位：格 ]
         /// </summary>
         public virtual int CanSelectTargetRange { get; set; } = 0;
+
+        /// <summary>
+        /// 如果为 true，表示非指向性技能，可以任意选取一个范围（<see cref="CanSelectTargetRange"/> = 0 时为单个格子）。<para/>
+        /// 如果为 false，表示必须选取一个角色作为目标，当 <see cref="CanSelectTargetRange"/> > 0 时，技能作用范围将根据目标位置覆盖 <see cref="SkillRangeType"/> 形状的区域；= 0 时正常选取目标。
+        /// </summary>
+        public virtual bool IsNonDirectional { get; set; } = false;
+        
+        /// <summary>
+        /// 作用范围形状<para/>
+        /// <see cref="SkillRangeType.Diamond"/> - 菱形。默认的曼哈顿距离正方形<para/>
+        /// <see cref="SkillRangeType.Circle"/> - 圆形。基于欧几里得距离的圆形<para/>
+        /// <see cref="SkillRangeType.Square"/> - 正方形<para/>
+        /// <see cref="SkillRangeType.Line"/> - 施法者与目标之前的直线<para/>
+        /// <see cref="SkillRangeType.LinePass"/> - 施法者与目标所在的直线，贯穿至地图边缘<para/>
+        /// <see cref="SkillRangeType.Sector"/> - 扇形<para/>
+        /// 注意，该属性不影响选取目标的范围。选取目标的范围由 <see cref="Library.Common.Addon.GameMap"/> 决定。
+        /// </summary>
+        public virtual SkillRangeType SkillRangeType { get; set; } = SkillRangeType.Diamond;
 
         /// <summary>
         /// 选取角色的条件
@@ -534,6 +556,10 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 builder.AppendLine($"{DispelDescription}");
             }
+            if (GamingQueue?.Map != null && SkillType != SkillType.Passive)
+            {
+                builder.AppendLine($"施法距离：{(CastAnywhere ? "全图" : CastRange)}");
+            }
             if (IsActive && (Item?.IsInGameItem ?? true))
             {
                 if (SkillType == SkillType.Item)
@@ -661,5 +687,10 @@ namespace Milimoe.FunGame.Core.Entity
         /// 等级
         /// </summary>
         private int _Level = 0;
+
+        /// <summary>
+        /// 施法距离
+        /// </summary>
+        private int _CastRange = 3;
     }
 }

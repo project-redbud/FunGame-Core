@@ -147,7 +147,7 @@ namespace Milimoe.FunGame.Core.Model
             {
                 string[] teamActive = [.. Teams.OrderByDescending(kv => kv.Value.Score).Select(kv =>
                 {
-                    int activeCount = kv.Value.GetActiveCharacters(this).Count;
+                    int activeCount = kv.Value.GetActiveCharacters().Count;
                     if (kv.Value == killTeam)
                     {
                         activeCount += 1;
@@ -159,7 +159,7 @@ namespace Milimoe.FunGame.Core.Model
 
             if (deathTeam != null)
             {
-                List<Character> remain = deathTeam.GetActiveCharacters(this);
+                List<Character> remain = deathTeam.GetActiveCharacters();
                 int remainCount = remain.Count;
                 if (remainCount == 0)
                 {
@@ -175,7 +175,7 @@ namespace Milimoe.FunGame.Core.Model
 
             if (killTeam != null)
             {
-                List<Character> actives = killTeam.GetActiveCharacters(this);
+                List<Character> actives = killTeam.GetActiveCharacters();
                 int remainCount = actives.Count;
                 if (remainCount > 0 && MaxRespawnTimes == 0)
                 {

@@ -1,19 +1,17 @@
-﻿using Milimoe.FunGame.Core.Interface.Base;
-
-namespace Milimoe.FunGame.Core.Entity
+﻿namespace Milimoe.FunGame.Core.Entity
 {
     public class Team(string name, IEnumerable<Character> charaters)
     {
         public Guid Id { get; set; } = Guid.Empty;
         public string Name { get; set; } = name;
-        public List<Character> Members { get; } = new(charaters);
+        public List<Character> Members { get; } = [.. charaters];
         public int Score { get; set; } = 0;
         public bool IsWinner { get; set; } = false;
         public int Count => Members.Count;
 
-        public List<Character> GetActiveCharacters(IGamingQueue queue)
+        public List<Character> GetActiveCharacters()
         {
-            return [.. Members.Where(queue.Queue.Contains)];
+            return [.. Members.Where(c => c.HP > 0)];
         }
 
         public List<Character> GetTeammates(Character character)
@@ -21,9 +19,9 @@ namespace Milimoe.FunGame.Core.Entity
             return [.. Members.Where(c => c != character)];
         }
 
-        public List<Character> GetActiveTeammates(IGamingQueue queue, Character character)
+        public List<Character> GetActiveTeammates(Character character)
         {
-            return [.. Members.Where(c => queue.Queue.Contains(c) && c != character)];
+            return [.. Members.Where(c => c.HP > 0 && c != character)];
         }
 
         public bool IsOnThisTeam(Character character)

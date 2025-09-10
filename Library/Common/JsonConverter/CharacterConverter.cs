@@ -83,6 +83,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Character.ExHPPercentage):
                     result.ExHPPercentage = reader.GetDouble();
                     break;
+                case nameof(Character.HasMP):
+                    result.HasMP = reader.GetBoolean();
+                    break;
                 case nameof(Character.InitialMP):
                     result.InitialMP = reader.GetDouble();
                     break;
@@ -197,11 +200,11 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Character.ExCDR):
                     result.ExCDR = reader.GetDouble();
                     break;
-                case nameof(Character.ATR):
-                    result.ATR = reader.GetInt32();
+                case nameof(Character.ExATR):
+                    result.ExATR = reader.GetInt32();
                     break;
-                case nameof(Character.MOV):
-                    result.MOV = reader.GetInt32();
+                case nameof(Character.ExMOV):
+                    result.ExMOV = reader.GetInt32();
                     break;
                 case nameof(Character.ExCritRate):
                     result.ExCritRate = reader.GetDouble();
@@ -273,6 +276,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Character.InitialHP), value.InitialHP);
             writer.WriteNumber(nameof(Character.ExHP2), value.ExHP2);
             writer.WriteNumber(nameof(Character.ExHPPercentage), value.ExHPPercentage);
+            writer.WriteBoolean(nameof(Character.HasMP), value.HasMP);
             writer.WriteNumber(nameof(Character.InitialMP), value.InitialMP);
             writer.WriteNumber(nameof(Character.ExMP2), value.ExMP2);
             writer.WriteNumber(nameof(Character.ExMPPercentage), value.ExMPPercentage);
@@ -311,8 +315,8 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Character.ExActionCoefficient), value.ExActionCoefficient);
             writer.WriteNumber(nameof(Character.ExAccelerationCoefficient), value.ExAccelerationCoefficient);
             writer.WriteNumber(nameof(Character.ExCDR), value.ExCDR);
-            writer.WriteNumber(nameof(Character.ATR), value.ATR);
-            writer.WriteNumber(nameof(Character.MOV), value.MOV);
+            writer.WriteNumber(nameof(Character.ExATR), value.ExATR);
+            writer.WriteNumber(nameof(Character.ExMOV), value.ExMOV);
             writer.WriteNumber(nameof(Character.ExCritRate), value.ExCritRate);
             writer.WriteNumber(nameof(Character.ExCritDMG), value.ExCritDMG);
             writer.WriteNumber(nameof(Character.ExEvadeRate), value.ExEvadeRate);

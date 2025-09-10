@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface.Base;
 
 namespace Milimoe.FunGame.Core.Interface.Entity
 {
@@ -7,6 +8,11 @@ namespace Milimoe.FunGame.Core.Interface.Entity
     /// </summary>
     public interface ISkill : IBaseEntity
     {
+        /// <summary>
+        /// 所属的行动顺序表实例
+        /// </summary>
+        public IGamingQueue? GamingQueue { get; }
+
         /// <summary>
         /// 此技能所属的角色
         /// </summary>

@@ -1063,4 +1063,14 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Magical,
         True
     }
+
+    public enum SkillRangeType
+    {
+        Diamond,
+        Circle,
+        Square,
+        Line,
+        LinePass,
+        Sector
+    }
 }
