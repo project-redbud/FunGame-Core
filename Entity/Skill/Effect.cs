@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
@@ -560,7 +561,8 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
         /// <param name="map"></param>
-        public virtual void BeforeSelectTargetGrid(Character character, List<Character> enemys, List<Character> teammates, GameMap map)
+        /// <param name="moveRange"></param>
+        public virtual void BeforeSelectTargetGrid(Character character, List<Character> enemys, List<Character> teammates, GameMap map, List<Grid> moveRange)
         {
 
         }
@@ -1065,6 +1067,19 @@ namespace Milimoe.FunGame.Core.Entity
         public bool IsCharacterInAIControlling(Character character)
         {
             return GamingQueue?.IsCharacterInAIControlling(character) ?? false;
+        }
+
+        /// <summary>
+        /// 添加角色应用的特效类型到回合记录中
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="types"></param>
+        public void RecordCharacterApplyEffects(Character character, params List<EffectType> types)
+        {
+            if (GamingQueue?.LastRound.ApplyEffects.TryAdd(character, types) ?? false)
+            {
+                GamingQueue?.LastRound.ApplyEffects[character].AddRange(types);
+            }
         }
 
         /// <summary>

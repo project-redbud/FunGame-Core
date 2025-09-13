@@ -1,7 +1,9 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
+using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Entity
@@ -310,7 +312,13 @@ namespace Milimoe.FunGame.Core.Entity
             }
             if (result && Skills.Active != null)
             {
-                used = await queue.UseItemAsync(this, character, enemys, teammates);
+                List<Grid> castRange = [];
+                if (Skills.Active.GamingQueue != null && Skills.Active.GamingQueue.Map != null)
+                {
+                    Grid? grid = Skills.Active.GamingQueue.Map.GetCharacterCurrentGrid(character);
+                    castRange = grid is null ? [] : Skills.Active.GamingQueue.Map.GetGridsByRange(grid, Skills.Active.CastRange, true);
+                }
+                used = await queue.UseItemAsync(this, character, enemys, teammates, castRange);
             }
             if (used)
             {

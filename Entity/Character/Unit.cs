@@ -47,7 +47,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 获取单位的详细信息
         /// </summary>
         /// <returns></returns>
-        public new string GetInfo(bool showUser = true, bool showGrowth = true, bool showEXP = false)
+        public new string GetInfo(bool showUser = true, bool showGrowth = true, bool showEXP = false, bool showMapRelated = false)
         {
             StringBuilder builder = new();
 
@@ -77,6 +77,12 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"加速系数：{AccelerationCoefficient * 100:0.##}%");
             builder.AppendLine($"物理穿透：{PhysicalPenetration * 100:0.##}%");
             builder.AppendLine($"魔法穿透：{MagicalPenetration * 100:0.##}%");
+
+            if (showMapRelated)
+            {
+                builder.AppendLine($"移动距离：{MOV}");
+                builder.AppendLine($"攻击距离：{ATR}");
+            }
 
             if (CharacterState != CharacterState.Actionable)
             {
@@ -174,7 +180,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 获取单位的简略信息
         /// </summary>
         /// <returns></returns>
-        public new string GetSimpleInfo(bool showUser = true, bool showGrowth = true, bool showEXP = false, bool showBasicOnly = false)
+        public new string GetSimpleInfo(bool showUser = true, bool showGrowth = true, bool showEXP = false, bool showBasicOnly = false, bool showMapRelated = false)
         {
             StringBuilder builder = new();
 
@@ -197,6 +203,12 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"行动速度：{SPD:0.##}" + (exSPD != 0 ? $" [{InitialSPD:0.##} {(exSPD >= 0 ? "+" : "-")} {Math.Abs(exSPD):0.##}]" : "") + $" ({ActionCoefficient * 100:0.##}%)");
             builder.AppendLine($"生命回复：{HR:0.##}" + (ExHR != 0 ? $" [{InitialHR + STR * GameplayEquilibriumConstant.STRtoHRFactor:0.##} {(ExHR >= 0 ? "+" : "-")} {Math.Abs(ExHR):0.##}]" : ""));
             builder.AppendLine($"魔法回复：{MR:0.##}" + (ExMR != 0 ? $" [{InitialMR + INT * GameplayEquilibriumConstant.INTtoMRFactor:0.##} {(ExMR >= 0 ? "+" : "-")} {Math.Abs(ExMR):0.##}]" : ""));
+
+            if (showMapRelated)
+            {
+                builder.AppendLine($"移动距离：{MOV}");
+                builder.AppendLine($"攻击距离：{ATR}");
+            }
 
             if (!showBasicOnly)
             {
@@ -408,7 +420,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 获取单位的物品信息
         /// </summary>
         /// <returns></returns>
-        public new string GetItemInfo(bool showUser = true, bool showGrowth = true, bool showEXP = false)
+        public new string GetItemInfo(bool showUser = true, bool showGrowth = true, bool showEXP = false, bool showMapRelated = false)
         {
             StringBuilder builder = new();
 
@@ -438,6 +450,12 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"加速系数：{AccelerationCoefficient * 100:0.##}%");
             builder.AppendLine($"物理穿透：{PhysicalPenetration * 100:0.##}%");
             builder.AppendLine($"魔法穿透：{MagicalPenetration * 100:0.##}%");
+
+            if (showMapRelated)
+            {
+                builder.AppendLine($"移动距离：{MOV}");
+                builder.AppendLine($"攻击距离：{ATR}");
+            }
 
             if (EquipSlot.Any())
             {

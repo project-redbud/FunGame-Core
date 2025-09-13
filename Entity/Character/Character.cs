@@ -219,7 +219,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 最大生命值 = 基础生命值 + 额外生命值 + 额外生命值2 + 额外生命值3
         /// </summary>
-        public double MaxHP => BaseHP + ExHP + ExHP2 + ExHP3;
+        public double MaxHP => Math.Max(1, BaseHP + ExHP + ExHP2 + ExHP3);
 
         /// <summary>
         /// 当前生命值 [ 战斗相关 ]
@@ -238,6 +238,12 @@ namespace Milimoe.FunGame.Core.Entity
             }
         }
 
+        /// <summary>
+        /// 是否有魔法值 [ 初始设定 ]
+        /// </summary>
+        [InitRequired]
+        public bool HasMP { get; set; } = true;
+        
         /// <summary>
         /// 初始魔法值 [ 初始设定 ]
         /// </summary>
@@ -272,7 +278,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 最大魔法值 = 基础魔法值 + 额外魔法值 + 额外魔法值2 + 额外魔法值3
         /// </summary>
-        public double MaxMP => BaseMP + ExMP + ExMP2 + ExMP3;
+        public double MaxMP => Math.Max(1, BaseMP + ExMP + ExMP2 + ExMP3);
 
         /// <summary>
         /// 当前魔法值 [ 战斗相关 ]
@@ -749,16 +755,68 @@ namespace Milimoe.FunGame.Core.Entity
         public double ExCDR { get; set; } = 0;
 
         /// <summary>
-        /// 攻击距离 [ 与技能和物品相关 ] [ 单位：格（半径） ]
+        /// 攻击距离 [ 与武器相关 ] [ 单位：格（半径） ]
         /// </summary>
-        [InitOptional]
-        public int ATR { get; set; } = 1;
+        public int ATR
+        {
+            get
+            {
+                int baseATR = 1;
+                if (EquipSlot.Weapon != null)
+                {
+                    baseATR = EquipSlot.Weapon.WeaponType switch
+                    {
+                        WeaponType.OneHandedSword => GameplayEquilibriumConstant.OneHandedSwordAttackRange,
+                        WeaponType.TwoHandedSword => GameplayEquilibriumConstant.TwoHandedSwordAttackRange,
+                        WeaponType.Bow => GameplayEquilibriumConstant.BowAttackRange,
+                        WeaponType.Pistol => GameplayEquilibriumConstant.PistolAttackRange,
+                        WeaponType.Rifle => GameplayEquilibriumConstant.RifleAttackRange,
+                        WeaponType.DualDaggers => GameplayEquilibriumConstant.DualDaggersAttackRange,
+                        WeaponType.Talisman => GameplayEquilibriumConstant.TalismanAttackRange,
+                        WeaponType.Staff => GameplayEquilibriumConstant.StaffAttackRange,
+                        WeaponType.Polearm => GameplayEquilibriumConstant.PolearmAttackRange,
+                        WeaponType.Gauntlet => GameplayEquilibriumConstant.GauntletAttackRange,
+                        WeaponType.HiddenWeapon => GameplayEquilibriumConstant.HiddenWeaponAttackRange,
+                        _ => baseATR
+                    };
+                }
+                return Math.Max(1, baseATR + ExATR);
+            }
+        }
+
+        /// <summary>
+        /// 额外攻击距离 [ 与技能和物品相关 ] [ 单位：格（半径） ]
+        /// </summary>
+        public int ExATR { get; set; } = 0;
+        
+        /// <summary>
+        /// 行动力/可移动距离 [ 与第一定位相关 ] [ 单位：格（半径） ]
+        /// </summary>
+        public int MOV
+        {
+            get
+            {
+                int baseMOV = 3;
+                if (EquipSlot.Weapon != null)
+                {
+                    baseMOV = FirstRoleType switch
+                    {
+                        RoleType.Core => GameplayEquilibriumConstant.RoleMOV_Core,
+                        RoleType.Vanguard => GameplayEquilibriumConstant.RoleMOV_Vanguard,
+                        RoleType.Guardian => GameplayEquilibriumConstant.RoleMOV_Guardian,
+                        RoleType.Support => GameplayEquilibriumConstant.RoleMOV_Support,
+                        RoleType.Medic => GameplayEquilibriumConstant.RoleMOV_Medic,
+                        _ => baseMOV
+                    };
+                }
+                return Math.Max(1, baseMOV + ExMOV);
+            }
+        }
         
         /// <summary>
         /// 行动力/可移动距离 [ 与技能和物品相关 ] [ 单位：格（半径） ]
         /// </summary>
-        [InitOptional]
-        public int MOV { get; set; } = 5;
+        public int ExMOV { get; set; } = 0;
         
         /// <summary>
         /// 暴击率(%) = [ 与敏捷相关 ] + 额外暴击率(%)
@@ -1388,7 +1446,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 获取角色的详细信息
         /// </summary>
         /// <returns></returns>
-        public string GetInfo(bool showUser = true, bool showGrowth = true, bool showEXP = false)
+        public string GetInfo(bool showUser = true, bool showGrowth = true, bool showEXP = false, bool showMapRelated = false)
         {
             StringBuilder builder = new();
 
@@ -1434,6 +1492,12 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"魔法消耗减少：{INT * GameplayEquilibriumConstant.INTtoCastMPReduce * 100:0.##}%");
             builder.AppendLine($"能量消耗减少：{INT * GameplayEquilibriumConstant.INTtoCastEPReduce * 100:0.##}%");
 
+            if (showMapRelated)
+            {
+                builder.AppendLine($"移动距离：{MOV}");
+                builder.AppendLine($"攻击距离：{ATR}");
+            }
+
             GetStatusInfo(builder);
 
             builder.AppendLine("== 普通攻击 ==");
@@ -1475,7 +1539,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 获取角色的简略信息
         /// </summary>
         /// <returns></returns>
-        public string GetSimpleInfo(bool showUser = true, bool showGrowth = true, bool showEXP = false, bool showBasicOnly = false)
+        public string GetSimpleInfo(bool showUser = true, bool showGrowth = true, bool showEXP = false, bool showBasicOnly = false, bool showMapRelated = false)
         {
             StringBuilder builder = new();
 
@@ -1517,6 +1581,12 @@ namespace Milimoe.FunGame.Core.Entity
             }
             builder.AppendLine($"生命回复：{HR:0.##}" + (ExHR != 0 ? $" [{InitialHR + STR * GameplayEquilibriumConstant.STRtoHRFactor:0.##} {(ExHR >= 0 ? "+" : "-")} {Math.Abs(ExHR):0.##}]" : ""));
             builder.AppendLine($"魔法回复：{MR:0.##}" + (ExMR != 0 ? $" [{InitialMR + INT * GameplayEquilibriumConstant.INTtoMRFactor:0.##} {(ExMR >= 0 ? "+" : "-")} {Math.Abs(ExMR):0.##}]" : ""));
+
+            if (showMapRelated)
+            {
+                builder.AppendLine($"移动距离：{MOV}");
+                builder.AppendLine($"攻击距离：{ATR}");
+            }
 
             if (!showBasicOnly)
             {
@@ -1685,7 +1755,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 获取角色的物品信息
         /// </summary>
         /// <returns></returns>
-        public string GetItemInfo(bool showUser = true, bool showGrowth = true, bool showEXP = false)
+        public string GetItemInfo(bool showUser = true, bool showGrowth = true, bool showEXP = false, bool showMapRelated = false)
         {
             StringBuilder builder = new();
 
@@ -1730,6 +1800,12 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"魔法穿透：{MagicalPenetration * 100:0.##}%");
             builder.AppendLine($"魔法消耗减少：{INT * GameplayEquilibriumConstant.INTtoCastMPReduce * 100:0.##}%");
             builder.AppendLine($"能量消耗减少：{INT * GameplayEquilibriumConstant.INTtoCastEPReduce * 100:0.##}%");
+
+            if (showMapRelated)
+            {
+                builder.AppendLine($"移动距离：{MOV}");
+                builder.AppendLine($"攻击距离：{ATR}");
+            }
 
             if (EquipSlot.Any())
             {
@@ -2022,8 +2098,8 @@ namespace Milimoe.FunGame.Core.Entity
                 c.MDF = MDF.Copy();
                 c.Lifesteal = Lifesteal;
                 c.Shield = Shield.Copy();
-                c.ATR = ATR;
-                c.MOV = MOV;
+                c.ExATR = ExATR;
+                c.ExMOV = ExMOV;
                 c.MagicType = MagicType;
                 c.ImmuneType = ImmuneType;
             }
@@ -2132,8 +2208,8 @@ namespace Milimoe.FunGame.Core.Entity
             ExActionCoefficient = c.ExActionCoefficient;
             ExAccelerationCoefficient = c.ExAccelerationCoefficient;
             ExCDR = c.ExCDR;
-            ATR = c.ATR;
-            MOV = c.MOV;
+            ExATR = c.ExATR;
+            ExMOV = c.ExMOV;
             ExCritRate = c.ExCritRate;
             ExCritDMG = c.ExCritDMG;
             ExEvadeRate = c.ExEvadeRate;

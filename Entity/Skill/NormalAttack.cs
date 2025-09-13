@@ -234,6 +234,11 @@ namespace Milimoe.FunGame.Core.Entity
         public double CurrentCD => 0;
 
         /// <summary>
+        /// 游戏中的行动顺序表实例，使用时需要判断其是否存在
+        /// </summary>
+        public IGamingQueue? GamingQueue { get; set; } = null;
+
+        /// <summary>
         /// 绑定到特效的普通攻击扩展。键为特效，值为对应的普攻扩展对象。
         /// </summary>
         public Dictionary<Effect, NormalAttackOfEffect> NormalAttackOfEffects { get; } = [];
@@ -450,6 +455,7 @@ namespace Milimoe.FunGame.Core.Entity
 
             builder.AppendLine($"{Name} - 等级 {Level}");
             builder.AppendLine($"描述：{Description}");
+            if (GamingQueue?.Map != null) builder.AppendLine($"攻击距离：{Character.ATR}");
             builder.AppendLine($"硬直时间：{RealHardnessTime:0.##}{(showOriginal && RealHardnessTime != HardnessTime ? $"（原始值：{HardnessTime}）" : "")}");
 
             return builder.ToString();

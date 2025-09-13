@@ -461,6 +461,86 @@ namespace Milimoe.FunGame.Core.Model
         public double HiddenWeaponHardness { get; set; } = 7;
 
         /// <summary>
+        /// 单手剑的攻击距离
+        /// </summary>
+        public int OneHandedSwordAttackRange { get; set; } = 1;
+
+        /// <summary>
+        /// 双手剑的攻击距离
+        /// </summary>
+        public int TwoHandedSwordAttackRange { get; set; } = 2;
+
+        /// <summary>
+        /// 弓的攻击距离
+        /// </summary>
+        public int BowAttackRange { get; set; } = 4;
+
+        /// <summary>
+        /// 手枪的攻击距离
+        /// </summary>
+        public int PistolAttackRange { get; set; } = 3;
+
+        /// <summary>
+        /// 步枪的攻击距离
+        /// </summary>
+        public int RifleAttackRange { get; set; } = 5;
+
+        /// <summary>
+        /// 双持短刀的攻击距离
+        /// </summary>
+        public int DualDaggersAttackRange { get; set; } = 1;
+
+        /// <summary>
+        /// 法器的攻击距离
+        /// </summary>
+        public int TalismanAttackRange { get; set; } = 5;
+
+        /// <summary>
+        /// 法杖的攻击距离
+        /// </summary>
+        public int StaffAttackRange { get; set; } = 3;
+
+        /// <summary>
+        /// 长柄武器的攻击距离
+        /// </summary>
+        public int PolearmAttackRange { get; set; } = 2;
+
+        /// <summary>
+        /// 拳套的攻击距离
+        /// </summary>
+        public int GauntletAttackRange { get; set; } = 1;
+
+        /// <summary>
+        /// 暗器的攻击距离
+        /// </summary>
+        public int HiddenWeaponAttackRange { get; set; } = 4;
+
+        /// <summary>
+        /// 核心角色的移动距离
+        /// </summary>
+        public int RoleMOV_Core { get; set; } = 3;
+
+        /// <summary>
+        /// 先锋角色的移动距离
+        /// </summary>
+        public int RoleMOV_Vanguard { get; set; } = 6;
+
+        /// <summary>
+        /// 近卫角色的移动距离
+        /// </summary>
+        public int RoleMOV_Guardian { get; set; } = 5;
+
+        /// <summary>
+        /// 支援角色的移动距离
+        /// </summary>
+        public int RoleMOV_Support { get; set; } = 4;
+
+        /// <summary>
+        /// 治疗角色的移动距离
+        /// </summary>
+        public int RoleMOV_Medic { get; set; } = 3;
+
+        /// <summary>
         /// 应用此游戏平衡常数给实体
         /// </summary>
         /// <param name="entities"></param>
