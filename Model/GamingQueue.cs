@@ -115,6 +115,29 @@ namespace Milimoe.FunGame.Core.Model
         public Dictionary<int, List<Skill>> RoundRewards => _roundRewards;
 
         /// <summary>
+        /// 是否使用插队保护机制
+        /// </summary>
+        public bool UseQueueProtected { get; set; }
+
+        /// <summary>
+        /// 插队保护机制检查的最多被插队次数：-1 为默认，即队列长度，最少为 5；0 为不保护
+        /// </summary>
+        public int MaxCutQueueTimes
+        {
+            get
+            {
+                if (!UseQueueProtected || _maxCutQueueTimes == 0) return 0;
+                else if (_maxCutQueueTimes == -1) return Math.Max(5, _queue.Count);
+                else if (_maxCutQueueTimes < 5) return 5;
+                else return _maxCutQueueTimes;
+            }
+            set
+            {
+                _maxCutQueueTimes = value;
+            }
+        }
+
+        /// <summary>
         /// 自定义数据
         /// </summary>
         public Dictionary<string, object> CustomData { get; } = [];
@@ -237,6 +260,11 @@ namespace Milimoe.FunGame.Core.Model
         /// 回合奖励的特效工厂
         /// </summary>
         protected Func<long, Dictionary<string, object>> _factoryRoundRewardEffects = id => [];
+
+        /// <summary>
+        /// 最多被插队次数，-1 为默认，即队列长度，最少为 5
+        /// </summary>
+        protected int _maxCutQueueTimes = 5;
 
         /// <summary>
         /// 游戏是否结束
@@ -472,49 +500,51 @@ namespace Milimoe.FunGame.Core.Model
             if (isCheckProtected)
             {
                 // 查找保护条件 被插队超过此次数便能获得插队补偿 即行动保护
-                int countProtected = Math.Max(5, _queue.Count);
-
-                // 查找队列中是否有满足插队补偿条件的角色（最后一个）
-                var list = _queue
-                    .Select((c, index) => new { Character = c, Index = index })
-                    .Where(x => _cutCount.ContainsKey(x.Character) && _cutCount[x.Character] >= countProtected);
-
-                // 如果没有找到满足条件的角色，返回 -1
-                int protectIndex = list.Select(x => x.Index).LastOrDefault(-1);
-
-                if (protectIndex != -1)
+                int countProtected = MaxCutQueueTimes;
+                if (countProtected > 0)
                 {
-                    // 获取最后一个符合条件的角色
-                    Character lastProtectedCharacter = list.Last().Character;
-                    double lastProtectedHardnessTime = _hardnessTimes[lastProtectedCharacter];
-
-                    // 查找与最后一个受保护角色相同硬直时间的其他角色
-                    var sameHardnessList = _queue
+                    // 查找队列中是否有满足插队补偿条件的角色（最后一个）
+                    var list = _queue
                         .Select((c, index) => new { Character = c, Index = index })
-                        .Where(x => _hardnessTimes[x.Character] == lastProtectedHardnessTime && x.Index > protectIndex);
+                        .Where(x => _cutCount.ContainsKey(x.Character) && _cutCount[x.Character] >= countProtected);
 
-                    // 如果找到了相同硬直时间的角色，更新 protectIndex 为它们中最后一个的索引
-                    if (sameHardnessList.Any())
+                    // 如果没有找到满足条件的角色，返回 -1
+                    int protectIndex = list.Select(x => x.Index).LastOrDefault(-1);
+
+                    if (protectIndex != -1)
                     {
-                        protectIndex = sameHardnessList.Select(x => x.Index).Last();
-                    }
+                        // 获取最后一个符合条件的角色
+                        Character lastProtectedCharacter = list.Last().Character;
+                        double lastProtectedHardnessTime = _hardnessTimes[lastProtectedCharacter];
 
-                    // 判断是否需要插入到受保护角色的后面
-                    // 只有当插入位置在受保护角色之前或相同时才触发保护
-                    if (insertIndex != -1 && insertIndex <= protectIndex)
-                    {
-                        // 插入到受保护角色的后面一位
-                        insertIndex = protectIndex + 1;
+                        // 查找与最后一个受保护角色相同硬直时间的其他角色
+                        var sameHardnessList = _queue
+                            .Select((c, index) => new { Character = c, Index = index })
+                            .Where(x => _hardnessTimes[x.Character] == lastProtectedHardnessTime && x.Index > protectIndex);
 
-                        // 设置硬直时间为保护角色的硬直时间 + 0.01
-                        hardnessTime = lastProtectedHardnessTime + 0.01;
-                        hardnessTime = ResolveConflict(hardnessTime, character);
+                        // 如果找到了相同硬直时间的角色，更新 protectIndex 为它们中最后一个的索引
+                        if (sameHardnessList.Any())
+                        {
+                            protectIndex = sameHardnessList.Select(x => x.Index).Last();
+                        }
 
-                        // 重新计算插入索引
-                        insertIndex = _queue.FindIndex(c => _hardnessTimes[c] > hardnessTime);
+                        // 判断是否需要插入到受保护角色的后面
+                        // 只有当插入位置在受保护角色之前或相同时才触发保护
+                        if (insertIndex != -1 && insertIndex <= protectIndex)
+                        {
+                            // 插入到受保护角色的后面一位
+                            insertIndex = protectIndex + 1;
 
-                        // 列出受保护角色的名单
-                        WriteLine($"由于 [ {string.Join(" ]，[ ", list.Select(x => x.Character))} ] 受到行动保护，因此角色 [ {character} ] 将插入至顺序表第 {insertIndex + 1} 位。");
+                            // 设置硬直时间为保护角色的硬直时间 + 0.01
+                            hardnessTime = lastProtectedHardnessTime + 0.01;
+                            hardnessTime = ResolveConflict(hardnessTime, character);
+
+                            // 重新计算插入索引
+                            insertIndex = _queue.FindIndex(c => _hardnessTimes[c] > hardnessTime);
+
+                            // 列出受保护角色的名单
+                            WriteLine($"由于 [ {string.Join(" ]，[ ", list.Select(x => x.Character))} ] 受到行动保护，因此角色 [ {character} ] 将插入至顺序表第 {insertIndex + 1} 位。");
+                        }
                     }
                 }
             }
@@ -815,7 +845,7 @@ namespace Milimoe.FunGame.Core.Model
 
             // 队友列表
             List<Character> allTeammates = GetTeammates(character);
-            List<Character> selecableTeammates = [.. allTeammates.Where(_queue.Contains)];
+            List<Character> selectableTeammates = [.. allTeammates.Where(_queue.Contains)];
 
             // 敌人列表
             List<Character> allEnemys = [.. _allCharacters.Where(c => c != character && !allTeammates.Contains(c))];
@@ -831,7 +861,7 @@ namespace Milimoe.FunGame.Core.Model
 
             // 回合开始事件，允许事件返回 false 接管回合操作
             // 如果事件全程接管回合操作，需要注意触发特效
-            if (!await OnTurnStartAsync(character, selectableEnemys, selecableTeammates, skills, items))
+            if (!await OnTurnStartAsync(character, selectableEnemys, selectableTeammates, skills, items))
             {
                 _isInRound = false;
                 return _isGameEnd;
@@ -839,13 +869,13 @@ namespace Milimoe.FunGame.Core.Model
 
             foreach (Skill skillTurnStart in skills)
             {
-                skillTurnStart.OnTurnStart(character, selectableEnemys, selecableTeammates, skills, items);
+                skillTurnStart.OnTurnStart(character, selectableEnemys, selectableTeammates, skills, items);
             }
 
             List<Effect> effects = [.. character.Effects.Where(e => e.IsInEffect)];
             foreach (Effect effect in effects)
             {
-                effect.OnTurnStart(character, selectableEnemys, selecableTeammates, skills, items);
+                effect.OnTurnStart(character, selectableEnemys, selectableTeammates, skills, items);
             }
 
             // 此变量用于在取消选择时，能够重新行动
@@ -919,13 +949,13 @@ namespace Milimoe.FunGame.Core.Model
                     }
 
                     enemys = [.. selectableEnemys.Where(canAttackGrids.Union(canCastGrids).SelectMany(g => g.Characters).Contains)];
-                    teammates = [.. selecableTeammates.Where(canAttackGrids.Union(canCastGrids).SelectMany(g => g.Characters).Contains)];
+                    teammates = [.. selectableTeammates.Where(canAttackGrids.Union(canCastGrids).SelectMany(g => g.Characters).Contains)];
                     willMoveGridWithSkill = [.. canMoveGrids.Where(g => canAttackGrids.Union(canCastGrids).Contains(g))];
                 }
                 else
                 {
                     enemys = selectableEnemys;
-                    teammates = selecableTeammates;
+                    teammates = selectableTeammates;
                 }
 
                 // AI 决策结果（适用于启用战棋地图的情况）
@@ -1020,7 +1050,7 @@ namespace Milimoe.FunGame.Core.Model
                         }
                         else if (character.CharacterState == CharacterState.BattleRestricted)
                         {
-                            // 战斗不能，只能使用物品
+                            // 战斗不能，只能对自己使用物品
                             enemys.Clear();
                             teammates.Clear();
                             skills.Clear();
@@ -1063,7 +1093,7 @@ namespace Milimoe.FunGame.Core.Model
                         // 启用战棋地图时的专属 AI 决策方法
                         if (isAI && ai != null && startGrid != null)
                         {
-                            aiDecision = await ai.DecideAIActionAsync(character, startGrid, canMoveGrids, skills, items, allEnemys, allTeammates);
+                            aiDecision = await ai.DecideAIActionAsync(character, startGrid, canMoveGrids, skills, items, allEnemys, allTeammates, enemys, teammates);
                             type = aiDecision.ActionType;
                         }
                         else
@@ -1115,10 +1145,14 @@ namespace Milimoe.FunGame.Core.Model
                         }
                         moved = await CharacterMoveAsync(character, target, startGrid);
                     }
-                    if (isAI && aiDecision != null && cancelTimes == 0)
+                    if (isAI && (aiDecision?.IsPureMove ?? false))
                     {
                         // 取消 AI 的移动
+                        SetOnlyMoveHardnessTime(character, ref baseTime);
                         type = CharacterActionType.EndTurn;
+                        decided = true;
+                        WriteLine($"[ {character} ] 结束了回合！");
+                        await OnCharacterDoNothingAsync(character);
                     }
                 }
                 else if (type == CharacterActionType.NormalAttack)
@@ -1439,14 +1473,7 @@ namespace Milimoe.FunGame.Core.Model
                 }
                 else if (type == CharacterActionType.EndTurn)
                 {
-                    baseTime += 3;
-                    if (character.CharacterState == CharacterState.NotActionable ||
-                        character.CharacterState == CharacterState.ActionRestricted ||
-                        character.CharacterState == CharacterState.BattleRestricted)
-                    {
-                        baseTime += 3;
-                        WriteLine($"[ {character} ] {CharacterSet.GetCharacterState(character.CharacterState)}，放弃行动将额外获得 3 {GameplayEquilibriumConstant.InGameTime}硬直时间！");
-                    }
+                    SetOnlyMoveHardnessTime(character, ref baseTime);
                     decided = true;
                     WriteLine($"[ {character} ] 结束了回合！");
                     await OnCharacterDoNothingAsync(character);
@@ -2935,6 +2962,23 @@ namespace Milimoe.FunGame.Core.Model
                 else dict[target] = teammates.Contains(target);
             }
             return dict;
+        }
+
+        /// <summary>
+        /// 对角色设置仅移动的硬直时间
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="baseTime"></param>
+        public void SetOnlyMoveHardnessTime(Character character, ref double baseTime)
+        {
+            baseTime += 3;
+            if (character.CharacterState == CharacterState.NotActionable ||
+                character.CharacterState == CharacterState.ActionRestricted ||
+                character.CharacterState == CharacterState.BattleRestricted)
+            {
+                baseTime += 3;
+                WriteLine($"[ {character} ] {CharacterSet.GetCharacterState(character.CharacterState)}，放弃行动将额外获得 3 {GameplayEquilibriumConstant.InGameTime}硬直时间！");
+            }
         }
 
         #endregion
