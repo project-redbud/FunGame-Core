@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Interface.Entity;
+﻿using System.Text.Json.Serialization;
+using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
 
@@ -29,6 +30,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 实体所用的游戏平衡常数
         /// </summary>
+        [JsonIgnore]
         public EquilibriumConstant GameplayEquilibriumConstant { get; set; } = General.GameplayEquilibriumConstant;
 
         /// <summary>
