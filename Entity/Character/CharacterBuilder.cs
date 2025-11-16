@@ -257,7 +257,7 @@ namespace Milimoe.FunGame.Core.Entity
             character.NormalAttack.ExDamage2 = reference.NormalAttack.ExDamage2;
             character.NormalAttack.ExHardnessTime = reference.NormalAttack.ExHardnessTime;
             character.NormalAttack.ExHardnessTime2 = reference.NormalAttack.ExHardnessTime2;
-            character.NormalAttack.SetMagicType(reference.NormalAttack.IsMagic, reference.NormalAttack.MagicType);
+            character.NormalAttack.SetMagicType(null, null, null);
             if (!recovery)
             {
                 character.HP = reference.HP;

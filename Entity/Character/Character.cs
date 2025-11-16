@@ -1326,7 +1326,7 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 effect.OnAttributeChanged(this);
             }
-            NormalAttack.ResolveMagicType();
+            NormalAttack.SetMagicType(null, null, null);
         }
 
         /// <summary>
