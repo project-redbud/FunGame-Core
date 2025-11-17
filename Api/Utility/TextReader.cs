@@ -51,7 +51,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="FileName">文件名，缺省为FunGame.ini</param>
         /// <returns>是否存在</returns>
-        public static bool ExistINIFile(string FileName = DefaultFileName) => File.Exists($@"{AppDomain.CurrentDomain.BaseDirectory}{FileName}");
+        public static bool INIFileExists(string FileName = DefaultFileName) => File.Exists($@"{AppDomain.CurrentDomain.BaseDirectory}{FileName}");
 
         /// <summary>
         /// 初始化ini模板文件

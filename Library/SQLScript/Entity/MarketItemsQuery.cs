@@ -53,7 +53,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             SQLHelper.Parameters["@Price"] = Price;
             return $"{Command_Update} {TableName} {Command_Set} {Column_Price} = @Price {Command_Where} {Column_ItemGuid} = @ItemGuid";
         }
-        
+
         public static string Update_MarketItemStock(SQLHelper SQLHelper, Guid ItemGuid, double Stock)
         {
             SQLHelper.Parameters["@ItemGuid"] = ItemGuid.ToString();

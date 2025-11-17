@@ -110,7 +110,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 }
 
                 // 确保目录存在
-                ExistsDirectoryAndCreate(novelName);
+                DirectoryExistsAndCreate(novelName);
 
                 // 复制文件内容
                 string json = File.ReadAllText(path, General.DefaultEncoding);
@@ -276,7 +276,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="novelName"></param>
         /// <returns></returns>
-        public static bool ExistsDirectory(string novelName)
+        public static bool DirectoryExists(string novelName)
         {
             string dpath = $@"{AppDomain.CurrentDomain.BaseDirectory}{RootPath}/{novelName}";
             return Directory.Exists(dpath);
@@ -287,7 +287,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="novelName"></param>
         /// <returns></returns>
-        public static bool ExistsDirectoryAndCreate(string novelName)
+        public static bool DirectoryExistsAndCreate(string novelName)
         {
             string dpath = $@"{AppDomain.CurrentDomain.BaseDirectory}{RootPath}/{novelName}";
             bool result = Directory.Exists(dpath);
@@ -304,7 +304,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="novelName"></param>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public static bool ExistsFile(string novelName, string fileName)
+        public static bool FileExists(string novelName, string fileName)
         {
             string dpath = $@"{AppDomain.CurrentDomain.BaseDirectory}{RootPath}/{novelName}";
             string fpath = $@"{dpath}/{fileName}.json";

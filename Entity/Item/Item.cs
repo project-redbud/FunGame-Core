@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
@@ -190,7 +189,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 所属的玩家
         /// </summary>
         public User? User { get; set; } = null;
-        
+
         /// <summary>
         /// 物品拥有的技能
         /// </summary>

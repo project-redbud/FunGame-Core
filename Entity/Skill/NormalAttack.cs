@@ -162,7 +162,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 额外硬直时间 [ 技能和物品相关 ]
         /// </summary>
         public double ExHardnessTime { get; set; } = 0;
-        
+
         /// <summary>
         /// 额外硬直时间% [ 技能和物品相关 ]
         /// </summary>
@@ -266,7 +266,7 @@ namespace Milimoe.FunGame.Core.Entity
                     selectable.Add(character);
                 }
             }
-            
+
             foreach (Character character in teammates)
             {
                 if (CanSelectTeammate)

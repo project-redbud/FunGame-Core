@@ -224,7 +224,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// </summary>
         /// <returns></returns>
         public void SetCharactersToAIControl(bool bySystem = true, bool cancel = false, params IEnumerable<Character> characters);
-        
+
         /// <summary>
         /// 检查角色是否在 AI 控制状态
         /// </summary>

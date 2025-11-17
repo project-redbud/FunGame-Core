@@ -180,7 +180,7 @@ namespace Milimoe.FunGame.Core.Model
         /// 角色是否在 AI 控制下 [ 系统控制 ]
         /// </summary>
         protected readonly HashSet<Character> _charactersInAIBySystem = [];
-        
+
         /// <summary>
         /// 角色是否在 AI 控制下 [ 玩家手动设置 ]
         /// </summary>
@@ -3313,7 +3313,7 @@ namespace Milimoe.FunGame.Core.Model
                 }
             }
         }
-        
+
         /// <summary>
         /// 设置角色为 AI 控制 [ 玩家手动设置 ]
         /// </summary>
@@ -3323,7 +3323,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             SetCharactersToAIControl(false, cancel, characters);
         }
-        
+
         /// <summary>
         /// 检查角色是否在 AI 控制状态
         /// </summary>
@@ -3610,7 +3610,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             return await (SelectTargetGrid?.Invoke(this, character, enemys, teammates, map, moveRange) ?? Task.FromResult(Grid.Empty));
         }
-        
+
         public delegate Task<List<Character>> SelectSkillTargetsEventHandler(GamingQueue queue, Character caster, Skill skill, List<Character> enemys, List<Character> teammates, List<Grid> castRange);
         /// <summary>
         /// 选取技能目标事件
@@ -3681,7 +3681,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             return await (DeathCalculation?.Invoke(this, killer, death) ?? Task.FromResult(true));
         }
-        
+
         public delegate Task<bool> DeathCalculationByTeammateEventHandler(GamingQueue queue, Character killer, Character death);
         /// <summary>
         /// 死亡结算（击杀队友）事件

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
@@ -260,7 +259,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             return 0;
         }
-        
+
         /// <summary>
         /// 在应用真实伤害前修改伤害 [ 允许取消伤害 ]
         /// </summary>
@@ -1058,7 +1057,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             GamingQueue?.SetCharactersToAIControl(true, cancel, characters);
         }
-        
+
         /// <summary>
         /// 检查角色是否在 AI 控制状态
         /// </summary>

@@ -33,13 +33,13 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
             return $"{Select_Users} {Command_Where} {Column_Id} = @Id";
         }
 
-        public static string Select_IsExistEmail(SQLHelper SQLHelper, string Email)
+        public static string Select_UserByEmail(SQLHelper SQLHelper, string Email)
         {
             SQLHelper.Parameters["@Email"] = Email;
             return $"{Select_Users} {Command_Where} {Column_Email} = @Email";
         }
 
-        public static string Select_IsExistUsername(SQLHelper SQLHelper, string Username)
+        public static string Select_UserByUsername(SQLHelper SQLHelper, string Username)
         {
             SQLHelper.Parameters["@Username"] = Username;
             return $"{Select_Users} {Command_Where} {Column_Username} = @Username";

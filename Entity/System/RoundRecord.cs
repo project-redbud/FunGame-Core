@@ -68,7 +68,7 @@ namespace Milimoe.FunGame.Core.Entity
                 if (ActorContinuousKilling.Count > 0) builder.AppendLine($"{string.Join("\r\n", ActorContinuousKilling)}");
                 if (Assists.Count > 0) builder.AppendLine($"本回合助攻：[ {string.Join(" ] / [ ", Assists)} ]");
             }
-            
+
             if (ActionType == CharacterActionType.PreCastSkill && Skill != null)
             {
                 if (Skill.IsMagic)

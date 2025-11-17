@@ -299,7 +299,7 @@ namespace Milimoe.FunGame.Core.Model
         /// 单手剑的基础伤害倍率
         /// </summary>
         public double OneHandedSwordBaseMultiplier { get; set; } = 1.0;
-        
+
         /// <summary>
         /// 单手剑的基础伤害倍率成长
         /// </summary>
