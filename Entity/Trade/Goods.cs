@@ -43,7 +43,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             return ToString(null);
         }
-        
+
         public string ToString(User? user = null)
         {
             StringBuilder builder = new();

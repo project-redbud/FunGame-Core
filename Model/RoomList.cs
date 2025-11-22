@@ -98,7 +98,7 @@ namespace Milimoe.FunGame.Core.Model
 
         public Room GetRoom(string roomid) => _List.TryGetValue(roomid, out Room? room) ? room : General.HallInstance;
 
-        public bool IsExist(string roomid) => _List.ContainsKey(roomid);
+        public bool Exists(string roomid) => _List.ContainsKey(roomid);
 
         public void SetRoomMaster(string roomid, User user)
         {

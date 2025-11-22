@@ -243,7 +243,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         [InitRequired]
         public bool HasMP { get; set; } = true;
-        
+
         /// <summary>
         /// 初始魔法值 [ 初始设定 ]
         /// </summary>
@@ -788,7 +788,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 额外攻击距离 [ 与技能和物品相关 ] [ 单位：格（半径） ]
         /// </summary>
         public int ExATR { get; set; } = 0;
-        
+
         /// <summary>
         /// 行动力/可移动距离 [ 与第一定位相关 ] [ 单位：格（半径） ]
         /// </summary>
@@ -812,12 +812,12 @@ namespace Milimoe.FunGame.Core.Entity
                 return Math.Max(1, baseMOV + ExMOV);
             }
         }
-        
+
         /// <summary>
         /// 行动力/可移动距离 [ 与技能和物品相关 ] [ 单位：格（半径） ]
         /// </summary>
         public int ExMOV { get; set; } = 0;
-        
+
         /// <summary>
         /// 暴击率(%) = [ 与敏捷相关 ] + 额外暴击率(%)
         /// </summary>
@@ -1900,7 +1900,7 @@ namespace Milimoe.FunGame.Core.Entity
 
             return builder.ToString();
         }
-        
+
         /// <summary>
         /// 获取角色背包信息
         /// </summary>

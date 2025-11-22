@@ -15,7 +15,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// </summary>
         /// <param name="single">单例对象</param>
         /// <returns></returns>
-        public static bool IsExist(object single)
+        public static bool Exists(object single)
         {
             Type type = single.GetType();
             string name = type.FullName ?? type.ToString();

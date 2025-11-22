@@ -48,7 +48,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Fail,
         NotFound,
         SQLError,
-        IsExist
+        Exists
     }
 
     public enum MailSendResult

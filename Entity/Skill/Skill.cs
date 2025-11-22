@@ -94,7 +94,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 是否无视施法距离（全图施法），魔法默认为 true，战技默认为 false
         /// </summary>
         public virtual bool CastAnywhere { get; set; } = false;
-        
+
         /// <summary>
         /// 施法距离 [ 单位：格 ]
         /// </summary>
@@ -145,7 +145,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 如果为 false，表示必须选取一个角色作为目标，当 <see cref="CanSelectTargetRange"/> > 0 时，技能作用范围将根据目标位置覆盖 <see cref="SkillRangeType"/> 形状的区域；= 0 时正常选取目标。
         /// </summary>
         public virtual bool IsNonDirectional { get; set; } = false;
-        
+
         /// <summary>
         /// 作用范围形状<para/>
         /// <see cref="SkillRangeType.Diamond"/> - 菱形。默认的曼哈顿距离正方形<para/>
@@ -383,7 +383,7 @@ namespace Milimoe.FunGame.Core.Entity
                     selectable.Add(character);
                 }
             }
-            
+
             foreach (Character character in teammates)
             {
                 IEnumerable<Effect> effects = character.Effects.Where(e => e.IsInEffect);

@@ -23,7 +23,7 @@ namespace Milimoe.FunGame.Core.Library.SQLScript.Entity
         public const string Select_Rooms = $"{Command_Select} {TableName}.{Command_All}, {UserQuery.TableName}.{UserQuery.Column_Username} {Command_As} {Column_RoomMasterName} " +
             $"{Command_From} {TableName} {Command_LeftJoin} {UserQuery.TableName} {Command_On} {UserQuery.TableName}.{UserQuery.Column_Id} = {TableName}.{Column_RoomMaster}";
 
-        public static string Select_IsExistRoom(SQLHelper SQLHelper, string Roomid)
+        public static string Select_RoomByRoomId(SQLHelper SQLHelper, string Roomid)
         {
             SQLHelper.Parameters["@Roomid"] = Roomid;
             return $"{Command_Select} {Command_All} {Command_From} {TableName} {Command_Where} {Column_Roomid} = @Roomid";

@@ -66,7 +66,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 混合护盾
         /// </summary>
         public double Mix { get; set; } = 0;
-        
+
         /// <summary>
         /// 总计混合护盾
         /// </summary>
