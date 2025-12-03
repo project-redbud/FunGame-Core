@@ -114,6 +114,7 @@ namespace Milimoe.FunGame.Core.Entity
                 string hasDamage = "";
                 string hasHeal = "";
                 string hasEffect = "";
+                string hasEvaded = "";
                 if (Damages.TryGetValue(target, out double damage))
                 {
                     hasDamage = $"伤害：{damage:0.##}";
@@ -134,18 +135,18 @@ namespace Milimoe.FunGame.Core.Entity
                 {
                     if (ActionType == CharacterActionType.NormalAttack)
                     {
-                        hasDamage = "完美闪避";
+                        hasEvaded = hasDamage == "" ? "完美闪避" : "闪避";
                     }
                     else if ((ActionType == CharacterActionType.PreCastSkill || ActionType == CharacterActionType.CastSkill || ActionType == CharacterActionType.CastSuperSkill))
                     {
-                        hasDamage = "技能免疫";
+                        hasEvaded = "技能免疫";
                     }
                 }
                 if (IsImmune.ContainsKey(target) && hasDamage != "" && target != Actor)
                 {
                     hasDamage = "免疫";
                 }
-                string[] strs = [hasDamage, hasHeal, hasEffect];
+                string[] strs = [hasDamage, hasHeal, hasEffect, hasEvaded];
                 strs = [.. strs.Where(s => s != "")];
                 if (strs.Length == 0) strings.Add($"[ {target} ]）");
                 else strings.Add($"[ {target}（{string.Join(" / ", strs)}）]）");
