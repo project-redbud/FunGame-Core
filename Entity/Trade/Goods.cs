@@ -50,7 +50,7 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"{Id}. {Name}");
             if (ExpireTime.HasValue) builder.AppendLine($"限时购买：{ExpireTime.Value.ToString(General.GeneralDateTimeFormatChinese)} 截止");
             builder.AppendLine($"商品描述：{Description}");
-            builder.AppendLine($"商品售价：{(Prices.Count > 0 ? string.Join("、", Prices.Select(kv => $"{kv.Value} {kv.Key}")) : "免费")}");
+            builder.AppendLine($"商品售价：{(Prices.Count > 0 ? string.Join("、", Prices.Select(kv => $"{kv.Value:0.##} {kv.Key}")) : "免费")}");
             builder.AppendLine($"包含物品：{string.Join("、", Items.Select(i => $"[{ItemSet.GetQualityTypeName(i.QualityType)}|{ItemSet.GetItemTypeName(i.ItemType)}] {i.Name}"))}");
             int buyCount = 0;
             if (user != null)

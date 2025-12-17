@@ -26,9 +26,9 @@ namespace Milimoe.FunGame.Core.Model
 
         public List<User> GetUsers(string roomid) => [.. this[roomid].UserAndIsReady.Keys];
 
-        public List<User> GetReadyUserList(string roomid) => this[roomid].UserAndIsReady.Where(kv => kv.Value && kv.Key.Id != GetRoomMaster(roomid).Id).Select(kv => kv.Key).ToList();
+        public List<User> GetReadyUserList(string roomid) => [.. this[roomid].UserAndIsReady.Where(kv => kv.Value && kv.Key.Id != GetRoomMaster(roomid).Id).Select(kv => kv.Key)];
 
-        public List<User> GetNotReadyUserList(string roomid) => this[roomid].UserAndIsReady.Where(kv => !kv.Value && kv.Key.Id != GetRoomMaster(roomid).Id).Select(kv => kv.Key).ToList();
+        public List<User> GetNotReadyUserList(string roomid) => [.. this[roomid].UserAndIsReady.Where(kv => !kv.Value && kv.Key.Id != GetRoomMaster(roomid).Id).Select(kv => kv.Key)];
 
         public void Clear()
         {
