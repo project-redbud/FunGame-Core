@@ -43,7 +43,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             ActivityState newState;
             DateTime now = DateTime.Now;
-            DateTime? upComingTime = StartTime?.AddHours(-6);
+            DateTime? upComingTime = StartTime?.AddHours(-16);
 
             if (Predecessor != -1 && PredecessorStatus != ActivityState.Ended)
             {
