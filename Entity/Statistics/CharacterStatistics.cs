@@ -44,8 +44,8 @@
         public int Wins { get; set; } = 0;
         public int Top3s { get; set; } = 0;
         public int Loses { get; set; } = 0;
-        public double Winrates { get; set; } = 0;
-        public double Top3rates { get; set; } = 0;
+        public double Winrate { get; set; } = 0;
+        public double Top3rate { get; set; } = 0;
         public int LastRank { get; set; } = 0;
         public double AvgRank { get; set; } = 0;
         public double Rating { get; set; } = 0;

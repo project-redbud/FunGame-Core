@@ -882,7 +882,7 @@ namespace Milimoe.FunGame.Core.Model
             bool decided = false;
             // 最大取消次数
             int cancelTimes = 3;
-            // 此变量控制角色移动后可以继续选择其他的行动
+            // 此变量指示角色是否移动
             bool moved = false;
 
             // AI 决策控制器，适用于启用战棋地图的情况
