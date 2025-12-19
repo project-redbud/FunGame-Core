@@ -23,16 +23,13 @@ namespace Milimoe.FunGame.Core.Service
         /// </summary>
         private class TaskAwaiter : ITaskAwaiter
         {
-            public bool IsCompleted => _IsCompleted;
-            public Exception Exception => _Exception;
+            public bool IsCompleted { get; private set; } = false;
+            public Exception Exception { get; private set; } = new();
 
             private delegate void CompletedEvent();
             private delegate void ErrorEvent(Exception e);
             private event CompletedEvent? Completed;
             private event ErrorEvent? Error;
-
-            private bool _IsCompleted = false;
-            private Exception _Exception = new();
 
             internal TaskAwaiter(Action action) => Worker(action);
 
@@ -71,12 +68,12 @@ namespace Milimoe.FunGame.Core.Service
                     try
                     {
                         await Task.Run(action);
-                        _IsCompleted = true;
+                        IsCompleted = true;
                         Completed?.Invoke();
                     }
                     catch (Exception e)
                     {
-                        _Exception = e;
+                        Exception = e;
                         Error?.Invoke(e);
                     }
                 });
@@ -89,12 +86,12 @@ namespace Milimoe.FunGame.Core.Service
                     try
                     {
                         await function();
-                        _IsCompleted = true;
+                        IsCompleted = true;
                         Completed?.Invoke();
                     }
                     catch (Exception e)
                     {
-                        _Exception = e;
+                        Exception = e;
                         Error?.Invoke(e);
                     }
                 });

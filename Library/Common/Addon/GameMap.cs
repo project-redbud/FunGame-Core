@@ -101,7 +101,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 加载标记
         /// </summary>
-        private bool IsLoaded = false;
+        private bool _isLoaded = false;
 
         /// <summary>
         /// 加载地图
@@ -110,7 +110,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <returns></returns>
         public bool Load(params object[] objs)
         {
-            if (IsLoaded)
+            if (_isLoaded)
             {
                 return false;
             }
@@ -118,7 +118,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             if (BeforeLoad())
             {
                 // 地图加载后，不允许再次加载此地图
-                IsLoaded = true;
+                _isLoaded = true;
                 // 生成格子
                 for (int x = 0; x < Length; x++)
                 {
@@ -133,7 +133,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
                     }
                 }
             }
-            return IsLoaded;
+            return _isLoaded;
         }
 
         /// <summary>

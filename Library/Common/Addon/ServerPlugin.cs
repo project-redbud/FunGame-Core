@@ -33,8 +33,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// </summary>
         public ServerAddonController<IPlugin> Controller
         {
-            get => _Controller ?? throw new NotImplementedException();
-            internal set => _Controller = value;
+            get => _controller ?? throw new NotImplementedException();
+            internal set => _controller = value;
         }
 
         /// <summary>
@@ -43,25 +43,25 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         BaseAddonController<IPlugin> IAddonController<IPlugin>.Controller
         {
             get => Controller;
-            set => _Controller = (ServerAddonController<IPlugin>?)value;
+            set => _controller = (ServerAddonController<IPlugin>?)value;
         }
 
         /// <summary>
         /// 控制器内部变量
         /// </summary>
-        private ServerAddonController<IPlugin>? _Controller;
+        private ServerAddonController<IPlugin>? _controller;
 
         /// <summary>
         /// 加载标记
         /// </summary>
-        private bool IsLoaded = false;
+        private bool _isLoaded = false;
 
         /// <summary>
         /// 加载插件
         /// </summary>
         public bool Load(params object[] objs)
         {
-            if (IsLoaded)
+            if (_isLoaded)
             {
                 return false;
             }
@@ -69,11 +69,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             if (BeforeLoad(objs))
             {
                 // 插件加载后，不允许再次加载此插件
-                IsLoaded = true;
+                _isLoaded = true;
                 // 触发绑定事件
                 BindEvent();
             }
-            return IsLoaded;
+            return _isLoaded;
         }
 
         /// <summary>

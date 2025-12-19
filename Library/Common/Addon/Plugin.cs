@@ -34,8 +34,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// </summary>
         public AddonController<IPlugin> Controller
         {
-            get => _Controller ?? throw new NotImplementedException();
-            internal set => _Controller = value;
+            get => _controller ?? throw new NotImplementedException();
+            internal set => _controller = value;
         }
 
         /// <summary>
@@ -44,25 +44,25 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         BaseAddonController<IPlugin> IAddonController<IPlugin>.Controller
         {
             get => Controller;
-            set => _Controller = (AddonController<IPlugin>?)value;
+            set => _controller = (AddonController<IPlugin>?)value;
         }
 
         /// <summary>
         /// 控制器内部变量
         /// </summary>
-        private AddonController<IPlugin>? _Controller;
+        private AddonController<IPlugin>? _controller;
 
         /// <summary>
         /// 加载标记
         /// </summary>
-        private bool IsLoaded = false;
+        private bool _isLoaded = false;
 
         /// <summary>
         /// 加载插件
         /// </summary>
         public bool Load(params object[] objs)
         {
-            if (IsLoaded)
+            if (_isLoaded)
             {
                 return false;
             }
@@ -70,13 +70,13 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             if (BeforeLoad(objs))
             {
                 // 插件加载后，不允许再次加载此插件
-                IsLoaded = true;
+                _isLoaded = true;
                 // 初始化此插件（传入委托或者Model）
                 Init(objs);
                 // 触发绑定事件
                 BindEvent();
             }
-            return IsLoaded;
+            return _isLoaded;
         }
 
         /// <summary>
@@ -101,19 +101,19 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// </summary>
         private void Init(params object[] objs)
         {
-            if (objs.Length > 0) Session = (Session)objs[0];
-            if (objs.Length > 1) Config = (FunGameConfig)objs[1];
+            if (objs.Length > 0) _session = (Session)objs[0];
+            if (objs.Length > 1) _config = (FunGameConfig)objs[1];
         }
 
         /// <summary>
         /// Session对象
         /// </summary>
-        protected Session Session = new();
+        protected Session _session = new();
 
         /// <summary>
         /// Config对象
         /// </summary>
-        protected FunGameConfig Config = new();
+        protected FunGameConfig _config = new();
 
         /// <summary>
         /// 绑定事件。在<see cref="BeforeLoad"/>后触发

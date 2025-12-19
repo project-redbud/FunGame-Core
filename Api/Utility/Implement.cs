@@ -21,10 +21,10 @@ namespace Milimoe.FunGame.Core.Api.Utility
             List<Type>? Classes = null;
             if (Assembly != null)
             {
-                Classes = Assembly.GetTypes().Where(w =>
+                Classes = [.. Assembly.GetTypes().Where(w =>
                     w.Namespace == "Milimoe.FunGame.Core.Implement" &&
                     w.Name.Contains(ClassName)
-                ).ToList();
+                )];
                 if (Classes != null && Classes.Count > 0)
                     return Classes[0];
                 else return null;

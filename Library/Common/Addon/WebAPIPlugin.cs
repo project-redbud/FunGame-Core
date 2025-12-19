@@ -33,8 +33,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// </summary>
         public ServerAddonController<IAddon> Controller
         {
-            get => _Controller ?? throw new NotImplementedException();
-            internal set => _Controller = value;
+            get => _controller ?? throw new NotImplementedException();
+            internal set => _controller = value;
         }
 
         /// <summary>
@@ -43,13 +43,13 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         BaseAddonController<IAddon> IAddonController<IAddon>.Controller
         {
             get => Controller;
-            set => _Controller = (ServerAddonController<IAddon>?)value;
+            set => _controller = (ServerAddonController<IAddon>?)value;
         }
 
         /// <summary>
         /// 控制器内部变量
         /// </summary>
-        private ServerAddonController<IAddon>? _Controller;
+        private ServerAddonController<IAddon>? _controller;
 
         /// <summary>
         /// 加载标记

@@ -125,13 +125,13 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                return _Level >= 1 ? _Level : 1;
+                return field >= 1 ? field : 1;
             }
             set
             {
-                int past = _Level;
-                _Level = Math.Min(Math.Max(1, value), GameplayEquilibriumConstant.MaxLevel);
-                if (past != _Level)
+                int past = field;
+                field = Math.Min(Math.Max(1, value), GameplayEquilibriumConstant.MaxLevel);
+                if (past != field)
                 {
                     OnAttributeChanged();
                     Recovery();
@@ -228,13 +228,13 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                return _HP < 0 ? 0 : (_HP > MaxHP ? MaxHP : _HP);
+                return field < 0 ? 0 : (field > MaxHP ? MaxHP : field);
             }
             set
             {
-                _HP = value;
-                if (_HP > MaxHP) _HP = MaxHP;
-                else if (_HP < 0) _HP = 0;
+                field = value;
+                if (field > MaxHP) field = MaxHP;
+                else if (field < 0) field = 0;
             }
         }
 
@@ -287,13 +287,13 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                return _MP < 0 ? 0 : (_MP > MaxMP ? MaxMP : _MP);
+                return field < 0 ? 0 : (field > MaxMP ? MaxMP : field);
             }
             set
             {
-                _MP = value;
-                if (_MP > MaxMP) _MP = MaxMP;
-                else if (_MP < 0) _MP = 0;
+                field = value;
+                if (field > MaxMP) field = MaxMP;
+                else if (field < 0) field = 0;
             }
         }
 
@@ -304,13 +304,13 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                return _EP < 0 ? 0 : (_EP > GameplayEquilibriumConstant.MaxEP ? GameplayEquilibriumConstant.MaxEP : _EP);
+                return field < 0 ? 0 : (field > GameplayEquilibriumConstant.MaxEP ? GameplayEquilibriumConstant.MaxEP : field);
             }
             set
             {
-                _EP = value;
-                if (_EP > GameplayEquilibriumConstant.MaxEP) _EP = GameplayEquilibriumConstant.MaxEP;
-                else if (_EP < 0) _EP = 0;
+                field = value;
+                if (field > GameplayEquilibriumConstant.MaxEP) field = GameplayEquilibriumConstant.MaxEP;
+                else if (field < 0) field = 0;
             }
         }
 
@@ -450,11 +450,11 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                return Calculation.PercentageCheck(_PhysicalPenetration);
+                return Calculation.PercentageCheck(field);
             }
             set
             {
-                _PhysicalPenetration = Calculation.PercentageCheck(value);
+                field = Calculation.PercentageCheck(value);
             }
         }
 
@@ -465,11 +465,11 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                return Calculation.PercentageCheck(_MagicalPenetration);
+                return Calculation.PercentageCheck(field);
             }
             set
             {
-                _MagicalPenetration = Calculation.PercentageCheck(value);
+                field = Calculation.PercentageCheck(value);
             }
         }
 
@@ -897,40 +897,6 @@ namespace Milimoe.FunGame.Core.Entity
         /// 角色携带的物品
         /// </summary>
         public HashSet<Item> Items { get; } = [];
-
-        /**
-         * ===== 私有变量 =====
-         */
-
-        /// <summary>
-        /// 等级
-        /// </summary>
-        private int _Level = 1;
-
-        /// <summary>
-        /// 生命值
-        /// </summary>
-        private double _HP = 0;
-
-        /// <summary>
-        /// 魔法值
-        /// </summary>
-        private double _MP = 0;
-
-        /// <summary>
-        /// 能量值
-        /// </summary>
-        private double _EP = 0;
-
-        /// <summary>
-        /// 物理穿透
-        /// </summary>
-        private double _PhysicalPenetration = 0;
-
-        /// <summary>
-        /// 魔法穿透
-        /// </summary>
-        private double _MagicalPenetration = 0;
 
         protected Character()
         {

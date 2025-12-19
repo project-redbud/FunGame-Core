@@ -9,11 +9,24 @@ namespace Milimoe.FunGame.Core.Entity
     {
         public DateTime? StartTime { get; set; } = null;
         public DateTime? EndTime { get; set; } = null;
+        public DateTime? EndAwardedTime
+        {
+            get
+            {
+                if (field is null && EndTime != null)
+                {
+                    return EndTime.Value.AddDays(7);
+                }
+                return field;
+            }
+            set => field = value;
+        }
         public string Description { get; set; } = "";
         public ActivityState Status { get; private set; } = ActivityState.Future;
-        public HashSet<Quest> Quests { get; set; } = [];
+        public HashSet<Quest> Quests { get; } = [];
         public long Predecessor { get; set; } = -1;
         public ActivityState PredecessorStatus { get; set; } = ActivityState.Future;
+        public Dictionary<long, HashSet<long>> QuestsAwardedUsers { get; } = [];
 
         public Activity(long id, string name, DateTime? startTime = null, DateTime? endTime = null)
         {
@@ -100,6 +113,34 @@ namespace Milimoe.FunGame.Core.Entity
             UserAccess?.Invoke(args);
             return args.AllowAccess;
         }
+
+        public bool RegisterAwardedUser(long userId, Quest quest)
+        {
+            if (Quests.Contains(quest))
+            {
+                if (!QuestsAwardedUsers.TryGetValue(quest.Id, out HashSet<long>? value))
+                {
+                    value = [];
+                    QuestsAwardedUsers[quest.Id] = value;
+                }
+                value.Add(userId);
+                return true;
+            }
+            return false;
+        }
+
+        public bool RegisterAwardedUser(long userId, long questId) => Quests.FirstOrDefault(q => q.Id == questId && q.Status == QuestState.Completed) is Quest quest && RegisterAwardedUser(userId, quest);
+
+        public bool HasUserAwarded(long userId, Quest quest)
+        {
+            if (QuestsAwardedUsers.TryGetValue(quest.Id, out HashSet<long>? value))
+            {
+                return value.Contains(userId);
+            }
+            return false;
+        }
+
+        public bool HasUserAwarded(long userId, long questId) => Quests.FirstOrDefault(q => q.Id == questId) is Quest quest && HasUserAwarded(userId, quest);
 
         public void GetActivityInfo(long userId, long questId = 0)
         {

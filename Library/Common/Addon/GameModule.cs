@@ -65,8 +65,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// </summary>
         public string AssociatedServerModuleName
         {
-            get => IsConnectToOtherServerModule ? _AssociatedServerModuleName : Name;
-            set => _AssociatedServerModuleName = value;
+            get => IsConnectToOtherServerModule ? _associatedServerModuleName : Name;
+            set => _associatedServerModuleName = value;
         }
 
         /// <summary>
@@ -74,8 +74,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// </summary>
         public AddonController<IGameModule> Controller
         {
-            get => _Controller ?? throw new NotImplementedException();
-            internal set => _Controller = value;
+            get => _controller ?? throw new NotImplementedException();
+            internal set => _controller = value;
         }
 
         /// <summary>
@@ -84,13 +84,13 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         BaseAddonController<IGameModule> IAddonController<IGameModule>.Controller
         {
             get => Controller;
-            set => _Controller = (AddonController<IGameModule>?)value;
+            set => _controller = (AddonController<IGameModule>?)value;
         }
 
         /// <summary>
         /// 控制器内部变量
         /// </summary>
-        private AddonController<IGameModule>? _Controller;
+        private AddonController<IGameModule>? _controller;
 
         /// <summary>
         /// 必须重写此方法，游戏的主要逻辑写在这里面<para/>
@@ -114,14 +114,14 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 加载标记
         /// </summary>
-        private bool IsLoaded = false;
+        private bool _isLoaded = false;
 
         /// <summary>
         /// 加载模组
         /// </summary>
         public bool Load(params object[] objs)
         {
-            if (IsLoaded)
+            if (_isLoaded)
             {
                 return false;
             }
@@ -129,13 +129,13 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             if (BeforeLoad(objs))
             {
                 // 模组加载后，不允许再次加载此模组
-                IsLoaded = true;
+                _isLoaded = true;
                 // 初始化此模组（传入委托或者Model）
                 Init(objs);
                 // 触发绑定事件
                 BindEvent();
             }
-            return IsLoaded;
+            return _isLoaded;
         }
 
         /// <summary>
@@ -160,24 +160,24 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// </summary>
         private void Init(params object[] objs)
         {
-            if (objs.Length > 0) Session = (Session)objs[0];
-            if (objs.Length > 1) Config = (FunGameConfig)objs[1];
+            if (objs.Length > 0) _session = (Session)objs[0];
+            if (objs.Length > 1) _config = (FunGameConfig)objs[1];
         }
 
         /// <summary>
         /// Session对象
         /// </summary>
-        protected Session Session = new();
+        protected Session _session = new();
 
         /// <summary>
         /// Config对象
         /// </summary>
-        protected FunGameConfig Config = new();
+        protected FunGameConfig _config = new();
 
         /// <summary>
         /// 关联的服务器模组名称
         /// </summary>
-        private string _AssociatedServerModuleName = "";
+        private string _associatedServerModuleName = "";
 
         /// <summary>
         /// 绑定事件。在<see cref="BeforeLoad"/>后触发

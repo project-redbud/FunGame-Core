@@ -16,24 +16,17 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// <summary>
         /// Smtp客户端信息
         /// </summary>
-        public SmtpClientInfo SmtpClientInfo => _SmtpClientInfo;
+        public SmtpClientInfo SmtpClientInfo { get; private set; }
 
         /// <summary>
         /// 上一个邮件发送的结果
         /// </summary>
-        public MailSendResult LastestResult => _LastestResult;
+        public MailSendResult LastestResult { get; private set; } = MailSendResult.NotSend;
 
         /// <summary>
         /// 上一个邮件的发送错误信息（如果发送失败）
         /// </summary>
-        public string ErrorMsg => _ErrorMsg;
-
-        /**
-         * 内部变量
-         */
-        private readonly SmtpClientInfo _SmtpClientInfo;
-        private MailSendResult _LastestResult = MailSendResult.NotSend;
-        private string _ErrorMsg = "";
+        public string ErrorMsg { get; private set; } = "";
 
         /// <summary>
         /// 创建邮件服务
@@ -47,7 +40,7 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         public MailSender(string senderMailAddress, string senderName, string senderPassword, string host, int port, bool ssl)
         {
             MailSenderID = Guid.NewGuid();
-            _SmtpClientInfo = new SmtpClientInfo(senderMailAddress, senderName, senderPassword, host, port, ssl);
+            SmtpClientInfo = new SmtpClientInfo(senderMailAddress, senderName, senderPassword, host, port, ssl);
             if (!MailManager.MailSenders.ContainsKey(MailSenderID)) MailManager.MailSenders.Add(MailSenderID, this);
         }
 
@@ -74,8 +67,9 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// <returns></returns>
         public MailSendResult Send(MailObject mail)
         {
-            _LastestResult = MailManager.Send(this, mail, out _ErrorMsg);
-            return _LastestResult;
+            LastestResult = MailManager.Send(this, mail, out string errorMsg);
+            if (!string.IsNullOrWhiteSpace(errorMsg)) ErrorMsg = errorMsg;
+            return LastestResult;
         }
 
         private bool _isDisposed = false;

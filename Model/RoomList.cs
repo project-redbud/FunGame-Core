@@ -6,21 +6,21 @@ namespace Milimoe.FunGame.Core.Model
 {
     public class RoomList : IEnumerable<Room>
     {
-        private readonly Dictionary<string, Room> _List = [];
-        private readonly Dictionary<string, List<User>> _UserList = [];
-        private readonly Dictionary<string, List<User>> _ReadyUserList = [];
+        private readonly Dictionary<string, Room> _list = [];
+        private readonly Dictionary<string, List<User>> _userList = [];
+        private readonly Dictionary<string, List<User>> _readyUserList = [];
 
         public Room this[string roomid] => GetRoom(roomid);
 
-        public int Count => _List.Count;
+        public int Count => _list.Count;
 
         public int GetUserCount(string roomid) => this[roomid].UserAndIsReady.Count;
 
         public int GetReadyUserCount(string roomid) => GetReadyUserList(roomid).Count;
 
-        public List<Room> ListRoom => [.. _List.Values];
+        public List<Room> ListRoom => [.. _list.Values];
 
-        public List<string> ListRoomID => [.. _List.Keys];
+        public List<string> ListRoomID => [.. _list.Keys];
 
         public User GetRoomMaster(string roomid) => this[roomid].RoomMaster;
 
@@ -32,16 +32,16 @@ namespace Milimoe.FunGame.Core.Model
 
         public void Clear()
         {
-            _List.Clear();
-            _UserList.Clear();
-            _ReadyUserList.Clear();
+            _list.Clear();
+            _userList.Clear();
+            _readyUserList.Clear();
         }
 
         public void AddRoom(Room room)
         {
-            _List.Add(room.Roomid, room);
-            _UserList.Add(room.Roomid, []);
-            _ReadyUserList.Add(room.Roomid, []);
+            _list.Add(room.Roomid, room);
+            _userList.Add(room.Roomid, []);
+            _readyUserList.Add(room.Roomid, []);
         }
 
         public void AddRooms(List<Room> rooms)
@@ -54,9 +54,9 @@ namespace Milimoe.FunGame.Core.Model
 
         public void RemoveRoom(string roomid)
         {
-            _List.Remove(roomid);
-            _UserList.Remove(roomid);
-            _ReadyUserList.Remove(roomid);
+            _list.Remove(roomid);
+            _userList.Remove(roomid);
+            _readyUserList.Remove(roomid);
         }
 
         public void RemoveRoom(Room room) => RemoveRoom(room.Roomid);
@@ -96,9 +96,9 @@ namespace Milimoe.FunGame.Core.Model
             }
         }
 
-        public Room GetRoom(string roomid) => _List.TryGetValue(roomid, out Room? room) ? room : General.HallInstance;
+        public Room GetRoom(string roomid) => _list.TryGetValue(roomid, out Room? room) ? room : General.HallInstance;
 
-        public bool Exists(string roomid) => _List.ContainsKey(roomid);
+        public bool Exists(string roomid) => _list.ContainsKey(roomid);
 
         public void SetRoomMaster(string roomid, User user)
         {

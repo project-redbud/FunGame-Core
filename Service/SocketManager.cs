@@ -12,15 +12,12 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 客户端专用Socket
         /// </summary>
-        internal static Socket? Socket => _Socket;
+        internal static Socket? Socket { get; private set; } = null;
 
         /// <summary>
         /// 服务器端专用Socket
         /// </summary>
-        internal static Socket? ServerSocket => _ServerSocket;
-
-        private static Socket? _Socket = null;
-        private static Socket? _ServerSocket = null;
+        internal static Socket? ServerSocket { get; private set; } = null;
 
         #endregion
 
@@ -37,12 +34,12 @@ namespace Milimoe.FunGame.Core.Service
             if (maxConnection <= 0) maxConnection = SocketSet.MaxConnection_2C2G;
             try
             {
-                _ServerSocket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                ServerSocket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 IPEndPoint ServerEndPoint = new(IPAddress.Any, port);
-                _ServerSocket.Bind(ServerEndPoint);
-                _ServerSocket.Listen(maxConnection);
-                _ServerSocket.NoDelay = true;
-                return _ServerSocket;
+                ServerSocket.Bind(ServerEndPoint);
+                ServerSocket.Listen(maxConnection);
+                ServerSocket.NoDelay = true;
+                return ServerSocket;
             }
             catch
             {
@@ -102,15 +99,15 @@ namespace Milimoe.FunGame.Core.Service
                                 if (ClientSocket.Connected)
                                 {
                                     ClientSocket.NoDelay = true;
-                                    _Socket = ClientSocket;
+                                    Socket = ClientSocket;
                                     break;
                                 }
                             }
                         }
                     });
-                    if (t.Wait(10 * 1000) && (_Socket?.Connected ?? false))
+                    if (t.Wait(10 * 1000) && (Socket?.Connected ?? false))
                     {
-                        return _Socket;
+                        return Socket;
                     }
                     else
                     {
@@ -121,7 +118,7 @@ namespace Milimoe.FunGame.Core.Service
             }
             catch
             {
-                _Socket?.Close();
+                Socket?.Close();
             }
             return null;
         }

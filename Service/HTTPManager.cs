@@ -13,8 +13,7 @@ namespace Milimoe.FunGame.Core.Service
         /// <summary>
         /// 实际的 <see cref="System.Net.HttpListener"/> 监听实例 [ 单例 ]
         /// </summary>
-        internal static HttpListener? HttpListener => _HttpListener;
-        private static HttpListener? _HttpListener = null;
+        internal static HttpListener? HttpListener { get; private set; } = null;
 
         /// <summary>
         /// 开始监听
@@ -27,10 +26,10 @@ namespace Milimoe.FunGame.Core.Service
         /// <returns></returns>
         internal static HttpListener StartListening(string address = "*", int port = 22223, string subUrl = "ws", bool ssl = false)
         {
-            _HttpListener = new();
-            _HttpListener.Prefixes.Add((ssl ? "https://" : "http://") + address + ":" + port + "/" + subUrl.Trim('/') + "/");
-            _HttpListener.Start();
-            return _HttpListener;
+            HttpListener = new();
+            HttpListener.Prefixes.Add((ssl ? "https://" : "http://") + address + ":" + port + "/" + subUrl.Trim('/') + "/");
+            HttpListener.Start();
+            return HttpListener;
         }
 
         /// <summary>

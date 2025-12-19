@@ -34,14 +34,14 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 加载标记
         /// </summary>
-        private bool IsLoaded = false;
+        private bool _isLoaded = false;
 
         /// <summary>
         /// 加载模组
         /// </summary>
         public bool Load(params object[] objs)
         {
-            if (IsLoaded)
+            if (_isLoaded)
             {
                 return false;
             }
@@ -49,13 +49,13 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             if (BeforeLoad())
             {
                 // 模组加载后，不允许再次加载此模组
-                IsLoaded = true;
+                _isLoaded = true;
                 // 注册工厂
                 Factory.OpenFactory.RegisterFactory(EntityFactory());
                 // 如果加载后需要执行代码，请重写AfterLoad方法
                 AfterLoad();
             }
-            return IsLoaded;
+            return _isLoaded;
         }
 
         /// <summary>

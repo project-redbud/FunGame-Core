@@ -49,12 +49,12 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                return Math.Max(0, _Level);
+                return Math.Max(0, field);
             }
             set
             {
                 int max = SkillSet.GetSkillMaxLevel(SkillType, GameplayEquilibriumConstant);
-                _Level = Math.Min(Math.Max(0, value), max);
+                field = Math.Min(Math.Max(0, value), max);
                 OnLevelUp();
             }
         }
@@ -101,9 +101,9 @@ namespace Milimoe.FunGame.Core.Entity
         [InitOptional]
         public int CastRange
         {
-            get => Math.Max(1, CastAnywhere ? (GamingQueue?.Map != null ? GamingQueue.Map.Grids.Count : 999) : _CastRange);
-            set => _CastRange = Math.Max(1, value);
-        }
+            get => Math.Max(1, CastAnywhere ? (GamingQueue?.Map != null ? GamingQueue.Map.Grids.Count : 999) : field);
+            set => field = Math.Max(1, value);
+        } = 3;
 
         /// <summary>
         /// 可选取自身
@@ -151,7 +151,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <see cref="SkillRangeType.Diamond"/> - 菱形。默认的曼哈顿距离正方形<para/>
         /// <see cref="SkillRangeType.Circle"/> - 圆形。基于欧几里得距离的圆形<para/>
         /// <see cref="SkillRangeType.Square"/> - 正方形<para/>
-        /// <see cref="SkillRangeType.Line"/> - 施法者与目标之前的直线<para/>
+        /// <see cref="SkillRangeType.Line"/> - 施法者与目标之间的直线<para/>
         /// <see cref="SkillRangeType.LinePass"/> - 施法者与目标所在的直线，贯穿至地图边缘<para/>
         /// <see cref="SkillRangeType.Sector"/> - 扇形<para/>
         /// 注意，该属性不影响选取目标的范围。选取目标的范围由 <see cref="Library.Common.Addon.GameMap"/> 决定。
@@ -682,15 +682,5 @@ namespace Milimoe.FunGame.Core.Entity
             }
             return skill;
         }
-
-        /// <summary>
-        /// 等级
-        /// </summary>
-        private int _Level = 0;
-
-        /// <summary>
-        /// 施法距离
-        /// </summary>
-        private int _CastRange = 3;
     }
 }

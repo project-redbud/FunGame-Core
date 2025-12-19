@@ -20,13 +20,13 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                return _customName.Trim() == "" ? User.Username + "的库存" : _customName;
+                return field.Trim() == "" ? User.Username + "的库存" : field;
             }
             set
             {
-                _customName = value;
+                field = value;
             }
-        }
+        } = "";
 
         /// <summary>
         /// 库存属于哪个玩家
@@ -60,20 +60,20 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                if (_character != null)
+                if (field != null)
                 {
-                    return _character;
+                    return field;
                 }
                 else if (Characters.Count > 0)
                 {
-                    _character = Characters.First();
-                    return _character;
+                    field = Characters.First();
+                    return field;
                 }
                 return Factory.GetCharacter();
             }
             set
             {
-                _character = value;
+                field = value;
             }
         }
 
@@ -86,9 +86,6 @@ namespace Milimoe.FunGame.Core.Entity
         /// 练级中的角色
         /// </summary>
         public Dictionary<long, DateTime> Training { get; set; } = [];
-
-        private Character? _character;
-        private string _customName = "";
 
         internal Inventory(User user)
         {

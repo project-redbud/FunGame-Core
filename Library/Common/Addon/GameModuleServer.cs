@@ -50,8 +50,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// </summary>
         public ServerAddonController<IGameModuleServer> Controller
         {
-            get => _Controller ?? throw new NotImplementedException();
-            internal set => _Controller = value;
+            get => _controller ?? throw new NotImplementedException();
+            internal set => _controller = value;
         }
 
         /// <summary>
@@ -60,13 +60,13 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         BaseAddonController<IGameModuleServer> IAddonController<IGameModuleServer>.Controller
         {
             get => Controller;
-            set => _Controller = (ServerAddonController<IGameModuleServer>?)value;
+            set => _controller = (ServerAddonController<IGameModuleServer>?)value;
         }
 
         /// <summary>
         /// 控制器内部变量
         /// </summary>
-        private ServerAddonController<IGameModuleServer>? _Controller;
+        private ServerAddonController<IGameModuleServer>? _controller;
 
         /// <summary>
         /// 此模组所有正在运行的游戏对象
@@ -127,14 +127,14 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 加载标记
         /// </summary>
-        private bool IsLoaded = false;
+        private bool _isLoaded = false;
 
         /// <summary>
         /// 加载模组
         /// </summary>
         public bool Load(params object[] objs)
         {
-            if (IsLoaded)
+            if (_isLoaded)
             {
                 return false;
             }
@@ -142,9 +142,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             if (BeforeLoad())
             {
                 // 模组加载后，不允许再次加载此模组
-                IsLoaded = true;
+                _isLoaded = true;
             }
-            return IsLoaded;
+            return _isLoaded;
         }
 
         /// <summary>

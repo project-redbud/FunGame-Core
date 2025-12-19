@@ -169,18 +169,18 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         public Character? Character
         {
-            get => _character;
+            get => field;
             set
             {
-                _character = value;
-                if (Skills.Active != null) Skills.Active.Character = _character;
+                field = value;
+                Skills.Active?.Character = field;
                 foreach (Skill skill in Skills.Passives)
                 {
-                    skill.Character = _character;
+                    skill.Character = field;
                 }
                 foreach (Skill skill in Skills.Magics)
                 {
-                    skill.Character = _character;
+                    skill.Character = field;
                 }
             }
         }
@@ -229,7 +229,7 @@ namespace Milimoe.FunGame.Core.Entity
                     Character.Skills.Add(skill);
                 }
             }
-            if (Character != null) OnItemEquipped(Character, this, type);
+            if (Character != null) OnItemEquipped(Character, type);
         }
 
         /// <summary>
@@ -273,7 +273,7 @@ namespace Milimoe.FunGame.Core.Entity
                         Character.EquipSlot.Accessory2 = null;
                         break;
                 }
-                OnItemUnEquipped(Character, this, type);
+                OnItemUnEquipped(Character, type);
             }
             Character = null;
             EquipSlotType = EquipSlotType.None;
@@ -285,7 +285,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="queue"></param>
         public void SetGamingQueue(IGamingQueue queue)
         {
-            if (Skills.Active != null) Skills.Active.GamingQueue = queue;
+            Skills.Active?.GamingQueue = queue;
             foreach (Skill skill in Skills.Passives)
             {
                 skill.GamingQueue = queue;
@@ -390,9 +390,8 @@ namespace Milimoe.FunGame.Core.Entity
         /// 当物品被装备时
         /// </summary>
         /// <param name="character"></param>
-        /// <param name="item"></param>
         /// <param name="type"></param>
-        protected virtual void OnItemEquipped(Character character, Item item, EquipSlotType type)
+        protected virtual void OnItemEquipped(Character character, EquipSlotType type)
         {
 
         }
@@ -401,9 +400,8 @@ namespace Milimoe.FunGame.Core.Entity
         /// 当物品被取消装备时
         /// </summary>
         /// <param name="character"></param>
-        /// <param name="item"></param>
         /// <param name="type"></param>
-        protected virtual void OnItemUnEquipped(Character character, Item item, EquipSlotType type)
+        protected virtual void OnItemUnEquipped(Character character, EquipSlotType type)
         {
 
         }
@@ -703,10 +701,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="level"></param>
         public void SetLevel(int level)
         {
-            if (Skills.Active != null)
-            {
-                Skills.Active.Level = level;
-            }
+            Skills.Active?.Level = level;
             foreach (Skill skill in Skills.Passives)
             {
                 skill.Level = level;
@@ -724,10 +719,5 @@ namespace Milimoe.FunGame.Core.Entity
                 skill.Level = level;
             }
         }
-
-        /// <summary>
-        /// 所属的角色
-        /// </summary>
-        private Character? _character = null;
     }
 }

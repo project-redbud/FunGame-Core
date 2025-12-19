@@ -216,36 +216,36 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         private class SocketRequest : SocketHandlerController
         {
             public Dictionary<string, object> RequestData { get; } = [];
-            public Dictionary<string, object> ResultData => _ResultData;
-            public RequestResult Result => _Result;
-            public string Error => _Error;
+            public Dictionary<string, object> ResultData => _resultData;
+            public RequestResult Result => _result;
+            public string Error => _error;
 
-            private readonly Socket? Socket = null;
-            private readonly HTTPClient? HTTPClient = null;
-            private readonly DataRequestType RequestType = DataRequestType.UnKnown;
-            private readonly Guid RequestID = Guid.Empty;
-            private readonly bool IsLongRunning = false;
-            private readonly SocketRuntimeType RuntimeType = SocketRuntimeType.Client;
-            private Dictionary<string, object> _ResultData = [];
-            private RequestResult _Result = RequestResult.Missing;
-            private string _Error = "";
+            private readonly Socket? _socket = null;
+            private readonly HTTPClient? _httpClient = null;
+            private readonly DataRequestType _requestType = DataRequestType.UnKnown;
+            private readonly Guid _requestID = Guid.Empty;
+            private readonly bool _isLongRunning = false;
+            private readonly SocketRuntimeType _runtimeType = SocketRuntimeType.Client;
+            private Dictionary<string, object> _resultData = [];
+            private RequestResult _result = RequestResult.Missing;
+            private string _error = "";
 
             public SocketRequest(Socket? socket, DataRequestType type, Guid requestId, bool longRunning = false, SocketRuntimeType runtime = SocketRuntimeType.Client) : base(socket)
             {
-                Socket = socket;
-                RequestType = type;
-                RequestID = requestId;
-                IsLongRunning = longRunning;
-                RuntimeType = runtime;
+                _socket = socket;
+                _requestType = type;
+                _requestID = requestId;
+                _isLongRunning = longRunning;
+                _runtimeType = runtime;
             }
 
             public SocketRequest(HTTPClient? client, DataRequestType type, Guid requestId, bool longRunning = false, SocketRuntimeType runtime = SocketRuntimeType.Client) : base(client)
             {
-                HTTPClient = client;
-                RequestType = type;
-                RequestID = requestId;
-                IsLongRunning = longRunning;
-                RuntimeType = runtime;
+                _httpClient = client;
+                _requestType = type;
+                _requestID = requestId;
+                _isLongRunning = longRunning;
+                _runtimeType = runtime;
             }
 
             public void SendRequest()
@@ -253,17 +253,17 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 try
                 {
                     SetWorking();
-                    if (RuntimeType == SocketRuntimeType.Addon)
+                    if (_runtimeType == SocketRuntimeType.Addon)
                     {
                         if (RequestData.ContainsKey(SocketSet.Plugins_Mark)) RequestData[SocketSet.Plugins_Mark] = "true";
                         else RequestData.Add(SocketSet.Plugins_Mark, true);
                     }
                     else RequestData.Remove(SocketSet.Plugins_Mark);
-                    if (Socket != null && Socket.Send(SocketMessageType.DataRequest, RequestType, RequestID, RequestData) == SocketResult.Success)
+                    if (_socket != null && _socket.Send(SocketMessageType.DataRequest, _requestType, _requestID, RequestData) == SocketResult.Success)
                     {
                         WaitForWorkDone();
                     }
-                    else if (HTTPClient != null)
+                    else if (_httpClient != null)
                     {
                         throw new AsyncSendException();
                     }
@@ -272,8 +272,8 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 catch (Exception e)
                 {
                     Working = false;
-                    _Result = RequestResult.Fail;
-                    _Error = e.GetErrorInfo();
+                    _result = RequestResult.Fail;
+                    _error = e.GetErrorInfo();
                 }
             }
 
@@ -282,17 +282,17 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 try
                 {
                     SetWorking();
-                    if (RuntimeType == SocketRuntimeType.Addon)
+                    if (_runtimeType == SocketRuntimeType.Addon)
                     {
                         if (RequestData.ContainsKey(SocketSet.Plugins_Mark)) RequestData[SocketSet.Plugins_Mark] = "true";
                         else RequestData.Add(SocketSet.Plugins_Mark, true);
                     }
                     else RequestData.Remove(SocketSet.Plugins_Mark);
-                    if (Socket != null && Socket.Send(SocketMessageType.DataRequest, RequestType, RequestID, RequestData) == SocketResult.Success)
+                    if (_socket != null && _socket.Send(SocketMessageType.DataRequest, _requestType, _requestID, RequestData) == SocketResult.Success)
                     {
                         await WaitForWorkDoneAsync();
                     }
-                    else if (HTTPClient != null && await HTTPClient.Send(SocketMessageType.DataRequest, RequestType, RequestID, RequestData) == SocketResult.Success)
+                    else if (_httpClient != null && await _httpClient.Send(SocketMessageType.DataRequest, _requestType, _requestID, RequestData) == SocketResult.Success)
                     {
                         await WaitForWorkDoneAsync();
                     }
@@ -301,8 +301,8 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 catch (Exception e)
                 {
                     Working = false;
-                    _Result = RequestResult.Fail;
-                    _Error = e.GetErrorInfo();
+                    _result = RequestResult.Fail;
+                    _error = e.GetErrorInfo();
                 }
             }
 
@@ -314,21 +314,21 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                     {
                         DataRequestType type = obj.GetParam<DataRequestType>(0);
                         Guid id = obj.GetParam<Guid>(1);
-                        if (type == RequestType && id == RequestID)
+                        if (type == _requestType && id == _requestID)
                         {
-                            if (!IsLongRunning) Dispose();
+                            if (!_isLongRunning) Dispose();
                             ReceivedObject = obj;
                             Working = false;
-                            _ResultData = obj.GetParam<Dictionary<string, object>>(2) ?? [];
-                            _Result = RequestResult.Success;
+                            _resultData = obj.GetParam<Dictionary<string, object>>(2) ?? [];
+                            _result = RequestResult.Success;
                         }
                     }
                 }
                 catch (Exception e)
                 {
                     Working = false;
-                    _Result = RequestResult.Fail;
-                    _Error = e.GetErrorInfo();
+                    _result = RequestResult.Fail;
+                    _error = e.GetErrorInfo();
                 }
             }
         }
@@ -339,36 +339,36 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         private class GamingRequest : SocketHandlerController
         {
             public Dictionary<string, object> RequestData { get; } = [];
-            public Dictionary<string, object> ResultData => _ResultData;
-            public RequestResult Result => _Result;
-            public string Error => _Error;
+            public Dictionary<string, object> ResultData => _resultData;
+            public RequestResult Result => _result;
+            public string Error => _error;
 
-            private readonly Socket? Socket = null;
-            private readonly HTTPClient? HTTPClient = null;
-            private readonly GamingType GamingType = GamingType.None;
-            private readonly Guid RequestID = Guid.Empty;
-            private readonly bool IsLongRunning = false;
-            private readonly SocketRuntimeType RuntimeType = SocketRuntimeType.Client;
-            private Dictionary<string, object> _ResultData = [];
-            private RequestResult _Result = RequestResult.Missing;
-            private string _Error = "";
+            private readonly Socket? _socket = null;
+            private readonly HTTPClient? _httpClient = null;
+            private readonly GamingType _gamingType = GamingType.None;
+            private readonly Guid _requestID = Guid.Empty;
+            private readonly bool _isLongRunning = false;
+            private readonly SocketRuntimeType _runtimeType = SocketRuntimeType.Client;
+            private Dictionary<string, object> _resultData = [];
+            private RequestResult _result = RequestResult.Missing;
+            private string _error = "";
 
             public GamingRequest(Socket? socket, GamingType type, Guid requestId, bool longRunning = false, SocketRuntimeType runtime = SocketRuntimeType.Client) : base(socket)
             {
-                Socket = socket;
-                GamingType = type;
-                RequestID = requestId;
-                IsLongRunning = longRunning;
-                RuntimeType = runtime;
+                _socket = socket;
+                _gamingType = type;
+                _requestID = requestId;
+                _isLongRunning = longRunning;
+                _runtimeType = runtime;
             }
 
             public GamingRequest(HTTPClient? client, GamingType type, Guid requestId, bool longRunning = false, SocketRuntimeType runtime = SocketRuntimeType.Client) : base(client)
             {
-                HTTPClient = client;
-                GamingType = type;
-                RequestID = requestId;
-                IsLongRunning = longRunning;
-                RuntimeType = runtime;
+                _httpClient = client;
+                _gamingType = type;
+                _requestID = requestId;
+                _isLongRunning = longRunning;
+                _runtimeType = runtime;
             }
 
             public void SendRequest()
@@ -376,17 +376,17 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 try
                 {
                     SetWorking();
-                    if (RuntimeType == SocketRuntimeType.Addon)
+                    if (_runtimeType == SocketRuntimeType.Addon)
                     {
                         if (RequestData.ContainsKey(SocketSet.Plugins_Mark)) RequestData[SocketSet.Plugins_Mark] = "true";
                         else RequestData.Add(SocketSet.Plugins_Mark, true);
                     }
                     else RequestData.Remove(SocketSet.Plugins_Mark);
-                    if (Socket != null && Socket.Send(SocketMessageType.GamingRequest, GamingType, RequestID, RequestData) == SocketResult.Success)
+                    if (_socket != null && _socket.Send(SocketMessageType.GamingRequest, _gamingType, _requestID, RequestData) == SocketResult.Success)
                     {
                         WaitForWorkDone();
                     }
-                    else if (HTTPClient != null)
+                    else if (_httpClient != null)
                     {
                         throw new AsyncSendException();
                     }
@@ -395,8 +395,8 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 catch (Exception e)
                 {
                     Working = false;
-                    _Result = RequestResult.Fail;
-                    _Error = e.GetErrorInfo();
+                    _result = RequestResult.Fail;
+                    _error = e.GetErrorInfo();
                 }
             }
 
@@ -405,17 +405,17 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 try
                 {
                     SetWorking();
-                    if (RuntimeType == SocketRuntimeType.Addon)
+                    if (_runtimeType == SocketRuntimeType.Addon)
                     {
                         if (RequestData.ContainsKey(SocketSet.Plugins_Mark)) RequestData[SocketSet.Plugins_Mark] = "true";
                         else RequestData.Add(SocketSet.Plugins_Mark, true);
                     }
                     else RequestData.Remove(SocketSet.Plugins_Mark);
-                    if (Socket != null && Socket.Send(SocketMessageType.GamingRequest, GamingType, RequestID, RequestData) == SocketResult.Success)
+                    if (_socket != null && _socket.Send(SocketMessageType.GamingRequest, _gamingType, _requestID, RequestData) == SocketResult.Success)
                     {
                         await WaitForWorkDoneAsync();
                     }
-                    else if (HTTPClient != null && await HTTPClient.Send(SocketMessageType.GamingRequest, GamingType, RequestID, RequestData) == SocketResult.Success)
+                    else if (_httpClient != null && await _httpClient.Send(SocketMessageType.GamingRequest, _gamingType, _requestID, RequestData) == SocketResult.Success)
                     {
                         await WaitForWorkDoneAsync();
                     }
@@ -424,8 +424,8 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                 catch (Exception e)
                 {
                     Working = false;
-                    _Result = RequestResult.Fail;
-                    _Error = e.GetErrorInfo();
+                    _result = RequestResult.Fail;
+                    _error = e.GetErrorInfo();
                 }
             }
 
@@ -437,21 +437,21 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
                     {
                         GamingType type = obj.GetParam<GamingType>(0);
                         Guid id = obj.GetParam<Guid>(1);
-                        if (type == GamingType && id == RequestID)
+                        if (type == _gamingType && id == _requestID)
                         {
-                            if (!IsLongRunning) Dispose();
+                            if (!_isLongRunning) Dispose();
                             ReceivedObject = obj;
                             Working = false;
-                            _ResultData = obj.GetParam<Dictionary<string, object>>(2) ?? [];
-                            _Result = RequestResult.Success;
+                            _resultData = obj.GetParam<Dictionary<string, object>>(2) ?? [];
+                            _result = RequestResult.Success;
                         }
                     }
                 }
                 catch (Exception e)
                 {
                     Working = false;
-                    _Result = RequestResult.Fail;
-                    _Error = e.GetErrorInfo();
+                    _result = RequestResult.Fail;
+                    _error = e.GetErrorInfo();
                 }
             }
         }

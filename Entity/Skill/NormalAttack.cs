@@ -95,23 +95,23 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                return Math.Max(1, _Level);
+                return Math.Max(1, _level);
             }
             set
             {
-                _Level = Math.Min(Math.Max(1, value), GameplayEquilibriumConstant.MaxNormalAttackLevel);
+                _level = Math.Min(Math.Max(1, value), GameplayEquilibriumConstant.MaxNormalAttackLevel);
             }
         }
 
         /// <summary>
         /// 是否是魔法伤害
         /// </summary>
-        public bool IsMagic => _IsMagic;
+        public bool IsMagic => _isMagic;
 
         /// <summary>
         /// 魔法伤害需要指定魔法类型
         /// </summary>
-        public MagicType MagicType => _MagicType;
+        public MagicType MagicType => _magicType;
 
         /// <summary>
         /// 是否可用
@@ -364,12 +364,12 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="queue"></param>
         public void SetMagicType(bool? isMagic, MagicType? magicType = null, IGamingQueue? queue = null)
         {
-            _ExIsMagic = isMagic;
+            _exIsMagic = isMagic;
             if (isMagic.HasValue && isMagic.Value)
             {
                 magicType ??= MagicType.None;
             }
-            _ExMagicType = magicType;
+            _exMagicType = magicType;
             ResolveMagicType(queue);
         }
 
@@ -400,37 +400,37 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         internal void ResolveMagicType(IGamingQueue? queue = null)
         {
-            bool past = _IsMagic;
-            MagicType pastType = _MagicType;
+            bool past = _isMagic;
+            MagicType pastType = _magicType;
             if (NormalAttackOfEffects.Count > 0)
             {
                 if (NormalAttackOfEffects.Values.OrderByDescending(n => n.Priority).FirstOrDefault() is NormalAttackOfEffect naoe)
                 {
-                    _IsMagic = naoe.IsMagic;
-                    _MagicType = naoe.MagicType;
+                    _isMagic = naoe.IsMagic;
+                    _magicType = naoe.MagicType;
                 }
             }
-            else if (_ExIsMagic.HasValue && _ExMagicType.HasValue)
+            else if (_exIsMagic.HasValue && _exMagicType.HasValue)
             {
-                _IsMagic = _ExIsMagic.Value;
-                _MagicType = _ExMagicType.Value;
+                _isMagic = _exIsMagic.Value;
+                _magicType = _exMagicType.Value;
             }
             else
             {
-                _IsMagic = false;
-                _MagicType = MagicType.None;
+                _isMagic = false;
+                _magicType = MagicType.None;
                 if (Character.EquipSlot.Weapon != null)
                 {
                     WeaponType type = Character.EquipSlot.Weapon.WeaponType;
                     if (type == WeaponType.Talisman || type == WeaponType.Staff)
                     {
-                        _IsMagic = true;
+                        _isMagic = true;
                     }
                 }
             }
-            if (queue != null && (past != _IsMagic || pastType != _MagicType))
+            if (queue != null && (past != _isMagic || pastType != _magicType))
             {
-                queue.WriteLine($"[ {Character} ] 的普通攻击类型已转变为：{(_IsMagic ? CharacterSet.GetMagicDamageName(_MagicType) : "物理伤害")}！");
+                queue.WriteLine($"[ {Character} ] 的普通攻击类型已转变为：{(_isMagic ? CharacterSet.GetMagicDamageName(_magicType) : "物理伤害")}！");
             }
         }
 
@@ -470,27 +470,27 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 等级
         /// </summary>
-        private int _Level = 0;
+        private int _level = 0;
 
         /// <summary>
         /// 是否是魔法伤害 [ 生效型 ]
         /// </summary>
-        private bool _IsMagic = isMagic;
+        private bool _isMagic = isMagic;
 
         /// <summary>
         /// 魔法类型 [ 生效型 ]
         /// </summary>
-        private MagicType _MagicType = magicType;
+        private MagicType _magicType = magicType;
 
         /// <summary>
         /// 是否是魔法伤害 [ 修改型 ]
         /// </summary>
-        private bool? _ExIsMagic = null;
+        private bool? _exIsMagic = null;
 
         /// <summary>
         /// 魔法类型 [ 修改型 ]
         /// </summary>
-        private MagicType? _ExMagicType = null;
+        private MagicType? _exMagicType = null;
     }
 
     /// <summary>
