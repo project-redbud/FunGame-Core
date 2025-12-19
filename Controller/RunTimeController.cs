@@ -355,7 +355,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// 关闭 WebSocket 连接
         /// </summary>
         /// <returns></returns>
-        public bool Close_WebSocket()
+        public bool CloseWebSocket()
         {
             try
             {
@@ -589,7 +589,7 @@ namespace Milimoe.FunGame.Core.Controller
                     }
                     else if (transmittalType == TransmittalType.WebSocket)
                     {
-                        Close_WebSocket();
+                        CloseWebSocket();
                     }
                     SocketHandler_Disconnect(obj);
                     break;
