@@ -6,7 +6,7 @@ namespace Milimoe.FunGame.Core.Model.PrefabricatedEntity
     /// <summary>
     /// 魔法卡包的基础实现
     /// </summary>
-    public class MagicCardPack : Item
+    public class MagicCardPack : OpenItem
     {
         public override ItemType ItemType => ItemType.MagicCardPack;
 
@@ -16,9 +16,14 @@ namespace Milimoe.FunGame.Core.Model.PrefabricatedEntity
         public HashSet<Skill> Magics => Skills.Magics;
 
         /// <summary>
-        /// 属性增强：增加角色额外核心属性
+        /// 动态矩阵：增加角色额外核心属性
         /// </summary>
-        public HashSet<AttributeBoost> AttributeBoosts { get; } = [];
+        public Dictionary<PrimaryAttribute, double> AttributeBoosts { get; } = new()
+        {
+            { PrimaryAttribute.STR, 0 },
+            { PrimaryAttribute.AGI, 0 },
+            { PrimaryAttribute.INT, 0 }
+        };
 
         /// <summary>
         /// 同频共振：强制转换角色的核心属性为该属性 [ 优先级：仅在装备时改变，覆盖该时刻的核心属性，后续可被其他物品/技能覆盖 ]
@@ -45,23 +50,46 @@ namespace Milimoe.FunGame.Core.Model.PrefabricatedEntity
         /// </summary>
         private PrimaryAttribute _originalAttribute = PrimaryAttribute.None;
 
-        protected override void OnItemEquipped(Character character, EquipSlotType type)
+        public MagicCardPack(long id, string name, Dictionary<string, object> args) : base(id, name, args)
         {
-            foreach (AttributeBoost ab in AttributeBoosts)
+            foreach (string key in args.Keys)
             {
-                switch (ab.PrimaryAttribute)
+                switch (key.ToLower())
                 {
-                    case PrimaryAttribute.AGI:
-                        character.ExAGI += ab.Value;
+                    case "exstr":
+                        if (double.TryParse(args[key].ToString(), out double strValue))
+                        {
+                            AttributeBoosts[PrimaryAttribute.STR] = strValue;
+                        }
                         break;
-                    case PrimaryAttribute.INT:
-                        character.ExINT += ab.Value;
+                    case "exagi":
+                        if (double.TryParse(args[key].ToString(), out double agiValue))
+                        {
+                            AttributeBoosts[PrimaryAttribute.AGI] = agiValue;
+                        }
                         break;
-                    default:
-                        character.ExSTR += ab.Value;
+                    case "exint":
+                        if (double.TryParse(args[key].ToString(), out double intValue))
+                        {
+                            AttributeBoosts[PrimaryAttribute.INT] = intValue;
+                        }
+                        break;
+                    case "res":
+                    case "resonance":
+                        if (Enum.TryParse(args[key].ToString(), out PrimaryAttribute resonance))
+                        {
+                            Resonance = resonance;
+                        }
                         break;
                 }
             }
+        }
+
+        protected override void OnItemEquipped(Character character, EquipSlotType type)
+        {
+            character.ExSTR += AttributeBoosts[PrimaryAttribute.STR];
+            character.ExAGI += AttributeBoosts[PrimaryAttribute.AGI];
+            character.ExINT += AttributeBoosts[PrimaryAttribute.INT];
             if (Resonance != PrimaryAttribute.None)
             {
                 _originalAttribute = character.PrimaryAttribute;
@@ -84,21 +112,9 @@ namespace Milimoe.FunGame.Core.Model.PrefabricatedEntity
 
         protected override void OnItemUnEquipped(Character character, EquipSlotType type)
         {
-            foreach (AttributeBoost ab in AttributeBoosts)
-            {
-                switch (ab.PrimaryAttribute)
-                {
-                    case PrimaryAttribute.AGI:
-                        character.ExAGI -= ab.Value;
-                        break;
-                    case PrimaryAttribute.INT:
-                        character.ExINT -= ab.Value;
-                        break;
-                    default:
-                        character.ExSTR -= ab.Value;
-                        break;
-                }
-            }
+            character.ExSTR -= AttributeBoosts[PrimaryAttribute.STR];
+            character.ExAGI -= AttributeBoosts[PrimaryAttribute.AGI];
+            character.ExINT -= AttributeBoosts[PrimaryAttribute.INT];
             if (_originalAttribute != PrimaryAttribute.None)
             {
                 character.PrimaryAttribute = _originalAttribute;

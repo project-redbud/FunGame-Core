@@ -5,7 +5,7 @@ namespace Milimoe.FunGame.Core.Model.PrefabricatedEntity
     /// <summary>
     /// 继承此类以表示灵魂绑定技能
     /// </summary>
-    public class SoulboundSkill : Skill
+    public class SoulboundSkill(long id, string name, Dictionary<string, object> args, Character? character = null) : OpenSkill(id, name, args, character)
     {
         public override bool CostAllEP => true;
         public override double MinCostEP => 100;
