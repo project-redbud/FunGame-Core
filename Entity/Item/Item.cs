@@ -33,6 +33,16 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual string BackgroundStory { get; set; } = "";
 
         /// <summary>
+        /// 物品的分类
+        /// </summary>
+        public virtual string Category { get; set; } = "";
+
+        /// <summary>
+        /// 物品的标签
+        /// </summary>
+        public virtual List<string> Tags { get; set; } = [];
+
+        /// <summary>
         /// 物品类型
         /// </summary>
         public virtual ItemType ItemType { get; set; } = ItemType.Others;
@@ -448,6 +458,7 @@ namespace Milimoe.FunGame.Core.Entity
             if (itemtype != "") itemtype = $" {itemtype}";
 
             builder.AppendLine($"{itemquality + itemtype}");
+            if (!string.IsNullOrWhiteSpace(Category)) builder.AppendLine(Category);
 
             if (isShowInStore && Price > 0)
             {
@@ -593,6 +604,7 @@ namespace Milimoe.FunGame.Core.Entity
                 if (sellandtrade.Count > 0) builder.AppendLine(string.Join(" ", sellandtrade).Trim());
                 if (Description != "") builder.AppendLine($"{Description}");
                 if (IsEquipment && Character != null) builder.AppendLine($"装备于：{Character.ToStringWithLevelWithOutUser()}");
+                if (Tags.Count > 0) builder.AppendLine($"标签：{string.Join("，", Tags)}");
             }
 
             return builder.ToString();

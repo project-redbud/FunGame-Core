@@ -7,6 +7,7 @@ namespace Milimoe.FunGame.Core.Entity
     {
         public string Description { get; set; } = "";
         public QuestState Status { get; set; } = QuestState.NotStarted;
+        public bool Global { get; set; } = false;
         public long CharacterId { get; set; } = 0;
         public long RegionId { get; set; } = 0;
         public string NeedyExploreCharacterName { get; set; } = "";

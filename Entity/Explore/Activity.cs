@@ -86,21 +86,22 @@ namespace Milimoe.FunGame.Core.Entity
             if (Status != newState)
             {
                 Status = newState;
-                foreach (Quest quest in Quests)
+            }
+
+            foreach (Quest quest in Quests)
+            {
+                if (Status == ActivityState.InProgress)
                 {
-                    if (newState == ActivityState.InProgress)
+                    if (quest.Status == QuestState.NotStarted && quest.QuestType == QuestType.Progressive)
                     {
-                        if (quest.Status == QuestState.NotStarted && quest.QuestType == QuestType.Progressive)
-                        {
-                            quest.Status = QuestState.InProgress;
-                        }
+                        quest.Status = QuestState.InProgress;
                     }
-                    else if (newState == ActivityState.Ended)
+                }
+                else if (Status == ActivityState.Ended)
+                {
+                    if (quest.Status == QuestState.NotStarted || quest.Status == QuestState.InProgress)
                     {
-                        if (quest.Status == QuestState.NotStarted || quest.Status == QuestState.InProgress)
-                        {
-                            quest.Status = QuestState.Missed;
-                        }
+                        quest.Status = QuestState.Missed;
                     }
                 }
             }
@@ -149,15 +150,23 @@ namespace Milimoe.FunGame.Core.Entity
             UserGetActivityInfo?.Invoke(args);
         }
 
-        public string ToString(bool showQuests)
+        public string ToString(bool showQuests, bool isSubActivity = false)
         {
             UpdateState();
             StringBuilder builder = new();
 
-            builder.AppendLine($"☆--- {Name} ---☆");
+            if (!isSubActivity)
+            {
+                builder.AppendLine($"☆--- {Name} ---☆");
+            }
+            else
+            {
+                builder.AppendLine($"==[ {Name} ]==");
+            }
+
             builder.AppendLine($"{Description}");
             builder.AppendLine($"活动状态：{CommonSet.GetActivityStatus(Status)}");
-            builder.AppendLine(GetTimeString());
+            builder.AppendLine(GetTimeString(!isSubActivity));
 
             if (showQuests && Quests.Count > 0)
             {

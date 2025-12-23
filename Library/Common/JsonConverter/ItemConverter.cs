@@ -35,6 +35,16 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Item.BackgroundStory):
                     result.BackgroundStory = reader.GetString() ?? "";
                     break;
+                case nameof(Item.Category):
+                    result.Category = reader.GetString() ?? "";
+                    break;
+                case nameof(Item.Tags):
+                    string[] tags = NetworkUtility.JsonDeserialize<string[]>(ref reader, options) ?? [];
+                    foreach (string tag in tags)
+                    {
+                        result.Tags.Add(tag);
+                    }
+                    break;
                 case nameof(Item.ItemType):
                     result.ItemType = (ItemType)reader.GetInt32();
                     break;
@@ -129,6 +139,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteString(nameof(Item.Description), value.Description);
             writer.WriteString(nameof(Item.GeneralDescription), value.GeneralDescription);
             writer.WriteString(nameof(Item.BackgroundStory), value.BackgroundStory);
+            writer.WriteString(nameof(Item.Category), value.Category);
+            writer.WritePropertyName(nameof(Item.Tags));
+            JsonSerializer.Serialize(writer, value.Tags, options);
             writer.WriteNumber(nameof(Item.ItemType), (int)value.ItemType);
             writer.WriteNumber(nameof(Item.WeaponType), (int)value.WeaponType);
             writer.WriteNumber(nameof(Item.EquipSlotType), (int)value.EquipSlotType);

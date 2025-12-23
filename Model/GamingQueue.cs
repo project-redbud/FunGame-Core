@@ -1486,6 +1486,12 @@ namespace Milimoe.FunGame.Core.Model
                 }
             }
 
+            if (!decided && (isAI || cancelTimes == 0))
+            {
+                baseTime += 5;
+                type = CharacterActionType.EndTurn;
+            }
+
             if (type == CharacterActionType.None)
             {
                 WriteLine($"[ {character} ] 放弃了行动！");

@@ -32,6 +32,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Quest.Status):
                     result.Status = (QuestState)reader.GetInt32();
                     break;
+                case nameof(Quest.Global):
+                    result.Global = reader.GetBoolean();
+                    break;
                 case nameof(Quest.CharacterId):
                     result.CharacterId = reader.GetInt64();
                     break;
@@ -109,6 +112,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteString(nameof(Quest.Name), value.Name);
             writer.WriteString(nameof(Quest.Description), value.Description);
             writer.WriteNumber(nameof(Quest.Status), (int)value.Status);
+            writer.WriteBoolean(nameof(Quest.Global), value.Global);
             writer.WriteNumber(nameof(Quest.CharacterId), value.CharacterId);
             writer.WriteNumber(nameof(Quest.RegionId), value.RegionId);
             writer.WriteString(nameof(Quest.NeedyExploreCharacterName), value.NeedyExploreCharacterName);
