@@ -130,7 +130,7 @@ namespace Milimoe.FunGame.Core.Entity
             return false;
         }
 
-        public bool RegisterAwardedUser(long userId, long questId) => Quests.FirstOrDefault(q => q.Id == questId && q.Status == QuestState.Completed) is Quest quest && RegisterAwardedUser(userId, quest);
+        public bool RegisterAwardedUser(long userId, long questId) => Quests.FirstOrDefault(q => q.Id == questId) is Quest quest && RegisterAwardedUser(userId, quest);
 
         public bool HasUserAwarded(long userId, Quest quest)
         {

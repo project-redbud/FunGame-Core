@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Library.Constant;
+﻿using Milimoe.FunGame.Core.Interface.Base;
+using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Api.Utility
@@ -80,78 +81,75 @@ namespace Milimoe.FunGame.Core.Api.Utility
         }
 
         /// <summary>
-        /// 获取任务计划上一次执行时间
+        /// 获取任务计划
         /// </summary>
         /// <param name="name"></param>
         /// <param name="recurring"></param>
         /// <returns></returns>
-        public DateTime GetLastTime(string name, bool recurring = false)
-        {
-            if (!recurring)
-            {
-                if (_tasks.FirstOrDefault(t => t.Name == name) is ScheduledTask task && task.LastRun.HasValue)
-                {
-                    return task.LastRun.Value;
-                }
-                else if (_recurringTasks.FirstOrDefault(t => t.Name == name) is RecurringTask recurringTask && recurringTask.LastRun.HasValue)
-                {
-                    return recurringTask.LastRun.Value;
-                }
-            }
-            else if (_recurringTasks.FirstOrDefault(t => t.Name == name) is RecurringTask recurringTask && recurringTask.LastRun.HasValue)
-            {
-                return recurringTask.LastRun.Value;
-            }
-            return DateTime.MinValue;
-        }
-
-        /// <summary>
-        /// 获取任务计划下一次执行时间
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="recurring"></param>
-        /// <returns></returns>
-        public DateTime GetNextTime(string name, bool recurring = false)
+        public IScheduledTask? GetTask(string name, bool recurring = false)
         {
             if (!recurring)
             {
                 if (_tasks.FirstOrDefault(t => t.Name == name) is ScheduledTask task)
                 {
-                    DateTime today = DateTime.Today.Add(task.TimeOfDay);
-                    return task.IsTodayRun ? today.AddDays(1) : today;
+                    return task;
                 }
                 else if (_recurringTasks.FirstOrDefault(t => t.Name == name) is RecurringTask recurringTask)
                 {
-                    return recurringTask.NextRun;
+                    return recurringTask;
                 }
             }
             else if (_recurringTasks.FirstOrDefault(t => t.Name == name) is RecurringTask recurringTask)
             {
-                return recurringTask.NextRun;
+                return recurringTask;
             }
-            return DateTime.MaxValue;
+            return null;
         }
 
+        /// <summary>
+        /// 获取任务计划上一次执行时间
+        /// </summary>
+        /// <param name="task"></param>
+        /// <returns></returns>
+        public static DateTime GetLastTime(IScheduledTask task) => task.LastRun.HasValue ? task.LastRun.Value : DateTime.MinValue;
+
+        /// <summary>
+        /// 获取任务计划下一次执行时间
+        /// </summary>
+        /// <param name="task"></param>
+        /// <returns></returns>
+        public static DateTime GetNextTime(IScheduledTask task) => task.NextRun;
+
+        /// <summary>
+        /// 格式化任务计划执行信息
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public string GetRunTimeInfo(string name)
         {
-            DateTime last = GetLastTime(name);
-            DateTime next = GetNextTime(name);
-            string msg = "";
-            if (last != DateTime.MinValue)
+            string msg;
+            IScheduledTask? task = GetTask(name);
+            if (task is null)
             {
-                msg += $"上次运行时间：{last.ToString(General.GeneralDateTimeFormat)}\r\n";
-            }
-            if (next != DateTime.MaxValue)
-            {
-                msg += $"下次运行时间：{next.ToString(General.GeneralDateTimeFormat)}\r\n";
-            }
-            if (msg != "")
-            {
-                msg = $"任务计划：{name}\r\n{msg}";
+                msg = $"任务计划 {name} 不存在！";
             }
             else
             {
-                msg = $"任务计划 {name} 不存在！";
+                msg = $"任务计划：{name}\r\n";
+                DateTime last = GetLastTime(task);
+                DateTime next = GetNextTime(task);
+                if (last != DateTime.MinValue)
+                {
+                    msg += $"上次执行时间：{last.ToString(General.GeneralDateTimeFormat)}\r\n";
+                }
+                if (next != DateTime.MaxValue)
+                {
+                    msg += $"下次执行时间：{next.ToString(General.GeneralDateTimeFormat)}\r\n";
+                }
+                if (task.ExecutedTimeSpan.TotalSeconds > 0)
+                {
+                    msg += $"任务执行时长：{task.ExecutedTimeSpan.TotalSeconds:0.###} 秒\r\n";
+                }
             }
             return msg.Trim();
         }
@@ -168,6 +166,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             {
                 if (!task.IsTodayRun)
                 {
+                    now = DateTime.Now;
                     if (now.TimeOfDay >= task.TimeOfDay && now.TimeOfDay < task.TimeOfDay.Add(TimeSpan.FromSeconds(10)))
                     {
                         task.LastRun = now;
@@ -176,6 +175,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                             try
                             {
                                 task.Action();
+                                task.ExecutedTimeSpan = DateTime.Now - now;
                             }
                             catch (Exception ex)
                             {
@@ -190,6 +190,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
 
             foreach (RecurringTask recurringTask in _recurringTasks)
             {
+                now = DateTime.Now;
                 if (now >= recurringTask.NextRun)
                 {
                     recurringTask.LastRun = now;
@@ -199,6 +200,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                         try
                         {
                             recurringTask.Action();
+                            recurringTask.ExecutedTimeSpan = DateTime.Now - now;
                         }
                         catch (Exception ex)
                         {
