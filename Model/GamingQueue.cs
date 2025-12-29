@@ -1221,6 +1221,7 @@ namespace Milimoe.FunGame.Core.Model
                                 dp.ActionsTaken++;
                                 dp.ActionTypes.Add(CharacterActionType.NormalAttack);
                                 dp.CurrentDecisionPoints -= costDP;
+                                LastRound.ActionTypes.Add(CharacterActionType.NormalAttack);
                                 decided = true;
 
                                 await OnCharacterNormalAttackAsync(character, targets);
@@ -1296,6 +1297,7 @@ namespace Milimoe.FunGame.Core.Model
                                             dp.ActionsTaken++;
                                             dp.ActionTypes.Add(CharacterActionType.PreCastSkill);
                                             dp.CurrentDecisionPoints -= costDP;
+                                            LastRound.ActionTypes.Add(CharacterActionType.PreCastSkill);
                                             decided = true;
                                             endTurn = true;
 
@@ -1364,6 +1366,7 @@ namespace Milimoe.FunGame.Core.Model
                                                     // 勇气指令不消耗决策点，但是有标记
                                                     dp.CourageCommandSkill = true;
                                                 }
+                                                LastRound.ActionTypes.Add(skillType);
                                                 decided = true;
 
                                                 SkillTarget skillTarget = new(skill, targets);
@@ -1456,6 +1459,7 @@ namespace Milimoe.FunGame.Core.Model
                     {
                         dp.ActionsTaken++;
                         dp.ActionTypes.Add(CharacterActionType.CastSuperSkill);
+                        LastRound.ActionTypes.Add(CharacterActionType.CastSuperSkill);
                         decided = true;
                         endTurn = true;
                         // 结束预释放爆发技的状态
@@ -1542,6 +1546,7 @@ namespace Milimoe.FunGame.Core.Model
                                 dp.ActionsTaken++;
                                 dp.ActionTypes.Add(CharacterActionType.UseItem);
                                 dp.CurrentDecisionPoints -= costDP;
+                                LastRound.ActionTypes.Add(CharacterActionType.UseItem);
                                 decided = true;
                                 LastRound.Items[CharacterActionType.UseItem] = item;
                                 baseTime += skill.RealHardnessTime > 0 ? skill.RealHardnessTime : 5;
@@ -1598,7 +1603,6 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             _stats[character].ActionTurn += 1;
-            LastRound.ActionTypes.Add(type);
 
             await AfterCharacterAction(character, type);
 
