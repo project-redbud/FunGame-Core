@@ -1073,13 +1073,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="character"></param>
         /// <param name="types"></param>
-        public void RecordCharacterApplyEffects(Character character, params List<EffectType> types)
-        {
-            if (GamingQueue?.LastRound.ApplyEffects.TryAdd(character, types) ?? false)
-            {
-                GamingQueue?.LastRound.ApplyEffects[character].AddRange(types);
-            }
-        }
+        public void RecordCharacterApplyEffects(Character character, params List<EffectType> types) => GamingQueue?.LastRound.AddApplyEffects(character, types);
 
         /// <summary>
         /// 返回特效详情

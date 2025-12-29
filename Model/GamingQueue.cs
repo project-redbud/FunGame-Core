@@ -5,6 +5,7 @@ using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Model.PrefabricatedEntity;
 
 namespace Milimoe.FunGame.Core.Model
 {
@@ -152,6 +153,11 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         public GameMap? Map => _map;
 
+        /// <summary>
+        /// 角色的决策点
+        /// </summary>
+        public Dictionary<Character, DecisionPoints> CharacterDecisionPoints => _decisionPoints;
+
         #endregion
 
         #region 保护变量
@@ -260,6 +266,11 @@ namespace Milimoe.FunGame.Core.Model
         /// 回合奖励的特效工厂
         /// </summary>
         protected Func<long, Dictionary<string, object>> _factoryRoundRewardEffects = id => [];
+
+        /// <summary>
+        /// 角色的决策点
+        /// </summary>
+        protected readonly Dictionary<Character, DecisionPoints> _decisionPoints = [];
 
         /// <summary>
         /// 最多被插队次数，-1 为默认，即队列长度，最少为 5
@@ -836,6 +847,9 @@ namespace Milimoe.FunGame.Core.Model
                 return _isGameEnd;
             }
 
+            // 决策点补充
+            DecisionPoints dp = DecisionPointsRecovery(character);
+
             // 获取回合奖励
             List<Skill> rewards = GetRoundRewards(TotalRound, character);
 
@@ -878,16 +892,6 @@ namespace Milimoe.FunGame.Core.Model
                 effect.OnTurnStart(character, selectableEnemys, selectableTeammates, skills, items);
             }
 
-            // 此变量用于在取消选择时，能够重新行动
-            bool decided = false;
-            // 最大取消次数
-            int cancelTimes = 3;
-            // 此变量指示角色是否移动
-            bool moved = false;
-
-            // AI 决策控制器，适用于启用战棋地图的情况
-            AIController? ai = null;
-
             // 角色的起始地点，确保角色该回合移动的范围不超过 MOV
             Grid? startGrid = null;
             List<Grid> canMoveGrids = [];
@@ -916,361 +920,354 @@ namespace Milimoe.FunGame.Core.Model
             // 作出了什么行动
             CharacterActionType type = CharacterActionType.None;
 
-            // 循环条件：
-            // AI 控制下：未决策、取消次数大于0
-            // 手动控制下：未决策
+            // 是否结束回合
+            bool endTurn = false;
             bool isAI = CharactersInAI.Contains(character);
-            while (!decided && (!isAI || cancelTimes > 0))
+
+            // 循环条件：未结束回合、决策点大于0（AI控制下为0时自动结束）
+            while (!endTurn && (!isAI || dp.CurrentDecisionPoints > 0))
             {
-                // 根据当前位置，更新可选取角色列表
-                Grid? realGrid = null;
-                List<Grid> canAttackGrids = [];
-                List<Grid> canCastGrids = [];
-                List<Grid> willMoveGridWithSkill = [];
-                List<Character> enemys = [];
-                List<Character> teammates = [];
-                if (_map != null)
+                // 此变量用于在取消选择时，能够重新行动
+                bool decided = false;
+                // 最大取消次数
+                int cancelTimes = 3;
+                // 此变量指示角色是否移动
+                bool moved = false;
+
+                // AI 决策控制器，适用于启用战棋地图的情况
+                AIController? ai = null;
+
+                // 循环条件：
+                // AI 控制下：未决策、取消次数大于0
+                // 手动控制下：未决策
+                isAI = CharactersInAI.Contains(character);
+                while (!decided && (!isAI || cancelTimes > 0))
                 {
-                    if (isAI)
+                    // 根据当前位置，更新可选取角色列表
+                    Grid? realGrid = null;
+                    List<Grid> canAttackGrids = [];
+                    List<Grid> canCastGrids = [];
+                    List<Grid> willMoveGridWithSkill = [];
+                    List<Character> enemys = [];
+                    List<Character> teammates = [];
+                    if (_map != null)
                     {
-                        ai ??= new(this, _map);
-                    }
-
-                    realGrid = _map.GetCharacterCurrentGrid(character);
-
-                    if (realGrid != null)
-                    {
-                        canAttackGrids = _map.GetGridsByRange(realGrid, character.ATR, true);
-                        Skill[] canCastSkills = [.. skills, .. items.Select(i => i.Skills.Active!)];
-                        foreach (Skill skill in canCastSkills)
+                        if (isAI)
                         {
-                            canCastGrids.AddRange(_map.GetGridsByRange(realGrid, skill.CastRange, true));
+                            ai ??= new(this, _map);
                         }
+
+                        realGrid = _map.GetCharacterCurrentGrid(character);
+
+                        if (realGrid != null)
+                        {
+                            canAttackGrids = _map.GetGridsByRange(realGrid, character.ATR, true);
+                            Skill[] canCastSkills = [.. skills, .. items.Select(i => i.Skills.Active!)];
+                            foreach (Skill skill in canCastSkills)
+                            {
+                                canCastGrids.AddRange(_map.GetGridsByRange(realGrid, skill.CastRange, true));
+                            }
+                        }
+
+                        enemys = [.. selectableEnemys.Where(canAttackGrids.Union(canCastGrids).SelectMany(g => g.Characters).Contains)];
+                        teammates = [.. selectableTeammates.Where(canAttackGrids.Union(canCastGrids).SelectMany(g => g.Characters).Contains)];
+                        willMoveGridWithSkill = [.. canMoveGrids.Where(g => canAttackGrids.Union(canCastGrids).Contains(g))];
+                    }
+                    else
+                    {
+                        enemys = selectableEnemys;
+                        teammates = selectableTeammates;
                     }
 
-                    enemys = [.. selectableEnemys.Where(canAttackGrids.Union(canCastGrids).SelectMany(g => g.Characters).Contains)];
-                    teammates = [.. selectableTeammates.Where(canAttackGrids.Union(canCastGrids).SelectMany(g => g.Characters).Contains)];
-                    willMoveGridWithSkill = [.. canMoveGrids.Where(g => canAttackGrids.Union(canCastGrids).Contains(g))];
-                }
-                else
-                {
-                    enemys = selectableEnemys;
-                    teammates = selectableTeammates;
-                }
+                    // AI 决策结果（适用于启用战棋地图的情况）
+                    AIDecision? aiDecision = null;
 
-                // AI 决策结果（适用于启用战棋地图的情况）
-                AIDecision? aiDecision = null;
-
-                // 行动开始前，可以修改可选取的角色列表
-                Dictionary<Character, int> continuousKillingTemp = new(_continuousKilling);
-                Dictionary<Character, int> earnedMoneyTemp = new(_earnedMoney);
-                effects = [.. character.Effects.Where(e => e.IsInEffect)];
-                foreach (Effect effect in effects)
-                {
-                    effect.AlterSelectListBeforeAction(character, enemys, teammates, skills, continuousKillingTemp, earnedMoneyTemp);
-                }
-
-                // 这里筛掉重复角色
-                enemys = [.. enemys.Distinct()];
-                teammates = [.. teammates.Distinct()];
-
-                if (moved) moved = false;
-                else cancelTimes--;
-                type = CharacterActionType.None;
-
-                // 是否能使用物品和释放技能
-                bool canUseItem = items.Count > 0;
-                bool canCastSkill = skills.Count > 0;
-
-                // 使用物品和释放技能、使用普通攻击的概率
-                double pUseItem = 0.33;
-                double pCastSkill = 0.33;
-                double pNormalAttack = 0.34;
-
-                // 是否强制执行（跳过状态检查等）
-                bool forceAction = false;
-
-                // 不允许在吟唱和预释放状态下，修改角色的行动
-                if (character.CharacterState != CharacterState.Casting && character.CharacterState != CharacterState.PreCastSuperSkill)
-                {
-                    CharacterActionType actionTypeTemp = CharacterActionType.None;
+                    // 行动开始前，可以修改可选取的角色列表
+                    Dictionary<Character, int> continuousKillingTemp = new(_continuousKilling);
+                    Dictionary<Character, int> earnedMoneyTemp = new(_earnedMoney);
                     effects = [.. character.Effects.Where(e => e.IsInEffect)];
                     foreach (Effect effect in effects)
                     {
-                        actionTypeTemp = effect.AlterActionTypeBeforeAction(character, character.CharacterState, ref canUseItem, ref canCastSkill, ref pUseItem, ref pCastSkill, ref pNormalAttack, ref forceAction);
+                        effect.AlterSelectListBeforeAction(character, enemys, teammates, skills, continuousKillingTemp, earnedMoneyTemp);
                     }
-                    if (actionTypeTemp != CharacterActionType.None && actionTypeTemp != CharacterActionType.CastSkill && actionTypeTemp != CharacterActionType.CastSuperSkill)
-                    {
-                        type = actionTypeTemp;
-                    }
-                }
 
-                if (type == CharacterActionType.None)
-                {
-                    if (character.CharacterState != CharacterState.NotActionable && character.CharacterState != CharacterState.Casting && character.CharacterState != CharacterState.PreCastSuperSkill)
-                    {
-                        // 根据角色状态，设置一些参数
-                        if (character.CharacterState == CharacterState.Actionable)
-                        {
-                            // 可以任意行动
-                            if (canUseItem && canCastSkill)
-                            {
-                                // 不做任何处理
-                            }
-                            else if (canUseItem && !canCastSkill)
-                            {
-                                pCastSkill = 0;
-                            }
-                            else if (!canUseItem && canCastSkill)
-                            {
-                                pUseItem = 0;
-                            }
-                            else
-                            {
-                                pUseItem = 0;
-                                pCastSkill = 0;
-                            }
-                        }
-                        else if (character.CharacterState == CharacterState.ActionRestricted)
-                        {
-                            // 行动受限，只能使用消耗品
-                            items = [.. items.Where(i => i.ItemType == ItemType.Consumable)];
-                            canUseItem = items.Count > 0;
-                            if (canUseItem)
-                            {
-                                pCastSkill = 0;
-                                pNormalAttack = 0;
-                            }
-                            else
-                            {
-                                pUseItem = 0;
-                                pCastSkill = 0;
-                                pNormalAttack = 0;
-                            }
-                        }
-                        else if (character.CharacterState == CharacterState.BattleRestricted)
-                        {
-                            // 战斗不能，只能对自己使用物品
-                            enemys.Clear();
-                            teammates.Clear();
-                            skills.Clear();
-                            if (canUseItem)
-                            {
-                                pCastSkill = 0;
-                                pNormalAttack = 0;
-                            }
-                            else
-                            {
-                                pUseItem = 0;
-                                pCastSkill = 0;
-                                pNormalAttack = 0;
-                            }
-                        }
-                        else if (character.CharacterState == CharacterState.SkillRestricted)
-                        {
-                            // 技能受限，无法使用技能，可以普通攻击，可以使用物品
-                            skills.Clear();
-                            if (canUseItem)
-                            {
-                                pCastSkill = 0;
-                            }
-                            else
-                            {
-                                pUseItem = 0;
-                                pCastSkill = 0;
-                            }
-                        }
-                        else if (character.CharacterState == CharacterState.AttackRestricted)
-                        {
-                            // 攻击受限，无法普通攻击，可以使用技能，可以使用物品
-                            pNormalAttack = 0;
-                            if (!canUseItem)
-                            {
-                                pUseItem = 0;
-                            }
-                        }
+                    // 这里筛掉重复角色
+                    enemys = [.. enemys.Distinct()];
+                    teammates = [.. teammates.Distinct()];
 
-                        // 启用战棋地图时的专属 AI 决策方法
-                        if (isAI && ai != null && startGrid != null)
-                        {
-                            aiDecision = await ai.DecideAIActionAsync(character, startGrid, canMoveGrids, skills, items, allEnemys, allTeammates, enemys, teammates);
-                            type = aiDecision.ActionType;
-                        }
-                        else
-                        {
-                            // 模组可以通过此事件来决定角色的行动
-                            type = await OnDecideActionAsync(character, enemys, teammates, skills, items);
-                        }
-                        // 若事件未完成决策，则将通过概率对角色进行自动化决策
-                        if (type == CharacterActionType.None)
-                        {
-                            type = GetActionType(pUseItem, pCastSkill, pNormalAttack);
-                        }
-                    }
-                    else if (character.CharacterState == CharacterState.Casting)
-                    {
-                        // 如果角色上一次吟唱了魔法，这次的行动则是结算这个魔法
-                        type = CharacterActionType.CastSkill;
-                    }
-                    else if (character.CharacterState == CharacterState.PreCastSuperSkill)
-                    {
-                        // 角色使用回合外爆发技插队
-                        type = CharacterActionType.CastSuperSkill;
-                    }
-                    else
-                    {
-                        // 完全行动不能
-                        type = CharacterActionType.None;
-                    }
-                }
+                    if (moved) moved = false;
+                    else cancelTimes--;
+                    type = CharacterActionType.None;
 
-                if (aiDecision != null && aiDecision.ActionType != CharacterActionType.Move && aiDecision.TargetMoveGrid != null)
-                {
-                    // 不是纯粹移动的情况，需要手动移动
-                    moved = await CharacterMoveAsync(character, aiDecision.TargetMoveGrid, startGrid);
-                }
+                    // 是否能使用物品和释放技能
+                    bool canUseItem = items.Count > 0;
+                    bool canCastSkill = skills.Count > 0;
 
-                if (type == CharacterActionType.Move)
-                {
-                    if (_map != null)
+                    // 使用物品和释放技能、使用普通攻击的概率
+                    double pUseItem = 0.33;
+                    double pCastSkill = 0.33;
+                    double pNormalAttack = 0.34;
+
+                    // 是否强制执行（跳过状态检查等）
+                    bool forceAction = false;
+
+                    // 不允许在吟唱和预释放状态下，修改角色的行动
+                    if (character.CharacterState != CharacterState.Casting && character.CharacterState != CharacterState.PreCastSuperSkill)
                     {
-                        Grid target;
-                        if (aiDecision != null && aiDecision.TargetMoveGrid != null)
+                        CharacterActionType actionTypeTemp = CharacterActionType.None;
+                        effects = [.. character.Effects.Where(e => e.IsInEffect)];
+                        foreach (Effect effect in effects)
                         {
-                            target = aiDecision.TargetMoveGrid;
+                            actionTypeTemp = effect.AlterActionTypeBeforeAction(character, character.CharacterState, ref canUseItem, ref canCastSkill, ref pUseItem, ref pCastSkill, ref pNormalAttack, ref forceAction);
                         }
-                        else
+                        if (actionTypeTemp != CharacterActionType.None && actionTypeTemp != CharacterActionType.CastSkill && actionTypeTemp != CharacterActionType.CastSuperSkill)
                         {
-                            target = await SelectTargetGridAsync(character, enemys, teammates, _map, canMoveGrids);
+                            type = actionTypeTemp;
                         }
-                        moved = await CharacterMoveAsync(character, target, startGrid);
                     }
-                    if (isAI && (aiDecision?.IsPureMove ?? false))
+
+                    if (type == CharacterActionType.None)
                     {
-                        // 取消 AI 的移动
-                        SetOnlyMoveHardnessTime(character, ref baseTime);
-                        type = CharacterActionType.EndTurn;
-                        decided = true;
-                        WriteLine($"[ {character} ] 结束了回合！");
-                        await OnCharacterDoNothingAsync(character);
-                    }
-                }
-                else if (type == CharacterActionType.NormalAttack)
-                {
-                    if (!forceAction && (character.CharacterState == CharacterState.NotActionable ||
-                        character.CharacterState == CharacterState.ActionRestricted ||
-                        character.CharacterState == CharacterState.BattleRestricted ||
-                        character.CharacterState == CharacterState.AttackRestricted))
-                    {
-                        WriteLine($"角色 [ {character} ] 状态为：{CharacterSet.GetCharacterState(character.CharacterState)}，无法使用普通攻击！");
-                    }
-                    else
-                    {
-                        // 使用普通攻击逻辑
-                        List<Character> targets;
-                        if (aiDecision != null)
+                        if (character.CharacterState != CharacterState.NotActionable && character.CharacterState != CharacterState.Casting && character.CharacterState != CharacterState.PreCastSuperSkill)
                         {
-                            targets = aiDecision.Targets;
-                        }
-                        else
-                        {
-                            List<Grid> attackRange = [];
-                            if (_map != null && realGrid != null)
+                            // 根据角色状态，设置一些参数
+                            if (character.CharacterState == CharacterState.Actionable)
                             {
-                                attackRange = _map.GetGridsByRange(realGrid, character.ATR, true);
-                                enemys = [.. enemys.Where(attackRange.SelectMany(g => g.Characters).Contains)];
-                                teammates = [.. teammates.Where(attackRange.SelectMany(g => g.Characters).Contains)];
-                            }
-                            targets = await SelectTargetsAsync(character, character.NormalAttack, enemys, teammates, attackRange);
-                        }
-                        if (targets.Count > 0)
-                        {
-                            LastRound.Targets = [.. targets];
-                            decided = true;
-
-                            await OnCharacterNormalAttackAsync(character, targets);
-
-                            character.NormalAttack.Attack(this, character, targets);
-                            baseTime += character.NormalAttack.RealHardnessTime;
-                            effects = [.. character.Effects.Where(e => e.IsInEffect)];
-                            foreach (Effect effect in effects)
-                            {
-                                effect.AlterHardnessTimeAfterNormalAttack(character, ref baseTime, ref isCheckProtected);
-                            }
-                        }
-                    }
-                }
-                else if (type == CharacterActionType.PreCastSkill)
-                {
-                    if (!forceAction && (character.CharacterState == CharacterState.NotActionable ||
-                        character.CharacterState == CharacterState.ActionRestricted ||
-                        character.CharacterState == CharacterState.BattleRestricted ||
-                        character.CharacterState == CharacterState.SkillRestricted))
-                    {
-                        WriteLine($"角色 [ {character} ] 状态为：{CharacterSet.GetCharacterState(character.CharacterState)}，无法释放技能！");
-                    }
-                    else
-                    {
-                        // 预使用技能，即开始吟唱逻辑
-                        Skill? skill;
-                        if (aiDecision != null && aiDecision.SkillToUse is Skill s)
-                        {
-                            skill = s;
-                        }
-                        else
-                        {
-                            skill = await OnSelectSkillAsync(character, skills);
-                        }
-                        if (skill is null && CharactersInAI.Contains(character) && skills.Count > 0)
-                        {
-                            skill = skills[Random.Shared.Next(skills.Count)];
-                        }
-                        if (skill != null)
-                        {
-                            // 吟唱前需要先选取目标
-                            if (skill.SkillType == SkillType.Magic)
-                            {
-                                List<Character> targets;
-                                if (aiDecision != null)
+                                // 可以任意行动
+                                if (canUseItem && canCastSkill)
                                 {
-                                    targets = aiDecision.Targets;
+                                    // 不做任何处理
+                                }
+                                else if (canUseItem && !canCastSkill)
+                                {
+                                    pCastSkill = 0;
+                                }
+                                else if (!canUseItem && canCastSkill)
+                                {
+                                    pUseItem = 0;
                                 }
                                 else
                                 {
-                                    List<Grid> castRange = [];
-                                    if (_map != null && realGrid != null)
-                                    {
-                                        castRange = _map.GetGridsByRange(realGrid, skill.CastRange, true);
-                                        enemys = [.. enemys.Where(castRange.SelectMany(g => g.Characters).Contains)];
-                                        teammates = [.. teammates.Where(castRange.SelectMany(g => g.Characters).Contains)];
-                                    }
-                                    targets = await SelectTargetsAsync(character, skill, enemys, teammates, castRange);
+                                    pUseItem = 0;
+                                    pCastSkill = 0;
                                 }
-                                if (targets.Count > 0)
+                            }
+                            else if (character.CharacterState == CharacterState.ActionRestricted)
+                            {
+                                // 行动受限，只能使用消耗品
+                                items = [.. items.Where(i => i.ItemType == ItemType.Consumable)];
+                                canUseItem = items.Count > 0;
+                                if (canUseItem)
                                 {
-                                    // 免疫检定
-                                    await CheckSkilledImmuneAsync(character, targets, skill);
-
-                                    if (targets.Count > 0)
-                                    {
-                                        LastRound.Targets = [.. targets];
-                                        decided = true;
-
-                                        character.CharacterState = CharacterState.Casting;
-                                        SkillTarget skillTarget = new(skill, targets);
-                                        await OnCharacterPreCastSkillAsync(character, skillTarget);
-
-                                        _castingSkills[character] = skillTarget;
-                                        baseTime += skill.RealCastTime;
-                                        isCheckProtected = false;
-                                        skill.OnSkillCasting(this, character, targets);
-                                    }
+                                    pCastSkill = 0;
+                                    pNormalAttack = 0;
                                 }
+                                else
+                                {
+                                    pUseItem = 0;
+                                    pCastSkill = 0;
+                                    pNormalAttack = 0;
+                                }
+                            }
+                            else if (character.CharacterState == CharacterState.BattleRestricted)
+                            {
+                                // 战斗不能，只能对自己使用物品
+                                enemys.Clear();
+                                teammates.Clear();
+                                skills.Clear();
+                                if (canUseItem)
+                                {
+                                    pCastSkill = 0;
+                                    pNormalAttack = 0;
+                                }
+                                else
+                                {
+                                    pUseItem = 0;
+                                    pCastSkill = 0;
+                                    pNormalAttack = 0;
+                                }
+                            }
+                            else if (character.CharacterState == CharacterState.SkillRestricted)
+                            {
+                                // 技能受限，无法使用技能，可以普通攻击，可以使用物品
+                                skills.Clear();
+                                if (canUseItem)
+                                {
+                                    pCastSkill = 0;
+                                }
+                                else
+                                {
+                                    pUseItem = 0;
+                                    pCastSkill = 0;
+                                }
+                            }
+                            else if (character.CharacterState == CharacterState.AttackRestricted)
+                            {
+                                // 攻击受限，无法普通攻击，可以使用技能，可以使用物品
+                                pNormalAttack = 0;
+                                if (!canUseItem)
+                                {
+                                    pUseItem = 0;
+                                }
+                            }
+
+                            // 启用战棋地图时的专属 AI 决策方法
+                            if (isAI && ai != null && startGrid != null)
+                            {
+                                aiDecision = await ai.DecideAIActionAsync(character, startGrid, canMoveGrids, skills, items, allEnemys, allTeammates, enemys, teammates);
+                                type = aiDecision.ActionType;
                             }
                             else
                             {
-                                // 只有魔法需要吟唱，战技和爆发技直接释放
-                                if (CheckCanCast(character, skill, out double cost))
+                                // 模组可以通过此事件来决定角色的行动
+                                type = await OnDecideActionAsync(character, enemys, teammates, skills, items);
+                            }
+                            // 若事件未完成决策，则将通过概率对角色进行自动化决策
+                            if (type == CharacterActionType.None)
+                            {
+                                type = GetActionType(pUseItem, pCastSkill, pNormalAttack);
+                            }
+                        }
+                        else if (character.CharacterState == CharacterState.Casting)
+                        {
+                            // 如果角色上一次吟唱了魔法，这次的行动则是结算这个魔法
+                            type = CharacterActionType.CastSkill;
+                        }
+                        else if (character.CharacterState == CharacterState.PreCastSuperSkill)
+                        {
+                            // 角色使用回合外爆发技插队
+                            type = CharacterActionType.CastSuperSkill;
+                        }
+                        else
+                        {
+                            // 完全行动不能
+                            type = CharacterActionType.None;
+                        }
+                    }
+
+                    if (aiDecision != null && aiDecision.ActionType != CharacterActionType.Move && aiDecision.TargetMoveGrid != null)
+                    {
+                        // 不是纯粹移动的情况，需要手动移动
+                        moved = await CharacterMoveAsync(character, aiDecision.TargetMoveGrid, startGrid);
+                    }
+
+                    int costDP = DecisionPoints.GetActionPointCost(type);
+
+                    if (type == CharacterActionType.Move)
+                    {
+                        if (_map != null)
+                        {
+                            Grid target;
+                            if (aiDecision != null && aiDecision.TargetMoveGrid != null)
+                            {
+                                target = aiDecision.TargetMoveGrid;
+                            }
+                            else
+                            {
+                                target = await SelectTargetGridAsync(character, enemys, teammates, _map, canMoveGrids);
+                            }
+                            moved = await CharacterMoveAsync(character, target, startGrid);
+                        }
+                        if (isAI && (aiDecision?.IsPureMove ?? false))
+                        {
+                            // 取消 AI 的移动
+                            SetOnlyMoveHardnessTime(character, ref baseTime);
+                            type = CharacterActionType.EndTurn;
+                            decided = true;
+                            endTurn = true;
+                            WriteLine($"[ {character} ] 结束了回合！");
+                            await OnCharacterDoNothingAsync(character);
+                        }
+                    }
+                    else if (type == CharacterActionType.NormalAttack)
+                    {
+                        if (!forceAction && (character.CharacterState == CharacterState.NotActionable ||
+                            character.CharacterState == CharacterState.ActionRestricted ||
+                            character.CharacterState == CharacterState.BattleRestricted ||
+                            character.CharacterState == CharacterState.AttackRestricted))
+                        {
+                            WriteLine($"角色 [ {character} ] 状态为：{CharacterSet.GetCharacterState(character.CharacterState)}，无法使用普通攻击！");
+                        }
+                        else if (dp.CurrentDecisionPoints < costDP)
+                        {
+                            WriteLine($"角色 [ {character} ] 决策点不足，无法使用普通攻击！");
+                        }
+                        else if (dp.ActionTypes.Contains(CharacterActionType.NormalAttack))
+                        {
+                            WriteLine($"角色 [ {character} ] 该回合已经使用过普通攻击，无法再次使用普通攻击！");
+                        }
+                        else
+                        {
+                            // 使用普通攻击逻辑
+                            List<Character> targets;
+                            if (aiDecision != null)
+                            {
+                                targets = aiDecision.Targets;
+                            }
+                            else
+                            {
+                                List<Grid> attackRange = [];
+                                if (_map != null && realGrid != null)
+                                {
+                                    attackRange = _map.GetGridsByRange(realGrid, character.ATR, true);
+                                    enemys = [.. enemys.Where(attackRange.SelectMany(g => g.Characters).Contains)];
+                                    teammates = [.. teammates.Where(attackRange.SelectMany(g => g.Characters).Contains)];
+                                }
+                                targets = await SelectTargetsAsync(character, character.NormalAttack, enemys, teammates, attackRange);
+                            }
+                            if (targets.Count > 0)
+                            {
+                                LastRound.Targets[CharacterActionType.NormalAttack] = [.. targets];
+                                dp.ActionsTaken++;
+                                dp.ActionTypes.Add(CharacterActionType.NormalAttack);
+                                dp.CurrentDecisionPoints -= costDP;
+                                decided = true;
+
+                                await OnCharacterNormalAttackAsync(character, targets);
+
+                                character.NormalAttack.Attack(this, character, targets);
+                                baseTime += character.NormalAttack.RealHardnessTime;
+                                effects = [.. character.Effects.Where(e => e.IsInEffect)];
+                                foreach (Effect effect in effects)
+                                {
+                                    effect.AlterHardnessTimeAfterNormalAttack(character, ref baseTime, ref isCheckProtected);
+                                }
+                            }
+                        }
+                    }
+                    else if (type == CharacterActionType.PreCastSkill)
+                    {
+                        if (!forceAction && (character.CharacterState == CharacterState.NotActionable ||
+                            character.CharacterState == CharacterState.ActionRestricted ||
+                            character.CharacterState == CharacterState.BattleRestricted ||
+                            character.CharacterState == CharacterState.SkillRestricted))
+                        {
+                            WriteLine($"角色 [ {character} ] 状态为：{CharacterSet.GetCharacterState(character.CharacterState)}，无法释放技能！");
+                        }
+                        else if (dp.CurrentDecisionPoints < costDP)
+                        {
+                            WriteLine($"角色 [ {character} ] 决策点不足，无法释放技能！");
+                        }
+                        else
+                        {
+                            // 预使用技能，即开始吟唱逻辑
+                            Skill? skill;
+                            if (aiDecision != null && aiDecision.SkillToUse is Skill s)
+                            {
+                                skill = s;
+                            }
+                            else
+                            {
+                                skill = await OnSelectSkillAsync(character, skills);
+                            }
+                            if (skill is null && CharactersInAI.Contains(character) && skills.Count > 0)
+                            {
+                                skill = skills[Random.Shared.Next(skills.Count)];
+                            }
+                            if (skill != null)
+                            {
+                                // 吟唱前需要先选取目标
+                                if (skill.SkillType == SkillType.Magic)
                                 {
                                     List<Character> targets;
                                     if (aiDecision != null)
@@ -1295,78 +1292,206 @@ namespace Milimoe.FunGame.Core.Model
 
                                         if (targets.Count > 0)
                                         {
-                                            LastRound.Targets = [.. targets];
+                                            LastRound.Targets[CharacterActionType.PreCastSkill] = [.. targets];
+                                            dp.ActionsTaken++;
+                                            dp.ActionTypes.Add(CharacterActionType.PreCastSkill);
+                                            dp.CurrentDecisionPoints -= costDP;
                                             decided = true;
+                                            endTurn = true;
 
+                                            character.CharacterState = CharacterState.Casting;
                                             SkillTarget skillTarget = new(skill, targets);
                                             await OnCharacterPreCastSkillAsync(character, skillTarget);
 
+                                            _castingSkills[character] = skillTarget;
+                                            baseTime += skill.RealCastTime;
+                                            isCheckProtected = false;
                                             skill.OnSkillCasting(this, character, targets);
-                                            skill.BeforeSkillCasted();
-
-                                            character.EP -= cost;
-                                            baseTime += skill.RealHardnessTime;
-                                            skill.CurrentCD = skill.RealCD;
-                                            skill.Enable = false;
-                                            LastRound.SkillCost = $"{-cost:0.##} EP";
-                                            WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
-
-                                            await OnCharacterCastSkillAsync(character, skillTarget, cost);
-
-                                            skill.OnSkillCasted(this, character, targets);
-                                            effects = [.. character.Effects.Where(e => e.IsInEffect)];
-                                            foreach (Effect effect in effects)
+                                        }
+                                    }
+                                }
+                                else if (skill is CourageCommandSkill && dp.CourageCommandSkill)
+                                {
+                                    WriteLine($"角色 [ {character} ] 该回合已经使用过勇气指令，无法再次使用勇气指令！");
+                                }
+                                else if (skill is not CourageCommandSkill && dp.ActionTypes.Contains(CharacterActionType.CastSkill))
+                                {
+                                    WriteLine($"角色 [ {character} ] 该回合已经使用过战技，无法再次使用战技！");
+                                }
+                                else if (skill is not CourageCommandSkill && dp.ActionTypes.Contains(CharacterActionType.CastSuperSkill))
+                                {
+                                    WriteLine($"角色 [ {character} ] 该回合已经使用过爆发技，无法再次使用爆发技！");
+                                }
+                                else
+                                {
+                                    // 只有魔法需要吟唱，战技和爆发技直接释放
+                                    if (CheckCanCast(character, skill, out double cost))
+                                    {
+                                        List<Character> targets;
+                                        if (aiDecision != null)
+                                        {
+                                            targets = aiDecision.Targets;
+                                        }
+                                        else
+                                        {
+                                            List<Grid> castRange = [];
+                                            if (_map != null && realGrid != null)
                                             {
-                                                effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
+                                                castRange = _map.GetGridsByRange(realGrid, skill.CastRange, true);
+                                                enemys = [.. enemys.Where(castRange.SelectMany(g => g.Characters).Contains)];
+                                                teammates = [.. teammates.Where(castRange.SelectMany(g => g.Characters).Contains)];
+                                            }
+                                            targets = await SelectTargetsAsync(character, skill, enemys, teammates, castRange);
+                                        }
+                                        if (targets.Count > 0)
+                                        {
+                                            // 免疫检定
+                                            await CheckSkilledImmuneAsync(character, targets, skill);
+
+                                            if (targets.Count > 0)
+                                            {
+                                                CharacterActionType skillType = skill.SkillType == SkillType.SuperSkill ? CharacterActionType.CastSuperSkill : CharacterActionType.CastSkill;
+                                                LastRound.Skills[skillType] = skill;
+                                                LastRound.Targets[skillType] = [.. targets];
+                                                if (skill is not CourageCommandSkill)
+                                                {
+                                                    dp.ActionsTaken++;
+                                                    dp.ActionTypes.Add(skillType);
+                                                    dp.CurrentDecisionPoints -= costDP;
+                                                }
+                                                else
+                                                {
+                                                    // 勇气指令不消耗决策点，但是有标记
+                                                    dp.CourageCommandSkill = true;
+                                                }
+                                                decided = true;
+
+                                                SkillTarget skillTarget = new(skill, targets);
+                                                await OnCharacterPreCastSkillAsync(character, skillTarget);
+
+                                                skill.OnSkillCasting(this, character, targets);
+                                                skill.BeforeSkillCasted();
+
+                                                character.EP -= cost;
+                                                baseTime += skill.RealHardnessTime;
+                                                skill.CurrentCD = skill.RealCD;
+                                                skill.Enable = false;
+                                                LastRound.SkillsCost[skill] = $"{-cost:0.##} EP";
+                                                WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
+
+                                                await OnCharacterCastSkillAsync(character, skillTarget, cost);
+
+                                                skill.OnSkillCasted(this, character, targets);
+                                                effects = [.. character.Effects.Where(e => e.IsInEffect)];
+                                                foreach (Effect effect in effects)
+                                                {
+                                                    effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
-                            LastRound.Skill = skill;
                         }
                     }
-                }
-                else if (type == CharacterActionType.CastSkill)
-                {
-                    if (_castingSkills.TryGetValue(character, out SkillTarget skillTarget))
+                    else if (type == CharacterActionType.CastSkill)
                     {
-                        // 使用技能逻辑，结束吟唱状态
-                        character.CharacterState = CharacterState.Actionable;
-                        character.UpdateCharacterState();
-                        Skill skill = skillTarget.Skill;
-                        List<Character> targets = [.. skillTarget.Targets.Where(c => c == character || !c.IsUnselectable)];
-
-                        // 判断是否能够释放技能
-                        if (targets.Count > 0 && CheckCanCast(character, skill, out double cost))
+                        if (_castingSkills.TryGetValue(character, out SkillTarget skillTarget))
                         {
-                            // 免疫检定
-                            await CheckSkilledImmuneAsync(character, targets, skill);
+                            // 使用技能逻辑，结束吟唱状态
+                            character.CharacterState = CharacterState.Actionable;
+                            character.UpdateCharacterState();
+                            Skill skill = skillTarget.Skill;
+                            List<Character> targets = [.. skillTarget.Targets.Where(c => c == character || !c.IsUnselectable)];
 
-                            if (targets.Count > 0)
+                            // 判断是否能够释放技能
+                            if (targets.Count > 0 && CheckCanCast(character, skill, out double cost))
                             {
-                                decided = true;
-                                LastRound.Targets = [.. targets];
-                                LastRound.Skill = skill;
-                                _castingSkills.Remove(character);
+                                // 免疫检定
+                                await CheckSkilledImmuneAsync(character, targets, skill);
 
-                                skill.BeforeSkillCasted();
+                                if (targets.Count > 0)
+                                {
+                                    decided = true;
+                                    endTurn = true;
+                                    LastRound.Targets[CharacterActionType.CastSkill] = [.. targets];
+                                    LastRound.Skills[CharacterActionType.CastSkill] = skill;
+                                    _castingSkills.Remove(character);
 
-                                character.MP -= cost;
-                                baseTime += skill.RealHardnessTime;
-                                skill.CurrentCD = skill.RealCD;
-                                skill.Enable = false;
-                                LastRound.SkillCost = $"{-cost:0.##} MP";
-                                WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点魔法值，释放了魔法 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
+                                    skill.BeforeSkillCasted();
 
-                                await OnCharacterCastSkillAsync(character, skillTarget, cost);
+                                    character.MP -= cost;
+                                    baseTime += skill.RealHardnessTime;
+                                    skill.CurrentCD = skill.RealCD;
+                                    skill.Enable = false;
+                                    LastRound.SkillsCost[skill] = $"{-cost:0.##} MP";
+                                    WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点魔法值，释放了魔法 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
 
-                                skill.OnSkillCasted(this, character, targets);
+                                    await OnCharacterCastSkillAsync(character, skillTarget, cost);
+
+                                    skill.OnSkillCasted(this, character, targets);
+                                }
+                            }
+                            else
+                            {
+                                WriteLine($"[ {character} ] 放弃释放技能！");
+                                // 放弃释放技能会获得3的硬直时间
+                                if (baseTime == 0) baseTime = 3;
+                            }
+
+                            effects = [.. character.Effects.Where(e => e.IsInEffect)];
+                            foreach (Effect effect in effects)
+                            {
+                                effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
                             }
                         }
                         else
                         {
-                            WriteLine($"[ {character} ] 放弃释放技能！");
+                            // 原吟唱的技能丢失（被打断或者被取消），允许角色再次决策
+                            character.CharacterState = CharacterState.Actionable;
+                            character.UpdateCharacterState();
+                        }
+                    }
+                    else if (type == CharacterActionType.CastSuperSkill)
+                    {
+                        dp.ActionsTaken++;
+                        dp.ActionTypes.Add(CharacterActionType.CastSuperSkill);
+                        decided = true;
+                        endTurn = true;
+                        // 结束预释放爆发技的状态
+                        character.CharacterState = CharacterState.Actionable;
+                        character.UpdateCharacterState();
+                        Skill skill = _castingSuperSkills[character];
+                        LastRound.Skills[CharacterActionType.CastSuperSkill] = skill;
+                        _castingSuperSkills.Remove(character);
+
+                        // 判断是否能够释放技能
+                        if (CheckCanCast(character, skill, out double cost))
+                        {
+                            // 预释放的爆发技不可取消
+                            List<Grid> castRange = _map != null && realGrid != null ? _map.GetGridsByRange(realGrid, skill.CastRange, true) : [];
+                            List<Character> targets = await SelectTargetsAsync(character, skill, enemys, teammates, castRange);
+                            // 免疫检定
+                            await CheckSkilledImmuneAsync(character, targets, skill);
+                            LastRound.Targets[CharacterActionType.CastSuperSkill] = [.. targets];
+
+                            skill.BeforeSkillCasted();
+
+                            character.EP -= cost;
+                            baseTime += skill.RealHardnessTime;
+                            skill.CurrentCD = skill.RealCD;
+                            skill.Enable = false;
+                            LastRound.SkillsCost[skill] = $"{-cost:0.##} EP";
+                            WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点能量值，释放了爆发技 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
+
+                            SkillTarget skillTarget = new(skill, targets);
+                            await OnCharacterCastSkillAsync(character, skillTarget, cost);
+
+                            skill.OnSkillCasted(this, character, targets);
+                        }
+                        else
+                        {
+                            WriteLine($"[ {character} ] 因能量不足放弃释放爆发技！");
                             // 放弃释放技能会获得3的硬直时间
                             if (baseTime == 0) baseTime = 3;
                         }
@@ -1377,129 +1502,103 @@ namespace Milimoe.FunGame.Core.Model
                             effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
                         }
                     }
-                    else
+                    else if (type == CharacterActionType.UseItem)
                     {
-                        // 原吟唱的技能丢失（被打断或者被取消），允许角色再次决策
-                        character.CharacterState = CharacterState.Actionable;
-                        character.UpdateCharacterState();
-                    }
-                }
-                else if (type == CharacterActionType.CastSuperSkill)
-                {
-                    decided = true;
-                    // 结束预释放爆发技的状态
-                    character.CharacterState = CharacterState.Actionable;
-                    character.UpdateCharacterState();
-                    Skill skill = _castingSuperSkills[character];
-                    LastRound.Skill = skill;
-                    _castingSuperSkills.Remove(character);
-
-                    // 判断是否能够释放技能
-                    if (CheckCanCast(character, skill, out double cost))
-                    {
-                        // 预释放的爆发技不可取消
-                        List<Grid> castRange = _map != null && realGrid != null ? _map.GetGridsByRange(realGrid, skill.CastRange, true) : [];
-                        List<Character> targets = await SelectTargetsAsync(character, skill, enemys, teammates, castRange);
-                        // 免疫检定
-                        await CheckSkilledImmuneAsync(character, targets, skill);
-                        LastRound.Targets = [.. targets];
-
-                        skill.BeforeSkillCasted();
-
-                        character.EP -= cost;
-                        baseTime += skill.RealHardnessTime;
-                        skill.CurrentCD = skill.RealCD;
-                        skill.Enable = false;
-                        LastRound.SkillCost = $"{-cost:0.##} EP";
-                        WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点能量值，释放了爆发技 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
-
-                        SkillTarget skillTarget = new(skill, targets);
-                        await OnCharacterCastSkillAsync(character, skillTarget, cost);
-
-                        skill.OnSkillCasted(this, character, targets);
-                    }
-                    else
-                    {
-                        WriteLine($"[ {character} ] 因能量不足放弃释放爆发技！");
-                        // 放弃释放技能会获得3的硬直时间
-                        if (baseTime == 0) baseTime = 3;
-                    }
-
-                    effects = [.. character.Effects.Where(e => e.IsInEffect)];
-                    foreach (Effect effect in effects)
-                    {
-                        effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
-                    }
-                }
-                else if (type == CharacterActionType.UseItem)
-                {
-                    // 使用物品逻辑
-                    Item? item;
-                    if (aiDecision != null && aiDecision.ItemToUse != null)
-                    {
-                        item = aiDecision.ItemToUse;
-                    }
-                    else
-                    {
-                        item = await OnSelectItemAsync(character, items);
-                    }
-                    if (item is null && CharactersInAI.Contains(character) && items.Count > 0)
-                    {
-                        // AI 控制下随机选取一个物品
-                        item = items[Random.Shared.Next(items.Count)];
-                    }
-                    if (item != null && item.Skills.Active != null)
-                    {
-                        Skill skill = item.Skills.Active;
-                        List<Grid> castRange = [];
-                        if (_map != null && realGrid != null)
+                        // 使用物品逻辑
+                        Item? item;
+                        if (aiDecision != null && aiDecision.ItemToUse != null)
                         {
-                            castRange = _map.GetGridsByRange(realGrid, skill.CastRange, true);
-                            enemys = [.. enemys.Where(castRange.SelectMany(g => g.Characters).Contains)];
-                            teammates = [.. teammates.Where(castRange.SelectMany(g => g.Characters).Contains)];
+                            item = aiDecision.ItemToUse;
                         }
-                        if (await UseItemAsync(item, character, enemys, teammates, castRange, aiDecision?.Targets))
+                        else
                         {
-                            decided = true;
-                            LastRound.Item = item;
-                            baseTime += skill.RealHardnessTime > 0 ? skill.RealHardnessTime : 5;
-                            effects = [.. character.Effects.Where(e => e.IsInEffect)];
-                            foreach (Effect effect in effects)
+                            item = await OnSelectItemAsync(character, items);
+                        }
+                        if (item is null && CharactersInAI.Contains(character) && items.Count > 0)
+                        {
+                            // AI 控制下随机选取一个物品
+                            item = items[Random.Shared.Next(items.Count)];
+                        }
+                        if (item != null && item.Skills.Active != null)
+                        {
+                            Skill skill = item.Skills.Active;
+                            List<Grid> castRange = [];
+                            if (_map != null && realGrid != null)
                             {
-                                effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
+                                castRange = _map.GetGridsByRange(realGrid, skill.CastRange, true);
+                                enemys = [.. enemys.Where(castRange.SelectMany(g => g.Characters).Contains)];
+                                teammates = [.. teammates.Where(castRange.SelectMany(g => g.Characters).Contains)];
+                            }
+                            if (dp.CurrentDecisionPoints < costDP)
+                            {
+                                WriteLine($"角色 [ {character} ] 决策点不足，无法使用物品！");
+                            }
+                            else if (dp.ActionTypes.Contains(CharacterActionType.UseItem))
+                            {
+                                WriteLine($"角色 [ {character} ] 该回合已经使用过物品，无法再使用物品！");
+                            }
+                            else if (await UseItemAsync(item, character, enemys, teammates, castRange, aiDecision?.Targets))
+                            {
+                                dp.ActionsTaken++;
+                                dp.ActionTypes.Add(CharacterActionType.UseItem);
+                                dp.CurrentDecisionPoints -= costDP;
+                                decided = true;
+                                LastRound.Items[CharacterActionType.UseItem] = item;
+                                baseTime += skill.RealHardnessTime > 0 ? skill.RealHardnessTime : 5;
+                                effects = [.. character.Effects.Where(e => e.IsInEffect)];
+                                foreach (Effect effect in effects)
+                                {
+                                    effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
+                                }
                             }
                         }
                     }
+                    else if (type == CharacterActionType.EndTurn)
+                    {
+                        SetOnlyMoveHardnessTime(character, ref baseTime);
+                        decided = true;
+                        endTurn = true;
+                        WriteLine($"[ {character} ] 结束了回合！");
+                        await OnCharacterDoNothingAsync(character);
+                    }
+                    else
+                    {
+                        if (baseTime == 0) baseTime += 8;
+                        decided = true;
+                        endTurn = true;
+                        WriteLine($"[ {character} ] 完全行动不能！");
+                    }
                 }
-                else if (type == CharacterActionType.EndTurn)
+
+                if (!decided && (isAI || cancelTimes == 0))
                 {
-                    SetOnlyMoveHardnessTime(character, ref baseTime);
-                    decided = true;
-                    WriteLine($"[ {character} ] 结束了回合！");
-                    await OnCharacterDoNothingAsync(character);
+                    endTurn = true;
+                    baseTime += 5;
+                    type = CharacterActionType.EndTurn;
                 }
-                else
+
+                if (type == CharacterActionType.None)
                 {
-                    if (baseTime == 0) baseTime += 8;
-                    decided = true;
-                    WriteLine($"[ {character} ] 完全行动不能！");
+                    endTurn = true;
+                    WriteLine($"[ {character} ] 放弃了行动！");
+                    await OnCharacterGiveUpAsync(character);
+                }
+
+                if (character.CharacterState != CharacterState.Casting) dp.ActionsHardnessTime.Add(baseTime);
+
+                if (!await AfterCharacterDecision(character))
+                {
+                    endTurn = true;
                 }
             }
 
-            if (!decided && (isAI || cancelTimes == 0))
+            if (character.CharacterState != CharacterState.Casting && dp.ActionsTaken > 1)
             {
-                baseTime += 5;
-                type = CharacterActionType.EndTurn;
-            }
-
-            if (type == CharacterActionType.None)
-            {
-                WriteLine($"[ {character} ] 放弃了行动！");
-                await OnCharacterGiveUpAsync(character);
+                baseTime = dp.ActionsHardnessTime.Max() + dp.ActionsTaken;
             }
 
             _stats[character].ActionTurn += 1;
-            LastRound.ActionType = type;
+            LastRound.ActionTypes.Add(type);
 
             await AfterCharacterAction(character, type);
 
@@ -1650,6 +1749,22 @@ namespace Milimoe.FunGame.Core.Model
                 _isGameEnd = true;
                 await OnGameEndAsync(killer);
             }
+        }
+
+        /// <summary>
+        /// 回合内进行一次决策后触发
+        /// </summary>
+        /// <param name="character"></param>
+        /// <returns>返回 false 结束回合</returns>
+        protected virtual async Task<bool> AfterCharacterDecision(Character character)
+        {
+            List<Character> allTeammates = GetTeammates(character);
+            Character[] allEnemys = [.. _allCharacters.Where(c => c != character && !allTeammates.Contains(c))];
+            if (!allEnemys.Any(c => c.HP > 0))
+            {
+                return false;
+            }
+            return true;
         }
 
         /// <summary>
@@ -2428,7 +2543,7 @@ namespace Milimoe.FunGame.Core.Model
 
                         if (targets.Count > 0)
                         {
-                            LastRound.Targets = [.. targets];
+                            LastRound.Targets[CharacterActionType.UseItem] = [.. targets];
 
                             WriteLine($"[ {character} ] 使用了物品 [ {item.Name} ]！");
                             item.ReduceTimesAndRemove();
@@ -2448,15 +2563,15 @@ namespace Milimoe.FunGame.Core.Model
                             if (costMP > 0)
                             {
                                 character.MP -= costMP;
-                                LastRound.SkillCost = $"{-costMP:0.##} MP";
+                                LastRound.ItemsCost[item] = $"{-costMP:0.##} MP";
                                 line += $"消耗了 {costMP:0.##} 点魔法值，";
                             }
 
                             if (costEP > 0)
                             {
                                 character.EP -= costEP;
-                                if (LastRound.SkillCost != "") LastRound.SkillCost += " / ";
-                                LastRound.SkillCost += $"{-costEP:0.##} EP";
+                                if (LastRound.ItemsCost[item] != "") LastRound.ItemsCost[item] += " / ";
+                                LastRound.ItemsCost[item] += $"{-costEP:0.##} EP";
                                 line += $"消耗了 {costEP:0.##} 点能量，";
                             }
 
@@ -2987,6 +3102,57 @@ namespace Milimoe.FunGame.Core.Model
             }
         }
 
+        /// <summary>
+        /// 决策点补充
+        /// </summary>
+        public DecisionPoints DecisionPointsRecovery(Character character)
+        {
+            DecisionPoints dp;
+            if (!_decisionPoints.TryGetValue(character, out DecisionPoints? value) || value is null)
+            {
+                value = new();
+                _decisionPoints[character] = value;
+            }
+            dp = value;
+
+            // 吟唱态不做处理
+            if (character.CharacterState == CharacterState.Casting || character.CharacterState == CharacterState.PreCastSuperSkill)
+            {
+                return dp;
+            }
+
+            // 清空上回合的记录
+            dp.ActionTypes.Clear();
+            dp.ActionsTaken = 0;
+
+            // 根据角色状态补充决策点
+            int pointsToAdd;
+
+            if (character.CharacterState == CharacterState.NotActionable || character.CharacterState == CharacterState.ActionRestricted)
+            {
+                // 完全行动不能/行动受限：补充上限1/4
+                pointsToAdd = Math.Max(1, dp.MaxDecisionPoints / 4);
+                dp.CurrentDecisionPoints = Math.Min(dp.CurrentDecisionPoints + pointsToAdd, dp.MaxDecisionPoints);
+            }
+            else
+            {
+                // 正常状态：补充上限一半
+                pointsToAdd = Math.Max(1, dp.MaxDecisionPoints / 2);
+                dp.CurrentDecisionPoints = Math.Min(dp.CurrentDecisionPoints + pointsToAdd, dp.MaxDecisionPoints);
+            }
+
+            // 每回合提升决策点上限（最多到10）
+            if (dp.MaxDecisionPoints < 10)
+            {
+                dp.MaxDecisionPoints++;
+            }
+
+            dp.DecisionPointsRecovery = pointsToAdd;
+
+            WriteLine($"[ {character} ] 回合开始，补充 {pointsToAdd} 决策点，当前 {dp.CurrentDecisionPoints}/{dp.MaxDecisionPoints} 决策点。");
+            return dp;
+        }
+
         #endregion
 
         #region 回合奖励
@@ -3059,7 +3225,6 @@ namespace Milimoe.FunGame.Core.Model
                     WriteLine($"[ {character} ] 获得了回合奖励！{skill.Description}".Trim());
                     if (skill.IsActive)
                     {
-                        LastRound.Targets.Add(character);
                         skill.OnSkillCasted(this, character, [character]);
                     }
                     else
@@ -3103,6 +3268,11 @@ namespace Milimoe.FunGame.Core.Model
             // 选取所有 AI 控制角色
             foreach (Character other in _queue.Where(c => c.CharacterState == CharacterState.Actionable && CharactersInAI.Contains(c)).ToList())
             {
+                if (_decisionPoints.TryGetValue(other, out DecisionPoints? dp) && dp != null && dp.CurrentDecisionPoints < 3)
+                {
+                    continue;
+                }
+
                 // 有 65% 欲望插队
                 if (Random.Shared.NextDouble() < 0.65)
                 {
@@ -3199,6 +3369,11 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="skill"></param>
         public async Task SetCharacterPreCastSuperSkill(Character character, Skill skill)
         {
+            if (_decisionPoints.TryGetValue(character, out DecisionPoints? dp) && dp != null && dp.CurrentDecisionPoints < 3)
+            {
+                WriteLine("[ " + character + " ] 决策点不足，无法预释放爆发技。");
+                return;
+            }
             if (character.CharacterState == CharacterState.Casting)
             {
                 _castingSkills.Remove(character);

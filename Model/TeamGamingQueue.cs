@@ -101,7 +101,7 @@ namespace Milimoe.FunGame.Core.Model
             Team? team = GetTeam(character);
             if (team != null)
             {
-                SetNotDamageAssistTime(character, LastRound.Targets.Where(team.IsOnThisTeam));
+                SetNotDamageAssistTime(character, LastRound.Targets.Values.SelectMany(c => c).Where(team.IsOnThisTeam));
             }
             else await Task.CompletedTask;
         }
@@ -197,6 +197,25 @@ namespace Milimoe.FunGame.Core.Model
                     return;
                 }
             }
+        }
+
+        /// <summary>
+        /// 当角色完成决策后，进行死亡竞赛幸存者检定
+        /// </summary>
+        /// <param name="character"></param>
+        /// <returns></returns>
+        protected override async Task<bool> AfterCharacterDecision(Character character)
+        {
+            bool result = await base.AfterCharacterDecision(character);
+            if (result)
+            {
+                Team? team = GetTeam(character);
+                if ((!_teams.Keys.Where(str => str != team?.Name).Any()) || (MaxScoreToWin > 0 && (team?.Score ?? 0) >= MaxScoreToWin))
+                {
+                    return false;
+                }
+            }
+            return result;
         }
 
         /// <summary>

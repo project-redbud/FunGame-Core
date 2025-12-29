@@ -3,7 +3,6 @@ using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
 {
@@ -25,8 +24,11 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.Actor = NetworkUtility.JsonDeserialize<Character>(ref reader, options) ?? Factory.GetCharacter();
                     break;
                 case nameof(RoundRecord.Targets):
-                    List<Character> targets = NetworkUtility.JsonDeserialize<List<Character>>(ref reader, options) ?? [];
-                    result.Targets.AddRange(targets);
+                    Dictionary<CharacterActionType, List<Character>> targets = NetworkUtility.JsonDeserialize<Dictionary<CharacterActionType, List<Character>>>(ref reader, options) ?? [];
+                    foreach (CharacterActionType type in targets.Keys)
+                    {
+                        result.Targets[type] = targets[type];
+                    }
                     break;
                 case nameof(RoundRecord.Damages):
                     Dictionary<Guid, double> damagesGuid = NetworkUtility.JsonDeserialize<Dictionary<Guid, double>>(ref reader, options) ?? [];
@@ -40,17 +42,40 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     }
                     break;
 
-                case nameof(RoundRecord.ActionType):
-                    result.ActionType = (CharacterActionType)reader.GetInt32();
+                case nameof(RoundRecord.ActionTypes):
+                    List<CharacterActionType> types = NetworkUtility.JsonDeserialize<List<CharacterActionType>>(ref reader, options) ?? [];
+                    foreach (CharacterActionType type in types)
+                    {
+                        result.ActionTypes.Add(type);
+                    }
                     break;
-                case nameof(RoundRecord.Skill):
-                    result.Skill = NetworkUtility.JsonDeserialize<Skill>(ref reader, options);
+                case nameof(RoundRecord.Skills):
+                    Dictionary<CharacterActionType, Skill> skills = NetworkUtility.JsonDeserialize<Dictionary<CharacterActionType, Skill>>(ref reader, options) ?? [];
+                    foreach (CharacterActionType type in skills.Keys)
+                    {
+                        result.Skills[type] = skills[type];
+                    }
                     break;
-                case nameof(RoundRecord.SkillCost):
-                    result.SkillCost = reader.GetString() ?? "";
+                case nameof(RoundRecord.SkillsCost):
+                    Dictionary<Skill, string> skillsCost = NetworkUtility.JsonDeserialize<Dictionary<Skill, string>>(ref reader, options) ?? [];
+                    foreach (Skill skill in skillsCost.Keys)
+                    {
+                        result.SkillsCost[skill] = skillsCost[skill];
+                    }
                     break;
-                case nameof(RoundRecord.Item):
-                    result.Item = NetworkUtility.JsonDeserialize<Item>(ref reader, options);
+                case nameof(RoundRecord.Items):
+                    Dictionary<CharacterActionType, Item> items = NetworkUtility.JsonDeserialize<Dictionary<CharacterActionType, Item>>(ref reader, options) ?? [];
+                    foreach (CharacterActionType type in items.Keys)
+                    {
+                        result.Items[type] = items[type];
+                    }
+                    break;
+                case nameof(RoundRecord.ItemsCost):
+                    Dictionary<Item, string> itemsCost = NetworkUtility.JsonDeserialize<Dictionary<Item, string>>(ref reader, options) ?? [];
+                    foreach (Item item in itemsCost.Keys)
+                    {
+                        result.ItemsCost[item] = itemsCost[item];
+                    }
                     break;
                 case nameof(RoundRecord.HasKill):
                     result.HasKill = reader.GetBoolean();
@@ -181,12 +206,16 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             JsonSerializer.Serialize(writer, value.Targets, options);
             writer.WritePropertyName(nameof(RoundRecord.Damages));
             JsonSerializer.Serialize(writer, value.Damages.ToDictionary(kv => kv.Key.Guid, kv => kv.Value), options);
-            writer.WriteNumber(nameof(RoundRecord.ActionType), (int)value.ActionType);
-            writer.WritePropertyName(nameof(RoundRecord.Skill));
-            JsonSerializer.Serialize(writer, value.Skill, options);
-            writer.WriteString(nameof(RoundRecord.SkillCost), value.SkillCost);
-            writer.WritePropertyName(nameof(RoundRecord.Item));
-            JsonSerializer.Serialize(writer, value.Item, options);
+            writer.WritePropertyName(nameof(RoundRecord.ActionTypes));
+            JsonSerializer.Serialize(writer, value.ActionTypes.Select(type => (int)type), options);
+            writer.WritePropertyName(nameof(RoundRecord.Skills));
+            JsonSerializer.Serialize(writer, value.Skills.ToDictionary(kv => kv.Key.ToString(), kv => kv.Value), options);
+            writer.WritePropertyName(nameof(RoundRecord.SkillsCost));
+            JsonSerializer.Serialize(writer, value.SkillsCost.ToDictionary(kv => kv.Key.GetIdName(), kv => kv.Value), options);
+            writer.WritePropertyName(nameof(RoundRecord.Items));
+            JsonSerializer.Serialize(writer, value.Items.ToDictionary(kv => kv.Key.ToString(), kv => kv.Value), options);
+            writer.WritePropertyName(nameof(RoundRecord.ItemsCost));
+            JsonSerializer.Serialize(writer, value.ItemsCost.ToDictionary(kv => kv.Key.GetIdName(), kv => kv.Value), options);
             writer.WriteBoolean(nameof(RoundRecord.HasKill), value.HasKill);
             writer.WritePropertyName(nameof(RoundRecord.Assists));
             JsonSerializer.Serialize(writer, value.Assists, options);
@@ -221,7 +250,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
 
         private static Character? FindCharacterByGuid(Guid guid, RoundRecord record)
         {
-            Character? character = record.Targets.FirstOrDefault(c => c.Guid == guid);
+            Character? character = record.Targets.Values.SelectMany(c => c).FirstOrDefault(c => c.Guid == guid);
             if (character != null) return character;
             if (record.Actor != null && record.Actor.Guid == guid) return record.Actor;
             character = record.Assists.FirstOrDefault(c => c.Guid == guid);
