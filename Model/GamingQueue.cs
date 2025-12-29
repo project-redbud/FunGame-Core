@@ -1218,10 +1218,10 @@ namespace Milimoe.FunGame.Core.Model
                             if (targets.Count > 0)
                             {
                                 LastRound.Targets[CharacterActionType.NormalAttack] = [.. targets];
+                                LastRound.ActionTypes.Add(CharacterActionType.NormalAttack);
                                 dp.ActionsTaken++;
                                 dp.ActionTypes.Add(CharacterActionType.NormalAttack);
                                 dp.CurrentDecisionPoints -= costDP;
-                                LastRound.ActionTypes.Add(CharacterActionType.NormalAttack);
                                 decided = true;
 
                                 await OnCharacterNormalAttackAsync(character, targets);
@@ -1293,11 +1293,12 @@ namespace Milimoe.FunGame.Core.Model
 
                                         if (targets.Count > 0)
                                         {
+                                            LastRound.Skills[CharacterActionType.PreCastSkill] = skill;
                                             LastRound.Targets[CharacterActionType.PreCastSkill] = [.. targets];
+                                            LastRound.ActionTypes.Add(CharacterActionType.PreCastSkill);
                                             dp.ActionsTaken++;
                                             dp.ActionTypes.Add(CharacterActionType.PreCastSkill);
                                             dp.CurrentDecisionPoints -= costDP;
-                                            LastRound.ActionTypes.Add(CharacterActionType.PreCastSkill);
                                             decided = true;
                                             endTurn = true;
 
@@ -1355,6 +1356,7 @@ namespace Milimoe.FunGame.Core.Model
                                                 CharacterActionType skillType = skill.SkillType == SkillType.SuperSkill ? CharacterActionType.CastSuperSkill : CharacterActionType.CastSkill;
                                                 LastRound.Skills[skillType] = skill;
                                                 LastRound.Targets[skillType] = [.. targets];
+                                                LastRound.ActionTypes.Add(skillType);
                                                 if (skill is not CourageCommandSkill)
                                                 {
                                                     dp.ActionsTaken++;
@@ -1366,7 +1368,6 @@ namespace Milimoe.FunGame.Core.Model
                                                     // 勇气指令不消耗决策点，但是有标记
                                                     dp.CourageCommandSkill = true;
                                                 }
-                                                LastRound.ActionTypes.Add(skillType);
                                                 decided = true;
 
                                                 SkillTarget skillTarget = new(skill, targets);
@@ -1419,6 +1420,7 @@ namespace Milimoe.FunGame.Core.Model
                                     endTurn = true;
                                     LastRound.Targets[CharacterActionType.CastSkill] = [.. targets];
                                     LastRound.Skills[CharacterActionType.CastSkill] = skill;
+                                    LastRound.ActionTypes.Add(CharacterActionType.CastSkill);
                                     _castingSkills.Remove(character);
 
                                     skill.BeforeSkillCasted();
@@ -1547,8 +1549,8 @@ namespace Milimoe.FunGame.Core.Model
                                 dp.ActionTypes.Add(CharacterActionType.UseItem);
                                 dp.CurrentDecisionPoints -= costDP;
                                 LastRound.ActionTypes.Add(CharacterActionType.UseItem);
-                                decided = true;
                                 LastRound.Items[CharacterActionType.UseItem] = item;
+                                decided = true;
                                 baseTime += skill.RealHardnessTime > 0 ? skill.RealHardnessTime : 5;
                                 effects = [.. character.Effects.Where(e => e.IsInEffect)];
                                 foreach (Effect effect in effects)
