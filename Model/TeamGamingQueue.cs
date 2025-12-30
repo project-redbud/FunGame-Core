@@ -148,10 +148,6 @@ namespace Milimoe.FunGame.Core.Model
                 string[] teamActive = [.. Teams.OrderByDescending(kv => kv.Value.Score).Select(kv =>
                 {
                     int activeCount = kv.Value.GetActiveCharacters().Count;
-                    if (kv.Value == killTeam)
-                    {
-                        activeCount += 1;
-                    }
                     return kv.Key + "：" + kv.Value.Score + "（剩余存活人数：" + activeCount + "）";
                 })];
                 WriteLine($"\r\n=== 当前死亡竞赛比分 ===\r\n{string.Join("\r\n", teamActive)}");

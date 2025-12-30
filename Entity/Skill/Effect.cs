@@ -4,6 +4,7 @@ using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Entity
 {
@@ -583,6 +584,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 行动开始前，指定角色的行动，而不是使用顺序表自带的逻辑；或者修改对应的操作触发概率
         /// </summary>
         /// <param name="character"></param>
+        /// <param name="dp"></param>
         /// <param name="state"></param>
         /// <param name="canUseItem"></param>
         /// <param name="canCastSkill"></param>
@@ -591,7 +593,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="pNormalAttack"></param>
         /// <param name="forceAction"></param>
         /// <returns></returns>
-        public virtual CharacterActionType AlterActionTypeBeforeAction(Character character, CharacterState state, ref bool canUseItem, ref bool canCastSkill, ref double pUseItem, ref double pCastSkill, ref double pNormalAttack, ref bool forceAction)
+        public virtual CharacterActionType AlterActionTypeBeforeAction(Character character, DecisionPoints dp, CharacterState state, ref bool canUseItem, ref bool canCastSkill, ref double pUseItem, ref double pCastSkill, ref double pNormalAttack, ref bool forceAction)
         {
             return CharacterActionType.None;
         }

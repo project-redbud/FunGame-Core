@@ -16,7 +16,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 普通攻击说明
         /// </summary>
-        public string Description => $"对目标敌人造成 {BaseDamageMultiplier * 100:0.##}% 攻击力 [ {Damage:0.##} ] 点{(IsMagic ? CharacterSet.GetMagicDamageName(MagicType) : "物理伤害")}。";
+        public string Description => $"{(_isMagicByWeapon ? "已由武器附魔。" : "")}对目标敌人造成 {BaseDamageMultiplier * 100:0.##}% 攻击力 [ {Damage:0.##} ] 点{(IsMagic ? CharacterSet.GetMagicDamageName(MagicType) : "物理伤害")}。";
 
         /// <summary>
         /// 普通攻击的通用说明
@@ -425,7 +425,16 @@ namespace Milimoe.FunGame.Core.Entity
                     if (type == WeaponType.Talisman || type == WeaponType.Staff)
                     {
                         _isMagic = true;
+                        _isMagicByWeapon = true;
                     }
+                    else
+                    {
+                        _isMagicByWeapon = false;
+                    }
+                }
+                else
+                {
+                    _isMagicByWeapon = false;
                 }
             }
             if (queue != null && (past != _isMagic || pastType != _magicType))
@@ -476,6 +485,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 是否是魔法伤害 [ 生效型 ]
         /// </summary>
         private bool _isMagic = isMagic;
+
+        /// <summary>
+        /// 指示普通攻击是否由武器附魔
+        /// </summary>
+        private bool _isMagicByWeapon = false;
 
         /// <summary>
         /// 魔法类型 [ 生效型 ]
