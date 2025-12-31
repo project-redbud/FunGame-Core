@@ -12,19 +12,20 @@ namespace Milimoe.FunGame.Core.Controller
         private readonly GameMap _map = map;
 
         /// <summary>
-        /// AI的核心决策方法，根据当前游戏状态为角色选择最佳行动。
+        /// AI的核心决策方法，根据当前游戏状态为角色选择最佳行动
         /// </summary>
-        /// <param name="character">当前行动的AI角色。</param>
-        /// <param name="startGrid">角色的起始格子。</param>
-        /// <param name="allPossibleMoveGrids">从起始格子可达的所有移动格子（包括起始格子本身）。</param>
-        /// <param name="availableSkills">角色所有可用的技能（已过滤CD和EP/MP）。</param>
-        /// <param name="availableItems">角色所有可用的物品（已过滤CD和EP/MP）。</param>
-        /// <param name="allEnemysInGame">场上所有敌人。</param>
-        /// <param name="allTeammatesInGame">场上所有队友。</param>
-        /// <param name="selectableEnemys">场上能够选取的敌人。</param>
-        /// <param name="selectableTeammates">场上能够选取的队友。</param>
-        /// <returns>包含最佳行动的AIDecision对象。</returns>
-        public async Task<AIDecision> DecideAIActionAsync(Character character, Grid startGrid, List<Grid> allPossibleMoveGrids,
+        /// <param name="character">当前行动的AI角色</param>
+        /// <param name="dp">角色的决策点</param>
+        /// <param name="startGrid">角色的起始格子</param>
+        /// <param name="allPossibleMoveGrids">从起始格子可达的所有移动格子（包括起始格子本身）</param>
+        /// <param name="availableSkills">角色所有可用的技能（已过滤CD和EP/MP）</param>
+        /// <param name="availableItems">角色所有可用的物品（已过滤CD和EP/MP）</param>
+        /// <param name="allEnemysInGame">场上所有敌人</param>
+        /// <param name="allTeammatesInGame">场上所有队友</param>
+        /// <param name="selectableEnemys">场上能够选取的敌人</param>
+        /// <param name="selectableTeammates">场上能够选取的队友</param>
+        /// <returns>包含最佳行动的AIDecision对象</returns>
+        public async Task<AIDecision> DecideAIActionAsync(Character character, DecisionPoints dp, Grid startGrid, List<Grid> allPossibleMoveGrids,
             List<Skill> availableSkills, List<Item> availableItems, List<Character> allEnemysInGame, List<Character> allTeammatesInGame,
             List<Character> selectableEnemys, List<Character> selectableTeammates)
         {
@@ -44,7 +45,7 @@ namespace Milimoe.FunGame.Core.Controller
                 int moveDistance = GameMap.CalculateManhattanDistance(startGrid, potentialMoveGrid);
                 double movePenalty = moveDistance * 0.5; // 每移动一步扣0.5分
 
-                if (CanCharacterNormalAttack(character))
+                if (CanCharacterNormalAttack(character, dp))
                 {
                     // 计算普通攻击的可达格子
                     List<Grid> normalAttackReachableGrids = _map.GetGridsByRange(potentialMoveGrid, character.ATR, true);
@@ -80,7 +81,7 @@ namespace Milimoe.FunGame.Core.Controller
 
                 foreach (Skill skill in availableSkills)
                 {
-                    if (CanCharacterUseSkill(character) && _queue.CheckCanCast(character, skill, out double cost))
+                    if (CanCharacterUseSkill(character, skill, dp) && _queue.CheckCanCast(character, skill, out double cost))
                     {
                         // 计算当前技能的可达格子
                         List<Grid> skillReachableGrids = _map.GetGridsByRange(potentialMoveGrid, skill.CastRange, true);
@@ -118,7 +119,7 @@ namespace Milimoe.FunGame.Core.Controller
 
                 foreach (Item item in availableItems)
                 {
-                    if (item.Skills.Active != null && CanCharacterUseItem(character, item) && _queue.CheckCanCast(character, item.Skills.Active, out double cost))
+                    if (item.Skills.Active != null && CanCharacterUseItem(character, item, dp) && _queue.CheckCanCast(character, item.Skills.Active, out double cost))
                     {
                         Skill itemSkill = item.Skills.Active;
 
@@ -158,7 +159,7 @@ namespace Milimoe.FunGame.Core.Controller
                 }
 
                 // 如果从该格子没有更好的行动，但移动本身有价值
-                // 只有当当前最佳决策是“结束回合”或分数很低时，才考虑纯粹的移动。
+                // 只有当当前最佳决策是“结束回合”或分数很低时，才考虑纯粹的移动
                 if (potentialMoveGrid != startGrid && bestDecision.Score < 0) // 如果当前最佳决策是负分（即什么都不做）
                 {
                     double pureMoveScore = -movePenalty; // 移动本身有代价
@@ -221,27 +222,32 @@ namespace Milimoe.FunGame.Core.Controller
         // --- AI 决策辅助方法 ---
 
         // 检查角色是否能进行普通攻击（基于状态）
-        private static bool CanCharacterNormalAttack(Character character)
+        private static bool CanCharacterNormalAttack(Character character, DecisionPoints dp)
         {
-            return character.CharacterState != CharacterState.NotActionable &&
+            return dp.CheckActionTypeQuota(CharacterActionType.NormalAttack) && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostNormalAttack &&
+                   character.CharacterState != CharacterState.NotActionable &&
                    character.CharacterState != CharacterState.ActionRestricted &&
                    character.CharacterState != CharacterState.BattleRestricted &&
                    character.CharacterState != CharacterState.AttackRestricted;
         }
 
         // 检查角色是否能使用某个技能（基于状态）
-        private static bool CanCharacterUseSkill(Character character)
+        private static bool CanCharacterUseSkill(Character character, Skill skill, DecisionPoints dp)
         {
-            return character.CharacterState != CharacterState.NotActionable &&
+            return ((skill.SkillType == SkillType.Magic && dp.CheckActionTypeQuota(CharacterActionType.PreCastSkill) && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostMagic) ||
+                    (skill.SkillType == SkillType.Skill && dp.CheckActionTypeQuota(CharacterActionType.CastSkill) && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostSkill) ||
+                    (skill.SkillType == SkillType.SuperSkill && dp.CheckActionTypeQuota(CharacterActionType.CastSuperSkill)) && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostSuperSkill) &&
+                   character.CharacterState != CharacterState.NotActionable &&
                    character.CharacterState != CharacterState.ActionRestricted &&
                    character.CharacterState != CharacterState.BattleRestricted &&
                    character.CharacterState != CharacterState.SkillRestricted;
         }
 
         // 检查角色是否能使用某个物品（基于状态）
-        private static bool CanCharacterUseItem(Character character, Item item)
+        private static bool CanCharacterUseItem(Character character, Item item, DecisionPoints dp)
         {
-            return character.CharacterState != CharacterState.NotActionable &&
+            return dp.CheckActionTypeQuota(CharacterActionType.UseItem) && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostItem &&
+                   character.CharacterState != CharacterState.NotActionable &&
                    (character.CharacterState != CharacterState.ActionRestricted || item.ItemType == ItemType.Consumable) && // 行动受限只能用消耗品
                    character.CharacterState != CharacterState.BattleRestricted;
         }

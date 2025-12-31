@@ -8,11 +8,12 @@ namespace Milimoe.FunGame.Core.Entity
     {
         public int Round { get; set; } = round;
         public Character Actor { get; set; } = Factory.GetCharacter();
-        public CharacterActionType ActionType { get; set; } = CharacterActionType.None;
-        public List<Character> Targets { get; set; } = [];
-        public Skill? Skill { get; set; } = null;
-        public string SkillCost { get; set; } = "";
-        public Item? Item { get; set; } = null;
+        public HashSet<CharacterActionType> ActionTypes { get; } = [];
+        public Dictionary<CharacterActionType, List<Character>> Targets { get; } = [];
+        public Dictionary<CharacterActionType, Skill> Skills { get; } = [];
+        public Dictionary<Skill, string> SkillsCost { get; set; } = [];
+        public Dictionary<CharacterActionType, Item> Items { get; set; } = [];
+        public Dictionary<Item, string> ItemsCost { get; set; } = [];
         public bool HasKill { get; set; } = false;
         public List<Character> Assists { get; set; } = [];
         public Dictionary<Character, double> Damages { get; set; } = [];
@@ -31,6 +32,18 @@ namespace Milimoe.FunGame.Core.Entity
         public List<Skill> RoundRewards { get; set; } = [];
         public List<string> OtherMessages { get; set; } = [];
 
+        public void AddApplyEffects(Character character, params IEnumerable<EffectType> types)
+        {
+            if (ApplyEffects.TryGetValue(character, out List<EffectType>? list) && list != null)
+            {
+                list.AddRange(types);
+            }
+            else
+            {
+                ApplyEffects.TryAdd(character, [.. types]);
+            }
+        }
+
         public override string ToString()
         {
             StringBuilder builder = new();
@@ -46,47 +59,56 @@ namespace Milimoe.FunGame.Core.Entity
                 builder.AppendLine($"[ {Actor} ] 发动了技能：{string.Join("，", Effects.Where(kv => kv.Key == Actor).Select(e => e.Value.Name))}");
             }
 
-            if (ActionType == CharacterActionType.NormalAttack || ActionType == CharacterActionType.CastSkill || ActionType == CharacterActionType.CastSuperSkill)
+            foreach (CharacterActionType type in ActionTypes)
             {
-                if (ActionType == CharacterActionType.NormalAttack)
+                if (type == CharacterActionType.PreCastSkill)
+                {
+                    continue;
+                }
+
+                if (!Targets.TryGetValue(type, out List<Character>? targets) || targets is null)
+                {
+                    targets = [];
+                }
+
+                if (type == CharacterActionType.NormalAttack)
                 {
                     builder.Append($"[ {Actor} ] {Actor.NormalAttack.Name} -> ");
                 }
-                else if (ActionType == CharacterActionType.CastSkill || ActionType == CharacterActionType.CastSuperSkill)
+                else if (type == CharacterActionType.CastSkill || type == CharacterActionType.CastSuperSkill)
                 {
-                    if (Skill != null)
+                    if (Skills.TryGetValue(type, out Skill? skill) && skill != null)
                     {
-                        builder.Append($"[ {Actor} ] {Skill.Name}（{SkillCost}）-> ");
+                        string skillCost = SkillsCost.TryGetValue(skill, out string? cost) ? $"（{cost}）" : "";
+                        builder.Append($"[ {Actor} ] {skill.Name}{skillCost} -> ");
                     }
                     else
                     {
-                        builder.Append($"释放魔法 -> ");
+                        builder.Append($"技能 -> ");
                     }
                 }
-                builder.AppendLine(string.Join(" / ", GetTargetsState()));
-                if (DeathContinuousKilling.Count > 0) builder.AppendLine($"{string.Join("\r\n", DeathContinuousKilling)}");
-                if (ActorContinuousKilling.Count > 0) builder.AppendLine($"{string.Join("\r\n", ActorContinuousKilling)}");
-                if (Assists.Count > 0) builder.AppendLine($"本回合助攻：[ {string.Join(" ] / [ ", Assists)} ]");
+                else if (type == CharacterActionType.UseItem)
+                {
+                    if (Items.TryGetValue(type, out Item? item) && item != null)
+                    {
+                        string itemCost = ItemsCost.TryGetValue(item, out string? cost) ? $"（{cost}）" : "";
+                        builder.Append($"[ {Actor} ] {item.Name}{itemCost} -> ");
+                    }
+                    else
+                    {
+                        builder.Append($"技能 -> ");
+                    }
+                }
+                builder.AppendLine(string.Join(" / ", GetTargetsState(type, targets)));
             }
 
-            if (ActionType == CharacterActionType.PreCastSkill && Skill != null)
+            if (DeathContinuousKilling.Count > 0) builder.AppendLine($"{string.Join("\r\n", DeathContinuousKilling)}");
+            if (ActorContinuousKilling.Count > 0) builder.AppendLine($"{string.Join("\r\n", ActorContinuousKilling)}");
+            if (Assists.Count > 0) builder.AppendLine($"本回合助攻：[ {string.Join(" ] / [ ", Assists)} ]");
+
+            if (ActionTypes.Any(type => type == CharacterActionType.PreCastSkill) && Skills.TryGetValue(CharacterActionType.PreCastSkill, out Skill? magic) && magic != null)
             {
-                if (Skill.IsMagic)
-                {
-                    builder.AppendLine($"[ {Actor} ] 吟唱 [ {Skill.Name} ]，持续时间：{CastTime:0.##}");
-                }
-                else
-                {
-                    builder.Append($"[ {Actor} ] {Skill.Name}（{SkillCost}）-> ");
-                    builder.AppendLine(string.Join(" / ", GetTargetsState()));
-                    builder.AppendLine($"[ {Actor} ] 回合结束，硬直时间：{HardnessTime:0.##}");
-                }
-            }
-            else if (ActionType == CharacterActionType.UseItem && Item != null)
-            {
-                builder.Append($"[ {Actor} ] {Item.Name}{(SkillCost != "" ? $"（{SkillCost}）" : " ")}-> ");
-                builder.AppendLine(string.Join(" / ", GetTargetsState()));
-                builder.AppendLine($"[ {Actor} ] 回合结束，硬直时间：{HardnessTime:0.##}");
+                builder.AppendLine($"[ {Actor} ] 吟唱 [ {magic.Name} ]，持续时间：{CastTime:0.##}");
             }
             else
             {
@@ -106,10 +128,10 @@ namespace Milimoe.FunGame.Core.Entity
             return builder.ToString();
         }
 
-        private List<string> GetTargetsState()
+        private List<string> GetTargetsState(CharacterActionType type, List<Character> targets)
         {
             List<string> strings = [];
-            foreach (Character target in Targets.Distinct())
+            foreach (Character target in targets.Distinct())
             {
                 string hasDamage = "";
                 string hasHeal = "";
@@ -133,11 +155,11 @@ namespace Milimoe.FunGame.Core.Entity
                 }
                 if (IsEvaded.ContainsKey(target))
                 {
-                    if (ActionType == CharacterActionType.NormalAttack)
+                    if (type == CharacterActionType.NormalAttack)
                     {
                         hasEvaded = hasDamage == "" ? "完美闪避" : "闪避";
                     }
-                    else if ((ActionType == CharacterActionType.PreCastSkill || ActionType == CharacterActionType.CastSkill || ActionType == CharacterActionType.CastSuperSkill))
+                    else if ((type == CharacterActionType.PreCastSkill || type == CharacterActionType.CastSkill || type == CharacterActionType.CastSuperSkill))
                     {
                         hasEvaded = "技能免疫";
                     }

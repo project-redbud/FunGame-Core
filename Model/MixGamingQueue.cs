@@ -36,6 +36,25 @@ namespace Milimoe.FunGame.Core.Model
         }
 
         /// <summary>
+        /// 角色行动后，进行死亡竞赛幸存者检定
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        protected override async Task<bool> AfterCharacterAction(Character character, CharacterActionType type)
+        {
+            bool result = await base.AfterCharacterAction(character, type);
+            if (result)
+            {
+                if (MaxRespawnTimes != 0 && MaxScoreToWin > 0 && _stats[character].Kills >= MaxScoreToWin)
+                {
+                    return false;
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
         /// 游戏结束信息
         /// </summary>
         public async Task EndGameInfo(Character winner)

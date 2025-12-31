@@ -90,20 +90,40 @@ namespace Milimoe.FunGame.Core.Model
         }
 
         /// <summary>
-        /// 角色行动后
+        /// 当角色完成决策后
         /// </summary>
         /// <param name="character"></param>
-        /// <param name="type"></param>
+        /// <param name="dp"></param>
         /// <returns></returns>
-        protected override async Task AfterCharacterAction(Character character, CharacterActionType type)
+        protected override async Task AfterCharacterDecision(Character character, DecisionPoints dp)
         {
             // 如果目标都是队友，会考虑非伤害型助攻
             Team? team = GetTeam(character);
             if (team != null)
             {
-                SetNotDamageAssistTime(character, LastRound.Targets.Where(team.IsOnThisTeam));
+                SetNotDamageAssistTime(character, LastRound.Targets.Values.SelectMany(c => c).Where(team.IsOnThisTeam));
             }
             else await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 角色行动后，进行死亡竞赛幸存者检定
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        protected override async Task<bool> AfterCharacterAction(Character character, CharacterActionType type)
+        {
+            bool result = await base.AfterCharacterAction(character, type);
+            if (result)
+            {
+                Team? team = GetTeam(character);
+                if ((!_teams.Keys.Where(str => str != team?.Name).Any()) || (MaxScoreToWin > 0 && (team?.Score ?? 0) >= MaxScoreToWin))
+                {
+                    return false;
+                }
+            }
+            return result;
         }
 
         /// <summary>
@@ -148,10 +168,6 @@ namespace Milimoe.FunGame.Core.Model
                 string[] teamActive = [.. Teams.OrderByDescending(kv => kv.Value.Score).Select(kv =>
                 {
                     int activeCount = kv.Value.GetActiveCharacters().Count;
-                    if (kv.Value == killTeam)
-                    {
-                        activeCount += 1;
-                    }
                     return kv.Key + "：" + kv.Value.Score + "（剩余存活人数：" + activeCount + "）";
                 })];
                 WriteLine($"\r\n=== 当前死亡竞赛比分 ===\r\n{string.Join("\r\n", teamActive)}");

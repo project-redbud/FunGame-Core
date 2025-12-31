@@ -56,6 +56,11 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public Dictionary<Character, CharacterStatistics> CharacterStatistics { get; }
 
         /// <summary>
+        /// 角色的决策点
+        /// </summary>
+        public Dictionary<Character, DecisionPoints> CharacterDecisionPoints { get; }
+
+        /// <summary>
         /// 游戏运行的时间
         /// </summary>
         public double TotalTime { get; }
@@ -153,22 +158,24 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// 使用物品
         /// </summary>
         /// <param name="item"></param>
-        /// <param name="caster"></param>
+        /// <param name="character"></param>
+        /// <param name="dp"></param>
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
         /// <param name="castRange"></param>
         /// <param name="desiredTargets"></param>
         /// <returns></returns>
-        public Task<bool> UseItemAsync(Item item, Character caster, List<Character> enemys, List<Character> teammates, List<Grid> castRange, List<Character>? desiredTargets = null);
+        public Task<bool> UseItemAsync(Item item, Character character, DecisionPoints dp, List<Character> enemys, List<Character> teammates, List<Grid> castRange, List<Character>? desiredTargets = null);
 
         /// <summary>
         /// 角色移动
         /// </summary>
         /// <param name="character"></param>
+        /// <param name="dp"></param>
         /// <param name="target"></param>
         /// <param name="startGrid"></param>
         /// <returns></returns>
-        public Task<bool> CharacterMoveAsync(Character character, Grid target, Grid? startGrid);
+        public Task<bool> CharacterMoveAsync(Character character, DecisionPoints dp, Grid target, Grid? startGrid);
 
         /// <summary>
         /// 选取移动目标

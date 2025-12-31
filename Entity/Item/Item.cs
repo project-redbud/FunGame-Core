@@ -4,6 +4,7 @@ using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Entity
 {
@@ -310,7 +311,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 局内使用物品触发
         /// </summary>
         /// <returns></returns>
-        public async Task<bool> UseItem(IGamingQueue queue, Character character, List<Character> enemys, List<Character> teammates)
+        public async Task<bool> UseItem(IGamingQueue queue, Character character, DecisionPoints dp, List<Character> enemys, List<Character> teammates)
         {
             bool cancel = false;
             bool used = false;
@@ -327,7 +328,7 @@ namespace Milimoe.FunGame.Core.Entity
                     Grid? grid = Skills.Active.GamingQueue.Map.GetCharacterCurrentGrid(character);
                     castRange = grid is null ? [] : Skills.Active.GamingQueue.Map.GetGridsByRange(grid, Skills.Active.CastRange, true);
                 }
-                used = await queue.UseItemAsync(this, character, enemys, teammates, castRange);
+                used = await queue.UseItemAsync(this, character, dp, enemys, teammates, castRange);
             }
             if (used)
             {
