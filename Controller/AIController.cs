@@ -224,7 +224,7 @@ namespace Milimoe.FunGame.Core.Controller
         // 检查角色是否能进行普通攻击（基于状态）
         private static bool CanCharacterNormalAttack(Character character, DecisionPoints dp)
         {
-            return !dp.ActionTypes.Contains(CharacterActionType.NormalAttack) &&
+            return dp.CheckActionTypeQuota(CharacterActionType.NormalAttack) && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostNormalAttack &&
                    character.CharacterState != CharacterState.NotActionable &&
                    character.CharacterState != CharacterState.ActionRestricted &&
                    character.CharacterState != CharacterState.BattleRestricted &&
@@ -234,9 +234,9 @@ namespace Milimoe.FunGame.Core.Controller
         // 检查角色是否能使用某个技能（基于状态）
         private static bool CanCharacterUseSkill(Character character, Skill skill, DecisionPoints dp)
         {
-            return ((skill.SkillType == SkillType.Magic && !dp.ActionTypes.Contains(CharacterActionType.PreCastSkill)) ||
-                    (skill.SkillType == SkillType.Skill && !dp.ActionTypes.Contains(CharacterActionType.CastSkill)) ||
-                    (skill.SkillType == SkillType.SuperSkill && !dp.ActionTypes.Contains(CharacterActionType.CastSuperSkill))) &&
+            return ((skill.SkillType == SkillType.Magic && dp.CheckActionTypeQuota(CharacterActionType.PreCastSkill) && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostMagic) ||
+                    (skill.SkillType == SkillType.Skill && dp.CheckActionTypeQuota(CharacterActionType.CastSkill) && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostSkill) ||
+                    (skill.SkillType == SkillType.SuperSkill && dp.CheckActionTypeQuota(CharacterActionType.CastSuperSkill)) && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostSuperSkill) &&
                    character.CharacterState != CharacterState.NotActionable &&
                    character.CharacterState != CharacterState.ActionRestricted &&
                    character.CharacterState != CharacterState.BattleRestricted &&
@@ -246,7 +246,8 @@ namespace Milimoe.FunGame.Core.Controller
         // 检查角色是否能使用某个物品（基于状态）
         private static bool CanCharacterUseItem(Character character, Item item, DecisionPoints dp)
         {
-            return !dp.ActionTypes.Contains(CharacterActionType.UseItem) && character.CharacterState != CharacterState.NotActionable &&
+            return dp.CheckActionTypeQuota(CharacterActionType.UseItem) && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostItem &&
+                   character.CharacterState != CharacterState.NotActionable &&
                    (character.CharacterState != CharacterState.ActionRestricted || item.ItemType == ItemType.Consumable) && // 行动受限只能用消耗品
                    character.CharacterState != CharacterState.BattleRestricted;
         }

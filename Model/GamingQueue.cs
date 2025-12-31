@@ -764,12 +764,6 @@ namespace Milimoe.FunGame.Core.Model
                         effect.OnEffectGained(character);
                     }
 
-                    // 如果特效具备临时驱散或者持续性驱散的功能
-                    if (effect.Source != null && (effect.EffectType == EffectType.WeakDispelling || effect.EffectType == EffectType.StrongDispelling))
-                    {
-                        effect.Dispel(effect.Source, character, !IsTeammate(character, effect.Source) && character != effect.Source);
-                    }
-
                     // 自身被动不会考虑
                     if (effect.EffectType == EffectType.None && effect.Skill.SkillType == SkillType.Passive)
                     {
@@ -799,6 +793,14 @@ namespace Milimoe.FunGame.Core.Model
                             effect.OnTimeElapsed(character, timeToReduce);
                         }
                     }
+                }
+
+                // 如果特效具备临时驱散或者持续性驱散的功能
+                effects = [.. character.Effects.Where(e => e.Source != null && (e.EffectType == EffectType.WeakDispelling || e.EffectType == EffectType.StrongDispelling))];
+                foreach (Effect effect in effects)
+                {
+                    if (effect.Source is null) continue;
+                    effect.Dispel(effect.Source, character, !IsTeammate(character, effect.Source) && character != effect.Source);
                 }
 
                 _eliminated.Remove(character);
@@ -910,8 +912,8 @@ namespace Milimoe.FunGame.Core.Model
             bool endTurn = false;
             bool isAI = CharactersInAI.Contains(character);
 
-            // 循环条件：未结束回合、决策点大于0（AI控制下为0时自动结束）
-            while (!endTurn && (!isAI || dp.CurrentDecisionPoints > 0))
+            // 循环条件：未结束回合、决策点大于0（AI控制下为0时自动结束）或角色处于吟唱态
+            while (!endTurn && (!isAI || dp.CurrentDecisionPoints > 0 || character.CharacterState == CharacterState.Casting || character.CharacterState == CharacterState.PreCastSuperSkill))
             {
                 // 刷新可选列表
                 (selectableTeammates, selectableEnemys, skills, items) = GetTurnStartNeedyList(character, allTeammates, allEnemys);
@@ -927,10 +929,9 @@ namespace Milimoe.FunGame.Core.Model
                     {
                         canCastGridsByStartGrid.AddRange(_map.GetGridsByRange(startGrid, skill.CastRange, true));
                     }
+                    allEnemys = [.. allEnemys.Where(canAttackGridsByStartGrid.Union(canCastGridsByStartGrid).SelectMany(g => g.Characters).Contains)];
+                    allTeammates = [.. allTeammates.Where(canAttackGridsByStartGrid.Union(canCastGridsByStartGrid).SelectMany(g => g.Characters).Contains)];
                 }
-
-                allEnemys = [.. allEnemys.Where(canAttackGridsByStartGrid.Union(canCastGridsByStartGrid).SelectMany(g => g.Characters).Contains)];
-                allTeammates = [.. allTeammates.Where(canAttackGridsByStartGrid.Union(canCastGridsByStartGrid).SelectMany(g => g.Characters).Contains)];
 
                 // 此变量用于在取消选择时，能够重新行动
                 bool decided = false;
@@ -1164,7 +1165,7 @@ namespace Milimoe.FunGame.Core.Model
                         moved = await CharacterMoveAsync(character, dp, aiDecision.TargetMoveGrid, startGrid);
                     }
 
-                    int costDP = DecisionPoints.GetActionPointCost(type);
+                    int costDP = dp.GetActionPointCost(type);
 
                     if (type == CharacterActionType.Move)
                     {
@@ -1184,7 +1185,7 @@ namespace Milimoe.FunGame.Core.Model
                         if (isAI && (aiDecision?.IsPureMove ?? false))
                         {
                             // 取消 AI 的移动
-                            SetOnlyMoveHardnessTime(character, ref baseTime);
+                            SetOnlyMoveHardnessTime(character, dp, ref baseTime);
                             type = CharacterActionType.EndTurn;
                             decided = true;
                             endTurn = true;
@@ -1205,9 +1206,9 @@ namespace Milimoe.FunGame.Core.Model
                         {
                             if (IsDebug) WriteLine($"角色 [ {character} ] 决策点不足，无法使用普通攻击！");
                         }
-                        else if (dp.ActionTypes.Contains(CharacterActionType.NormalAttack))
+                        else if (!dp.CheckActionTypeQuota(CharacterActionType.NormalAttack))
                         {
-                            if (IsDebug) WriteLine($"角色 [ {character} ] 该回合已经使用过普通攻击，无法再次使用普通攻击！");
+                            if (IsDebug) WriteLine($"角色 [ {character} ] 该回合使用普通攻击的次数已超过决策点配额，无法再次使用普通攻击！");
                         }
                         else
                         {
@@ -1232,8 +1233,7 @@ namespace Milimoe.FunGame.Core.Model
                             {
                                 LastRound.Targets[CharacterActionType.NormalAttack] = [.. targets];
                                 LastRound.ActionTypes.Add(CharacterActionType.NormalAttack);
-                                dp.ActionsTaken++;
-                                dp.ActionTypes.Add(CharacterActionType.NormalAttack);
+                                dp.AddActionType(CharacterActionType.NormalAttack);
                                 dp.CurrentDecisionPoints -= costDP;
                                 decided = true;
 
@@ -1258,10 +1258,6 @@ namespace Milimoe.FunGame.Core.Model
                         {
                             if (IsDebug) WriteLine($"角色 [ {character} ] 状态为：{CharacterSet.GetCharacterState(character.CharacterState)}，无法释放技能！");
                         }
-                        else if (dp.CurrentDecisionPoints < costDP)
-                        {
-                            if (IsDebug) WriteLine($"角色 [ {character} ] 决策点不足，无法释放技能！");
-                        }
                         else
                         {
                             // 预使用技能，即开始吟唱逻辑
@@ -1280,9 +1276,14 @@ namespace Milimoe.FunGame.Core.Model
                             }
                             if (skill != null)
                             {
-                                // 吟唱前需要先选取目标
-                                if (skill.SkillType == SkillType.Magic)
+                                costDP = dp.GetActionPointCost(type, skill);
+                                if (dp.CurrentDecisionPoints < costDP)
                                 {
+                                    if (IsDebug) WriteLine($"角色 [ {character} ] 决策点不足，无法释放技能！");
+                                }
+                                else if (skill.SkillType == SkillType.Magic)
+                                {
+                                    // 吟唱前需要先选取目标
                                     List<Character> targets;
                                     if (aiDecision != null)
                                     {
@@ -1309,8 +1310,7 @@ namespace Milimoe.FunGame.Core.Model
                                             LastRound.Skills[CharacterActionType.PreCastSkill] = skill;
                                             LastRound.Targets[CharacterActionType.PreCastSkill] = [.. targets];
                                             LastRound.ActionTypes.Add(CharacterActionType.PreCastSkill);
-                                            dp.ActionsTaken++;
-                                            dp.ActionTypes.Add(CharacterActionType.PreCastSkill);
+                                            dp.AddActionType(CharacterActionType.PreCastSkill);
                                             dp.CurrentDecisionPoints -= costDP;
                                             decided = true;
                                             endTurn = true;
@@ -1330,13 +1330,13 @@ namespace Milimoe.FunGame.Core.Model
                                 {
                                     if (IsDebug) WriteLine($"角色 [ {character} ] 该回合已经使用过勇气指令，无法再次使用勇气指令！");
                                 }
-                                else if (skill is not CourageCommandSkill && dp.ActionTypes.Contains(CharacterActionType.CastSkill))
+                                else if (skill is not CourageCommandSkill && !skill.IsSuperSkill && !dp.CheckActionTypeQuota(CharacterActionType.CastSkill))
                                 {
-                                    if (IsDebug) WriteLine($"角色 [ {character} ] 该回合已经使用过战技，无法再次使用战技！");
+                                    if (IsDebug) WriteLine($"角色 [ {character} ] 该回合使用战技的次数已超过决策点配额，无法再次使用战技！");
                                 }
-                                else if (skill is not CourageCommandSkill && dp.ActionTypes.Contains(CharacterActionType.CastSuperSkill))
+                                else if (skill is not CourageCommandSkill && skill.IsSuperSkill && !dp.CheckActionTypeQuota(CharacterActionType.CastSuperSkill))
                                 {
-                                    if (IsDebug) WriteLine($"角色 [ {character} ] 该回合已经使用过爆发技，无法再次使用爆发技！");
+                                    if (IsDebug) WriteLine($"角色 [ {character} ] 该回合使用爆发技的次数已超过决策点配额，无法再次使用爆发技！");
                                 }
                                 else
                                 {
@@ -1372,8 +1372,7 @@ namespace Milimoe.FunGame.Core.Model
                                                 LastRound.ActionTypes.Add(skillType);
                                                 if (skill is not CourageCommandSkill)
                                                 {
-                                                    dp.ActionsTaken++;
-                                                    dp.ActionTypes.Add(skillType);
+                                                    dp.AddActionType(skillType);
                                                     dp.CurrentDecisionPoints -= costDP;
                                                 }
                                                 else
@@ -1472,8 +1471,7 @@ namespace Milimoe.FunGame.Core.Model
                     }
                     else if (type == CharacterActionType.CastSuperSkill)
                     {
-                        dp.ActionsTaken++;
-                        dp.ActionTypes.Add(CharacterActionType.CastSuperSkill);
+                        dp.AddActionType(CharacterActionType.CastSuperSkill);
                         LastRound.ActionTypes.Add(CharacterActionType.CastSuperSkill);
                         decided = true;
                         endTurn = true;
@@ -1552,14 +1550,13 @@ namespace Milimoe.FunGame.Core.Model
                             {
                                 if (IsDebug) WriteLine($"角色 [ {character} ] 决策点不足，无法使用物品！");
                             }
-                            else if (dp.ActionTypes.Contains(CharacterActionType.UseItem))
+                            else if (!dp.CheckActionTypeQuota(CharacterActionType.UseItem))
                             {
-                                if (IsDebug) WriteLine($"角色 [ {character} ] 该回合已经使用过物品，无法再使用物品！");
+                                if (IsDebug) WriteLine($"角色 [ {character} ] 该回合使用物品的次数已超过决策点配额，无法再使用物品！");
                             }
                             else if (await UseItemAsync(item, character, dp, enemys, teammates, castRange, aiDecision?.Targets))
                             {
-                                dp.ActionsTaken++;
-                                dp.ActionTypes.Add(CharacterActionType.UseItem);
+                                dp.AddActionType(CharacterActionType.UseItem);
                                 dp.CurrentDecisionPoints -= costDP;
                                 LastRound.ActionTypes.Add(CharacterActionType.UseItem);
                                 LastRound.Items[CharacterActionType.UseItem] = item;
@@ -1575,7 +1572,7 @@ namespace Milimoe.FunGame.Core.Model
                     }
                     else if (type == CharacterActionType.EndTurn)
                     {
-                        SetOnlyMoveHardnessTime(character, ref baseTime);
+                        SetOnlyMoveHardnessTime(character, dp, ref baseTime);
                         decided = true;
                         endTurn = true;
                         WriteLine($"[ {character} ] 结束了回合！");
@@ -1611,20 +1608,34 @@ namespace Milimoe.FunGame.Core.Model
 
                 if (character.CharacterState != CharacterState.Casting) dp.ActionsHardnessTime.Add(baseTime);
 
-                if (!await AfterCharacterDecision(character))
+                await OnCharacterActionTakenAsync(character, dp, type, LastRound);
+
+                effects = [.. character.Effects.Where(e => e.IsInEffect)];
+                foreach (Effect effect in effects)
+                {
+                    effect.OnCharacterActionTaken(character, dp, type);
+                }
+
+                if (!await AfterCharacterAction(character, type))
                 {
                     endTurn = true;
                 }
             }
 
-            if (character.CharacterState != CharacterState.Casting && dp.ActionsTaken > 1)
+            if (character.CharacterState != CharacterState.Casting)
             {
-                baseTime = dp.ActionsHardnessTime.Max() + dp.ActionsTaken;
+                baseTime = dp.ActionsTaken > 1 ? (dp.ActionsHardnessTime.Max() + dp.ActionsTaken) : dp.ActionsHardnessTime.Max();
             }
 
             _stats[character].ActionTurn += 1;
 
-            await AfterCharacterAction(character, type);
+            await AfterCharacterDecision(character, dp);
+            await OnCharacterDecisionCompletedAsync(character, dp, LastRound);
+            effects = [.. character.Effects.Where(e => e.IsInEffect)];
+            foreach (Effect effect in effects)
+            {
+                effect.OnCharacterDecisionCompleted(character, dp);
+            }
 
             // 统一在回合结束时处理角色的死亡
             await ProcessCharacterDeathAsync(character);
@@ -1688,6 +1699,9 @@ namespace Milimoe.FunGame.Core.Model
                 }
             }
 
+            // 清空临时决策点
+            dp.ClearTempActionQuota();
+
             // 有人想要插队吗？
             await WillPreCastSuperSkill();
 
@@ -1742,7 +1756,24 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         /// <param name="character"></param>
         /// <param name="type"></param>
-        protected virtual async Task AfterCharacterAction(Character character, CharacterActionType type)
+        /// <returns>返回 false 结束回合</returns>
+        protected virtual async Task<bool> AfterCharacterAction(Character character, CharacterActionType type)
+        {
+            List<Character> allTeammates = GetTeammates(character);
+            Character[] allEnemys = [.. _allCharacters.Where(c => c != character && !allTeammates.Contains(c) && !_eliminated.Contains(c))];
+            if (!allEnemys.Any(c => c.HP > 0))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 角色完成回合决策后触发
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="dp"></param>
+        protected virtual async Task AfterCharacterDecision(Character character, DecisionPoints dp)
         {
             await Task.CompletedTask;
         }
@@ -1773,22 +1804,6 @@ namespace Milimoe.FunGame.Core.Model
                 _isGameEnd = true;
                 await OnGameEndAsync(killer);
             }
-        }
-
-        /// <summary>
-        /// 回合内进行一次决策后触发
-        /// </summary>
-        /// <param name="character"></param>
-        /// <returns>返回 false 结束回合</returns>
-        protected virtual async Task<bool> AfterCharacterDecision(Character character)
-        {
-            List<Character> allTeammates = GetTeammates(character);
-            Character[] allEnemys = [.. _allCharacters.Where(c => c != character && !allTeammates.Contains(c) && !_eliminated.Contains(c))];
-            if (!allEnemys.Any(c => c.HP > 0))
-            {
-                return false;
-            }
-            return true;
         }
 
         /// <summary>
@@ -2671,14 +2686,21 @@ namespace Milimoe.FunGame.Core.Model
         /// <returns></returns>
         public static CharacterActionType GetActionType(DecisionPoints dp, double pUseItem, double pCastSkill, double pNormalAttack)
         {
-            if (dp.ActionTypes.Contains(CharacterActionType.NormalAttack))
+            if (!dp.CheckActionTypeQuota(CharacterActionType.NormalAttack) || dp.CurrentDecisionPoints < dp.GameplayEquilibriumConstant.DecisionPointsCostNormalAttack)
             {
                 pNormalAttack = 0;
             }
             
-            if (dp.ActionTypes.Contains(CharacterActionType.UseItem))
+            if (!dp.CheckActionTypeQuota(CharacterActionType.UseItem) || dp.CurrentDecisionPoints < dp.GameplayEquilibriumConstant.DecisionPointsCostItem)
             {
                 pUseItem = 0;
+            }
+
+            if (dp.CurrentDecisionPoints < dp.GameplayEquilibriumConstant.DecisionPointsCostSkill &&
+                dp.CurrentDecisionPoints < dp.GameplayEquilibriumConstant.DecisionPointsCostSuperSkill &&
+                dp.CurrentDecisionPoints < dp.GameplayEquilibriumConstant.DecisionPointsCostMagic)
+            {
+                pCastSkill = 0;
             }
             
             if (pUseItem == 0 && pCastSkill == 0 && pNormalAttack == 0)
@@ -3149,9 +3171,12 @@ namespace Milimoe.FunGame.Core.Model
         /// 对角色设置仅移动的硬直时间
         /// </summary>
         /// <param name="character"></param>
+        /// <param name="dp"></param>
         /// <param name="baseTime"></param>
-        public void SetOnlyMoveHardnessTime(Character character, ref double baseTime)
+        public void SetOnlyMoveHardnessTime(Character character, DecisionPoints dp, ref double baseTime)
         {
+            if (dp.ActionsTaken > 0) return;
+
             baseTime += 3;
             if (character.CharacterState == CharacterState.NotActionable ||
                 character.CharacterState == CharacterState.ActionRestricted ||
@@ -3190,6 +3215,16 @@ namespace Milimoe.FunGame.Core.Model
             // 根据角色状态补充决策点
             int pointsToAdd;
 
+            // 每回合提升决策点上限
+            if (dp.MaxDecisionPoints < dp.GameplayEquilibriumConstant.MaxDecisionPoints)
+            {
+                dp.MaxDecisionPoints++;
+            }
+            else if (dp.MaxDecisionPoints > dp.GameplayEquilibriumConstant.MaxDecisionPoints)
+            {
+                dp.MaxDecisionPoints = dp.GameplayEquilibriumConstant.MaxDecisionPoints;
+            }
+
             if (character.CharacterState == CharacterState.NotActionable || character.CharacterState == CharacterState.ActionRestricted)
             {
                 // 完全行动不能/行动受限：补充上限1/4
@@ -3201,12 +3236,6 @@ namespace Milimoe.FunGame.Core.Model
                 // 正常状态：补充上限一半
                 pointsToAdd = Math.Max(1, dp.MaxDecisionPoints / 2);
                 dp.CurrentDecisionPoints = Math.Min(dp.CurrentDecisionPoints + pointsToAdd, dp.MaxDecisionPoints);
-            }
-
-            // 每回合提升决策点上限（最多到10）
-            if (dp.MaxDecisionPoints < 10)
-            {
-                dp.MaxDecisionPoints++;
             }
 
             dp.DecisionPointsRecovery = pointsToAdd;
@@ -3330,7 +3359,7 @@ namespace Milimoe.FunGame.Core.Model
             // 选取所有 AI 控制角色
             foreach (Character other in _queue.Where(c => c.CharacterState == CharacterState.Actionable && CharactersInAI.Contains(c)).ToList())
             {
-                if (_decisionPoints.TryGetValue(other, out DecisionPoints? dp) && dp != null && dp.CurrentDecisionPoints < 3)
+                if (_decisionPoints.TryGetValue(other, out DecisionPoints? dp) && dp != null && dp.CurrentDecisionPoints < dp.GetActionPointCost(CharacterActionType.CastSuperSkill))
                 {
                     continue;
                 }
@@ -4203,6 +4232,41 @@ namespace Milimoe.FunGame.Core.Model
         protected async Task OnQueueUpdatedAsync(List<Character> characters, Character character, DecisionPoints dp, double hardnessTime, QueueUpdatedReason reason, string msg = "")
         {
             await (QueueUpdated?.Invoke(this, characters, character, dp, hardnessTime, reason, msg) ?? Task.CompletedTask);
+        }
+
+        public delegate Task CharacterActionTakenEventHandler(GamingQueue queue, Character actor, DecisionPoints dp, CharacterActionType type, RoundRecord record);
+        /// <summary>
+        /// 角色完成行动事件
+        /// </summary>
+        public event CharacterActionTakenEventHandler? CharacterActionTaken;
+        /// <summary>
+        /// 角色完成行动事件
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="dp"></param>
+        /// <param name="type"></param>
+        /// <param name="record"></param>
+        /// <returns></returns>
+        protected async Task OnCharacterActionTakenAsync(Character actor, DecisionPoints dp, CharacterActionType type, RoundRecord record)
+        {
+            await (CharacterActionTaken?.Invoke(this, actor, dp, type, record) ?? Task.CompletedTask);
+        }
+
+        public delegate Task CharacterDecisionCompletedEventHandler(GamingQueue queue, Character actor, DecisionPoints dp, RoundRecord record);
+        /// <summary>
+        /// 角色完成决策事件
+        /// </summary>
+        public event CharacterDecisionCompletedEventHandler? CharacterDecisionCompleted;
+        /// <summary>
+        /// 角色完成决策事件
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="dp"></param>
+        /// <param name="record"></param>
+        /// <returns></returns>
+        protected async Task OnCharacterDecisionCompletedAsync(Character actor, DecisionPoints dp, RoundRecord record)
+        {
+            await (CharacterDecisionCompleted?.Invoke(this, actor, dp, record) ?? Task.CompletedTask);
         }
 
         #endregion

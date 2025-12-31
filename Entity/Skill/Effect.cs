@@ -798,6 +798,27 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 在角色行动后触发
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="dp"></param>
+        /// <param name="type"></param>
+        public virtual void OnCharacterActionTaken(Character actor, DecisionPoints dp, CharacterActionType type)
+        {
+
+        }
+
+        /// <summary>
+        /// 在角色回合决策结束后触发
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="dp"></param>
+        public virtual void OnCharacterDecisionCompleted(Character actor, DecisionPoints dp)
+        {
+
+        }
+
+        /// <summary>
         /// 对敌人造成技能伤害 [ 强烈建议使用此方法造成伤害而不是自行调用 <see cref="IGamingQueue.DamageToEnemyAsync"/> ]
         /// </summary>
         /// <param name="actor"></param>

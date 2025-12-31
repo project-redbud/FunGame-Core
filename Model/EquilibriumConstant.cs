@@ -541,6 +541,86 @@ namespace Milimoe.FunGame.Core.Model
         public int RoleMOV_Medic { get; set; } = 3;
 
         /// <summary>
+        /// 初始决策点数
+        /// </summary>
+        public int InitialDecisionPoints { get; set; } = 1;
+
+        /// <summary>
+        /// 决策点上限
+        /// </summary>
+        public int MaxDecisionPoints { get; set; } = 7;
+
+        /// <summary>
+        /// 每回合决策点补充数量
+        /// </summary>
+        public int RecoverDecisionPointsPerRound { get; set; } = 1;
+
+        /// <summary>
+        /// 每回合普通攻击决策配额
+        /// </summary>
+        public int ActionQuotaNormalAttack { get; set; } = 1;
+
+        /// <summary>
+        /// 每回合战技决策配额
+        /// </summary>
+        public int ActionQuotaSkill { get; set; } = 1;
+
+        /// <summary>
+        /// 每回合爆发技决策配额
+        /// </summary>
+        public int ActionQuotaSuperSkill { get; set; } = 1;
+
+        /// <summary>
+        /// 每回合魔法决策配额 [ 使用魔法因为会进入吟唱态，所以无论是否设置都没意义 ]
+        /// </summary>
+        public int ActionQuotaMagic { get; set; } = 1;
+
+        /// <summary>
+        /// 每回合使用物品决策配额
+        /// </summary>
+        public int ActionQuotaItem { get; set; } = 1;
+
+        /// <summary>
+        /// 每回合其他决策配额
+        /// </summary>
+        public int ActionQuotaOther { get; set; } = 0;
+
+        /// <summary>
+        /// 普通攻击决策点消耗
+        /// </summary>
+        public int DecisionPointsCostNormalAttack { get; set; } = 1;
+
+        /// <summary>
+        /// 战技决策点消耗
+        /// </summary>
+        public int DecisionPointsCostSkill { get; set; } = 2;
+
+        /// <summary>
+        /// 爆发技决策点消耗（回合内）
+        /// </summary>
+        public int DecisionPointsCostSuperSkill { get; set; } = 2;
+
+        /// <summary>
+        /// 爆发技决策点消耗（回合外）
+        /// </summary>
+        public int DecisionPointsCostSuperSkillOutOfTurn { get; set; } = 3;
+
+        /// <summary>
+        /// 魔法决策点消耗
+        /// </summary>
+        public int DecisionPointsCostMagic { get; set; } = 2;
+
+        /// <summary>
+        /// 使用物品决策点消耗
+        /// </summary>
+        public int DecisionPointsCostItem { get; set; } = 1;
+
+        /// <summary>
+        /// 其他决策点消耗
+        /// </summary>
+        public int DecisionPointsCostOther { get; set; } = 1;
+
+        /// <summary>
         /// 应用此游戏平衡常数给实体
         /// </summary>
         /// <param name="entities"></param>
