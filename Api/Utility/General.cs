@@ -256,8 +256,10 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns></returns>
         public static T? JsonDeserializeFromHashtable<T>(Hashtable hashtable, string key, JsonSerializerOptions options) => Service.JsonManager.GetObject<T>(hashtable, key, options);
 
-        // 创建一个静态 HttpClient 实例，供整个应用程序生命周期使用
-        private static readonly HttpClient client = new();
+        /// <summary>
+        /// 创建一个静态 HttpClient 实例，供整个应用程序生命周期使用
+        /// </summary>
+        public static HttpClient HttpClient { get; } = new();
 
         /// <summary>
         /// 发送 GET 请求
@@ -266,12 +268,22 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns></returns>
         public static async Task<T?> HttpGet<T>(string url)
         {
-            HttpResponseMessage response = await client.GetAsync(url);
+            HttpResponseMessage response = await HttpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
 
             string content = await response.Content.ReadAsStringAsync();
-            T? result = JsonDeserialize<T>(content);
-            return result;
+            try
+            {
+                return JsonDeserialize<T>(content);
+            }
+            catch
+            {
+                if (typeof(T) == typeof(string))
+                {
+                    return (T)(object)content;
+                }
+            }
+            return default;
         }
 
         /// <summary>
@@ -284,12 +296,22 @@ namespace Milimoe.FunGame.Core.Api.Utility
         public static async Task<T?> HttpPost<T>(string url, string json)
         {
             HttpContent content = new StringContent(json, General.DefaultEncoding, "application/json");
-            HttpResponseMessage response = await client.PostAsync(url, content);
+            HttpResponseMessage response = await HttpClient.PostAsync(url, content);
             response.EnsureSuccessStatusCode();
 
             string read = await response.Content.ReadAsStringAsync();
-            T? result = JsonDeserialize<T>(read);
-            return result;
+            try
+            {
+                return JsonDeserialize<T>(read);
+            }
+            catch
+            {
+                if (typeof(T) == typeof(string))
+                {
+                    return (T)(object)content;
+                }
+            }
+            return default;
         }
     }
 

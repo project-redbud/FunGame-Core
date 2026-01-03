@@ -89,8 +89,18 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             response.EnsureSuccessStatusCode();
 
             string content = await response.Content.ReadAsStringAsync();
-            T? result = NetworkUtility.JsonDeserialize<T>(content);
-            return result;
+            try
+            {
+                return NetworkUtility.JsonDeserialize<T>(content);
+            }
+            catch
+            {
+                if (typeof(T) == typeof(string))
+                {
+                    return (T)(object)content;
+                }
+            }
+            return default;
         }
 
         /// <summary>
@@ -107,8 +117,18 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             response.EnsureSuccessStatusCode();
 
             string read = await response.Content.ReadAsStringAsync();
-            T? result = NetworkUtility.JsonDeserialize<T>(read);
-            return result;
+            try
+            {
+                return NetworkUtility.JsonDeserialize<T>(read);
+            }
+            catch
+            {
+                if (typeof(T) == typeof(string))
+                {
+                    return (T)(object)content;
+                }
+            }
+            return default;
         }
 
         public void AddSocketObjectHandler(Action<SocketObject> method)
