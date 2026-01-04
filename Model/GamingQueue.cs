@@ -2130,8 +2130,8 @@ namespace Milimoe.FunGame.Core.Model
                     }
                     WriteLine(strDamageMessage);
 
-                    // 生命偷取，攻击者为全额
-                    double steal = damage * actor.Lifesteal;
+                    // 生命偷取
+                    double steal = actualDamage * actor.Lifesteal;
                     await HealToTargetAsync(actor, actor, steal, false);
                     effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                     foreach (Effect effect in effects)
@@ -2139,8 +2139,8 @@ namespace Milimoe.FunGame.Core.Model
                         effect.AfterLifesteal(actor, enemy, damage, steal);
                     }
 
-                    // 造成伤害和受伤都可以获得能量。攻击者为全额，被攻击者为 actualDamage，护盾抵消的伤害不算
-                    double ep = GetEP(damage, GameplayEquilibriumConstant.DamageGetEPFactor, GameplayEquilibriumConstant.DamageGetEPMax);
+                    // 造成伤害和受伤都可以获得能量。护盾抵消的伤害不算
+                    double ep = GetEP(actualDamage, GameplayEquilibriumConstant.DamageGetEPFactor, GameplayEquilibriumConstant.DamageGetEPMax);
                     if (ep > 0)
                     {
                         effects = [.. actor.Effects.Where(e => e.IsInEffect)];
@@ -2432,13 +2432,12 @@ namespace Milimoe.FunGame.Core.Model
                 return;
             }
 
-            double realHeal = heal;
             if (target.HP > 0 || (isDead && canRespawn))
             {
                 // 用于数据统计，不能是全额，溢出的部分需要扣除
                 if (target.HP + heal > target.MaxHP)
                 {
-                    realHeal = target.MaxHP - target.HP;
+                    heal = target.MaxHP - target.HP;
                 }
                 target.HP += heal;
                 if (!LastRound.Heals.TryAdd(target, heal))
@@ -2475,7 +2474,7 @@ namespace Milimoe.FunGame.Core.Model
             // 统计数据
             if (_stats.TryGetValue(actor, out CharacterStatistics? stats) && stats != null)
             {
-                stats.TotalHeal += realHeal;
+                stats.TotalHeal += heal;
             }
 
             await OnHealToTargetAsync(actor, target, heal, isRespawn);
