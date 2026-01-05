@@ -341,7 +341,8 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="caster"></param>
         /// <param name="targets"></param>
-        public virtual void OnSkillCasting(Character caster, List<Character> targets)
+        /// <param name="grids"></param>
+        public virtual void OnSkillCasting(Character caster, List<Character> targets, List<Grid> grids)
         {
 
         }
@@ -362,10 +363,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="caster"></param>
         /// <param name="targets"></param>
+        /// <param name="grids"></param>
         /// <param name="others"></param>
-        public virtual void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)
+        public virtual async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
-
+            await Task.CompletedTask;
         }
 
         /// <summary>
@@ -374,9 +376,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="user"></param>
         /// <param name="targets"></param>
         /// <param name="others"></param>
-        public virtual void OnSkillCasted(User user, List<Character> targets, Dictionary<string, object> others)
+        public virtual async Task OnSkillCasted(User user, List<Character> targets, Dictionary<string, object> others)
         {
-
+            await Task.CompletedTask;
         }
 
         /// <summary>
@@ -1048,7 +1050,7 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 return;
             }
-            Effect[] effects = [.. target.Effects.Where(e => e.IsInEffect && e.ShowInStatusBar)];
+            Effect[] effects = [.. target.Effects.Where(e => e.ShowInStatusBar)];
             foreach (Effect effect in effects)
             {
                 if (effect.OnEffectIsBeingDispelled(dispeller, target, this, isEnemy))

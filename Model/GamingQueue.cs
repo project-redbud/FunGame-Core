@@ -858,7 +858,7 @@ namespace Milimoe.FunGame.Core.Model
             DecisionPoints dp = DecisionPointsRecovery(character);
 
             // 获取回合奖励
-            List<Skill> rewards = GetRoundRewards(TotalRound, character);
+            List<Skill> rewards = await GetRoundRewards(TotalRound, character);
 
             // 基础硬直时间
             double baseTime = 0;
@@ -929,8 +929,6 @@ namespace Milimoe.FunGame.Core.Model
                     {
                         canCastGridsByStartGrid.AddRange(_map.GetGridsByRange(startGrid, skill.CastRange, true));
                     }
-                    allEnemys = [.. allEnemys.Where(canAttackGridsByStartGrid.Union(canCastGridsByStartGrid).SelectMany(g => g.Characters).Contains)];
-                    allTeammates = [.. allTeammates.Where(canAttackGridsByStartGrid.Union(canCastGridsByStartGrid).SelectMany(g => g.Characters).Contains)];
                 }
 
                 // 此变量用于在取消选择时，能够重新行动
@@ -1128,6 +1126,9 @@ namespace Milimoe.FunGame.Core.Model
                             // 启用战棋地图时的专属 AI 决策方法
                             if (isAI && ai != null && startGrid != null)
                             {
+                                List<Character> allEnemysInGame = [.. allEnemys.Where(canAttackGridsByStartGrid.Union(canCastGridsByStartGrid).SelectMany(g => g.Characters).Contains)];
+                                List<Character> allTeammatesInGame = [.. allTeammates.Where(canAttackGridsByStartGrid.Union(canCastGridsByStartGrid).SelectMany(g => g.Characters).Contains)];
+
                                 aiDecision = await ai.DecideAIActionAsync(character, dp, startGrid, canMoveGrids, skills, items, allEnemys, allTeammates, enemys, teammates);
                                 type = aiDecision.ActionType;
                             }
@@ -1276,6 +1277,9 @@ namespace Milimoe.FunGame.Core.Model
                             }
                             if (skill != null)
                             {
+                                skill.GamingQueue = this;
+                                List<Character> targets = [];
+                                List<Grid> grids = [];
                                 costDP = dp.GetActionPointCost(type, skill);
                                 if (dp.CurrentDecisionPoints < costDP)
                                 {
@@ -1284,46 +1288,38 @@ namespace Milimoe.FunGame.Core.Model
                                 else if (skill.SkillType == SkillType.Magic)
                                 {
                                     // 吟唱前需要先选取目标
-                                    List<Character> targets;
-                                    if (aiDecision != null)
+                                    List<Grid> castRange = [];
+                                    if (_map != null && realGrid != null)
                                     {
-                                        targets = aiDecision.Targets;
+                                        castRange = _map.GetGridsByRange(realGrid, skill.CastRange, true);
+                                        enemys = [.. enemys.Where(castRange.SelectMany(g => g.Characters).Contains)];
+                                        teammates = [.. teammates.Where(castRange.SelectMany(g => g.Characters).Contains)];
                                     }
-                                    else
-                                    {
-                                        List<Grid> castRange = [];
-                                        if (_map != null && realGrid != null)
-                                        {
-                                            castRange = _map.GetGridsByRange(realGrid, skill.CastRange, true);
-                                            enemys = [.. enemys.Where(castRange.SelectMany(g => g.Characters).Contains)];
-                                            teammates = [.. teammates.Where(castRange.SelectMany(g => g.Characters).Contains)];
-                                        }
-                                        targets = await SelectTargetsAsync(character, skill, enemys, teammates, castRange);
-                                    }
+                                    (targets, grids) = await GetSelectedSkillTargetsList(character, skill, enemys, teammates, castRange, allEnemys, allTeammates, aiDecision);
+
                                     if (targets.Count > 0)
                                     {
                                         // 免疫检定
                                         await CheckSkilledImmuneAsync(character, targets, skill);
+                                    }
+                                    if (targets.Count > 0 || (skill.IsNonDirectional && grids.Count == 0))
+                                    {
+                                        LastRound.Skills[CharacterActionType.PreCastSkill] = skill;
+                                        LastRound.Targets[CharacterActionType.PreCastSkill] = [.. targets];
+                                        LastRound.ActionTypes.Add(CharacterActionType.PreCastSkill);
+                                        dp.AddActionType(CharacterActionType.PreCastSkill);
+                                        dp.CurrentDecisionPoints -= costDP;
+                                        decided = true;
+                                        endTurn = true;
 
-                                        if (targets.Count > 0)
-                                        {
-                                            LastRound.Skills[CharacterActionType.PreCastSkill] = skill;
-                                            LastRound.Targets[CharacterActionType.PreCastSkill] = [.. targets];
-                                            LastRound.ActionTypes.Add(CharacterActionType.PreCastSkill);
-                                            dp.AddActionType(CharacterActionType.PreCastSkill);
-                                            dp.CurrentDecisionPoints -= costDP;
-                                            decided = true;
-                                            endTurn = true;
+                                        character.CharacterState = CharacterState.Casting;
+                                        SkillTarget skillTarget = new(skill, targets, grids);
+                                        await OnCharacterPreCastSkillAsync(character, dp, skillTarget);
 
-                                            character.CharacterState = CharacterState.Casting;
-                                            SkillTarget skillTarget = new(skill, targets);
-                                            await OnCharacterPreCastSkillAsync(character, dp, skillTarget);
-
-                                            _castingSkills[character] = skillTarget;
-                                            baseTime += skill.RealCastTime;
-                                            isCheckProtected = false;
-                                            skill.OnSkillCasting(this, character, targets);
-                                        }
+                                        _castingSkills[character] = skillTarget;
+                                        baseTime += skill.RealCastTime;
+                                        isCheckProtected = false;
+                                        skill.OnSkillCasting(this, character, targets, grids);
                                     }
                                 }
                                 else if (skill is CourageCommandSkill && dp.CourageCommandSkill)
@@ -1343,66 +1339,58 @@ namespace Milimoe.FunGame.Core.Model
                                     // 只有魔法需要吟唱，战技和爆发技直接释放
                                     if (CheckCanCast(character, skill, out double cost))
                                     {
-                                        List<Character> targets;
-                                        if (aiDecision != null)
+                                        List<Grid> castRange = [];
+                                        if (_map != null && realGrid != null)
                                         {
-                                            targets = aiDecision.Targets;
+                                            castRange = _map.GetGridsByRange(realGrid, skill.CastRange, true);
+                                            enemys = [.. enemys.Where(castRange.SelectMany(g => g.Characters).Contains)];
+                                            teammates = [.. teammates.Where(castRange.SelectMany(g => g.Characters).Contains)];
                                         }
-                                        else
-                                        {
-                                            List<Grid> castRange = [];
-                                            if (_map != null && realGrid != null)
-                                            {
-                                                castRange = _map.GetGridsByRange(realGrid, skill.CastRange, true);
-                                                enemys = [.. enemys.Where(castRange.SelectMany(g => g.Characters).Contains)];
-                                                teammates = [.. teammates.Where(castRange.SelectMany(g => g.Characters).Contains)];
-                                            }
-                                            targets = await SelectTargetsAsync(character, skill, enemys, teammates, castRange);
-                                        }
+                                        (targets, grids) = await GetSelectedSkillTargetsList(character, skill, enemys, teammates, castRange, allEnemys, allTeammates, aiDecision);
+
                                         if (targets.Count > 0)
                                         {
                                             // 免疫检定
                                             await CheckSkilledImmuneAsync(character, targets, skill);
-
-                                            if (targets.Count > 0)
+                                        }
+                                        if (targets.Count > 0 || (skill.IsNonDirectional && grids.Count > 0))
+                                        {
+                                            CharacterActionType skillType = skill.SkillType == SkillType.SuperSkill ? CharacterActionType.CastSuperSkill : CharacterActionType.CastSkill;
+                                            LastRound.Skills[skillType] = skill;
+                                            LastRound.Targets[skillType] = [.. targets];
+                                            LastRound.ActionTypes.Add(skillType);
+                                            if (skill is not CourageCommandSkill)
                                             {
-                                                CharacterActionType skillType = skill.SkillType == SkillType.SuperSkill ? CharacterActionType.CastSuperSkill : CharacterActionType.CastSkill;
-                                                LastRound.Skills[skillType] = skill;
-                                                LastRound.Targets[skillType] = [.. targets];
-                                                LastRound.ActionTypes.Add(skillType);
-                                                if (skill is not CourageCommandSkill)
-                                                {
-                                                    dp.AddActionType(skillType);
-                                                    dp.CurrentDecisionPoints -= costDP;
-                                                }
-                                                else
-                                                {
-                                                    // 勇气指令不消耗决策点，但是有标记
-                                                    dp.CourageCommandSkill = true;
-                                                }
-                                                decided = true;
+                                                dp.AddActionType(skillType);
+                                                dp.CurrentDecisionPoints -= costDP;
+                                            }
+                                            else
+                                            {
+                                                // 勇气指令不消耗决策点，但是有标记
+                                                dp.CourageCommandSkill = true;
+                                            }
+                                            decided = true;
 
-                                                SkillTarget skillTarget = new(skill, targets);
-                                                await OnCharacterPreCastSkillAsync(character, dp, skillTarget);
+                                            SkillTarget skillTarget = new(skill, targets, grids);
+                                            await OnCharacterPreCastSkillAsync(character, dp, skillTarget);
 
-                                                skill.OnSkillCasting(this, character, targets);
-                                                skill.BeforeSkillCasted();
+                                            skill.OnSkillCasting(this, character, targets, grids);
+                                            skill.BeforeSkillCasted();
 
-                                                character.EP -= cost;
-                                                baseTime += skill.RealHardnessTime;
-                                                skill.CurrentCD = skill.RealCD;
-                                                skill.Enable = false;
-                                                LastRound.SkillsCost[skill] = $"{-cost:0.##} EP";
-                                                WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
+                                            character.EP -= cost;
+                                            baseTime += skill.RealHardnessTime;
+                                            skill.CurrentCD = skill.RealCD;
+                                            skill.Enable = false;
+                                            LastRound.SkillsCost[skill] = $"{-cost:0.##} EP";
+                                            WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
 
-                                                await OnCharacterCastSkillAsync(character, dp, skillTarget, cost);
+                                            await OnCharacterCastSkillAsync(character, dp, skillTarget, cost);
 
-                                                skill.OnSkillCasted(this, character, targets);
-                                                effects = [.. character.Effects.Where(e => e.IsInEffect)];
-                                                foreach (Effect effect in effects)
-                                                {
-                                                    effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
-                                                }
+                                            await skill.OnSkillCasted(this, character, targets, grids);
+                                            effects = [.. character.Effects.Where(e => e.IsInEffect)];
+                                            foreach (Effect effect in effects)
+                                            {
+                                                effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
                                             }
                                         }
                                     }
@@ -1418,36 +1406,50 @@ namespace Milimoe.FunGame.Core.Model
                             character.CharacterState = CharacterState.Actionable;
                             character.UpdateCharacterState();
                             Skill skill = skillTarget.Skill;
-                            List<Character> targets = [.. skillTarget.Targets.Where(c => c == character || !c.IsUnselectable)];
+                            List<Character> targets = [];
+                            List<Grid> grids = [];
+                            if (skill.IsNonDirectional)
+                            {
+                                grids = skillTarget.TargetGrids;
+                                targets = skill.SelectTargetsByRange(character, allEnemys, allTeammates, targets, grids);
+                            }
+                            else
+                            {
+                                targets = [.. skillTarget.Targets.Where(c => c == character || !c.IsUnselectable)];
+                                if (skill.CanSelectTargetRange > 0)
+                                {
+                                    targets = skill.SelectTargetsByCanSelectTargetRange(character, allEnemys, allTeammates, targets);
+                                }
+                            }
 
-                            // 判断是否能够释放技能
-                            if (targets.Count > 0 && CheckCanCast(character, skill, out double cost))
+                            if (targets.Count > 0)
                             {
                                 // 免疫检定
                                 await CheckSkilledImmuneAsync(character, targets, skill);
+                            }
 
-                                if (targets.Count > 0)
-                                {
-                                    decided = true;
-                                    endTurn = true;
-                                    LastRound.Targets[CharacterActionType.CastSkill] = [.. targets];
-                                    LastRound.Skills[CharacterActionType.CastSkill] = skill;
-                                    LastRound.ActionTypes.Add(CharacterActionType.CastSkill);
-                                    _castingSkills.Remove(character);
+                            // 判断是否能够释放技能
+                            if ((targets.Count > 0 || (skill.IsNonDirectional && grids.Count == 0)) && CheckCanCast(character, skill, out double cost))
+                            {
+                                decided = true;
+                                endTurn = true;
+                                LastRound.Targets[CharacterActionType.CastSkill] = [.. targets];
+                                LastRound.Skills[CharacterActionType.CastSkill] = skill;
+                                LastRound.ActionTypes.Add(CharacterActionType.CastSkill);
+                                _castingSkills.Remove(character);
 
-                                    skill.BeforeSkillCasted();
+                                skill.BeforeSkillCasted();
 
-                                    character.MP -= cost;
-                                    baseTime += skill.RealHardnessTime;
-                                    skill.CurrentCD = skill.RealCD;
-                                    skill.Enable = false;
-                                    LastRound.SkillsCost[skill] = $"{-cost:0.##} MP";
-                                    WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点魔法值，释放了魔法 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
+                                character.MP -= cost;
+                                baseTime += skill.RealHardnessTime;
+                                skill.CurrentCD = skill.RealCD;
+                                skill.Enable = false;
+                                LastRound.SkillsCost[skill] = $"{-cost:0.##} MP";
+                                WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点魔法值，释放了魔法 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
 
-                                    await OnCharacterCastSkillAsync(character, dp, skillTarget, cost);
+                                await OnCharacterCastSkillAsync(character, dp, skillTarget, cost);
 
-                                    skill.OnSkillCasted(this, character, targets);
-                                }
+                                await skill.OnSkillCasted(this, character, targets, grids);
                             }
                             else
                             {
@@ -1487,7 +1489,7 @@ namespace Milimoe.FunGame.Core.Model
                         {
                             // 预释放的爆发技不可取消
                             List<Grid> castRange = _map != null && realGrid != null ? _map.GetGridsByRange(realGrid, skill.CastRange, true) : [];
-                            List<Character> targets = await SelectTargetsAsync(character, skill, enemys, teammates, castRange);
+                            (List<Character> targets, List<Grid> grids) = await GetSelectedSkillTargetsList(character, skill, enemys, teammates, castRange, allEnemys, allTeammates, aiDecision);
                             // 免疫检定
                             await CheckSkilledImmuneAsync(character, targets, skill);
                             LastRound.Targets[CharacterActionType.CastSuperSkill] = [.. targets];
@@ -1501,10 +1503,10 @@ namespace Milimoe.FunGame.Core.Model
                             LastRound.SkillsCost[skill] = $"{-cost:0.##} EP";
                             WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点能量值，释放了爆发技 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
 
-                            SkillTarget skillTarget = new(skill, targets);
+                            SkillTarget skillTarget = new(skill, targets, grids);
                             await OnCharacterCastSkillAsync(character, dp, skillTarget, cost);
 
-                            skill.OnSkillCasted(this, character, targets);
+                            await skill.OnSkillCasted(this, character, targets, grids);
                         }
                         else
                         {
@@ -1554,7 +1556,7 @@ namespace Milimoe.FunGame.Core.Model
                             {
                                 if (IsDebug) WriteLine($"角色 [ {character} ] 该回合使用物品的次数已超过决策点配额，无法再使用物品！");
                             }
-                            else if (await UseItemAsync(item, character, dp, enemys, teammates, castRange, aiDecision?.Targets))
+                            else if (await UseItemAsync(item, character, dp, enemys, teammates, castRange, allEnemys, allTeammates, aiDecision))
                             {
                                 dp.AddActionType(CharacterActionType.UseItem);
                                 dp.CurrentDecisionPoints -= costDP;
@@ -2427,11 +2429,6 @@ namespace Milimoe.FunGame.Core.Model
             }
             heal += totalHealBonus.Sum(kv => kv.Value);
 
-            if (heal <= 0)
-            {
-                return;
-            }
-
             if (target.HP > 0 || (isDead && canRespawn))
             {
                 // 用于数据统计，不能是全额，溢出的部分需要扣除
@@ -2444,6 +2441,11 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     LastRound.Heals[target] += heal;
                 }
+            }
+
+            if (heal <= 0)
+            {
+                return;
             }
 
             bool isRespawn = isDead && canRespawn;
@@ -2505,6 +2507,47 @@ namespace Milimoe.FunGame.Core.Model
                 i.Skills.Active.SkillType == SkillType.Item && i.Skills.Active.Enable && !i.Skills.Active.IsInEffect && i.Skills.Active.CurrentCD == 0 && i.Skills.Active.RealMPCost <= character.MP && i.Skills.Active.RealEPCost <= character.EP)];
 
             return (selectableTeammates, selectableEnemys, skills, items);
+        }
+
+        /// <summary>
+        /// 同时考虑指向性和非指向性技能的目标选取方法
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="skill"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <param name="castRange"></param>
+        /// <param name="allEnemys"></param>
+        /// <param name="allTeammates"></param>
+        /// <param name="aiDecision"></param>
+        /// <returns></returns>
+        public async Task<(List<Character>, List<Grid>)> GetSelectedSkillTargetsList(Character character, Skill skill, List<Character> enemys, List<Character> teammates, List<Grid> castRange, List<Character> allEnemys, List<Character> allTeammates, AIDecision? aiDecision)
+        {
+            List<Character> targets = [];
+            List<Grid> grids = [];
+            if (skill.IsNonDirectional)
+            {
+                if (aiDecision != null) grids = aiDecision.TargetGrids;
+                if (grids.Count == 0)
+                {
+                    grids = await SelectNonDirectionalSkillTargetGridAsync(character, skill, enemys, teammates, castRange);
+                }
+                targets = skill.SelectTargetsByRange(character, allEnemys, allTeammates, targets, grids);
+            }
+            else
+            {
+                if (aiDecision != null) targets = aiDecision.Targets;
+                if (targets.Count == 0)
+                {
+                    targets = await SelectTargetsAsync(character, skill, enemys, teammates, castRange);
+                }
+                if (skill.CanSelectTargetRange > 0)
+                {
+                    // 扩散目标
+                    targets = skill.SelectTargetsByCanSelectTargetRange(character, allEnemys, allTeammates, targets);
+                }
+            }
+            return (targets, grids);
         }
 
         /// <summary>
@@ -2579,9 +2622,11 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
         /// <param name="castRange"></param>
-        /// <param name="desiredTargets"></param>
+        /// <param name="allEnemys"></param>
+        /// <param name="allTeammates"></param>
+        /// <param name="aiDecision"></param>
         /// <returns></returns>
-        public async Task<bool> UseItemAsync(Item item, Character character, DecisionPoints dp, List<Character> enemys, List<Character> teammates, List<Grid> castRange, List<Character>? desiredTargets = null)
+        public async Task<bool> UseItemAsync(Item item, Character character, DecisionPoints dp, List<Character> enemys, List<Character> teammates, List<Grid> castRange, List<Character> allEnemys, List<Character> allTeammates, AIDecision? aiDecision = null)
         {
             if (CheckCanCast(character, item, out double costMP, out double costEP))
             {
@@ -2589,63 +2634,55 @@ namespace Milimoe.FunGame.Core.Model
                 if (skill != null)
                 {
                     skill.GamingQueue = this;
-                    List<Character> targets;
-                    if (desiredTargets != null)
-                    {
-                        targets = desiredTargets;
-                    }
-                    else
-                    {
-                        targets = await SelectTargetsAsync(character, skill, enemys, teammates, castRange);
-                    }
+                    (List<Character> targets, List<Grid> grids) = await GetSelectedSkillTargetsList(character, skill, enemys, teammates, castRange, allEnemys, allTeammates, aiDecision);
+
                     if (targets.Count > 0)
                     {
                         // 免疫检定
                         await CheckSkilledImmuneAsync(character, targets, skill, item);
+                    }
+                    if (targets.Count > 0 && CheckCanCast(character, skill, out double cost))
+                    {
+                        LastRound.Targets[CharacterActionType.UseItem] = [.. targets];
 
-                        if (targets.Count > 0)
+                        WriteLine($"[ {character} ] 使用了物品 [ {item.Name} ]！");
+                        item.ReduceTimesAndRemove();
+                        if (item.IsReduceTimesAfterUse && item.RemainUseTimes == 0)
                         {
-                            LastRound.Targets[CharacterActionType.UseItem] = [.. targets];
-
-                            WriteLine($"[ {character} ] 使用了物品 [ {item.Name} ]！");
-                            item.ReduceTimesAndRemove();
-                            if (item.IsReduceTimesAfterUse && item.RemainUseTimes == 0)
-                            {
-                                character.Items.Remove(item);
-                            }
-                            await OnCharacterUseItemAsync(character, dp, item, targets);
-
-                            skill.OnSkillCasting(this, character, targets);
-                            skill.BeforeSkillCasted();
-
-                            skill.CurrentCD = skill.RealCD;
-                            skill.Enable = false;
-
-                            string line = $"[ {character} ] ";
-                            if (costMP > 0)
-                            {
-                                character.MP -= costMP;
-                                LastRound.ItemsCost[item] = $"{-costMP:0.##} MP";
-                                line += $"消耗了 {costMP:0.##} 点魔法值，";
-                            }
-
-                            if (costEP > 0)
-                            {
-                                character.EP -= costEP;
-                                if (LastRound.ItemsCost[item] != "") LastRound.ItemsCost[item] += " / ";
-                                LastRound.ItemsCost[item] += $"{-costEP:0.##} EP";
-                                line += $"消耗了 {costEP:0.##} 点能量，";
-                            }
-
-                            line += $"释放了物品技能 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}";
-                            WriteLine(line);
-
-                            SkillTarget skillTarget = new(skill, targets);
-                            await OnCharacterCastItemSkillAsync(character, dp, item, skillTarget, costMP, costEP);
-
-                            skill.OnSkillCasted(this, character, targets);
-                            return true;
+                            character.Items.Remove(item);
                         }
+                        await OnCharacterUseItemAsync(character, dp, item, targets);
+
+                        skill.OnSkillCasting(this, character, targets, grids);
+                        skill.BeforeSkillCasted();
+
+                        skill.CurrentCD = skill.RealCD;
+                        skill.Enable = false;
+
+                        string line = $"[ {character} ] ";
+                        if (costMP > 0)
+                        {
+                            character.MP -= costMP;
+                            LastRound.ItemsCost[item] = $"{-costMP:0.##} MP";
+                            line += $"消耗了 {costMP:0.##} 点魔法值，";
+                        }
+
+                        if (costEP > 0)
+                        {
+                            character.EP -= costEP;
+                            if (LastRound.ItemsCost[item] != "") LastRound.ItemsCost[item] += " / ";
+                            LastRound.ItemsCost[item] += $"{-costEP:0.##} EP";
+                            line += $"消耗了 {costEP:0.##} 点能量，";
+                        }
+
+                        line += $"释放了物品技能 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}";
+                        WriteLine(line);
+
+                        SkillTarget skillTarget = new(skill, targets, grids);
+                        await OnCharacterCastItemSkillAsync(character, dp, item, skillTarget, costMP, costEP);
+
+                        await skill.OnSkillCasted(this, character, targets, grids);
+                        return true;
                     }
                 }
             }
@@ -2789,6 +2826,25 @@ namespace Milimoe.FunGame.Core.Model
             if (targets.Count == 0 && CharactersInAI.Contains(caster))
             {
                 targets = skill.SelectTargets(caster, enemys, teammates);
+            }
+            return targets;
+        }
+
+        /// <summary>
+        /// 选取非指向性技能目标
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="skill"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <param name="castRange"></param>
+        /// <returns></returns>
+        public async Task<List<Grid>> SelectNonDirectionalSkillTargetGridAsync(Character caster, Skill skill, List<Character> enemys, List<Character> teammates, List<Grid> castRange)
+        {
+            List<Grid> targets = await OnSelectNonDirectionalSkillTargetsAsync(caster, skill, enemys, teammates, castRange);
+            if (targets.Count == 0 && CharactersInAI.Contains(caster) && castRange.Count > 0)
+            {
+                targets = skill.SelectNonDirectionalTargets(caster, castRange.OrderBy(r => Random.Shared.Next()).FirstOrDefault(r => r.Characters.Count > 0) ?? castRange.First(), skill.SelectIncludeCharacterGrid);
             }
             return targets;
         }
@@ -3302,7 +3358,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="round"></param>
         /// <param name="character"></param>
         /// <returns></returns>
-        protected List<Skill> GetRoundRewards(int round, Character character)
+        protected async Task<List<Skill>> GetRoundRewards(int round, Character character)
         {
             if (_roundRewards.TryGetValue(round, out List<Skill>? value) && value is List<Skill> list && list.Count > 0)
             {
@@ -3315,7 +3371,7 @@ namespace Milimoe.FunGame.Core.Model
                     WriteLine($"[ {character} ] 获得了回合奖励！{skill.Description}".Trim());
                     if (skill.IsActive)
                     {
-                        skill.OnSkillCasted(this, character, [character]);
+                        await skill.OnSkillCasted(this, character, [character], []);
                     }
                     else
                     {
@@ -3521,7 +3577,7 @@ namespace Milimoe.FunGame.Core.Model
                 double newHardnessTime = preCastSSCount > 0 ? Calculation.Round2Digits(maxPreCastTime + 0.01) : 0;
 
                 AddCharacter(character, newHardnessTime, false);
-                skill.OnSkillCasting(this, character, []);
+                skill.OnSkillCasting(this, character, [], []);
                 await OnQueueUpdatedAsync(_queue, character, dp, 0, QueueUpdatedReason.PreCastSuperSkill, "设置角色预释放爆发技的硬直时间。");
             }
         }
@@ -3915,6 +3971,25 @@ namespace Milimoe.FunGame.Core.Model
         protected async Task<List<Character>> OnSelectSkillTargetsAsync(Character caster, Skill skill, List<Character> enemys, List<Character> teammates, List<Grid> castRange)
         {
             return await (SelectSkillTargets?.Invoke(this, caster, skill, enemys, teammates, castRange) ?? Task.FromResult(new List<Character>()));
+        }
+
+        public delegate Task<List<Grid>> SelectNonDirectionalSkillTargetsEventHandler(GamingQueue queue, Character caster, Skill skill, List<Character> enemys, List<Character> teammates, List<Grid> castRange);
+        /// <summary>
+        /// 选取非指向性技能目标事件
+        /// </summary>
+        public event SelectNonDirectionalSkillTargetsEventHandler? SelectNonDirectionalSkillTargets;
+        /// <summary>
+        /// 选取非指向性技能目标事件
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="skill"></param>
+        /// <param name="enemys"></param>
+        /// <param name="teammates"></param>
+        /// <param name="castRange"></param>
+        /// <returns></returns>
+        protected async Task<List<Grid>> OnSelectNonDirectionalSkillTargetsAsync(Character caster, Skill skill, List<Character> enemys, List<Character> teammates, List<Grid> castRange)
+        {
+            return await (SelectNonDirectionalSkillTargets?.Invoke(this, caster, skill, enemys, teammates, castRange) ?? Task.FromResult(new List<Grid>()));
         }
 
         public delegate Task<List<Character>> SelectNormalAttackTargetsEventHandler(GamingQueue queue, Character character, NormalAttack attack, List<Character> enemys, List<Character> teammates, List<Grid> attackRange);

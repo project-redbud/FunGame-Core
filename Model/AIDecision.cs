@@ -12,6 +12,7 @@ namespace Milimoe.FunGame.Core.Model
         public ISkill? SkillToUse { get; set; } = null;
         public Item? ItemToUse { get; set; } = null;
         public List<Character> Targets { get; set; } = [];
+        public List<Grid> TargetGrids { get; set; } = [];
         public double Score { get; set; } = 0;
         public bool IsPureMove { get; set; } = false;
     }

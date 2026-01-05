@@ -86,31 +86,43 @@ namespace Milimoe.FunGame.Core.Controller
                         // 计算当前技能的可达格子
                         List<Grid> skillReachableGrids = _map.GetGridsByRange(potentialMoveGrid, skill.CastRange, true);
 
-                        List<Character> skillReachableEnemys = [.. allEnemysInGame
+                        if (skill.IsNonDirectional)
+                        {
+                            AIDecision? nonDirDecision = EvaluateNonDirectionalSkill(character, skill, potentialMoveGrid, skillReachableGrids, allEnemysInGame, allTeammatesInGame, cost);
+
+                            if (nonDirDecision != null && nonDirDecision.Score > bestDecision.Score)
+                            {
+                                bestDecision = nonDirDecision;
+                            }
+                        }
+                        else
+                        {
+                            List<Character> skillReachableEnemys = [.. allEnemysInGame
                             .Where(c => skillReachableGrids.SelectMany(g => g.Characters).Contains(c) && !c.IsUnselectable && selectableEnemys.Contains(c))
                             .Distinct()];
-                        List<Character> skillReachableTeammates = [.. allTeammatesInGame
+                            List<Character> skillReachableTeammates = [.. allTeammatesInGame
                             .Where(c => skillReachableGrids.SelectMany(g => g.Characters).Contains(c) && selectableTeammates.Contains(c))
                             .Distinct()];
 
-                        // 检查是否有可用的目标（敌人或队友，取决于技能类型）
-                        if (skillReachableEnemys.Count > 0 || skillReachableTeammates.Count > 0)
-                        {
-                            // 将筛选后的目标列表传递给 SelectTargets
-                            List<Character> targets = SelectTargets(character, skill, skillReachableEnemys, skillReachableTeammates);
-                            if (targets.Count > 0)
+                            // 检查是否有可用的目标（敌人或队友，取决于技能类型）
+                            if (skillReachableEnemys.Count > 0 || skillReachableTeammates.Count > 0)
                             {
-                                double currentScore = EvaluateSkill(character, skill, targets, cost) - movePenalty;
-                                if (currentScore > bestDecision.Score)
+                                // 将筛选后的目标列表传递给 SelectTargets
+                                List<Character> targets = SelectTargets(character, skill, skillReachableEnemys, skillReachableTeammates);
+                                if (targets.Count > 0)
                                 {
-                                    bestDecision = new AIDecision
+                                    double currentScore = EvaluateSkill(character, skill, targets, cost) - movePenalty;
+                                    if (currentScore > bestDecision.Score)
                                     {
-                                        ActionType = CharacterActionType.PreCastSkill,
-                                        TargetMoveGrid = potentialMoveGrid,
-                                        SkillToUse = skill,
-                                        Targets = targets,
-                                        Score = currentScore
-                                    };
+                                        bestDecision = new AIDecision
+                                        {
+                                            ActionType = CharacterActionType.PreCastSkill,
+                                            TargetMoveGrid = potentialMoveGrid,
+                                            SkillToUse = skill,
+                                            Targets = targets,
+                                            Score = currentScore
+                                        };
+                                    }
                                 }
                             }
                         }
@@ -126,32 +138,44 @@ namespace Milimoe.FunGame.Core.Controller
                         // 计算当前物品技能的可达格子
                         List<Grid> itemSkillReachableGrids = _map.GetGridsByRange(potentialMoveGrid, itemSkill.CastRange, true);
 
-                        List<Character> itemSkillReachableEnemys = [.. allEnemysInGame
+                        if (itemSkill.IsNonDirectional)
+                        {
+                            AIDecision? nonDirDecision = EvaluateNonDirectionalSkill(character, itemSkill, potentialMoveGrid, itemSkillReachableGrids, allEnemysInGame, allTeammatesInGame, cost);
+
+                            if (nonDirDecision != null && nonDirDecision.Score > bestDecision.Score)
+                            {
+                                bestDecision = nonDirDecision;
+                            }
+                        }
+                        else
+                        {
+                            List<Character> itemSkillReachableEnemys = [.. allEnemysInGame
                             .Where(c => itemSkillReachableGrids.SelectMany(g => g.Characters).Contains(c) && !c.IsUnselectable && selectableEnemys.Contains(c))
                             .Distinct()];
-                        List<Character> itemSkillReachableTeammates = [.. allTeammatesInGame
+                            List<Character> itemSkillReachableTeammates = [.. allTeammatesInGame
                             .Where(c => itemSkillReachableGrids.SelectMany(g => g.Characters).Contains(c) && selectableTeammates.Contains(c))
                             .Distinct()];
 
-                        // 检查是否有可用的目标
-                        if (itemSkillReachableEnemys.Count > 0 || itemSkillReachableTeammates.Count > 0)
-                        {
-                            // 将筛选后的目标列表传递给 SelectTargets
-                            List<Character> targetsForItem = SelectTargets(character, itemSkill, itemSkillReachableEnemys, itemSkillReachableTeammates);
-                            if (targetsForItem.Count > 0)
+                            // 检查是否有可用的目标
+                            if (itemSkillReachableEnemys.Count > 0 || itemSkillReachableTeammates.Count > 0)
                             {
-                                double currentScore = EvaluateItem(character, item, targetsForItem, cost) - movePenalty;
-                                if (currentScore > bestDecision.Score)
+                                // 将筛选后的目标列表传递给 SelectTargets
+                                List<Character> targetsForItem = SelectTargets(character, itemSkill, itemSkillReachableEnemys, itemSkillReachableTeammates);
+                                if (targetsForItem.Count > 0)
                                 {
-                                    bestDecision = new AIDecision
+                                    double currentScore = EvaluateItem(character, item, targetsForItem, cost) - movePenalty;
+                                    if (currentScore > bestDecision.Score)
                                     {
-                                        ActionType = CharacterActionType.UseItem,
-                                        TargetMoveGrid = potentialMoveGrid,
-                                        ItemToUse = item,
-                                        SkillToUse = itemSkill,
-                                        Targets = targetsForItem,
-                                        Score = currentScore
-                                    };
+                                        bestDecision = new AIDecision
+                                        {
+                                            ActionType = CharacterActionType.UseItem,
+                                            TargetMoveGrid = potentialMoveGrid,
+                                            ItemToUse = item,
+                                            SkillToUse = itemSkill,
+                                            Targets = targetsForItem,
+                                            Score = currentScore
+                                        };
+                                    }
                                 }
                             }
                         }
@@ -251,6 +275,7 @@ namespace Milimoe.FunGame.Core.Controller
                    (character.CharacterState != CharacterState.ActionRestricted || item.ItemType == ItemType.Consumable) && // 行动受限只能用消耗品
                    character.CharacterState != CharacterState.BattleRestricted;
         }
+
         /// <summary>
         /// 选择技能的最佳目标
         /// </summary>
@@ -300,6 +325,51 @@ namespace Milimoe.FunGame.Core.Controller
             //score -= skill.RealCD * 2;
             //score -= skill.HardnessTime * 2;
             return score;
+        }
+
+        // 非指向性技能的评估
+        private AIDecision? EvaluateNonDirectionalSkill(Character character, Skill skill, Grid moveGrid, List<Grid> castableGrids, List<Character> allEnemys, List<Character> allTeammates, double cost)
+        {
+            double bestSkillScore = double.NegativeInfinity;
+            List<Grid> bestTargetGrids = [];
+
+            // 枚举所有可施放的格子作为潜在中心
+            foreach (Grid centerGrid in castableGrids)
+            {
+                // 计算该中心格子下的实际影响范围格子
+                List<Grid> effectGrids = skill.SelectNonDirectionalTargets(character, centerGrid, skill.SelectIncludeCharacterGrid);
+
+                // 计算实际影响的角色
+                List<Character> affected = skill.SelectTargetsByRange(character, allEnemys, allTeammates, [], effectGrids);
+
+                if (affected.Count == 0)
+                    continue;
+
+                // 评估这些影响目标的价值
+                double skillScore = affected.Sum(t => CalculateTargetValue(t, skill));
+
+                if (skillScore > bestSkillScore)
+                {
+                    bestSkillScore = skillScore;
+                    bestTargetGrids = effectGrids;
+                }
+            }
+
+            if (bestSkillScore == double.NegativeInfinity)
+                return null; // 无有效格子
+
+            double movePenalty = GameMap.CalculateManhattanDistance(_map.GetCharacterCurrentGrid(character)!, moveGrid) * 0.5;
+            double finalScore = bestSkillScore - movePenalty;
+
+            return new AIDecision
+            {
+                ActionType = CharacterActionType.PreCastSkill,
+                TargetMoveGrid = moveGrid,
+                SkillToUse = skill,
+                Targets = [],
+                TargetGrids = bestTargetGrids,
+                Score = finalScore
+            };
         }
 
         /// <summary>

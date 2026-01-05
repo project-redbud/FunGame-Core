@@ -163,9 +163,11 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
         /// <param name="castRange"></param>
-        /// <param name="desiredTargets"></param>
+        /// <param name="allEnemys"></param>
+        /// <param name="allTeammates"></param>
+        /// <param name="aiDecision"></param>
         /// <returns></returns>
-        public Task<bool> UseItemAsync(Item item, Character character, DecisionPoints dp, List<Character> enemys, List<Character> teammates, List<Grid> castRange, List<Character>? desiredTargets = null);
+        public Task<bool> UseItemAsync(Item item, Character character, DecisionPoints dp, List<Character> enemys, List<Character> teammates, List<Grid> castRange, List<Character> allEnemys, List<Character> allTeammates, AIDecision? aiDecision = null);
 
         /// <summary>
         /// 角色移动

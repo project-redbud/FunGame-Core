@@ -1066,11 +1066,34 @@ namespace Milimoe.FunGame.Core.Library.Constant
 
     public enum SkillRangeType
     {
+        /// <summary>
+        /// 菱形
+        /// </summary>
         Diamond,
+
+        /// <summary>
+        /// 圆形
+        /// </summary>
         Circle,
+
+        /// <summary>
+        /// 正方形
+        /// </summary>
         Square,
+
+        /// <summary>
+        /// 施法者与目标之间的线段
+        /// </summary>
         Line,
+
+        /// <summary>
+        /// 施法者与目标所在的直线，贯穿至地图边缘
+        /// </summary>
         LinePass,
+
+        /// <summary>
+        /// 扇形
+        /// </summary>
         Sector
     }
 }

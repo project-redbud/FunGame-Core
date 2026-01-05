@@ -367,6 +367,257 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         }
 
         /// <summary>
+        /// 获取以某个格子为中心，一定范围内的格子（正方形，切比雪夫距离），只考虑同一平面的格子。
+        /// </summary>
+        /// <param name="grid"></param>
+        /// <param name="range"></param>
+        /// <param name="includeCharacter"></param>
+        /// <returns></returns>
+        public virtual List<Grid> GetGridsBySquareRange(Grid grid, int range, bool includeCharacter = false)
+        {
+            List<Grid> grids = [];
+
+            if (range < 0) return grids;
+
+            for (int dx = -range; dx <= range; dx++)
+            {
+                for (int dy = -range; dy <= range; dy++)
+                {
+                    // 切比雪夫距离：max(|dx|, |dy|) <= range
+                    if (Math.Max(Math.Abs(dx), Math.Abs(dy)) <= range)
+                    {
+                        int x = grid.X + dx;
+                        int y = grid.Y + dy;
+                        int z = grid.Z;
+
+                        if (GridsByCoordinate.TryGetValue((x, y, z), out Grid? select) && select != null)
+                        {
+                            if (includeCharacter || select.Characters.Count == 0)
+                            {
+                                grids.Add(select);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return grids;
+        }
+
+        /// <summary>
+        /// 获取以某个格子为中心，最远距离的格子（正方形，切比雪夫距离），只考虑同一平面的格子。
+        /// </summary>
+        /// <param name="grid"></param>
+        /// <param name="range"></param>
+        /// <param name="includeCharacter"></param>
+        /// <returns></returns>
+        public virtual List<Grid> GetOuterGridsBySquareRange(Grid grid, int range, bool includeCharacter = false)
+        {
+            List<Grid> grids = [];
+
+            if (range < 0) return grids;
+
+            for (int dx = -range; dx <= range; dx++)
+            {
+                for (int dy = -range; dy <= range; dy++)
+                {
+                    if (Math.Max(Math.Abs(dx), Math.Abs(dy)) == range)
+                    {
+                        int x = grid.X + dx;
+                        int y = grid.Y + dy;
+                        int z = grid.Z;
+
+                        if (GridsByCoordinate.TryGetValue((x, y, z), out Grid? select) && select != null)
+                        {
+                            if (includeCharacter || select.Characters.Count == 0)
+                            {
+                                grids.Add(select);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return grids;
+        }
+
+        /// <summary>
+        /// 使用布雷森汉姆直线算法获取从起点到终点的所有格子（包含起点和终点）。
+        /// 若 passThrough 为 true，则继续向同一方向延伸直到地图边缘。只考虑同一平面的格子。
+        /// </summary>
+        /// <param name="casterGrid">施法者格子</param>
+        /// <param name="targetGrid">目标格子</param>
+        /// <param name="passThrough">是否贯穿至地图边缘</param>
+        /// <param name="includeCharacter">是否包含有角色的格子</param>
+        /// <returns>直线上的格子列表</returns>
+        public virtual List<Grid> GetGridsOnLine(Grid casterGrid, Grid targetGrid, bool passThrough = false, bool includeCharacter = false)
+        {
+            List<Grid> grids = [];
+
+            if (casterGrid == Grid.Empty || targetGrid == Grid.Empty || casterGrid.Z != targetGrid.Z)
+            {
+                if (targetGrid != Grid.Empty && (includeCharacter || targetGrid.Characters.Count == 0))
+                    grids.Add(targetGrid);
+                return grids;
+            }
+
+            int x0 = casterGrid.X;
+            int y0 = casterGrid.Y;
+            int x1 = targetGrid.X;
+            int y1 = targetGrid.Y;
+
+            // 始终包含起点
+            if (includeCharacter || casterGrid.Characters.Count == 0)
+                grids.Add(casterGrid);
+
+            int dx = Math.Abs(x1 - x0);
+            int dy = Math.Abs(y1 - y0);
+            int sx = x0 < x1 ? 1 : -1;
+            int sy = y0 < y1 ? 1 : -1;
+            int err = dx - dy;
+
+            int currentX = x0;
+            int currentY = y0;
+
+            while (true)
+            {
+                Grid? current = this[currentX, currentY, casterGrid.Z];
+                if (current != null && (includeCharacter || current.Characters.Count == 0) && !grids.Contains(current))
+                {
+                    grids.Add(current);
+                }
+
+                if (currentX == x1 && currentY == y1)
+                    break;
+
+                int e2 = 2 * err;
+                if (e2 > -dy)
+                {
+                    err -= dy;
+                    currentX += sx;
+                }
+                if (e2 < dx)
+                {
+                    err += dx;
+                    currentY += sy;
+                }
+            }
+
+            // 贯穿模式：继续向目标方向延伸直到地图边缘
+            if (passThrough)
+            {
+                int deltaX = x1 - x0;
+                int deltaY = y1 - y0;
+                int gcd = GCD(Math.Abs(deltaX), Math.Abs(deltaY));
+                if (gcd == 0) gcd = 1;
+
+                int stepX = deltaX / gcd;
+                int stepY = deltaY / gcd;
+
+                int extendX = x1 + stepX;
+                int extendY = y1 + stepY;
+
+                while (true)
+                {
+                    Grid? extendGrid = this[extendX, extendY, casterGrid.Z];
+                    if (extendGrid == null) break;
+
+                    if ((includeCharacter || extendGrid.Characters.Count == 0) && !grids.Contains(extendGrid))
+                    {
+                        grids.Add(extendGrid);
+                    }
+
+                    extendX += stepX;
+                    extendY += stepY;
+                }
+            }
+
+            return grids;
+        }
+
+        /// <summary>
+        /// 获取扇形范围内的格子
+        /// 朝向由 casterGrid → targetGrid 决定，扇形以 targetGrid 为顶点向外扩展
+        /// </summary>
+        /// <param name="targetGrid">目标格子，即扇形顶点</param>
+        /// <param name="casterGrid">施法者格子，用于确定朝向</param>
+        /// <param name="range">最大半径</param>
+        /// <param name="angleDegrees">扇形角度，默认 90</param>
+        /// <param name="includeCharacter">是否包含有角色的格子</param>
+        /// <returns></returns>
+        public virtual List<Grid> GetGridsInSector(Grid targetGrid, Grid casterGrid, int range, double angleDegrees = 90, bool includeCharacter = false)
+        {
+            List<Grid> grids = [];
+
+            if (range <= 0 || targetGrid.Z != casterGrid.Z)
+            {
+                if (includeCharacter || targetGrid.Characters.Count == 0)
+                    grids.Add(targetGrid);
+                return grids;
+            }
+
+            // 计算朝向向量（从施法者到落点）
+            double dirX = targetGrid.X - casterGrid.X;
+            double dirY = targetGrid.Y - casterGrid.Y;
+            double dirLength = Math.Sqrt(dirX * dirX + dirY * dirY);
+            if (dirLength == 0) return GetGridsByCircleRange(targetGrid, range, includeCharacter); // 退化为圆
+
+            // 单位方向向量
+            double unitDirX = dirX / dirLength;
+            double unitDirY = dirY / dirLength;
+
+            // 半角（弧度）
+            double halfAngleRad = (angleDegrees / 2) * Math.PI / 180.0;
+
+            for (int dx = -range; dx <= range; dx++)
+            {
+                for (int dy = -range; dy <= range; dy++)
+                {
+                    int x = targetGrid.X + dx;
+                    int y = targetGrid.Y + dy;
+                    int z = targetGrid.Z;
+
+                    Grid? candidate = this[x, y, z];
+                    if (candidate == null) continue;
+
+                    // 向量：从中心到候选格子
+                    double vecX = dx;
+                    double vecY = dy;
+                    double vecLength = Math.Sqrt(vecX * vecX + vecY * vecY);
+
+                    // 在半径内
+                    if (vecLength > range + 0.01) continue;
+
+                    if (vecLength < 0.01)
+                    {
+                        // 中心格子始终包含
+                        grids.Add(candidate);
+                        continue;
+                    }
+
+                    // 单位向量
+                    double unitVecX = vecX / vecLength;
+                    double unitVecY = vecY / vecLength;
+
+                    // 计算夹角（余弦）
+                    double dot = unitDirX * unitVecX + unitDirY * unitVecY;
+                    double angleRad = Math.Acos(Math.Clamp(dot, -1.0, 1.0));
+
+                    // 在扇形角度内
+                    if (angleRad <= halfAngleRad)
+                    {
+                        if (includeCharacter || candidate.Characters.Count == 0)
+                        {
+                            grids.Add(candidate);
+                        }
+                    }
+                }
+            }
+
+            return grids;
+        }
+
+        /// <summary>
         /// 设置角色移动
         /// </summary>
         /// <param name="character"></param>
@@ -550,6 +801,20 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         public static int CalculateManhattanDistance(Grid g1, Grid g2)
         {
             return Math.Abs(g1.X - g2.X) + Math.Abs(g1.Y - g2.Y) + Math.Abs(g1.Z - g2.Z);
+        }
+
+        /// <summary>
+        /// 计算两个整数的最大公约数（欧几里得算法）
+        /// </summary>
+        public static int GCD(int a, int b)
+        {
+            while (b != 0)
+            {
+                int temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
         }
 
         /// <summary>
