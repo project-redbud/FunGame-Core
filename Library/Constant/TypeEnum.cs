@@ -233,6 +233,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
     /// <para><see cref="SkillSet.GetDispelledTypeByEffectType(EffectType)"/></para>
     /// <para><see cref="SkillSet.GetEffectTypeName(EffectType)"/></para>
     /// <para><see cref="SkillSet.GetIsDebuffByEffectType(EffectType)"/></para>
+    /// <para><see cref="SkillSet.GetExemptionTypeByEffectType(EffectType)"/></para>
     /// </summary>
     public enum EffectType
     {
@@ -494,7 +495,17 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// <summary>
         /// 迟滞，硬直时间延长
         /// </summary>
-        Delay
+        Delay,
+
+        /// <summary>
+        /// 专注
+        /// </summary>
+        Focusing,
+
+        /// <summary>
+        /// 打断施法
+        /// </summary>
+        InterruptCasting
     }
 
     public enum ItemType

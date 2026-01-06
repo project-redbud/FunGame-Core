@@ -675,7 +675,7 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             TotalTime = Calculation.Round2Digits(TotalTime + timeToReduce);
-            WriteLine("时间流逝：" + timeToReduce);
+            WriteLine($"时间流逝：{timeToReduce}");
 
             Character[] characters = [.. _queue];
             foreach (Character character in characters)
@@ -758,6 +758,12 @@ namespace Milimoe.FunGame.Core.Model
                         effect.OnTimeElapsed(character, timeToReduce);
                     }
 
+                    // 进行持续时间豁免
+                    if (effect.Exemptable && effect.ExemptDuration && (effect.RemainDuration > 0 || effect.RemainDurationTurn > 0))
+                    {
+                        await CheckExemptionAsync(character, effect.Source, effect, false);
+                    }
+
                     if (effect.IsBeingTemporaryDispelled)
                     {
                         effect.IsBeingTemporaryDispelled = false;
@@ -801,6 +807,12 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     if (effect.Source is null) continue;
                     effect.Dispel(effect.Source, character, !IsTeammate(character, effect.Source) && character != effect.Source);
+                }
+
+                // 还原临时驱散后的吟唱状态
+                if (character.CharacterState == CharacterState.Actionable && _castingSkills.ContainsKey(character))
+                {
+                    character.CharacterState = CharacterState.Casting;
                 }
 
                 _eliminated.Remove(character);
@@ -1240,7 +1252,7 @@ namespace Milimoe.FunGame.Core.Model
 
                                 await OnCharacterNormalAttackAsync(character, dp, targets);
 
-                                character.NormalAttack.Attack(this, character, targets);
+                                character.NormalAttack.Attack(this, character, true, targets);
                                 baseTime += character.NormalAttack.RealHardnessTime;
                                 effects = [.. character.Effects.Where(e => e.IsInEffect)];
                                 foreach (Effect effect in effects)
@@ -1408,7 +1420,7 @@ namespace Milimoe.FunGame.Core.Model
                             Skill skill = skillTarget.Skill;
                             List<Character> targets = [];
                             List<Grid> grids = [];
-                            if (skill.IsNonDirectional)
+                            if (skill.IsNonDirectional && _map != null)
                             {
                                 grids = skillTarget.TargetGrids;
                                 targets = skill.SelectTargetsByRange(character, allEnemys, allTeammates, targets, grids);
@@ -1450,18 +1462,20 @@ namespace Milimoe.FunGame.Core.Model
                                 await OnCharacterCastSkillAsync(character, dp, skillTarget, cost);
 
                                 await skill.OnSkillCasted(this, character, targets, grids);
+
+                                effects = [.. character.Effects.Where(e => e.IsInEffect)];
+                                foreach (Effect effect in effects)
+                                {
+                                    effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
+                                }
                             }
                             else
                             {
                                 WriteLine($"[ {character} ] 放弃释放技能！");
                                 // 放弃释放技能会获得3的硬直时间
                                 if (baseTime == 0) baseTime = 3;
-                            }
-
-                            effects = [.. character.Effects.Where(e => e.IsInEffect)];
-                            foreach (Effect effect in effects)
-                            {
-                                effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
+                                decided = true;
+                                endTurn = true;
                             }
                         }
                         else
@@ -1507,18 +1521,20 @@ namespace Milimoe.FunGame.Core.Model
                             await OnCharacterCastSkillAsync(character, dp, skillTarget, cost);
 
                             await skill.OnSkillCasted(this, character, targets, grids);
+
+                            effects = [.. character.Effects.Where(e => e.IsInEffect)];
+                            foreach (Effect effect in effects)
+                            {
+                                effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
+                            }
                         }
                         else
                         {
                             WriteLine($"[ {character} ] 因能量不足放弃释放爆发技！");
                             // 放弃释放技能会获得3的硬直时间
                             if (baseTime == 0) baseTime = 3;
-                        }
-
-                        effects = [.. character.Effects.Where(e => e.IsInEffect)];
-                        foreach (Effect effect in effects)
-                        {
-                            effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
+                            decided = true;
+                            endTurn = true;
                         }
                     }
                     else if (type == CharacterActionType.UseItem)
@@ -1852,7 +1868,8 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="damageType"></param>
         /// <param name="magicType"></param>
         /// <param name="damageResult"></param>
-        public async Task DamageToEnemyAsync(Character actor, Character enemy, double damage, bool isNormalAttack, DamageType damageType = DamageType.Physical, MagicType magicType = MagicType.None, DamageResult damageResult = DamageResult.Normal)
+        /// <param name="triggerEffects"></param>
+        public async Task DamageToEnemyAsync(Character actor, Character enemy, double damage, bool isNormalAttack, DamageType damageType = DamageType.Physical, MagicType magicType = MagicType.None, DamageResult damageResult = DamageResult.Normal, bool triggerEffects = true)
         {
             // 如果敌人在结算伤害之前就已经死亡，将不会继续下去
             if (enemy.HP <= 0)
@@ -1871,30 +1888,33 @@ namespace Milimoe.FunGame.Core.Model
             bool isEvaded = damageResult == DamageResult.Evaded;
             List<Effect> effects = [];
 
-            // 真实伤害跳过伤害加成区间
-            if (damageType != DamageType.True)
+            if (triggerEffects)
             {
-                Dictionary<Effect, double> totalDamageBonus = [];
-                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
-                foreach (Effect effect in effects)
+                // 真实伤害跳过伤害加成区间
+                if (damageType != DamageType.True)
                 {
-                    double damageBonus = effect.AlterActualDamageAfterCalculation(actor, enemy, damage, isNormalAttack, damageType, magicType, damageResult, ref isEvaded, totalDamageBonus);
-                    totalDamageBonus[effect] = damageBonus;
-                    if (isEvaded)
+                    Dictionary<Effect, double> totalDamageBonus = [];
+                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+                    foreach (Effect effect in effects)
                     {
-                        damageResult = DamageResult.Evaded;
+                        double damageBonus = effect.AlterActualDamageAfterCalculation(actor, enemy, damage, isNormalAttack, damageType, magicType, damageResult, ref isEvaded, totalDamageBonus);
+                        totalDamageBonus[effect] = damageBonus;
+                        if (isEvaded)
+                        {
+                            damageResult = DamageResult.Evaded;
+                        }
                     }
+                    damage += totalDamageBonus.Sum(kv => kv.Value);
                 }
-                damage += totalDamageBonus.Sum(kv => kv.Value);
-            }
-            else
-            {
-                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
-                foreach (Effect effect in effects)
+                else
                 {
-                    if (effect.BeforeApplyTrueDamage(actor, enemy, damage, isNormalAttack, damageResult))
+                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+                    foreach (Effect effect in effects)
                     {
-                        damageResult = DamageResult.Evaded;
+                        if (effect.BeforeApplyTrueDamage(actor, enemy, damage, isNormalAttack, damageResult))
+                        {
+                            damageResult = DamageResult.Evaded;
+                        }
                     }
                 }
             }
@@ -1926,12 +1946,15 @@ namespace Milimoe.FunGame.Core.Model
                                 ignore = true;
                             }
                         }
-                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
-                        foreach (Effect effect in effects)
+                        if (triggerEffects)
                         {
-                            if (!effect.OnDamageImmuneCheck(actor, enemy, isNormalAttack, damageType, magicType, damage))
+                            effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+                            foreach (Effect effect in effects)
                             {
-                                ignore = true;
+                                if (!effect.OnDamageImmuneCheck(actor, enemy, isNormalAttack, damageType, magicType, damage))
+                                {
+                                    ignore = true;
+                                }
                             }
                         }
                     }
@@ -2181,10 +2204,13 @@ namespace Milimoe.FunGame.Core.Model
 
             await OnDamageToEnemyAsync(actor, enemy, damage, actualDamage, isNormalAttack, damageType, magicType, damageResult);
 
-            effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
-            foreach (Effect effect in effects)
+            if (triggerEffects)
             {
-                effect.AfterDamageCalculation(actor, enemy, damage, actualDamage, isNormalAttack, damageType, magicType, damageResult);
+                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+                foreach (Effect effect in effects)
+                {
+                    effect.AfterDamageCalculation(actor, enemy, damage, actualDamage, isNormalAttack, damageType, magicType, damageResult);
+                }
             }
 
             if (enemy.HP <= 0 && !_eliminated.Contains(enemy) && !_respawnCountdown.ContainsKey(enemy))
@@ -2525,7 +2551,8 @@ namespace Milimoe.FunGame.Core.Model
         {
             List<Character> targets = [];
             List<Grid> grids = [];
-            if (skill.IsNonDirectional)
+            // 对于非战棋模式，我们会把它退回到指向性目标选择器
+            if (skill.IsNonDirectional && _map != null)
             {
                 if (aiDecision != null) grids = aiDecision.TargetGrids;
                 if (grids.Count == 0)
@@ -2959,34 +2986,38 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="expectedDamage"></param>
         /// <param name="finalDamage"></param>
         /// <param name="changeCount"></param>
+        /// <param name="triggerEffects"></param>
         /// <returns></returns>
-        public DamageResult CalculatePhysicalDamage(Character actor, Character enemy, bool isNormalAttack, double expectedDamage, out double finalDamage, ref int changeCount)
+        public DamageResult CalculatePhysicalDamage(Character actor, Character enemy, bool isNormalAttack, double expectedDamage, out double finalDamage, ref int changeCount, bool triggerEffects)
         {
             List<Character> characters = [actor, enemy];
             DamageType damageType = DamageType.Physical;
             MagicType magicType = MagicType.None;
             List<Effect> effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
-            if (changeCount < 3)
+            if (triggerEffects)
             {
+                if (changeCount < 3)
+                {
+                    foreach (Effect effect in effects)
+                    {
+                        effect.AlterDamageTypeBeforeCalculation(actor, enemy, ref isNormalAttack, ref damageType, ref magicType);
+                    }
+                    if (damageType == DamageType.Magical)
+                    {
+                        changeCount++;
+                        return CalculateMagicalDamage(actor, enemy, isNormalAttack, magicType, expectedDamage, out finalDamage, ref changeCount, triggerEffects);
+                    }
+                }
+
+                Dictionary<Effect, double> totalDamageBonus = [];
+                effects = [.. actor.Effects.Union(enemy.Effects).Distinct().Where(e => e.IsInEffect)];
                 foreach (Effect effect in effects)
                 {
-                    effect.AlterDamageTypeBeforeCalculation(actor, enemy, ref isNormalAttack, ref damageType, ref magicType);
+                    double damageBonus = effect.AlterExpectedDamageBeforeCalculation(actor, enemy, expectedDamage, isNormalAttack, DamageType.Physical, MagicType.None, totalDamageBonus);
+                    totalDamageBonus[effect] = damageBonus;
                 }
-                if (damageType == DamageType.Magical)
-                {
-                    changeCount++;
-                    return CalculateMagicalDamage(actor, enemy, isNormalAttack, magicType, expectedDamage, out finalDamage, ref changeCount);
-                }
+                expectedDamage += totalDamageBonus.Sum(kv => kv.Value);
             }
-
-            Dictionary<Effect, double> totalDamageBonus = [];
-            effects = [.. actor.Effects.Union(enemy.Effects).Distinct().Where(e => e.IsInEffect)];
-            foreach (Effect effect in effects)
-            {
-                double damageBonus = effect.AlterExpectedDamageBeforeCalculation(actor, enemy, expectedDamage, isNormalAttack, DamageType.Physical, MagicType.None, totalDamageBonus);
-                totalDamageBonus[effect] = damageBonus;
-            }
-            expectedDamage += totalDamageBonus.Sum(kv => kv.Value);
 
             double dice = Random.Shared.NextDouble();
             double throwingBonus = 0;
@@ -3008,7 +3039,6 @@ namespace Milimoe.FunGame.Core.Model
                     // 闪避检定
                     if (dice < (enemy.EvadeRate + throwingBonus))
                     {
-                        finalDamage = 0;
                         bool isAlterEvaded = false;
                         effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                         foreach (Effect effect in effects)
@@ -3020,6 +3050,7 @@ namespace Milimoe.FunGame.Core.Model
                         }
                         if (!isAlterEvaded)
                         {
+                            finalDamage = 0;
                             WriteLine("此物理攻击被完美闪避了！");
                             return DamageResult.Evaded;
                         }
@@ -3076,33 +3107,37 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="expectedDamage"></param>
         /// <param name="finalDamage"></param>
         /// <param name="changeCount"></param>
+        /// <param name="triggerEffects"></param>
         /// <returns></returns>
-        public DamageResult CalculateMagicalDamage(Character actor, Character enemy, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage, ref int changeCount)
+        public DamageResult CalculateMagicalDamage(Character actor, Character enemy, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage, ref int changeCount, bool triggerEffects)
         {
             List<Character> characters = [actor, enemy];
             DamageType damageType = DamageType.Magical;
             List<Effect> effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
-            if (changeCount < 3)
+            if (triggerEffects)
             {
+                if (changeCount < 3)
+                {
+                    foreach (Effect effect in effects)
+                    {
+                        effect.AlterDamageTypeBeforeCalculation(actor, enemy, ref isNormalAttack, ref damageType, ref magicType);
+                    }
+                    if (damageType == DamageType.Physical)
+                    {
+                        changeCount++;
+                        return CalculatePhysicalDamage(actor, enemy, isNormalAttack, expectedDamage, out finalDamage, ref changeCount, triggerEffects);
+                    }
+                }
+
+                Dictionary<Effect, double> totalDamageBonus = [];
+                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                 foreach (Effect effect in effects)
                 {
-                    effect.AlterDamageTypeBeforeCalculation(actor, enemy, ref isNormalAttack, ref damageType, ref magicType);
+                    double damageBonus = effect.AlterExpectedDamageBeforeCalculation(actor, enemy, expectedDamage, isNormalAttack, DamageType.Magical, magicType, totalDamageBonus);
+                    totalDamageBonus[effect] = damageBonus;
                 }
-                if (damageType == DamageType.Physical)
-                {
-                    changeCount++;
-                    return CalculatePhysicalDamage(actor, enemy, isNormalAttack, expectedDamage, out finalDamage, ref changeCount);
-                }
+                expectedDamage += totalDamageBonus.Sum(kv => kv.Value);
             }
-
-            Dictionary<Effect, double> totalDamageBonus = [];
-            effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
-            foreach (Effect effect in effects)
-            {
-                double damageBonus = effect.AlterExpectedDamageBeforeCalculation(actor, enemy, expectedDamage, isNormalAttack, DamageType.Magical, magicType, totalDamageBonus);
-                totalDamageBonus[effect] = damageBonus;
-            }
-            expectedDamage += totalDamageBonus.Sum(kv => kv.Value);
 
             double dice = Random.Shared.NextDouble();
             double throwingBonus = 0;
@@ -3124,7 +3159,6 @@ namespace Milimoe.FunGame.Core.Model
                     // 闪避检定
                     if (dice < (enemy.EvadeRate + throwingBonus))
                     {
-                        finalDamage = 0;
                         bool isAlterEvaded = false;
                         effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                         foreach (Effect effect in effects)
@@ -3136,6 +3170,7 @@ namespace Milimoe.FunGame.Core.Model
                         }
                         if (!isAlterEvaded)
                         {
+                            finalDamage = 0;
                             WriteLine("此魔法攻击被完美闪避了！");
                             return DamageResult.Evaded;
                         }
@@ -3447,7 +3482,6 @@ namespace Milimoe.FunGame.Core.Model
             if (_castingSkills.TryGetValue(caster, out SkillTarget target))
             {
                 skill = target.Skill;
-                _castingSkills.Remove(caster);
             }
             if (skill is null && caster.CharacterState == CharacterState.PreCastSuperSkill)
             {
@@ -3455,13 +3489,26 @@ namespace Milimoe.FunGame.Core.Model
             }
             if (skill != null)
             {
-                WriteLine($"[ {caster} ] 的施法被 [ {interrupter} ] 打断了！！");
+                bool interruption = true;
                 List<Effect> effects = [.. caster.Effects.Union(interrupter.Effects).Distinct().Where(e => e.IsInEffect)];
-                foreach (Effect effect in effects)
+                foreach (Effect e in effects)
                 {
-                    effect.OnSkillCastInterrupted(caster, skill, interrupter);
+                    if (!e.BeforeSkillCastWillBeInterrupted(caster, skill, interrupter))
+                    {
+                        interruption = false;
+                    }
                 }
-                await OnInterruptCastingAsync(caster, skill, interrupter);
+                if (interruption)
+                {
+                    _castingSkills.Remove(caster);
+                    WriteLine($"[ {caster} ] 的施法被 [ {interrupter} ] 打断了！！");
+                    effects = [.. caster.Effects.Union(interrupter.Effects).Distinct().Where(e => e.IsInEffect)];
+                    foreach (Effect e in effects)
+                    {
+                        e.OnSkillCastInterrupted(caster, skill, interrupter);
+                    }
+                    await OnInterruptCastingAsync(caster, skill, interrupter);
+                }
             }
         }
 
@@ -3477,7 +3524,7 @@ namespace Milimoe.FunGame.Core.Model
                 if (skillTarget.Targets.Contains(interrupter))
                 {
                     Skill skill = skillTarget.Skill;
-                    WriteLine($"[ {interrupter} ] 打断了 [ {caster} ] 的施法！！");
+                    WriteLine($"[ {interrupter} ] 人间蒸发了。[ {caster} ] 丢失了施法目标！！");
                     List<Effect> effects = [.. caster.Effects.Union(interrupter.Effects).Distinct().Where(e => e.IsInEffect)];
                     foreach (Effect effect in effects)
                     {
@@ -3738,8 +3785,80 @@ namespace Milimoe.FunGame.Core.Model
                     await OnCharacterImmunedAsync(character, target, skill, item);
                 }
             }
-            await Task.CompletedTask;
-            return;
+        }
+
+        /// <summary>
+        /// 特效豁免检定
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="source"></param>
+        /// <param name="effect"></param>
+        /// <param name="isEvade">true - 豁免成功等效于闪避</param>
+        /// <returns></returns>
+        protected async Task<bool> CheckExemptionAsync(Character character, Character? source, Effect effect, bool isEvade)
+        {
+            double exemption = effect.ExemptionType switch
+            {
+                PrimaryAttribute.STR => character.STRExemption,
+                PrimaryAttribute.AGI => character.AGIExemption,
+                PrimaryAttribute.INT => character.INTExemption,
+                _ => 0
+            };
+            double dice = Random.Shared.NextDouble();
+            if (dice < exemption)
+            {
+                if (isEvade)
+                {
+                    WriteLine($"[ {character} ] 的{CharacterSet.GetPrimaryAttributeName(effect.ExemptionType)}豁免成功！");
+                }
+                else
+                {
+                    string description = "";
+                    if (effect.Durative && effect.RemainDuration > 0)
+                    {
+                        // 随机减小 20% 至 50%
+                        double reduce = Random.Shared.Next(2, 6) * 10;
+                        reduce = effect.RemainDuration * (reduce / 100);
+                        effect.RemainDuration -= reduce;
+                        description = $"[ {effect.Skill.Name} ] 的持续时间减少了 {reduce:0.##} {GameplayEquilibriumConstant.InGameTime}！";
+                    }
+                    else if (effect.RemainDurationTurn > 0)
+                    {
+                        effect.RemainDurationTurn--;
+                        description = $"[ {effect.Skill.Name} ] 的持续时间减少了 1 回合！";
+                    }
+                    WriteLine($"[ {character} ] 的{CharacterSet.GetPrimaryAttributeName(effect.ExemptionType)}豁免检定通过！{description}");
+                }
+                await OnCharacterExemptionAsync(character, source, effect.Skill, effect.Skill.Item, isEvade);
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 技能豁免检定
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="target"></param>
+        /// <param name="effect"></param>
+        /// <returns></returns>
+        public async Task<bool> CheckExemptionAsync(Character character, Character target, Effect effect)
+        {
+            double exemption = effect.ExemptionType switch
+            {
+                PrimaryAttribute.STR => character.STRExemption,
+                PrimaryAttribute.AGI => character.AGIExemption,
+                PrimaryAttribute.INT => character.INTExemption,
+                _ => 0
+            };
+            double dice = Random.Shared.NextDouble();
+            if (dice < exemption)
+            {
+                WriteLine($"[ {character} ] 想要对 [ {target} ] 释放技能 [ {effect.Skill.Name} ]，但 [ {target} ] 的{CharacterSet.GetPrimaryAttributeName(effect.ExemptionType)}豁免检定通过，免疫了该技能！");
+                await OnCharacterExemptionAsync(target, character, effect.Skill, effect.Skill.Item, true);
+                return true;
+            }
+            return false;
         }
 
         #endregion
@@ -4222,6 +4341,25 @@ namespace Milimoe.FunGame.Core.Model
         protected async Task OnCharacterImmunedAsync(Character character, Character immune, ISkill skill, Item? item = null)
         {
             await (CharacterImmuned?.Invoke(this, character, immune, skill, item) ?? Task.CompletedTask);
+        }
+
+        public delegate Task CharacterExemptionEventHandler(GamingQueue queue, Character character, Character? source, ISkill skill, Item? item = null, bool isEvade = false);
+        /// <summary>
+        /// 角色豁免事件
+        /// </summary>
+        public event CharacterExemptionEventHandler? CharacterExemption;
+        /// <summary>
+        /// 角色豁免事件
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="source"></param>
+        /// <param name="skill"></param>
+        /// <param name="item"></param>
+        /// <param name="isEvade"></param>
+        /// <returns></returns>
+        protected async Task OnCharacterExemptionAsync(Character character, Character? source, ISkill skill, Item? item = null, bool isEvade = false)
+        {
+            await (CharacterExemption?.Invoke(this, character, source, skill, item, isEvade) ?? Task.CompletedTask);
         }
 
         public delegate Task CharacterDoNothingEventHandler(GamingQueue queue, Character actor, DecisionPoints dp);

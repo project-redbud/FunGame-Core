@@ -688,6 +688,21 @@ namespace Milimoe.FunGame.Core.Entity
         public double INTGrowth { get; set; } = 0;
 
         /// <summary>
+        /// 力量豁免
+        /// </summary>
+        public double STRExemption => STR * GameplayEquilibriumConstant.STRtoExemptionRateMultiplier;
+        
+        /// <summary>
+        /// 敏捷豁免
+        /// </summary>
+        public double AGIExemption => AGI * GameplayEquilibriumConstant.AGItoExemptionRateMultiplier;
+
+        /// <summary>
+        /// 智力豁免
+        /// </summary>
+        public double INTExemption => INT * GameplayEquilibriumConstant.INTtoExemptionRateMultiplier;
+
+        /// <summary>
         /// 行动速度 [ 初始设定 ]
         /// </summary>
         [InitRequired]
@@ -1440,11 +1455,11 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"行动速度：{SPD:0.##}" + (exSPD != 0 ? $" [{InitialSPD:0.##} {(exSPD >= 0 ? "+" : "-")} {Math.Abs(exSPD):0.##}]" : "") + $" ({ActionCoefficient * 100:0.##}%)");
             builder.AppendLine($"核心属性：{CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)}");
             double exSTR = ExSTR + ExSTR2;
-            builder.AppendLine($"力量：{STR:0.##}" + (exSTR != 0 ? $" [{BaseSTR:0.##} {(exSTR >= 0 ? "+" : "-")} {Math.Abs(exSTR):0.##}]" : "") + (showGrowth ? $"（{(STRGrowth >= 0 ? "+" : "-")}{Math.Abs(STRGrowth)}/Lv）" : ""));
+            builder.AppendLine($"力量：{STR:0.##}" + (exSTR != 0 ? $" [{BaseSTR:0.##} {(exSTR >= 0 ? "+" : "-")} {Math.Abs(exSTR):0.##}]" : "") + (showGrowth ? $"（{(STRGrowth >= 0 ? "+" : "-")}{Math.Abs(STRGrowth)}/Lv）" : "") + $"（{STRExemption * 100:0.##}%）");
             double exAGI = ExAGI + ExAGI2;
-            builder.AppendLine($"敏捷：{AGI:0.##}" + (exAGI != 0 ? $" [{BaseAGI:0.##} {(exAGI >= 0 ? "+" : "-")} {Math.Abs(exAGI):0.##}]" : "") + (showGrowth ? $"（{(AGIGrowth >= 0 ? "+" : "-")}{Math.Abs(AGIGrowth)}/Lv）" : ""));
+            builder.AppendLine($"敏捷：{AGI:0.##}" + (exAGI != 0 ? $" [{BaseAGI:0.##} {(exAGI >= 0 ? "+" : "-")} {Math.Abs(exAGI):0.##}]" : "") + (showGrowth ? $"（{(AGIGrowth >= 0 ? "+" : "-")}{Math.Abs(AGIGrowth)}/Lv）" : "") + $"（{AGIExemption * 100:0.##}%）");
             double exINT = ExINT + ExINT2;
-            builder.AppendLine($"智力：{INT:0.##}" + (exINT != 0 ? $" [{BaseINT:0.##} {(exINT >= 0 ? "+" : "-")} {Math.Abs(exINT):0.##}]" : "") + (showGrowth ? $"（{(INTGrowth >= 0 ? "+" : "-")}{Math.Abs(INTGrowth)}/Lv）" : ""));
+            builder.AppendLine($"智力：{INT:0.##}" + (exINT != 0 ? $" [{BaseINT:0.##} {(exINT >= 0 ? "+" : "-")} {Math.Abs(exINT):0.##}]" : "") + (showGrowth ? $"（{(INTGrowth >= 0 ? "+" : "-")}{Math.Abs(INTGrowth)}/Lv）" : "") + $"（{INTExemption * 100:0.##}%）");
             builder.AppendLine($"生命回复：{HR:0.##}" + (ExHR != 0 ? $" [{InitialHR + STR * GameplayEquilibriumConstant.STRtoHRFactor:0.##} {(ExHR >= 0 ? "+" : "-")} {Math.Abs(ExHR):0.##}]" : ""));
             builder.AppendLine($"魔法回复：{MR:0.##}" + (ExMR != 0 ? $" [{InitialMR + INT * GameplayEquilibriumConstant.INTtoMRFactor:0.##} {(ExMR >= 0 ? "+" : "-")} {Math.Abs(ExMR):0.##}]" : ""));
             builder.AppendLine($"暴击率：{CritRate * 100:0.##}%");
@@ -1539,11 +1554,11 @@ namespace Milimoe.FunGame.Core.Entity
                 builder.AppendLine($"行动速度：{SPD:0.##}" + (exSPD != 0 ? $" [{InitialSPD:0.##} {(exSPD >= 0 ? "+" : "-")} {Math.Abs(exSPD):0.##}]" : "") + $" ({ActionCoefficient * 100:0.##}%)");
                 builder.AppendLine($"核心属性：{CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)}");
                 double exSTR = ExSTR + ExSTR2;
-                builder.AppendLine($"力量：{STR:0.##}" + (exSTR != 0 ? $" [{BaseSTR:0.##} {(exSTR >= 0 ? "+" : "-")} {Math.Abs(exSTR):0.##}]" : "") + (showGrowth ? $"（{(STRGrowth >= 0 ? "+" : "-")}{Math.Abs(STRGrowth)}/Lv）" : ""));
+                builder.AppendLine($"力量：{STR:0.##}" + (exSTR != 0 ? $" [{BaseSTR:0.##} {(exSTR >= 0 ? "+" : "-")} {Math.Abs(exSTR):0.##}]" : "") + (showGrowth ? $"（{(STRGrowth >= 0 ? "+" : "-")}{Math.Abs(STRGrowth)}/Lv）" : "") + $"（{STRExemption * 100:0.##}%）");
                 double exAGI = ExAGI + ExAGI2;
-                builder.AppendLine($"敏捷：{AGI:0.##}" + (exAGI != 0 ? $" [{BaseAGI:0.##} {(exAGI >= 0 ? "+" : "-")} {Math.Abs(exAGI):0.##}]" : "") + (showGrowth ? $"（{(AGIGrowth >= 0 ? "+" : "-")}{Math.Abs(AGIGrowth)}/Lv）" : ""));
+                builder.AppendLine($"敏捷：{AGI:0.##}" + (exAGI != 0 ? $" [{BaseAGI:0.##} {(exAGI >= 0 ? "+" : "-")} {Math.Abs(exAGI):0.##}]" : "") + (showGrowth ? $"（{(AGIGrowth >= 0 ? "+" : "-")}{Math.Abs(AGIGrowth)}/Lv）" : "") + $"（{AGIExemption * 100:0.##}%）");
                 double exINT = ExINT + ExINT2;
-                builder.AppendLine($"智力：{INT:0.##}" + (exINT != 0 ? $" [{BaseINT:0.##} {(exINT >= 0 ? "+" : "-")} {Math.Abs(exINT):0.##}]" : "") + (showGrowth ? $"（{(INTGrowth >= 0 ? "+" : "-")}{Math.Abs(INTGrowth)}/Lv）" : ""));
+                builder.AppendLine($"智力：{INT:0.##}" + (exINT != 0 ? $" [{BaseINT:0.##} {(exINT >= 0 ? "+" : "-")} {Math.Abs(exINT):0.##}]" : "") + (showGrowth ? $"（{(INTGrowth >= 0 ? "+" : "-")}{Math.Abs(INTGrowth)}/Lv）" : "") + $"（{INTExemption * 100:0.##}%）");
             }
             builder.AppendLine($"生命回复：{HR:0.##}" + (ExHR != 0 ? $" [{InitialHR + STR * GameplayEquilibriumConstant.STRtoHRFactor:0.##} {(ExHR >= 0 ? "+" : "-")} {Math.Abs(ExHR):0.##}]" : ""));
             builder.AppendLine($"魔法回复：{MR:0.##}" + (ExMR != 0 ? $" [{InitialMR + INT * GameplayEquilibriumConstant.INTtoMRFactor:0.##} {(ExMR >= 0 ? "+" : "-")} {Math.Abs(ExMR):0.##}]" : ""));
@@ -1749,11 +1764,11 @@ namespace Milimoe.FunGame.Core.Entity
             builder.AppendLine($"行动速度：{SPD:0.##}" + (exSPD != 0 ? $" [{InitialSPD:0.##} {(exSPD >= 0 ? "+" : "-")} {Math.Abs(exSPD):0.##}]" : "") + $" ({ActionCoefficient * 100:0.##}%)");
             builder.AppendLine($"核心属性：{CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)}");
             double exSTR = ExSTR + ExSTR2;
-            builder.AppendLine($"力量：{STR:0.##}" + (exSTR != 0 ? $" [{BaseSTR:0.##} {(exSTR >= 0 ? "+" : "-")} {Math.Abs(exSTR):0.##}]" : "") + (showGrowth ? $"（{(STRGrowth >= 0 ? "+" : "-")}{Math.Abs(STRGrowth)}/Lv）" : ""));
+            builder.AppendLine($"力量：{STR:0.##}" + (exSTR != 0 ? $" [{BaseSTR:0.##} {(exSTR >= 0 ? "+" : "-")} {Math.Abs(exSTR):0.##}]" : "") + (showGrowth ? $"（{(STRGrowth >= 0 ? "+" : "-")}{Math.Abs(STRGrowth)}/Lv）" : "") + $"（{STRExemption * 100:0.##}%）");
             double exAGI = ExAGI + ExAGI2;
-            builder.AppendLine($"敏捷：{AGI:0.##}" + (exAGI != 0 ? $" [{BaseAGI:0.##} {(exAGI >= 0 ? "+" : "-")} {Math.Abs(exAGI):0.##}]" : "") + (showGrowth ? $"（{(AGIGrowth >= 0 ? "+" : "-")}{Math.Abs(AGIGrowth)}/Lv）" : ""));
+            builder.AppendLine($"敏捷：{AGI:0.##}" + (exAGI != 0 ? $" [{BaseAGI:0.##} {(exAGI >= 0 ? "+" : "-")} {Math.Abs(exAGI):0.##}]" : "") + (showGrowth ? $"（{(AGIGrowth >= 0 ? "+" : "-")}{Math.Abs(AGIGrowth)}/Lv）" : "") + $"（{AGIExemption * 100:0.##}%）");
             double exINT = ExINT + ExINT2;
-            builder.AppendLine($"智力：{INT:0.##}" + (exINT != 0 ? $" [{BaseINT:0.##} {(exINT >= 0 ? "+" : "-")} {Math.Abs(exINT):0.##}]" : "") + (showGrowth ? $"（{(INTGrowth >= 0 ? "+" : "-")}{Math.Abs(INTGrowth)}/Lv）" : ""));
+            builder.AppendLine($"智力：{INT:0.##}" + (exINT != 0 ? $" [{BaseINT:0.##} {(exINT >= 0 ? "+" : "-")} {Math.Abs(exINT):0.##}]" : "") + (showGrowth ? $"（{(INTGrowth >= 0 ? "+" : "-")}{Math.Abs(INTGrowth)}/Lv）" : "") + $"（{INTExemption * 100:0.##}%）");
             builder.AppendLine($"生命回复：{HR:0.##}" + (ExHR != 0 ? $" [{InitialHR + STR * GameplayEquilibriumConstant.STRtoHRFactor:0.##} {(ExHR >= 0 ? "+" : "-")} {Math.Abs(ExHR):0.##}]" : ""));
             builder.AppendLine($"魔法回复：{MR:0.##}" + (ExMR != 0 ? $" [{InitialMR + INT * GameplayEquilibriumConstant.INTtoMRFactor:0.##} {(ExMR >= 0 ? "+" : "-")} {Math.Abs(ExMR):0.##}]" : ""));
             builder.AppendLine($"暴击率：{CritRate * 100:0.##}%");

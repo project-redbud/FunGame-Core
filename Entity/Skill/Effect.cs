@@ -136,6 +136,48 @@ namespace Milimoe.FunGame.Core.Entity
         /// 无视免疫类型
         /// </summary>
         public virtual ImmuneType IgnoreImmune { get; set; } = ImmuneType.None;
+        
+        /// <summary>
+        /// 豁免性的具体说明
+        /// </summary>
+        public virtual string ExemptionDescription
+        {
+            get
+            {
+                StringBuilder builder = new();
+                if (Exemptable)
+                {
+                    builder.AppendLine($"豁免类型：{CharacterSet.GetPrimaryAttributeName(ExemptionType)}");
+                    builder.Append($"豁免持续时间：{(ExemptDuration ? "是" : "否")}");
+                }
+                return builder.ToString();
+            }
+        }
+
+        /// <summary>
+        /// 是否可被属性豁免
+        /// </summary>
+        public bool Exemptable => ExemptionType != PrimaryAttribute.None;
+
+        /// <summary>
+        /// 豁免所需的属性类型
+        /// </summary>
+        public virtual PrimaryAttribute ExemptionType
+        {
+            get
+            {
+                return _exemptionType ?? SkillSet.GetExemptionTypeByEffectType(EffectType);
+            }
+            set
+            {
+                _exemptionType = value;
+            }
+        }
+
+        /// <summary>
+        /// 可豁免持续时间（每次减半/一回合）
+        /// </summary>
+        public virtual bool ExemptDuration { get; set; } = false;
 
         /// <summary>
         /// 效果描述
@@ -345,6 +387,18 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual void OnSkillCasting(Character caster, List<Character> targets, List<Grid> grids)
         {
 
+        }
+
+        /// <summary>
+        /// 技能吟唱被打断前触发
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="skill"></param>
+        /// <param name="interrupter"></param>
+        /// <returns>返回 false 阻止打断</returns>
+        public virtual bool BeforeSkillCastWillBeInterrupted(Character caster, Skill skill, Character interrupter)
+        {
+            return true;
         }
 
         /// <summary>
@@ -828,8 +882,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="damageType"></param>
         /// <param name="magicType"></param>
         /// <param name="expectedDamage"></param>
+        /// <param name="triggerEffects"></param>
         /// <returns></returns>
-        public DamageResult DamageToEnemy(Character actor, Character enemy, DamageType damageType, MagicType magicType, double expectedDamage)
+        public DamageResult DamageToEnemy(Character actor, Character enemy, DamageType damageType, MagicType magicType, double expectedDamage, bool triggerEffects = true)
         {
             if (GamingQueue is null) return DamageResult.Evaded;
             int changeCount = 0;
@@ -837,10 +892,10 @@ namespace Milimoe.FunGame.Core.Entity
             double damage = expectedDamage;
             if (damageType != DamageType.True)
             {
-                result = damageType == DamageType.Physical ? GamingQueue.CalculatePhysicalDamage(actor, enemy, false, expectedDamage, out damage, ref changeCount) : GamingQueue.CalculateMagicalDamage(actor, enemy, false, MagicType, expectedDamage, out damage, ref changeCount);
+                result = damageType == DamageType.Physical ? GamingQueue.CalculatePhysicalDamage(actor, enemy, false, expectedDamage, out damage, ref changeCount, triggerEffects) : GamingQueue.CalculateMagicalDamage(actor, enemy, false, MagicType, expectedDamage, out damage, ref changeCount, triggerEffects);
             }
             // 注意此方法在后台线程运行
-            GamingQueue.DamageToEnemyAsync(actor, enemy, damage, false, damageType, magicType, result);
+            GamingQueue.DamageToEnemyAsync(actor, enemy, damage, false, damageType, magicType, result, triggerEffects);
             return result;
         }
 
@@ -1061,6 +1116,20 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 技能豁免检定 [ 尽可能的调用此方法而不是自己实现 ]
+        /// 先进行检定，再施加状态效果
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="target"></param>
+        /// <param name="effect"></param>
+        /// <returns></returns>
+        public async Task<bool> CheckExemptionAsync(Character character, Character target, Effect effect)
+        {
+            if (GamingQueue is null) return false;
+            return await GamingQueue.CheckExemptionAsync(character, target, effect);
+        }
+
+        /// <summary>
         /// 修改角色的硬直时间 [ 尽可能的调用此方法而不是自己实现 ]
         /// </summary>
         /// <param name="character">角色</param>
@@ -1208,5 +1277,10 @@ namespace Milimoe.FunGame.Core.Entity
         /// 驱散描述
         /// </summary>
         private string _dispelDescription = "";
+
+        /// <summary>
+        /// 豁免性
+        /// </summary>
+        private PrimaryAttribute? _exemptionType = null;
     }
 }

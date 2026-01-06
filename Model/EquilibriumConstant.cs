@@ -231,6 +231,11 @@ namespace Milimoe.FunGame.Core.Model
         public double STRtoCritDMGMultiplier { get; set; } = 0.00575;
 
         /// <summary>
+        /// 每 1 点力量增加力量豁免率
+        /// </summary>
+        public double STRtoExemptionRateMultiplier { get; set; } = 0.001;
+
+        /// <summary>
         /// 每 1 点智力增加魔法值
         /// </summary>
         public double INTtoMPFactor { get; set; } = 8;
@@ -261,6 +266,11 @@ namespace Milimoe.FunGame.Core.Model
         public double INTtoAccelerationCoefficientMultiplier { get; set; } = 0.00125;
 
         /// <summary>
+        /// 每 1 点智力增加智力豁免率
+        /// </summary>
+        public double INTtoExemptionRateMultiplier { get; set; } = 0.001;
+
+        /// <summary>
         /// 每 1 点敏捷增加行动速度
         /// </summary>
         public double AGItoSPDMultiplier { get; set; } = 0.65;
@@ -274,6 +284,11 @@ namespace Milimoe.FunGame.Core.Model
         /// 每 1 点敏捷增加闪避率
         /// </summary>
         public double AGItoEvadeRateMultiplier { get; set; } = 0.00175;
+
+        /// <summary>
+        /// 每 1 点敏捷增加敏捷豁免率
+        /// </summary>
+        public double AGItoExemptionRateMultiplier { get; set; } = 0.001;
 
         /// <summary>
         /// 造成伤害获得能量值因子

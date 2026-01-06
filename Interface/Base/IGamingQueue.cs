@@ -98,7 +98,8 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="damageType"></param>
         /// <param name="magicType"></param>
         /// <param name="damageResult"></param>
-        public Task DamageToEnemyAsync(Character actor, Character enemy, double damage, bool isNormalAttack, DamageType damageType = DamageType.Physical, MagicType magicType = MagicType.None, DamageResult damageResult = DamageResult.Normal);
+        /// <param name="triggerEffects"></param>
+        public Task DamageToEnemyAsync(Character actor, Character enemy, double damage, bool isNormalAttack, DamageType damageType = DamageType.Physical, MagicType magicType = MagicType.None, DamageResult damageResult = DamageResult.Normal, bool triggerEffects = true);
 
         /// <summary>
         /// 治疗一个目标
@@ -118,8 +119,9 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="expectedDamage"></param>
         /// <param name="finalDamage"></param>
         /// <param name="changeCount"></param>
+        /// <param name="triggerEffects"></param>
         /// <returns></returns>
-        public DamageResult CalculatePhysicalDamage(Character actor, Character enemy, bool isNormalAttack, double expectedDamage, out double finalDamage, ref int changeCount);
+        public DamageResult CalculatePhysicalDamage(Character actor, Character enemy, bool isNormalAttack, double expectedDamage, out double finalDamage, ref int changeCount, bool triggerEffects);
 
         /// <summary>
         /// 计算魔法伤害
@@ -131,8 +133,9 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="expectedDamage"></param>
         /// <param name="finalDamage"></param>
         /// <param name="changeCount"></param>
+        /// <param name="triggerEffects"></param>
         /// <returns></returns>
-        public DamageResult CalculateMagicalDamage(Character actor, Character enemy, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage, ref int changeCount);
+        public DamageResult CalculateMagicalDamage(Character actor, Character enemy, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage, ref int changeCount, bool triggerEffects);
 
         /// <summary>
         /// 死亡结算
@@ -258,5 +261,14 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="damageType"></param>
         /// <param name="takenDamage"></param>
         public void CalculateCharacterDamageStatistics(Character character, Character characterTaken, double damage, DamageType damageType, double takenDamage = -1);
+
+        /// <summary>
+        /// 技能豁免检定
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="target"></param>
+        /// <param name="effect"></param>
+        /// <returns></returns>
+        public Task<bool> CheckExemptionAsync(Character character, Character target, Effect effect);
     }
 }

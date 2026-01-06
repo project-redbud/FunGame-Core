@@ -39,6 +39,11 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual string DispelDescription { get; set; } = "";
 
         /// <summary>
+        /// 豁免性的描述
+        /// </summary>
+        public virtual string ExemptionDescription { get; set; } = "";
+
+        /// <summary>
         /// 释放技能时的口号
         /// </summary>
         public virtual string Slogan { get; set; } = "";
@@ -694,6 +699,10 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 builder.AppendLine($"{DispelDescription}");
             }
+            if (ExemptionDescription != "")
+            {
+                builder.AppendLine($"{ExemptionDescription}");
+            }
             if (GamingQueue?.Map != null && SkillType != SkillType.Passive)
             {
                 builder.AppendLine($"施法距离：{(CastAnywhere ? "全图" : CastRange)}");
@@ -798,6 +807,7 @@ namespace Milimoe.FunGame.Core.Entity
             skill.Description = skillDefined.Description;
             skill.GeneralDescription = skillDefined.GeneralDescription;
             skill.DispelDescription = skillDefined.DispelDescription;
+            skill.ExemptionDescription = skillDefined.ExemptionDescription;
             skill.SkillType = skillDefined.SkillType;
             skill.MPCost = skillDefined.MPCost;
             skill.CastTime = skillDefined.CastTime;

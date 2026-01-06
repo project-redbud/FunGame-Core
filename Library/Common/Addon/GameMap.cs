@@ -465,61 +465,67 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             int y0 = casterGrid.Y;
             int x1 = targetGrid.X;
             int y1 = targetGrid.Y;
+            int z = casterGrid.Z;
 
             // 始终包含起点
             if (includeCharacter || casterGrid.Characters.Count == 0)
                 grids.Add(casterGrid);
 
-            int dx = Math.Abs(x1 - x0);
-            int dy = Math.Abs(y1 - y0);
-            int sx = x0 < x1 ? 1 : -1;
-            int sy = y0 < y1 ? 1 : -1;
-            int err = dx - dy;
+            // 计算直线上的所有整数点
+            List<(int x, int y)> points = GetLinePoints(x0, y0, x1, y1);
 
-            int currentX = x0;
-            int currentY = y0;
-
-            while (true)
+            // 添加中间点（不包括起点和终点）
+            for (int i = 1; i < points.Count - 1; i++)
             {
-                Grid? current = this[currentX, currentY, casterGrid.Z];
+                var point = points[i];
+                Grid? current = this[point.x, point.y, z];
                 if (current != null && (includeCharacter || current.Characters.Count == 0) && !grids.Contains(current))
                 {
                     grids.Add(current);
                 }
+            }
 
-                if (currentX == x1 && currentY == y1)
-                    break;
-
-                int e2 = 2 * err;
-                if (e2 > -dy)
+            // 添加终点（如果与起点不同）
+            if (!(x0 == x1 && y0 == y1))
+            {
+                Grid? target = this[x1, y1, z];
+                if (target != null && (includeCharacter || target.Characters.Count == 0) && !grids.Contains(target))
                 {
-                    err -= dy;
-                    currentX += sx;
-                }
-                if (e2 < dx)
-                {
-                    err += dx;
-                    currentY += sy;
+                    grids.Add(target);
                 }
             }
 
             // 贯穿模式：继续向目标方向延伸直到地图边缘
-            if (passThrough)
+            if (passThrough && points.Count >= 2)
             {
-                int deltaX = x1 - x0;
-                int deltaY = y1 - y0;
-                int gcd = GCD(Math.Abs(deltaX), Math.Abs(deltaY));
-                if (gcd == 0) gcd = 1;
+                // 获取方向向量（从最后第二个点到最后第一个点）
+                int lastIndex = points.Count - 1;
+                int dirX = points[lastIndex].x - points[lastIndex - 1].x;
+                int dirY = points[lastIndex].y - points[lastIndex - 1].y;
 
-                int stepX = deltaX / gcd;
-                int stepY = deltaY / gcd;
-
-                int extendX = x1 + stepX;
-                int extendY = y1 + stepY;
-
-                while (true)
+                // 规范化方向（保证每次移动一个单位）
+                if (Math.Abs(dirX) > 1 || Math.Abs(dirY) > 1)
                 {
-                    Grid? extendGrid = this[extendX, extendY, casterGrid.Z];
+                    int gcd = GCD(Math.Abs(dirX), Math.Abs(dirY));
+                    dirX /= gcd;
+                    dirY /= gcd;
+                }
+
+                int extendX = x1 + dirX;
+                int extendY = y1 + dirY;
+
+                // 设置最大延伸步数，防止无限循环
+                int maxSteps = Math.Max(Length, Width) * 2;
+                int steps = 0;
+
+                while (steps < maxSteps)
+                {
+                    // 检查坐标是否在地图边界内
+                    if (extendX < 0 || extendX >= Length ||
+                        extendY < 0 || extendY >= Width)
+                        break;
+
+                    Grid? extendGrid = this[extendX, extendY, z];
                     if (extendGrid == null) break;
 
                     if ((includeCharacter || extendGrid.Characters.Count == 0) && !grids.Contains(extendGrid))
@@ -527,8 +533,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
                         grids.Add(extendGrid);
                     }
 
-                    extendX += stepX;
-                    extendY += stepY;
+                    extendX += dirX;
+                    extendY += dirY;
+                    steps++;
                 }
             }
 
@@ -665,12 +672,16 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
                     return currentSteps;
                 }
 
-                // 定义平面移动的四个方向
+                // 定义平面移动的方向
                 (int dx, int dy)[] directions = [
                     (0, 1), // 上
                     (0, -1), // 下
                     (1, 0), // 右
-                    (-1, 0) // 左
+                    (-1, 0), // 左
+                    (1, 1), // 右上
+                    (1, -1), // 右下
+                    (-1, 1), // 左上
+                    (-1, -1) // 左下
                 ];
 
                 foreach (var (dx, dy) in directions)
@@ -735,9 +746,10 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             int minDistanceToTarget = CalculateManhattanDistance(startGrid, target);
             int stepsToBestReachable = 0;
 
-            // 定义平面移动的四个方向
+            // 定义平面移动的方向
             (int dx, int dy)[] directions = [
-                (0, 1), (0, -1), (1, 0), (-1, 0)
+                (0, 1), (0, -1), (1, 0), (-1, 0),
+                (1, 1), (1, -1), (-1, 1), (-1, -1)
             ];
 
             while (queue.Count > 0)
@@ -808,6 +820,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// </summary>
         public static int GCD(int a, int b)
         {
+            if (a == 0 && b == 0) return 1; // 避免除以零
+            if (a == 0) return b;
+            if (b == 0) return a;
             while (b != 0)
             {
                 int temp = b;
@@ -815,6 +830,84 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
                 a = temp;
             }
             return a;
+        }
+
+        /// <summary>
+        /// 获取两点之间直线上的所有整数点（包含起点和终点）
+        /// 使用改进的Bresenham算法，确保不遗漏任何点
+        /// </summary>
+        public static List<(int x, int y)> GetLinePoints(int x0, int y0, int x1, int y1)
+        {
+            List<(int x, int y)> points = [];
+
+            int dx = Math.Abs(x1 - x0);
+            int dy = Math.Abs(y1 - y0);
+            int sx = x0 < x1 ? 1 : -1;
+            int sy = y0 < y1 ? 1 : -1;
+
+            // 如果直线是水平的
+            if (dy == 0)
+            {
+                int x = x0;
+                while (x != x1 + sx)
+                {
+                    points.Add((x, y0));
+                    x += sx;
+                }
+                return points;
+            }
+
+            // 如果直线是垂直的
+            if (dx == 0)
+            {
+                int y = y0;
+                while (y != y1 + sy)
+                {
+                    points.Add((x0, y));
+                    y += sy;
+                }
+                return points;
+            }
+
+            // 对于斜线，使用改进的Bresenham算法
+            if (dx >= dy)
+            {
+                // 斜率小于1
+                int err = 2 * dy - dx;
+                int y = y0;
+
+                for (int x = x0; x != x1 + sx; x += sx)
+                {
+                    points.Add((x, y));
+
+                    if (err > 0)
+                    {
+                        y += sy;
+                        err -= 2 * dx;
+                    }
+                    err += 2 * dy;
+                }
+            }
+            else
+            {
+                // 斜率大于1
+                int err = 2 * dx - dy;
+                int x = x0;
+
+                for (int y = y0; y != y1 + sy; y += sy)
+                {
+                    points.Add((x, y));
+
+                    if (err > 0)
+                    {
+                        x += sx;
+                        err -= 2 * dy;
+                    }
+                    err += 2 * dx;
+                }
+            }
+
+            return points;
         }
 
         /// <summary>
@@ -830,7 +923,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// 在事件流逝后处理
         /// </summary>
         /// <param name="timeToReduce"></param>
-        protected virtual void AfterTimeElapsed(ref double timeToReduce)
+        protected virtual void AfterTimeElapsed(double timeToReduce)
         {
 
         }
@@ -870,7 +963,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
                 }
             }
 
-            AfterTimeElapsed(ref timeToReduce);
+            AfterTimeElapsed(timeToReduce);
         }
     }
 }
