@@ -153,9 +153,15 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual bool IsNonDirectional { get; set; } = false;
 
         /// <summary>
-        /// 在非指向性技能选取目标格子时，包括有角色的格子，默认为 true。仅 <see cref="IsNonDirectional"/> = true 时有效。
+        /// 在非指向性技能选取目标格子时，包括有角色的格子，默认为 true。仅 <see cref="IsNonDirectional"/> = true 时有效。<para/>
+        /// 当此项为 false 时，必须设置 <see cref="AllowSelectNoCharacterGrid"/> = true，否则实际施法时会被拒绝。
         /// </summary>
         public virtual bool SelectIncludeCharacterGrid { get; set; } = true;
+
+        /// <summary>
+        /// 是否可以选择没有被角色占据的空地，为 false 时会阻止施法
+        /// </summary>
+        public virtual bool AllowSelectNoCharacterGrid { get; set; } = false;
 
         /// <summary>
         /// 作用范围形状<para/>
@@ -392,7 +398,7 @@ namespace Milimoe.FunGame.Core.Entity
 
             foreach (Character character in enemys)
             {
-                IEnumerable<Effect> effects = character.Effects.Where(e => e.IsInEffect);
+                IEnumerable<Effect> effects = Effects.Where(e => e.IsInEffect);
                 if (CanSelectEnemy && ((character.ImmuneType & checkType) == ImmuneType.None ||
                     effects.Any(e => e.IgnoreImmune == ImmuneType.All || e.IgnoreImmune == ImmuneType.Skilled || (IsMagic && e.IgnoreImmune == ImmuneType.Magical))))
                 {
@@ -527,7 +533,7 @@ namespace Milimoe.FunGame.Core.Entity
 
                 if (allEnemys.Contains(character))
                 {
-                    IEnumerable<Effect> effects = character.Effects.Where(e => e.IsInEffect);
+                    IEnumerable<Effect> effects = Effects.Where(e => e.IsInEffect);
                     if (CanSelectEnemy && ((character.ImmuneType & checkType) == ImmuneType.None ||
                         effects.Any(e => e.IgnoreImmune == ImmuneType.All || e.IgnoreImmune == ImmuneType.Skilled || (IsMagic && e.IgnoreImmune == ImmuneType.Magical))))
                     {
@@ -582,8 +588,8 @@ namespace Milimoe.FunGame.Core.Entity
                 SkillRangeType.Diamond => map.GetGridsByRange(targetGrid, range, includeCharacter),
                 SkillRangeType.Circle => map.GetGridsByCircleRange(targetGrid, range, includeCharacter),
                 SkillRangeType.Square => map.GetGridsBySquareRange(targetGrid, range, includeCharacter),
-                SkillRangeType.Line => map.GetGridsOnLine(currentGrid, targetGrid, false, includeCharacter),
-                SkillRangeType.LinePass => map.GetGridsOnLine(currentGrid, targetGrid, true, includeCharacter),
+                SkillRangeType.Line => map.GetGridsOnThickLine(currentGrid, targetGrid, range, false, includeCharacter),
+                SkillRangeType.LinePass => map.GetGridsOnThickLine(currentGrid, targetGrid, range, true, includeCharacter),
                 SkillRangeType.Sector => map.GetGridsInSector(currentGrid, targetGrid, range, SectorAngle, includeCharacter),
                 _ => map.GetGridsByRange(targetGrid, range, includeCharacter)
             };
@@ -626,13 +632,13 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="caster"></param>
         /// <param name="targets"></param>
         /// <param name="grids"></param>
-        public async Task OnSkillCasted(IGamingQueue queue, Character caster, List<Character> targets, List<Grid> grids)
+        public void OnSkillCasted(IGamingQueue queue, Character caster, List<Character> targets, List<Grid> grids)
         {
             GamingQueue = queue;
             foreach (Effect e in Effects)
             {
                 e.GamingQueue = GamingQueue;
-                await e.OnSkillCasted(caster, targets, grids, Values);
+                e.OnSkillCasted(caster, targets, grids, Values);
             }
         }
 
@@ -641,11 +647,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="user"></param>
         /// <param name="targets"></param>
-        public async Task OnSkillCasted(User user, List<Character> targets)
+        public void OnSkillCasted(User user, List<Character> targets)
         {
             foreach (Effect e in Effects)
             {
-                await e.OnSkillCasted(user, targets, Values);
+                e.OnSkillCasted(user, targets, Values);
             }
         }
 

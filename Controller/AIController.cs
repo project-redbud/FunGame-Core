@@ -25,7 +25,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// <param name="selectableEnemys">场上能够选取的敌人</param>
         /// <param name="selectableTeammates">场上能够选取的队友</param>
         /// <returns>包含最佳行动的AIDecision对象</returns>
-        public async Task<AIDecision> DecideAIActionAsync(Character character, DecisionPoints dp, Grid startGrid, List<Grid> allPossibleMoveGrids,
+        public AIDecision DecideAIAction(Character character, DecisionPoints dp, Grid startGrid, List<Grid> allPossibleMoveGrids,
             List<Skill> availableSkills, List<Item> availableItems, List<Character> allEnemysInGame, List<Character> allTeammatesInGame,
             List<Character> selectableEnemys, List<Character> selectableTeammates)
         {
@@ -240,7 +240,7 @@ namespace Milimoe.FunGame.Core.Controller
                 }
             }
 
-            return await Task.FromResult(bestDecision);
+            return bestDecision;
         }
 
         // --- AI 决策辅助方法 ---

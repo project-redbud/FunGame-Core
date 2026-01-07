@@ -477,8 +477,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
             // 添加中间点（不包括起点和终点）
             for (int i = 1; i < points.Count - 1; i++)
             {
-                var point = points[i];
-                Grid? current = this[point.x, point.y, z];
+                (int x, int y) = points[i];
+                Grid? current = this[x, y, z];
                 if (current != null && (includeCharacter || current.Characters.Count == 0) && !grids.Contains(current))
                 {
                     grids.Add(current);
@@ -543,8 +543,37 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         }
 
         /// <summary>
+        /// 使用布雷森汉姆直线算法获取从起点到终点的所有格子（包含起点和终点）并考虑宽度。
+        /// 若 passThrough 为 true，则继续向同一方向延伸直到地图边缘。只考虑同一平面的格子。
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="directionRef"></param>
+        /// <param name="range"></param>
+        /// <param name="passThrough"></param>
+        /// <param name="includeChar"></param>
+        /// <returns></returns>
+        public virtual List<Grid> GetGridsOnThickLine(Grid start, Grid directionRef, int range, bool passThrough = false, bool includeChar = false)
+        {
+            List<Grid> line = GetGridsOnLine(start, directionRef, passThrough, includeCharacter: true);
+            List<Grid> result = [];
+
+            foreach (Grid g in line)
+            {
+                List<Grid> around = GetGridsBySquareRange(g, range / 2, includeCharacter: true);
+                foreach (Grid a in around)
+                {
+                    if (!result.Contains(a) && (includeChar || a.Characters.Count == 0))
+                    {
+                        result.Add(a);
+                    }
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
         /// 获取扇形范围内的格子
-        /// 朝向由 casterGrid → targetGrid 决定，扇形以 targetGrid 为顶点向外扩展
+        /// 扇形以 casterGrid 为顶点，向 targetGrid 方向张开
         /// </summary>
         /// <param name="targetGrid">目标格子，即扇形顶点</param>
         /// <param name="casterGrid">施法者格子，用于确定朝向</param>
@@ -552,53 +581,64 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <param name="angleDegrees">扇形角度，默认 90</param>
         /// <param name="includeCharacter">是否包含有角色的格子</param>
         /// <returns></returns>
-        public virtual List<Grid> GetGridsInSector(Grid targetGrid, Grid casterGrid, int range, double angleDegrees = 90, bool includeCharacter = false)
+        public virtual List<Grid> GetGridsInSector(Grid casterGrid, Grid targetGrid, int range, double angleDegrees = 90, bool includeCharacter = false)
         {
             List<Grid> grids = [];
 
-            if (range <= 0 || targetGrid.Z != casterGrid.Z)
+            if (casterGrid == Grid.Empty || targetGrid == Grid.Empty || casterGrid.Z != targetGrid.Z)
+                return grids;
+
+            if (range <= 0)
             {
-                if (includeCharacter || targetGrid.Characters.Count == 0)
-                    grids.Add(targetGrid);
+                if (includeCharacter || casterGrid.Characters.Count == 0)
+                    grids.Add(casterGrid);
                 return grids;
             }
 
-            // 计算朝向向量（从施法者到落点）
+            int z = casterGrid.Z;
+
+            // 计算朝向向量：从施法者指向目标点
             double dirX = targetGrid.X - casterGrid.X;
             double dirY = targetGrid.Y - casterGrid.Y;
             double dirLength = Math.Sqrt(dirX * dirX + dirY * dirY);
-            if (dirLength == 0) return GetGridsByCircleRange(targetGrid, range, includeCharacter); // 退化为圆
 
-            // 单位方向向量
+            // 如果目标和施法者重合，退化为圆形范围
+            if (dirLength < 0.01)
+            {
+                return GetGridsByCircleRange(casterGrid, range - 1 > 0 ? range - 1 : 0, includeCharacter);
+            }
+
+            // 单位朝向向量
             double unitDirX = dirX / dirLength;
             double unitDirY = dirY / dirLength;
 
             // 半角（弧度）
-            double halfAngleRad = (angleDegrees / 2) * Math.PI / 180.0;
+            double halfAngleRad = (angleDegrees / 2) * (Math.PI / 180.0);
 
+            // 遍历以施法者为中心的一个足够大的区域（-range 到 +range）
             for (int dx = -range; dx <= range; dx++)
             {
                 for (int dy = -range; dy <= range; dy++)
                 {
-                    int x = targetGrid.X + dx;
-                    int y = targetGrid.Y + dy;
-                    int z = targetGrid.Z;
+                    int x = casterGrid.X + dx;
+                    int y = casterGrid.Y + dy;
 
                     Grid? candidate = this[x, y, z];
                     if (candidate == null) continue;
 
-                    // 向量：从中心到候选格子
+                    // 向量：从施法者到候选格子
                     double vecX = dx;
                     double vecY = dy;
                     double vecLength = Math.Sqrt(vecX * vecX + vecY * vecY);
 
-                    // 在半径内
+                    // 必须在最大范围（半径）内
                     if (vecLength > range + 0.01) continue;
 
+                    // 中心格子（施法者自己）始终包含
                     if (vecLength < 0.01)
                     {
-                        // 中心格子始终包含
-                        grids.Add(candidate);
+                        if (includeCharacter || candidate.Characters.Count == 0)
+                            grids.Add(candidate);
                         continue;
                     }
 
@@ -606,11 +646,12 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
                     double unitVecX = vecX / vecLength;
                     double unitVecY = vecY / vecLength;
 
-                    // 计算夹角（余弦）
+                    // 计算与朝向的夹角
                     double dot = unitDirX * unitVecX + unitDirY * unitVecY;
-                    double angleRad = Math.Acos(Math.Clamp(dot, -1.0, 1.0));
+                    dot = Math.Clamp(dot, -1.0, 1.0);
+                    double angleRad = Math.Acos(dot);
 
-                    // 在扇形角度内
+                    // 夹角在半角范围内 → 在扇形内
                     if (angleRad <= halfAngleRad)
                     {
                         if (includeCharacter || candidate.Characters.Count == 0)

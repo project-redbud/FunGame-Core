@@ -86,7 +86,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// </summary>
         /// <param name="character"></param>
         /// <returns></returns>
-        public Task<bool> ProcessTurnAsync(Character character);
+        public bool ProcessTurn(Character character);
 
         /// <summary>
         /// 造成伤害
@@ -99,7 +99,8 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="magicType"></param>
         /// <param name="damageResult"></param>
         /// <param name="triggerEffects"></param>
-        public Task DamageToEnemyAsync(Character actor, Character enemy, double damage, bool isNormalAttack, DamageType damageType = DamageType.Physical, MagicType magicType = MagicType.None, DamageResult damageResult = DamageResult.Normal, bool triggerEffects = true);
+        /// <param name="ignoreImmune"></param>
+        public void DamageToEnemy(Character actor, Character enemy, double damage, bool isNormalAttack, DamageType damageType = DamageType.Physical, MagicType magicType = MagicType.None, DamageResult damageResult = DamageResult.Normal, bool triggerEffects = true, bool ignoreImmune = true);
 
         /// <summary>
         /// 治疗一个目标
@@ -108,7 +109,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="target"></param>
         /// <param name="heal"></param>
         /// <param name="canRespawn"></param>
-        public Task HealToTargetAsync(Character actor, Character target, double heal, bool canRespawn = false);
+        public void HealToTarget(Character actor, Character target, double heal, bool canRespawn = false);
 
         /// <summary>
         /// 计算物理伤害
@@ -142,20 +143,20 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// </summary>
         /// <param name="killer"></param>
         /// <param name="death"></param>
-        public Task DeathCalculationAsync(Character killer, Character death);
+        public void DeathCalculation(Character killer, Character death);
 
         /// <summary>
         /// 打断施法
         /// </summary>
         /// <param name="caster"></param>
         /// <param name="interrupter"></param>
-        public Task InterruptCastingAsync(Character caster, Character interrupter);
+        public void InterruptCasting(Character caster, Character interrupter);
 
         /// <summary>
         /// 打断施法 [ 用于使敌人目标丢失 ]
         /// </summary>
         /// <param name="interrupter"></param>
-        public Task InterruptCastingAsync(Character interrupter);
+        public void InterruptCasting(Character interrupter);
 
         /// <summary>
         /// 使用物品
@@ -170,7 +171,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="allTeammates"></param>
         /// <param name="aiDecision"></param>
         /// <returns></returns>
-        public Task<bool> UseItemAsync(Item item, Character character, DecisionPoints dp, List<Character> enemys, List<Character> teammates, List<Grid> castRange, List<Character> allEnemys, List<Character> allTeammates, AIDecision? aiDecision = null);
+        public bool UseItem(Item item, Character character, DecisionPoints dp, List<Character> enemys, List<Character> teammates, List<Grid> castRange, List<Character> allEnemys, List<Character> allTeammates, AIDecision? aiDecision = null);
 
         /// <summary>
         /// 角色移动
@@ -180,7 +181,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="target"></param>
         /// <param name="startGrid"></param>
         /// <returns></returns>
-        public Task<bool> CharacterMoveAsync(Character character, DecisionPoints dp, Grid target, Grid? startGrid);
+        public bool CharacterMove(Character character, DecisionPoints dp, Grid target, Grid? startGrid);
 
         /// <summary>
         /// 选取移动目标
@@ -191,7 +192,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="map"></param>
         /// <param name="moveRange"></param>
         /// <returns></returns>
-        public Task<Grid> SelectTargetGridAsync(Character character, List<Character> enemys, List<Character> teammates, GameMap map, List<Grid> moveRange);
+        public Grid SelectTargetGrid(Character character, List<Character> enemys, List<Character> teammates, GameMap map, List<Grid> moveRange);
 
         /// <summary>
         /// 选取技能目标
@@ -202,7 +203,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="teammates"></param>
         /// <param name="castRange"></param>
         /// <returns></returns>
-        public Task<List<Character>> SelectTargetsAsync(Character caster, Skill skill, List<Character> enemys, List<Character> teammates, List<Grid> castRange);
+        public List<Character> SelectTargets(Character caster, Skill skill, List<Character> enemys, List<Character> teammates, List<Grid> castRange);
 
         /// <summary>
         /// 选取普通攻击目标
@@ -213,7 +214,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="teammates"></param>
         /// <param name="attackRange"></param>
         /// <returns></returns>
-        public Task<List<Character>> SelectTargetsAsync(Character character, NormalAttack attack, List<Character> enemys, List<Character> teammates, List<Grid> attackRange);
+        public List<Character> SelectTargets(Character character, NormalAttack attack, List<Character> enemys, List<Character> teammates, List<Grid> attackRange);
 
         /// <summary>
         /// 判断目标对于某个角色是否是队友
@@ -263,12 +264,23 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public void CalculateCharacterDamageStatistics(Character character, Character characterTaken, double damage, DamageType damageType, double takenDamage = -1);
 
         /// <summary>
+        /// 免疫检定
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="targets"></param>
+        /// <param name="skill"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public void CheckSkilledImmune(Character character, List<Character> targets, Skill skill, Item? item = null);
+
+        /// <summary>
         /// 技能豁免检定
         /// </summary>
         /// <param name="character"></param>
-        /// <param name="target"></param>
+        /// <param name="source"></param>
         /// <param name="effect"></param>
+        /// <param name="isEvade">true - 豁免成功等效于闪避</param>
         /// <returns></returns>
-        public Task<bool> CheckExemptionAsync(Character character, Character target, Effect effect);
+        public bool CheckExemption(Character character, Character? source, Effect effect, bool isEvade);
     }
 }

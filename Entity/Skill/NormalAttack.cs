@@ -352,7 +352,7 @@ namespace Milimoe.FunGame.Core.Entity
                     double expected = Damage;
                     int changeCount = 0;
                     DamageResult result = IsMagic ? queue.CalculateMagicalDamage(attacker, enemy, true, MagicType, expected, out double damage, ref changeCount, triggerEffects) : queue.CalculatePhysicalDamage(attacker, enemy, true, expected, out damage, ref changeCount, triggerEffects);
-                    queue.DamageToEnemyAsync(attacker, enemy, damage, true, IsMagic ? DamageType.Magical : DamageType.Physical, MagicType, result);
+                    queue.DamageToEnemy(attacker, enemy, damage, true, IsMagic ? DamageType.Magical : DamageType.Physical, MagicType, result);
                 }
             }
         }

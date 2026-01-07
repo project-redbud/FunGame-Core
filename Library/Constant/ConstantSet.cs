@@ -973,8 +973,13 @@ namespace Milimoe.FunGame.Core.Library.Constant
             {
                 return "";
             }
+            return GetExemptionDescription(pa, exemptDuration);
+        }
+
+        public static string GetExemptionDescription(PrimaryAttribute type, bool exemptDuration = true)
+        {
             StringBuilder builder = new();
-            builder.AppendLine($"豁免类型：{CharacterSet.GetPrimaryAttributeName(pa)}");
+            builder.AppendLine($"豁免类型：{CharacterSet.GetPrimaryAttributeName(type)}");
             builder.Append($"豁免持续时间：{(exemptDuration ? "是" : "否")}");
             return builder.ToString();
         }

@@ -419,9 +419,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="targets"></param>
         /// <param name="grids"></param>
         /// <param name="others"></param>
-        public virtual async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public virtual void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
-            await Task.CompletedTask;
+
         }
 
         /// <summary>
@@ -430,9 +430,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="user"></param>
         /// <param name="targets"></param>
         /// <param name="others"></param>
-        public virtual async Task OnSkillCasted(User user, List<Character> targets, Dictionary<string, object> others)
+        public virtual void OnSkillCasted(User user, List<Character> targets, Dictionary<string, object> others)
         {
-            await Task.CompletedTask;
+
         }
 
         /// <summary>
@@ -875,7 +875,7 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 对敌人造成技能伤害 [ 强烈建议使用此方法造成伤害而不是自行调用 <see cref="IGamingQueue.DamageToEnemyAsync"/> ]
+        /// 对敌人造成技能伤害 [ 强烈建议使用此方法造成伤害而不是自行调用 <see cref="IGamingQueue.DamageToEnemy"/> ]
         /// </summary>
         /// <param name="actor"></param>
         /// <param name="enemy"></param>
@@ -883,8 +883,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="magicType"></param>
         /// <param name="expectedDamage"></param>
         /// <param name="triggerEffects"></param>
+        /// <param name="ignoreImmune"></param>
         /// <returns></returns>
-        public DamageResult DamageToEnemy(Character actor, Character enemy, DamageType damageType, MagicType magicType, double expectedDamage, bool triggerEffects = true)
+        public DamageResult DamageToEnemy(Character actor, Character enemy, DamageType damageType, MagicType magicType, double expectedDamage, bool triggerEffects = true, bool ignoreImmune = true)
         {
             if (GamingQueue is null) return DamageResult.Evaded;
             int changeCount = 0;
@@ -894,13 +895,12 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 result = damageType == DamageType.Physical ? GamingQueue.CalculatePhysicalDamage(actor, enemy, false, expectedDamage, out damage, ref changeCount, triggerEffects) : GamingQueue.CalculateMagicalDamage(actor, enemy, false, MagicType, expectedDamage, out damage, ref changeCount, triggerEffects);
             }
-            // 注意此方法在后台线程运行
-            GamingQueue.DamageToEnemyAsync(actor, enemy, damage, false, damageType, magicType, result, triggerEffects);
+            GamingQueue.DamageToEnemy(actor, enemy, damage, false, damageType, magicType, result, triggerEffects, ignoreImmune);
             return result;
         }
 
         /// <summary>
-        /// 治疗一个目标 [ 强烈建议使用此方法而不是自行调用 <see cref="IGamingQueue.HealToTargetAsync"/> ]
+        /// 治疗一个目标 [ 强烈建议使用此方法而不是自行调用 <see cref="IGamingQueue.HealToTarget"/> ]
         /// </summary>
         /// <param name="actor"></param>
         /// <param name="target"></param>
@@ -908,26 +908,26 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="canRespawn"></param>
         public void HealToTarget(Character actor, Character target, double heal, bool canRespawn = false)
         {
-            GamingQueue?.HealToTargetAsync(actor, target, heal, canRespawn);
+            GamingQueue?.HealToTarget(actor, target, heal, canRespawn);
         }
 
         /// <summary>
-        /// 打断施法 [ 尽可能的调用此方法而不是直接调用 <see cref="IGamingQueue.InterruptCastingAsync(Character, Character)"/>，以防止中断性变更 ]
+        /// 打断施法 [ 尽可能的调用此方法而不是直接调用 <see cref="IGamingQueue.InterruptCasting(Character, Character)"/>，以防止中断性变更 ]
         /// </summary>
         /// <param name="caster"></param>
         /// <param name="interrupter"></param>
         public void InterruptCasting(Character caster, Character interrupter)
         {
-            GamingQueue?.InterruptCastingAsync(caster, interrupter);
+            GamingQueue?.InterruptCasting(caster, interrupter);
         }
 
         /// <summary>
-        /// 打断施法 [ 用于使敌人目标丢失 ] [ 尽可能的调用此方法而不是直接调用 <see cref="IGamingQueue.InterruptCastingAsync(Character)"/>，以防止中断性变更 ]
+        /// 打断施法 [ 用于使敌人目标丢失 ] [ 尽可能的调用此方法而不是直接调用 <see cref="IGamingQueue.InterruptCasting(Character)"/>，以防止中断性变更 ]
         /// </summary>
         /// <param name="interrupter"></param>
         public void InterruptCasting(Character interrupter)
         {
-            GamingQueue?.InterruptCastingAsync(interrupter);
+            GamingQueue?.InterruptCasting(interrupter);
         }
 
         /// <summary>
@@ -1123,10 +1123,10 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="target"></param>
         /// <param name="effect"></param>
         /// <returns></returns>
-        public async Task<bool> CheckExemptionAsync(Character character, Character target, Effect effect)
+        public bool CheckExemption(Character character, Character target, Effect effect)
         {
             if (GamingQueue is null) return false;
-            return await GamingQueue.CheckExemptionAsync(character, target, effect);
+            return GamingQueue.CheckExemption(target, character, effect, true);
         }
 
         /// <summary>
