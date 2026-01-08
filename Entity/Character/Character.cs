@@ -482,7 +482,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 生命回复力 = [ 与初始设定相关 ] [ 与力量相关 ] + 额外生命回复力
         /// </summary>
-        public double HR => InitialHR + STR * GameplayEquilibriumConstant.STRtoHRFactor + ExHR;
+        public double HR => Math.Max(0, InitialHR + STR * GameplayEquilibriumConstant.STRtoHRFactor + ExHR);
 
         /// <summary>
         /// 额外生命回复力 [ 与技能和物品相关 ]
@@ -498,7 +498,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 魔法回复力 = [ 与初始设定相关 ] [ 与智力相关 ] + 额外魔法回复力
         /// </summary>
-        public double MR => InitialMR + INT * GameplayEquilibriumConstant.INTtoMRFactor + ExMR;
+        public double MR => Math.Max(0, InitialMR + INT * GameplayEquilibriumConstant.INTtoMRFactor + ExMR);
 
         /// <summary>
         /// 额外魔法回复力 [ 与技能和物品相关 ]
@@ -824,7 +824,7 @@ namespace Milimoe.FunGame.Core.Entity
                         _ => baseMOV
                     };
                 }
-                return Math.Max(1, baseMOV + ExMOV);
+                return Math.Max(0, baseMOV + ExMOV);
             }
         }
 
@@ -892,6 +892,16 @@ namespace Milimoe.FunGame.Core.Entity
         /// 护盾值 [ 与技能和物品相关 ]
         /// </summary>
         public Shield Shield { get; set; }
+
+        /// <summary>
+        /// 角色是否是单位 [ 初始设定 ]
+        /// </summary>
+        public virtual bool IsUnit { get; } = false;
+
+        /// <summary>
+        /// 角色所属的上级角色 [ 战斗相关 ]
+        /// </summary>
+        public Character? Master { get; set; } = null;
 
         /// <summary>
         /// 普通攻击对象
@@ -1489,6 +1499,7 @@ namespace Milimoe.FunGame.Core.Entity
                 builder.AppendLine("== 角色技能 ==");
                 foreach (Skill skill in Skills)
                 {
+                    skill.Character = this;
                     builder.Append(skill.ToString());
                 }
             }

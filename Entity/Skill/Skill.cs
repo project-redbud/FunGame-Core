@@ -159,9 +159,14 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual bool SelectIncludeCharacterGrid { get; set; } = true;
 
         /// <summary>
-        /// 是否可以选择没有被角色占据的空地，为 false 时会阻止施法
+        /// 是否可以选择没有被角色占据的空地，为 false 时会阻止施法。仅 <see cref="IsNonDirectional"/> = true 时有效。<para/>
         /// </summary>
         public virtual bool AllowSelectNoCharacterGrid { get; set; } = false;
+
+        /// <summary>
+        /// 是否可以选择已死亡的角色。仅 <see cref="IsNonDirectional"/> = true 时有效。
+        /// </summary>
+        public virtual bool AllowSelectDead { get; set; } = false;
 
         /// <summary>
         /// 作用范围形状<para/>
@@ -534,14 +539,14 @@ namespace Milimoe.FunGame.Core.Entity
                 if (allEnemys.Contains(character))
                 {
                     IEnumerable<Effect> effects = Effects.Where(e => e.IsInEffect);
-                    if (CanSelectEnemy && ((character.ImmuneType & checkType) == ImmuneType.None ||
-                        effects.Any(e => e.IgnoreImmune == ImmuneType.All || e.IgnoreImmune == ImmuneType.Skilled || (IsMagic && e.IgnoreImmune == ImmuneType.Magical))))
+                    if (CanSelectEnemy && ((AllowSelectDead && character.HP == 0) || (!AllowSelectDead && character.HP > 0)) &&
+                        ((character.ImmuneType & checkType) == ImmuneType.None || effects.Any(e => e.IgnoreImmune == ImmuneType.All || e.IgnoreImmune == ImmuneType.Skilled || (IsMagic && e.IgnoreImmune == ImmuneType.Magical))))
                     {
                         targets.Add(character);
                     }
                 }
 
-                if (CanSelectTeammate && allTeammates.Contains(character))
+                if (CanSelectTeammate && allTeammates.Contains(character) && ((AllowSelectDead && character.HP == 0) || (!AllowSelectDead && character.HP > 0)))
                 {
                     targets.Add(character);
                 }
@@ -550,10 +555,10 @@ namespace Milimoe.FunGame.Core.Entity
             // 如果和已经选择的列表合并
             if (union)
             {
-                return [.. targets.Union(selected).Distinct()];
+                return [.. targets.Where(c => SelectTargetPredicates.All(f => f(c))).Union(selected).Distinct()];
             }
 
-            return [.. targets.Distinct()];
+            return [.. targets.Where(c => SelectTargetPredicates.All(f => f(c))).Distinct()];
         }
 
         /// <summary>

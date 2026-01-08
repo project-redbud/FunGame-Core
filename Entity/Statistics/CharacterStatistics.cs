@@ -50,5 +50,9 @@
         public double AvgRank { get; set; } = 0;
         public double Rating { get; set; } = 0;
         public int MVPs { get; set; } = 0;
+        public int UseDecisionPoints { get; set; } = 0;
+        public int TurnDecisions { get; set; } = 0;
+        public int AvgUseDecisionPoints { get; set; } = 0;
+        public int AvgTurnDecisions { get; set; } = 0;
     }
 }

@@ -98,9 +98,8 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="damageType"></param>
         /// <param name="magicType"></param>
         /// <param name="damageResult"></param>
-        /// <param name="triggerEffects"></param>
-        /// <param name="ignoreImmune"></param>
-        public void DamageToEnemy(Character actor, Character enemy, double damage, bool isNormalAttack, DamageType damageType = DamageType.Physical, MagicType magicType = MagicType.None, DamageResult damageResult = DamageResult.Normal, bool triggerEffects = true, bool ignoreImmune = true);
+        /// <param name="options"></param>
+        public void DamageToEnemy(Character actor, Character enemy, double damage, bool isNormalAttack, DamageType damageType = DamageType.Physical, MagicType magicType = MagicType.None, DamageResult damageResult = DamageResult.Normal, DamageCalculationOptions? options = null);
 
         /// <summary>
         /// 治疗一个目标
@@ -109,7 +108,8 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="target"></param>
         /// <param name="heal"></param>
         /// <param name="canRespawn"></param>
-        public void HealToTarget(Character actor, Character target, double heal, bool canRespawn = false);
+        /// <param name="triggerEffects"></param>
+        public void HealToTarget(Character actor, Character target, double heal, bool canRespawn = false, bool triggerEffects = true);
 
         /// <summary>
         /// 计算物理伤害
@@ -120,9 +120,9 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="expectedDamage"></param>
         /// <param name="finalDamage"></param>
         /// <param name="changeCount"></param>
-        /// <param name="triggerEffects"></param>
+        /// <param name="options"></param>
         /// <returns></returns>
-        public DamageResult CalculatePhysicalDamage(Character actor, Character enemy, bool isNormalAttack, double expectedDamage, out double finalDamage, ref int changeCount, bool triggerEffects);
+        public DamageResult CalculatePhysicalDamage(Character actor, Character enemy, bool isNormalAttack, double expectedDamage, out double finalDamage, ref int changeCount, DamageCalculationOptions? options = null);
 
         /// <summary>
         /// 计算魔法伤害
@@ -134,9 +134,9 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="expectedDamage"></param>
         /// <param name="finalDamage"></param>
         /// <param name="changeCount"></param>
-        /// <param name="triggerEffects"></param>
+        /// <param name="options"></param>
         /// <returns></returns>
-        public DamageResult CalculateMagicalDamage(Character actor, Character enemy, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage, ref int changeCount, bool triggerEffects);
+        public DamageResult CalculateMagicalDamage(Character actor, Character enemy, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage, ref int changeCount, DamageCalculationOptions? options = null);
 
         /// <summary>
         /// 死亡结算
@@ -217,6 +217,20 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public List<Character> SelectTargets(Character character, NormalAttack attack, List<Character> enemys, List<Character> teammates, List<Grid> attackRange);
 
         /// <summary>
+        /// 获取某角色的敌人列表
+        /// </summary>
+        /// <param name="character"></param>
+        /// <returns></returns>
+        public List<Character> GetEnemies(Character character);
+
+        /// <summary>
+        /// 获取某角色的队友列表
+        /// </summary>
+        /// <param name="character"></param>
+        /// <returns></returns>
+        public List<Character> GetTeammates(Character character);
+
+        /// <summary>
         /// 判断目标对于某个角色是否是队友
         /// </summary>
         /// <param name="character"></param>
@@ -267,11 +281,11 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// 免疫检定
         /// </summary>
         /// <param name="character"></param>
-        /// <param name="targets"></param>
+        /// <param name="target"></param>
         /// <param name="skill"></param>
         /// <param name="item"></param>
         /// <returns></returns>
-        public void CheckSkilledImmune(Character character, List<Character> targets, Skill skill, Item? item = null);
+        public bool CheckSkilledImmune(Character character, Character target, Skill skill, Item? item = null);
 
         /// <summary>
         /// 技能豁免检定
@@ -282,5 +296,14 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="isEvade">true - 豁免成功等效于闪避</param>
         /// <returns></returns>
         public bool CheckExemption(Character character, Character? source, Effect effect, bool isEvade);
+
+        /// <summary>
+        /// 向角色（或控制该角色的玩家）进行询问并取得答复
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="topic"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public Dictionary<string, object> Inquiry(Character character, string topic, Dictionary<string, object> args);
     }
 }

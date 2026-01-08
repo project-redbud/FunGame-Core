@@ -77,7 +77,7 @@ namespace Milimoe.FunGame.Core.Model
         /// 获取某角色的团队成员
         /// </summary>
         /// <param name="character"></param>
-        protected override List<Character> GetTeammates(Character character)
+        public override List<Character> GetTeammates(Character character)
         {
             foreach (string team in _teams.Keys)
             {

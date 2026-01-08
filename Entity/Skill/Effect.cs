@@ -436,6 +436,18 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 在时间流逝期间应用生命/魔法回复前修改 [ 允许取消回复 ]
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="hr"></param>
+        /// <param name="mr"></param>
+        /// <returns>返回 true 取消回复</returns>
+        public virtual bool BeforeApplyRecoveryAtTimeLapsing(Character character, ref double hr, ref double mr)
+        {
+            return false;
+        }
+
+        /// <summary>
         /// 时间流逝时
         /// </summary>
         /// <param name="character"></param>
@@ -875,6 +887,18 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 在角色取得询问反应的答复时触发
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="topic"></param>
+        /// <param name="args"></param>
+        /// <param name="response"></param>
+        public virtual void OnCharacterInquiry(Character character, string topic, Dictionary<string, object> args, Dictionary<string, object> response)
+        {
+
+        }
+
+        /// <summary>
         /// 对敌人造成技能伤害 [ 强烈建议使用此方法造成伤害而不是自行调用 <see cref="IGamingQueue.DamageToEnemy"/> ]
         /// </summary>
         /// <param name="actor"></param>
@@ -882,20 +906,20 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="damageType"></param>
         /// <param name="magicType"></param>
         /// <param name="expectedDamage"></param>
-        /// <param name="triggerEffects"></param>
-        /// <param name="ignoreImmune"></param>
+        /// <param name="options"></param>
         /// <returns></returns>
-        public DamageResult DamageToEnemy(Character actor, Character enemy, DamageType damageType, MagicType magicType, double expectedDamage, bool triggerEffects = true, bool ignoreImmune = true)
+        public DamageResult DamageToEnemy(Character actor, Character enemy, DamageType damageType, MagicType magicType, double expectedDamage, DamageCalculationOptions? options = null)
         {
             if (GamingQueue is null) return DamageResult.Evaded;
             int changeCount = 0;
             DamageResult result = DamageResult.Normal;
             double damage = expectedDamage;
-            if (damageType != DamageType.True)
+            options ??= new();
+            if (options.NeedCalculate && damageType != DamageType.True)
             {
-                result = damageType == DamageType.Physical ? GamingQueue.CalculatePhysicalDamage(actor, enemy, false, expectedDamage, out damage, ref changeCount, triggerEffects) : GamingQueue.CalculateMagicalDamage(actor, enemy, false, MagicType, expectedDamage, out damage, ref changeCount, triggerEffects);
+                result = damageType == DamageType.Physical ? GamingQueue.CalculatePhysicalDamage(actor, enemy, false, expectedDamage, out damage, ref changeCount, options) : GamingQueue.CalculateMagicalDamage(actor, enemy, false, MagicType, expectedDamage, out damage, ref changeCount, options);
             }
-            GamingQueue.DamageToEnemy(actor, enemy, damage, false, damageType, magicType, result, triggerEffects, ignoreImmune);
+            GamingQueue.DamageToEnemy(actor, enemy, damage, false, damageType, magicType, result, options);
             return result;
         }
 
@@ -906,9 +930,10 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="target"></param>
         /// <param name="heal"></param>
         /// <param name="canRespawn"></param>
-        public void HealToTarget(Character actor, Character target, double heal, bool canRespawn = false)
+        /// <param name="triggerEffects"></param>
+        public void HealToTarget(Character actor, Character target, double heal, bool canRespawn = false, bool triggerEffects = true)
         {
-            GamingQueue?.HealToTarget(actor, target, heal, canRespawn);
+            GamingQueue?.HealToTarget(actor, target, heal, canRespawn, triggerEffects);
         }
 
         /// <summary>
@@ -1116,6 +1141,21 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 免疫检定 [ 尽可能的调用此方法而不是自己实现 ]
+        /// 先进行检定，再施加状态效果
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="target"></param>
+        /// <param name="skill"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public bool CheckSkilledImmune(Character character, Character target, Skill skill, Item? item = null)
+        {
+            if (GamingQueue is null) return false;
+            return GamingQueue.CheckSkilledImmune(target, character, skill, item);
+        }
+
+        /// <summary>
         /// 技能豁免检定 [ 尽可能的调用此方法而不是自己实现 ]
         /// 先进行检定，再施加状态效果
         /// </summary>
@@ -1160,6 +1200,18 @@ namespace Milimoe.FunGame.Core.Entity
         public bool IsCharacterInAIControlling(Character character)
         {
             return GamingQueue?.IsCharacterInAIControlling(character) ?? false;
+        }
+
+        /// <summary>
+        /// 向角色发起询问反应事件 [ 尽可能的调用此方法而不是自己实现 ]
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="topic"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public Dictionary<string, object> Inquiry(Character character, string topic, Dictionary<string, object> args)
+        {
+            return GamingQueue?.Inquiry(character, topic, args) ?? [];
         }
 
         /// <summary>

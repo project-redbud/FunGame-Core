@@ -3,6 +3,7 @@ using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Entity
 {
@@ -336,9 +337,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="queue"></param>
         /// <param name="attacker"></param>
-        /// <param name="triggerEffects"></param>
+        /// <param name="options"></param>
         /// <param name="enemys"></param>
-        public void Attack(IGamingQueue queue, Character attacker, bool triggerEffects, params IEnumerable<Character> enemys)
+        public void Attack(IGamingQueue queue, Character attacker, DamageCalculationOptions? options, params IEnumerable<Character> enemys)
         {
             if (!Enable)
             {
@@ -351,8 +352,8 @@ namespace Milimoe.FunGame.Core.Entity
                     queue.WriteLine($"[ {Character} ] 对 [ {enemy} ] 发起了普通攻击！");
                     double expected = Damage;
                     int changeCount = 0;
-                    DamageResult result = IsMagic ? queue.CalculateMagicalDamage(attacker, enemy, true, MagicType, expected, out double damage, ref changeCount, triggerEffects) : queue.CalculatePhysicalDamage(attacker, enemy, true, expected, out damage, ref changeCount, triggerEffects);
-                    queue.DamageToEnemy(attacker, enemy, damage, true, IsMagic ? DamageType.Magical : DamageType.Physical, MagicType, result);
+                    DamageResult result = IsMagic ? queue.CalculateMagicalDamage(attacker, enemy, true, MagicType, expected, out double damage, ref changeCount, options) : queue.CalculatePhysicalDamage(attacker, enemy, true, expected, out damage, ref changeCount, options);
+                    queue.DamageToEnemy(attacker, enemy, damage, true, IsMagic ? DamageType.Magical : DamageType.Physical, MagicType, result, options);
                 }
             }
         }
