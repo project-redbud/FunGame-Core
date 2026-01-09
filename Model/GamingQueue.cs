@@ -4059,21 +4059,20 @@ namespace Milimoe.FunGame.Core.Model
         /// 向角色（或控制该角色的玩家）进行询问并取得答复
         /// </summary>
         /// <param name="character"></param>
-        /// <param name="topic"></param>
-        /// <param name="args"></param>
+        /// <param name="options"></param>
         /// <returns></returns>
-        public Dictionary<string, object> Inquiry(Character character, string topic, Dictionary<string, object> args)
+        public InquiryResponse Inquiry(Character character, InquiryOptions options)
         {
             if (!_decisionPoints.TryGetValue(character, out DecisionPoints? dp) || dp is null)
             {
                 dp = new();
                 _decisionPoints[character] = dp;
             }
-            Dictionary<string, object> response = OnCharacterInquiryEvent(character, dp, topic, args);
+            InquiryResponse response = OnCharacterInquiryEvent(character, dp, options);
             Effect[] effects = [.. character.Effects.Where(e => e.IsInEffect)];
             foreach (Effect effect in effects)
             {
-                effect.OnCharacterInquiry(character, topic, args, response);
+                effect.OnCharacterInquiry(character, options, response);
             }
             return response;
         }
@@ -4597,7 +4596,7 @@ namespace Milimoe.FunGame.Core.Model
             CharacterDecisionCompletedEvent?.Invoke(this, actor, dp, record);
         }
 
-        public delegate Dictionary<string, object> CharacterInquiryEventHandler(GamingQueue character, Character actor, DecisionPoints dp, string topic, Dictionary<string, object> args);
+        public delegate InquiryResponse CharacterInquiryEventHandler(GamingQueue character, Character actor, DecisionPoints dp, InquiryOptions options);
         /// <summary>
         /// 角色询问反应事件
         /// </summary>
@@ -4607,12 +4606,11 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         /// <param name="character"></param>
         /// <param name="dp"></param>
-        /// <param name="topic"></param>
-        /// <param name="args"></param>
+        /// <param name="options"></param>
         /// <returns></returns>
-        protected Dictionary<string, object> OnCharacterInquiryEvent(Character character, DecisionPoints dp, string topic, Dictionary<string, object> args)
+        protected InquiryResponse OnCharacterInquiryEvent(Character character, DecisionPoints dp, InquiryOptions options)
         {
-            return CharacterInquiryEvent?.Invoke(this, character, dp, topic, args) ?? [];
+            return CharacterInquiryEvent?.Invoke(this, character, dp, options) ?? new(options);
         }
 
         #endregion

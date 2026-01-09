@@ -1107,4 +1107,15 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// </summary>
         Sector
     }
+
+    public enum InquiryType
+    {
+        None,
+        Choice,
+        MultipleChoice,
+        BinaryChoice,
+        TextInput,
+        NumberInput,
+        Custom
+    }
 }

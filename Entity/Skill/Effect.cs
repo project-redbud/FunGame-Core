@@ -890,10 +890,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// 在角色取得询问反应的答复时触发
         /// </summary>
         /// <param name="character"></param>
-        /// <param name="topic"></param>
-        /// <param name="args"></param>
+        /// <param name="options"></param>
         /// <param name="response"></param>
-        public virtual void OnCharacterInquiry(Character character, string topic, Dictionary<string, object> args, Dictionary<string, object> response)
+        public virtual void OnCharacterInquiry(Character character, InquiryOptions options, InquiryResponse response)
         {
 
         }
@@ -1206,12 +1205,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 向角色发起询问反应事件 [ 尽可能的调用此方法而不是自己实现 ]
         /// </summary>
         /// <param name="character"></param>
-        /// <param name="topic"></param>
-        /// <param name="args"></param>
+        /// <param name="options"></param>
         /// <returns></returns>
-        public Dictionary<string, object> Inquiry(Character character, string topic, Dictionary<string, object> args)
+        public InquiryResponse Inquiry(Character character, InquiryOptions options)
         {
-            return GamingQueue?.Inquiry(character, topic, args) ?? [];
+            return GamingQueue?.Inquiry(character, options) ?? new(options);
         }
 
         /// <summary>

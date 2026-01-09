@@ -301,9 +301,8 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// 向角色（或控制该角色的玩家）进行询问并取得答复
         /// </summary>
         /// <param name="character"></param>
-        /// <param name="topic"></param>
-        /// <param name="args"></param>
+        /// <param name="options"></param>
         /// <returns></returns>
-        public Dictionary<string, object> Inquiry(Character character, string topic, Dictionary<string, object> args);
+        public InquiryResponse Inquiry(Character character, InquiryOptions options);
     }
 }
