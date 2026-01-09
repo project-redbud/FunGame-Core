@@ -136,6 +136,48 @@ namespace Milimoe.FunGame.Core.Entity
         /// 无视免疫类型
         /// </summary>
         public virtual ImmuneType IgnoreImmune { get; set; } = ImmuneType.None;
+        
+        /// <summary>
+        /// 豁免性的具体说明
+        /// </summary>
+        public virtual string ExemptionDescription
+        {
+            get
+            {
+                StringBuilder builder = new();
+                if (Exemptable)
+                {
+                    builder.AppendLine($"豁免类型：{CharacterSet.GetPrimaryAttributeName(ExemptionType)}");
+                    builder.Append($"豁免持续时间：{(ExemptDuration ? "是" : "否")}");
+                }
+                return builder.ToString();
+            }
+        }
+
+        /// <summary>
+        /// 是否可被属性豁免
+        /// </summary>
+        public bool Exemptable => ExemptionType != PrimaryAttribute.None;
+
+        /// <summary>
+        /// 豁免所需的属性类型
+        /// </summary>
+        public virtual PrimaryAttribute ExemptionType
+        {
+            get
+            {
+                return _exemptionType ?? SkillSet.GetExemptionTypeByEffectType(EffectType);
+            }
+            set
+            {
+                _exemptionType = value;
+            }
+        }
+
+        /// <summary>
+        /// 可豁免持续时间（每次减半/一回合）
+        /// </summary>
+        public virtual bool ExemptDuration { get; set; } = false;
 
         /// <summary>
         /// 效果描述
@@ -341,9 +383,22 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="caster"></param>
         /// <param name="targets"></param>
-        public virtual void OnSkillCasting(Character caster, List<Character> targets)
+        /// <param name="grids"></param>
+        public virtual void OnSkillCasting(Character caster, List<Character> targets, List<Grid> grids)
         {
 
+        }
+
+        /// <summary>
+        /// 技能吟唱被打断前触发
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="skill"></param>
+        /// <param name="interrupter"></param>
+        /// <returns>返回 false 阻止打断</returns>
+        public virtual bool BeforeSkillCastWillBeInterrupted(Character caster, Skill skill, Character interrupter)
+        {
+            return true;
         }
 
         /// <summary>
@@ -362,8 +417,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="caster"></param>
         /// <param name="targets"></param>
+        /// <param name="grids"></param>
         /// <param name="others"></param>
-        public virtual void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)
+        public virtual void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
 
         }
@@ -377,6 +433,18 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual void OnSkillCasted(User user, List<Character> targets, Dictionary<string, object> others)
         {
 
+        }
+
+        /// <summary>
+        /// 在时间流逝期间应用生命/魔法回复前修改 [ 允许取消回复 ]
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="hr"></param>
+        /// <param name="mr"></param>
+        /// <returns>返回 true 取消回复</returns>
+        public virtual bool BeforeApplyRecoveryAtTimeLapsing(Character character, ref double hr, ref double mr)
+        {
+            return false;
         }
 
         /// <summary>
@@ -819,58 +887,72 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 对敌人造成技能伤害 [ 强烈建议使用此方法造成伤害而不是自行调用 <see cref="IGamingQueue.DamageToEnemyAsync"/> ]
+        /// 在角色取得询问反应的答复时触发
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="topic"></param>
+        /// <param name="args"></param>
+        /// <param name="response"></param>
+        public virtual void OnCharacterInquiry(Character character, string topic, Dictionary<string, object> args, Dictionary<string, object> response)
+        {
+
+        }
+
+        /// <summary>
+        /// 对敌人造成技能伤害 [ 强烈建议使用此方法造成伤害而不是自行调用 <see cref="IGamingQueue.DamageToEnemy"/> ]
         /// </summary>
         /// <param name="actor"></param>
         /// <param name="enemy"></param>
         /// <param name="damageType"></param>
         /// <param name="magicType"></param>
         /// <param name="expectedDamage"></param>
+        /// <param name="options"></param>
         /// <returns></returns>
-        public DamageResult DamageToEnemy(Character actor, Character enemy, DamageType damageType, MagicType magicType, double expectedDamage)
+        public DamageResult DamageToEnemy(Character actor, Character enemy, DamageType damageType, MagicType magicType, double expectedDamage, DamageCalculationOptions? options = null)
         {
             if (GamingQueue is null) return DamageResult.Evaded;
             int changeCount = 0;
             DamageResult result = DamageResult.Normal;
             double damage = expectedDamage;
-            if (damageType != DamageType.True)
+            options ??= new();
+            if (options.NeedCalculate && damageType != DamageType.True)
             {
-                result = damageType == DamageType.Physical ? GamingQueue.CalculatePhysicalDamage(actor, enemy, false, expectedDamage, out damage, ref changeCount) : GamingQueue.CalculateMagicalDamage(actor, enemy, false, MagicType, expectedDamage, out damage, ref changeCount);
+                result = damageType == DamageType.Physical ? GamingQueue.CalculatePhysicalDamage(actor, enemy, false, expectedDamage, out damage, ref changeCount, options) : GamingQueue.CalculateMagicalDamage(actor, enemy, false, MagicType, expectedDamage, out damage, ref changeCount, options);
             }
-            // 注意此方法在后台线程运行
-            GamingQueue.DamageToEnemyAsync(actor, enemy, damage, false, damageType, magicType, result);
+            GamingQueue.DamageToEnemy(actor, enemy, damage, false, damageType, magicType, result, options);
             return result;
         }
 
         /// <summary>
-        /// 治疗一个目标 [ 强烈建议使用此方法而不是自行调用 <see cref="IGamingQueue.HealToTargetAsync"/> ]
+        /// 治疗一个目标 [ 强烈建议使用此方法而不是自行调用 <see cref="IGamingQueue.HealToTarget"/> ]
         /// </summary>
         /// <param name="actor"></param>
         /// <param name="target"></param>
         /// <param name="heal"></param>
         /// <param name="canRespawn"></param>
-        public void HealToTarget(Character actor, Character target, double heal, bool canRespawn = false)
+        /// <param name="triggerEffects"></param>
+        public void HealToTarget(Character actor, Character target, double heal, bool canRespawn = false, bool triggerEffects = true)
         {
-            GamingQueue?.HealToTargetAsync(actor, target, heal, canRespawn);
+            GamingQueue?.HealToTarget(actor, target, heal, canRespawn, triggerEffects);
         }
 
         /// <summary>
-        /// 打断施法 [ 尽可能的调用此方法而不是直接调用 <see cref="IGamingQueue.InterruptCastingAsync(Character, Character)"/>，以防止中断性变更 ]
+        /// 打断施法 [ 尽可能的调用此方法而不是直接调用 <see cref="IGamingQueue.InterruptCasting(Character, Character)"/>，以防止中断性变更 ]
         /// </summary>
         /// <param name="caster"></param>
         /// <param name="interrupter"></param>
         public void InterruptCasting(Character caster, Character interrupter)
         {
-            GamingQueue?.InterruptCastingAsync(caster, interrupter);
+            GamingQueue?.InterruptCasting(caster, interrupter);
         }
 
         /// <summary>
-        /// 打断施法 [ 用于使敌人目标丢失 ] [ 尽可能的调用此方法而不是直接调用 <see cref="IGamingQueue.InterruptCastingAsync(Character)"/>，以防止中断性变更 ]
+        /// 打断施法 [ 用于使敌人目标丢失 ] [ 尽可能的调用此方法而不是直接调用 <see cref="IGamingQueue.InterruptCasting(Character)"/>，以防止中断性变更 ]
         /// </summary>
         /// <param name="interrupter"></param>
         public void InterruptCasting(Character interrupter)
         {
-            GamingQueue?.InterruptCastingAsync(interrupter);
+            GamingQueue?.InterruptCasting(interrupter);
         }
 
         /// <summary>
@@ -1048,7 +1130,7 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 return;
             }
-            Effect[] effects = [.. target.Effects.Where(e => e.IsInEffect && e.ShowInStatusBar)];
+            Effect[] effects = [.. target.Effects.Where(e => e.ShowInStatusBar)];
             foreach (Effect effect in effects)
             {
                 if (effect.OnEffectIsBeingDispelled(dispeller, target, this, isEnemy))
@@ -1056,6 +1138,35 @@ namespace Milimoe.FunGame.Core.Entity
                     OnDispellingEffect(dispeller, target, effect, isEnemy);
                 }
             }
+        }
+
+        /// <summary>
+        /// 免疫检定 [ 尽可能的调用此方法而不是自己实现 ]
+        /// 先进行检定，再施加状态效果
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="target"></param>
+        /// <param name="skill"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public bool CheckSkilledImmune(Character character, Character target, Skill skill, Item? item = null)
+        {
+            if (GamingQueue is null) return false;
+            return GamingQueue.CheckSkilledImmune(target, character, skill, item);
+        }
+
+        /// <summary>
+        /// 技能豁免检定 [ 尽可能的调用此方法而不是自己实现 ]
+        /// 先进行检定，再施加状态效果
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="target"></param>
+        /// <param name="effect"></param>
+        /// <returns></returns>
+        public bool CheckExemption(Character character, Character target, Effect effect)
+        {
+            if (GamingQueue is null) return false;
+            return GamingQueue.CheckExemption(target, character, effect, true);
         }
 
         /// <summary>
@@ -1089,6 +1200,18 @@ namespace Milimoe.FunGame.Core.Entity
         public bool IsCharacterInAIControlling(Character character)
         {
             return GamingQueue?.IsCharacterInAIControlling(character) ?? false;
+        }
+
+        /// <summary>
+        /// 向角色发起询问反应事件 [ 尽可能的调用此方法而不是自己实现 ]
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="topic"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public Dictionary<string, object> Inquiry(Character character, string topic, Dictionary<string, object> args)
+        {
+            return GamingQueue?.Inquiry(character, topic, args) ?? [];
         }
 
         /// <summary>
@@ -1206,5 +1329,10 @@ namespace Milimoe.FunGame.Core.Entity
         /// 驱散描述
         /// </summary>
         private string _dispelDescription = "";
+
+        /// <summary>
+        /// 豁免性
+        /// </summary>
+        private PrimaryAttribute? _exemptionType = null;
     }
 }

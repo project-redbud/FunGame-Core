@@ -16,6 +16,11 @@ namespace Milimoe.FunGame.Core.Entity
         public override string Name { get; set; } = "";
 
         /// <summary>
+        /// 单位标识
+        /// </summary>
+        public override bool IsUnit => true;
+
+        /// <summary>
         /// 获取单位名称以及所属玩家
         /// </summary>
         /// <returns></returns>

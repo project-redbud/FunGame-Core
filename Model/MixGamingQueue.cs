@@ -14,7 +14,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="death"></param>
         /// <param name="killer"></param>
         /// <returns></returns>
-        protected override async Task AfterDeathCalculation(Character death, Character killer)
+        protected override void AfterDeathCalculation(Character death, Character killer)
         {
             if (MaxRespawnTimes != 0 && MaxScoreToWin > 0)
             {
@@ -25,12 +25,12 @@ namespace Milimoe.FunGame.Core.Model
             if (!_queue.Where(c => c != killer).Any())
             {
                 // 没有其他的角色了，游戏结束
-                await EndGameInfo(killer);
+                EndGameInfo(killer);
             }
 
             if (MaxScoreToWin > 0 && _stats[killer].Kills >= MaxScoreToWin)
             {
-                await EndGameInfo(killer);
+                EndGameInfo(killer);
                 return;
             }
         }
@@ -41,9 +41,9 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="character"></param>
         /// <param name="type"></param>
         /// <returns></returns>
-        protected override async Task<bool> AfterCharacterAction(Character character, CharacterActionType type)
+        protected override bool AfterCharacterAction(Character character, CharacterActionType type)
         {
-            bool result = await base.AfterCharacterAction(character, type);
+            bool result = base.AfterCharacterAction(character, type);
             if (result)
             {
                 if (MaxRespawnTimes != 0 && MaxScoreToWin > 0 && _stats[character].Kills >= MaxScoreToWin)
@@ -57,7 +57,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 游戏结束信息
         /// </summary>
-        public async Task EndGameInfo(Character winner)
+        public void EndGameInfo(Character winner)
         {
             WriteLine("[ " + winner + " ] 是胜利者。");
             foreach (Character character in _stats.OrderBy(kv => kv.Value.Kills)
@@ -73,7 +73,7 @@ namespace Milimoe.FunGame.Core.Model
             _queue.Clear();
             _isGameEnd = true;
 
-            if (!await OnGameEndAsync(winner))
+            if (!OnGameEndEvent(winner))
             {
                 return;
             }

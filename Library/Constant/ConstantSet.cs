@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Model;
+﻿using System.Text;
+using Milimoe.FunGame.Core.Model;
 
 /**
  * 此文件用于保存字符串常量（String Set）
@@ -703,7 +704,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.Item => "装备特效",
                 EffectType.Mark => "标记",
                 EffectType.Stun => "眩晕",
-                EffectType.Freeze => "冰冻",
+                EffectType.Freeze => "冻结",
                 EffectType.Silence => "沉默",
                 EffectType.Root => "定身",
                 EffectType.Fear => "恐惧",
@@ -751,6 +752,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.Recovery => "恢复",
                 EffectType.Vulnerable => "易伤",
                 EffectType.Delay => "迟滞",
+                EffectType.Focusing => "专注",
+                EffectType.InterruptCasting => "打断施法",
                 _ => "未知效果"
             };
         }
@@ -811,7 +814,46 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.Recovery => DispelledType.Weak,
                 EffectType.Vulnerable => DispelledType.Weak,
                 EffectType.Delay => DispelledType.Weak,
+                EffectType.InterruptCasting => DispelledType.Weak,
                 _ => DispelledType.Weak
+            };
+        }
+
+        public static PrimaryAttribute GetExemptionTypeByEffectType(EffectType type)
+        {
+            return type switch
+            {
+                EffectType.Stun => PrimaryAttribute.STR,
+                EffectType.Freeze => PrimaryAttribute.STR,
+                EffectType.Silence => PrimaryAttribute.INT,
+                EffectType.Root => PrimaryAttribute.STR,
+                EffectType.Fear => PrimaryAttribute.INT,
+                EffectType.Sleep => PrimaryAttribute.STR,
+                EffectType.Knockback => PrimaryAttribute.STR,
+                EffectType.Knockdown => PrimaryAttribute.STR,
+                EffectType.Taunt => PrimaryAttribute.INT,
+                EffectType.Slow => PrimaryAttribute.AGI,
+                EffectType.Weaken => PrimaryAttribute.STR,
+                EffectType.Poison => PrimaryAttribute.AGI,
+                EffectType.Burn => PrimaryAttribute.AGI,
+                EffectType.Bleed => PrimaryAttribute.AGI,
+                EffectType.Blind => PrimaryAttribute.AGI,
+                EffectType.Cripple => PrimaryAttribute.STR,
+                EffectType.MagicResistBreak => PrimaryAttribute.INT,
+                EffectType.Curse => PrimaryAttribute.INT,
+                EffectType.Exhaustion => PrimaryAttribute.STR,
+                EffectType.ManaBurn => PrimaryAttribute.INT,
+                EffectType.Charm => PrimaryAttribute.INT,
+                EffectType.Disarm => PrimaryAttribute.STR,
+                EffectType.Confusion => PrimaryAttribute.INT,
+                EffectType.Petrify => PrimaryAttribute.STR,
+                EffectType.SilenceMagic => PrimaryAttribute.INT,
+                EffectType.Banish => PrimaryAttribute.INT,
+                EffectType.GrievousWound => PrimaryAttribute.STR,
+                EffectType.Vulnerable => PrimaryAttribute.INT,
+                EffectType.Delay => PrimaryAttribute.AGI,
+                EffectType.InterruptCasting => PrimaryAttribute.INT,
+                _ => PrimaryAttribute.None
             };
         }
 
@@ -871,6 +913,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 EffectType.Recovery => false,
                 EffectType.Vulnerable => true,
                 EffectType.Delay => true,
+                EffectType.InterruptCasting => true,
                 _ => false
             };
         }
@@ -921,6 +964,24 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 DispelledType.CannotBeDispelled => "不可驱散",
                 _ => ""
             };
+        }
+
+        public static string GetExemptionDescription(EffectType type, bool exemptDuration = true)
+        {
+            PrimaryAttribute pa = GetExemptionTypeByEffectType(type);
+            if (pa == PrimaryAttribute.None)
+            {
+                return "";
+            }
+            return GetExemptionDescription(pa, exemptDuration);
+        }
+
+        public static string GetExemptionDescription(PrimaryAttribute type, bool exemptDuration = true)
+        {
+            StringBuilder builder = new();
+            builder.AppendLine($"豁免类型：{CharacterSet.GetPrimaryAttributeName(type)}");
+            builder.Append($"豁免持续时间：{(exemptDuration ? "是" : "否")}");
+            return builder.ToString();
         }
     }
 }

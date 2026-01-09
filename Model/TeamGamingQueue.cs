@@ -77,7 +77,7 @@ namespace Milimoe.FunGame.Core.Model
         /// 获取某角色的团队成员
         /// </summary>
         /// <param name="character"></param>
-        protected override List<Character> GetTeammates(Character character)
+        public override List<Character> GetTeammates(Character character)
         {
             foreach (string team in _teams.Keys)
             {
@@ -95,7 +95,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="character"></param>
         /// <param name="dp"></param>
         /// <returns></returns>
-        protected override async Task AfterCharacterDecision(Character character, DecisionPoints dp)
+        protected override void AfterCharacterDecision(Character character, DecisionPoints dp)
         {
             // 如果目标都是队友，会考虑非伤害型助攻
             Team? team = GetTeam(character);
@@ -103,7 +103,6 @@ namespace Milimoe.FunGame.Core.Model
             {
                 SetNotDamageAssistTime(character, LastRound.Targets.Values.SelectMany(c => c).Where(team.IsOnThisTeam));
             }
-            else await Task.CompletedTask;
         }
 
         /// <summary>
@@ -112,9 +111,9 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="character"></param>
         /// <param name="type"></param>
         /// <returns></returns>
-        protected override async Task<bool> AfterCharacterAction(Character character, CharacterActionType type)
+        protected override bool AfterCharacterAction(Character character, CharacterActionType type)
         {
-            bool result = await base.AfterCharacterAction(character, type);
+            bool result = base.AfterCharacterAction(character, type);
             if (result)
             {
                 Team? team = GetTeam(character);
@@ -132,7 +131,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="death"></param>
         /// <param name="killer"></param>
         /// <returns></returns>
-        protected override async Task OnDeathCalculation(Character death, Character killer)
+        protected override void OnDeathCalculation(Character death, Character killer)
         {
             if (killer == death)
             {
@@ -149,7 +148,6 @@ namespace Milimoe.FunGame.Core.Model
                 }
                 else team.Score++;
             }
-            else await Task.CompletedTask;
         }
 
         /// <summary>
@@ -158,7 +156,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="death"></param>
         /// <param name="killer"></param>
         /// <returns></returns>
-        protected override async Task AfterDeathCalculation(Character death, Character killer)
+        protected override void AfterDeathCalculation(Character death, Character killer)
         {
             Team? killTeam = GetTeam(killer);
             Team? deathTeam = GetTeam(death);
@@ -200,7 +198,7 @@ namespace Milimoe.FunGame.Core.Model
                 if (!_teams.Keys.Where(str => str != killTeam.Name).Any())
                 {
                     // 没有其他的团队了，游戏结束
-                    await EndGameInfo(killTeam);
+                    EndGameInfo(killTeam);
                     return;
                 }
                 if (MaxScoreToWin > 0 && killTeam.Score >= MaxScoreToWin)
@@ -209,7 +207,7 @@ namespace Milimoe.FunGame.Core.Model
                     combinedTeams.Remove(killTeam);
                     _eliminatedTeams.Clear();
                     _eliminatedTeams.AddRange(combinedTeams.OrderByDescending(t => t.Score));
-                    await EndGameInfo(killTeam);
+                    EndGameInfo(killTeam);
                     return;
                 }
             }
@@ -218,12 +216,12 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 游戏结束信息 [ 团队版 ] 
         /// </summary>
-        public async Task EndGameInfo(Team winner)
+        public void EndGameInfo(Team winner)
         {
             winner.IsWinner = true;
             WriteLine("[ " + winner + " ] 是胜利者。");
 
-            if (!await OnGameEndTeamAsync(winner))
+            if (!OnGameEndTeamEvent(winner))
             {
                 return;
             }
@@ -322,19 +320,19 @@ namespace Milimoe.FunGame.Core.Model
 
         }
 
-        public delegate Task<bool> GameEndTeamEventHandler(TeamGamingQueue queue, Team winner);
+        public delegate bool GameEndTeamEventHandler(TeamGamingQueue queue, Team winner);
         /// <summary>
         /// 游戏结束事件（团队版）
         /// </summary>
-        public event GameEndTeamEventHandler? GameEndTeam;
+        public event GameEndTeamEventHandler? GameEndTeamEvent;
         /// <summary>
         /// 游戏结束事件（团队版）
         /// </summary>
         /// <param name="winner"></param>
         /// <returns></returns>
-        protected async Task<bool> OnGameEndTeamAsync(Team winner)
+        protected bool OnGameEndTeamEvent(Team winner)
         {
-            return await (GameEndTeam?.Invoke(this, winner) ?? Task.FromResult(true));
+            return GameEndTeamEvent?.Invoke(this, winner) ?? true;
         }
     }
 }

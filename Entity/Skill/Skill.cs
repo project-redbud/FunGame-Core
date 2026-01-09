@@ -2,6 +2,7 @@
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
+using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Entity
@@ -36,6 +37,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 驱散性和被驱散性的描述
         /// </summary>
         public virtual string DispelDescription { get; set; } = "";
+
+        /// <summary>
+        /// 豁免性的描述
+        /// </summary>
+        public virtual string ExemptionDescription { get; set; } = "";
 
         /// <summary>
         /// 释放技能时的口号
@@ -147,16 +153,37 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual bool IsNonDirectional { get; set; } = false;
 
         /// <summary>
+        /// 在非指向性技能选取目标格子时，包括有角色的格子，默认为 true。仅 <see cref="IsNonDirectional"/> = true 时有效。<para/>
+        /// 当此项为 false 时，必须设置 <see cref="AllowSelectNoCharacterGrid"/> = true，否则实际施法时会被拒绝。
+        /// </summary>
+        public virtual bool SelectIncludeCharacterGrid { get; set; } = true;
+
+        /// <summary>
+        /// 是否可以选择没有被角色占据的空地，为 false 时会阻止施法。仅 <see cref="IsNonDirectional"/> = true 时有效。<para/>
+        /// </summary>
+        public virtual bool AllowSelectNoCharacterGrid { get; set; } = false;
+
+        /// <summary>
+        /// 是否可以选择已死亡的角色。仅 <see cref="IsNonDirectional"/> = true 时有效。
+        /// </summary>
+        public virtual bool AllowSelectDead { get; set; } = false;
+
+        /// <summary>
         /// 作用范围形状<para/>
         /// <see cref="SkillRangeType.Diamond"/> - 菱形。默认的曼哈顿距离正方形<para/>
         /// <see cref="SkillRangeType.Circle"/> - 圆形。基于欧几里得距离的圆形<para/>
         /// <see cref="SkillRangeType.Square"/> - 正方形<para/>
-        /// <see cref="SkillRangeType.Line"/> - 施法者与目标之间的直线<para/>
+        /// <see cref="SkillRangeType.Line"/> - 施法者与目标之间的线段<para/>
         /// <see cref="SkillRangeType.LinePass"/> - 施法者与目标所在的直线，贯穿至地图边缘<para/>
         /// <see cref="SkillRangeType.Sector"/> - 扇形<para/>
-        /// 注意，该属性不影响选取目标的范围。选取目标的范围由 <see cref="Library.Common.Addon.GameMap"/> 决定。
+        /// 注意，该属性不影响选取目标的范围。选取目标的范围由 <see cref="GameMap"/> 决定。
         /// </summary>
         public virtual SkillRangeType SkillRangeType { get; set; } = SkillRangeType.Diamond;
+
+        /// <summary>
+        /// 扇形的角度。仅 <see cref="SkillRangeType"/> 为 <see cref="SkillRangeType.Sector"/> 时有效，默认值为 90 度。
+        /// </summary>
+        public virtual double SectorAngle { get; set; } = 90;
 
         /// <summary>
         /// 选取角色的条件
@@ -376,7 +403,7 @@ namespace Milimoe.FunGame.Core.Entity
 
             foreach (Character character in enemys)
             {
-                IEnumerable<Effect> effects = character.Effects.Where(e => e.IsInEffect);
+                IEnumerable<Effect> effects = Effects.Where(e => e.IsInEffect);
                 if (CanSelectEnemy && ((character.ImmuneType & checkType) == ImmuneType.None ||
                     effects.Any(e => e.IgnoreImmune == ImmuneType.All || e.IgnoreImmune == ImmuneType.Skilled || (IsMagic && e.IgnoreImmune == ImmuneType.Magical))))
                 {
@@ -386,7 +413,6 @@ namespace Milimoe.FunGame.Core.Entity
 
             foreach (Character character in teammates)
             {
-                IEnumerable<Effect> effects = character.Effects.Where(e => e.IsInEffect);
                 if (CanSelectTeammate)
                 {
                     selectable.Add(character);
@@ -453,18 +479,145 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 默认行为：在指向性技能中，当 <see cref="CanSelectTargetRange"/> > 0 时，会额外选取一些被扩散的目标
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="allEnemys"></param>
+        /// <param name="allTeammates"></param>
+        /// <param name="selected"></param>
+        /// <param name="union"></param>
+        /// <returns></returns>
+        public virtual List<Character> SelectTargetsByCanSelectTargetRange(Character caster, List<Character> allEnemys, List<Character> allTeammates, IEnumerable<Character> selected, bool union = true)
+        {
+            List<Grid> grids = [];
+
+            if (IsNonDirectional || CanSelectTargetRange < 0 || GamingQueue?.Map is not GameMap map)
+            {
+                return [];
+            }
+
+            foreach (Character selectedCharacter in selected)
+            {
+                Grid? centerGrid = map.GetCharacterCurrentGrid(selectedCharacter);
+                if (centerGrid == null || centerGrid == Grid.Empty)
+                    continue;
+
+                // 使用曼哈顿距离获取以主要目标为中心、范围内的所有格子（包括中心格子本身）
+                grids.AddRange(map.GetGridsByRange(centerGrid, CanSelectTargetRange, true));
+            }
+
+            return SelectTargetsByRange(caster, allEnemys, allTeammates, selected, grids, union);
+        }
+
+        /// <summary>
+        /// 选取范围内的目标
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="allEnemys"></param>
+        /// <param name="allTeammates"></param>
+        /// <param name="selected"></param>
+        /// <param name="range"></param>
+        /// <param name="union"></param>
+        /// <returns></returns>
+        public virtual List<Character> SelectTargetsByRange(Character caster, List<Character> allEnemys, List<Character> allTeammates, IEnumerable<Character> selected, IEnumerable<Grid> range, bool union = true)
+        {
+            List<Character> targets = [];
+
+            foreach (Character character in range.SelectMany(g => g.Characters))
+            {
+                if (CanSelectSelf && character == caster)
+                {
+                    targets.Add(caster);
+                }
+
+                ImmuneType checkType = ImmuneType.Skilled | ImmuneType.All;
+                if (IsMagic)
+                {
+                    checkType |= ImmuneType.Magical;
+                }
+
+                if (allEnemys.Contains(character))
+                {
+                    IEnumerable<Effect> effects = Effects.Where(e => e.IsInEffect);
+                    if (CanSelectEnemy && ((AllowSelectDead && character.HP == 0) || (!AllowSelectDead && character.HP > 0)) &&
+                        ((character.ImmuneType & checkType) == ImmuneType.None || effects.Any(e => e.IgnoreImmune == ImmuneType.All || e.IgnoreImmune == ImmuneType.Skilled || (IsMagic && e.IgnoreImmune == ImmuneType.Magical))))
+                    {
+                        targets.Add(character);
+                    }
+                }
+
+                if (CanSelectTeammate && allTeammates.Contains(character) && ((AllowSelectDead && character.HP == 0) || (!AllowSelectDead && character.HP > 0)))
+                {
+                    targets.Add(character);
+                }
+            }
+
+            // 如果和已经选择的列表合并
+            if (union)
+            {
+                return [.. targets.Where(c => SelectTargetPredicates.All(f => f(c))).Union(selected).Distinct()];
+            }
+
+            return [.. targets.Where(c => SelectTargetPredicates.All(f => f(c))).Distinct()];
+        }
+
+        /// <summary>
+        /// 选取非指向性目标
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="targetGrid"></param>
+        /// <param name="includeCharacter"></param>
+        /// <returns></returns>
+        public virtual List<Grid> SelectNonDirectionalTargets(Character caster, Grid targetGrid, bool includeCharacter = false)
+        {
+            int range = CanSelectTargetRange;
+            List<Grid> targets = [];
+
+            if (GamingQueue?.Map == null || targetGrid == Grid.Empty || range < 0)
+            {
+                return targets;
+            }
+
+            GameMap map = GamingQueue.Map;
+            Grid currentGrid = map.GetCharacterCurrentGrid(caster) ?? Grid.Empty;
+
+            // 范围等于 0 时只返回中心格子
+            if (range == 0)
+            {
+                targets.Add(targetGrid);
+                return targets;
+            }
+
+            List<Grid> rangeGrids = SkillRangeType switch
+            {
+                SkillRangeType.Diamond => map.GetGridsByRange(targetGrid, range, includeCharacter),
+                SkillRangeType.Circle => map.GetGridsByCircleRange(targetGrid, range, includeCharacter),
+                SkillRangeType.Square => map.GetGridsBySquareRange(targetGrid, range, includeCharacter),
+                SkillRangeType.Line => map.GetGridsOnThickLine(currentGrid, targetGrid, range, false, includeCharacter),
+                SkillRangeType.LinePass => map.GetGridsOnThickLine(currentGrid, targetGrid, range, true, includeCharacter),
+                SkillRangeType.Sector => map.GetGridsInSector(currentGrid, targetGrid, range, SectorAngle, includeCharacter),
+                _ => map.GetGridsByRange(targetGrid, range, includeCharacter)
+            };
+
+            targets.AddRange(rangeGrids);
+
+            return [.. targets.Distinct()];
+        }
+
+        /// <summary>
         /// 技能开始吟唱时 [ 吟唱魔法、释放战技和爆发技、预释放爆发技均可触发 ]
         /// </summary>
         /// <param name="queue"></param>
         /// <param name="caster"></param>
         /// <param name="targets"></param>
-        public void OnSkillCasting(IGamingQueue queue, Character caster, List<Character> targets)
+        /// <param name="grids"></param>
+        public void OnSkillCasting(IGamingQueue queue, Character caster, List<Character> targets, List<Grid> grids)
         {
             GamingQueue = queue;
             foreach (Effect e in Effects)
             {
                 e.GamingQueue = GamingQueue;
-                e.OnSkillCasting(caster, targets);
+                e.OnSkillCasting(caster, targets, grids);
             }
         }
 
@@ -483,13 +636,14 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="queue"></param>
         /// <param name="caster"></param>
         /// <param name="targets"></param>
-        public void OnSkillCasted(IGamingQueue queue, Character caster, List<Character> targets)
+        /// <param name="grids"></param>
+        public void OnSkillCasted(IGamingQueue queue, Character caster, List<Character> targets, List<Grid> grids)
         {
             GamingQueue = queue;
             foreach (Effect e in Effects)
             {
                 e.GamingQueue = GamingQueue;
-                e.OnSkillCasted(caster, targets, Values);
+                e.OnSkillCasted(caster, targets, grids, Values);
             }
         }
 
@@ -555,6 +709,10 @@ namespace Milimoe.FunGame.Core.Entity
             if (DispelDescription != "")
             {
                 builder.AppendLine($"{DispelDescription}");
+            }
+            if (ExemptionDescription != "")
+            {
+                builder.AppendLine($"{ExemptionDescription}");
             }
             if (GamingQueue?.Map != null && SkillType != SkillType.Passive)
             {
@@ -660,6 +818,7 @@ namespace Milimoe.FunGame.Core.Entity
             skill.Description = skillDefined.Description;
             skill.GeneralDescription = skillDefined.GeneralDescription;
             skill.DispelDescription = skillDefined.DispelDescription;
+            skill.ExemptionDescription = skillDefined.ExemptionDescription;
             skill.SkillType = skillDefined.SkillType;
             skill.MPCost = skillDefined.MPCost;
             skill.CastTime = skillDefined.CastTime;

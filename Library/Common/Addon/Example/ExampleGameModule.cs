@@ -338,16 +338,15 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             // 不使用框架的实现时，需要地图作者与游戏队列的作者做好适配
             if (queue is GamingQueue gq)
             {
-                gq.SelectTargetGrid += Gq_SelectTargetGrid;
+                gq.SelectTargetGridEvent += Gq_SelectTargetGrid;
             }
 
             return map;
         }
 
-        private async Task<Grid> Gq_SelectTargetGrid(GamingQueue queue, Character character, List<Character> enemys, List<Character> teammates, GameMap map, List<Grid> canMoveGrids)
+        private Grid Gq_SelectTargetGrid(GamingQueue queue, Character character, List<Character> enemys, List<Character> teammates, GameMap map, List<Grid> canMoveGrids)
         {
             // 介入选择，假设这里更新界面，让玩家选择目的地
-            await Task.CompletedTask;
             return Grid.Empty;
         }
     }
