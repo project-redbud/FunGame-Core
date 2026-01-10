@@ -352,6 +352,44 @@ namespace Milimoe.FunGame.Core.Model
             _map = map.InitGamingQueue(this);
         }
 
+        /// <summary>
+        /// 将角色从地图上移除
+        /// </summary>
+        public void RemoveCharacterFromMap(params IEnumerable<Character> characters)
+        {
+            if (Map is null)
+            {
+                return;
+            }
+
+            foreach (Character character in characters)
+            {
+                _queue.Remove(character);
+                Grid[] grids = [.. Map.Grids.Values.Where(g => g.Characters.Contains(character))];
+                foreach (Grid grid in grids)
+                {
+                    grid.Characters.Remove(character);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 将角色拥有的单位从地图上移除
+        /// </summary>
+        public void RemoveCharactersUnitFromMap(params IEnumerable<Character> characters)
+        {
+            if (Map is null)
+            {
+                return;
+            }
+
+            foreach (Character character in characters)
+            {
+                Character[] willRemove = [.. _queue.Where(c => c.IsUnit && c.Master == character)];
+                RemoveCharacterFromMap(willRemove);
+            }
+        }
+
         #endregion
 
         #region 队列框架
@@ -365,6 +403,7 @@ namespace Milimoe.FunGame.Core.Model
             // 保存原始的角色信息。用于复活时还原状态
             foreach (Character character in characters)
             {
+                if (character.IsUnit) continue;
                 // 添加角色引用到所有角色列表
                 _allCharacters.Add(character);
                 // 复制原始角色对象
@@ -384,7 +423,7 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             // 获取 HP 小于等于 0 的角色
-            List<Character> deadCharacters = [.. characters.Where(c => c.HP <= 0)];
+            List<Character> deadCharacters = [.. characters.Where(c => c.HP <= 0 && !c.IsUnit)];
             foreach (Character death in deadCharacters)
             {
                 _eliminated.Add(death);
@@ -2261,6 +2300,23 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="death"></param>
         public void DeathCalculation(Character killer, Character death)
         {
+            if (killer == death)
+            {
+                if (!OnDeathCalculationEvent(killer, death))
+                {
+                    return;
+                }
+                _stats[death].Deaths += 1;
+                WriteLine($"[ {death} ] 自杀了！");
+                DealWithCharacterDied(killer, death);
+                return;
+            }
+
+            if (killer.IsUnit && killer.Master != null)
+            {
+                killer = killer.Master;
+            }
+
             if (IsTeammate(killer, death))
             {
                 DeathCalculationByTeammate(killer, death);
@@ -2269,14 +2325,6 @@ namespace Milimoe.FunGame.Core.Model
 
             if (!OnDeathCalculationEvent(killer, death))
             {
-                return;
-            }
-
-            if (killer == death)
-            {
-                _stats[death].Deaths += 1;
-                WriteLine($"[ {death} ] 自杀了！");
-                DealWithCharacterDied(killer, death);
                 return;
             }
 
@@ -2443,18 +2491,21 @@ namespace Milimoe.FunGame.Core.Model
                 return;
             }
 
-            _stats[death].Deaths += 1;
-            string msg = $"[ {killer} ] 反补了 [ {death} ]！[ {killer} ] 受到了击杀队友惩罚，扣除 200 {GameplayEquilibriumConstant.InGameCurrency}并且当前连杀计数减少一次！！";
-            if (!_earnedMoney.TryAdd(killer, -200))
+            if (!death.IsUnit)
             {
-                _earnedMoney[killer] -= 200;
+                _stats[death].Deaths += 1;
+                string msg = $"[ {killer} ] 反补了 [ {death} ]！[ {killer} ] 受到了击杀队友惩罚，扣除 200 {GameplayEquilibriumConstant.InGameCurrency}并且当前连杀计数减少一次！！";
+                if (!_earnedMoney.TryAdd(killer, -200))
+                {
+                    _earnedMoney[killer] -= 200;
+                }
+                if (_continuousKilling.TryGetValue(killer, out int times) && times > 0)
+                {
+                    _continuousKilling[killer] -= 1;
+                }
+                LastRound.DeathContinuousKilling.Add(msg);
+                WriteLine(msg);
             }
-            if (_continuousKilling.TryGetValue(killer, out int times) && times > 0)
-            {
-                _continuousKilling[killer] -= 1;
-            }
-            LastRound.DeathContinuousKilling.Add(msg);
-            WriteLine(msg);
 
             DealWithCharacterDied(killer, death);
         }
@@ -2629,30 +2680,33 @@ namespace Milimoe.FunGame.Core.Model
 
             death.EP = 0;
 
-            // 清除对死者的助攻数据
-            List<AssistDetail> ads = [.. _assistDetail.Values.Where(ad => ad.Character != death)];
-            foreach (AssistDetail ad in ads)
+            if (!death.IsUnit)
             {
-                ad[death, 0] = 0;
-            }
+                // 清除对死者的助攻数据
+                List<AssistDetail> ads = [.. _assistDetail.Values.Where(ad => ad.Character != death)];
+                foreach (AssistDetail ad in ads)
+                {
+                    ad[death, 0] = 0;
+                }
 
-            _continuousKilling.Remove(death);
-            _eliminated.Add(death);
-            if (MaxRespawnTimes == 0)
-            {
-                // do nothing
-            }
-            else if (_respawnTimes.TryGetValue(death, out int times) && MaxRespawnTimes != -1 && times == MaxRespawnTimes)
-            {
-                WriteLine($"[ {death} ] 已达到复活次数上限，将不能再复活！！");
-            }
-            else
-            {
-                // 进入复活倒计时
-                double respawnTime = GetRespawnTime(death, times);
-                _respawnCountdown.TryAdd(death, respawnTime);
-                LastRound.RespawnCountdowns.TryAdd(death, respawnTime);
-                WriteLine($"[ {death} ] 进入复活倒计时：{respawnTime:0.##} {GameplayEquilibriumConstant.InGameTime}！");
+                _continuousKilling.Remove(death);
+                _eliminated.Add(death);
+                if (MaxRespawnTimes == 0)
+                {
+                    // do nothing
+                }
+                else if (_respawnTimes.TryGetValue(death, out int times) && MaxRespawnTimes != -1 && times == MaxRespawnTimes)
+                {
+                    WriteLine($"[ {death} ] 已达到复活次数上限，将不能再复活！！");
+                }
+                else
+                {
+                    // 进入复活倒计时
+                    double respawnTime = GetRespawnTime(death, times);
+                    _respawnCountdown.TryAdd(death, respawnTime);
+                    LastRound.RespawnCountdowns.TryAdd(death, respawnTime);
+                    WriteLine($"[ {death} ] 进入复活倒计时：{respawnTime:0.##} {GameplayEquilibriumConstant.InGameTime}！");
+                }
             }
 
             // 移除死者的施法
