@@ -258,9 +258,9 @@ namespace Milimoe.FunGame.Core.Model
         protected readonly Dictionary<Character, double> _respawnCountdown = [];
 
         /// <summary>
-        /// 当前回合死亡角色
+        /// 当前回合死亡角色和参与击杀的人
         /// </summary>
-        protected readonly List<Character> _roundDeaths = [];
+        protected readonly Dictionary<Character, Character[]> _roundDeaths = [];
 
         /// <summary>
         /// 回合奖励
@@ -364,7 +364,8 @@ namespace Milimoe.FunGame.Core.Model
 
             foreach (Character character in characters)
             {
-                _queue.Remove(character);
+                RemoveCharacterFromQueue(character);
+                Map.Characters.Remove(character);
                 Grid[] grids = [.. Map.Grids.Values.Where(g => g.Characters.Contains(character))];
                 foreach (Grid grid in grids)
                 {
@@ -385,7 +386,7 @@ namespace Milimoe.FunGame.Core.Model
 
             foreach (Character character in characters)
             {
-                Character[] willRemove = [.. _queue.Where(c => c.IsUnit && c.Master == character)];
+                Character[] willRemove = [.. _queue.Where(c => c.Master == character)];
                 RemoveCharacterFromMap(willRemove);
             }
         }
@@ -627,6 +628,9 @@ namespace Milimoe.FunGame.Core.Model
                     }
                 }
             }
+
+            // 重新排序
+            _queue.Sort((a, b) => _hardnessTimes[a].CompareTo(_hardnessTimes[b]));
         }
 
         /// <summary>
@@ -652,6 +656,19 @@ namespace Milimoe.FunGame.Core.Model
             _eliminated.Clear();
             _charactersInAIBySystem.Clear();
             _charactersInAIByUser.Clear();
+        }
+
+        /// <summary>
+        /// 将角色彻底移出行动顺序表
+        /// </summary>
+        /// <param name="characters"></param>
+        public void RemoveCharacterFromQueue(params IEnumerable<Character> characters)
+        {
+            foreach (Character character in characters)
+            {
+                _queue.Remove(character);
+                _hardnessTimes.Remove(character);
+            }
         }
 
         #endregion
@@ -735,11 +752,19 @@ namespace Milimoe.FunGame.Core.Model
                 }
 
                 // 统计
-                _stats[character].LiveRound += 1;
-                _stats[character].LiveTime += timeToReduce;
-                _stats[character].DamagePerRound = _stats[character].LiveRound == 0 ? 0 : _stats[character].TotalDamage / _stats[character].LiveRound;
-                _stats[character].DamagePerTurn = _stats[character].ActionTurn == 0 ? 0 : _stats[character].TotalDamage / _stats[character].ActionTurn;
-                _stats[character].DamagePerSecond = _stats[character].LiveTime == 0 ? 0 : _stats[character].TotalDamage / _stats[character].LiveTime;
+                Character statsCharacter = character;
+                if (character.Master != null)
+                {
+                    statsCharacter = character.Master;
+                }
+                if (character.Master is null)
+                {
+                    _stats[statsCharacter].LiveRound += 1;
+                    _stats[statsCharacter].LiveTime += timeToReduce;
+                }
+                _stats[statsCharacter].DamagePerRound = _stats[statsCharacter].LiveRound == 0 ? 0 : _stats[statsCharacter].TotalDamage / _stats[statsCharacter].LiveRound;
+                _stats[statsCharacter].DamagePerTurn = _stats[statsCharacter].ActionTurn == 0 ? 0 : _stats[statsCharacter].TotalDamage / _stats[statsCharacter].ActionTurn;
+                _stats[statsCharacter].DamagePerSecond = _stats[statsCharacter].LiveTime == 0 ? 0 : _stats[statsCharacter].TotalDamage / _stats[statsCharacter].LiveTime;
 
                 // 回血回蓝
                 double recoveryHP = character.HR * timeToReduce;
@@ -764,19 +789,19 @@ namespace Milimoe.FunGame.Core.Model
                     {
                         character.HP += reallyReHP;
                         character.MP += reallyReMP;
-                        if (IsDebug) WriteLine($"角色 {character.Name} 回血：{recoveryHP:0.##} [{character.HP:0.##} / {character.MaxHP:0.##}] / 回蓝：{recoveryMP:0.##} [{character.MP:0.##} / {character.MaxMP:0.##}] / 当前能量：{character.EP:0.##}");
+                        if (IsDebug) WriteLine($"角色 {character} 回血：{recoveryHP:0.##} [{character.HP:0.##} / {character.MaxHP:0.##}] / 回蓝：{recoveryMP:0.##} [{character.MP:0.##} / {character.MaxMP:0.##}] / 当前能量：{character.EP:0.##}");
                     }
                     else
                     {
                         if (reallyReHP > 0)
                         {
                             character.HP += reallyReHP;
-                            if (IsDebug) WriteLine($"角色 {character.Name} 回血：{recoveryHP:0.##} [{character.HP:0.##} / {character.MaxHP:0.##}] / 当前能量：{character.EP:0.##}");
+                            if (IsDebug) WriteLine($"角色 {character} 回血：{recoveryHP:0.##} [{character.HP:0.##} / {character.MaxHP:0.##}] / 当前能量：{character.EP:0.##}");
                         }
                         if (reallyReMP > 0)
                         {
                             character.MP += reallyReMP;
-                            if (IsDebug) WriteLine($"角色 {character.Name} 回蓝：{recoveryMP:0.##} [{character.MP:0.##} / {character.MaxMP:0.##}] / 当前能量：{character.EP:0.##}");
+                            if (IsDebug) WriteLine($"角色 {character} 回蓝：{recoveryMP:0.##} [{character.MP:0.##} / {character.MaxMP:0.##}] / 当前能量：{character.EP:0.##}");
                         }
                     }
                 }
@@ -837,8 +862,16 @@ namespace Milimoe.FunGame.Core.Model
                     // 统计控制时长
                     if (effect.Source != null && SkillSet.GetCharacterStateByEffectType(effect.EffectType) != CharacterState.Actionable)
                     {
-                        _stats[effect.Source].ControlTime += timeToReduce;
-                        _assistDetail[effect.Source][character, TotalTime] += 1;
+                        Character source = effect.Source;
+                        if (effect.Source.Master != null)
+                        {
+                            source = effect.Source.Master;
+                        }
+                        _stats[source].ControlTime += timeToReduce;
+                        if (character.Master is null)
+                        {
+                            _assistDetail[source][character, TotalTime] += 1;
+                        }
                     }
 
                     if (effect.Durative)
@@ -917,6 +950,11 @@ namespace Milimoe.FunGame.Core.Model
             _isInRound = true;
             LastRound.Actor = character;
             _roundDeaths.Clear();
+            Character statsCharacter = character;
+            if (character.Master != null)
+            {
+                statsCharacter = character.Master;
+            }
 
             if (!BeforeTurn(character))
             {
@@ -938,7 +976,7 @@ namespace Milimoe.FunGame.Core.Model
             List<Character> allTeammates = GetTeammates(character);
 
             // 敌人列表
-            List<Character> allEnemys = [.. _allCharacters.Where(c => c != character && !allTeammates.Contains(c))];
+            List<Character> allEnemys = [.. _allCharacters.Union(_queue).Distinct().Where(c => c != character && !allTeammates.Contains(c) && !_eliminated.Contains(c) && c.Master != character && character.Master != c)];
 
             // 取得可选列表
             (List<Character> selectableTeammates, List<Character> selectableEnemys, List<Skill> skills, List<Item> items) = GetTurnStartNeedyList(character, allTeammates, allEnemys);
@@ -980,7 +1018,7 @@ namespace Milimoe.FunGame.Core.Model
 
             // 是否结束回合
             bool endTurn = false;
-            bool isAI = CharactersInAI.Contains(character);
+            bool isAI = IsCharacterInAIControlling(character);
 
             // 循环条件：未结束回合、决策点大于0（AI控制下为0时自动结束）或角色处于吟唱态
             while (!endTurn && (!isAI || dp.CurrentDecisionPoints > 0 || character.CharacterState == CharacterState.Casting || character.CharacterState == CharacterState.PreCastSuperSkill))
@@ -1014,7 +1052,7 @@ namespace Milimoe.FunGame.Core.Model
                 // 循环条件：
                 // AI 控制下：未决策、取消次数大于0
                 // 手动控制下：未决策
-                isAI = CharactersInAI.Contains(character);
+                isAI = IsCharacterInAIControlling(character);
                 while (!decided && (!isAI || cancelTimes > 0))
                 {
                     // 根据当前位置，更新可选取角色列表
@@ -1284,6 +1322,13 @@ namespace Milimoe.FunGame.Core.Model
                         else
                         {
                             // 使用普通攻击逻辑
+                            // 如果有询问，先进行询问
+                            character.NormalAttack.GamingQueue = this;
+                            if (character.NormalAttack.OnInquiryBeforeTargetSelection(character, character.NormalAttack) is InquiryOptions inquiry)
+                            {
+                                Inquiry(character, inquiry);
+                            }
+                            // 选择目标
                             List<Character> targets;
                             if (aiDecision != null)
                             {
@@ -1304,8 +1349,8 @@ namespace Milimoe.FunGame.Core.Model
                             {
                                 LastRound.Targets[CharacterActionType.NormalAttack] = [.. targets];
                                 LastRound.ActionTypes.Add(CharacterActionType.NormalAttack);
-                                _stats[character].UseDecisionPoints += costDP;
-                                _stats[character].TurnDecisions++;
+                                _stats[statsCharacter].UseDecisionPoints += costDP;
+                                _stats[statsCharacter].TurnDecisions++;
                                 dp.AddActionType(CharacterActionType.NormalAttack);
                                 dp.CurrentDecisionPoints -= costDP;
                                 decided = true;
@@ -1343,7 +1388,7 @@ namespace Milimoe.FunGame.Core.Model
                             {
                                 skill = OnSelectSkillEvent(character, skills);
                             }
-                            if (skill is null && CharactersInAI.Contains(character) && skills.Count > 0)
+                            if (skill is null && IsCharacterInAIControlling(character) && skills.Count > 0)
                             {
                                 skill = skills[Random.Shared.Next(skills.Count)];
                             }
@@ -1359,46 +1404,55 @@ namespace Milimoe.FunGame.Core.Model
                                 }
                                 else if (skill.SkillType == SkillType.Magic)
                                 {
-                                    // 吟唱前需要先选取目标
-                                    List<Grid> castRange = [];
-                                    if (_map != null && realGrid != null)
+                                    if (CheckCanCast(character, skill, out double cost))
                                     {
-                                        castRange = _map.GetGridsByRange(realGrid, skill.CastRange, true);
-                                        enemys = [.. enemys.Where(castRange.SelectMany(g => g.Characters).Contains)];
-                                        teammates = [.. teammates.Where(castRange.SelectMany(g => g.Characters).Contains)];
-                                    }
-                                    (targets, grids) = GetSelectedSkillTargetsList(character, skill, enemys, teammates, castRange, allEnemys, allTeammates, aiDecision);
+                                        // 如果有询问，先进行询问
+                                        if (skill.InquiryBeforeTargetSelection(character, skill) is InquiryOptions inquiry)
+                                        {
+                                            Inquiry(character, inquiry);
+                                        }
 
-                                    if (targets.Count > 0)
-                                    {
-                                        // 免疫检定
-                                        CheckSkilledImmune(character, targets, skill);
-                                    }
-                                    bool hasTarget = targets.Count > 0 || (skill.IsNonDirectional && grids.Count > 0 && (skill.AllowSelectNoCharacterGrid || !skill.AllowSelectNoCharacterGrid && targets.Count > 0));
-                                    if (hasTarget)
-                                    {
-                                        LastRound.Skills[CharacterActionType.PreCastSkill] = skill;
-                                        LastRound.Targets[CharacterActionType.PreCastSkill] = [.. targets];
-                                        LastRound.ActionTypes.Add(CharacterActionType.PreCastSkill);
-                                        _stats[character].UseDecisionPoints += costDP;
-                                        _stats[character].TurnDecisions++;
-                                        dp.AddActionType(CharacterActionType.PreCastSkill);
-                                        dp.CurrentDecisionPoints -= costDP;
-                                        decided = true;
-                                        endTurn = true;
+                                        // 吟唱前需要先选取目标
+                                        List<Grid> castRange = [];
+                                        if (_map != null && realGrid != null)
+                                        {
+                                            castRange = _map.GetGridsByRange(realGrid, skill.CastRange, true);
+                                            enemys = [.. enemys.Where(castRange.SelectMany(g => g.Characters).Contains)];
+                                            teammates = [.. teammates.Where(castRange.SelectMany(g => g.Characters).Contains)];
+                                        }
+                                        (targets, grids) = GetSelectedSkillTargetsList(character, skill, enemys, teammates, castRange, allEnemys, allTeammates, aiDecision);
 
-                                        character.CharacterState = CharacterState.Casting;
-                                        SkillTarget skillTarget = new(skill, targets, grids);
-                                        OnCharacterPreCastSkillEvent(character, dp, skillTarget);
+                                        if (targets.Count > 0)
+                                        {
+                                            // 免疫检定
+                                            CheckSkilledImmune(character, targets, skill);
+                                        }
+                                        bool hasTarget = targets.Count > 0 || (skill.IsNonDirectional && grids.Count > 0 && (skill.AllowSelectNoCharacterGrid || !skill.AllowSelectNoCharacterGrid && targets.Count > 0));
+                                        if (hasTarget)
+                                        {
+                                            LastRound.Skills[CharacterActionType.PreCastSkill] = skill;
+                                            LastRound.Targets[CharacterActionType.PreCastSkill] = [.. targets];
+                                            LastRound.ActionTypes.Add(CharacterActionType.PreCastSkill);
+                                            _stats[statsCharacter].UseDecisionPoints += costDP;
+                                            _stats[statsCharacter].TurnDecisions++;
+                                            dp.AddActionType(CharacterActionType.PreCastSkill);
+                                            dp.CurrentDecisionPoints -= costDP;
+                                            decided = true;
+                                            endTurn = true;
 
-                                        _castingSkills[character] = skillTarget;
-                                        baseTime += skill.RealCastTime;
-                                        isCheckProtected = false;
-                                        skill.OnSkillCasting(this, character, targets, grids);
-                                    }
-                                    else
-                                    {
-                                        if (IsDebug) WriteLine($"[ {character} ] 想要吟唱 [ {skill.Name} ]，但是没有目标！");
+                                            character.CharacterState = CharacterState.Casting;
+                                            SkillTarget skillTarget = new(skill, targets, grids);
+                                            OnCharacterPreCastSkillEvent(character, dp, skillTarget);
+
+                                            _castingSkills[character] = skillTarget;
+                                            baseTime += skill.RealCastTime;
+                                            isCheckProtected = false;
+                                            skill.OnSkillCasting(this, character, targets, grids);
+                                        }
+                                        else
+                                        {
+                                            if (IsDebug) WriteLine($"[ {character} ] 想要吟唱 [ {skill.Name} ]，但是没有目标！");
+                                        }
                                     }
                                 }
                                 else if (skill is CourageCommandSkill && dp.CourageCommandSkill)
@@ -1418,6 +1472,12 @@ namespace Milimoe.FunGame.Core.Model
                                     // 只有魔法需要吟唱，战技和爆发技直接释放
                                     if (CheckCanCast(character, skill, out double cost))
                                     {
+                                        // 如果有询问，先进行询问
+                                        if (skill.InquiryBeforeTargetSelection(character, skill) is InquiryOptions inquiry)
+                                        {
+                                            Inquiry(character, inquiry);
+                                        }
+
                                         List<Grid> castRange = [];
                                         if (_map != null && realGrid != null)
                                         {
@@ -1441,8 +1501,8 @@ namespace Milimoe.FunGame.Core.Model
                                             LastRound.ActionTypes.Add(skillType);
                                             if (skill is not CourageCommandSkill)
                                             {
-                                                _stats[character].UseDecisionPoints += costDP;
-                                                _stats[character].TurnDecisions++;
+                                                _stats[statsCharacter].UseDecisionPoints += costDP;
+                                                _stats[statsCharacter].TurnDecisions++;
                                                 dp.AddActionType(skillType);
                                                 dp.CurrentDecisionPoints -= costDP;
                                             }
@@ -1552,6 +1612,8 @@ namespace Milimoe.FunGame.Core.Model
                                     WriteLine($"[ {character} ] 想要释放 [ {skill.Name} ]，但是没有目标！");
                                 }
                                 WriteLine($"[ {character} ] 放弃释放技能！");
+                                character.CharacterState = CharacterState.Actionable;
+                                character.UpdateCharacterState();
                                 // 放弃释放技能会获得3的硬直时间
                                 if (baseTime == 0) baseTime = 3;
                                 decided = true;
@@ -1567,7 +1629,7 @@ namespace Milimoe.FunGame.Core.Model
                     }
                     else if (type == CharacterActionType.CastSuperSkill)
                     {
-                        _stats[character].TurnDecisions++;
+                        _stats[statsCharacter].TurnDecisions++;
                         dp.AddActionType(CharacterActionType.CastSuperSkill);
                         LastRound.ActionTypes.Add(CharacterActionType.CastSuperSkill);
                         decided = true;
@@ -1612,6 +1674,8 @@ namespace Milimoe.FunGame.Core.Model
                         else
                         {
                             WriteLine($"[ {character} ] 因能量不足放弃释放爆发技！");
+                            character.CharacterState = CharacterState.Actionable;
+                            character.UpdateCharacterState();
                             // 放弃释放技能会获得3的硬直时间
                             if (baseTime == 0) baseTime = 3;
                             decided = true;
@@ -1630,7 +1694,7 @@ namespace Milimoe.FunGame.Core.Model
                         {
                             item = OnSelectItemEvent(character, items);
                         }
-                        if (item is null && CharactersInAI.Contains(character) && items.Count > 0)
+                        if (item is null && IsCharacterInAIControlling(character) && items.Count > 0)
                         {
                             // AI 控制下随机选取一个物品
                             item = items[Random.Shared.Next(items.Count)];
@@ -1638,6 +1702,18 @@ namespace Milimoe.FunGame.Core.Model
                         if (item != null && item.Skills.Active != null)
                         {
                             Skill skill = item.Skills.Active;
+
+                            // 如果有询问，先进行询问
+                            if (item.InquiryBeforeTargetSelection(character, item) is InquiryOptions inquiry)
+                            {
+                                Inquiry(character, inquiry);
+                            }
+
+                            if (skill.InquiryBeforeTargetSelection(character, skill) is InquiryOptions inquiry2)
+                            {
+                                Inquiry(character, inquiry2);
+                            }
+
                             List<Grid> castRange = [];
                             if (_map != null && realGrid != null)
                             {
@@ -1655,8 +1731,8 @@ namespace Milimoe.FunGame.Core.Model
                             }
                             else if (UseItem(item, character, dp, enemys, teammates, castRange, allEnemys, allTeammates, aiDecision))
                             {
-                                _stats[character].UseDecisionPoints += costDP;
-                                _stats[character].TurnDecisions++;
+                                _stats[statsCharacter].UseDecisionPoints += costDP;
+                                _stats[statsCharacter].TurnDecisions++;
                                 dp.AddActionType(CharacterActionType.UseItem);
                                 dp.CurrentDecisionPoints -= costDP;
                                 LastRound.ActionTypes.Add(CharacterActionType.UseItem);
@@ -1673,7 +1749,7 @@ namespace Milimoe.FunGame.Core.Model
                     }
                     else if (type == CharacterActionType.EndTurn)
                     {
-                        _stats[character].TurnDecisions++;
+                        _stats[statsCharacter].TurnDecisions++;
                         SetOnlyMoveHardnessTime(character, dp, ref baseTime);
                         decided = true;
                         endTurn = true;
@@ -1729,7 +1805,10 @@ namespace Milimoe.FunGame.Core.Model
                 baseTime = dp.ActionsTaken > 1 ? (dp.ActionsHardnessTime.Max() + dp.ActionsTaken) : dp.ActionsHardnessTime.Max();
             }
 
-            _stats[character].ActionTurn += 1;
+            if (character.Master is null)
+            {
+                _stats[character].ActionTurn += 1;
+            }
 
             AfterCharacterDecision(character, dp);
             OnCharacterDecisionCompletedEvent(character, dp, LastRound);
@@ -1823,9 +1902,11 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="character"></param>
         protected void ProcessCharacterDeath(Character character)
         {
-            foreach (Character death in _roundDeaths)
+            foreach (Character death in _roundDeaths.Keys)
             {
-                if (!OnCharacterDeathEvent(character, death))
+                Character[] assists = _roundDeaths[death];
+
+                if (!OnCharacterDeathEvent(character, death, assists))
                 {
                     continue;
                 }
@@ -1834,12 +1915,12 @@ namespace Milimoe.FunGame.Core.Model
                 List<Effect> effects = [.. _queue.SelectMany(c => c.Effects.Where(e => e.IsInEffect))];
                 foreach (Effect effect in effects)
                 {
-                    effect.AfterDeathCalculation(death, character, _continuousKilling, _earnedMoney);
+                    effect.AfterDeathCalculation(death, character, _continuousKilling, _earnedMoney, assists);
                 }
                 // 将死者移出队列
                 _queue.Remove(death);
 
-                AfterDeathCalculation(death, character);
+                AfterDeathCalculation(death, character, assists);
             }
         }
 
@@ -1852,7 +1933,7 @@ namespace Milimoe.FunGame.Core.Model
         protected virtual bool AfterCharacterAction(Character character, CharacterActionType type)
         {
             List<Character> allTeammates = GetTeammates(character);
-            Character[] allEnemys = [.. _allCharacters.Where(c => c != character && !allTeammates.Contains(c) && !_eliminated.Contains(c))];
+            Character[] allEnemys = [.. _allCharacters.Union(_queue).Distinct().Where(c => c != character && !allTeammates.Contains(c) && !_eliminated.Contains(c) && c.Master != character && character.Master != c)];
             if (!allEnemys.Any(c => c.HP > 0))
             {
                 return false;
@@ -1885,9 +1966,10 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         /// <param name="death"></param>
         /// <param name="killer"></param>
-        protected virtual void AfterDeathCalculation(Character death, Character killer)
+        /// <param name="assists"></param>
+        protected virtual void AfterDeathCalculation(Character death, Character killer, Character[] assists)
         {
-            if (!_queue.Where(c => c != killer).Any())
+            if (!_queue.Any(c => c != killer && c.Master != killer && killer.Master != c))
             {
                 // 没有其他的角色了，游戏结束
                 WriteLine("[ " + killer + " ] 是胜利者。");
@@ -2212,9 +2294,17 @@ namespace Milimoe.FunGame.Core.Model
                         }
 
                         // 统计护盾
-                        if (damage > actualDamage && _stats.TryGetValue(actor, out CharacterStatistics? stats) && stats != null)
+                        if (damage > actualDamage)
                         {
-                            stats.TotalShield += damage - actualDamage;
+                            Character statsCharacter = actor;
+                            if (statsCharacter.Master != null)
+                            {
+                                statsCharacter = statsCharacter.Master;
+                            }
+                            if (_stats.TryGetValue(statsCharacter, out CharacterStatistics? stats) && stats != null)
+                            {
+                                stats.TotalShield += damage - actualDamage;
+                            }
                         }
                     }
 
@@ -2264,7 +2354,18 @@ namespace Milimoe.FunGame.Core.Model
                     // 计算助攻
                     if (actor != enemy && !IsTeammate(actor, enemy))
                     {
-                        _assistDetail[actor][enemy, TotalTime] += damage;
+                        if (actor.Master != null)
+                        {
+                            actor = actor.Master;
+                        }
+                        if (enemy.Master != null)
+                        {
+                            enemy = enemy.Master;
+                        }
+                        if (actor != enemy)
+                        {
+                            _assistDetail[actor][enemy, TotalTime] += damage;
+                        }
                     }
                 }
             }
@@ -2288,7 +2389,7 @@ namespace Milimoe.FunGame.Core.Model
             if (enemy.HP <= 0 && !_eliminated.Contains(enemy) && !_respawnCountdown.ContainsKey(enemy))
             {
                 LastRound.HasKill = true;
-                _roundDeaths.Add(enemy);
+                _roundDeaths.Add(enemy, []);
                 DeathCalculation(actor, enemy);
             }
         }
@@ -2306,13 +2407,16 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     return;
                 }
-                _stats[death].Deaths += 1;
+                if (killer.Master is null)
+                {
+                    _stats[death].Deaths += 1;
+                }
                 WriteLine($"[ {death} ] 自杀了！");
                 DealWithCharacterDied(killer, death);
                 return;
             }
 
-            if (killer.IsUnit && killer.Master != null)
+            if (killer.Master != null)
             {
                 killer = killer.Master;
             }
@@ -2324,6 +2428,11 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             if (!OnDeathCalculationEvent(killer, death))
+            {
+                return;
+            }
+
+            if (death.Master != null)
             {
                 return;
             }
@@ -2435,6 +2544,7 @@ namespace Milimoe.FunGame.Core.Model
                 }
                 WriteLine(msg);
             }
+            _roundDeaths[death] = assists;
 
             if (FirstKiller is null)
             {
@@ -2491,7 +2601,7 @@ namespace Milimoe.FunGame.Core.Model
                 return;
             }
 
-            if (!death.IsUnit)
+            if (death.Master is null)
             {
                 _stats[death].Deaths += 1;
                 string msg = $"[ {killer} ] 反补了 [ {death} ]！[ {killer} ] 受到了击杀队友惩罚，扣除 200 {GameplayEquilibriumConstant.InGameCurrency}并且当前连杀计数减少一次！！";
@@ -2588,7 +2698,12 @@ namespace Milimoe.FunGame.Core.Model
             SetNotDamageAssistTime(actor, target);
 
             // 统计数据
-            if (_stats.TryGetValue(actor, out CharacterStatistics? stats) && stats != null)
+            Character statsCharacter = actor;
+            if (statsCharacter.Master != null)
+            {
+                statsCharacter = statsCharacter.Master;
+            }
+            if (_stats.TryGetValue(statsCharacter, out CharacterStatistics? stats) && stats != null)
             {
                 stats.TotalHeal += heal;
             }
@@ -2680,7 +2795,7 @@ namespace Milimoe.FunGame.Core.Model
 
             death.EP = 0;
 
-            if (!death.IsUnit)
+            if (death.Master is null)
             {
                 // 清除对死者的助攻数据
                 List<AssistDetail> ads = [.. _assistDetail.Values.Where(ad => ad.Character != death)];
@@ -2847,7 +2962,7 @@ namespace Milimoe.FunGame.Core.Model
             {
                 pNormalAttack = 0;
             }
-            
+
             if (!dp.CheckActionTypeQuota(CharacterActionType.UseItem) || dp.CurrentDecisionPoints < dp.GameplayEquilibriumConstant.DecisionPointsCostItem)
             {
                 pUseItem = 0;
@@ -2859,7 +2974,7 @@ namespace Milimoe.FunGame.Core.Model
             {
                 pCastSkill = 0;
             }
-            
+
             if (pUseItem == 0 && pCastSkill == 0 && pNormalAttack == 0)
             {
                 return CharacterActionType.EndTurn;
@@ -2944,7 +3059,7 @@ namespace Milimoe.FunGame.Core.Model
                 effect.AlterSelectListBeforeSelection(caster, skill, enemys, teammates);
             }
             List<Character> targets = OnSelectSkillTargetsEvent(caster, skill, enemys, teammates, castRange);
-            if (targets.Count == 0 && CharactersInAI.Contains(caster))
+            if (targets.Count == 0 && IsCharacterInAIControlling(caster))
             {
                 targets = skill.SelectTargets(caster, enemys, teammates);
             }
@@ -2963,7 +3078,7 @@ namespace Milimoe.FunGame.Core.Model
         public List<Grid> SelectNonDirectionalSkillTargetGrid(Character caster, Skill skill, List<Character> enemys, List<Character> teammates, List<Grid> castRange)
         {
             List<Grid> targets = OnSelectNonDirectionalSkillTargetsEvent(caster, skill, enemys, teammates, castRange);
-            if (targets.Count == 0 && CharactersInAI.Contains(caster) && castRange.Count > 0)
+            if (targets.Count == 0 && IsCharacterInAIControlling(caster) && castRange.Count > 0)
             {
                 targets = skill.SelectNonDirectionalTargets(caster, castRange.OrderBy(r => Random.Shared.Next()).FirstOrDefault(r => r.Characters.Count > 0) ?? castRange.First(), skill.SelectIncludeCharacterGrid);
             }
@@ -2987,7 +3102,7 @@ namespace Milimoe.FunGame.Core.Model
                 effect.AlterSelectListBeforeSelection(character, attack, enemys, teammates);
             }
             List<Character> targets = OnSelectNormalAttackTargetsEvent(character, attack, enemys, teammates, attackRange);
-            if (targets.Count == 0 && CharactersInAI.Contains(character))
+            if (targets.Count == 0 && IsCharacterInAIControlling(character))
             {
                 targets = character.NormalAttack.SelectTargets(character, enemys, teammates);
             }
@@ -3345,7 +3460,7 @@ namespace Milimoe.FunGame.Core.Model
         public List<Character> GetEnemies(Character character)
         {
             List<Character> teammates = GetTeammates(character);
-            return [.. _allCharacters.Where(c => c != character && !teammates.Contains(c))];
+            return [.. _allCharacters.Union(_queue).Distinct().Where(c => c != character && !teammates.Contains(c) && !_eliminated.Contains(c) && c.Master != character && character.Master != c)];
         }
 
         /// <summary>
@@ -3355,7 +3470,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <returns></returns>
         public virtual List<Character> GetTeammates(Character character)
         {
-            return [];
+            return [.. _queue.Where(c => c != character && (character.Master == c || c == character.Master || (c.Master != null && character.Master != null && c.Master == character.Master)))];
         }
 
         /// <summary>
@@ -3367,7 +3482,7 @@ namespace Milimoe.FunGame.Core.Model
         public bool IsTeammate(Character character, Character target)
         {
             List<Character> teammates = GetTeammates(character);
-            return teammates.Contains(target);
+            return teammates.Contains(target) && (character.Master == target || target == character.Master || (target.Master != null && character.Master != null && target.Master == character.Master));
         }
 
         /// <summary>
@@ -3578,7 +3693,7 @@ namespace Milimoe.FunGame.Core.Model
         protected void WillPreCastSuperSkill()
         {
             // 选取所有 AI 控制角色
-            foreach (Character other in _queue.Where(c => c.CharacterState == CharacterState.Actionable && CharactersInAI.Contains(c)).ToList())
+            foreach (Character other in _queue.Where(c => c.CharacterState == CharacterState.Actionable && IsCharacterInAIControlling(c)).ToList())
             {
                 if (!_decisionPoints.TryGetValue(other, out DecisionPoints? dp) || dp is null || dp.CurrentDecisionPoints < dp.GetActionPointCost(CharacterActionType.CastSuperSkill))
                 {
@@ -3649,13 +3764,14 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="interrupter"></param>
         public void InterruptCasting(Character interrupter)
         {
+            WriteLine($"[ {interrupter} ] 人间蒸发了。");
             foreach (Character caster in _castingSkills.Keys)
             {
                 SkillTarget skillTarget = _castingSkills[caster];
                 if (skillTarget.Targets.Contains(interrupter))
                 {
                     Skill skill = skillTarget.Skill;
-                    WriteLine($"[ {interrupter} ] 人间蒸发了。[ {caster} ] 丢失了施法目标！！");
+                    WriteLine($"[ {caster} ] 丢失了施法目标！！");
                     List<Effect> effects = [.. caster.Effects.Union(interrupter.Effects).Distinct().Where(e => e.IsInEffect)];
                     foreach (Effect effect in effects)
                     {
@@ -3672,23 +3788,26 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="character"></param>
         public void SetCharacterRespawn(Character character)
         {
-            double hardnessTime = 5;
-            character.Respawn(_original[character.Guid]);
-            _eliminated.Remove(character);
-            WriteLine($"[ {character} ] 已复活！获得 {hardnessTime} {GameplayEquilibriumConstant.InGameTime}的硬直时间。");
-            AddCharacter(character, hardnessTime, false);
-            LastRound.Respawns.Add(character);
-            _respawnCountdown.Remove(character);
-            if (!_respawnTimes.TryAdd(character, 1))
+            if (_original.TryGetValue(character.Guid, out Character? original) && original != null)
             {
-                _respawnTimes[character] += 1;
+                double hardnessTime = 5;
+                character.Respawn(_original[character.Guid]);
+                _eliminated.Remove(character);
+                WriteLine($"[ {character} ] 已复活！获得 {hardnessTime} {GameplayEquilibriumConstant.InGameTime}的硬直时间。");
+                AddCharacter(character, hardnessTime, false);
+                LastRound.Respawns.Add(character);
+                _respawnCountdown.Remove(character);
+                if (!_respawnTimes.TryAdd(character, 1))
+                {
+                    _respawnTimes[character] += 1;
+                }
+                if (!_decisionPoints.TryGetValue(character, out DecisionPoints? dp) || dp is null)
+                {
+                    dp = new();
+                    _decisionPoints[character] = dp;
+                }
+                OnQueueUpdatedEvent(_queue, character, dp, hardnessTime, QueueUpdatedReason.Respawn, "设置角色复活后的硬直时间。");
             }
-            if (!_decisionPoints.TryGetValue(character, out DecisionPoints? dp) || dp is null)
-            {
-                dp = new();
-                _decisionPoints[character] = dp;
-            }
-            OnQueueUpdatedEvent(_queue, character, dp, hardnessTime, QueueUpdatedReason.Respawn, "设置角色复活后的硬直时间。");
         }
 
         /// <summary>
@@ -3721,8 +3840,11 @@ namespace Milimoe.FunGame.Core.Model
             if (character.CharacterState == CharacterState.Actionable)
             {
                 dp.CurrentDecisionPoints -= GameplayEquilibriumConstant.DecisionPointsCostSuperSkillOutOfTurn;
-                _stats[character].UseDecisionPoints += GameplayEquilibriumConstant.DecisionPointsCostSuperSkillOutOfTurn;
-                _stats[character].TurnDecisions++;
+                if (character.Master is Character statsCharacter)
+                {
+                    _stats[statsCharacter].UseDecisionPoints += GameplayEquilibriumConstant.DecisionPointsCostSuperSkillOutOfTurn;
+                    _stats[statsCharacter].TurnDecisions++;
+                }
                 _castingSuperSkills[character] = skill;
                 character.CharacterState = CharacterState.PreCastSuperSkill;
                 _queue.Remove(character);
@@ -3773,7 +3895,17 @@ namespace Milimoe.FunGame.Core.Model
             foreach (Character target in targets)
             {
                 if (character == target || IsTeammate(character, target)) continue;
-                _assistDetail[character].NotDamageAssistLastTime[target] = TotalTime;
+                Character c = character, t = target;
+                if (character.Master != null)
+                {
+                    c = character.Master;
+                }
+                if (target.Master != null)
+                {
+                    t = target.Master;
+                }
+                if (c == t) continue;
+                _assistDetail[c].NotDamageAssistLastTime[t] = TotalTime;
             }
         }
 
@@ -3790,7 +3922,10 @@ namespace Milimoe.FunGame.Core.Model
             {
                 return;
             }
-            double hardnessTime = _hardnessTimes[character];
+            if (!_hardnessTimes.TryGetValue(character, out double hardnessTime))
+            {
+                hardnessTime = 0;
+            }
             if (isPercentage)
             {
                 addValue = hardnessTime * addValue;
@@ -3856,6 +3991,14 @@ namespace Milimoe.FunGame.Core.Model
         /// <returns></returns>
         public bool IsCharacterInAIControlling(Character character)
         {
+            if (character.Master != null)
+            {
+                if (_charactersInAIBySystem.Contains(character))
+                {
+                    return true;
+                }
+                character = character.Master;
+            }
             return CharactersInAI.Contains(character);
         }
 
@@ -3970,8 +4113,27 @@ namespace Milimoe.FunGame.Core.Model
                 PrimaryAttribute.INT => character.INTExemption,
                 _ => 0
             };
-            double dice = Random.Shared.NextDouble();
-            if (dice < exemption)
+            bool exempted = false;
+            bool checkExempted = true;
+            double throwingBonus = 0;
+            Character[] characters = source != null ? [character, source] : [character];
+            Effect[] effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+            foreach (Effect e in effects)
+            {
+                if (!e.OnExemptionCheck(character, source, effect, isEvade, ref throwingBonus))
+                {
+                    checkExempted = false;
+                }
+            }
+            if (checkExempted)
+            {
+                double dice = Random.Shared.NextDouble();
+                if (dice < (exemption + throwingBonus))
+                {
+                    exempted = true;
+                }
+            }
+            if (exempted)
             {
                 if (isEvade)
                 {
@@ -4003,9 +4165,8 @@ namespace Milimoe.FunGame.Core.Model
                     WriteLine($"[ {character} ] 的{CharacterSet.GetPrimaryAttributeName(effect.ExemptionType)}豁免检定通过！{description}");
                 }
                 OnCharacterExemptionEvent(character, source, effect.Skill, effect.Skill.Item, isEvade);
-                return true;
             }
-            return false;
+            return exempted;
         }
 
         #endregion
@@ -4018,6 +4179,10 @@ namespace Milimoe.FunGame.Core.Model
         public void CalculateCharacterDamageStatistics(Character character, Character characterTaken, double damage, DamageType damageType, double takenDamage = -1)
         {
             if (takenDamage == -1) takenDamage = damage;
+            if (character.Master != null)
+            {
+                character = character.Master;
+            }
             if (_stats.TryGetValue(character, out CharacterStatistics? stats) && stats != null)
             {
                 if (damageType == DamageType.True)
@@ -4348,7 +4513,7 @@ namespace Milimoe.FunGame.Core.Model
             return DeathCalculationByTeammateEvent?.Invoke(this, killer, death) ?? true;
         }
 
-        public delegate bool CharacterDeathEventHandler(GamingQueue queue, Character current, Character death);
+        public delegate bool CharacterDeathEventHandler(GamingQueue queue, Character current, Character death, Character[] assists);
         /// <summary>
         /// 角色死亡事件，此事件位于 <see cref="DeathCalculation"/> 之后
         /// </summary>
@@ -4358,10 +4523,11 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         /// <param name="current"></param>
         /// <param name="death"></param>
+        /// <param name="assists"></param>
         /// <returns></returns>
-        protected bool OnCharacterDeathEvent(Character current, Character death)
+        protected bool OnCharacterDeathEvent(Character current, Character death, Character[] assists)
         {
-            return CharacterDeathEvent?.Invoke(this, current, death) ?? true;
+            return CharacterDeathEvent?.Invoke(this, current, death, assists) ?? true;
         }
 
         public delegate void HealToTargetEventHandler(GamingQueue queue, Character actor, Character target, double heal, bool isRespawn);
@@ -4650,7 +4816,7 @@ namespace Milimoe.FunGame.Core.Model
             CharacterDecisionCompletedEvent?.Invoke(this, actor, dp, record);
         }
 
-        public delegate InquiryResponse CharacterInquiryEventHandler(GamingQueue character, Character actor, DecisionPoints dp, InquiryOptions options);
+        public delegate InquiryResponse CharacterInquiryEventHandler(GamingQueue queue, Character character, DecisionPoints dp, InquiryOptions options);
         /// <summary>
         /// 角色询问反应事件
         /// </summary>
