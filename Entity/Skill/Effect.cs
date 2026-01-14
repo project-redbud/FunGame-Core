@@ -436,6 +436,20 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 在技能释放前触发
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="skill"></param>
+        /// <param name="targets"></param>
+        /// <param name="grids"></param>
+        /// <param name="others"></param>
+        /// <returns>返回 false 将角色从目标集合中移除</returns>
+        public virtual bool BeforeSkillCasted(Character caster, Skill skill, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        {
+            return true;
+        }
+
+        /// <summary>
         /// 在时间流逝期间应用生命/魔法回复前修改 [ 允许取消回复 ]
         /// </summary>
         /// <param name="character"></param>
@@ -581,9 +595,10 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="actor"></param>
         /// <param name="enemy"></param>
+        /// <param name="isNormalAttack"></param>
         /// <param name="throwingBonus"></param>
         /// <returns>返回 false 表示不进行暴击检定</returns>
-        public virtual bool BeforeCriticalCheck(Character actor, Character enemy, ref double throwingBonus)
+        public virtual bool BeforeCriticalCheck(Character actor, Character enemy, bool isNormalAttack, ref double throwingBonus)
         {
             return true;
         }
@@ -878,6 +893,17 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual bool OnExemptionCheck(Character character, Character? source, Effect effect, bool isEvade, ref double throwingBonus)
         {
             return true;
+        }
+
+        /// <summary>
+        /// 在角色开始行动时触发
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="dp"></param>
+        /// <param name="type"></param>
+        public virtual void OnCharacterActionStart(Character actor, DecisionPoints dp, CharacterActionType type)
+        {
+
         }
 
         /// <summary>

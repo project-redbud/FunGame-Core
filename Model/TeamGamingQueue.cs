@@ -159,8 +159,15 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="killer"></param>
         /// <param name="assists"></param>
         /// <returns></returns>
-        protected override void AfterDeathCalculation(Character death, Character killer, Character[] assists)
+        protected override void AfterDeathCalculation(Character death, Character? killer, Character[] assists)
         {
+            killer ??= _queue.FirstOrDefault();
+            if (killer is null)
+            {
+                WriteLine("游戏结束。");
+                return;
+            }
+
             Team? killTeam = GetTeam(killer);
             Team? deathTeam = GetTeam(death);
 

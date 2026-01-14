@@ -726,7 +726,7 @@ namespace Milimoe.FunGame.Core.Entity
             get
             {
                 double value = SPD / GameplayEquilibriumConstant.SPDUpperLimit + ExActionCoefficient;
-                return Calculation.PercentageCheck(value);
+                return Math.Max(0, Math.Min(value, 0.9));
             }
         }
 
@@ -2210,7 +2210,8 @@ namespace Milimoe.FunGame.Core.Entity
                 Skill newskill = skill.Copy();
                 newskill.Character = this;
                 newskill.Level = skill.Level;
-                newskill.CurrentCD = 0;
+                newskill.CurrentCD = skill.CurrentCD;
+                skill.OnCharacterRespawn(newskill);
                 Skills.Add(newskill);
             }
             foreach (Item item in items)

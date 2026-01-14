@@ -56,6 +56,11 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public Dictionary<Character, CharacterStatistics> CharacterStatistics { get; }
 
         /// <summary>
+        /// 助攻记录
+        /// </summary>
+        public Dictionary<Character, AssistDetail> AssistDetails { get; }
+
+        /// <summary>
         /// 角色的决策点
         /// </summary>
         public Dictionary<Character, DecisionPoints> CharacterDecisionPoints { get; }

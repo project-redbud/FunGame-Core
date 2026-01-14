@@ -505,7 +505,7 @@ namespace Milimoe.FunGame.Core.Entity
 
             if (IsNonDirectional || CanSelectTargetRange < 0 || GamingQueue?.Map is not GameMap map)
             {
-                return [];
+                return [.. selected];
             }
 
             foreach (Character selectedCharacter in selected)
@@ -652,6 +652,19 @@ namespace Milimoe.FunGame.Core.Entity
         public void OnSkillCasted(IGamingQueue queue, Character caster, List<Character> targets, List<Grid> grids)
         {
             GamingQueue = queue;
+            Character[] characters = [caster, .. targets];
+            foreach (Character target in characters)
+            {
+                Effect[] effects = [.. target.Effects.Where(e => e.IsInEffect)];
+                foreach (Effect e in effects)
+                {
+                    e.GamingQueue = GamingQueue;
+                    if (!e.BeforeSkillCasted(caster, this, targets, grids, Values))
+                    {
+                        targets.Remove(target);
+                    }
+                }
+            }
             foreach (Effect e in Effects)
             {
                 e.GamingQueue = GamingQueue;
@@ -689,6 +702,16 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual IEnumerable<Effect> AddPassiveEffectToCharacter()
         {
             return [];
+        }
+
+        /// <summary>
+        /// 在复活时，因为复活是重新构建角色，如果需要继承死亡角色的技能数据，可以重写此方法并设置相关属性
+        /// </summary>
+        /// <param name="newSkill"></param>
+        /// <returns></returns>
+        public virtual void OnCharacterRespawn(Skill newSkill)
+        {
+
         }
 
         /// <summary>

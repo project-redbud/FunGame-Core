@@ -68,6 +68,11 @@ namespace Milimoe.FunGame.Core.Model
         public Dictionary<Character, CharacterStatistics> CharacterStatistics => _stats;
 
         /// <summary>
+        /// 助攻记录
+        /// </summary>
+        public Dictionary<Character, AssistDetail> AssistDetails => _assistDetail;
+
+        /// <summary>
         /// 游戏运行的时间
         /// </summary>
         public double TotalTime { get; set; } = 0;
@@ -162,6 +167,11 @@ namespace Milimoe.FunGame.Core.Model
         /// 角色的决策点
         /// </summary>
         public Dictionary<Character, DecisionPoints> CharacterDecisionPoints => _decisionPoints;
+
+        /// <summary>
+        /// 游戏结束标识
+        /// </summary>
+        public bool GameOver => _isGameEnd;
 
         #endregion
 
@@ -260,7 +270,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 当前回合死亡角色和参与击杀的人
         /// </summary>
-        protected readonly Dictionary<Character, Character[]> _roundDeaths = [];
+        protected readonly List<DeathRelation> _roundDeaths = [];
 
         /// <summary>
         /// 回合奖励
@@ -910,7 +920,8 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             // 减少复活倒计时
-            foreach (Character character in _respawnCountdown.Keys)
+            Character[] willRespawns = [.. _respawnCountdown.Keys];
+            foreach (Character character in willRespawns)
             {
                 _respawnCountdown[character] = Calculation.Round2Digits(_respawnCountdown[character] - timeToReduce);
                 if (_respawnCountdown[character] <= 0)
@@ -918,6 +929,8 @@ namespace Milimoe.FunGame.Core.Model
                     SetCharacterRespawn(character);
                 }
             }
+
+            ProcessCharacterDeath();
 
             WriteLine("\r\n");
 
@@ -1275,6 +1288,12 @@ namespace Milimoe.FunGame.Core.Model
                     }
 
                     int costDP = dp.GetActionPointCost(type);
+
+                    effects = [.. character.Effects.Where(e => e.IsInEffect)];
+                    foreach (Effect effect in effects)
+                    {
+                        effect.OnCharacterActionStart(character, dp, type);
+                    }
 
                     if (type == CharacterActionType.Move)
                     {
@@ -1800,7 +1819,7 @@ namespace Milimoe.FunGame.Core.Model
                 }
             }
 
-            if (character.CharacterState != CharacterState.Casting)
+            if (character.CharacterState != CharacterState.Casting && dp.ActionsHardnessTime.Count > 0)
             {
                 baseTime = dp.ActionsTaken > 1 ? (dp.ActionsHardnessTime.Max() + dp.ActionsTaken) : dp.ActionsHardnessTime.Max();
             }
@@ -1819,7 +1838,7 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             // 统一在回合结束时处理角色的死亡
-            ProcessCharacterDeath(character);
+            ProcessCharacterDeath();
 
             // 移除回合奖励
             RemoveRoundRewards(character, rewards);
@@ -1899,29 +1918,20 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 处理角色死亡
         /// </summary>
-        /// <param name="character"></param>
-        protected void ProcessCharacterDeath(Character character)
+        protected void ProcessCharacterDeath()
         {
-            foreach (Character death in _roundDeaths.Keys)
+            foreach (DeathRelation dr in _roundDeaths)
             {
-                Character[] assists = _roundDeaths[death];
+                Character death = dr.Death;
+                Character? killer = dr.Killer;
+                Character[] assists = dr.Assists;
 
-                if (!OnCharacterDeathEvent(character, death, assists))
+                if (!_isGameEnd)
                 {
-                    continue;
+                    AfterDeathCalculation(death, killer, assists);
                 }
-
-                // 给所有角色的特效广播角色死亡结算
-                List<Effect> effects = [.. _queue.SelectMany(c => c.Effects.Where(e => e.IsInEffect))];
-                foreach (Effect effect in effects)
-                {
-                    effect.AfterDeathCalculation(death, character, _continuousKilling, _earnedMoney, assists);
-                }
-                // 将死者移出队列
-                _queue.Remove(death);
-
-                AfterDeathCalculation(death, character, assists);
             }
+            _roundDeaths.Clear();
         }
 
         /// <summary>
@@ -1967,16 +1977,23 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="death"></param>
         /// <param name="killer"></param>
         /// <param name="assists"></param>
-        protected virtual void AfterDeathCalculation(Character death, Character killer, Character[] assists)
+        protected virtual void AfterDeathCalculation(Character death, Character? killer, Character[] assists)
         {
-            if (!_queue.Any(c => c != killer && c.Master != killer && killer.Master != c))
+            if (!_queue.Any(c => c != killer && c.Master != killer && killer?.Master != c))
             {
                 // 没有其他的角色了，游戏结束
-                WriteLine("[ " + killer + " ] 是胜利者。");
-                _queue.Remove(killer);
-                _eliminated.Add(killer);
+                if (killer != null)
+                {
+                    WriteLine("[ " + killer + " ] 是胜利者。");
+                    _queue.Remove(killer);
+                    _eliminated.Add(killer);
+                    OnGameEndEvent(killer);
+                }
+                else
+                {
+                    WriteLine("游戏结束。");
+                }
                 _isGameEnd = true;
-                OnGameEndEvent(killer);
             }
         }
 
@@ -2389,7 +2406,6 @@ namespace Milimoe.FunGame.Core.Model
             if (enemy.HP <= 0 && !_eliminated.Contains(enemy) && !_respawnCountdown.ContainsKey(enemy))
             {
                 LastRound.HasKill = true;
-                _roundDeaths.Add(enemy, []);
                 DeathCalculation(actor, enemy);
             }
         }
@@ -2401,6 +2417,9 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="death"></param>
         public void DeathCalculation(Character killer, Character death)
         {
+            DeathRelation dr = new(death, killer);
+            _roundDeaths.Add(dr);
+
             if (killer == death)
             {
                 if (!OnDeathCalculationEvent(killer, death))
@@ -2452,6 +2471,9 @@ namespace Milimoe.FunGame.Core.Model
             // 现在 20 时间内的非伤害类型辅助也能参与助攻了
             Character[] assists = [.. _assistDetail.Keys.Where(c => c != death &&
                 ((TotalTime - _assistDetail[c].GetLastTime(death) <= 30) || (TotalTime - _assistDetail[c].GetNotDamageAssistLastTime(killer) <= 20)))];
+
+            // 获取队友列表
+            Character[] teammates = [.. GetTeammates(killer)];
 
             // 获取贡献百分比 以伤害为主，非伤害助攻贡献不足 10% 的按 10% 计算
             double minPercentage = 0.1;
@@ -2509,7 +2531,10 @@ namespace Milimoe.FunGame.Core.Model
                     cmoney += calDiff(death, assist);
                     if (!_earnedMoney.TryAdd(assist, cmoney)) _earnedMoney[assist] += cmoney;
                     assist.User.Inventory.Credits += cmoney;
-                    _stats[assist].Assists += 1;
+                    if (teammates.Length == 0 || (teammates.Length > 0 && teammates.Contains(assist)))
+                    {
+                        _stats[assist].Assists += 1;
+                    }
                     if (!LastRound.Assists.Contains(assist)) LastRound.Assists.Add(assist);
                 }
                 else
@@ -2544,7 +2569,7 @@ namespace Milimoe.FunGame.Core.Model
                 }
                 WriteLine(msg);
             }
-            _roundDeaths[death] = assists;
+            dr.Assists = assists;
 
             if (FirstKiller is null)
             {
@@ -2586,6 +2611,17 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             DealWithCharacterDied(killer, death);
+
+            // 给所有角色的特效广播角色死亡结算
+            List<Effect> effects = [.. _queue.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Union(killer.Effects).Distinct()];
+            foreach (Effect effect in effects)
+            {
+                effect.AfterDeathCalculation(death, killer, _continuousKilling, _earnedMoney, assists);
+            }
+            // 将死者移出队列
+            _queue.Remove(death);
+
+            OnCharacterDeathEvent(death, killer, assists);
         }
 
         /// <summary>
@@ -2630,6 +2666,12 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="triggerEffects"></param>
         public void HealToTarget(Character actor, Character target, double heal, bool canRespawn = false, bool triggerEffects = true)
         {
+            // 死人怎么能对自己治疗呢？
+            if (actor.HP <= 0)
+            {
+                return;
+            }
+
             if (target.HP == target.MaxHP)
             {
                 return;
@@ -3287,7 +3329,7 @@ namespace Milimoe.FunGame.Core.Model
                 effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                 foreach (Effect effect in effects)
                 {
-                    if (!effect.BeforeCriticalCheck(actor, enemy, ref throwingBonus))
+                    if (!effect.BeforeCriticalCheck(actor, enemy, isNormalAttack, ref throwingBonus))
                     {
                         checkCritical = false;
                     }
@@ -3414,7 +3456,7 @@ namespace Milimoe.FunGame.Core.Model
                 effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                 foreach (Effect effect in effects)
                 {
-                    if (!effect.BeforeCriticalCheck(actor, enemy, ref throwingBonus))
+                    if (!effect.BeforeCriticalCheck(actor, enemy, isNormalAttack, ref throwingBonus))
                     {
                         checkCritical = false;
                     }
@@ -4189,7 +4231,7 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     stats.TotalTrueDamage += damage;
                 }
-                if (damageType == DamageType.Magical)
+                else if (damageType == DamageType.Magical)
                 {
                     stats.TotalMagicDamage += damage;
                 }
@@ -4205,7 +4247,7 @@ namespace Milimoe.FunGame.Core.Model
                 {
                     statsTaken.TotalTakenTrueDamage = Calculation.Round2Digits(statsTaken.TotalTakenTrueDamage + takenDamage);
                 }
-                if (damageType == DamageType.Magical)
+                else if (damageType == DamageType.Magical)
                 {
                     statsTaken.TotalTakenMagicDamage = Calculation.Round2Digits(statsTaken.TotalTakenMagicDamage + takenDamage);
                 }
@@ -4513,7 +4555,7 @@ namespace Milimoe.FunGame.Core.Model
             return DeathCalculationByTeammateEvent?.Invoke(this, killer, death) ?? true;
         }
 
-        public delegate bool CharacterDeathEventHandler(GamingQueue queue, Character current, Character death, Character[] assists);
+        public delegate bool CharacterDeathEventHandler(GamingQueue queue, Character death, Character? killer, Character[] assists);
         /// <summary>
         /// 角色死亡事件，此事件位于 <see cref="DeathCalculation"/> 之后
         /// </summary>
@@ -4521,13 +4563,13 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 角色死亡事件，此事件位于 <see cref="DeathCalculation"/> 之后
         /// </summary>
-        /// <param name="current"></param>
         /// <param name="death"></param>
+        /// <param name="killer"></param>
         /// <param name="assists"></param>
         /// <returns></returns>
-        protected bool OnCharacterDeathEvent(Character current, Character death, Character[] assists)
+        protected bool OnCharacterDeathEvent(Character death, Character? killer, Character[] assists)
         {
-            return CharacterDeathEvent?.Invoke(this, current, death, assists) ?? true;
+            return CharacterDeathEvent?.Invoke(this, death, killer, assists) ?? true;
         }
 
         public delegate void HealToTargetEventHandler(GamingQueue queue, Character actor, Character target, double heal, bool isRespawn);

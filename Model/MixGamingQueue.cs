@@ -15,7 +15,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="killer"></param>
         /// <param name="assists"></param>
         /// <returns></returns>
-        protected override void AfterDeathCalculation(Character death, Character killer, Character[] assists)
+        protected override void AfterDeathCalculation(Character death, Character? killer, Character[] assists)
         {
             if (MaxRespawnTimes != 0 && MaxScoreToWin > 0)
             {
@@ -23,13 +23,13 @@ namespace Milimoe.FunGame.Core.Model
                     .Select(kv => $"[ {kv.Key} ] {kv.Value.Kills} 分"))}\r\n剩余存活人数：{_queue.Count}");
             }
 
-            if (!_queue.Any(c => c != killer && c.Master != killer && killer.Master != c))
+            if (!_queue.Any(c => c != killer && c.Master != killer && killer?.Master != c))
             {
                 // 没有其他的角色了，游戏结束
                 EndGameInfo(killer);
             }
 
-            if (MaxScoreToWin > 0 && _stats[killer].Kills >= MaxScoreToWin)
+            if (MaxScoreToWin > 0 && killer != null && _stats[killer].Kills >= MaxScoreToWin)
             {
                 EndGameInfo(killer);
                 return;
@@ -58,8 +58,14 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 游戏结束信息
         /// </summary>
-        public void EndGameInfo(Character winner)
+        public void EndGameInfo(Character? winner)
         {
+            winner ??= _queue.FirstOrDefault();
+            if (winner is null)
+            {
+                WriteLine("游戏结束。");
+                return;
+            }
             WriteLine("[ " + winner + " ] 是胜利者。");
             foreach (Character character in _stats.OrderBy(kv => kv.Value.Kills)
                 .ThenByDescending(kv => kv.Value.Deaths)
