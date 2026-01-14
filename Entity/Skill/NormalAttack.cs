@@ -479,6 +479,24 @@ namespace Milimoe.FunGame.Core.Entity
         public override string ToString() => GetInfo(true);
 
         /// <summary>
+        /// 在选取目标前向角色（玩家）发起询问的事件
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="normalAttack"></param>
+        /// <returns></returns>
+        public delegate InquiryOptions? NormalAttackInquiryOptionsDelegate(Character character, NormalAttack normalAttack);
+        public event NormalAttackInquiryOptionsDelegate? InquiryBeforeTargetSelectionEvent;
+        /// <summary>
+        /// 触发选择目标前的询问事件
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="normalAttack"></param>
+        public InquiryOptions? OnInquiryBeforeTargetSelection(Character character, NormalAttack normalAttack)
+        {
+            return InquiryBeforeTargetSelectionEvent?.Invoke(character, normalAttack);
+        }
+
+        /// <summary>
         /// 等级
         /// </summary>
         private int _level = 0;

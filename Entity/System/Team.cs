@@ -26,6 +26,10 @@
 
         public bool IsOnThisTeam(Character character)
         {
+            if (character.Master != null)
+            {
+                character = character.Master;
+            }
             return Members.Contains(character);
         }
 

@@ -13,8 +13,9 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         /// <param name="death"></param>
         /// <param name="killer"></param>
+        /// <param name="assists"></param>
         /// <returns></returns>
-        protected override void AfterDeathCalculation(Character death, Character killer)
+        protected override void AfterDeathCalculation(Character death, Character killer, Character[] assists)
         {
             if (MaxRespawnTimes != 0 && MaxScoreToWin > 0)
             {
@@ -22,7 +23,7 @@ namespace Milimoe.FunGame.Core.Model
                     .Select(kv => $"[ {kv.Key} ] {kv.Value.Kills} 分"))}\r\n剩余存活人数：{_queue.Count}");
             }
 
-            if (!_queue.Where(c => c != killer).Any())
+            if (!_queue.Any(c => c != killer && c.Master != killer && killer.Master != c))
             {
                 // 没有其他的角色了，游戏结束
                 EndGameInfo(killer);

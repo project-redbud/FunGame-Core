@@ -4,6 +4,7 @@ using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Model;
 
 namespace Milimoe.FunGame.Core.Entity
 {
@@ -377,6 +378,17 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual void OnTurnStart(Character character, List<Character> enemys, List<Character> teammates, List<Skill> skills, List<Item> items)
         {
 
+        }
+
+        /// <summary>
+        /// 在选取目标前向角色（玩家）发起询问
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="skill"></param>
+        /// <returns></returns>
+        public virtual InquiryOptions? InquiryBeforeTargetSelection(Character character, Skill skill)
+        {
+            return null;
         }
 
         /// <summary>

@@ -83,7 +83,9 @@ namespace Milimoe.FunGame.Core.Model
             {
                 if (_teams[team].IsOnThisTeam(character))
                 {
-                    return _teams[team].GetTeammates(character);
+                    List<Character> list = _teams[team].GetTeammates(character);
+                    list.AddRange(_queue.Where(c => c.Master != null && _teams[team].IsOnThisTeam(c.Master)));
+                    return list;
                 }
             }
             return [];
@@ -155,8 +157,9 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         /// <param name="death"></param>
         /// <param name="killer"></param>
+        /// <param name="assists"></param>
         /// <returns></returns>
-        protected override void AfterDeathCalculation(Character death, Character killer)
+        protected override void AfterDeathCalculation(Character death, Character killer, Character[] assists)
         {
             Team? killTeam = GetTeam(killer);
             Team? deathTeam = GetTeam(death);

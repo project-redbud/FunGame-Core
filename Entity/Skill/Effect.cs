@@ -546,7 +546,8 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="killer"></param>
         /// <param name="continuousKilling"></param>
         /// <param name="earnedMoney"></param>
-        public virtual void AfterDeathCalculation(Character death, Character? killer, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney)
+        /// <param name="assists"></param>
+        public virtual void AfterDeathCalculation(Character death, Character? killer, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney, Character[] assists)
         {
 
         }
@@ -861,6 +862,20 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="damage"></param>
         /// <returns>false：免疫检定不通过</returns>
         public virtual bool OnDamageImmuneCheck(Character actor, Character enemy, bool isNormalAttack, DamageType damageType, MagicType magicType, double damage)
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// 在特效豁免检定时
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="source"></param>
+        /// <param name="effect"></param>
+        /// <param name="isEvade"></param>
+        /// <param name="throwingBonus"></param>
+        /// <returns>false：跳过豁免检定</returns>
+        public virtual bool OnExemptionCheck(Character character, Character? source, Effect effect, bool isEvade, ref double throwingBonus)
         {
             return true;
         }

@@ -308,6 +308,17 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 在选取目标前向角色（玩家）发起询问
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public virtual InquiryOptions? InquiryBeforeTargetSelection(Character character, Item item)
+        {
+            return null;
+        }
+
+        /// <summary>
         /// 局内使用物品触发
         /// </summary>
         /// <returns></returns>
