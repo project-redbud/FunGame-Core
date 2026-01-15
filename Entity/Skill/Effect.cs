@@ -557,11 +557,12 @@ namespace Milimoe.FunGame.Core.Entity
         /// 在完成死亡结算后 [ 全体广播 ]
         /// </summary>
         /// <param name="death"></param>
+        /// <param name="hasMaster"></param>
         /// <param name="killer"></param>
         /// <param name="continuousKilling"></param>
         /// <param name="earnedMoney"></param>
         /// <param name="assists"></param>
-        public virtual void AfterDeathCalculation(Character death, Character? killer, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney, Character[] assists)
+        public virtual void AfterDeathCalculation(Character death, bool hasMaster, Character? killer, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney, Character[] assists)
         {
 
         }
@@ -955,9 +956,10 @@ namespace Milimoe.FunGame.Core.Entity
             DamageResult result = DamageResult.Normal;
             double damage = expectedDamage;
             options ??= new();
+            if (options.ExpectedDamage == 0) options.ExpectedDamage = expectedDamage;
             if (options.NeedCalculate && damageType != DamageType.True)
             {
-                result = damageType == DamageType.Physical ? GamingQueue.CalculatePhysicalDamage(actor, enemy, false, expectedDamage, out damage, ref changeCount, options) : GamingQueue.CalculateMagicalDamage(actor, enemy, false, MagicType, expectedDamage, out damage, ref changeCount, options);
+                result = damageType == DamageType.Physical ? GamingQueue.CalculatePhysicalDamage(actor, enemy, false, expectedDamage, out damage, ref changeCount, ref options) : GamingQueue.CalculateMagicalDamage(actor, enemy, false, MagicType, expectedDamage, out damage, ref changeCount, ref options);
             }
             GamingQueue.DamageToEnemy(actor, enemy, damage, false, damageType, magicType, result, options);
             return result;

@@ -2061,18 +2061,19 @@ namespace Milimoe.FunGame.Core.Model
             bool isEvaded = damageResult == DamageResult.Evaded;
             List<Effect> effects = [];
             options ??= new();
+            if (options.ExpectedDamage == 0) options.ExpectedDamage = damage;
 
+            Dictionary<Effect, double> totalDamageBonus = [];
             if (options.TriggerEffects)
             {
                 // 真实伤害跳过伤害加成区间
                 if (damageType != DamageType.True)
                 {
-                    Dictionary<Effect, double> totalDamageBonus = [];
                     effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                     foreach (Effect effect in effects)
                     {
                         double damageBonus = effect.AlterActualDamageAfterCalculation(actor, enemy, damage, isNormalAttack, damageType, magicType, damageResult, ref isEvaded, totalDamageBonus);
-                        totalDamageBonus[effect] = damageBonus;
+                        if (damageBonus != 0) totalDamageBonus[effect] = damageBonus;
                         if (isEvaded)
                         {
                             damageResult = DamageResult.Evaded;
@@ -2092,6 +2093,8 @@ namespace Milimoe.FunGame.Core.Model
                     }
                 }
             }
+            options.AfterDamageBonus = totalDamageBonus;
+            options.FinalDamage = damage;
             double actualDamage = damage;
 
             // 闪避了就没伤害了
@@ -2322,15 +2325,34 @@ namespace Milimoe.FunGame.Core.Model
                             {
                                 stats.TotalShield += damage - actualDamage;
                             }
+                            options.ShieldReduction += damage - actualDamage;
                         }
                     }
 
+                    options.ActualDamage = actualDamage;
                     enemy.HP -= actualDamage;
                     string strDamageMessage = $"[ {enemy} ] 受到了 {actualDamage:0.##} 点{damageTypeString}！{shieldMsg}";
                     effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                     foreach (Effect effect in effects)
                     {
                         effect.OnApplyDamage(enemy, actor, damage, actualDamage, isNormalAttack, damageType, magicType, damageResult, shieldMsg, ref strDamageMessage);
+                    }
+                    if (IsDebug)
+                    {
+                        string strBeforeBonus = "";
+                        if (options.BeforeDamageBonus.Count > 0)
+                        {
+                            strBeforeBonus = string.Join("", options.BeforeDamageBonus.Select(kv => $"{(kv.Value >= 0 ? " + " : " - ")}{Math.Abs(kv.Value):0.##}（{kv.Key.Name}）"));
+                        }
+                        string strDefenseReduction = options.DefenseReduction == 0 ? "" : ($"{(options.DefenseReduction >= 0 ? " - " : " + ")}{Math.Abs(options.DefenseReduction):0.##}（减伤）");
+                        string strCriticalDamage = options.CriticalDamage == 0 ? "" : ($"{(options.CriticalDamage >= 0 ? " + " : " - ")}{Math.Abs(options.CriticalDamage):0.##}（暴击）");
+                        string strAfterBonus = "";
+                        if (options.AfterDamageBonus.Count > 0)
+                        {
+                            strAfterBonus = string.Join("", options.AfterDamageBonus.Select(kv => $"{(kv.Value >= 0 ? " + " : " - ")}{Math.Abs(kv.Value):0.##}（{kv.Key.Name}）"));
+                        }
+                        string strShieldReduction = options.ShieldReduction == 0 ? "" : ($"{(options.ShieldReduction >= 0 ? " - " : " + ")}{Math.Abs(options.ShieldReduction):0.##}（护盾）");
+                        strDamageMessage += $"【{options.ExpectedDamage:0.##}（基础）{strBeforeBonus}{strDefenseReduction}{strCriticalDamage}{strAfterBonus}{strShieldReduction} = {options.ActualDamage:0.##} 点{damageTypeString}】";
                     }
                     WriteLine(strDamageMessage);
 
@@ -2371,17 +2393,18 @@ namespace Milimoe.FunGame.Core.Model
                     // 计算助攻
                     if (actor != enemy && !IsTeammate(actor, enemy))
                     {
-                        if (actor.Master != null)
+                        Character a = actor, e = enemy;
+                        if (a.Master != null)
                         {
-                            actor = actor.Master;
+                            a = a.Master;
                         }
-                        if (enemy.Master != null)
+                        if (e.Master != null)
                         {
-                            enemy = enemy.Master;
+                            e = e.Master;
                         }
-                        if (actor != enemy)
+                        if (a != e)
                         {
-                            _assistDetail[actor][enemy, TotalTime] += damage;
+                            _assistDetail[a][e, TotalTime] += damage;
                         }
                     }
                 }
@@ -2422,16 +2445,12 @@ namespace Milimoe.FunGame.Core.Model
 
             if (killer == death)
             {
-                if (!OnDeathCalculationEvent(killer, death))
-                {
-                    return;
-                }
                 if (killer.Master is null)
                 {
                     _stats[death].Deaths += 1;
                 }
                 WriteLine($"[ {death} ] 自杀了！");
-                DealWithCharacterDied(killer, death);
+                DealWithCharacterDied(killer, death, []);
                 return;
             }
 
@@ -2446,13 +2465,9 @@ namespace Milimoe.FunGame.Core.Model
                 return;
             }
 
-            if (!OnDeathCalculationEvent(killer, death))
-            {
-                return;
-            }
-
             if (death.Master != null)
             {
+                DealWithCharacterDied(killer, death, []);
                 return;
             }
 
@@ -2610,18 +2625,7 @@ namespace Milimoe.FunGame.Core.Model
                 WriteLine(actorContinuousKilling);
             }
 
-            DealWithCharacterDied(killer, death);
-
-            // 给所有角色的特效广播角色死亡结算
-            List<Effect> effects = [.. _queue.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Union(killer.Effects).Distinct()];
-            foreach (Effect effect in effects)
-            {
-                effect.AfterDeathCalculation(death, killer, _continuousKilling, _earnedMoney, assists);
-            }
-            // 将死者移出队列
-            _queue.Remove(death);
-
-            OnCharacterDeathEvent(death, killer, assists);
+            DealWithCharacterDied(killer, death, assists);
         }
 
         /// <summary>
@@ -2653,7 +2657,7 @@ namespace Milimoe.FunGame.Core.Model
                 WriteLine(msg);
             }
 
-            DealWithCharacterDied(killer, death);
+            DealWithCharacterDied(killer, death, []);
         }
 
         /// <summary>
@@ -2678,6 +2682,7 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             bool isDead = target.HP <= 0;
+            string healString = $"【{heal:0.##}（基础）";
 
             if (triggerEffects)
             {
@@ -2691,9 +2696,16 @@ namespace Milimoe.FunGame.Core.Model
                     {
                         canRespawn = true;
                     }
+                    if (healBonus != 0)
+                    {
+                        totalHealBonus[effect]= healBonus;
+                        healString += $"{(healBonus > 0 ? " + " : " - ")}{Math.Abs(healBonus):0.##}（{effect.Name}）";
+                    }
                 }
                 heal += totalHealBonus.Sum(kv => kv.Value);
             }
+            healString += $" = {heal:0.##} 点生命值】";
+            if (!IsDebug) healString = "";
 
             if (target.HP > 0 || (isDead && canRespawn))
             {
@@ -2719,11 +2731,11 @@ namespace Milimoe.FunGame.Core.Model
             {
                 if (target != actor)
                 {
-                    WriteLine($"[ {target} ] 被 [ {actor} ] 复苏了，并回复了 {heal:0.##} 点生命值！！");
+                    WriteLine($"[ {target} ] 被 [ {actor} ] 复苏了，并回复了 {heal:0.##} 点生命值！！{healString}");
                 }
                 else
                 {
-                    WriteLine($"[ {target} ] 复苏了，并回复了 {heal:0.##} 点生命值！！");
+                    WriteLine($"[ {target} ] 复苏了，并回复了 {heal:0.##} 点生命值！！{healString}");
                 }
                 double hp = target.HP;
                 double mp = target.MP;
@@ -2733,7 +2745,7 @@ namespace Milimoe.FunGame.Core.Model
             }
             else
             {
-                WriteLine($"[ {target} ] 回复了 {heal:0.##} 点生命值！");
+                WriteLine($"[ {target} ] 回复了 {heal:0.##} 点生命值！{healString}");
             }
 
             // 添加助攻
@@ -2830,9 +2842,24 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         /// <param name="killer"></param>
         /// <param name="death"></param>
+        /// <param name="assists"></param>
         /// <returns></returns>
-        public void DealWithCharacterDied(Character killer, Character death)
+        public void DealWithCharacterDied(Character killer, Character death, Character[] assists)
         {
+            // 给所有角色的特效广播角色死亡结算
+            List<Effect> effects = [.. _queue.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Union(killer.Effects).Distinct()];
+            foreach (Effect effect in effects)
+            {
+                effect.AfterDeathCalculation(death, death.Master != null, killer, _continuousKilling, _earnedMoney, assists);
+            }
+            // 将死者移出队列
+            _queue.Remove(death);
+
+            if (!OnCharacterDeathEvent(death, killer, assists))
+            {
+                return;
+            }
+
             OnDeathCalculation(death, killer);
 
             death.EP = 0;
@@ -3239,13 +3266,15 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="changeCount"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public DamageResult CalculatePhysicalDamage(Character actor, Character enemy, bool isNormalAttack, double expectedDamage, out double finalDamage, ref int changeCount, DamageCalculationOptions? options = null)
+        public DamageResult CalculatePhysicalDamage(Character actor, Character enemy, bool isNormalAttack, double expectedDamage, out double finalDamage, ref int changeCount, ref DamageCalculationOptions? options)
         {
             options ??= new();
+            if (options.ExpectedDamage == 0) options.ExpectedDamage = expectedDamage;
             List<Character> characters = [actor, enemy];
             DamageType damageType = DamageType.Physical;
             MagicType magicType = MagicType.None;
             List<Effect> effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+            Dictionary<Effect, double> totalDamageBonus = [];
             if (options.TriggerEffects)
             {
                 if (changeCount < 3)
@@ -3257,19 +3286,19 @@ namespace Milimoe.FunGame.Core.Model
                     if (damageType == DamageType.Magical)
                     {
                         changeCount++;
-                        return CalculateMagicalDamage(actor, enemy, isNormalAttack, magicType, expectedDamage, out finalDamage, ref changeCount, options);
+                        return CalculateMagicalDamage(actor, enemy, isNormalAttack, magicType, expectedDamage, out finalDamage, ref changeCount, ref options);
                     }
                 }
 
-                Dictionary<Effect, double> totalDamageBonus = [];
                 effects = [.. actor.Effects.Union(enemy.Effects).Distinct().Where(e => e.IsInEffect)];
                 foreach (Effect effect in effects)
                 {
                     double damageBonus = effect.AlterExpectedDamageBeforeCalculation(actor, enemy, expectedDamage, isNormalAttack, DamageType.Physical, MagicType.None, totalDamageBonus);
-                    totalDamageBonus[effect] = damageBonus;
+                    if (damageBonus != 0) totalDamageBonus[effect] = damageBonus;
                 }
                 expectedDamage += totalDamageBonus.Sum(kv => kv.Value);
             }
+            options.BeforeDamageBonus = totalDamageBonus;
 
             double dice = Random.Shared.NextDouble();
             double throwingBonus = 0;
@@ -3321,11 +3350,13 @@ namespace Milimoe.FunGame.Core.Model
             {
                 penetratedDEF = (1 - actor.PhysicalPenetration) * enemy.DEF;
                 physicalDamageReduction = penetratedDEF / (penetratedDEF + GameplayEquilibriumConstant.DEFReductionFactor);
-                finalDamage = expectedDamage * (1 - Calculation.PercentageCheck(physicalDamageReduction + enemy.ExPDR));
+                options.DefenseReduction = expectedDamage * Calculation.PercentageCheck(physicalDamageReduction + enemy.ExPDR);
+                finalDamage = expectedDamage - options.DefenseReduction;
             }
 
             if (options.CalculateCritical)
-            { // 暴击检定
+            {
+                // 暴击检定
                 effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                 foreach (Effect effect in effects)
                 {
@@ -3340,6 +3371,7 @@ namespace Milimoe.FunGame.Core.Model
                     dice = Random.Shared.NextDouble();
                     if (dice < (actor.CritRate + throwingBonus))
                     {
+                        options.CriticalDamage = finalDamage * (actor.CritDMG - 1);
                         finalDamage *= actor.CritDMG; // 暴击伤害倍率加成
                         WriteLine("暴击生效！！");
                         effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
@@ -3368,12 +3400,14 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="changeCount"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public DamageResult CalculateMagicalDamage(Character actor, Character enemy, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage, ref int changeCount, DamageCalculationOptions? options = null)
+        public DamageResult CalculateMagicalDamage(Character actor, Character enemy, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage, ref int changeCount, ref DamageCalculationOptions? options)
         {
             options ??= new();
+            if (options.ExpectedDamage == 0) options.ExpectedDamage = expectedDamage;
             List<Character> characters = [actor, enemy];
             DamageType damageType = DamageType.Magical;
             List<Effect> effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+            Dictionary<Effect, double> totalDamageBonus = [];
             if (options.TriggerEffects)
             {
                 if (changeCount < 3)
@@ -3385,19 +3419,19 @@ namespace Milimoe.FunGame.Core.Model
                     if (damageType == DamageType.Physical)
                     {
                         changeCount++;
-                        return CalculatePhysicalDamage(actor, enemy, isNormalAttack, expectedDamage, out finalDamage, ref changeCount, options);
+                        return CalculatePhysicalDamage(actor, enemy, isNormalAttack, expectedDamage, out finalDamage, ref changeCount, ref options);
                     }
                 }
 
-                Dictionary<Effect, double> totalDamageBonus = [];
                 effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                 foreach (Effect effect in effects)
                 {
                     double damageBonus = effect.AlterExpectedDamageBeforeCalculation(actor, enemy, expectedDamage, isNormalAttack, DamageType.Magical, magicType, totalDamageBonus);
-                    totalDamageBonus[effect] = damageBonus;
+                    if (damageBonus != 0) totalDamageBonus[effect] = damageBonus;
                 }
                 expectedDamage += totalDamageBonus.Sum(kv => kv.Value);
             }
+            options.BeforeDamageBonus = totalDamageBonus;
 
             double dice = Random.Shared.NextDouble();
             double throwingBonus = 0;
@@ -3446,8 +3480,11 @@ namespace Milimoe.FunGame.Core.Model
                 // 魔法穿透后的魔法抗性
                 MDF = (1 - actor.MagicalPenetration) * MDF;
 
+                // 魔法抗性减伤
+                options.DefenseReduction = expectedDamage * MDF;
+
                 // 最终的魔法伤害
-                finalDamage = expectedDamage * (1 - MDF);
+                finalDamage = expectedDamage - options.DefenseReduction;
             }
 
             if (options.CalculateCritical)
@@ -3467,6 +3504,7 @@ namespace Milimoe.FunGame.Core.Model
                     dice = Random.Shared.NextDouble();
                     if (dice < (actor.CritRate + throwingBonus))
                     {
+                        options.CriticalDamage = finalDamage * (actor.CritDMG - 1);
                         finalDamage *= actor.CritDMG; // 暴击伤害倍率加成
                         WriteLine("暴击生效！！");
                         effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
@@ -3524,7 +3562,7 @@ namespace Milimoe.FunGame.Core.Model
         public bool IsTeammate(Character character, Character target)
         {
             List<Character> teammates = GetTeammates(character);
-            return teammates.Contains(target) && (character.Master == target || target == character.Master || (target.Master != null && character.Master != null && target.Master == character.Master));
+            return teammates.Contains(target) || character.Master == target || target == character.Master || (target.Master != null && character.Master != null && target.Master == character.Master);
         }
 
         /// <summary>
@@ -4224,6 +4262,10 @@ namespace Milimoe.FunGame.Core.Model
             if (character.Master != null)
             {
                 character = character.Master;
+            }
+            if (characterTaken.Master != null)
+            {
+                characterTaken = characterTaken.Master;
             }
             if (_stats.TryGetValue(character, out CharacterStatistics? stats) && stats != null)
             {

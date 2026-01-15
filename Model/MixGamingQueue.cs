@@ -23,7 +23,7 @@ namespace Milimoe.FunGame.Core.Model
                     .Select(kv => $"[ {kv.Key} ] {kv.Value.Kills} 分"))}\r\n剩余存活人数：{_queue.Count}");
             }
 
-            if (!_queue.Any(c => c != killer && c.Master != killer && killer?.Master != c))
+            if (!_queue.Any(c => c != killer && c.Master != killer && killer?.Master != c && killer?.Master != c.Master))
             {
                 // 没有其他的角色了，游戏结束
                 EndGameInfo(killer);
@@ -65,6 +65,10 @@ namespace Milimoe.FunGame.Core.Model
             {
                 WriteLine("游戏结束。");
                 return;
+            }
+            if (winner.Master != null)
+            {
+                winner = winner.Master;
             }
             WriteLine("[ " + winner + " ] 是胜利者。");
             foreach (Character character in _stats.OrderBy(kv => kv.Value.Kills)

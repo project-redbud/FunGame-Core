@@ -127,7 +127,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="changeCount"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public DamageResult CalculatePhysicalDamage(Character actor, Character enemy, bool isNormalAttack, double expectedDamage, out double finalDamage, ref int changeCount, DamageCalculationOptions? options = null);
+        public DamageResult CalculatePhysicalDamage(Character actor, Character enemy, bool isNormalAttack, double expectedDamage, out double finalDamage, ref int changeCount, ref DamageCalculationOptions? options);
 
         /// <summary>
         /// 计算魔法伤害
@@ -141,7 +141,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="changeCount"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public DamageResult CalculateMagicalDamage(Character actor, Character enemy, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage, ref int changeCount, DamageCalculationOptions? options = null);
+        public DamageResult CalculateMagicalDamage(Character actor, Character enemy, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage, ref int changeCount, ref DamageCalculationOptions? options);
 
         /// <summary>
         /// 死亡结算

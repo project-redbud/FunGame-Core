@@ -135,7 +135,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <returns></returns>
         protected override void OnDeathCalculation(Character death, Character killer)
         {
-            if (killer == death)
+            if (killer == death || death.Master != null)
             {
                 return;
             }
