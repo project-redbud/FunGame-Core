@@ -787,7 +787,7 @@ namespace Milimoe.FunGame.Core.Model
                 Effect[] effects = [.. character.Effects];
                 foreach (Effect effect in effects)
                 {
-                    if (effect.BeforeApplyRecoveryAtTimeLapsing(character, ref reallyReHP, ref reallyReMP))
+                    if (!effect.BeforeApplyRecoveryAtTimeLapsing(character, ref reallyReHP, ref reallyReMP))
                     {
                         allowRecovery = false;
                     }
@@ -1979,7 +1979,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="assists"></param>
         protected virtual void AfterDeathCalculation(Character death, Character? killer, Character[] assists)
         {
-            if (!_queue.Any(c => c != killer && c.Master != killer && killer?.Master != c))
+            if (!_queue.Any(c => c != killer && (c.Master is null || c.Master != killer)))
             {
                 // 没有其他的角色了，游戏结束
                 if (killer != null)
@@ -2358,11 +2358,23 @@ namespace Milimoe.FunGame.Core.Model
 
                     // 生命偷取
                     double steal = actualDamage * actor.Lifesteal;
-                    HealToTarget(actor, actor, steal, false, true);
+                    bool allowSteal = true;
                     effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
                     foreach (Effect effect in effects)
                     {
-                        effect.AfterLifesteal(actor, enemy, damage, steal);
+                        if (!effect.BeforeLifesteal(actor, enemy, damage, steal))
+                        {
+                            allowSteal = false;
+                        }
+                    }
+                    if (allowSteal)
+                    {
+                        HealToTarget(actor, actor, steal, false, true);
+                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Distinct()];
+                        foreach (Effect effect in effects)
+                        {
+                            effect.AfterLifesteal(actor, enemy, damage, steal);
+                        }
                     }
 
                     // 造成伤害和受伤都可以获得能量。护盾抵消的伤害不算
@@ -2681,13 +2693,28 @@ namespace Milimoe.FunGame.Core.Model
                 return;
             }
 
+            bool allowHealing = true;
+            List<Effect> effects = [.. actor.Effects.Union(target.Effects).Distinct().Where(e => e.IsInEffect)];
+            foreach (Effect effect in effects)
+            {
+                if (!effect.BeforeHealToTarget(actor, target, heal, canRespawn))
+                {
+                    allowHealing = false;
+                }
+            }
+
+            if (!allowHealing)
+            {
+                return;
+            }
+
             bool isDead = target.HP <= 0;
             string healString = $"【{heal:0.##}（基础）";
 
             if (triggerEffects)
             {
                 Dictionary<Effect, double> totalHealBonus = [];
-                List<Effect> effects = [.. actor.Effects.Union(target.Effects).Distinct().Where(e => e.IsInEffect)];
+                effects = [.. actor.Effects.Union(target.Effects).Distinct().Where(e => e.IsInEffect)];
                 foreach (Effect effect in effects)
                 {
                     bool changeCanRespawn = false;

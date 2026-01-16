@@ -455,10 +455,10 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="character"></param>
         /// <param name="hr"></param>
         /// <param name="mr"></param>
-        /// <returns>返回 true 取消回复</returns>
+        /// <returns>返回 false 取消回复</returns>
         public virtual bool BeforeApplyRecoveryAtTimeLapsing(Character character, ref double hr, ref double mr)
         {
-            return false;
+            return true;
         }
 
         /// <summary>
@@ -498,7 +498,20 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 在治疗结算前修改治疗值
+        /// 在治疗结算前触发
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="target"></param>
+        /// <param name="heal"></param>
+        /// <param name="canRespawn"></param>
+        /// <returns>返回 false 取消治疗</returns>
+        public virtual bool BeforeHealToTarget(Character actor, Character target, double heal, bool canRespawn)
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// 在 <see cref="BeforeHealToTarget"/> 后、治疗结算前修改治疗值
         /// </summary>
         /// <param name="actor"></param>
         /// <param name="target"></param>
@@ -782,6 +795,19 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="isEnemy"></param>
         /// <returns>返回 false 可以阻止驱散</returns>
         public virtual bool OnEffectIsBeingDispelled(Character dispeller, Character target, Effect dispellerEffect, bool isEnemy)
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// 当角色触发生命偷取前
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="enemy"></param>
+        /// <param name="damage"></param>
+        /// <param name="steal"></param>
+        /// <returns>返回 false 取消生命偷取</returns>
+        public virtual bool BeforeLifesteal(Character character, Character enemy, double damage, double steal)
         {
             return true;
         }
