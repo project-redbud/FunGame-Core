@@ -194,13 +194,18 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 实际魔法消耗 [ 魔法 ]
         /// </summary>
-        public double RealMPCost => Math.Max(0, MPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * GameplayEquilibriumConstant.INTtoCastMPReduce)));
+        public double RealMPCost => FreeCostMP ? 0 : Math.Max(0, MPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * GameplayEquilibriumConstant.INTtoCastMPReduce)));
 
         /// <summary>
         /// 魔法消耗 [ 魔法 ]
         /// </summary>
         [InitOptional]
         public virtual double MPCost { get; set; } = 0;
+
+        /// <summary>
+        /// 无魔法消耗 [ 运行时 ]
+        /// </summary>
+        public bool FreeCostMP { get; set; } = false;
 
         /// <summary>
         /// 吟唱时间 [ 魔法 ]
@@ -216,7 +221,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 实际能量消耗 [ 战技 ]
         /// </summary>
-        public double RealEPCost => CostAllEP ? Math.Max(MinCostEP, Character?.EP ?? MinCostEP) : (IsSuperSkill ? EPCost : Math.Max(0, EPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * GameplayEquilibriumConstant.INTtoCastEPReduce))));
+        public double RealEPCost => FreeCostEP ? 0 : (CostAllEP ? Math.Max(MinCostEP, Character?.EP ?? MinCostEP) : (IsSuperSkill ? EPCost : Math.Max(0, EPCost * (1 - Calculation.PercentageCheck((Character?.INT ?? 0) * GameplayEquilibriumConstant.INTtoCastEPReduce)))));
 
         /// <summary>
         /// 能量消耗 [ 战技 ]
@@ -235,6 +240,11 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual double MinCostEP { get; set; } = 100;
 
         /// <summary>
+        /// 无能量消耗 [ 运行时 ]
+        /// </summary>
+        public bool FreeCostEP { get; set; } = false;
+
+        /// <summary>
         /// 上一次释放此技能消耗的魔法 [ 魔法 ]
         /// </summary>
         public double LastCostMP { get; set; } = 0;
@@ -247,7 +257,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 实际冷却时间
         /// </summary>
-        public double RealCD => Math.Max(0, CD * (1 - (Character?.CDR ?? 0)));
+        public double RealCD => InstantReset ? 0 : Math.Max(0, CD * (1 - (Character?.CDR ?? 0)));
 
         /// <summary>
         /// 冷却时间
@@ -259,6 +269,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 剩余冷却时间 [ 建议配合 <see cref="Enable"/>  属性使用 ]
         /// </summary>
         public double CurrentCD { get; set; } = 0;
+
+        /// <summary>
+        /// 无 CD [ 运行时 ]
+        /// </summary>
+        public bool InstantReset { get; set; } = false;
 
         /// <summary>
         /// 硬直时间
@@ -280,6 +295,25 @@ namespace Milimoe.FunGame.Core.Entity
         /// 实际硬直时间
         /// </summary>
         public double RealHardnessTime => Math.Max(0, (HardnessTime + ExHardnessTime) * (1 + ExHardnessTime2) * (1 - Calculation.PercentageCheck(Character?.ActionCoefficient ?? 0)));
+
+        /// <summary>
+        /// 魔法瓶颈 [ 智力相关 ]
+        /// </summary>
+        public virtual double MagicBottleneck { get; set; } = 0;
+
+        /// <summary>
+        /// 魔法效能% [ 智力相关 ] 公式：魔法效能 = (角色智力 / 魔法瓶颈) ^ (魔法瓶颈 / 角色智力)
+        /// <para/>该值决定魔法的实际施展效果（乘算），低于 1 时会使效果低于预期，最多增长至 2 倍
+        /// </summary>
+        public double MagicEfficacy
+        {
+            get
+            {
+                if (MagicBottleneck == 0) return 1.0;
+                if (Character is null || Character.INT == 0) return 0.01;
+                return Math.Clamp(Math.Pow((Character.INT / MagicBottleneck), (MagicBottleneck / Character.INT)), 0.01, 2.0);
+            }
+        }
 
         /// <summary>
         /// 效果列表
@@ -858,8 +892,12 @@ namespace Milimoe.FunGame.Core.Entity
             skill.MPCost = skillDefined.MPCost;
             skill.CastTime = skillDefined.CastTime;
             skill.EPCost = skillDefined.EPCost;
+            skill.FreeCostMP = skillDefined.FreeCostMP;
+            skill.FreeCostEP = skillDefined.FreeCostEP;
             skill.CD = skillDefined.CD;
+            skill.InstantReset = skillDefined.InstantReset;
             skill.HardnessTime = skillDefined.HardnessTime;
+            skill.MagicBottleneck = skillDefined.MagicBottleneck;
             skill.GamingQueue = skillDefined.GamingQueue;
             if (skill is OpenSkill)
             {

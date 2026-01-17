@@ -71,6 +71,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Skill.MPCost):
                     result.MPCost = reader.GetDouble();
                     break;
+                case nameof(Skill.FreeCostMP):
+                    result.FreeCostMP = reader.GetBoolean();
+                    break;
                 case nameof(Skill.EPCost):
                     result.EPCost = reader.GetDouble();
                     break;
@@ -79,6 +82,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     break;
                 case nameof(Skill.MinCostEP):
                     result.MinCostEP = reader.GetDouble();
+                    break;
+                case nameof(Skill.FreeCostEP):
+                    result.FreeCostEP = reader.GetBoolean();
                     break;
                 case nameof(Skill.CastTime):
                     result.CastTime = reader.GetDouble();
@@ -89,6 +95,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Skill.CurrentCD):
                     result.CurrentCD = reader.GetDouble();
                     break;
+                case nameof(Skill.InstantReset):
+                    result.InstantReset = reader.GetBoolean();
+                    break;
                 case nameof(Skill.HardnessTime):
                     result.HardnessTime = reader.GetDouble();
                     break;
@@ -97,6 +106,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     break;
                 case nameof(Skill.ExHardnessTime2):
                     result.ExHardnessTime2 = reader.GetDouble();
+                    break;
+                case nameof(Skill.MagicBottleneck):
+                    result.MagicBottleneck = reader.GetDouble();
                     break;
                 case nameof(Skill.Effects):
                     HashSet<Effect> effects = NetworkUtility.JsonDeserialize<HashSet<Effect>>(ref reader, options) ?? [];
@@ -141,15 +153,19 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             if (!value.Enable) writer.WriteBoolean(nameof(Skill.Enable), value.Enable);
             if (value.IsInEffect) writer.WriteBoolean(nameof(Skill.IsInEffect), value.IsInEffect);
             if (value.MPCost > 0) writer.WriteNumber(nameof(Skill.MPCost), value.MPCost);
+            if (!value.FreeCostMP) writer.WriteBoolean(nameof(Skill.FreeCostMP), value.FreeCostMP);
             if (value.EPCost > 0) writer.WriteNumber(nameof(Skill.EPCost), value.EPCost);
             if (value.CostAllEP) writer.WriteBoolean(nameof(Skill.CostAllEP), value.CostAllEP);
             if (value.MinCostEP > 0) writer.WriteNumber(nameof(Skill.MinCostEP), value.MinCostEP);
+            if (!value.FreeCostEP) writer.WriteBoolean(nameof(Skill.FreeCostEP), value.FreeCostEP);
             if (value.CastTime > 0) writer.WriteNumber(nameof(Skill.CastTime), value.CastTime);
             if (value.CD > 0) writer.WriteNumber(nameof(Skill.CD), value.CD);
             if (value.CurrentCD > 0) writer.WriteNumber(nameof(Skill.CurrentCD), value.CurrentCD);
+            if (!value.InstantReset) writer.WriteBoolean(nameof(Skill.InstantReset), value.InstantReset);
             if (value.HardnessTime > 0) writer.WriteNumber(nameof(Skill.HardnessTime), value.HardnessTime);
             if (value.ExHardnessTime != 0) writer.WriteNumber(nameof(Skill.ExHardnessTime), value.ExHardnessTime);
             if (value.ExHardnessTime2 != 0) writer.WriteNumber(nameof(Skill.ExHardnessTime2), value.ExHardnessTime2);
+            if (value.MagicBottleneck != 0) writer.WriteNumber(nameof(Skill.MagicBottleneck), value.MagicBottleneck);
             writer.WritePropertyName(nameof(Skill.Effects));
             JsonSerializer.Serialize(writer, value.Effects, options);
             writer.WritePropertyName(nameof(Skill.Values));
