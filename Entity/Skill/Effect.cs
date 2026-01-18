@@ -981,7 +981,10 @@ namespace Milimoe.FunGame.Core.Entity
             int changeCount = 0;
             DamageResult result = DamageResult.Normal;
             double damage = expectedDamage;
-            options ??= new();
+            options ??= new(actor)
+            {
+                Skill = Skill
+            };
             if (options.ExpectedDamage == 0) options.ExpectedDamage = expectedDamage;
             if (options.NeedCalculate && damageType != DamageType.True)
             {

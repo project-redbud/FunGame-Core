@@ -299,19 +299,29 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 魔法瓶颈 [ 智力相关 ]
         /// </summary>
-        public virtual double MagicBottleneck { get; set; } = 0;
+        public virtual double MagicBottleneck
+        {
+            get
+            {
+                return Math.Max(0, field);
+            }
+            set
+            {
+                field = Math.Max(0, value);
+            }
+        }
 
         /// <summary>
-        /// 魔法效能% [ 智力相关 ] 公式：魔法效能 = (角色智力 / 魔法瓶颈) ^ (魔法瓶颈 / 角色智力)
-        /// <para/>该值决定魔法的实际施展效果（乘算），低于 1 时会使效果低于预期，最多增长至 2 倍
+        /// 魔法效能% [ 智力相关 ] 该值决定魔法的实际施展效果（乘算），低于 1 时会使效果低于预期，最多增长至 2 倍
+        /// <para/>计算方法：以魔法瓶颈为100%，智力每低于瓶颈的 1%，效能就减少 1%，反之提升
         /// </summary>
         public double MagicEfficacy
         {
             get
             {
-                if (MagicBottleneck == 0) return 1.0;
-                if (Character is null || Character.INT == 0) return 0.01;
-                return Math.Clamp(Math.Pow((Character.INT / MagicBottleneck), (MagicBottleneck / Character.INT)), 0.01, 2.0);
+                if (MagicBottleneck == 0 || Character is null) return 1.0;
+                double percentageDiff = (Character.INT - MagicBottleneck) / MagicBottleneck;
+                return Math.Clamp(1.0 + percentageDiff, 0.01, 2.0);
             }
         }
 
@@ -810,6 +820,7 @@ namespace Milimoe.FunGame.Core.Entity
                     {
                         if (IsMagic)
                         {
+                            if (MagicBottleneck > 0) builder.AppendLine($"魔法瓶颈：{MagicBottleneck:0.##}{(Character != null ? $"（{MagicEfficacy * 100:0.##}%）" : "")}");
                             builder.AppendLine($"魔法消耗：{RealMPCost:0.##}{(showOriginal && RealMPCost != MPCost ? $"（原始值：{MPCost:0.##}）" : "")}");
                             builder.AppendLine($"吟唱时间：{RealCastTime:0.##}{(showOriginal && RealCastTime != CastTime ? $"（原始值：{CastTime:0.##}）" : "")}");
                         }

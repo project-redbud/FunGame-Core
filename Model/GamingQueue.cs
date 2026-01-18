@@ -1002,7 +1002,9 @@ namespace Milimoe.FunGame.Core.Model
                 return _isGameEnd;
             }
 
-            foreach (Skill skillTurnStart in skills)
+            List<Skill> skillsTurnStart = [.. character.Skills];
+            AddCharacterEquipSlotSkills(character, skillsTurnStart);
+            foreach (Skill skillTurnStart in skillsTurnStart)
             {
                 skillTurnStart.OnTurnStart(character, selectableEnemys, selectableTeammates, skills, items);
             }
@@ -2060,7 +2062,7 @@ namespace Milimoe.FunGame.Core.Model
             List<Character> characters = [actor, enemy];
             bool isEvaded = damageResult == DamageResult.Evaded;
             List<Effect> effects = [];
-            options ??= new();
+            options ??= new(actor);
             if (options.ExpectedDamage == 0) options.ExpectedDamage = damage;
 
             Dictionary<Effect, double> totalDamageBonus = [];
@@ -2094,6 +2096,14 @@ namespace Milimoe.FunGame.Core.Model
                 }
             }
             options.AfterDamageBonus = totalDamageBonus;
+
+            // 魔法效能乘区
+            if (options.IsMagicSkill)
+            {
+                options.MagicEfficacyDamage = damage * (options.MagicEfficacy - 1);
+                damage *= options.MagicEfficacy;
+            }
+
             options.FinalDamage = damage;
             double actualDamage = damage;
 
@@ -2351,8 +2361,9 @@ namespace Milimoe.FunGame.Core.Model
                         {
                             strAfterBonus = string.Join("", options.AfterDamageBonus.Select(kv => $"{(kv.Value >= 0 ? " + " : " - ")}{Math.Abs(kv.Value):0.##}（{kv.Key.Name}）"));
                         }
+                        string strMagicEfficacyDamage = options.MagicEfficacyDamage == 0 ? "" : ($"{(options.MagicEfficacyDamage >= 0 ? " + " : " - ")}{Math.Abs(options.MagicEfficacyDamage):0.##}（魔法效能：{options.MagicEfficacy * 100:0.##}%）");
                         string strShieldReduction = options.ShieldReduction == 0 ? "" : ($"{(options.ShieldReduction >= 0 ? " - " : " + ")}{Math.Abs(options.ShieldReduction):0.##}（护盾）");
-                        strDamageMessage += $"【{options.ExpectedDamage:0.##}（基础）{strBeforeBonus}{strDefenseReduction}{strCriticalDamage}{strAfterBonus}{strShieldReduction} = {options.ActualDamage:0.##} 点{damageTypeString}】";
+                        strDamageMessage += $"【{options.ExpectedDamage:0.##}（基础）{strBeforeBonus}{strDefenseReduction}{strCriticalDamage}{strAfterBonus}{strMagicEfficacyDamage}{strShieldReduction} = {options.ActualDamage:0.##} 点{damageTypeString}】";
                     }
                     WriteLine(strDamageMessage);
 
@@ -2797,6 +2808,21 @@ namespace Milimoe.FunGame.Core.Model
         #region 回合内-辅助方法
 
         /// <summary>
+        /// 将角色装备栏中的主动技能加入列表
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="list"></param>
+        public static void AddCharacterEquipSlotSkills(Character character, List<Skill> list)
+        {
+            if (character.EquipSlot.MagicCardPack?.Skills.Active != null) list.Add(character.EquipSlot.MagicCardPack.Skills.Active);
+            if (character.EquipSlot.Weapon?.Skills.Active != null) list.Add(character.EquipSlot.Weapon.Skills.Active);
+            if (character.EquipSlot.Armor?.Skills.Active != null) list.Add(character.EquipSlot.Armor.Skills.Active);
+            if (character.EquipSlot.Shoes?.Skills.Active != null) list.Add(character.EquipSlot.Shoes.Skills.Active);
+            if (character.EquipSlot.Accessory1?.Skills.Active != null) list.Add(character.EquipSlot.Accessory1.Skills.Active);
+            if (character.EquipSlot.Accessory2?.Skills.Active != null) list.Add(character.EquipSlot.Accessory2.Skills.Active);
+        }
+
+        /// <summary>
         /// 取得回合开始时必需的列表
         /// </summary>
         /// <returns></returns>
@@ -2809,7 +2835,11 @@ namespace Milimoe.FunGame.Core.Model
             List<Character> selectableEnemys = [.. allEnemys.Where(c => _queue.Contains(c) && !c.IsUnselectable)];
 
             // 技能列表
-            List<Skill> skills = [.. character.Skills.Where(s => s.Level > 0 && s.SkillType != SkillType.Passive && s.Enable && !s.IsInEffect && s.CurrentCD == 0 &&
+            List<Skill> skills = [.. character.Skills];
+
+            // 将角色装备栏中的主动技能加入技能列表以供筛选
+            AddCharacterEquipSlotSkills(character, skills);
+            skills = [.. skills.Where(s => s.Level > 0 && s.SkillType != SkillType.Passive && s.Enable && !s.IsInEffect && s.CurrentCD == 0 &&
                 ((s.SkillType == SkillType.SuperSkill || s.SkillType == SkillType.Skill) && s.RealEPCost <= character.EP || s.SkillType == SkillType.Magic && s.RealMPCost <= character.MP))];
 
             // 物品列表
@@ -3295,7 +3325,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <returns></returns>
         public DamageResult CalculatePhysicalDamage(Character actor, Character enemy, bool isNormalAttack, double expectedDamage, out double finalDamage, ref int changeCount, ref DamageCalculationOptions? options)
         {
-            options ??= new();
+            options ??= new(actor);
             if (options.ExpectedDamage == 0) options.ExpectedDamage = expectedDamage;
             List<Character> characters = [actor, enemy];
             DamageType damageType = DamageType.Physical;
@@ -3429,7 +3459,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <returns></returns>
         public DamageResult CalculateMagicalDamage(Character actor, Character enemy, bool isNormalAttack, MagicType magicType, double expectedDamage, out double finalDamage, ref int changeCount, ref DamageCalculationOptions? options)
         {
-            options ??= new();
+            options ??= new(actor);
             if (options.ExpectedDamage == 0) options.ExpectedDamage = expectedDamage;
             List<Character> characters = [actor, enemy];
             DamageType damageType = DamageType.Magical;
