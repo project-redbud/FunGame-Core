@@ -266,7 +266,7 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual double CD { get; set; } = 0;
 
         /// <summary>
-        /// 剩余冷却时间 [ 建议配合 <see cref="Enable"/>  属性使用 ]
+        /// 剩余冷却时间 [ 和 <see cref="Enable"/> 属性配合使用 ]
         /// </summary>
         public double CurrentCD { get; set; } = 0;
 
@@ -344,6 +344,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 技能是否属于某个物品
         /// </summary>
         public Item? Item { get; set; } = null;
+
+        /// <summary>
+        /// 设置该属性可以由框架自动进行豁免检定
+        /// </summary>
+        public virtual Effect? EffectForExemptionCheck { get; set; } = null;
 
         /// <summary>
         /// 继承此类实现时，调用基类的构造函数
@@ -696,6 +701,17 @@ namespace Milimoe.FunGame.Core.Entity
         public void OnSkillCasted(IGamingQueue queue, Character caster, List<Character> targets, List<Grid> grids)
         {
             GamingQueue = queue;
+            if (EffectForExemptionCheck != null)
+            {
+                Character[] exemptionTargets = [.. targets];
+                foreach (Character target in exemptionTargets)
+                {
+                    if (!GamingQueue.CheckExemption(target, caster, EffectForExemptionCheck, true))
+                    {
+                        targets.Remove(target);
+                    }
+                }
+            }
             Character[] characters = [caster, .. targets];
             foreach (Character target in characters)
             {

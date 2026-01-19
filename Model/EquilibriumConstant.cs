@@ -213,12 +213,12 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 每 1 点力量增加生命值
         /// </summary>
-        public double STRtoHPFactor { get; set; } = 9;
+        public double STRtoHPFactor { get; set; } = 13;
 
         /// <summary>
         /// 每 1 点力量增加生命回复力
         /// </summary>
-        public double STRtoHRFactor { get; set; } = 0.1;
+        public double STRtoHRFactor { get; set; } = 0.15;
 
         /// <summary>
         /// 每 1 点力量增加物理护甲
@@ -248,7 +248,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 每 1 点智力增加魔法回复力
         /// </summary>
-        public double INTtoMRFactor { get; set; } = 0.04;
+        public double INTtoMRFactor { get; set; } = 0.1;
 
         /// <summary>
         /// 每 1 点智力减少魔法消耗

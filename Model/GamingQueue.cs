@@ -703,13 +703,24 @@ namespace Milimoe.FunGame.Core.Model
 
             if (character != null)
             {
-                _queue.Remove(character);
-                _cutCount.Remove(character);
-
                 // 进入下一回合
                 TotalRound++;
                 LastRound = new(TotalRound);
                 Rounds.Add(LastRound);
+
+                if (TotalRound == 1)
+                {
+                    // 触发游戏开始事件
+                    OnGameStartEvent();
+                    Effect[] effects = [.. _queue.SelectMany(c => c.Effects).Where(e => e.IsInEffect)];
+                    foreach (Effect effect in effects)
+                    {
+                        effect.OnGameStart();
+                    }
+                }
+
+                _queue.Remove(character);
+                _cutCount.Remove(character);
 
                 return character;
             }
@@ -817,13 +828,18 @@ namespace Milimoe.FunGame.Core.Model
                 }
 
                 // 减少所有技能的冷却时间
-                foreach (Skill skill in character.Skills)
+                List<Skill> skills = [.. character.Skills.Union(character.Items.Where(i => i.Skills.Active != null).Select(i => i.Skills.Active!))];
+                AddCharacterEquipSlotSkills(character, skills);
+                foreach (Skill skill in skills)
                 {
-                    skill.CurrentCD -= timeToReduce;
-                    if (skill.CurrentCD <= 0)
+                    if (skill.CurrentCD > 0)
                     {
-                        skill.CurrentCD = 0;
-                        skill.Enable = true;
+                        skill.CurrentCD -= timeToReduce;
+                        if (skill.CurrentCD <= 0)
+                        {
+                            skill.CurrentCD = 0;
+                            skill.Enable = true;
+                        }
                     }
                 }
 
@@ -2691,7 +2707,8 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="heal"></param>
         /// <param name="canRespawn"></param>
         /// <param name="triggerEffects"></param>
-        public void HealToTarget(Character actor, Character target, double heal, bool canRespawn = false, bool triggerEffects = true)
+        /// <param name="skill"></param>
+        public void HealToTarget(Character actor, Character target, double heal, bool canRespawn = false, bool triggerEffects = true, Skill? skill = null)
         {
             // 死人怎么能对自己治疗呢？
             if (actor.HP <= 0)
@@ -2720,7 +2737,8 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             bool isDead = target.HP <= 0;
-            string healString = $"【{heal:0.##}（基础）";
+            List<string> healStrings = [];
+            healStrings.Add($"{heal:0.##}（基础）");
 
             if (triggerEffects)
             {
@@ -2737,13 +2755,22 @@ namespace Milimoe.FunGame.Core.Model
                     if (healBonus != 0)
                     {
                         totalHealBonus[effect]= healBonus;
-                        healString += $"{(healBonus > 0 ? " + " : " - ")}{Math.Abs(healBonus):0.##}（{effect.Name}）";
+                        healStrings.Add($"{(healBonus > 0 ? " + " : " - ")}{Math.Abs(healBonus):0.##}（{effect.Name}）");
                     }
                 }
                 heal += totalHealBonus.Sum(kv => kv.Value);
             }
-            healString += $" = {heal:0.##} 点生命值】";
-            if (!IsDebug) healString = "";
+
+            if (skill != null && skill.MagicBottleneck > 0)
+            {
+                double efficacyHeal = heal * (skill.MagicEfficacy - 1);
+                heal *= skill.MagicEfficacy;
+                healStrings.Add($"{(efficacyHeal >= 0 ? " + " : " - ")}{Math.Abs(efficacyHeal):0.##}（魔法效能：{skill.MagicEfficacy * 100:0.##}%）");
+            }
+
+            healStrings.Add($" = {heal:0.##} 点生命值");
+            if (!IsDebug) healStrings.Clear();
+            string healString = $"【{string.Join("", healStrings)}】";
 
             if (target.HP > 0 || (isDead && canRespawn))
             {
@@ -4885,6 +4912,20 @@ namespace Milimoe.FunGame.Core.Model
         protected void OnCharacterMoveEvent(Character actor, DecisionPoints dp, Grid grid)
         {
             CharacterMoveEvent?.Invoke(this, actor, dp, grid);
+        }
+
+        public delegate void GameStartEventHandler(GamingQueue queue);
+        /// <summary>
+        /// 游戏开始事件
+        /// </summary>
+        public event GameStartEventHandler? GameStartEvent;
+        /// <summary>
+        /// 游戏开始事件
+        /// </summary>
+        /// <returns></returns>
+        protected void OnGameStartEvent()
+        {
+            GameStartEvent?.Invoke(this);
         }
 
         public delegate bool GameEndEventHandler(GamingQueue queue, Character winner);

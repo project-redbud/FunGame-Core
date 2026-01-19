@@ -180,6 +180,11 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual bool ExemptDuration { get; set; } = false;
 
         /// <summary>
+        /// 魔法效能% [ 来自技能 ]
+        /// </summary>
+        public double MagicEfficacy => Skill.MagicEfficacy;
+
+        /// <summary>
         /// 效果描述
         /// </summary>
         public virtual string Description { get; set; } = "";
@@ -252,6 +257,14 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="character"></param>
         public virtual void OnEffectLost(Character character)
+        {
+
+        }
+
+        /// <summary>
+        /// 游戏开始时触发（第一回合开始前）
+        /// </summary>
+        public virtual void OnGameStart()
         {
 
         }
@@ -1004,7 +1017,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="triggerEffects"></param>
         public void HealToTarget(Character actor, Character target, double heal, bool canRespawn = false, bool triggerEffects = true)
         {
-            GamingQueue?.HealToTarget(actor, target, heal, canRespawn, triggerEffects);
+            GamingQueue?.HealToTarget(actor, target, heal, canRespawn, triggerEffects, Skill);
         }
 
         /// <summary>

@@ -114,7 +114,8 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// <param name="heal"></param>
         /// <param name="canRespawn"></param>
         /// <param name="triggerEffects"></param>
-        public void HealToTarget(Character actor, Character target, double heal, bool canRespawn = false, bool triggerEffects = true);
+        /// <param name="skill"></param>
+        public void HealToTarget(Character actor, Character target, double heal, bool canRespawn = false, bool triggerEffects = true, Skill? skill = null);
 
         /// <summary>
         /// 计算物理伤害
