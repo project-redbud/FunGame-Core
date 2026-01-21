@@ -947,7 +947,7 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 在角色行动后触发
+        /// 在角色行动后触发，注意这个钩子是广播队列所有角色
         /// </summary>
         /// <param name="actor"></param>
         /// <param name="dp"></param>
@@ -979,6 +979,61 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 角色完成移动后
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="target"></param>
+        public virtual void AfterCharacterMove(Character character, Grid target)
+        {
+
+        }
+
+        /// <summary>
+        /// 角色完成普通攻击后
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="normalAttack"></param>
+        /// <param name="targets"></param>
+        public virtual void AfterCharacterNormalAttack(Character character, NormalAttack normalAttack, List<Character> targets)
+        {
+
+        }
+
+        /// <summary>
+        /// 角色开始吟唱后
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="skill"></param>
+        /// <param name="targets"></param>
+        public virtual void AfterCharacterStartCasting(Character character, Skill skill, List<Character> targets)
+        {
+
+        }
+
+        /// <summary>
+        /// 角色释放技能后
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="skill"></param>
+        /// <param name="targets"></param>
+        public virtual void AfterCharacterCastSkill(Character character, Skill skill, List<Character> targets)
+        {
+
+        }
+
+        /// <summary>
+        /// 角色使用物品后
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="item"></param>
+        /// <param name="skill"></param>
+        /// <param name="targets"></param>
+        public virtual void AfterCharacterUseItem(Character character, Item item, Skill skill, List<Character> targets)
+        {
+
+        }
+
+        /// <summary>
         /// 对敌人造成技能伤害 [ 强烈建议使用此方法造成伤害而不是自行调用 <see cref="IGamingQueue.DamageToEnemy"/> ]
         /// </summary>
         /// <param name="actor"></param>
@@ -994,10 +1049,8 @@ namespace Milimoe.FunGame.Core.Entity
             int changeCount = 0;
             DamageResult result = DamageResult.Normal;
             double damage = expectedDamage;
-            options ??= new(actor)
-            {
-                Skill = Skill
-            };
+            options ??= new(actor);
+            options.Skill = Skill;
             if (options.ExpectedDamage == 0) options.ExpectedDamage = expectedDamage;
             if (options.NeedCalculate && damageType != DamageType.True)
             {

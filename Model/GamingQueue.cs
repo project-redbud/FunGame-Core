@@ -1395,6 +1395,13 @@ namespace Milimoe.FunGame.Core.Model
                                 OnCharacterNormalAttackEvent(character, dp, targets);
 
                                 character.NormalAttack.Attack(this, character, null, targets);
+
+                                effects = [.. character.Effects.Where(e => e.IsInEffect)];
+                                foreach (Effect effect in effects)
+                                {
+                                    effect.AfterCharacterNormalAttack(character, character.NormalAttack, targets);
+                                }
+
                                 baseTime += character.NormalAttack.RealHardnessTime;
                                 effects = [.. character.Effects.Where(e => e.IsInEffect)];
                                 foreach (Effect effect in effects)
@@ -1485,6 +1492,12 @@ namespace Milimoe.FunGame.Core.Model
                                             baseTime += skill.RealCastTime;
                                             isCheckProtected = false;
                                             skill.OnSkillCasting(this, character, targets, grids);
+
+                                            effects = [.. character.Effects.Where(e => e.IsInEffect)];
+                                            foreach (Effect effect in effects)
+                                            {
+                                                effect.AfterCharacterStartCasting(character, skill, targets);
+                                            }
                                         }
                                         else
                                         {
@@ -1554,6 +1567,13 @@ namespace Milimoe.FunGame.Core.Model
                                             OnCharacterPreCastSkillEvent(character, dp, skillTarget);
 
                                             skill.OnSkillCasting(this, character, targets, grids);
+
+                                            effects = [.. character.Effects.Where(e => e.IsInEffect)];
+                                            foreach (Effect effect in effects)
+                                            {
+                                                effect.AfterCharacterStartCasting(character, skill, targets);
+                                            }
+
                                             skill.BeforeSkillCasted();
 
                                             character.EP -= cost;
@@ -1566,6 +1586,13 @@ namespace Milimoe.FunGame.Core.Model
                                             OnCharacterCastSkillEvent(character, dp, skillTarget, cost);
 
                                             skill.OnSkillCasted(this, character, targets, grids);
+
+                                            effects = [.. character.Effects.Where(e => e.IsInEffect)];
+                                            foreach (Effect effect in effects)
+                                            {
+                                                effect.AfterCharacterCastSkill(character, skill, targets);
+                                            }
+
                                             effects = [.. character.Effects.Where(e => e.IsInEffect)];
                                             foreach (Effect effect in effects)
                                             {
@@ -1639,6 +1666,12 @@ namespace Milimoe.FunGame.Core.Model
                                 effects = [.. character.Effects.Where(e => e.IsInEffect)];
                                 foreach (Effect effect in effects)
                                 {
+                                    effect.AfterCharacterCastSkill(character, skill, targets);
+                                }
+
+                                effects = [.. character.Effects.Where(e => e.IsInEffect)];
+                                foreach (Effect effect in effects)
+                                {
                                     effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
                                 }
                             }
@@ -1701,6 +1734,12 @@ namespace Milimoe.FunGame.Core.Model
                             OnCharacterCastSkillEvent(character, dp, skillTarget, cost);
 
                             skill.OnSkillCasted(this, character, targets, grids);
+
+                            effects = [.. character.Effects.Where(e => e.IsInEffect)];
+                            foreach (Effect effect in effects)
+                            {
+                                effect.AfterCharacterCastSkill(character, skill, targets);
+                            }
 
                             effects = [.. character.Effects.Where(e => e.IsInEffect)];
                             foreach (Effect effect in effects)
@@ -1825,7 +1864,7 @@ namespace Milimoe.FunGame.Core.Model
 
                 OnCharacterActionTakenEvent(character, dp, type, LastRound);
 
-                effects = [.. character.Effects.Where(e => e.IsInEffect)];
+                effects = [.. _queue.Union([character]).SelectMany(c => c.Effects).Where(e => e.IsInEffect).Distinct()];
                 foreach (Effect effect in effects)
                 {
                     effect.OnCharacterActionTaken(character, dp, type);
@@ -2769,8 +2808,9 @@ namespace Milimoe.FunGame.Core.Model
             }
 
             healStrings.Add($" = {heal:0.##} 点生命值");
+            string healString = "";
             if (!IsDebug) healStrings.Clear();
-            string healString = $"【{string.Join("", healStrings)}】";
+            else healString = $"【{string.Join("", healStrings)}】";
 
             if (target.HP > 0 || (isDead && canRespawn))
             {
@@ -3043,6 +3083,13 @@ namespace Milimoe.FunGame.Core.Model
                         OnCharacterUseItemEvent(character, dp, item, targets);
 
                         skill.OnSkillCasting(this, character, targets, grids);
+
+                        Effect[] effects = [.. character.Effects.Where(e => e.IsInEffect)];
+                        foreach (Effect effect in effects)
+                        {
+                            effect.AfterCharacterStartCasting(character, skill, targets);
+                        }
+
                         skill.BeforeSkillCasted();
 
                         skill.CurrentCD = skill.RealCD;
@@ -3071,6 +3118,18 @@ namespace Milimoe.FunGame.Core.Model
                         OnCharacterCastItemSkillEvent(character, dp, item, skillTarget, costMP, costEP);
 
                         skill.OnSkillCasted(this, character, targets, grids);
+
+                        effects = [.. character.Effects.Where(e => e.IsInEffect)];
+                        foreach (Effect effect in effects)
+                        {
+                            effect.AfterCharacterCastSkill(character, skill, targets);
+                        }
+
+                        effects = [.. character.Effects.Where(e => e.IsInEffect)];
+                        foreach (Effect effect in effects)
+                        {
+                            effect.AfterCharacterUseItem(character, item, skill, targets);
+                        }
                         return true;
                     }
                 }
@@ -4045,6 +4104,11 @@ namespace Milimoe.FunGame.Core.Model
 
                 AddCharacter(character, newHardnessTime, false);
                 skill.OnSkillCasting(this, character, [], []);
+                Effect[] effects = [.. character.Effects.Where(e => e.IsInEffect)];
+                foreach (Effect effect in effects)
+                {
+                    effect.AfterCharacterStartCasting(character, skill, []);
+                }
                 OnQueueUpdatedEvent(_queue, character, dp, 0, QueueUpdatedReason.PreCastSuperSkill, "设置角色预释放爆发技的硬直时间。");
             }
         }
