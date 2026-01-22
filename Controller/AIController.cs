@@ -50,12 +50,8 @@ namespace Milimoe.FunGame.Core.Controller
                     // 计算普通攻击的可达格子
                     List<Grid> normalAttackReachableGrids = _map.GetGridsByRange(potentialMoveGrid, character.ATR, true);
 
-                    List<Character> normalAttackReachableEnemys = [.. allEnemysInGame
-                        .Where(c => normalAttackReachableGrids.SelectMany(g => g.Characters).Contains(c) && !c.IsUnselectable && selectableEnemys.Contains(c))
-                        .Distinct()];
-                    List<Character> normalAttackReachableTeammates = [.. allTeammatesInGame
-                        .Where(c => normalAttackReachableGrids.SelectMany(g => g.Characters).Contains(c) && selectableTeammates.Contains(c))
-                        .Distinct()];
+                    List<Character> normalAttackReachableEnemys = [.. allEnemysInGame.Where(c => normalAttackReachableGrids.SelectMany(g => g.Characters).Contains(c) && !c.IsUnselectable && selectableEnemys.Contains(c)).Distinct()];
+                    List<Character> normalAttackReachableTeammates = [.. allTeammatesInGame.Where(c => normalAttackReachableGrids.SelectMany(g => g.Characters).Contains(c) && selectableTeammates.Contains(c)).Distinct()];
 
                     if (normalAttackReachableEnemys.Count > 0)
                     {
@@ -97,12 +93,8 @@ namespace Milimoe.FunGame.Core.Controller
                         }
                         else
                         {
-                            List<Character> skillReachableEnemys = [.. allEnemysInGame
-                            .Where(c => skillReachableGrids.SelectMany(g => g.Characters).Contains(c) && !c.IsUnselectable && selectableEnemys.Contains(c))
-                            .Distinct()];
-                            List<Character> skillReachableTeammates = [.. allTeammatesInGame
-                            .Where(c => skillReachableGrids.SelectMany(g => g.Characters).Contains(c) && selectableTeammates.Contains(c))
-                            .Distinct()];
+                            List<Character> skillReachableEnemys = [.. allEnemysInGame.Where(c => skillReachableGrids.SelectMany(g => g.Characters).Contains(c) && !c.IsUnselectable && selectableEnemys.Contains(c)).Distinct()];
+                            List<Character> skillReachableTeammates = [.. allTeammatesInGame.Where(c => skillReachableGrids.SelectMany(g => g.Characters).Contains(c) && selectableTeammates.Contains(c)).Distinct()];
 
                             // 检查是否有可用的目标（敌人或队友，取决于技能类型）
                             if (skillReachableEnemys.Count > 0 || skillReachableTeammates.Count > 0)
@@ -149,12 +141,8 @@ namespace Milimoe.FunGame.Core.Controller
                         }
                         else
                         {
-                            List<Character> itemSkillReachableEnemys = [.. allEnemysInGame
-                            .Where(c => itemSkillReachableGrids.SelectMany(g => g.Characters).Contains(c) && !c.IsUnselectable && selectableEnemys.Contains(c))
-                            .Distinct()];
-                            List<Character> itemSkillReachableTeammates = [.. allTeammatesInGame
-                            .Where(c => itemSkillReachableGrids.SelectMany(g => g.Characters).Contains(c) && selectableTeammates.Contains(c))
-                            .Distinct()];
+                            List<Character> itemSkillReachableEnemys = [.. allEnemysInGame.Where(c => itemSkillReachableGrids.SelectMany(g => g.Characters).Contains(c) && !c.IsUnselectable && selectableEnemys.Contains(c)).Distinct()];
+                            List<Character> itemSkillReachableTeammates = [.. allTeammatesInGame.Where(c => itemSkillReachableGrids.SelectMany(g => g.Characters).Contains(c) && selectableTeammates.Contains(c)).Distinct()];
 
                             // 检查是否有可用的目标
                             if (itemSkillReachableEnemys.Count > 0 || itemSkillReachableTeammates.Count > 0)
@@ -203,16 +191,12 @@ namespace Milimoe.FunGame.Core.Controller
                         }
                     }
                     List<Grid> tempAllReachableGridsForPureMove = [.. tempAttackGridsForPureMove.Union(tempCastGridsForPureMove).Distinct()];
-                    List<Character> tempCurrentReachableEnemysForPureMove = [.. allEnemysInGame
-                    .Where(c => tempAllReachableGridsForPureMove.SelectMany(g => g.Characters).Contains(c) && !c.IsUnselectable && selectableEnemys.Contains(c))
-                    .Distinct()];
+                    List<Character> tempCurrentReachableEnemysForPureMove = [.. allEnemysInGame.Where(c => tempAllReachableGridsForPureMove.SelectMany(g => g.Characters).Contains(c) && !c.IsUnselectable && selectableEnemys.Contains(c)).Distinct()];
 
                     // 如果当前位置无法攻击任何敌人，但地图上还有敌人，尝试向最近的敌人移动
                     if (tempCurrentReachableEnemysForPureMove.Count == 0 && allEnemysInGame.Count > 0) // 使用新计算的列表
                     {
-                        Character? target = allEnemysInGame
-                            .OrderBy(e => GameMap.CalculateManhattanDistance(potentialMoveGrid, _map.GetCharacterCurrentGrid(e)!))
-                            .FirstOrDefault();
+                        Character? target = allEnemysInGame.OrderBy(e => GameMap.CalculateManhattanDistance(potentialMoveGrid, _map.GetCharacterCurrentGrid(e) ?? Grid.Empty)).FirstOrDefault();
 
                         if (target != null)
                         {

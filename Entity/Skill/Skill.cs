@@ -268,7 +268,17 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 剩余冷却时间 [ 和 <see cref="Enable"/> 属性配合使用 ]
         /// </summary>
-        public double CurrentCD { get; set; } = 0;
+        public double CurrentCD
+        {
+            get
+            {
+                return Math.Max(0, field);
+            }
+            set
+            {
+                field = Math.Max(0, value);
+            }
+        }
 
         /// <summary>
         /// 无 CD [ 运行时 ]

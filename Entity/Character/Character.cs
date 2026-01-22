@@ -1866,7 +1866,7 @@ namespace Milimoe.FunGame.Core.Entity
             }
             if (EquipSlot.Weapon != null)
             {
-                builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.Weapon.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.Weapon) + "：" + EquipSlot.Weapon.Name);
+                builder.AppendLine($"[{ItemSet.GetQualityTypeName(EquipSlot.Weapon.QualityType)}]" + ItemSet.GetEquipSlotTypeName(EquipSlotType.Weapon) + $"-{ItemSet.GetWeaponTypeName(EquipSlot.Weapon.WeaponType)}" + "：" + EquipSlot.Weapon.Name);
                 builder.AppendLine(EquipSlot.Weapon.Description);
             }
             if (EquipSlot.Armor != null)
