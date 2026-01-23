@@ -1295,7 +1295,7 @@ namespace Milimoe.FunGame.Core.Entity
         public bool CheckSkilledImmune(Character character, Character target, Skill skill, Item? item = null)
         {
             if (GamingQueue is null) return false;
-            return GamingQueue.CheckSkilledImmune(target, character, skill, item);
+            return GamingQueue.CheckSkilledImmune(character, target, skill, item);
         }
 
         /// <summary>
