@@ -408,7 +408,7 @@ namespace Milimoe.FunGame.Core.Entity
             }
             if (Level > 0 && Character != null)
             {
-                Effect[] effects = [.. Character.Effects.Where(e => e.IsInEffect)];
+                Effect[] effects = [.. Character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                 foreach (Effect e in effects)
                 {
                     e.OnSkillLevelUp(Character, Level);
@@ -474,7 +474,7 @@ namespace Milimoe.FunGame.Core.Entity
 
             foreach (Character character in enemys)
             {
-                IEnumerable<Effect> effects = Effects.Where(e => e.IsInEffect);
+                IEnumerable<Effect> effects = Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority);
                 if (CanSelectEnemy && ((character.ImmuneType & checkType) == ImmuneType.None ||
                     effects.Any(e => e.IgnoreImmune == ImmuneType.All || e.IgnoreImmune == ImmuneType.Skilled || (IsMagic && e.IgnoreImmune == ImmuneType.Magical))))
                 {
@@ -609,7 +609,7 @@ namespace Milimoe.FunGame.Core.Entity
 
                 if (allEnemys.Contains(character))
                 {
-                    IEnumerable<Effect> effects = Effects.Where(e => e.IsInEffect);
+                    IEnumerable<Effect> effects = Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority);
                     if (CanSelectEnemy && ((AllowSelectDead && character.HP == 0) || (!AllowSelectDead && character.HP > 0)) &&
                         ((character.ImmuneType & checkType) == ImmuneType.None || effects.Any(e => e.IgnoreImmune == ImmuneType.All || e.IgnoreImmune == ImmuneType.Skilled || (IsMagic && e.IgnoreImmune == ImmuneType.Magical))))
                     {
@@ -725,7 +725,7 @@ namespace Milimoe.FunGame.Core.Entity
             Character[] characters = [caster, .. targets];
             foreach (Character target in characters)
             {
-                Effect[] effects = [.. target.Effects.Where(e => e.IsInEffect)];
+                Effect[] effects = [.. target.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                 foreach (Effect e in effects)
                 {
                     e.GamingQueue = GamingQueue;

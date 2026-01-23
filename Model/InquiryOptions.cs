@@ -12,6 +12,7 @@ namespace Milimoe.FunGame.Core.Model
         public double MinNumberValue { get; set; } = 0;
         public double MaxNumberValue { get; set; } = 0;
         public double DefaultNumberValue { get; set; } = 0;
+        public bool CanCancel { get; set; } = true;
         public Dictionary<string, object> CustomArgs { get; set; } = [];
 
         public InquiryOptions(InquiryType type, string topic)

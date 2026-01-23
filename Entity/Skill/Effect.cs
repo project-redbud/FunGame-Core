@@ -19,6 +19,12 @@ namespace Milimoe.FunGame.Core.Entity
         public Skill Skill { get; }
 
         /// <summary>
+        /// 特效触发优先级
+        /// 越大优先级越高；默认值为 0，在状态栏（<see cref="Character.Effects"/>）中使用默认哈希排序。
+        /// </summary>
+        public int Priority { get; set; } = 0;
+
+        /// <summary>
         /// 特殊效果类型<para/>
         /// 注意：如果技能特效没有原生施加控制效果，请始终保持此属性为 <see cref="EffectType.None"/>。
         /// </summary>
@@ -1267,7 +1273,7 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 return;
             }
-            Effect[] effects = [.. target.Effects.Where(e => e.ShowInStatusBar)];
+            Effect[] effects = [.. target.Effects.Where(e => e.ShowInStatusBar).OrderByDescending(e => e.Priority)];
             foreach (Effect effect in effects)
             {
                 if (effect.OnEffectIsBeingDispelled(dispeller, target, this, isEnemy))

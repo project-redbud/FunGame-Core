@@ -292,8 +292,9 @@ namespace Milimoe.FunGame.Core.Entity
         /// 获取战斗状态的信息
         /// </summary>
         /// <param name="hardnessTimes"></param>
+        /// <param name="simpleStatusBar"></param>
         /// <returns></returns>
-        public new string GetInBattleInfo(double hardnessTimes)
+        public new string GetInBattleInfo(double hardnessTimes, bool simpleStatusBar = false)
         {
             StringBuilder builder = new();
 
@@ -334,38 +335,6 @@ namespace Milimoe.FunGame.Core.Entity
                 {
                     builder.Append(effect.ToString());
                 }
-            }
-
-            return builder.ToString();
-        }
-
-        /// <summary>
-        /// 获取战斗状态的信息（简略版）
-        /// </summary>
-        /// <param name="hardnessTimes"></param>
-        /// <returns></returns>
-        public new string GetSimpleInBattleInfo(double hardnessTimes)
-        {
-            StringBuilder builder = new();
-
-            builder.AppendLine(ToStringWithLevel());
-            double exHP = ExHP + ExHP2 + ExHP3;
-            List<string> shield = [];
-            if (Shield.TotalPhysical > 0) shield.Add($"物理：{Shield.TotalPhysical:0.##}");
-            if (Shield.TotalMagical > 0) shield.Add($"魔法：{Shield.TotalMagical:0.##}");
-            if (Shield.Mix > 0) shield.Add($"混合：{Shield.Mix:0.##}");
-            builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : "") + (shield.Count > 0 ? $"（{string.Join("，", shield)}）" : ""));
-            double exMP = ExMP + ExMP2 + ExMP3;
-            builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
-            double exATK = ExATK + ExATK2 + ExATK3;
-            builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
-            builder.AppendLine($"硬直时间：{hardnessTimes:0.##}");
-
-            Effect[] effects = [.. Effects.Where(e => e.ShowInStatusBar)];
-            if (effects.Length > 0)
-            {
-                builder.AppendLine("== 状态栏 ==");
-                builder.Append(string.Join("，", effects.Select(e => e.Name)));
             }
 
             return builder.ToString();

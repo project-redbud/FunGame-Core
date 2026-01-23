@@ -14,6 +14,7 @@ namespace Milimoe.FunGame.Core.Model
         public List<Character> Targets { get; set; } = [];
         public List<Grid> TargetGrids { get; set; } = [];
         public double Score { get; set; } = 0;
+        public double ProbabilityWeight { get; set; } = 0;
         public bool IsPureMove { get; set; } = false;
     }
 }

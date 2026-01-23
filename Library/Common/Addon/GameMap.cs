@@ -979,7 +979,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
 
             foreach (Grid grid in Grids.Values)
             {
-                List<Effect> effects = [.. grid.Effects];
+                List<Effect> effects = [.. grid.Effects.OrderByDescending(e => e.Priority)];
                 foreach (Effect effect in effects)
                 {
                     if (effect.Durative)

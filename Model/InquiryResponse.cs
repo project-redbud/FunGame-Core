@@ -9,6 +9,7 @@ namespace Milimoe.FunGame.Core.Model
         public List<string> Choices { get; set; } = [];
         public string TextResult { get; set; } = "";
         public double NumberResult { get; set; } = 0;
+        public bool Cancel { get; set; } = false;
         public Dictionary<string, object> CustomResponse { get; set; } = [];
 
         public InquiryResponse(InquiryType type, string topic)
