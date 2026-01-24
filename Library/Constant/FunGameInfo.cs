@@ -12,7 +12,7 @@
         }
 
         public const string FunGame_CopyRight_Core = "©2023-Present Project Redbud and Contributors.\r\n©2022-2023 Milimoe.";
-        public const string FunGame_CopyRight_Desktop = "©2025 Milimoe. 米粒的糖果屋";
+        public const string FunGame_CopyRight_Desktop = "©2026 Milimoe. 米粒的糖果屋";
 
         /// <summary>
         /// 添加-debug启动项将开启DebugMode（仅适用于Desktop或Console）
