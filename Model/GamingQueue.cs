@@ -909,6 +909,7 @@ namespace Milimoe.FunGame.Core.Model
                             effect.RemainDuration = 0;
                             character.Effects.Remove(effect);
                             effect.OnEffectLost(character);
+                            WriteLine($"[ {character} ] 失去了 [ {effect.Name} ] 效果。");
                         }
                         else
                         {
@@ -1346,15 +1347,15 @@ namespace Milimoe.FunGame.Core.Model
                             character.CharacterState == CharacterState.BattleRestricted ||
                             character.CharacterState == CharacterState.AttackRestricted))
                         {
-                            if (IsDebug) WriteLine($"角色 [ {character} ] 状态为：{CharacterSet.GetCharacterState(character.CharacterState)}，无法使用普通攻击！");
+                            if (IsDebug) WriteLine($"[ {character} ] 的状态为：{CharacterSet.GetCharacterState(character.CharacterState)}，无法使用普通攻击！");
                         }
                         else if (dp.CurrentDecisionPoints < costDP)
                         {
-                            if (IsDebug) WriteLine($"角色 [ {character} ] 决策点不足，无法使用普通攻击！");
+                            if (IsDebug) WriteLine($"[ {character} ] 想要发起普通攻击，但决策点不足，无法使用普通攻击！");
                         }
                         else if (!dp.CheckActionTypeQuota(CharacterActionType.NormalAttack))
                         {
-                            if (IsDebug) WriteLine($"角色 [ {character} ] 该回合使用普通攻击的次数已超过决策点配额，无法再次使用普通攻击！");
+                            if (IsDebug) WriteLine($"[ {character} ] 想要发起普通攻击，但该回合使用普通攻击的次数已超过决策点配额，无法再次使用普通攻击！");
                         }
                         else
                         {
@@ -1418,7 +1419,7 @@ namespace Milimoe.FunGame.Core.Model
                             character.CharacterState == CharacterState.BattleRestricted ||
                             character.CharacterState == CharacterState.SkillRestricted))
                         {
-                            if (IsDebug) WriteLine($"角色 [ {character} ] 状态为：{CharacterSet.GetCharacterState(character.CharacterState)}，无法释放技能！");
+                            if (IsDebug) WriteLine($"[ {character} ] 的状态为：{CharacterSet.GetCharacterState(character.CharacterState)}，无法释放技能！");
                         }
                         else
                         {
@@ -1444,7 +1445,7 @@ namespace Milimoe.FunGame.Core.Model
                                 costDP = dp.GetActionPointCost(type, skill);
                                 if (dp.CurrentDecisionPoints < costDP)
                                 {
-                                    if (IsDebug) WriteLine($"角色 [ {character} ] 决策点不足，无法释放技能！");
+                                    if (IsDebug) WriteLine($"[ {character} ] 想要释放 [ {skill.Name} ]，但决策点不足，无法释放技能！");
                                 }
                                 else if (skill.SkillType == SkillType.Magic)
                                 {
@@ -1479,7 +1480,7 @@ namespace Milimoe.FunGame.Core.Model
                                             LastRound.ActionTypes.Add(CharacterActionType.PreCastSkill);
                                             _stats[statsCharacter].UseDecisionPoints += costDP;
                                             _stats[statsCharacter].TurnDecisions++;
-                                            dp.AddActionType(CharacterActionType.PreCastSkill);
+                                            dp.AddActionType(CharacterActionType.PreCastSkill, skill);
                                             dp.CurrentDecisionPoints -= costDP;
                                             decided = true;
                                             endTurn = true;
@@ -1507,15 +1508,15 @@ namespace Milimoe.FunGame.Core.Model
                                 }
                                 else if (skill is CourageCommandSkill && dp.CourageCommandSkill)
                                 {
-                                    if (IsDebug) WriteLine($"角色 [ {character} ] 该回合已经使用过勇气指令，无法再次使用勇气指令！");
+                                    if (IsDebug) WriteLine($"[ {character} ] 想要释放 [ {skill.Name} ]，但该回合已经使用过勇气指令，无法再次使用勇气指令！");
                                 }
                                 else if (skill is not CourageCommandSkill && !skill.IsSuperSkill && !dp.CheckActionTypeQuota(CharacterActionType.CastSkill))
                                 {
-                                    if (IsDebug) WriteLine($"角色 [ {character} ] 该回合使用战技的次数已超过决策点配额，无法再次使用战技！");
+                                    if (IsDebug) WriteLine($"[ {character} ] 想要释放 [ {skill.Name} ]，但该回合使用战技的次数已超过决策点配额，无法再次使用战技！");
                                 }
                                 else if (skill is not CourageCommandSkill && skill.IsSuperSkill && !dp.CheckActionTypeQuota(CharacterActionType.CastSuperSkill))
                                 {
-                                    if (IsDebug) WriteLine($"角色 [ {character} ] 该回合使用爆发技的次数已超过决策点配额，无法再次使用爆发技！");
+                                    if (IsDebug) WriteLine($"[ {character} ] 想要释放 [ {skill.Name} ]，但该回合使用爆发技的次数已超过决策点配额，无法再次使用爆发技！");
                                 }
                                 else
                                 {
@@ -1553,7 +1554,7 @@ namespace Milimoe.FunGame.Core.Model
                                             {
                                                 _stats[statsCharacter].UseDecisionPoints += costDP;
                                                 _stats[statsCharacter].TurnDecisions++;
-                                                dp.AddActionType(skillType);
+                                                dp.AddActionType(skillType, skill);
                                                 dp.CurrentDecisionPoints -= costDP;
                                             }
                                             else
@@ -1799,11 +1800,11 @@ namespace Milimoe.FunGame.Core.Model
                             }
                             if (dp.CurrentDecisionPoints < costDP)
                             {
-                                if (IsDebug) WriteLine($"角色 [ {character} ] 决策点不足，无法使用物品！");
+                                if (IsDebug) WriteLine($"[ {character} ] 想要使用物品 [ {item.Name} ]，但决策点不足，无法使用物品！");
                             }
                             else if (!dp.CheckActionTypeQuota(CharacterActionType.UseItem))
                             {
-                                if (IsDebug) WriteLine($"角色 [ {character} ] 该回合使用物品的次数已超过决策点配额，无法再使用物品！");
+                                if (IsDebug) WriteLine($"[ {character} ] 想要使用物品 [ {item.Name} ]，但该回合使用物品的次数已超过决策点配额，无法再使用物品！");
                             }
                             else if (UseItem(item, character, dp, enemys, teammates, castRange, allEnemys, allTeammates, aiDecision))
                             {
@@ -1834,7 +1835,7 @@ namespace Milimoe.FunGame.Core.Model
                     }
                     else
                     {
-                        if (baseTime == 0) baseTime += 8;
+                        if (baseTime == 0) baseTime += 7;
                         decided = true;
                         endTurn = true;
                         WriteLine($"[ {character} ] 完全行动不能！");
@@ -1849,7 +1850,7 @@ namespace Milimoe.FunGame.Core.Model
                 if (!decided && (isAI || cancelTimes == 0))
                 {
                     endTurn = true;
-                    baseTime += 5;
+                    baseTime += 4;
                     type = CharacterActionType.EndTurn;
                 }
 
@@ -1878,7 +1879,7 @@ namespace Milimoe.FunGame.Core.Model
 
             if (character.CharacterState != CharacterState.Casting && dp.ActionsHardnessTime.Count > 0)
             {
-                baseTime = dp.ActionsTaken > 1 ? (dp.ActionsHardnessTime.Max() + dp.ActionsTaken) : dp.ActionsHardnessTime.Max();
+                baseTime = dp.ActionsTaken > 1 ? (dp.ActionsHardnessTime.Max() + dp.DecisionPointsCost) : dp.ActionsHardnessTime.Max();
             }
 
             if (character.Master is null)
@@ -1952,6 +1953,7 @@ namespace Milimoe.FunGame.Core.Model
                         effect.RemainDurationTurn = 0;
                         character.Effects.Remove(effect);
                         effect.OnEffectLost(character);
+                        WriteLine($"[ {character} ] 失去了 [ {effect.Name} ] 效果。");
                     }
                 }
             }
@@ -2778,7 +2780,7 @@ namespace Milimoe.FunGame.Core.Model
 
             bool isDead = target.HP <= 0;
             List<string> healStrings = [];
-            healStrings.Add($"{heal:0.##}（基础）");
+            healStrings.Add($"{heal:0.##}（{(skill is null ? $"生命偷取：{actor.Lifesteal * 100:0.##}%" : skill.Name)}）");
 
             if (triggerEffects)
             {
@@ -3742,7 +3744,7 @@ namespace Milimoe.FunGame.Core.Model
                 character.CharacterState == CharacterState.ActionRestricted ||
                 character.CharacterState == CharacterState.BattleRestricted)
             {
-                baseTime += 3;
+                baseTime += 2;
                 WriteLine($"[ {character} ] {CharacterSet.GetCharacterState(character.CharacterState)}，放弃行动将额外获得 3 {GameplayEquilibriumConstant.InGameTime}硬直时间！");
             }
         }
@@ -3771,6 +3773,7 @@ namespace Milimoe.FunGame.Core.Model
             dp.ActionsHardnessTime.Clear();
             dp.ActionTypes.Clear();
             dp.ActionsTaken = 0;
+            dp.DecisionPointsCost = 0;
 
             // 根据角色状态补充决策点
             int pointsToAdd;

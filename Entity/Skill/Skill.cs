@@ -56,7 +56,7 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                return Math.Max(0, field);
+                return Math.Max(0, field + ExLevel);
             }
             set
             {
@@ -65,6 +65,11 @@ namespace Milimoe.FunGame.Core.Entity
                 OnLevelUp();
             }
         }
+
+        /// <summary>
+        /// 额外等级
+        /// </summary>
+        public int ExLevel { get; set; } = 0;
 
         /// <summary>
         /// 技能类型 [ 此项为最高优先级 ]

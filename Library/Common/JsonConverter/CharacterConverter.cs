@@ -59,6 +59,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Character.Level):
                     result.Level = reader.GetInt32();
                     break;
+                case nameof(Character.ExLevel):
+                    result.ExLevel = reader.GetInt32();
+                    break;
                 case nameof(Character.LevelBreak):
                     result.LevelBreak = reader.GetInt32();
                     break;
@@ -267,6 +270,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Character.Promotion), value.Promotion);
             writer.WriteNumber(nameof(Character.PrimaryAttribute), (int)value.PrimaryAttribute);
             writer.WriteNumber(nameof(Character.Level), value.Level);
+            writer.WriteNumber(nameof(Character.ExLevel), value.ExLevel);
             writer.WriteNumber(nameof(Character.LevelBreak), value.LevelBreak);
             writer.WriteNumber(nameof(Character.EXP), value.EXP);
             writer.WriteBoolean(nameof(Character.IsNeutral), value.IsNeutral);

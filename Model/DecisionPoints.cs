@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text;
+using System.Text.Json.Serialization;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
@@ -52,15 +53,51 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         public int ActionsTaken { get; set; } = 0;
 
-        // 回合内的临时决策点配额加成
-        private int _tempActionQuotaNormalAttack = 0;
-        private int _tempActionQuotaSuperSkill = 0;
-        private int _tempActionQuotaSkill = 0;
-        private int _tempActionQuotaItem = 0;
-        private int _tempActionQuotaOther = 0;
+        /// <summary>
+        /// 本回合已使用的决策点
+        /// </summary>
+        public int DecisionPointsCost { get; set; } = 0;
 
         /// <summary>
-        /// 获取当前决策点配额
+        /// 临时全能决策点配额加成
+        /// </summary>
+        public int TempActionQuotaAllRound => _tempActionQuotaAllRound.Values.Sum();
+
+        /// <summary>
+        /// 临时普通攻击决策点配额加成
+        /// </summary>
+        public int TempActionQuotaNormalAttack => _tempActionQuotaNormalAttack.Values.Sum();
+
+        /// <summary>
+        /// 临时爆发技决策点配额加成
+        /// </summary>
+        public int TempActionQuotaSuperSkill => _tempActionQuotaSuperSkill.Values.Sum();
+
+        /// <summary>
+        /// 临时战技决策点配额加成
+        /// </summary>
+        public int TempActionQuotaSkill => _tempActionQuotaSkill.Values.Sum();
+
+        /// <summary>
+        /// 临时使用物品决策点配额加成
+        /// </summary>
+        public int TempActionQuotaItem => _tempActionQuotaItem.Values.Sum();
+
+        /// <summary>
+        /// 临时其他决策点配额加成
+        /// </summary>
+        public int TempActionQuotaOther => _tempActionQuotaOther.Values.Sum();
+
+        // 回合内的临时决策点配额加成
+        private readonly Dictionary<Effect, int> _tempActionQuotaAllRound = [];
+        private readonly Dictionary<Effect, int> _tempActionQuotaNormalAttack = [];
+        private readonly Dictionary<Effect, int> _tempActionQuotaSuperSkill = [];
+        private readonly Dictionary<Effect, int> _tempActionQuotaSkill = [];
+        private readonly Dictionary<Effect, int> _tempActionQuotaItem = [];
+        private readonly Dictionary<Effect, int> _tempActionQuotaOther = [];
+
+        /// <summary>
+        /// 获取决策点配额
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
@@ -70,12 +107,12 @@ namespace Milimoe.FunGame.Core.Model
             {
                 return type switch
                 {
-                    CharacterActionType.NormalAttack => GameplayEquilibriumConstant.ActionQuotaNormalAttack + _tempActionQuotaNormalAttack,
-                    CharacterActionType.CastSuperSkill => GameplayEquilibriumConstant.ActionQuotaSuperSkill + _tempActionQuotaSuperSkill,
-                    CharacterActionType.CastSkill => GameplayEquilibriumConstant.ActionQuotaSkill + _tempActionQuotaSkill,
+                    CharacterActionType.NormalAttack => GameplayEquilibriumConstant.ActionQuotaNormalAttack + TempActionQuotaNormalAttack + TempActionQuotaAllRound,
+                    CharacterActionType.CastSuperSkill => GameplayEquilibriumConstant.ActionQuotaSuperSkill + TempActionQuotaSuperSkill + TempActionQuotaAllRound,
+                    CharacterActionType.CastSkill => GameplayEquilibriumConstant.ActionQuotaSkill + TempActionQuotaSkill + TempActionQuotaAllRound,
                     CharacterActionType.PreCastSkill => GameplayEquilibriumConstant.ActionQuotaMagic,
-                    CharacterActionType.UseItem => GameplayEquilibriumConstant.ActionQuotaItem + _tempActionQuotaItem,
-                    _ => GameplayEquilibriumConstant.ActionQuotaOther + _tempActionQuotaOther,
+                    CharacterActionType.UseItem => GameplayEquilibriumConstant.ActionQuotaItem + TempActionQuotaItem + TempActionQuotaAllRound,
+                    _ => GameplayEquilibriumConstant.ActionQuotaOther + TempActionQuotaOther + TempActionQuotaAllRound,
                 };
             }
         }
@@ -83,28 +120,21 @@ namespace Milimoe.FunGame.Core.Model
         /// <summary>
         /// 添加临时决策点配额 [ 回合结束时清除 ]
         /// </summary>
+        /// <param name="effect"></param>
         /// <param name="type"></param>
         /// <param name="add"></param>
-        public void AddTempActionQuota(CharacterActionType type, int add = 1)
+        public void AddTempActionQuota(Effect effect, CharacterActionType? type = null, int add = 1)
         {
-            switch (type)
+            Dictionary<Effect, int> dict = type switch
             {
-                case CharacterActionType.NormalAttack:
-                    _tempActionQuotaNormalAttack += add;
-                    break;
-                case CharacterActionType.CastSkill:
-                    _tempActionQuotaSkill += add;
-                    break;
-                case CharacterActionType.CastSuperSkill:
-                    _tempActionQuotaSuperSkill += add;
-                    break;
-                case CharacterActionType.UseItem:
-                    _tempActionQuotaItem += add;
-                    break;
-                default:
-                    _tempActionQuotaOther += add;
-                    break;
-            }
+                null => _tempActionQuotaAllRound,
+                CharacterActionType.NormalAttack => _tempActionQuotaNormalAttack,
+                CharacterActionType.CastSkill => _tempActionQuotaSkill,
+                CharacterActionType.CastSuperSkill => _tempActionQuotaSuperSkill,
+                CharacterActionType.UseItem => _tempActionQuotaItem,
+                _ => _tempActionQuotaOther
+            };
+            dict[effect] = dict.GetValueOrDefault(effect) + add;
         }
 
         /// <summary>
@@ -112,25 +142,28 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         public void ClearTempActionQuota()
         {
-            _tempActionQuotaNormalAttack = 0;
-            _tempActionQuotaSuperSkill = 0;
-            _tempActionQuotaSkill = 0;
-            _tempActionQuotaItem = 0;
-            _tempActionQuotaOther = 0;
+            _tempActionQuotaAllRound.Clear();
+            _tempActionQuotaNormalAttack.Clear();
+            _tempActionQuotaSuperSkill.Clear();
+            _tempActionQuotaSkill.Clear();
+            _tempActionQuotaItem.Clear();
+            _tempActionQuotaOther.Clear();
         }
 
         /// <summary>
         /// 累计行动类型和次数
         /// </summary>
         /// <param name="type"></param>
+        /// <param name="skill"></param>
         /// <param name="addActionTaken"></param>
-        public void AddActionType(CharacterActionType type, bool addActionTaken = true)
+        public void AddActionType(CharacterActionType type, Skill? skill = null, bool addActionTaken = true)
         {
             if (addActionTaken) ActionsTaken++;
             if (!ActionTypes.TryAdd(type, 1))
             {
                 ActionTypes[type]++;
             }
+            DecisionPointsCost += GetActionPointCost(type, skill);
         }
 
         /// <summary>
@@ -164,6 +197,31 @@ namespace Milimoe.FunGame.Core.Model
                 CharacterActionType.CastSuperSkill => GameplayEquilibriumConstant.DecisionPointsCostSuperSkillOutOfTurn, // 回合外使用爆发技
                 _ => GameplayEquilibriumConstant.DecisionPointsCostOther
             };
+        }
+
+        /// <summary>
+        /// 获取当前决策点信息
+        /// </summary>
+        /// <returns></returns>
+        public string GetDecisionPointsInfo()
+        {
+            StringBuilder builder = new();
+
+            builder.AppendLine($"===[ 决策点信息 ]===");
+            builder.AppendLine($"当前决策点：{CurrentDecisionPoints} / {MaxDecisionPoints}");
+            builder.AppendLine($"普通攻击决策点配额：{this[CharacterActionType.NormalAttack] - ActionTypes.GetValueOrDefault(CharacterActionType.NormalAttack)} / {this[CharacterActionType.NormalAttack]}");
+            builder.AppendLine($"战技决策点配额：{this[CharacterActionType.CastSkill] - ActionTypes.GetValueOrDefault(CharacterActionType.CastSkill)} / {this[CharacterActionType.CastSkill]}");
+            builder.AppendLine($"魔法决策点配额：{this[CharacterActionType.PreCastSkill] - ActionTypes.GetValueOrDefault(CharacterActionType.PreCastSkill)} / {this[CharacterActionType.PreCastSkill]}");
+            builder.AppendLine($"爆发技决策点配额：{this[CharacterActionType.CastSuperSkill] - ActionTypes.GetValueOrDefault(CharacterActionType.CastSuperSkill)} / {this[CharacterActionType.CastSuperSkill]}");
+            builder.AppendLine($"使用物品决策点配额：{this[CharacterActionType.UseItem] - ActionTypes.GetValueOrDefault(CharacterActionType.UseItem)} / {this[CharacterActionType.UseItem]}");
+
+            if (_tempActionQuotaAllRound.Count > 0)
+            {
+                builder.AppendLine($"全能决策点配额：你拥有以下全能决策点配额加成并已自动计入每个行动决策所需的配额中。");
+                builder.AppendLine(string.Join("\r\n", _tempActionQuotaAllRound.Select(kv => $"{kv.Key.Name}：{kv.Value}")));
+            }
+
+            return builder.ToString();
         }
     }
 }

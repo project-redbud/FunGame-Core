@@ -125,19 +125,25 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                return field >= 1 ? field : 1;
+                return Math.Max(1, field + ExLevel);
             }
             set
             {
                 int past = field;
                 field = Math.Min(Math.Max(1, value), GameplayEquilibriumConstant.MaxLevel);
-                if (past != field)
+                int level = field + ExLevel;
+                if (past != level)
                 {
                     OnAttributeChanged();
                     Recovery();
                 }
             }
         }
+
+        /// <summary>
+        /// 额外等级
+        /// </summary>
+        public int ExLevel { get; set; } = 0;
 
         /// <summary>
         /// 经验值
@@ -2003,6 +2009,7 @@ namespace Milimoe.FunGame.Core.Entity
                 Promotion = Promotion,
                 PrimaryAttribute = PrimaryAttribute,
                 Level = Level,
+                ExLevel = ExLevel,
                 LevelBreak = LevelBreak,
                 EXP = EXP,
                 InitialHP = InitialHP,
@@ -2116,6 +2123,7 @@ namespace Milimoe.FunGame.Core.Entity
             Promotion = c.Promotion;
             PrimaryAttribute = c.PrimaryAttribute;
             Level = c.Level;
+            ExLevel = c.ExLevel;
             LevelBreak = c.LevelBreak;
             EXP = c.EXP;
             CharacterState = c.CharacterState;
