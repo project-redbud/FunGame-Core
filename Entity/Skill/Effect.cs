@@ -793,12 +793,14 @@ namespace Milimoe.FunGame.Core.Entity
                     if (IsTemporaryDispel)
                     {
                         effect.IsBeingTemporaryDispelled = true;
+                        WriteLine($"[ {target} ] 暂时失去了 [ {effect.Name} ] 效果。");
                     }
                     else
                     {
                         effect.RemainDuration = 0;
                         effect.RemainDurationTurn = 0;
                         target.Effects.Remove(effect);
+                        WriteLine($"[ {target} ] 失去了 [ {effect.Name} ] 效果。");
                     }
                     effect.OnEffectLost(target);
                 }
