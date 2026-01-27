@@ -867,12 +867,6 @@ namespace Milimoe.FunGame.Core.Model
                         effect.OnTimeElapsed(character, timeToReduce);
                     }
 
-                    // 进行持续时间豁免
-                    if (effect.Exemptable && effect.ExemptDuration && (effect.RemainDuration > 0 || effect.RemainDurationTurn > 0))
-                    {
-                        CheckExemption(character, effect.Source, effect, false);
-                    }
-
                     if (effect.IsBeingTemporaryDispelled)
                     {
                         effect.IsBeingTemporaryDispelled = false;
@@ -992,6 +986,16 @@ namespace Milimoe.FunGame.Core.Model
                 return _isGameEnd;
             }
 
+            // 进行持续时间豁免
+            Effect[] effects = [.. character.Effects.OrderByDescending(e => e.Priority)];
+            foreach (Effect effect in effects)
+            {
+                if (effect.Exemptable && effect.ExemptDuration && (effect.RemainDuration > 0 || effect.RemainDurationTurn > 0))
+                {
+                    CheckExemption(character, effect.Source, effect, false);
+                }
+            }
+
             // 决策点补充
             DecisionPoints dp = DecisionPointsRecovery(character);
 
@@ -1026,7 +1030,7 @@ namespace Milimoe.FunGame.Core.Model
                 skillTurnStart.OnTurnStart(character, selectableEnemys, selectableTeammates, skills, items);
             }
 
-            List<Effect> effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
+            effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
             foreach (Effect effect in effects)
             {
                 effect.OnTurnStart(character, selectableEnemys, selectableTeammates, skills, items);
@@ -1850,7 +1854,7 @@ namespace Milimoe.FunGame.Core.Model
                 if (!decided && (isAI || cancelTimes == 0))
                 {
                     endTurn = true;
-                    baseTime += 4;
+                    baseTime += 3;
                     type = CharacterActionType.EndTurn;
                 }
 
@@ -3745,7 +3749,7 @@ namespace Milimoe.FunGame.Core.Model
                 character.CharacterState == CharacterState.BattleRestricted)
             {
                 baseTime += 2;
-                WriteLine($"[ {character} ] {CharacterSet.GetCharacterState(character.CharacterState)}，放弃行动将额外获得 3 {GameplayEquilibriumConstant.InGameTime}硬直时间！");
+                WriteLine($"[ {character} ] {CharacterSet.GetCharacterState(character.CharacterState)}，放弃行动将额外获得 2 {GameplayEquilibriumConstant.InGameTime}硬直时间！");
             }
         }
 
@@ -4378,13 +4382,18 @@ namespace Milimoe.FunGame.Core.Model
                 else
                 {
                     string description = "";
+                    bool remove = false;
                     if (effect.Durative && effect.RemainDuration > 0)
                     {
-                        // 随机减小 20% 至 50%
-                        double reduce = Random.Shared.Next(2, 6) * 10;
-                        reduce = effect.RemainDuration * (reduce / 100);
+                        // 随机减小 5% 至 20%
+                        double reduce = Random.Shared.Next(5, 20);
+                        reduce = (effect.Duration > 0 ? effect.Duration : effect.RemainDuration) * (reduce / 100);
                         effect.RemainDuration -= reduce;
                         description = $"[ {effect.Name} ] 的持续时间减少了 {reduce:0.##} {GameplayEquilibriumConstant.InGameTime}！";
+                        if (effect.RemainDuration <= 0)
+                        {
+                            effect.RemainDuration = 0;
+                        }
                     }
                     else if (effect.RemainDurationTurn > 0)
                     {
@@ -4393,10 +4402,13 @@ namespace Milimoe.FunGame.Core.Model
                         if (effect.RemainDurationTurn <= 0)
                         {
                             effect.RemainDurationTurn = 0;
-                            character.Effects.Remove(effect);
-                            effect.OnEffectLost(character);
-                            description += $"\r\n[ {character} ] 失去了 [ {effect.Name} ] 效果。";
                         }
+                    }
+                    if (remove)
+                    {
+                        character.Effects.Remove(effect);
+                        effect.OnEffectLost(character);
+                        description += $"\r\n[ {character} ] 失去了 [ {effect.Name} ] 效果。";
                     }
                     WriteLine($"[ {character} ] 的{CharacterSet.GetPrimaryAttributeName(effect.ExemptionType)}豁免检定通过！{description}");
                 }
