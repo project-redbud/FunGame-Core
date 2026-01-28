@@ -56,7 +56,12 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                return Math.Max(0, field + ExLevel);
+                int level = field + ExLevel;
+                if (MaxLevel > 0)
+                {
+                    level = Math.Min(level, MaxLevel);
+                }
+                return Math.Max(0, level);
             }
             set
             {
@@ -70,6 +75,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 额外等级
         /// </summary>
         public int ExLevel { get; set; } = 0;
+
+        /// <summary>
+        /// 自定义最大等级
+        /// </summary>
+        public int MaxLevel { get; set; } = 0;
 
         /// <summary>
         /// 技能类型 [ 此项为最高优先级 ]
@@ -771,12 +781,56 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 被动技能，需要重写此方法，返回被动特效给角色 [ 此方法会在技能学习时触发 ]
+        /// 被动技能需要重写此方法，返回被动特效给角色 [ 此方法会在技能学习时触发 ]
         /// </summary>
         /// <returns></returns>
         public virtual IEnumerable<Effect> AddPassiveEffectToCharacter()
         {
             return [];
+        }
+
+        /// <summary>
+        /// 将技能添加到角色身上，如果是被动，则添加被动特效
+        /// </summary>
+        /// <param name="character">角色</param>
+        /// <returns></returns>
+        public void AddSkillToCharacter(Character character)
+        {
+            if (Level > 0)
+            {
+                Character = character;
+                foreach (Effect e in AddPassiveEffectToCharacter())
+                {
+                    e.GamingQueue = GamingQueue;
+                    Character.Effects.Add(e);
+                    e.OnEffectGained(Character);
+                }
+                // 如果是纯被动技能，则不会添加到角色技能组中
+                if (IsActive)
+                {
+                    Character.Skills.Add(this);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 从角色身上移除技能
+        /// </summary>
+        /// <param name="character">角色</param>
+        /// <returns></returns>
+        public void RemoveSkillFromCharacter(Character character)
+        {
+            List<Effect> effects = [.. character.Effects.Where(e => e.Skill == this).OrderByDescending(e => e.Priority)];
+            foreach (Effect e in effects)
+            {
+                character.Effects.Remove(e);
+                if (e.IsInEffect) e.OnEffectLost(character);
+            }
+            character.Skills.Remove(this);
+            if (character == Character)
+            {
+                Character = null;
+            }
         }
 
         /// <summary>

@@ -44,6 +44,9 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(Skill.ExLevel):
                     result.ExLevel = reader.GetInt32();
                     break;
+                case nameof(Skill.MaxLevel):
+                    result.MaxLevel = reader.GetInt32();
+                    break;
                 case nameof(Skill.CastAnywhere):
                     result.CastAnywhere = reader.GetBoolean();
                     break;
@@ -147,6 +150,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             if (value.Slogan.Length > 0) writer.WriteString(nameof(Skill.Slogan), value.Slogan);
             if (value.Level > 0) writer.WriteNumber(nameof(Skill.Level), value.Level);
             if (value.ExLevel > 0) writer.WriteNumber(nameof(Skill.ExLevel), value.ExLevel);
+            if (value.MaxLevel > 0) writer.WriteNumber(nameof(Skill.MaxLevel), value.MaxLevel);
             writer.WriteBoolean(nameof(Skill.CastAnywhere), value.CastAnywhere);
             writer.WriteNumber(nameof(Skill.CastRange), value.CastRange);
             if (value.CanSelectSelf) writer.WriteBoolean(nameof(Skill.CanSelectSelf), value.CanSelectSelf);

@@ -125,7 +125,12 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                return Math.Max(1, field + ExLevel);
+                int level = field + ExLevel;
+                if (MaxLevel > 0)
+                {
+                    level = Math.Min(level, MaxLevel);
+                }
+                return Math.Max(0, level);
             }
             set
             {
@@ -144,6 +149,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// 额外等级
         /// </summary>
         public int ExLevel { get; set; } = 0;
+
+        /// <summary>
+        /// 自定义最大等级
+        /// </summary>
+        public int MaxLevel { get; set; } = 0;
 
         /// <summary>
         /// 经验值
@@ -910,6 +920,11 @@ namespace Milimoe.FunGame.Core.Entity
         public Character? Master { get; set; } = null;
 
         /// <summary>
+        /// 角色职业对象
+        /// </summary>
+        public CharacterClass Class { get; set; }
+
+        /// <summary>
         /// 普通攻击对象
         /// </summary>
         public NormalAttack NormalAttack { get; }
@@ -941,6 +956,7 @@ namespace Milimoe.FunGame.Core.Entity
             MDF = new();
             Shield = new();
             NormalAttack = new(this);
+            Class = new(this);
         }
 
         internal static Character GetInstance()
@@ -1289,6 +1305,7 @@ namespace Milimoe.FunGame.Core.Entity
             }
             if (isUp)
             {
+                Class.OnLevelUp();
                 Effect[] effects = [.. Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                 foreach (Effect e in effects)
                 {
@@ -2010,6 +2027,7 @@ namespace Milimoe.FunGame.Core.Entity
                 PrimaryAttribute = PrimaryAttribute,
                 Level = Level,
                 ExLevel = ExLevel,
+                MaxLevel = MaxLevel,
                 LevelBreak = LevelBreak,
                 EXP = EXP,
                 InitialHP = InitialHP,
@@ -2124,6 +2142,7 @@ namespace Milimoe.FunGame.Core.Entity
             PrimaryAttribute = c.PrimaryAttribute;
             Level = c.Level;
             ExLevel = c.ExLevel;
+            MaxLevel = c.MaxLevel;
             LevelBreak = c.LevelBreak;
             EXP = c.EXP;
             CharacterState = c.CharacterState;

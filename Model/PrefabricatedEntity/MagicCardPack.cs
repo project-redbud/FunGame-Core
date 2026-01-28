@@ -122,16 +122,10 @@ namespace Milimoe.FunGame.Core.Model.PrefabricatedEntity
             if (NeuralCalibration != null)
             {
                 character.Effects.Remove(NeuralCalibration);
-                NeuralCalibration.OnEffectLost(character);
+                if (NeuralCalibration.IsInEffect) NeuralCalibration.OnEffectLost(character);
             }
-            if (CourageCommand != null)
-            {
-                character.Skills.Remove(CourageCommand);
-            }
-            if (Soulbound != null)
-            {
-                character.Skills.Remove(Soulbound);
-            }
+            CourageCommand?.RemoveSkillFromCharacter(character);
+            Soulbound?.RemoveSkillFromCharacter(character);
         }
     }
 }

@@ -636,6 +636,11 @@ namespace Milimoe.FunGame.Core.Model
         public int DecisionPointsCostOther { get; set; } = 1;
 
         /// <summary>
+        /// 角色升级时会获得职业点数，该属性设置可获得点数的等级
+        /// </summary>
+        public HashSet<int> ClassPointsGetterList { get; set; } = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+
+        /// <summary>
         /// 应用此游戏平衡常数给实体
         /// </summary>
         /// <param name="entities"></param>

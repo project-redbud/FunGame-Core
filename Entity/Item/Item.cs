@@ -252,16 +252,11 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 foreach (Skill skill in Skills.Passives)
                 {
-                    List<Effect> effects = [.. Character.Effects.Where(e => e.Skill == skill && e.IsInEffect).OrderByDescending(e => e.Priority)];
-                    foreach (Effect e in effects)
-                    {
-                        Character.Effects.Remove(e);
-                        e.OnEffectLost(Character);
-                    }
+                    skill.RemoveSkillFromCharacter(Character);
                 }
                 foreach (Skill skill in Skills.Magics)
                 {
-                    Character.Skills.Remove(skill);
+                    skill.RemoveSkillFromCharacter(Character);
                 }
                 switch (type)
                 {
