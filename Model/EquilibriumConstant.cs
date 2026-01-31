@@ -641,6 +641,16 @@ namespace Milimoe.FunGame.Core.Model
         public HashSet<int> ClassPointsGetterList { get; set; } = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
 
         /// <summary>
+        /// 最高职业等级
+        /// </summary>
+        public int MaxClassLevel { get; set; } = 10;
+
+        /// <summary>
+        /// 能修改默认职业的最小等级
+        /// </summary>
+        public int MinLevelCanModifyDefaultClass { get; set; } = 20;
+
+        /// <summary>
         /// 应用此游戏平衡常数给实体
         /// </summary>
         /// <param name="entities"></param>
