@@ -1686,6 +1686,7 @@ namespace Milimoe.FunGame.Core.Model
                                 {
                                     WriteLine($"[ {character} ] 想要释放 [ {skill.Name} ]，但是没有目标！");
                                 }
+                                _castingSkills.Remove(character);
                                 WriteLine($"[ {character} ] 放弃释放技能！");
                                 character.CharacterState = CharacterState.Actionable;
                                 character.UpdateCharacterState();
@@ -1754,6 +1755,7 @@ namespace Milimoe.FunGame.Core.Model
                         }
                         else
                         {
+                            _castingSuperSkills.Remove(character);
                             WriteLine($"[ {character} ] 因能量不足放弃释放爆发技！");
                             character.CharacterState = CharacterState.Actionable;
                             character.UpdateCharacterState();
