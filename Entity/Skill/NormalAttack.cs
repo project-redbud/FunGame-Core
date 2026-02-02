@@ -483,18 +483,42 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="character"></param>
         /// <param name="normalAttack"></param>
+        /// <param name="dp"></param>
         /// <returns></returns>
-        public delegate InquiryOptions? NormalAttackInquiryOptionsDelegate(Character character, NormalAttack normalAttack);
+        public delegate InquiryOptions? NormalAttackInquiryOptionsDelegate(Character character, NormalAttack normalAttack, DecisionPoints dp);
         public event NormalAttackInquiryOptionsDelegate? InquiryBeforeTargetSelectionEvent;
         /// <summary>
         /// 触发选择目标前的询问事件
         /// </summary>
         /// <param name="character"></param>
-        /// <param name="normalAttack"></param>
-        public InquiryOptions? OnInquiryBeforeTargetSelection(Character character, NormalAttack normalAttack)
+        /// <param name="dp"></param>
+        public InquiryOptions? OnInquiryBeforeTargetSelection(Character character, DecisionPoints dp)
         {
-            return InquiryBeforeTargetSelectionEvent?.Invoke(character, normalAttack);
+            return InquiryBeforeTargetSelectionEvent?.Invoke(character, this, dp);
         }
+
+        /// <summary>
+        /// 处理在选取目标前发起询问的结果事件
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="normalAttack"></param>
+        /// <param name="dp"></param>
+        /// <param name="options"></param>
+        /// <param name="response"></param>
+        public delegate void ResolveInquiryBeforeTargetSelection(Character character, NormalAttack normalAttack, DecisionPoints dp, InquiryOptions options, InquiryResponse response);
+        public event ResolveInquiryBeforeTargetSelection? ResolveInquiryBeforeTargetSelectionEvent;
+        /// <summary>
+        /// 触发处理选取目标前发起询问的结果事件
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="dp"></param>
+        /// <param name="options"></param>
+        /// <param name="response"></param>
+        public void OnResolveInquiryBeforeTargetSelection(Character character, DecisionPoints dp, InquiryOptions options, InquiryResponse response)
+        {
+            ResolveInquiryBeforeTargetSelectionEvent?.Invoke(character, this, dp, options, response);
+        }
+
 
         /// <summary>
         /// 等级

@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Entity;
+﻿using System.Collections.Concurrent;
+using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -11,8 +12,19 @@ namespace Milimoe.FunGame.Core.Controller
         private readonly GamingQueue _queue = queue;
         private readonly GameMap _map = map;
 
+        public delegate double EvaluateSkillDelegate(Character character, Skill skill, List<Character> targets, double cost);
+        public delegate double EvaluateNormalAttackDelegate(Character character, NormalAttack normalAttack, List<Character> targets);
+        public delegate double EvaluateNonDirectionalSkillDelegate(Character character, Skill skill, Grid moveGrid, List<Grid> castableGrids, List<Character> allEnemys, List<Character> allTeammates, double cost);
+        public delegate double EvaluateItemDelegate(Character character, Item item, List<Character> targets, double cost);
+        public delegate double CalculateTargetValueDelegate(Character character, ISkill skill);
+        public static event EvaluateSkillDelegate? EvaluateSkillEvent;
+        public static event EvaluateNormalAttackDelegate? EvaluateNormalAttackEvent;
+        public static event EvaluateNonDirectionalSkillDelegate? EvaluateNonDirectionalSkillEvent;
+        public static event EvaluateItemDelegate? EvaluateItemEvent;
+        public static event CalculateTargetValueDelegate? CalculateTargetValueEvent;
+
         /// <summary>
-        /// AI的核心决策方法，根据当前游戏状态为角色选择最佳行动
+        /// 核心决策方法：外部同步，内部异步并行计算所有独立决策的分数
         /// </summary>
         /// <param name="character">当前行动的AI角色</param>
         /// <param name="dp">角色的决策点</param>
@@ -32,6 +44,10 @@ namespace Milimoe.FunGame.Core.Controller
             List<Skill> availableSkills, List<Item> availableItems, List<Character> allEnemysInGame, List<Character> allTeammatesInGame,
             List<Character> selectableEnemys, List<Character> selectableTeammates, double pUseItem, double pCastSkill, double pNormalAttack)
         {
+            // 控制最大并发数
+            int maxConcurrency = Math.Max(1, Environment.ProcessorCount / 2);
+            SemaphoreSlim semaphore = new(maxConcurrency);
+
             // 动态调整概率
             double dynamicPUseItem = pUseItem;
             double dynamicPCastSkill = pCastSkill;
@@ -57,212 +73,304 @@ namespace Milimoe.FunGame.Core.Controller
             };
 
             // 候选决策
-            List<AIDecision> candidateDecisions = [];
+            ConcurrentBag<AIDecision> candidateDecisions = [];
 
-            // 遍历所有可能的移动目标格子 (包括起始格子本身)
+            // 封装单个移动格子的决策计算逻辑为异步任务
+            List<Task> decisionTasks = [];
             foreach (Grid potentialMoveGrid in allPossibleMoveGrids)
             {
-                // 计算移动到这个格子的代价（曼哈顿距离）
-                int moveDistance = GameMap.CalculateManhattanDistance(startGrid, potentialMoveGrid);
-                double movePenalty = moveDistance * 0.5; // 每移动一步扣0.5分
-
-                if (pNormalAttack > 0)
+                // 捕获循环变量（避免闭包陷阱）
+                Grid currentMoveGrid = potentialMoveGrid;
+                Task task = Task.Run(async () =>
                 {
-                    if (CanCharacterNormalAttack(character, dp))
+                    await semaphore.WaitAsync();
+                    try
                     {
-                        // 计算普通攻击的可达格子
-                        List<Grid> normalAttackReachableGrids = _map.GetGridsByRange(potentialMoveGrid, character.ATR, true);
-
-                        List<Character> normalAttackReachableEnemys = [.. allEnemysInGame.Where(c => normalAttackReachableGrids.SelectMany(g => g.Characters).Contains(c) && !c.IsUnselectable && selectableEnemys.Contains(c)).Distinct()];
-                        List<Character> normalAttackReachableTeammates = [.. allTeammatesInGame.Where(c => normalAttackReachableGrids.SelectMany(g => g.Characters).Contains(c) && selectableTeammates.Contains(c)).Distinct()];
-
-                        if (normalAttackReachableEnemys.Count > 0)
-                        {
-                            // 将筛选后的目标列表传递给 SelectTargets
-                            List<Character> targets = SelectTargets(character, character.NormalAttack, normalAttackReachableEnemys, normalAttackReachableTeammates);
-                            if (targets.Count > 0)
-                            {
-                                double currentScore = EvaluateNormalAttack(character, targets) - movePenalty;
-                                double probabilityWeight = 1.0 + (normalizedPNormalAttack * 0.3);
-                                candidateDecisions.Add(new AIDecision
-                                {
-                                    ActionType = CharacterActionType.NormalAttack,
-                                    TargetMoveGrid = potentialMoveGrid,
-                                    SkillToUse = character.NormalAttack,
-                                    Targets = targets,
-                                    Score = currentScore,
-                                    ProbabilityWeight = probabilityWeight
-                                });
-                            }
-                        }
+                        CalculateDecisionForGrid(
+                            character, dp, startGrid, currentMoveGrid,
+                            availableSkills, availableItems, allEnemysInGame, allTeammatesInGame,
+                            selectableEnemys, selectableTeammates,
+                            normalizedPUseItem, normalizedPCastSkill, normalizedPNormalAttack,
+                            preferredAction, candidateDecisions
+                        );
                     }
-                }
-
-                if (pCastSkill > 0)
-                {
-                    foreach (Skill skill in availableSkills)
+                    catch (Exception ex)
                     {
-                        if (CanCharacterUseSkill(character, skill, dp) && _queue.CheckCanCast(character, skill, out double cost))
-                        {
-                            // 计算当前技能的可达格子
-                            List<Grid> skillReachableGrids = _map.GetGridsByRange(potentialMoveGrid, skill.CastRange, true);
-
-                            if (skill.IsNonDirectional)
-                            {
-                                AIDecision? nonDirDecision = EvaluateNonDirectionalSkill(character, skill, potentialMoveGrid, skillReachableGrids, allEnemysInGame, allTeammatesInGame, cost);
-
-                                if (nonDirDecision != null && nonDirDecision.Score > bestDecision.Score)
-                                {
-                                    bestDecision = nonDirDecision;
-                                }
-                            }
-                            else
-                            {
-                                List<Character> skillReachableEnemys = [.. allEnemysInGame.Where(c => skillReachableGrids.SelectMany(g => g.Characters).Contains(c) && !c.IsUnselectable && selectableEnemys.Contains(c)).Distinct()];
-                                List<Character> skillReachableTeammates = [.. allTeammatesInGame.Where(c => skillReachableGrids.SelectMany(g => g.Characters).Contains(c) && selectableTeammates.Contains(c)).Distinct()];
-
-                                // 检查是否有可用的目标（敌人或队友，取决于技能类型）
-                                if (skillReachableEnemys.Count > 0 || skillReachableTeammates.Count > 0)
-                                {
-                                    // 将筛选后的目标列表传递给 SelectTargets
-                                    List<Character> targets = SelectTargets(character, skill, skillReachableEnemys, skillReachableTeammates);
-                                    if (targets.Count > 0)
-                                    {
-                                        double currentScore = EvaluateSkill(character, skill, targets, cost) - movePenalty;
-                                        double probabilityWeight = 1.0 + (normalizedPCastSkill * 0.3);
-                                        candidateDecisions.Add(new AIDecision
-                                        {
-                                            ActionType = CharacterActionType.PreCastSkill,
-                                            TargetMoveGrid = potentialMoveGrid,
-                                            SkillToUse = skill,
-                                            Targets = targets,
-                                            Score = currentScore,
-                                            ProbabilityWeight = probabilityWeight
-                                        });
-                                    }
-                                }
-                            }
-                        }
+                        // 单个格子的计算异常不影响整体，记录日志
+                        Console.WriteLine($"计算格子[{currentMoveGrid.X},{currentMoveGrid.Y}]决策失败：{ex.Message}");
                     }
-                }
-
-                if (pUseItem > 0)
-                {
-                    foreach (Item item in availableItems)
+                    finally
                     {
-                        if (item.Skills.Active != null && CanCharacterUseItem(character, item, dp) && _queue.CheckCanCast(character, item.Skills.Active, out double cost))
-                        {
-                            Skill itemSkill = item.Skills.Active;
-
-                            // 计算当前物品技能的可达格子
-                            List<Grid> itemSkillReachableGrids = _map.GetGridsByRange(potentialMoveGrid, itemSkill.CastRange, true);
-
-                            if (itemSkill.IsNonDirectional)
-                            {
-                                AIDecision? nonDirDecision = EvaluateNonDirectionalSkill(character, itemSkill, potentialMoveGrid, itemSkillReachableGrids, allEnemysInGame, allTeammatesInGame, cost);
-
-                                if (nonDirDecision != null && nonDirDecision.Score > bestDecision.Score)
-                                {
-                                    bestDecision = nonDirDecision;
-                                }
-                            }
-                            else
-                            {
-                                List<Character> itemSkillReachableEnemys = [.. allEnemysInGame.Where(c => itemSkillReachableGrids.SelectMany(g => g.Characters).Contains(c) && !c.IsUnselectable && selectableEnemys.Contains(c)).Distinct()];
-                                List<Character> itemSkillReachableTeammates = [.. allTeammatesInGame.Where(c => itemSkillReachableGrids.SelectMany(g => g.Characters).Contains(c) && selectableTeammates.Contains(c)).Distinct()];
-
-                                // 检查是否有可用的目标
-                                if (itemSkillReachableEnemys.Count > 0 || itemSkillReachableTeammates.Count > 0)
-                                {
-                                    // 将筛选后的目标列表传递给 SelectTargets
-                                    List<Character> targetsForItem = SelectTargets(character, itemSkill, itemSkillReachableEnemys, itemSkillReachableTeammates);
-                                    if (targetsForItem.Count > 0)
-                                    {
-                                        double currentScore = EvaluateItem(character, item, targetsForItem, cost) - movePenalty;
-                                        double probabilityWeight = 1.0 + (normalizedPUseItem * 0.3);
-                                        candidateDecisions.Add(new AIDecision
-                                        {
-                                            ActionType = CharacterActionType.UseItem,
-                                            TargetMoveGrid = potentialMoveGrid,
-                                            ItemToUse = item,
-                                            SkillToUse = itemSkill,
-                                            Targets = targetsForItem,
-                                            Score = currentScore,
-                                            ProbabilityWeight = probabilityWeight
-                                        });
-                                    }
-                                }
-                            }
-                        }
+                        semaphore.Release();
                     }
-                }
+                });
+                decisionTasks.Add(task);
+            }
 
-                // 如果从该格子没有更好的行动，但移动本身有价值
-                // 只有当当前最佳决策是“结束回合”或分数很低时，才考虑纯粹的移动
-                if (potentialMoveGrid != startGrid && bestDecision.Score < 0) // 如果当前最佳决策是负分（即什么都不做）
-                {
-                    double pureMoveScore = -movePenalty; // 移动本身有代价
+            // 等待所有异步任务完成
+            Task.WaitAll(decisionTasks);
 
-                    // 为纯粹移动逻辑重新计算综合可达敌人列表
-                    List<Grid> tempAttackGridsForPureMove = _map.GetGridsByRange(potentialMoveGrid, character.ATR, true);
-                    List<Grid> tempCastGridsForPureMove = [];
-                    foreach (Skill skill in availableSkills)
-                    {
-                        tempCastGridsForPureMove.AddRange(_map.GetGridsByRange(potentialMoveGrid, skill.CastRange, true));
-                    }
-                    foreach (Item item in availableItems)
-                    {
-                        if (item.Skills.Active != null)
-                        {
-                            tempCastGridsForPureMove.AddRange(_map.GetGridsByRange(potentialMoveGrid, item.Skills.Active.CastRange, true));
-                        }
-                    }
-                    List<Grid> tempAllReachableGridsForPureMove = [.. tempAttackGridsForPureMove.Union(tempCastGridsForPureMove).Distinct()];
-                    List<Character> tempCurrentReachableEnemysForPureMove = [.. allEnemysInGame.Where(c => tempAllReachableGridsForPureMove.SelectMany(g => g.Characters).Contains(c) && !c.IsUnselectable && selectableEnemys.Contains(c)).Distinct()];
-
-                    // 如果当前位置无法攻击任何敌人，但地图上还有敌人，尝试向最近的敌人移动
-                    if (tempCurrentReachableEnemysForPureMove.Count == 0 && allEnemysInGame.Count > 0) // 使用新计算的列表
-                    {
-                        Character? target = allEnemysInGame.OrderBy(e => GameMap.CalculateManhattanDistance(potentialMoveGrid, _map.GetCharacterCurrentGrid(e) ?? Grid.Empty)).FirstOrDefault();
-
-                        if (target != null)
-                        {
-                            Grid? nearestEnemyGrid = _map.GetCharacterCurrentGrid(target);
-                            if (nearestEnemyGrid != null)
-                            {
-                                // 奖励靠近敌人
-                                pureMoveScore += (10 - GameMap.CalculateManhattanDistance(potentialMoveGrid, nearestEnemyGrid)) * 0.1;
-                            }
-                        }
-                    }
-
-                    candidateDecisions.Add(new AIDecision
-                    {
-                        ActionType = CharacterActionType.Move,
-                        TargetMoveGrid = potentialMoveGrid,
-                        Targets = [],
-                        Score = pureMoveScore,
-                        IsPureMove = true
-                    });
-                }
-
-                // 偏好类型额外加分
-                if (preferredAction.HasValue)
-                {
-                    foreach (var decision in candidateDecisions)
-                    {
-                        if (decision.ActionType == preferredAction.Value)
-                        {
-                            decision.Score *= 1.2;
-                        }
-                    }
-                }
-
-                // 最终决策
-                bestDecision = candidateDecisions.OrderByDescending(d => d.Score * d.ProbabilityWeight).FirstOrDefault() ?? bestDecision;
+            // 从所有候选决策中选出最高分的（保留原有评分权重逻辑）
+            if (!candidateDecisions.IsEmpty)
+            {
+                bestDecision = candidateDecisions
+                    .OrderByDescending(d => d.Score * d.ProbabilityWeight)
+                    .FirstOrDefault() ?? bestDecision;
             }
 
             return bestDecision;
+        }
+
+        /// <summary>
+        /// 异步执行的核心：计算单个移动格子的所有可能决策，并添加到线程安全容器
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="dp"></param>
+        /// <param name="startGrid"></param>
+        /// <param name="potentialMoveGrid"></param>
+        /// <param name="availableSkills"></param>
+        /// <param name="availableItems"></param>
+        /// <param name="allEnemysInGame"></param>
+        /// <param name="allTeammatesInGame"></param>
+        /// <param name="selectableEnemys"></param>
+        /// <param name="selectableTeammates"></param>
+        /// <param name="normalizedPUseItem"></param>
+        /// <param name="normalizedPCastSkill"></param>
+        /// <param name="normalizedPNormalAttack"></param>
+        /// <param name="preferredAction"></param>
+        /// <param name="candidateDecisions"></param>
+        private void CalculateDecisionForGrid(
+            Character character, DecisionPoints dp, Grid startGrid, Grid potentialMoveGrid,
+            List<Skill> availableSkills, List<Item> availableItems, List<Character> allEnemysInGame, List<Character> allTeammatesInGame,
+            List<Character> selectableEnemys, List<Character> selectableTeammates,
+            double normalizedPUseItem, double normalizedPCastSkill, double normalizedPNormalAttack,
+            CharacterActionType? preferredAction,
+            ConcurrentBag<AIDecision> candidateDecisions)
+        {
+            // 计算移动惩罚
+            int moveDistance = GameMap.CalculateManhattanDistance(startGrid, potentialMoveGrid);
+            double movePenalty = moveDistance * 0.5;
+
+            // 计算普通攻击决策
+            if (normalizedPNormalAttack > 0 && CanCharacterNormalAttack(character, dp))
+            {
+                List<Grid> normalAttackReachableGrids = _map.GetGridsByRange(potentialMoveGrid, character.ATR, true);
+                List<Character> normalAttackReachableEnemys = [.. allEnemysInGame.Where(c =>
+                    normalAttackReachableGrids.SelectMany(g => g.Characters).Contains(c)
+                    && !c.IsUnselectable
+                    && selectableEnemys.Contains(c)).Distinct()];
+
+                if (normalAttackReachableEnemys.Count > 0)
+                {
+                    List<Character> targets = SelectTargets(character, character.NormalAttack, normalAttackReachableEnemys, []);
+                    if (targets.Count > 0)
+                    {
+                        double currentScore = EvaluateNormalAttack(character, targets) - movePenalty;
+                        double probabilityWeight = 1.0 + (normalizedPNormalAttack * 0.3);
+                        AIDecision attackDecision = new()
+                        {
+                            ActionType = CharacterActionType.NormalAttack,
+                            TargetMoveGrid = potentialMoveGrid,
+                            SkillToUse = character.NormalAttack,
+                            Targets = targets,
+                            Score = currentScore,
+                            ProbabilityWeight = probabilityWeight
+                        };
+                        // 偏好类型加分
+                        if (preferredAction.HasValue && attackDecision.ActionType == preferredAction.Value)
+                        {
+                            attackDecision.Score *= 1.2;
+                        }
+                        candidateDecisions.Add(attackDecision);
+                    }
+                }
+            }
+
+            // 计算技能释放决策
+            if (normalizedPCastSkill > 0)
+            {
+                foreach (Skill skill in availableSkills)
+                {
+                    if (CanCharacterUseSkill(character, skill, dp) && _queue.CheckCanCast(character, skill, out double cost))
+                    {
+                        List<Grid> skillReachableGrids = _map.GetGridsByRange(potentialMoveGrid, skill.CastRange, true);
+
+                        if (skill.IsNonDirectional)
+                        {
+                            AIDecision? nonDirDecision = EvaluateNonDirectionalSkill(
+                                character, skill, potentialMoveGrid, skillReachableGrids,
+                                allEnemysInGame, allTeammatesInGame, cost);
+
+                            if (nonDirDecision != null)
+                            {
+                                // 偏好类型加分
+                                if (preferredAction.HasValue && nonDirDecision.ActionType == preferredAction.Value)
+                                {
+                                    nonDirDecision.Score *= 1.2;
+                                }
+                                candidateDecisions.Add(nonDirDecision);
+                            }
+                        }
+                        else
+                        {
+                            List<Character> skillReachableEnemys = [.. allEnemysInGame.Where(c =>
+                                skillReachableGrids.SelectMany(g => g.Characters).Contains(c)
+                                && !c.IsUnselectable
+                                && selectableEnemys.Contains(c)).Distinct()];
+                            List<Character> skillReachableTeammates = [.. allTeammatesInGame.Where(c =>
+                                skillReachableGrids.SelectMany(g => g.Characters).Contains(c)
+                                && selectableTeammates.Contains(c)).Distinct()];
+
+                            if (skillReachableEnemys.Count > 0 || skillReachableTeammates.Count > 0)
+                            {
+                                List<Character> targets = SelectTargets(character, skill, skillReachableEnemys, skillReachableTeammates);
+                                if (targets.Count > 0)
+                                {
+                                    double currentScore = EvaluateSkill(character, skill, targets, cost) - movePenalty;
+                                    double probabilityWeight = 1.0 + (normalizedPCastSkill * 0.3);
+                                    AIDecision skillDecision = new()
+                                    {
+                                        ActionType = CharacterActionType.PreCastSkill,
+                                        TargetMoveGrid = potentialMoveGrid,
+                                        SkillToUse = skill,
+                                        Targets = targets,
+                                        Score = currentScore,
+                                        ProbabilityWeight = probabilityWeight
+                                    };
+                                    // 偏好类型加分
+                                    if (preferredAction.HasValue && skillDecision.ActionType == preferredAction.Value)
+                                    {
+                                        skillDecision.Score *= 1.2;
+                                    }
+                                    candidateDecisions.Add(skillDecision);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 计算物品使用决策
+            if (normalizedPUseItem > 0)
+            {
+                foreach (Item item in availableItems)
+                {
+                    if (item.Skills.Active != null && CanCharacterUseItem(character, item, dp) && _queue.CheckCanCast(character, item.Skills.Active, out double cost))
+                    {
+                        Skill itemSkill = item.Skills.Active;
+                        List<Grid> itemSkillReachableGrids = _map.GetGridsByRange(potentialMoveGrid, itemSkill.CastRange, true);
+
+                        if (itemSkill.IsNonDirectional)
+                        {
+                            AIDecision? nonDirDecision = EvaluateNonDirectionalSkill(
+                                character, itemSkill, potentialMoveGrid, itemSkillReachableGrids,
+                                allEnemysInGame, allTeammatesInGame, cost);
+
+                            if (nonDirDecision != null)
+                            {
+                                // 偏好类型加分
+                                if (preferredAction.HasValue && nonDirDecision.ActionType == preferredAction.Value)
+                                {
+                                    nonDirDecision.Score *= 1.2;
+                                }
+                                candidateDecisions.Add(nonDirDecision);
+                            }
+                        }
+                        else
+                        {
+                            List<Character> itemSkillReachableEnemys = [.. allEnemysInGame.Where(c =>
+                                itemSkillReachableGrids.SelectMany(g => g.Characters).Contains(c)
+                                && !c.IsUnselectable
+                                && selectableEnemys.Contains(c)).Distinct()];
+                            List<Character> itemSkillReachableTeammates = [.. allTeammatesInGame.Where(c =>
+                                itemSkillReachableGrids.SelectMany(g => g.Characters).Contains(c)
+                                && selectableTeammates.Contains(c)).Distinct()];
+
+                            if (itemSkillReachableEnemys.Count > 0 || itemSkillReachableTeammates.Count > 0)
+                            {
+                                List<Character> targetsForItem = SelectTargets(character, itemSkill, itemSkillReachableEnemys, itemSkillReachableTeammates);
+                                if (targetsForItem.Count > 0)
+                                {
+                                    double currentScore = EvaluateItem(character, item, targetsForItem, cost) - movePenalty;
+                                    double probabilityWeight = 1.0 + (normalizedPUseItem * 0.3);
+                                    AIDecision itemDecision = new()
+                                    {
+                                        ActionType = CharacterActionType.UseItem,
+                                        TargetMoveGrid = potentialMoveGrid,
+                                        ItemToUse = item,
+                                        SkillToUse = itemSkill,
+                                        Targets = targetsForItem,
+                                        Score = currentScore,
+                                        ProbabilityWeight = probabilityWeight
+                                    };
+                                    // 偏好类型加分
+                                    if (preferredAction.HasValue && itemDecision.ActionType == preferredAction.Value)
+                                    {
+                                        itemDecision.Score *= 1.2;
+                                    }
+                                    candidateDecisions.Add(itemDecision);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 计算纯移动决策
+            if (potentialMoveGrid != startGrid)
+            {
+                double pureMoveScore = -movePenalty;
+
+                List<Grid> tempAttackGridsForPureMove = _map.GetGridsByRange(potentialMoveGrid, character.ATR, true);
+                List<Grid> tempCastGridsForPureMove = [];
+                foreach (Skill skill in availableSkills)
+                {
+                    tempCastGridsForPureMove.AddRange(_map.GetGridsByRange(potentialMoveGrid, skill.CastRange, true));
+                }
+                foreach (Item item in availableItems)
+                {
+                    if (item.Skills.Active != null)
+                    {
+                        tempCastGridsForPureMove.AddRange(_map.GetGridsByRange(potentialMoveGrid, item.Skills.Active.CastRange, true));
+                    }
+                }
+                List<Grid> tempAllReachableGridsForPureMove = [.. tempAttackGridsForPureMove.Union(tempCastGridsForPureMove).Distinct()];
+                List<Character> tempCurrentReachableEnemysForPureMove = [.. allEnemysInGame.Where(c =>
+                    tempAllReachableGridsForPureMove.SelectMany(g => g.Characters).Contains(c)
+                    && !c.IsUnselectable
+                    && selectableEnemys.Contains(c)).Distinct()];
+
+                if (tempCurrentReachableEnemysForPureMove.Count == 0 && allEnemysInGame.Count > 0)
+                {
+                    Character? target = allEnemysInGame.OrderBy(e =>
+                        GameMap.CalculateManhattanDistance(potentialMoveGrid, _map.GetCharacterCurrentGrid(e) ?? Grid.Empty)).FirstOrDefault();
+
+                    if (target != null)
+                    {
+                        Grid? nearestEnemyGrid = _map.GetCharacterCurrentGrid(target);
+                        if (nearestEnemyGrid != null)
+                        {
+                            pureMoveScore += (10 - GameMap.CalculateManhattanDistance(potentialMoveGrid, nearestEnemyGrid)) * 0.1;
+                        }
+                    }
+                }
+
+                AIDecision moveDecision = new()
+                {
+                    ActionType = CharacterActionType.Move,
+                    TargetMoveGrid = potentialMoveGrid,
+                    Targets = [],
+                    Score = pureMoveScore,
+                    IsPureMove = true,
+                    ProbabilityWeight = 1.0 // 纯移动无概率权重
+                };
+                // 偏好类型加分（如果移动是偏好类型）
+                if (preferredAction.HasValue && moveDecision.ActionType == preferredAction.Value)
+                {
+                    moveDecision.Score *= 1.2;
+                }
+                candidateDecisions.Add(moveDecision);
+            }
         }
 
         // --- AI 决策辅助方法 ---
@@ -343,42 +451,39 @@ namespace Milimoe.FunGame.Core.Controller
         // 检查角色是否能进行普通攻击（基于状态）
         private static bool CanCharacterNormalAttack(Character character, DecisionPoints dp)
         {
-            return dp.CheckActionTypeQuota(CharacterActionType.NormalAttack) && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostNormalAttack &&
-                   character.CharacterState != CharacterState.NotActionable &&
-                   character.CharacterState != CharacterState.ActionRestricted &&
-                   character.CharacterState != CharacterState.BattleRestricted &&
-                   character.CharacterState != CharacterState.AttackRestricted;
+            return dp.CheckActionTypeQuota(CharacterActionType.NormalAttack)
+                && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostNormalAttack
+                && character.CharacterState != CharacterState.NotActionable
+                && character.CharacterState != CharacterState.ActionRestricted
+                && character.CharacterState != CharacterState.BattleRestricted
+                && character.CharacterState != CharacterState.AttackRestricted;
         }
 
         // 检查角色是否能使用某个技能（基于状态）
         private static bool CanCharacterUseSkill(Character character, Skill skill, DecisionPoints dp)
         {
-            return ((skill.SkillType == SkillType.Magic && dp.CheckActionTypeQuota(CharacterActionType.PreCastSkill) && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostMagic) ||
-                    (skill.SkillType == SkillType.Skill && dp.CheckActionTypeQuota(CharacterActionType.CastSkill) && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostSkill) ||
-                    (skill.SkillType == SkillType.SuperSkill && dp.CheckActionTypeQuota(CharacterActionType.CastSuperSkill)) && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostSuperSkill) &&
-                   character.CharacterState != CharacterState.NotActionable &&
-                   character.CharacterState != CharacterState.ActionRestricted &&
-                   character.CharacterState != CharacterState.BattleRestricted &&
-                   character.CharacterState != CharacterState.SkillRestricted;
+            return (
+                (skill.SkillType == SkillType.Magic && dp.CheckActionTypeQuota(CharacterActionType.PreCastSkill) && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostMagic)
+                || (skill.SkillType == SkillType.Skill && dp.CheckActionTypeQuota(CharacterActionType.CastSkill) && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostSkill)
+                || (skill.SkillType == SkillType.SuperSkill && dp.CheckActionTypeQuota(CharacterActionType.CastSuperSkill) && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostSuperSkill)
+            )
+            && character.CharacterState != CharacterState.NotActionable
+            && character.CharacterState != CharacterState.ActionRestricted
+            && character.CharacterState != CharacterState.BattleRestricted
+            && character.CharacterState != CharacterState.SkillRestricted;
         }
 
         // 检查角色是否能使用某个物品（基于状态）
         private static bool CanCharacterUseItem(Character character, Item item, DecisionPoints dp)
         {
-            return dp.CheckActionTypeQuota(CharacterActionType.UseItem) && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostItem &&
-                   character.CharacterState != CharacterState.NotActionable &&
-                   (character.CharacterState != CharacterState.ActionRestricted || item.ItemType == ItemType.Consumable) && // 行动受限只能用消耗品
-                   character.CharacterState != CharacterState.BattleRestricted;
+            return dp.CheckActionTypeQuota(CharacterActionType.UseItem)
+                && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostItem
+                && character.CharacterState != CharacterState.NotActionable
+                && (character.CharacterState != CharacterState.ActionRestricted || item.ItemType == ItemType.Consumable)
+                && character.CharacterState != CharacterState.BattleRestricted;
         }
 
-        /// <summary>
-        /// 选择技能的最佳目标
-        /// </summary>
-        /// <param name="character"></param>
-        /// <param name="skill"></param>
-        /// <param name="enemys"></param>
-        /// <param name="teammates"></param>
-        /// <returns></returns>
+        // 选择技能的最佳目标
         private static List<Character> SelectTargets(Character character, ISkill skill, List<Character> enemys, List<Character> teammates)
         {
             List<Character> targets = skill.GetSelectableTargets(character, enemys, teammates);
@@ -386,12 +491,7 @@ namespace Milimoe.FunGame.Core.Controller
             return [.. targets.OrderBy(o => Random.Shared.Next()).Take(count)];
         }
 
-        /// <summary>
-        /// 评估普通攻击的价值
-        /// </summary>
-        /// <param name="character"></param>
-        /// <param name="targets"></param>
-        /// <returns></returns>
+        // 评估普通攻击的价值
         private static double EvaluateNormalAttack(Character character, List<Character> targets)
         {
             double score = 0;
@@ -401,24 +501,16 @@ namespace Milimoe.FunGame.Core.Controller
                 score += damage;
                 if (target.HP <= damage) score += 100;
             }
+            score += EvaluateNormalAttackEvent?.Invoke(character, character.NormalAttack, targets) ?? 0;
             return score;
         }
 
-        /// <summary>
-        /// 评估技能的价值
-        /// </summary>
-        /// <param name="character"></param>
-        /// <param name="skill"></param>
-        /// <param name="targets"></param>
-        /// <param name="cost"></param>
-        /// <returns></returns>
+        // 评估技能的价值
         private static double EvaluateSkill(Character character, Skill skill, List<Character> targets, double cost)
         {
             double score = 0;
             score += targets.Sum(t => CalculateTargetValue(t, skill));
-            //score -= cost * 5;
-            //score -= skill.RealCD * 2;
-            //score -= skill.HardnessTime * 2;
+            score += EvaluateSkillEvent?.Invoke(character, skill, targets, cost) ?? 0;
             return score;
         }
 
@@ -455,6 +547,7 @@ namespace Milimoe.FunGame.Core.Controller
 
             double movePenalty = GameMap.CalculateManhattanDistance(_map.GetCharacterCurrentGrid(character)!, moveGrid) * 0.5;
             double finalScore = bestSkillScore - movePenalty;
+            finalScore += EvaluateNonDirectionalSkillEvent?.Invoke(character, skill, moveGrid, castableGrids, allEnemys, allTeammates, cost) ?? 0;
 
             return new AIDecision
             {
@@ -463,33 +556,24 @@ namespace Milimoe.FunGame.Core.Controller
                 SkillToUse = skill,
                 Targets = [],
                 TargetGrids = bestTargetGrids,
-                Score = finalScore
+                Score = finalScore,
+                ProbabilityWeight = 1.0 // 非指向性技能默认权重
             };
         }
 
-        /// <summary>
-        /// 评估物品的价值
-        /// </summary>
-        /// <param name="character"></param>
-        /// <param name="item"></param>
-        /// <param name="targets"></param>
-        /// <param name="cost"></param>
-        /// <returns></returns>
+        // 评估物品的价值
         private static double EvaluateItem(Character character, Item item, List<Character> targets, double cost)
         {
             double score = Random.Shared.Next(1000);
+            score += EvaluateItemEvent?.Invoke(character, item, targets, cost) ?? 0;
             return score;
         }
 
-        /// <summary>
-        /// 辅助函数：计算单个目标在某个技能下的价值
-        /// </summary>
-        /// <param name="target"></param>
-        /// <param name="skill"></param>
-        /// <returns></returns>
+        // 辅助函数：计算单个目标在某个技能下的价值
         private static double CalculateTargetValue(Character target, ISkill skill)
         {
             double value = Random.Shared.Next(1000);
+            value += CalculateTargetValueEvent?.Invoke(target, skill) ?? 0;
             return value;
         }
     }

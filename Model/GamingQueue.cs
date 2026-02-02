@@ -1310,8 +1310,6 @@ namespace Milimoe.FunGame.Core.Model
                         moved = CharacterMove(character, dp, aiDecision.TargetMoveGrid, startGrid);
                     }
 
-                    int costDP = dp.GetActionPointCost(type);
-
                     effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                     foreach (Effect effect in effects)
                     {
@@ -1346,6 +1344,16 @@ namespace Milimoe.FunGame.Core.Model
                     }
                     else if (type == CharacterActionType.NormalAttack)
                     {
+                        // 使用普通攻击逻辑
+                        // 如果有询问，先进行询问
+                        character.NormalAttack.GamingQueue = this;
+                        if (character.NormalAttack.OnInquiryBeforeTargetSelection(character, dp) is InquiryOptions inquiry)
+                        {
+                            InquiryResponse response = Inquiry(character, inquiry);
+                            character.NormalAttack.OnResolveInquiryBeforeTargetSelection(character, dp, inquiry, response);
+                        }
+
+                        int costDP = dp.GetActionPointCost(type);
                         if (!forceAction && (character.CharacterState == CharacterState.NotActionable ||
                             character.CharacterState == CharacterState.ActionRestricted ||
                             character.CharacterState == CharacterState.BattleRestricted ||
@@ -1363,13 +1371,6 @@ namespace Milimoe.FunGame.Core.Model
                         }
                         else
                         {
-                            // 使用普通攻击逻辑
-                            // 如果有询问，先进行询问
-                            character.NormalAttack.GamingQueue = this;
-                            if (character.NormalAttack.OnInquiryBeforeTargetSelection(character, character.NormalAttack) is InquiryOptions inquiry)
-                            {
-                                Inquiry(character, inquiry);
-                            }
                             // 选择目标
                             List<Character> targets;
                             if (aiDecision != null)
@@ -1446,21 +1447,22 @@ namespace Milimoe.FunGame.Core.Model
                                 skill.GamingQueue = this;
                                 List<Character> targets = [];
                                 List<Grid> grids = [];
-                                costDP = dp.GetActionPointCost(type, skill);
-                                if (dp.CurrentDecisionPoints < costDP)
+                                if (skill.SkillType == SkillType.Magic)
                                 {
-                                    if (IsDebug) WriteLine($"[ {character} ] 想要释放 [ {skill.Name} ]，但决策点不足，无法释放技能！");
-                                }
-                                else if (skill.SkillType == SkillType.Magic)
-                                {
-                                    if (CheckCanCast(character, skill, out double cost))
+                                    // 如果有询问，先进行询问
+                                    if (skill.InquiryBeforeTargetSelection(character, dp) is InquiryOptions inquiry)
                                     {
-                                        // 如果有询问，先进行询问
-                                        if (skill.InquiryBeforeTargetSelection(character, skill) is InquiryOptions inquiry)
-                                        {
-                                            Inquiry(character, inquiry);
-                                        }
+                                        InquiryResponse response = Inquiry(character, inquiry);
+                                        skill.ResolveInquiryBeforeTargetSelection(character, dp, inquiry, response);
+                                    }
 
+                                    int costDP = dp.GetActionPointCost(type, skill);
+                                    if (dp.CurrentDecisionPoints < costDP)
+                                    {
+                                        if (IsDebug) WriteLine($"[ {character} ] 想要释放 [ {skill.Name} ]，但决策点不足，无法释放技能！");
+                                    }
+                                    else if (CheckCanCast(character, skill, out double cost))
+                                    {
                                         // 吟唱前需要先选取目标
                                         List<Grid> castRange = [];
                                         if (_map != null && realGrid != null)
@@ -1510,29 +1512,31 @@ namespace Milimoe.FunGame.Core.Model
                                         }
                                     }
                                 }
-                                else if (skill is CourageCommandSkill && dp.CourageCommandSkill)
-                                {
-                                    if (IsDebug) WriteLine($"[ {character} ] 想要释放 [ {skill.Name} ]，但该回合已经使用过勇气指令，无法再次使用勇气指令！");
-                                }
-                                else if (skill is not CourageCommandSkill && !skill.IsSuperSkill && !dp.CheckActionTypeQuota(CharacterActionType.CastSkill))
-                                {
-                                    if (IsDebug) WriteLine($"[ {character} ] 想要释放 [ {skill.Name} ]，但该回合使用战技的次数已超过决策点配额，无法再次使用战技！");
-                                }
-                                else if (skill is not CourageCommandSkill && skill.IsSuperSkill && !dp.CheckActionTypeQuota(CharacterActionType.CastSuperSkill))
-                                {
-                                    if (IsDebug) WriteLine($"[ {character} ] 想要释放 [ {skill.Name} ]，但该回合使用爆发技的次数已超过决策点配额，无法再次使用爆发技！");
-                                }
                                 else
                                 {
-                                    // 只有魔法需要吟唱，战技和爆发技直接释放
-                                    if (CheckCanCast(character, skill, out double cost))
+                                    // 如果有询问，先进行询问
+                                    if (skill.InquiryBeforeTargetSelection(character, dp) is InquiryOptions inquiry)
                                     {
-                                        // 如果有询问，先进行询问
-                                        if (skill.InquiryBeforeTargetSelection(character, skill) is InquiryOptions inquiry)
-                                        {
-                                            Inquiry(character, inquiry);
-                                        }
+                                        InquiryResponse response = Inquiry(character, inquiry);
+                                        skill.ResolveInquiryBeforeTargetSelection(character, dp, inquiry, response);
+                                    }
 
+                                    int costDP = dp.GetActionPointCost(type, skill);
+                                    if (skill is CourageCommandSkill && dp.CourageCommandSkill)
+                                    {
+                                        if (IsDebug) WriteLine($"[ {character} ] 想要释放 [ {skill.Name} ]，但该回合已经使用过勇气指令，无法再次使用勇气指令！");
+                                    }
+                                    else if (skill is not CourageCommandSkill && !skill.IsSuperSkill && !dp.CheckActionTypeQuota(CharacterActionType.CastSkill))
+                                    {
+                                        if (IsDebug) WriteLine($"[ {character} ] 想要释放 [ {skill.Name} ]，但该回合使用战技的次数已超过决策点配额，无法再次使用战技！");
+                                    }
+                                    else if (skill is not CourageCommandSkill && skill.IsSuperSkill && !dp.CheckActionTypeQuota(CharacterActionType.CastSuperSkill))
+                                    {
+                                        if (IsDebug) WriteLine($"[ {character} ] 想要释放 [ {skill.Name} ]，但该回合使用爆发技的次数已超过决策点配额，无法再次使用爆发技！");
+                                    }
+                                    // 只有魔法需要吟唱，战技和爆发技直接释放
+                                    else if (CheckCanCast(character, skill, out double cost))
+                                    {
                                         List<Grid> castRange = [];
                                         if (_map != null && realGrid != null)
                                         {
@@ -1686,7 +1690,6 @@ namespace Milimoe.FunGame.Core.Model
                                 {
                                     WriteLine($"[ {character} ] 想要释放 [ {skill.Name} ]，但是没有目标！");
                                 }
-                                _castingSkills.Remove(character);
                                 WriteLine($"[ {character} ] 放弃释放技能！");
                                 character.CharacterState = CharacterState.Actionable;
                                 character.UpdateCharacterState();
@@ -1755,7 +1758,6 @@ namespace Milimoe.FunGame.Core.Model
                         }
                         else
                         {
-                            _castingSuperSkills.Remove(character);
                             WriteLine($"[ {character} ] 因能量不足放弃释放爆发技！");
                             character.CharacterState = CharacterState.Actionable;
                             character.UpdateCharacterState();
@@ -1787,14 +1789,17 @@ namespace Milimoe.FunGame.Core.Model
                             Skill skill = item.Skills.Active;
 
                             // 如果有询问，先进行询问
-                            if (item.InquiryBeforeTargetSelection(character, item) is InquiryOptions inquiry)
+                            if (item.InquiryBeforeTargetSelection(character, dp) is InquiryOptions inquiry)
                             {
-                                Inquiry(character, inquiry);
+                                InquiryResponse response = Inquiry(character, inquiry);
+                                item.ResolveInquiryBeforeTargetSelection(character, dp, inquiry, response);
                             }
 
-                            if (skill.InquiryBeforeTargetSelection(character, skill) is InquiryOptions inquiry2)
+                            // 如果有询问，先进行询问
+                            if (skill.InquiryBeforeTargetSelection(character, dp) is InquiryOptions inquiry2)
                             {
-                                Inquiry(character, inquiry2);
+                                InquiryResponse response = Inquiry(character, inquiry2);
+                                skill.ResolveInquiryBeforeTargetSelection(character, dp, inquiry2, response);
                             }
 
                             List<Grid> castRange = [];
@@ -1804,6 +1809,8 @@ namespace Milimoe.FunGame.Core.Model
                                 enemys = [.. enemys.Where(castRange.SelectMany(g => g.Characters).Contains)];
                                 teammates = [.. teammates.Where(castRange.SelectMany(g => g.Characters).Contains)];
                             }
+
+                            int costDP = dp.GetActionPointCost(type);
                             if (dp.CurrentDecisionPoints < costDP)
                             {
                                 if (IsDebug) WriteLine($"[ {character} ] 想要使用物品 [ {item.Name} ]，但决策点不足，无法使用物品！");
