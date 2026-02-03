@@ -6,8 +6,10 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Milimoe.FunGame.Core.Interface.Addons;
 using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Service;
 
 // 通用工具类，客户端和服务器端都可以直接调用的工具方法都可以写在这里
 namespace Milimoe.FunGame.Core.Api.Utility
@@ -847,6 +849,29 @@ namespace Milimoe.FunGame.Core.Api.Utility
         {
             return Math.Abs(value) < epsilon;
         }
+    }
+
+    #endregion
+
+    #region 加载项服务
+
+    public class HotLoadAddonUtility
+    {
+        /// <summary>
+        /// 热更新 DLL
+        /// </summary>
+        /// <param name="filePath">DLL 完整路径</param>
+        /// <returns>是否成功热更新</returns>
+        public static bool HotReload(string filePath) => HotLoadAddonManager.HotReload(filePath);
+
+        /// <summary>
+        /// 尝试获取当前最新的实例
+        /// </summary>
+        /// <typeparam name="T">预期类型</typeparam>
+        /// <param name="addonName">插件/模组名称</param>
+        /// <param name="instance">最新的实例</param>
+        /// <returns>是否找到</returns>
+        public static bool TryGetLiveInstance<T>(string addonName, out T? instance) where T : class, IAddon => HotLoadAddonManager.TryGetLiveInstance(addonName, out instance);
     }
 
     #endregion

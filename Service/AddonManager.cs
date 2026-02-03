@@ -28,7 +28,7 @@ namespace Milimoe.FunGame.Core.Service
         {
             if (!Directory.Exists(ReflectionSet.PluginFolderPath)) return plugins;
 
-            string[] dlls = Directory.GetFiles(ReflectionSet.PluginFolderPath, "*.dll");
+            string[] dlls = Directory.GetFiles(ReflectionSet.PluginFolderPath, "*.dll", SearchOption.AllDirectories);
 
             foreach (string dll in dlls)
             {
@@ -81,7 +81,7 @@ namespace Milimoe.FunGame.Core.Service
         {
             if (!Directory.Exists(ReflectionSet.PluginFolderPath)) return plugins;
 
-            string[] dlls = Directory.GetFiles(ReflectionSet.PluginFolderPath, "*.dll");
+            string[] dlls = Directory.GetFiles(ReflectionSet.PluginFolderPath, "*.dll", SearchOption.AllDirectories);
 
             foreach (string dll in dlls)
             {
@@ -134,7 +134,7 @@ namespace Milimoe.FunGame.Core.Service
         {
             if (!Directory.Exists(ReflectionSet.PluginFolderPath)) return plugins;
 
-            string[] dlls = Directory.GetFiles(ReflectionSet.PluginFolderPath, "*.dll");
+            string[] dlls = Directory.GetFiles(ReflectionSet.PluginFolderPath, "*.dll", SearchOption.AllDirectories);
 
             foreach (string dll in dlls)
             {
@@ -190,7 +190,7 @@ namespace Milimoe.FunGame.Core.Service
         {
             if (!Directory.Exists(ReflectionSet.GameModuleFolderPath)) return modules;
 
-            string[] dlls = Directory.GetFiles(ReflectionSet.GameModuleFolderPath, "*.dll");
+            string[] dlls = Directory.GetFiles(ReflectionSet.GameModuleFolderPath, "*.dll", SearchOption.AllDirectories);
 
             foreach (string dll in dlls)
             {
@@ -264,7 +264,7 @@ namespace Milimoe.FunGame.Core.Service
         {
             if (!Directory.Exists(ReflectionSet.GameModuleFolderPath)) return servers;
 
-            string[] dlls = Directory.GetFiles(ReflectionSet.GameModuleFolderPath, "*.dll");
+            string[] dlls = Directory.GetFiles(ReflectionSet.GameModuleFolderPath, "*.dll", SearchOption.AllDirectories);
 
             foreach (string dll in dlls)
             {
@@ -334,7 +334,7 @@ namespace Milimoe.FunGame.Core.Service
         {
             if (!Directory.Exists(ReflectionSet.GameMapFolderPath)) return maps;
 
-            string[] dlls = Directory.GetFiles(ReflectionSet.GameMapFolderPath, "*.dll");
+            string[] dlls = Directory.GetFiles(ReflectionSet.GameMapFolderPath, "*.dll", SearchOption.AllDirectories);
 
             foreach (string dll in dlls)
             {

@@ -2842,7 +2842,7 @@ namespace Milimoe.FunGame.Core.Model
                 }
             }
 
-            if (heal <= 0)
+            if (heal <= 0 || heal.ToString("0.##") == "0")
             {
                 return;
             }

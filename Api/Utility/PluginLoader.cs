@@ -15,11 +15,16 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <summary>
         /// 已加载的插件DLL名称对应的路径
         /// </summary>
-        public static Dictionary<string, string> PluginFilePaths => new(AddonManager.PluginFilePaths);
+        public Dictionary<string, string> PluginFilePaths => IsHotLoadMode ? new(HotLoadAddonManager.PluginFilePaths) : new(AddonManager.PluginFilePaths);
 
-        private PluginLoader()
+        /// <summary>
+        /// 使用可热更新的加载项模式
+        /// </summary>
+        public bool IsHotLoadMode { get; } = false;
+
+        private PluginLoader(bool hotMode = false)
         {
-
+            IsHotLoadMode = hotMode;
         }
 
         /// <summary>
@@ -33,6 +38,24 @@ namespace Milimoe.FunGame.Core.Api.Utility
             PluginLoader loader = new();
             AddonManager.LoadPlugins(loader.Plugins, delegates, otherobjs);
             foreach (Plugin plugin in loader.Plugins.Values.ToList())
+            {
+                // 如果插件加载后需要执行代码，请重写AfterLoad方法
+                plugin.AfterLoad(loader, otherobjs);
+            }
+            return loader;
+        }
+
+        /// <summary>
+        /// 构建一个插件读取器并读取插件 [ 可热更新模式 ]
+        /// </summary>
+        /// <param name="delegates">用于构建 <see cref="Controller.AddonController{T}"/></param>
+        /// <param name="otherobjs">其他需要传入给插件初始化的对象</param>
+        /// <returns></returns>
+        public static PluginLoader LoadPluginsByHotLoadMode(Dictionary<string, object> delegates, params object[] otherobjs)
+        {
+            PluginLoader loader = new();
+            List<Plugin> updated = HotLoadAddonManager.LoadPlugins(loader.Plugins, delegates, otherobjs);
+            foreach (Plugin plugin in updated)
             {
                 // 如果插件加载后需要执行代码，请重写AfterLoad方法
                 plugin.AfterLoad(loader, otherobjs);

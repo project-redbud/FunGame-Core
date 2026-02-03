@@ -6,7 +6,7 @@ using Milimoe.FunGame.Core.Library.Common.Event;
 
 namespace Milimoe.FunGame.Core.Library.Common.Addon
 {
-    public abstract class WebAPIPlugin : IAddon, IAddonController<IAddon>
+    public abstract class WebAPIPlugin : IPlugin
     {
         /// <summary>
         /// 插件名称
@@ -31,7 +31,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 包含了一些常用方法的控制器
         /// </summary>
-        public ServerAddonController<IAddon> Controller
+        public ServerAddonController<IPlugin> Controller
         {
             get => _controller ?? throw new NotImplementedException();
             internal set => _controller = value;
@@ -40,16 +40,16 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// base控制器
         /// </summary>
-        BaseAddonController<IAddon> IAddonController<IAddon>.Controller
+        BaseAddonController<IPlugin> IAddonController<IPlugin>.Controller
         {
             get => Controller;
-            set => _controller = (ServerAddonController<IAddon>?)value;
+            set => _controller = (ServerAddonController<IPlugin>?)value;
         }
 
         /// <summary>
         /// 控制器内部变量
         /// </summary>
-        private ServerAddonController<IAddon>? _controller;
+        private ServerAddonController<IPlugin>? _controller;
 
         /// <summary>
         /// 加载标记

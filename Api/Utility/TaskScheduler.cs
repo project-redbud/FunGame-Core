@@ -1,6 +1,7 @@
 ﻿using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
+using Milimoe.FunGame.Core.Service;
 
 namespace Milimoe.FunGame.Core.Api.Utility
 {
@@ -152,6 +153,14 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 }
             }
             return msg.Trim();
+        }
+
+        /// <summary>
+        /// 开启循环检查是否有未清除的加载项上下文
+        /// </summary>
+        public static void StartCleanUnusedAddonContexts(Action<Exception>? error = null)
+        {
+            Shared.AddRecurringTask("CleanUnusedContexts", TimeSpan.FromMinutes(2), HotLoadAddonManager.CleanUnusedContexts, true, error);
         }
 
         /// <summary>
