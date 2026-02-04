@@ -69,11 +69,13 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 AddonManager.LoadGameMaps(loader.Maps, otherobjs);
                 foreach (GameMap map in loader.Maps.Values.ToList())
                 {
+                    map.ModuleLoader = loader;
                     map.AfterLoad(loader, otherobjs);
                 }
                 AddonManager.LoadGameModules(loader.Modules, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
                 foreach (GameModule module in loader.Modules.Values.ToList())
                 {
+                    module.ModuleLoader = loader;
                     // 读取模组的依赖集合
                     module.GameModuleDepend.GetDependencies(loader);
                     // 如果模组加载后需要执行代码，请重写AfterLoad方法
@@ -85,11 +87,13 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 AddonManager.LoadGameMaps(loader.Maps, otherobjs);
                 foreach (GameMap map in loader.Maps.Values.ToList())
                 {
+                    map.ModuleLoader = loader;
                     map.AfterLoad(loader, otherobjs);
                 }
                 AddonManager.LoadGameModulesForServer(loader.ModuleServers, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
                 foreach (GameModuleServer server in loader.ModuleServers.Values.ToList())
                 {
+                    server.ModuleLoader = loader;
                     server.GameModuleDepend.GetDependencies(loader);
                     server.AfterLoad(loader, otherobjs);
                 }
@@ -115,11 +119,13 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 List<GameMap> updated = HotLoadAddonManager.LoadGameMaps(loader.Maps, otherobjs);
                 foreach (GameMap map in updated)
                 {
+                    map.ModuleLoader = loader;
                     map.AfterLoad(loader, otherobjs);
                 }
                 List<GameModule> updatedModule = HotLoadAddonManager.LoadGameModules(loader.Modules, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
                 foreach (GameModule module in updatedModule)
                 {
+                    module.ModuleLoader = loader;
                     // 读取模组的依赖集合
                     module.GameModuleDepend.GetDependencies(loader);
                     // 如果模组加载后需要执行代码，请重写AfterLoad方法
@@ -131,11 +137,13 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 List<GameMap> updated = HotLoadAddonManager.LoadGameMaps(loader.Maps, otherobjs);
                 foreach (GameMap map in updated)
                 {
+                    map.ModuleLoader = loader;
                     map.AfterLoad(loader, otherobjs);
                 }
                 List<GameModuleServer> updatedServer = HotLoadAddonManager.LoadGameModulesForServer(loader.ModuleServers, loader.Characters, loader.Skills, loader.Items, delegates, otherobjs);
                 foreach (GameModuleServer server in updatedServer)
                 {
+                    server.ModuleLoader = loader;
                     server.GameModuleDepend.GetDependencies(loader);
                     server.AfterLoad(loader, otherobjs);
                 }
@@ -157,11 +165,13 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 List<GameMap> updated = HotLoadAddonManager.LoadGameMaps(Maps, otherobjs);
                 foreach (GameMap map in updated)
                 {
+                    map.ModuleLoader = this;
                     map.AfterLoad(this, otherobjs);
                 }
                 List<GameModule> updatedModule = HotLoadAddonManager.LoadGameModules(Modules, Characters, Skills, Items, delegates, otherobjs);
                 foreach (GameModule module in updatedModule)
                 {
+                    module.ModuleLoader = this;
                     // 读取模组的依赖集合
                     module.GameModuleDepend.GetDependencies(this);
                     // 如果模组加载后需要执行代码，请重写AfterLoad方法
@@ -173,11 +183,13 @@ namespace Milimoe.FunGame.Core.Api.Utility
                 List<GameMap> updated = HotLoadAddonManager.LoadGameMaps(Maps, otherobjs);
                 foreach (GameMap map in updated)
                 {
+                    map.ModuleLoader = this;
                     map.AfterLoad(this, otherobjs);
                 }
                 List<GameModuleServer> updatedServer = HotLoadAddonManager.LoadGameModulesForServer(ModuleServers, Characters, Skills, Items, delegates, otherobjs);
                 foreach (GameModuleServer server in updatedServer)
                 {
+                    server.ModuleLoader = this;
                     server.GameModuleDepend.GetDependencies(this);
                     server.AfterLoad(this, otherobjs);
                 }

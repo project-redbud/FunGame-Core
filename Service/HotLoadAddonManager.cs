@@ -85,6 +85,7 @@ namespace Milimoe.FunGame.Core.Service
                         {
                             aware.OnBeforeUnload();
                         }
+                        sub.Instance.UnLoad();
                         Plugins.Remove(sub.Name);
                         Modules.Remove(sub.Name);
                     }

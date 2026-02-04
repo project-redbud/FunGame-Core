@@ -39,6 +39,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             AddonManager.LoadServerPlugins(loader.Plugins, delegates, otherobjs);
             foreach (ServerPlugin plugin in loader.Plugins.Values.ToList())
             {
+                plugin.PluginLoader = loader;
                 // 如果插件加载后需要执行代码，请重写AfterLoad方法
                 plugin.AfterLoad(loader, otherobjs);
             }
@@ -57,6 +58,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             List<ServerPlugin> updated = HotLoadAddonManager.LoadServerPlugins(loader.Plugins, delegates, otherobjs);
             foreach (ServerPlugin plugin in updated)
             {
+                plugin.PluginLoader = loader;
                 // 如果插件加载后需要执行代码，请重写AfterLoad方法
                 plugin.AfterLoad(loader, otherobjs);
             }
@@ -74,6 +76,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             List<ServerPlugin> updated = HotLoadAddonManager.LoadServerPlugins(Plugins, delegates, otherobjs);
             foreach (ServerPlugin plugin in updated)
             {
+                plugin.PluginLoader = this;
                 plugin.AfterLoad(this, otherobjs);
             }
         }

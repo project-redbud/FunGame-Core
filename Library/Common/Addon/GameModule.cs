@@ -70,6 +70,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         }
 
         /// <summary>
+        /// 记录该模组的加载器
+        /// </summary>
+        public GameModuleLoader? ModuleLoader { get; set; } = null;
+
+        /// <summary>
         /// 包含了一些常用方法的控制器
         /// </summary>
         public AddonController<IGameModule> Controller
@@ -139,6 +144,15 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         }
 
         /// <summary>
+        /// 卸载模组
+        /// </summary>
+        /// <param name="objs"></param>
+        public void UnLoad(params object[] objs)
+        {
+            BindEvent(false);
+        }
+
+        /// <summary>
         /// 模组完全加载后需要做的事
         /// </summary>
         public virtual void AfterLoad(GameModuleLoader loader, params object[] args)
@@ -160,8 +174,14 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// </summary>
         private void Init(params object[] objs)
         {
-            if (objs.Length > 0) _session = (Session)objs[0];
-            if (objs.Length > 1) _config = (FunGameConfig)objs[1];
+            if (objs.Length > 0 && objs[0] is Session session)
+            {
+                _session = session;
+            }
+            if (objs.Length > 1 && objs[1] is FunGameConfig config)
+            {
+                _config = config;
+            }
         }
 
         /// <summary>
@@ -182,126 +202,246 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 绑定事件。在<see cref="BeforeLoad"/>后触发
         /// </summary>
-        private void BindEvent()
+        private void BindEvent(bool isAdd = true)
         {
-            if (this is IGamingConnectEvent)
+            if (this is IGamingConnectEvent connect)
             {
-                IGamingConnectEvent bind = (IGamingConnectEvent)this;
-                GamingConnect += bind.GamingConnectEvent;
+                if (isAdd)
+                {
+                    GamingConnect += connect.GamingConnectEvent;
+                }
+                else
+                {
+                    GamingConnect -= connect.GamingConnectEvent;
+                }
             }
 
-            if (this is IGamingDisconnectEvent)
+            if (this is IGamingDisconnectEvent disconnect)
             {
-                IGamingDisconnectEvent bind = (IGamingDisconnectEvent)this;
-                GamingDisconnect += bind.GamingDisconnectEvent;
+                if (isAdd)
+                {
+                    GamingDisconnect += disconnect.GamingDisconnectEvent;
+                }
+                else
+                {
+                    GamingDisconnect -= disconnect.GamingDisconnectEvent;
+                }
             }
 
-            if (this is IGamingReconnectEvent)
+            if (this is IGamingReconnectEvent reconnect)
             {
-                IGamingReconnectEvent bind = (IGamingReconnectEvent)this;
-                GamingReconnect += bind.GamingReconnectEvent;
+                if (isAdd)
+                {
+                    GamingReconnect += reconnect.GamingReconnectEvent;
+                }
+                else
+                {
+                    GamingReconnect -= reconnect.GamingReconnectEvent;
+                }
             }
 
-            if (this is IGamingBanCharacterEvent)
+            if (this is IGamingBanCharacterEvent ban)
             {
-                IGamingBanCharacterEvent bind = (IGamingBanCharacterEvent)this;
-                GamingBanCharacter += bind.GamingBanCharacterEvent;
+                if (isAdd)
+                {
+                    GamingBanCharacter += ban.GamingBanCharacterEvent;
+                }
+                else
+                {
+                    GamingBanCharacter -= ban.GamingBanCharacterEvent;
+                }
             }
 
-            if (this is IGamingPickCharacterEvent)
+            if (this is IGamingPickCharacterEvent pick)
             {
-                IGamingPickCharacterEvent bind = (IGamingPickCharacterEvent)this;
-                GamingPickCharacter += bind.GamingPickCharacterEvent;
+                if (isAdd)
+                {
+                    GamingPickCharacter += pick.GamingPickCharacterEvent;
+                }
+                else
+                {
+                    GamingPickCharacter -= pick.GamingPickCharacterEvent;
+                }
             }
 
-            if (this is IGamingRandomEvent)
+            if (this is IGamingRandomEvent random)
             {
-                IGamingRandomEvent bind = (IGamingRandomEvent)this;
-                GamingRandom += bind.GamingRandomEvent;
+                if (isAdd)
+                {
+                    GamingRandom += random.GamingRandomEvent;
+                }
+                else
+                {
+                    GamingRandom -= random.GamingRandomEvent;
+                }
             }
 
-            if (this is IGamingRoundEvent)
+            if (this is IGamingRoundEvent round)
             {
-                IGamingRoundEvent bind = (IGamingRoundEvent)this;
-                GamingRound += bind.GamingRoundEvent;
+                if (isAdd)
+                {
+                    GamingRound += round.GamingRoundEvent;
+                }
+                else
+                {
+                    GamingRound -= round.GamingRoundEvent;
+                }
             }
 
-            if (this is IGamingLevelUpEvent)
+            if (this is IGamingLevelUpEvent levelUp)
             {
-                IGamingLevelUpEvent bind = (IGamingLevelUpEvent)this;
-                GamingLevelUp += bind.GamingLevelUpEvent;
+                if (isAdd)
+                {
+                    GamingLevelUp += levelUp.GamingLevelUpEvent;
+                }
+                else
+                {
+                    GamingLevelUp -= levelUp.GamingLevelUpEvent;
+                }
             }
 
-            if (this is IGamingMoveEvent)
+            if (this is IGamingMoveEvent move)
             {
-                IGamingMoveEvent bind = (IGamingMoveEvent)this;
-                GamingMove += bind.GamingMoveEvent;
+                if (isAdd)
+                {
+                    GamingMove += move.GamingMoveEvent;
+                }
+                else
+                {
+                    GamingMove -= move.GamingMoveEvent;
+                }
             }
 
-            if (this is IGamingAttackEvent)
+            if (this is IGamingAttackEvent attack)
             {
-                IGamingAttackEvent bind = (IGamingAttackEvent)this;
-                GamingAttack += bind.GamingAttackEvent;
+                if (isAdd)
+                {
+                    GamingAttack += attack.GamingAttackEvent;
+                }
+                else
+                {
+                    GamingAttack -= attack.GamingAttackEvent;
+                }
             }
 
-            if (this is IGamingSkillEvent)
+            if (this is IGamingSkillEvent skill)
             {
-                IGamingSkillEvent bind = (IGamingSkillEvent)this;
-                GamingSkill += bind.GamingSkillEvent;
+                if (isAdd)
+                {
+                    GamingSkill += skill.GamingSkillEvent;
+                }
+                else
+                {
+                    GamingSkill -= skill.GamingSkillEvent;
+                }
             }
 
-            if (this is IGamingItemEvent)
+            if (this is IGamingItemEvent item)
             {
-                IGamingItemEvent bind = (IGamingItemEvent)this;
-                GamingItem += bind.GamingItemEvent;
+                if (isAdd)
+                {
+                    GamingItem += item.GamingItemEvent;
+                }
+                else
+                {
+                    GamingItem -= item.GamingItemEvent;
+                }
             }
 
-            if (this is IGamingMagicEvent)
+            if (this is IGamingMagicEvent magic)
             {
-                IGamingMagicEvent bind = (IGamingMagicEvent)this;
-                GamingMagic += bind.GamingMagicEvent;
+                if (isAdd)
+                {
+                    GamingMagic += magic.GamingMagicEvent;
+                }
+                else
+                {
+                    GamingMagic -= magic.GamingMagicEvent;
+                }
             }
 
-            if (this is IGamingBuyEvent)
+            if (this is IGamingBuyEvent buy)
             {
-                IGamingBuyEvent bind = (IGamingBuyEvent)this;
-                GamingBuy += bind.GamingBuyEvent;
+                if (isAdd)
+                {
+                    GamingBuy += buy.GamingBuyEvent;
+                }
+                else
+                {
+                    GamingBuy -= buy.GamingBuyEvent;
+                }
             }
 
-            if (this is IGamingSuperSkillEvent)
+            if (this is IGamingSuperSkillEvent super)
             {
-                IGamingSuperSkillEvent bind = (IGamingSuperSkillEvent)this;
-                GamingSuperSkill += bind.GamingSuperSkillEvent;
+                if (isAdd)
+                {
+                    GamingSuperSkill += super.GamingSuperSkillEvent;
+                }
+                else
+                {
+                    GamingSuperSkill -= super.GamingSuperSkillEvent;
+                }
             }
 
-            if (this is IGamingPauseEvent)
+            if (this is IGamingPauseEvent pause)
             {
-                IGamingPauseEvent bind = (IGamingPauseEvent)this;
-                GamingPause += bind.GamingPauseEvent;
+                if (isAdd)
+                {
+                    GamingPause += pause.GamingPauseEvent;
+                }
+                else
+                {
+                    GamingPause -= pause.GamingPauseEvent;
+                }
             }
 
-            if (this is IGamingUnpauseEvent)
+            if (this is IGamingUnpauseEvent unpause)
             {
-                IGamingUnpauseEvent bind = (IGamingUnpauseEvent)this;
-                GamingUnpause += bind.GamingUnpauseEvent;
+                if (isAdd)
+                {
+                    GamingUnpause += unpause.GamingUnpauseEvent;
+                }
+                else
+                {
+                    GamingUnpause -= unpause.GamingUnpauseEvent;
+                }
             }
 
-            if (this is IGamingSurrenderEvent)
+            if (this is IGamingSurrenderEvent surrender)
             {
-                IGamingSurrenderEvent bind = (IGamingSurrenderEvent)this;
-                GamingSurrender += bind.GamingSurrenderEvent;
+                if (isAdd)
+                {
+                    GamingSurrender += surrender.GamingSurrenderEvent;
+                }
+                else
+                {
+                    GamingSurrender -= surrender.GamingSurrenderEvent;
+                }
             }
 
-            if (this is IGamingUpdateInfoEvent)
+            if (this is IGamingUpdateInfoEvent update)
             {
-                IGamingUpdateInfoEvent bind = (IGamingUpdateInfoEvent)this;
-                GamingUpdateInfo += bind.GamingUpdateInfoEvent;
+                if (isAdd)
+                {
+                    GamingUpdateInfo += update.GamingUpdateInfoEvent;
+                }
+                else
+                {
+                    GamingUpdateInfo -= update.GamingUpdateInfoEvent;
+                }
             }
 
-            if (this is IGamingPunishEvent)
+            if (this is IGamingPunishEvent punish)
             {
-                IGamingPunishEvent bind = (IGamingPunishEvent)this;
-                GamingPunish += bind.GamingPunishEvent;
+                if (isAdd)
+                {
+                    GamingPunish += punish.GamingPunishEvent;
+                }
+                else
+                {
+                    GamingPunish -= punish.GamingPunishEvent;
+                }
             }
         }
 

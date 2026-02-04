@@ -39,6 +39,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             AddonManager.LoadPlugins(loader.Plugins, delegates, otherobjs);
             foreach (Plugin plugin in loader.Plugins.Values.ToList())
             {
+                plugin.PluginLoader = loader;
                 // 如果插件加载后需要执行代码，请重写AfterLoad方法
                 plugin.AfterLoad(loader, otherobjs);
             }
@@ -57,10 +58,27 @@ namespace Milimoe.FunGame.Core.Api.Utility
             List<Plugin> updated = HotLoadAddonManager.LoadPlugins(loader.Plugins, delegates, otherobjs);
             foreach (Plugin plugin in updated)
             {
+                plugin.PluginLoader = loader;
                 // 如果插件加载后需要执行代码，请重写AfterLoad方法
                 plugin.AfterLoad(loader, otherobjs);
             }
             return loader;
+        }
+
+        /// <summary>
+        /// 热更新
+        /// </summary>
+        /// <param name="delegates"></param>
+        /// <param name="otherobjs"></param>
+        public void HotReload(Dictionary<string, object> delegates, params object[] otherobjs)
+        {
+            if (!IsHotLoadMode) return;
+            List<Plugin> updated = HotLoadAddonManager.LoadPlugins(Plugins, delegates, otherobjs);
+            foreach (Plugin plugin in updated)
+            {
+                plugin.PluginLoader = this;
+                plugin.AfterLoad(this, otherobjs);
+            }
         }
 
         public Plugin this[string name]

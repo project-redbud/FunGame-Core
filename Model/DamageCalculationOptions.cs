@@ -11,7 +11,7 @@ namespace Milimoe.FunGame.Core.Model
         /// 伤害来源
         /// </summary>
         public Character Character { get; set; } = character;
-        
+
         /// <summary>
         /// 完整计算伤害
         /// </summary>

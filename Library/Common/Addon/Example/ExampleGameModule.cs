@@ -1,9 +1,11 @@
 using System.Collections.Concurrent;
+using System.Text;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Interface.Base;
+using Milimoe.FunGame.Core.Interface.Base.Addons;
 using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
@@ -30,7 +32,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
     }
 
     /// <summary>
-    /// 模组：必须继承基类：<see cref="GameModule"/><para/>
+    /// GameModule 是用于客户端的模组。每个模组都有一个对应的服务器模组，可以简单理解为“一种游戏模式”<para/>
+    /// 必须继承基类：<see cref="GameModule"/><para/>
     /// 继承事件接口并实现其方法来使模组生效。例如继承：<seealso cref="IGamingUpdateInfoEvent"/><para/>
     /// </summary>
     public class ExampleGameModule : GameModule, IGamingUpdateInfoEvent
@@ -112,7 +115,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
     /// 模组服务器：必须继承基类：<see cref="GameModuleServer"/><para/>
     /// 使用switch块分类处理 <see cref="GamingType"/>。
     /// </summary>
-    public class ExampleGameModuleServer : GameModuleServer
+    public class ExampleGameModuleServer : GameModuleServer, IHotReloadAware
     {
         /// <summary>
         /// 注意：服务器模组的名称必须和模组名称相同。除非你指定了 <see cref="GameModule.IsConnectToOtherServerModule"/> 和 <see cref="GameModule.AssociatedServerModuleName"/>
@@ -137,6 +140,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
         {
             public GamingObject GamingObject { get; } = obj;
             public List<User> ConnectedUser { get; } = [];
+            public List<Character> CharactersForPick { get; } = [];
+            public Dictionary<string, Character> UserCharacters { get; } = [];
             public Dictionary<string, Dictionary<string, object>> UserData { get; } = [];
         }
 
@@ -184,48 +189,24 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             await SendGamingMessage(obj.All.Values, GamingType.UpdateInfo, data);
 
             // 新建一个线程等待所有玩家确认，如果超时则取消游戏，30秒
-            CancellationTokenSource cts = new();
-            CancellationToken ct = cts.Token;
-            Task timeoutTask = Task.Delay(TimeSpan.FromSeconds(30), ct);
-
-            Task completionTask = Task.Run(async () =>
+            // 每200ms确认一次，不需要太频繁
+            await WaitForUsers(30, async () =>
             {
-                while (!ct.IsCancellationRequested)
+                if (worker.ConnectedUser.Count == obj.Users.Count)
                 {
-                    if (worker.ConnectedUser.Count == obj.Users.Count)
-                    {
-                        Controller.WriteLine("所有玩家都已经连接。");
-                        return;
-                    }
-                    // 每200ms确认一次，不需要太频繁
-                    await Task.Delay(200);
+                    Controller.WriteLine("所有玩家都已经连接。");
+                    return true;
                 }
-            }, ct);
-
-            // 等待完成或超时
-            Task completedTask = await Task.WhenAny(completionTask, timeoutTask);
-
-            if (completedTask == timeoutTask)
+                return false;
+            }, 200, async () =>
             {
                 Controller.WriteLine("等待玩家连接超时，放弃该局游戏！", LogLevel.Warning);
-                cts.Cancel();
-
-                // 通知已连接的玩家
-                Dictionary<string, object> timeoutData = new()
-                {
-                    { "msg", "由于等待超时，游戏已取消！" }
-                };
-                // 结束
-                SendEndGame(obj);
-                worker.ConnectedUser.Clear();
-                Workers.Remove(obj.Room.Roomid, out _);
-            }
-            else
+                await CancelGame(obj, worker, "由于等待超时，游戏已取消!");
+            }, async () =>
             {
-                cts.Cancel();
-            }
-
-            cts.Dispose();
+                // 所有玩家都连接完毕了，可以建立一个回合制游戏了
+                await StartGame(obj, worker);
+            });
         }
 
         public override async Task<Dictionary<string, object>> GamingMessageHandler(IServerModel model, GamingType type, Dictionary<string, object> data)
@@ -250,6 +231,15 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
                     }
                     else Controller.WriteLine(username + " 确认连接失败！", LogLevel.Warning);
                     break;
+                case GamingType.PickCharacter:
+                    // 客户端选完了角色这里就要处理了
+                    long id = NetworkUtility.JsonDeserializeFromDictionary<long>(data, "id");
+                    if (worker.CharactersForPick.FirstOrDefault(c => c.Id == id) is Character character)
+                    {
+                        // 如果有人选一样的，你还没有处理，为了防止意外，最好复制一份
+                        worker.UserCharacters[username] = character.Copy();
+                    }
+                    break;
                 default:
                     await Task.Delay(1);
                     break;
@@ -258,9 +248,230 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             return result;
         }
 
+        private async Task CancelGame(GamingObject obj, ModuleServerWorker worker, string reason)
+        {
+            // 通知所有玩家
+            await SendAllTextMessage(obj, reason);
+            // 结束
+            SendEndGame(obj);
+            worker.ConnectedUser.Clear();
+            Workers.Remove(obj.Room.Roomid, out _);
+        }
+
+        private static async Task WaitForUsers(int waitSeconds, Func<Task<bool>> waitSomething, int delay, Func<Task> ifTimeout, Func<Task> ifCompleted)
+        {
+            // 这是一个用于等待的通用辅助方法
+            CancellationTokenSource cts = new();
+            CancellationToken ct = cts.Token;
+            Task timeoutTask = Task.Delay(TimeSpan.FromSeconds(waitSeconds), ct);
+
+            Task completionTask = Task.Run(async () =>
+            {
+                while (!ct.IsCancellationRequested)
+                {
+                    if (await waitSomething())
+                    {
+                        return;
+                    }
+                    await Task.Delay(delay);
+                }
+            }, ct);
+
+            // 等待完成或超时
+            Task completedTask = await Task.WhenAny(completionTask, timeoutTask);
+
+            if (completedTask == timeoutTask)
+            {
+                // 对超时的处理
+                cts.Cancel();
+                await ifTimeout();
+            }
+
+            cts.Dispose();
+
+            await ifCompleted();
+        }
+
+        private async Task StartGame(GamingObject obj, ModuleServerWorker worker)
+        {
+            Dictionary<User, Character> characters = [];
+            List<Character> characterPickeds = [];
+            Dictionary<string, object> data = [];
+
+            // 首先，让玩家们选择角色
+            // 需要一个待选的角色池
+            // 这些角色可以从工厂中获取，比如：
+            Character character1 = Factory.OpenFactory.GetInstance<Character>(1, "", []);
+            worker.CharactersForPick.Add(character1);
+            // 或者在什么地方已经有个列表？则使用复制方法
+            if (ModuleLoader != null && ModuleLoader.Characters.Count > 0)
+            {
+                CharacterModule characterModule = ModuleLoader.Characters.Values.First();
+                Character character2 = characterModule.Characters.Values.FirstOrDefault()?.Copy() ?? Factory.GetCharacter();
+                if (character2.Id > 0)
+                {
+                    worker.CharactersForPick.Add(character2);
+                }
+            }
+            // 传整个对象或者id都可以，看你心情，推荐用id，轻量，方便
+            data["list"] = worker.CharactersForPick.Select(c => c.Id);
+            await SendGamingMessage(obj.All.Values, GamingType.PickCharacter, data);
+
+            // 依然等待
+            await WaitForUsers(30, async () =>
+            {
+                if (worker.UserCharacters.Count == obj.Users.Count)
+                {
+                    Controller.WriteLine("所有玩家都已经完成选择。");
+                    return true;
+                }
+                return false;
+            }, 200, async () =>
+            {
+                await CancelGame(obj, worker, "由于等待超时，游戏已取消!");
+            }, async () =>
+            {
+                try
+                {
+                    // 得到一个最终列表
+                    List<Character> finalList = [.. worker.UserCharacters.Values];
+
+                    // 这里我们可以随意对角色们进行升级和赋能
+                    int clevel = 60;
+                    int slevel = 6;
+                    int mlevel = 8;
+
+                    foreach (Character c in finalList)
+                    {
+                        c.Level = clevel;
+                        c.NormalAttack.Level = mlevel;
+                        // 假设要给所有角色发一个编号为1的技能
+                        Skill s = Factory.OpenFactory.GetInstance<Skill>(1, "", []);
+                        s.Level = slevel;
+                        c.Skills.Add(s);
+                    }
+
+                    // 重点，创建一个战斗队列
+                    MixGamingQueue queue = new(finalList, (str) =>
+                    {
+                        // 战斗日志可以直接通过传输信息的方式输出回客户端
+                        _ = SendAllTextMessage(obj, str);
+                    });
+                    queue.InitActionQueue();
+                    // 这里我们仅演示自动化战斗，指令战斗还需要实现其他的消息处理类型
+                    queue.SetCharactersToAIControl(cancel: false, finalList);
+
+                    // 总游戏时长
+                    double totalTime = 0;
+                    // 总死亡数
+                    int deaths = 0;
+
+                    // 总回合数
+                    int max = 999;
+                    int i = 1;
+                    while (i < max)
+                    {
+                        if (i == (max - 1))
+                        {
+                            // 为了防止回合数超标，游戏近乎死局，可以设置一个上限，然后随便让一个人赢
+                            await SendAllTextMessage(obj, $"=== 终局审判 ===");
+                            Dictionary<Character, double> hp = [];
+                            foreach (Character c in finalList)
+                            {
+                                hp.TryAdd(c, Calculation.Round4Digits(c.HP / c.MaxHP));
+                            }
+                            double maxhp = hp.Values.Max();
+                            Character winner = hp.Keys.Where(c => hp[c] == maxhp).First();
+                            await SendAllTextMessage(obj, "[ " + winner + " ] 成为了天选之人！！");
+                            foreach (Character c in finalList.Where(c => c != winner && c.HP > 0))
+                            {
+                                await SendAllTextMessage(obj, "[ " + winner + " ] 对 [ " + c + " ] 造成了 99999999999 点真实伤害。");
+                                queue.DeathCalculation(winner, c);
+                            }
+                            queue.EndGameInfo(winner);
+                            break;
+                        }
+
+                        // 检查是否有角色可以行动
+                        Character? characterToAct = queue.NextCharacter();
+
+                        // 处理回合
+                        if (characterToAct != null)
+                        {
+                            await SendAllTextMessage(obj, $"=== Round {i++} ===");
+                            await SendAllTextMessage(obj, "现在是 [ " + characterToAct + " ] 的回合！");
+
+                            if (queue.Queue.Count == 0)
+                            {
+                                break;
+                            }
+
+                            bool isGameEnd = queue.ProcessTurn(characterToAct);
+                            if (isGameEnd)
+                            {
+                                break;
+                            }
+
+                            queue.DisplayQueue();
+                        }
+
+                        // 时间流逝，这样能知道下一个是谁可以行动
+                        totalTime += queue.TimeLapse();
+
+                        if (queue.Eliminated.Count > deaths)
+                        {
+                            deaths = queue.Eliminated.Count;
+                        }
+                    }
+
+                    await SendAllTextMessage(obj, "--- End ---");
+                    await SendAllTextMessage(obj, "总游戏时长：" + Calculation.Round2Digits(totalTime));
+
+                    // 赛后统计，充分利用 GamingQueue 提供的功能
+                    await SendAllTextMessage(obj, "=== 伤害排行榜 ===");
+                    int top = finalList.Count;
+                    int count = 1;
+                    foreach (Character character in queue.CharacterStatistics.OrderByDescending(d => d.Value.TotalDamage).Select(d => d.Key))
+                    {
+                        StringBuilder builder = new();
+                        CharacterStatistics stats = queue.CharacterStatistics[character];
+                        builder.AppendLine($"{count++}. [ {character.ToStringWithLevel()} ] （{stats.Kills} / {stats.Assists}）");
+                        builder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn} / 总计决策数：{stats.TurnDecisions} / 总计决策点：{stats.UseDecisionPoints}");
+                        builder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
+                        builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
+                        builder.Append($"每秒伤害：{stats.DamagePerSecond} / 每回合伤害：{stats.DamagePerTurn}");
+
+                        await SendAllTextMessage(obj, builder.ToString());
+                    }
+                }
+                catch (System.Exception e)
+                {
+                    TXTHelper.AppendErrorLog(e.ToString());
+                    Controller.Error(e);
+                }
+                finally
+                {
+                    // 结束
+                    SendEndGame(obj);
+                    worker.ConnectedUser.Clear();
+                    Workers.Remove(obj.Room.Roomid, out _);
+                }
+            });
+        }
+
+        private async Task SendAllTextMessage(GamingObject obj, string str)
+        {
+            // 工具方法，向所有人推送文本消息
+            Dictionary<string, object> data = [];
+            data.Add("showmessage", true);
+            data.Add("msg", str);
+            await SendGamingMessage(obj.All.Values, GamingType.UpdateInfo, data);
+        }
+
         protected HashSet<IServerModel> _clientModels = [];
 
         /// <summary>
+        /// 匿名服务器允许客户端不经过FunGameServer的登录验证就能建立一个游戏模组连接<para/>
         /// 匿名服务器示例
         /// </summary>
         /// <param name="model"></param>
@@ -268,7 +479,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
         /// <returns></returns>
         public override bool StartAnonymousServer(IServerModel model, Dictionary<string, object> data)
         {
-            // 可以做验证处理
+            // 可以做验证处理（这只是个演示，具体实现只需要双方约定，收发什么都无所谓）
             string access_token = NetworkUtility.JsonDeserializeFromDictionary<string>(data, "access_token") ?? "";
             if (access_token == "approval_access_token")
             {
@@ -303,6 +514,24 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             result.Add("msg", "匿名服务器已经收到消息了");
 
             return result;
+        }
+
+        /// <summary>
+        /// 热更新示例：必须实现 <see cref="IHotReloadAware"/> 接口才会被热更新模式加载这个模组<para/>
+        /// 如果想要实现端运行的所有模组都能热更新，那么这些模组都必须实现了这个接口（包括 <see cref="GameModule"/>，<see cref="GameMap"/>，<see cref="CharacterModule"/> 等等……）
+        /// </summary>
+        public void OnBeforeUnload()
+        {
+            // 这个方法会在模组被卸载前调用，因此，这里要清理一些状态，让框架可以正确卸载模组
+            // 假设，这是个匿名服务器，因此它需要清理匿名连接
+            GamingObjects.Clear();
+            _ = Send(_clientModels, SocketMessageType.EndGame, Factory.GetRoom(), Factory.GetUser());
+            IServerModel[] models = [.. _clientModels];
+            foreach (IServerModel model in models)
+            {
+                model.NowGamingServer = null;
+                CloseAnonymousServer(model);
+            }
         }
     }
 
@@ -385,6 +614,22 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
                 return dict;
             }
         }
+
+        protected override Factory.EntityFactoryDelegate<Character> CharacterFactory()
+        {
+            // 上面示例用 Characters 是预定义的
+            // 这里的工厂模式则是根据传进来的参数定制生成角色，只要重写这个方法就能注册工厂了
+            return (id, name, args) =>
+            {
+                return null;
+            };
+        }
+
+        public static Character CreateCharacter(long id, string name, Dictionary<string, object> args)
+        {
+            // 注册工厂后，后续创建角色只需要这样调用
+            return Factory.OpenFactory.GetInstance<Character>(id, name, args);
+        }
     }
 
     /// <summary>
@@ -405,14 +650,15 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             get
             {
                 Dictionary<string, Skill> dict = [];
-                // 技能应该在GameModule中新建类继承Skill实现，再自行构造。
+                /// 技能应该在新建类继承Skill实现，再自行构造并加入此列表。
+                /// 技能的实现示例参见：<see cref="ExampleSkill"/>
                 return dict;
             }
         }
 
         protected override Factory.EntityFactoryDelegate<Skill> SkillFactory()
         {
-            // 注册一个工厂，根据id和name，返回一个你继承实现了的类对象。
+            // 注册一个工厂，根据id和name，返回一个你继承实现了的类对象。所有的工厂使用方法参考 Character，都是一样的
             return (id, name, args) =>
             {
                 return null;
@@ -423,6 +669,18 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
         {
             return (id, name, args) =>
             {
+                // 以下是一个示例，实际开发中 id,name,args 怎么处置，看你心情
+                Skill? skill = null;
+                if (args.TryGetValue("skill", out object? value) && value is Skill s)
+                {
+                    skill = s;
+                }
+                skill ??= new OpenSkill(id, name, args);
+                /// 如 <see cref="ExampleOpenItemByJson"/> 中所说，特效需要在工厂中注册，方便重用
+                if (id == 1001)
+                {
+                    return new ExampleOpenEffectExATK2(skill, args);
+                }
                 return null;
             };
         }
@@ -446,7 +704,8 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             get
             {
                 Dictionary<string, Item> dict = [];
-                // 物品应该在GameModule中新建类继承Item实现，再自行构造。
+                /// 物品应该新建类继承Item实现，再自行构造并加入此列表。
+                /// 物品的实现示例参见：<see cref="ExampleItem"/>
                 return dict;
             }
         }

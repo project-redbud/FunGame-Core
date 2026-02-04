@@ -474,7 +474,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="response"></param>
         public virtual void ResolveInquiryBeforeTargetSelection(Character character, DecisionPoints dp, InquiryOptions options, InquiryResponse response)
         {
-            
+
         }
 
         /// <summary>

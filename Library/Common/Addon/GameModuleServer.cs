@@ -46,6 +46,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         public virtual bool IsAnonymous { get; set; } = false;
 
         /// <summary>
+        /// 记录该模组的加载器
+        /// </summary>
+        public GameModuleLoader? ModuleLoader { get; set; } = null;
+
+        /// <summary>
         /// 包含了一些常用方法的控制器
         /// </summary>
         public ServerAddonController<IGameModuleServer> Controller
@@ -145,6 +150,15 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
                 _isLoaded = true;
             }
             return _isLoaded;
+        }
+
+        /// <summary>
+        /// 卸载模组
+        /// </summary>
+        /// <param name="objs"></param>
+        public void UnLoad(params object[] objs)
+        {
+
         }
 
         /// <summary>

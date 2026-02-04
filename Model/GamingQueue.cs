@@ -2809,7 +2809,7 @@ namespace Milimoe.FunGame.Core.Model
                     }
                     if (healBonus != 0)
                     {
-                        totalHealBonus[effect]= healBonus;
+                        totalHealBonus[effect] = healBonus;
                         healStrings.Add($"{(healBonus > 0 ? " + " : " - ")}{Math.Abs(healBonus):0.##}（{effect.Name}）");
                     }
                 }

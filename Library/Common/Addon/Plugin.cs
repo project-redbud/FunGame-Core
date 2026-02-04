@@ -30,6 +30,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         public abstract string Author { get; }
 
         /// <summary>
+        /// 记录该插件的加载器
+        /// </summary>
+        public PluginLoader? PluginLoader { get; set; } = null;
+
+        /// <summary>
         /// 包含了一些常用方法的控制器
         /// </summary>
         public AddonController<IPlugin> Controller
@@ -80,6 +85,15 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         }
 
         /// <summary>
+        /// 卸载模组
+        /// </summary>
+        /// <param name="objs"></param>
+        public void UnLoad(params object[] objs)
+        {
+            BindEvent(false);
+        }
+
+        /// <summary>
         /// 插件完全加载后需要做的事
         /// </summary>
         public virtual void AfterLoad(PluginLoader loader, params object[] objs)
@@ -118,153 +132,300 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 绑定事件。在<see cref="BeforeLoad"/>后触发
         /// </summary>
-        private void BindEvent()
+        private void BindEvent(bool isAdd = true)
         {
-            if (this is IConnectEvent)
+            if (this is IConnectEvent connect)
             {
-                IConnectEvent bind = (IConnectEvent)this;
-                BeforeConnect += bind.BeforeConnectEvent;
-                AfterConnect += bind.AfterConnectEvent;
+                if (isAdd)
+                {
+                    BeforeConnect += connect.BeforeConnectEvent;
+                    AfterConnect += connect.AfterConnectEvent;
+                }
+                else
+                {
+                    BeforeConnect -= connect.BeforeConnectEvent;
+                    AfterConnect -= connect.AfterConnectEvent;
+                }
             }
 
-            if (this is IDisconnectEvent)
+            if (this is IDisconnectEvent disconnect)
             {
-                IDisconnectEvent bind = (IDisconnectEvent)this;
-                BeforeDisconnect += bind.BeforeDisconnectEvent;
-                AfterDisconnect += bind.AfterDisconnectEvent;
+                if (isAdd)
+                {
+                    BeforeDisconnect += disconnect.BeforeDisconnectEvent;
+                    AfterDisconnect += disconnect.AfterDisconnectEvent;
+                }
+                else
+                {
+                    BeforeDisconnect -= disconnect.BeforeDisconnectEvent;
+                    AfterDisconnect -= disconnect.AfterDisconnectEvent;
+                }
             }
 
-            if (this is ILoginEvent)
+            if (this is ILoginEvent login)
             {
-                ILoginEvent bind = (ILoginEvent)this;
-                BeforeLogin += bind.BeforeLoginEvent;
-                AfterLogin += bind.AfterLoginEvent;
+                if (isAdd)
+                {
+                    BeforeLogin += login.BeforeLoginEvent;
+                    AfterLogin += login.AfterLoginEvent;
+                }
+                else
+                {
+                    BeforeLogin -= login.BeforeLoginEvent;
+                    AfterLogin -= login.AfterLoginEvent;
+                }
             }
 
-            if (this is ILogoutEvent)
+            if (this is ILogoutEvent logout)
             {
-                ILogoutEvent bind = (ILogoutEvent)this;
-                BeforeLogout += bind.BeforeLogoutEvent;
-                AfterLogout += bind.AfterLogoutEvent;
+                if (isAdd)
+                {
+                    BeforeLogout += logout.BeforeLogoutEvent;
+                    AfterLogout += logout.AfterLogoutEvent;
+                }
+                else
+                {
+                    BeforeLogout -= logout.BeforeLogoutEvent;
+                    AfterLogout -= logout.AfterLogoutEvent;
+                }
             }
 
-            if (this is IRegEvent)
+            if (this is IRegEvent reg)
             {
-                IRegEvent bind = (IRegEvent)this;
-                BeforeReg += bind.BeforeRegEvent;
-                AfterReg += bind.AfterRegEvent;
+                if (isAdd)
+                {
+                    BeforeReg += reg.BeforeRegEvent;
+                    AfterReg += reg.AfterRegEvent;
+                }
+                else
+                {
+                    BeforeReg -= reg.BeforeRegEvent;
+                    AfterReg -= reg.AfterRegEvent;
+                }
             }
 
-            if (this is IIntoRoomEvent)
+            if (this is IIntoRoomEvent intoRoom)
             {
-                IIntoRoomEvent bind = (IIntoRoomEvent)this;
-                BeforeIntoRoom += bind.BeforeIntoRoomEvent;
-                AfterIntoRoom += bind.AfterIntoRoomEvent;
+                if (isAdd)
+                {
+                    BeforeIntoRoom += intoRoom.BeforeIntoRoomEvent;
+                    AfterIntoRoom += intoRoom.AfterIntoRoomEvent;
+                }
+                else
+                {
+                    BeforeIntoRoom -= intoRoom.BeforeIntoRoomEvent;
+                    AfterIntoRoom -= intoRoom.AfterIntoRoomEvent;
+                }
             }
 
-            if (this is ISendTalkEvent)
+            if (this is ISendTalkEvent sendTalk)
             {
-                ISendTalkEvent bind = (ISendTalkEvent)this;
-                BeforeSendTalk += bind.BeforeSendTalkEvent;
-                AfterSendTalk += bind.AfterSendTalkEvent;
+                if (isAdd)
+                {
+                    BeforeSendTalk += sendTalk.BeforeSendTalkEvent;
+                    AfterSendTalk += sendTalk.AfterSendTalkEvent;
+                }
+                else
+                {
+                    BeforeSendTalk -= sendTalk.BeforeSendTalkEvent;
+                    AfterSendTalk -= sendTalk.AfterSendTalkEvent;
+                }
             }
 
-            if (this is ICreateRoomEvent)
+            if (this is ICreateRoomEvent createRoom)
             {
-                ICreateRoomEvent bind = (ICreateRoomEvent)this;
-                BeforeCreateRoom += bind.BeforeCreateRoomEvent;
-                AfterCreateRoom += bind.AfterCreateRoomEvent;
+                if (isAdd)
+                {
+                    BeforeCreateRoom += createRoom.BeforeCreateRoomEvent;
+                    AfterCreateRoom += createRoom.AfterCreateRoomEvent;
+                }
+                else
+                {
+                    BeforeCreateRoom -= createRoom.BeforeCreateRoomEvent;
+                    AfterCreateRoom -= createRoom.AfterCreateRoomEvent;
+                }
             }
 
-            if (this is IQuitRoomEvent)
+            if (this is IQuitRoomEvent quitRoom)
             {
-                IQuitRoomEvent bind = (IQuitRoomEvent)this;
-                BeforeQuitRoom += bind.BeforeQuitRoomEvent;
-                AfterQuitRoom += bind.AfterQuitRoomEvent;
+                if (isAdd)
+                {
+                    BeforeQuitRoom += quitRoom.BeforeQuitRoomEvent;
+                    AfterQuitRoom += quitRoom.AfterQuitRoomEvent;
+                }
+                else
+                {
+                    BeforeQuitRoom -= quitRoom.BeforeQuitRoomEvent;
+                    AfterQuitRoom -= quitRoom.AfterQuitRoomEvent;
+                }
             }
 
-            if (this is IChangeRoomSettingEvent)
+            if (this is IChangeRoomSettingEvent changeRoomSetting)
             {
-                IChangeRoomSettingEvent bind = (IChangeRoomSettingEvent)this;
-                BeforeChangeRoomSetting += bind.BeforeChangeRoomSettingEvent;
-                AfterChangeRoomSetting += bind.AfterChangeRoomSettingEvent;
+                if (isAdd)
+                {
+                    BeforeChangeRoomSetting += changeRoomSetting.BeforeChangeRoomSettingEvent;
+                    AfterChangeRoomSetting += changeRoomSetting.AfterChangeRoomSettingEvent;
+                }
+                else
+                {
+                    BeforeChangeRoomSetting -= changeRoomSetting.BeforeChangeRoomSettingEvent;
+                    AfterChangeRoomSetting -= changeRoomSetting.AfterChangeRoomSettingEvent;
+                }
             }
 
-            if (this is IStartMatchEvent)
+            if (this is IStartMatchEvent startMatch)
             {
-                IStartMatchEvent bind = (IStartMatchEvent)this;
-                BeforeStartMatch += bind.BeforeStartMatchEvent;
-                AfterStartMatch += bind.AfterStartMatchEvent;
+                if (isAdd)
+                {
+                    BeforeStartMatch += startMatch.BeforeStartMatchEvent;
+                    AfterStartMatch += startMatch.AfterStartMatchEvent;
+                }
+                else
+                {
+                    BeforeStartMatch -= startMatch.BeforeStartMatchEvent;
+                    AfterStartMatch -= startMatch.AfterStartMatchEvent;
+                }
             }
 
-            if (this is IStartGameEvent)
+            if (this is IStartGameEvent startGame)
             {
-                IStartGameEvent bind = (IStartGameEvent)this;
-                BeforeStartGame += bind.BeforeStartGameEvent;
-                AfterStartGame += bind.AfterStartGameEvent;
+                if (isAdd)
+                {
+                    BeforeStartGame += startGame.BeforeStartGameEvent;
+                    AfterStartGame += startGame.AfterStartGameEvent;
+                }
+                else
+                {
+                    BeforeStartGame -= startGame.BeforeStartGameEvent;
+                    AfterStartGame -= startGame.AfterStartGameEvent;
+                }
             }
 
-            if (this is IChangeProfileEvent)
+            if (this is IChangeProfileEvent changeProfile)
             {
-                IChangeProfileEvent bind = (IChangeProfileEvent)this;
-                BeforeChangeProfile += bind.BeforeChangeProfileEvent;
-                AfterChangeProfile += bind.AfterChangeProfileEvent;
+                if (isAdd)
+                {
+                    BeforeChangeProfile += changeProfile.BeforeChangeProfileEvent;
+                    AfterChangeProfile += changeProfile.AfterChangeProfileEvent;
+                }
+                else
+                {
+                    BeforeChangeProfile -= changeProfile.BeforeChangeProfileEvent;
+                    AfterChangeProfile -= changeProfile.AfterChangeProfileEvent;
+                }
             }
 
-            if (this is IChangeAccountSettingEvent)
+            if (this is IChangeAccountSettingEvent changeAccountSetting)
             {
-                IChangeAccountSettingEvent bind = (IChangeAccountSettingEvent)this;
-                BeforeChangeAccountSetting += bind.BeforeChangeAccountSettingEvent;
-                AfterChangeAccountSetting += bind.AfterChangeAccountSettingEvent;
+                if (isAdd)
+                {
+                    BeforeChangeAccountSetting += changeAccountSetting.BeforeChangeAccountSettingEvent;
+                    AfterChangeAccountSetting += changeAccountSetting.AfterChangeAccountSettingEvent;
+                }
+                else
+                {
+                    BeforeChangeAccountSetting -= changeAccountSetting.BeforeChangeAccountSettingEvent;
+                    AfterChangeAccountSetting -= changeAccountSetting.AfterChangeAccountSettingEvent;
+                }
             }
 
-            if (this is IOpenInventoryEvent)
+            if (this is IOpenInventoryEvent openInventory)
             {
-                IOpenInventoryEvent bind = (IOpenInventoryEvent)this;
-                BeforeOpenInventory += bind.BeforeOpenInventoryEvent;
-                AfterOpenInventory += bind.AfterOpenInventoryEvent;
+                if (isAdd)
+                {
+                    BeforeOpenInventory += openInventory.BeforeOpenInventoryEvent;
+                    AfterOpenInventory += openInventory.AfterOpenInventoryEvent;
+                }
+                else
+                {
+                    BeforeOpenInventory -= openInventory.BeforeOpenInventoryEvent;
+                    AfterOpenInventory -= openInventory.AfterOpenInventoryEvent;
+                }
             }
 
-            if (this is ISignInEvent)
+            if (this is ISignInEvent signIn)
             {
-                ISignInEvent bind = (ISignInEvent)this;
-                BeforeSignIn += bind.BeforeSignInEvent;
-                AfterSignIn += bind.AfterSignInEvent;
+                if (isAdd)
+                {
+                    BeforeSignIn += signIn.BeforeSignInEvent;
+                    AfterSignIn += signIn.AfterSignInEvent;
+                }
+                else
+                {
+                    BeforeSignIn -= signIn.BeforeSignInEvent;
+                    AfterSignIn -= signIn.AfterSignInEvent;
+                }
             }
 
-            if (this is IOpenStoreEvent)
+            if (this is IOpenStoreEvent openStore)
             {
-                IOpenStoreEvent bind = (IOpenStoreEvent)this;
-                BeforeOpenStore += bind.BeforeOpenStoreEvent;
-                AfterOpenStore += bind.AfterOpenStoreEvent;
+                if (isAdd)
+                {
+                    BeforeOpenStore += openStore.BeforeOpenStoreEvent;
+                    AfterOpenStore += openStore.AfterOpenStoreEvent;
+                }
+                else
+                {
+                    BeforeOpenStore -= openStore.BeforeOpenStoreEvent;
+                    AfterOpenStore -= openStore.AfterOpenStoreEvent;
+                }
             }
 
-            if (this is IBuyItemEvent)
+            if (this is IBuyItemEvent buyItem)
             {
-                IBuyItemEvent bind = (IBuyItemEvent)this;
-                BeforeBuyItem += bind.BeforeBuyItemEvent;
-                AfterBuyItem += bind.AfterBuyItemEvent;
+                if (isAdd)
+                {
+                    BeforeBuyItem += buyItem.BeforeBuyItemEvent;
+                    AfterBuyItem += buyItem.AfterBuyItemEvent;
+                }
+                else
+                {
+                    BeforeBuyItem -= buyItem.BeforeBuyItemEvent;
+                    AfterBuyItem -= buyItem.AfterBuyItemEvent;
+                }
             }
 
-            if (this is IShowRankingEvent)
+            if (this is IShowRankingEvent showRanking)
             {
-                IShowRankingEvent bind = (IShowRankingEvent)this;
-                BeforeShowRanking += bind.BeforeShowRankingEvent;
-                AfterShowRanking += bind.AfterShowRankingEvent;
+                if (isAdd)
+                {
+                    BeforeShowRanking += showRanking.BeforeShowRankingEvent;
+                    AfterShowRanking += showRanking.AfterShowRankingEvent;
+                }
+                else
+                {
+                    BeforeShowRanking -= showRanking.BeforeShowRankingEvent;
+                    AfterShowRanking -= showRanking.AfterShowRankingEvent;
+                }
             }
 
-            if (this is IUseItemEvent)
+            if (this is IUseItemEvent useItem)
             {
-                IUseItemEvent bind = (IUseItemEvent)this;
-                BeforeUseItem += bind.BeforeUseItemEvent;
-                AfterUseItem += bind.AfterUseItemEvent;
+                if (isAdd)
+                {
+                    BeforeUseItem += useItem.BeforeUseItemEvent;
+                    AfterUseItem += useItem.AfterUseItemEvent;
+                }
+                else
+                {
+                    BeforeUseItem -= useItem.BeforeUseItemEvent;
+                    AfterUseItem -= useItem.AfterUseItemEvent;
+                }
             }
 
-            if (this is IEndGameEvent)
+            if (this is IEndGameEvent endGame)
             {
-                IEndGameEvent bind = (IEndGameEvent)this;
-                BeforeEndGame += bind.BeforeEndGameEvent;
-                AfterEndGame += bind.AfterEndGameEvent;
+                if (isAdd)
+                {
+                    BeforeEndGame += endGame.BeforeEndGameEvent;
+                    AfterEndGame += endGame.AfterEndGameEvent;
+                }
+                else
+                {
+                    BeforeEndGame -= endGame.BeforeEndGameEvent;
+                    AfterEndGame -= endGame.AfterEndGameEvent;
+                }
             }
         }
 

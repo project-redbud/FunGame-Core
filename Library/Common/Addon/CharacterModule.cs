@@ -51,7 +51,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
                 // 模组加载后，不允许再次加载此模组
                 _isLoaded = true;
                 // 注册工厂
-                Factory.OpenFactory.RegisterFactory(EntityFactory());
+                Factory.OpenFactory.RegisterFactory(CharacterFactory());
                 // 如果加载后需要执行代码，请重写AfterLoad方法
                 AfterLoad();
             }
@@ -59,9 +59,18 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         }
 
         /// <summary>
+        /// 卸载模组
+        /// </summary>
+        /// <param name="objs"></param>
+        public void UnLoad(params object[] objs)
+        {
+            Factory.OpenFactory.UnRegisterFactory(CharacterFactory());
+        }
+
+        /// <summary>
         /// 注册工厂
         /// </summary>
-        protected virtual Factory.EntityFactoryDelegate<Character> EntityFactory()
+        protected virtual Factory.EntityFactoryDelegate<Character> CharacterFactory()
         {
             return (id, name, args) =>
             {
