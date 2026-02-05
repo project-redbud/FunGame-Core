@@ -6,6 +6,7 @@ using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.Base.Addons;
+using Milimoe.FunGame.Core.Library.Common.Architecture;
 using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
@@ -81,8 +82,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
 
         public override void StartUI(params object[] args)
         {
-            // 如果你是一个WPF或者Winform项目，可以在这里启动你的界面
-            // 如果没有，则不需要重写此方法
+            /// 如果模组不依附 <see cref="Gaming"/> 类启动，或者没有UI，则不需要重写此方法
         }
 
         public void GamingUpdateInfoEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
@@ -220,26 +220,45 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             switch (type)
             {
                 case GamingType.Connect:
-                    // 编写处理“连接”命令的逻辑
-                    // 如果需要处理客户端传递的参数：获取与客户端约定好的参数key对应的值
-                    string un = NetworkUtility.JsonDeserializeFromDictionary<string>(data, "username") ?? "";
-                    Guid token = NetworkUtility.JsonDeserializeFromDictionary<Guid>(data, "connect_token");
-                    if (un == username && worker.UserData.TryGetValue(username, out Dictionary<string, object>? value) && value != null && (value["connect_token"]?.Equals(token) ?? false))
                     {
-                        worker.ConnectedUser.Add(obj.Users.Where(u => u.Username == username).First());
-                        Controller.WriteLine(username + " 已经连接。");
+                        // 编写处理“连接”命令的逻辑
+                        // 如果需要处理客户端传递的参数：获取与客户端约定好的参数key对应的值
+                        string un = NetworkUtility.JsonDeserializeFromDictionary<string>(data, "username") ?? "";
+                        Guid token = NetworkUtility.JsonDeserializeFromDictionary<Guid>(data, "connect_token");
+                        if (un == username && worker.UserData.TryGetValue(username, out Dictionary<string, object>? value) && value != null && (value["connect_token"]?.Equals(token) ?? false))
+                        {
+                            worker.ConnectedUser.Add(obj.Users.Where(u => u.Username == username).First());
+                            Controller.WriteLine(username + " 已经连接。");
+                        }
+                        else Controller.WriteLine(username + " 确认连接失败！", LogLevel.Warning);
+                        break;
                     }
-                    else Controller.WriteLine(username + " 确认连接失败！", LogLevel.Warning);
-                    break;
                 case GamingType.PickCharacter:
-                    // 客户端选完了角色这里就要处理了
-                    long id = NetworkUtility.JsonDeserializeFromDictionary<long>(data, "id");
-                    if (worker.CharactersForPick.FirstOrDefault(c => c.Id == id) is Character character)
                     {
-                        // 如果有人选一样的，你还没有处理，为了防止意外，最好复制一份
-                        worker.UserCharacters[username] = character.Copy();
+                        // 客户端选完了角色这里就要处理了
+                        long id = NetworkUtility.JsonDeserializeFromDictionary<long>(data, "id");
+                        if (worker.CharactersForPick.FirstOrDefault(c => c.Id == id) is Character character)
+                        {
+                            // 如果有人选一样的，你还没有做特殊处理的话，为了防止意外，最好复制一份
+                            worker.UserCharacters[username] = character.Copy();
+                        }
+                        break;
                     }
-                    break;
+                case GamingType.Skill:
+                    {
+                        string e = NetworkUtility.JsonDeserializeFromDictionary<string>(data, "event") ?? "";
+                        if (e.Equals("SelectSkillTargets", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            long caster = NetworkUtility.JsonDeserializeFromDictionary<long>(data, "caster");
+                            long[] targets = NetworkUtility.JsonDeserializeFromDictionary<long[]>(data, "targets") ?? [];
+                            // 接收客户端传来的目标序号并记录
+                            if (worker.UserData.TryGetValue(username, out Dictionary<string, object>? value) && value != null)
+                            {
+                                value.Add("SkillTargets", targets);
+                            }
+                        }
+                        break;
+                    }
                 default:
                     await Task.Delay(1);
                     break;
@@ -258,38 +277,33 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             Workers.Remove(obj.Room.Roomid, out _);
         }
 
-        private static async Task WaitForUsers(int waitSeconds, Func<Task<bool>> waitSomething, int delay, Func<Task> ifTimeout, Func<Task> ifCompleted)
+        private async Task WaitForUsers(int waitSeconds, Func<Task<bool>> waitSomething, int delay, Func<Task> onTimeout, Func<Task> onCompleted)
         {
             // 这是一个用于等待的通用辅助方法
-            CancellationTokenSource cts = new();
+            using CancellationTokenSource cts = new(TimeSpan.FromSeconds(waitSeconds));
             CancellationToken ct = cts.Token;
-            Task timeoutTask = Task.Delay(TimeSpan.FromSeconds(waitSeconds), ct);
 
-            Task completionTask = Task.Run(async () =>
+            while (!ct.IsCancellationRequested)
             {
-                while (!ct.IsCancellationRequested)
+                try
                 {
                     if (await waitSomething())
                     {
+                        await onCompleted();
                         return;
                     }
-                    await Task.Delay(delay);
+                    await Task.Delay(delay, ct);
                 }
-            }, ct);
-
-            // 等待完成或超时
-            Task completedTask = await Task.WhenAny(completionTask, timeoutTask);
-
-            if (completedTask == timeoutTask)
-            {
-                // 对超时的处理
-                cts.Cancel();
-                await ifTimeout();
+                catch (System.Exception e) when (e is not OperationCanceledException)
+                {
+                    Controller.Error(e);
+                    await onTimeout();
+                    return;
+                }
             }
 
-            cts.Dispose();
-
-            await ifCompleted();
+            // 异常和超时都走超时逻辑
+            await onTimeout();
         }
 
         private async Task StartGame(GamingObject obj, ModuleServerWorker worker)
@@ -352,13 +366,51 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
                     }
 
                     // 重点，创建一个战斗队列
+                    // 注意，整个游戏中，finalList及其内部角色对象的引用始终不变，请放心使用
                     MixGamingQueue queue = new(finalList, (str) =>
                     {
                         // 战斗日志可以直接通过传输信息的方式输出回客户端
                         _ = SendAllTextMessage(obj, str);
                     });
+
+                    // 如果你需要开启战棋地图模式
+                    GameMap? map = GameModuleDepend.Maps.FirstOrDefault();
+                    if (map != null)
+                    {
+                        queue.LoadGameMap(map);
+                    }
+
+                    // 关键，监听任何事件
+                    // 在客户端中，通过事件可以很方便地对UI进行操作以同步界面状态，而在服务端则需要套一层网络层
+                    //queue.TurnStartEvent += Queue_TurnStartEvent;
+                    //queue.DecideActionEvent += Queue_DecideActionEvent;
+                    //queue.SelectNormalAttackTargetsEvent += Queue_SelectNormalAttackTargetsEvent;
+                    //queue.SelectSkillEvent += Queue_SelectSkillEvent;
+                    //queue.SelectNonDirectionalSkillTargetsEvent += Queue_SelectNonDirectionalSkillTargetsEvent;
+                    //queue.SelectItemEvent += Queue_SelectItemEvent;
+                    //queue.QueueUpdatedEvent += Queue_QueueUpdatedEvent;
+                    //queue.TurnEndEvent += Queue_TurnEndEvent;
+
+                    // 我们示范两个事件，一是选择技能目标，需要和客户端交互的事件
+                    queue.SelectSkillTargetsEvent += (queue, caster, skill, enemys, teammates, castRange) =>
+                    {
+                        /// 如果你的逻辑都写在 <see cref="ModuleServerWorker"/> 里就不用这么麻烦每次都传 obj 和 worker 了。
+                        return Queue_SelectSkillTargetsEvent(worker, caster, skill, enemys, teammates, castRange);
+                    };
+
+                    // 二是角色行动完毕，需要通知客户端更新状态的事件
+                    queue.CharacterActionTakenEvent += Queue_CharacterActionTakenEvent;
+
+                    // 战棋地图模式需要额外绑定的事件（如果你在map类里没有处理的话，这里还可以处理）
+                    if (queue.Map != null)
+                    {
+                        //queue.SelectTargetGridEvent += Queue_SelectTargetGridEvent;
+                        //queue.CharacterMoveEvent += Queue_CharacterMoveEvent;
+                    }
+
                     queue.InitActionQueue();
-                    // 这里我们仅演示自动化战斗，指令战斗还需要实现其他的消息处理类型
+                    // 这里我们仅演示自动化战斗，指令战斗还需要实现其他的消息处理类型/事件
+                    // 自动化战斗时上述绑定的事件可能不会触发，参见GamingQueue的内部实现
                     queue.SetCharactersToAIControl(cancel: false, finalList);
 
                     // 总游戏时长
@@ -457,6 +509,50 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
                     Workers.Remove(obj.Room.Roomid, out _);
                 }
             });
+        }
+
+        private List<Character> Queue_SelectSkillTargetsEvent(ModuleServerWorker worker, Character caster, Skill skill, List<Character> enemys, List<Character> teammates, List<Grid> castRange)
+        {
+            // 这是一个需要与客户端交互的事件，其他的选择事件与之做法相同
+            // SyncAwaiter是一个允许同步方法安全等待异步任务完成的工具类
+            return SyncAwaiter.WaitResult(RequestClientSelectSkillTargets(worker, caster, skill, enemys, teammates, castRange));
+        }
+
+        private async Task<List<Character>> RequestClientSelectSkillTargets(ModuleServerWorker worker, Character caster, Skill skill, List<Character> enemys, List<Character> teammates, List<Grid> castRange)
+        {
+            List<Character> selectTargets = [];
+            Dictionary<string, object> data = [];
+            data.Add("event", "SelectSkillTargets");
+            data.Add("caster", caster.Id);
+            data.Add("skill", skill.Id);
+            data.Add("enemys", enemys.Select(c => c.Id));
+            data.Add("teammates", teammates.Select(c => c.Id));
+            data.Add("castRange", castRange.Select(g => g.Id));
+            await SendGamingMessage(_clientModels, GamingType.Skill, data);
+            await WaitForUsers(30, async () =>
+            {
+                string username = worker.UserCharacters.FirstOrDefault(kv => kv.Value == caster).Key;
+                return worker.UserData.TryGetValue(username, out Dictionary<string, object>? value) && value != null && value.ContainsKey("SkillTargets");
+            }, 200, async () => await Task.CompletedTask, async () =>
+            {
+                string username = worker.UserCharacters.FirstOrDefault(kv => kv.Value == caster).Key;
+                if (worker.UserData.TryGetValue(username, out Dictionary<string, object>? value) && value != null && value.TryGetValue("SkillTargets", out object? value2) && value2 is long[] targets)
+                {
+                    selectTargets.AddRange(worker.UserCharacters.Values.Where(c => targets.Contains(c.Id)));
+                }
+            });
+            return selectTargets;
+        }
+
+        private void Queue_CharacterActionTakenEvent(GamingQueue queue, Character actor, DecisionPoints dp, CharacterActionType type, RoundRecord record)
+        {
+            Dictionary<string, object> data = [];
+            data.Add("event", "CharacterActionTaken");
+            data.Add("actor", actor.Id);
+            data.Add("dp", dp);
+            data.Add("type", type);
+            // 通知就行，无需等待
+            _ = SendGamingMessage(_clientModels, GamingType.Round, data);
         }
 
         private async Task SendAllTextMessage(GamingObject obj, string str)

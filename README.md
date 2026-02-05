@@ -1,6 +1,6 @@
 ## 项目简介
 
-`FunGame` 是一套基于 `C#.NET` 设计的回合制游戏解决方案，旨在打造充满策略趣味的战棋回合制战斗系统。
+`FunGame` 是一套基于 `C#.NET` 设计的回合制战斗系统解决方案，旨在打造充满策略趣味的战棋回合制游戏。
 
 配套服务器解决方案：[FunGameServer](https://github.com/project-redbud/FunGame-Server)（基于 `ASP.NET Core Web API` 的跨平台高性能服务器控制台）
 
