@@ -81,6 +81,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
                      * Console
                      */
                     WriteINI("Console", "LogLevel", "INFO");
+                    WriteINI("Console", "UseHotLoadAddons", "false");
                     /**
                      * Server
                      */

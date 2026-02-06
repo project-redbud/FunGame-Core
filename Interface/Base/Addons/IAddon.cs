@@ -8,5 +8,6 @@
         public string Author { get; }
 
         public bool Load(params object[] objs);
+        public void UnLoad(params object[] objs);
     }
 }

@@ -184,4 +184,19 @@
     {
         public override string Message => "试图构造一个不支持的类的实例 (#10037)";
     }
+
+    public class AddonInvalidException(string fullPath = "") : Exception
+    {
+        public override string Message => $"加载项 {(fullPath != "" ? $"'{fullPath}'" : "")} 无效 (#10038)";
+    }
+
+    public class AddonLoadException(string fullPath = "", Exception? inner = null) : Exception("", inner)
+    {
+        public override string Message => $"加载项 {(fullPath != "" ? $"'{fullPath}'" : "")} 加载失败 (#10039)";
+    }
+
+    public class AddonUnloadException(string fullPath = "", Exception? inner = null) : Exception("", inner)
+    {
+        public override string Message => $"卸载加载项 {(fullPath != "" ? $"'{fullPath}' 的" : "")} 旧上下文失败 (#10040)";
+    }
 }

@@ -69,6 +69,43 @@ namespace Milimoe.FunGame.Core.Api.Utility
         }
 
         /// <summary>
+        /// 移除工厂方法
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="d"></param>
+        public void UnRegisterFactory<T>(EntityFactoryDelegate<T> d)
+        {
+            if (typeof(T) == typeof(Character) && d is EntityFactoryDelegate<Character> character)
+            {
+                CharacterFactories.Remove(character);
+            }
+            if (typeof(T) == typeof(Inventory) && d is EntityFactoryDelegate<Inventory> inventory)
+            {
+                InventoryFactories.Remove(inventory);
+            }
+            if (typeof(T) == typeof(Skill) && d is EntityFactoryDelegate<Skill> skill)
+            {
+                SkillFactories.Remove(skill);
+            }
+            if (typeof(T) == typeof(Effect) && d is EntityFactoryDelegate<Effect> effect)
+            {
+                EffectFactories.Remove(effect);
+            }
+            if (typeof(T) == typeof(Item) && d is EntityFactoryDelegate<Item> item)
+            {
+                ItemFactories.Remove(item);
+            }
+            if (typeof(T) == typeof(Room) && d is EntityFactoryDelegate<Room> room)
+            {
+                RoomFactories.Remove(room);
+            }
+            if (typeof(T) == typeof(User) && d is EntityFactoryDelegate<User> user)
+            {
+                UserFactories.Remove(user);
+            }
+        }
+
+        /// <summary>
         /// 构造一个实体实例
         /// </summary>
         /// <typeparam name="T"></typeparam>

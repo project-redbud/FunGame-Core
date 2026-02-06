@@ -99,6 +99,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         }
 
         /// <summary>
+        /// 记录该模组的加载器
+        /// </summary>
+        public GameModuleLoader? ModuleLoader { get; set; } = null;
+
+        /// <summary>
         /// 加载标记
         /// </summary>
         private bool _isLoaded = false;
@@ -134,6 +139,22 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
                 }
             }
             return _isLoaded;
+        }
+
+        /// <summary>
+        /// 卸载模组
+        /// </summary>
+        /// <param name="objs"></param>
+        public void UnLoad(params object[] objs)
+        {
+            foreach (Grid grid in Grids.Values)
+            {
+                grid.Characters.Clear();
+                grid.Effects.Clear();
+            }
+            Characters.Clear();
+            Grids.Clear();
+            GridsByCoordinate.Clear();
         }
 
         /// <summary>

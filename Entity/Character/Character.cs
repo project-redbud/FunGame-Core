@@ -707,7 +707,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 力量豁免
         /// </summary>
         public double STRExemption => STR * GameplayEquilibriumConstant.STRtoExemptionRateMultiplier;
-        
+
         /// <summary>
         /// 敏捷豁免
         /// </summary>
@@ -1531,7 +1531,7 @@ namespace Milimoe.FunGame.Core.Entity
                 builder.AppendLine($"等级：{Level} / {GameplayEquilibriumConstant.MaxLevel}（突破进度：{LevelBreak + 1} / {GameplayEquilibriumConstant.LevelBreakList.Count}）");
                 builder.AppendLine($"经验值：{EXP:0.##}{(Level != GameplayEquilibriumConstant.MaxLevel && GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(Level, out double need) ? " / " + need : "")}");
             }
-            
+
             builder.AppendLine(GetSimpleAttributeInfo(showGrowth, showBasicOnly).Trim());
 
             if (showMapRelated)

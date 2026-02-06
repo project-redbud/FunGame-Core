@@ -142,7 +142,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// 无视免疫类型
         /// </summary>
         public virtual ImmuneType IgnoreImmune { get; set; } = ImmuneType.None;
-        
+
         /// <summary>
         /// 豁免性的具体说明
         /// </summary>

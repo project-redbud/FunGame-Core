@@ -59,6 +59,15 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         }
 
         /// <summary>
+        /// 卸载模组
+        /// </summary>
+        /// <param name="objs"></param>
+        public void UnLoad(params object[] objs)
+        {
+            Factory.OpenFactory.UnRegisterFactory(ItemFactory());
+        }
+
+        /// <summary>
         /// 注册工厂
         /// </summary>
         protected abstract Factory.EntityFactoryDelegate<Item> ItemFactory();

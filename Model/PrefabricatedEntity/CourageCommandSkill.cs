@@ -7,6 +7,6 @@ namespace Milimoe.FunGame.Core.Model.PrefabricatedEntity
     /// </summary>
     public class CourageCommandSkill(long id, string name, Dictionary<string, object> args, Character? character = null) : OpenSkill(id, name, args, character)
     {
-        
+
     }
 }

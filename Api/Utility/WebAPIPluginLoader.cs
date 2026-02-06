@@ -15,11 +15,16 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <summary>
         /// 已加载的插件DLL名称对应的路径
         /// </summary>
-        public static Dictionary<string, string> PluginFilePaths => new(AddonManager.PluginFilePaths);
+        public Dictionary<string, string> PluginFilePaths => IsHotLoadMode ? new(HotLoadAddonManager.PluginFilePaths) : new(AddonManager.PluginFilePaths);
 
-        private WebAPIPluginLoader()
+        /// <summary>
+        /// 使用可热更新的加载项模式
+        /// </summary>
+        public bool IsHotLoadMode { get; } = false;
+
+        private WebAPIPluginLoader(bool hotMode = false)
         {
-
+            IsHotLoadMode = hotMode;
         }
 
         /// <summary>
@@ -34,10 +39,46 @@ namespace Milimoe.FunGame.Core.Api.Utility
             AddonManager.LoadWebAPIPlugins(loader.Plugins, delegates, otherobjs);
             foreach (WebAPIPlugin plugin in loader.Plugins.Values.ToList())
             {
+                plugin.PluginLoader = loader;
                 // 如果插件加载后需要执行代码，请重写AfterLoad方法
                 plugin.AfterLoad(loader, otherobjs);
             }
             return loader;
+        }
+
+        /// <summary>
+        /// 构建一个插件读取器并读取插件 [ 可热更新模式 ]
+        /// </summary>
+        /// <param name="delegates">用于构建 <see cref="Controller.BaseAddonController{T}"/></param>
+        /// <param name="otherobjs">其他需要传入给插件初始化的对象</param>
+        /// <returns></returns>
+        public static WebAPIPluginLoader LoadPluginsByHotLoadMode(Dictionary<string, object> delegates, params object[] otherobjs)
+        {
+            WebAPIPluginLoader loader = new(true);
+            List<WebAPIPlugin> updated = HotLoadAddonManager.LoadWebAPIPlugins(loader.Plugins, delegates, otherobjs);
+            foreach (WebAPIPlugin plugin in updated)
+            {
+                plugin.PluginLoader = loader;
+                // 如果插件加载后需要执行代码，请重写AfterLoad方法
+                plugin.AfterLoad(loader, otherobjs);
+            }
+            return loader;
+        }
+
+        /// <summary>
+        /// 热更新
+        /// </summary>
+        /// <param name="delegates"></param>
+        /// <param name="otherobjs"></param>
+        public void HotReload(Dictionary<string, object> delegates, params object[] otherobjs)
+        {
+            if (!IsHotLoadMode) return;
+            List<WebAPIPlugin> updated = HotLoadAddonManager.LoadWebAPIPlugins(Plugins, delegates, otherobjs);
+            foreach (WebAPIPlugin plugin in updated)
+            {
+                plugin.PluginLoader = this;
+                plugin.AfterLoad(this, otherobjs);
+            }
         }
 
         public WebAPIPlugin this[string name]
