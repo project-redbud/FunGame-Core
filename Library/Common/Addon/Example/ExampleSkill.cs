@@ -324,7 +324,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             character.ExATK2 += ActualATKBonus;
             character.PhysicalPenetration += ActualPhysicalPenetrationBonus;
             character.ExEvadeRate += ActualEvadeRateBonus;
-            if (character.Effects.FirstOrDefault(e => e is ExamplePassiveSkillEffect) is ExamplePassiveSkillEffect e)
+            if (character.Effects.FirstOrDefault(e => e is ExamplePassiveSkillEffect && e.Skill.Character == character) is ExamplePassiveSkillEffect e)
             {
                 e.CD = 3;
                 if (e.CurrentCD > e.CD) e.CurrentCD = e.CD;
@@ -337,7 +337,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             character.ExATK2 -= ActualATKBonus;
             character.PhysicalPenetration -= ActualPhysicalPenetrationBonus;
             character.ExEvadeRate -= ActualEvadeRateBonus;
-            if (character.Effects.FirstOrDefault(e => e is ExamplePassiveSkillEffect) is ExamplePassiveSkillEffect e)
+            if (character.Effects.FirstOrDefault(e => e is ExamplePassiveSkillEffect && e.Skill.Character == character) is ExamplePassiveSkillEffect e)
             {
                 e.CD = 10;
             }

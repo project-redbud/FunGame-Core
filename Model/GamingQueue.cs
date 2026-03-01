@@ -1583,7 +1583,7 @@ namespace Milimoe.FunGame.Core.Model
                                                 effect.AfterCharacterStartCasting(character, skill, targets);
                                             }
 
-                                            skill.BeforeSkillCasted();
+                                            skill.BeforeSkillCasted(character, targets, grids);
 
                                             character.EP -= cost;
                                             baseTime += skill.RealHardnessTime;
@@ -1595,6 +1595,8 @@ namespace Milimoe.FunGame.Core.Model
                                             OnCharacterCastSkillEvent(character, dp, skillTarget, cost);
 
                                             skill.OnSkillCasted(this, character, targets, grids);
+
+                                            skill.AfterSkillCasted(character, targets, grids);
 
                                             effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                                             foreach (Effect effect in effects)
@@ -1659,7 +1661,7 @@ namespace Milimoe.FunGame.Core.Model
                                 LastRound.ActionTypes.Add(CharacterActionType.CastSkill);
                                 _castingSkills.Remove(character);
 
-                                skill.BeforeSkillCasted();
+                                skill.BeforeSkillCasted(character, targets, grids);
 
                                 character.MP -= cost;
                                 baseTime += skill.RealHardnessTime;
@@ -1671,6 +1673,8 @@ namespace Milimoe.FunGame.Core.Model
                                 OnCharacterCastSkillEvent(character, dp, skillTarget, cost);
 
                                 skill.OnSkillCasted(this, character, targets, grids);
+
+                                skill.AfterSkillCasted(character, targets, grids);
 
                                 effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                                 foreach (Effect effect in effects)
@@ -1730,7 +1734,7 @@ namespace Milimoe.FunGame.Core.Model
                             CheckSkilledImmune(character, targets, skill);
                             LastRound.Targets[CharacterActionType.CastSuperSkill] = [.. targets];
 
-                            skill.BeforeSkillCasted();
+                            skill.BeforeSkillCasted(character, targets, grids);
 
                             character.EP -= cost;
                             baseTime += skill.RealHardnessTime;
@@ -1743,6 +1747,8 @@ namespace Milimoe.FunGame.Core.Model
                             OnCharacterCastSkillEvent(character, dp, skillTarget, cost);
 
                             skill.OnSkillCasted(this, character, targets, grids);
+
+                            skill.AfterSkillCasted(character, targets, grids);
 
                             effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                             foreach (Effect effect in effects)
@@ -3106,7 +3112,7 @@ namespace Milimoe.FunGame.Core.Model
                             effect.AfterCharacterStartCasting(character, skill, targets);
                         }
 
-                        skill.BeforeSkillCasted();
+                        skill.BeforeSkillCasted(character, targets, grids);
 
                         skill.CurrentCD = skill.RealCD;
                         skill.Enable = false;
@@ -3134,6 +3140,8 @@ namespace Milimoe.FunGame.Core.Model
                         OnCharacterCastItemSkillEvent(character, dp, item, skillTarget, costMP, costEP);
 
                         skill.OnSkillCasted(this, character, targets, grids);
+
+                        skill.AfterSkillCasted(character, targets, grids);
 
                         effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                         foreach (Effect effect in effects)
