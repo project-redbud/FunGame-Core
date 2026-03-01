@@ -385,6 +385,10 @@ namespace Milimoe.FunGame.Core.Entity
             SkillType = type;
             CastAnywhere = SkillType == SkillType.Magic;
             Character = character;
+            if (SkillType == SkillType.SuperSkill)
+            {
+                EPCost = 100;
+            }
         }
 
         /// <summary>
@@ -712,7 +716,7 @@ namespace Milimoe.FunGame.Core.Entity
         public void OnSkillCasting(IGamingQueue queue, Character caster, List<Character> targets, List<Grid> grids)
         {
             GamingQueue = queue;
-            foreach (Effect e in Effects)
+            foreach (Effect e in Effects.OrderByDescending(e => e.Priority))
             {
                 e.GamingQueue = GamingQueue;
                 e.OnSkillCasting(caster, targets, grids);
@@ -722,10 +726,15 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 技能效果触发前
         /// </summary>
-        public void BeforeSkillCasted()
+        public void BeforeSkillCasted(Character caster, List<Character> targets, List<Grid> grids)
         {
             LastCostMP = RealMPCost;
             LastCostEP = RealEPCost;
+            foreach (Effect e in Effects.OrderByDescending(e => e.Priority))
+            {
+                e.GamingQueue = GamingQueue;
+                e.BeforeSkillCasted(caster, targets, grids, LastCostMP, LastCostEP);
+            }
         }
 
         /// <summary>
@@ -762,10 +771,22 @@ namespace Milimoe.FunGame.Core.Entity
                     }
                 }
             }
-            foreach (Effect e in Effects)
+            foreach (Effect e in Effects.OrderByDescending(e => e.Priority))
             {
                 e.GamingQueue = GamingQueue;
                 e.OnSkillCasted(caster, targets, grids, Values);
+            }
+        }
+
+        /// <summary>
+        /// 技能效果触发后
+        /// </summary>
+        public void AfterSkillCasted(Character caster, List<Character> targets, List<Grid> grids)
+        {
+            foreach (Effect e in Effects.OrderByDescending(e => e.Priority))
+            {
+                e.GamingQueue = GamingQueue;
+                e.AfterSkillCasted(caster, targets, grids);
             }
         }
 
@@ -776,7 +797,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="targets"></param>
         public void OnSkillCasted(User user, List<Character> targets)
         {
-            foreach (Effect e in Effects)
+            foreach (Effect e in Effects.OrderByDescending(e => e.Priority))
             {
                 e.OnSkillCasted(user, targets, Values);
             }

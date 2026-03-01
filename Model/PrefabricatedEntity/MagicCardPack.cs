@@ -6,7 +6,7 @@ namespace Milimoe.FunGame.Core.Model.PrefabricatedEntity
     /// <summary>
     /// 魔法卡包的基础实现
     /// </summary>
-    public class MagicCardPack : OpenItem
+    public class MagicCardPack : Item
     {
         public override ItemType ItemType => ItemType.MagicCardPack;
 
@@ -50,10 +50,12 @@ namespace Milimoe.FunGame.Core.Model.PrefabricatedEntity
         /// </summary>
         private PrimaryAttribute _originalAttribute = PrimaryAttribute.None;
 
-        public MagicCardPack(long id, string name, Dictionary<string, object> args) : base(id, name, args)
+        public MagicCardPack(Dictionary<string, object>? args = null) : base(ItemType.MagicCardPack)
         {
+            args ??= [];
             foreach (string key in args.Keys)
             {
+                Others[key] = args[key];
                 switch (key.ToLower())
                 {
                     case "exstr":

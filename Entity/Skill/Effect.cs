@@ -455,7 +455,20 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 在技能释放前触发
+        /// 在技能释放前触发 [ 技能的特效组 ]
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="targets"></param>
+        /// <param name="grids"></param>
+        /// <param name="mpCost"></param>
+        /// <param name="epCost"></param>
+        public virtual void BeforeSkillCasted(Character caster, List<Character> targets, List<Grid> grids, double mpCost = 0, double epCost = 0)
+        {
+
+        }
+
+        /// <summary>
+        /// 在技能释放前触发 [ 状态栏特效 ]
         /// </summary>
         /// <param name="caster"></param>
         /// <param name="skill"></param>
@@ -466,6 +479,17 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual bool BeforeSkillCasted(Character caster, Skill skill, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             return true;
+        }
+
+        /// <summary>
+        /// 在技能释放后触发 [ 技能的特效组 ]
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="targets"></param>
+        /// <param name="grids"></param>
+        public virtual void AfterSkillCasted(Character caster, List<Character> targets, List<Grid> grids)
+        {
+
         }
 
         /// <summary>
@@ -1051,21 +1075,24 @@ namespace Milimoe.FunGame.Core.Entity
         /// <param name="expectedDamage"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public DamageResult DamageToEnemy(Character actor, Character enemy, DamageType damageType, MagicType magicType, double expectedDamage, DamageCalculationOptions? options = null)
+        public DamageRecord DamageToEnemy(Character actor, Character enemy, DamageType damageType, MagicType magicType, double expectedDamage, DamageCalculationOptions? options = null)
         {
-            if (GamingQueue is null) return DamageResult.Evaded;
-            int changeCount = 0;
-            DamageResult result = DamageResult.Normal;
-            double damage = expectedDamage;
-            options ??= new(actor);
-            options.Skill = Skill;
-            if (options.ExpectedDamage == 0) options.ExpectedDamage = expectedDamage;
-            if (options.NeedCalculate && damageType != DamageType.True)
+            if (GamingQueue != null)
             {
-                result = damageType == DamageType.Physical ? GamingQueue.CalculatePhysicalDamage(actor, enemy, false, expectedDamage, out damage, ref changeCount, ref options) : GamingQueue.CalculateMagicalDamage(actor, enemy, false, MagicType, expectedDamage, out damage, ref changeCount, ref options);
+                int changeCount = 0;
+                DamageResult result = DamageResult.Normal;
+                double damage = expectedDamage;
+                options ??= new(actor);
+                options.Skill = Skill;
+                if (options.ExpectedDamage == 0) options.ExpectedDamage = expectedDamage;
+                if (options.NeedCalculate && damageType != DamageType.True)
+                {
+                    result = damageType == DamageType.Physical ? GamingQueue.CalculatePhysicalDamage(actor, enemy, false, expectedDamage, out damage, ref changeCount, ref options) : GamingQueue.CalculateMagicalDamage(actor, enemy, false, MagicType, expectedDamage, out damage, ref changeCount, ref options);
+                }
+                GamingQueue.DamageToEnemy(actor, enemy, damage, false, damageType, magicType, result, options);
+                return options?.GetDamageRecord(damageType, result) ?? new();
             }
-            GamingQueue.DamageToEnemy(actor, enemy, damage, false, damageType, magicType, result, options);
-            return result;
+            return new();
         }
 
         /// <summary>

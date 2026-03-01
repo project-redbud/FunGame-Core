@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Model
 {
@@ -73,6 +74,11 @@ namespace Milimoe.FunGame.Core.Model
         public double INT => Character.INT;
 
         /** == 调试数据记录 == **/
+
+        /// <summary>
+        /// 生成伤害记录
+        /// </summary>
+        public DamageRecord GetDamageRecord(DamageType type, DamageResult result) => new(type, result, ExpectedDamage, BeforeDamageBonus, CriticalDamage, DefenseReduction, AfterDamageBonus, MagicEfficacyDamage, FinalDamage, ShieldReduction, ActualDamage);
 
         /// <summary>
         /// 伤害基底（期望）
