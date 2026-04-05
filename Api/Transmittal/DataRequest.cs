@@ -27,10 +27,14 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         /// </summary>
         public bool IsDisposed => _isDisposed;
 
-        // 获取ResultData中key值对应的Json字符串
-        // -- 此索引器仅返回Json字符串，对象类型请使用反序列化方法GetResult<T>() --
-        // -- 当然也可以自己反序列化 --
-        // -- 基本类型可能有效，但仍建议使用反序列化方法 --
+        /// <summary>
+        /// 获取ResultData中key值对应的Json字符串
+        /// <para/>-- 此索引器仅返回Json字符串，对象类型请使用反序列化方法GetResult{T}() --
+        /// <para/>-- 当然也可以自己反序列化 --
+        /// <para/>-- 基本类型可能有效，但仍建议使用反序列化方法 --
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         public object? this[string key]
         {
             get

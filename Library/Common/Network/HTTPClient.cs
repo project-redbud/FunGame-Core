@@ -20,6 +20,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public string ServerNotice { get; } = "";
         public bool Connected => WebSocket != null && WebSocket.State == WebSocketState.Open;
         public bool Receiving => _receiving;
+        public int Ping => HeartBeat.Ping;
         private HeartBeat HeartBeat { get; }
 
         public event Action<System.Exception>? ConnectionLost;
@@ -36,7 +37,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
             ServerPort = serverPort;
             HeartBeat = new(this);
             HeartBeat.StartSendingHeartBeat();
-            Task.Factory.StartNew(async () => await StartListening(args));
+            Task.Run(async () => await StartListening(args));
         }
 
         public static async Task<HTTPClient> Connect(string serverAddress, bool ssl, int serverPort = 0, string subUrl = "", params object[] args)

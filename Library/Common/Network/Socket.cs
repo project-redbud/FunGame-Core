@@ -17,6 +17,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public string ServerNotice { get; } = "";
         public bool Connected => Instance != null && Instance.Connected;
         public bool Receiving => _receiving;
+        public int Ping => HeartBeat.Ping;
         private HeartBeat HeartBeat { get; }
 
         public event Action<System.Exception>? ConnectionLost;
@@ -28,9 +29,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
 
         private Socket(System.Net.Sockets.Socket instance, string serverAddress, int serverPort)
         {
-            this.Instance = instance;
-            this.ServerAddress = serverAddress;
-            this.ServerPort = serverPort;
+            Instance = instance;
+            ServerAddress = serverAddress;
+            ServerPort = serverPort;
             HeartBeat = new(this);
             HeartBeat.StartSendingHeartBeat();
         }

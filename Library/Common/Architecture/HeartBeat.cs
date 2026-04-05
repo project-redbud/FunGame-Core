@@ -1,20 +1,25 @@
-﻿using Milimoe.FunGame.Core.Interface.Sockets;
+﻿using System.Diagnostics;
+using Milimoe.FunGame.Core.Interface.Sockets;
 using Milimoe.FunGame.Core.Library.Common.Network;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Library.Common.Architecture
 {
-    public class HeartBeat : ISocketHeartBeat
+    internal class HeartBeat : ISocketHeartBeat
     {
         public TransmittalType TransmittalType { get; } = TransmittalType.Socket;
         public bool SendingHeartBeat => _sendingHeartBeat;
         public int HeartBeatFaileds => _heartBeatFaileds;
+        public int Ping => Math.Min(_ping, 999);
 
         private Task? _sendingHeartBeatTask;
         private bool _sendingHeartBeat = false;
-        private bool _lastHeartbeatReceived = false;
         private int _heartBeatFaileds = 0;
+        private string _currentProbeId = "";
+        private long _lastSentTimestamp;
+        private int _ping = 0;
 
+        private readonly Lock _probeLock = new();
         private readonly Socket? _socket = null;
         private readonly HTTPClient? _httpClient = null;
 
@@ -37,7 +42,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
                 _sendingHeartBeat = true;
                 _socket?.AddSocketObjectHandler(SocketObject_Handler);
                 _httpClient?.AddSocketObjectHandler(SocketObject_Handler);
-                _sendingHeartBeatTask = Task.Factory.StartNew(SendHeartBeat);
+                _sendingHeartBeatTask = Task.Run(SendHeartBeat);
             }
         }
 
@@ -55,39 +60,45 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
             try
             {
                 await Task.Delay(100);
-                if (_socket != null)
+                while (_sendingHeartBeat)
                 {
-                    while (_socket.Connected)
+                    // 发送心跳包
+                    string probeId = Guid.NewGuid().ToString();
+                    lock (_probeLock)
                     {
-                        if (!SendingHeartBeat) _sendingHeartBeat = true;
-                        // 发送心跳包
-                        _lastHeartbeatReceived = false;
-                        if (_socket.Send(SocketMessageType.HeartBeat) == SocketResult.Success)
+                        _currentProbeId = probeId;
+                        _lastSentTimestamp = Stopwatch.GetTimestamp();
+                    }
+                    try
+                    {
+                        bool sendSuccess = false;
+                        if (_socket != null)
+                        {
+                            sendSuccess = _socket.Connected && _socket.Send(SocketMessageType.HeartBeat, _currentProbeId) == SocketResult.Success;
+                        }
+                        else if (_httpClient != null)
+                        {
+                            sendSuccess = _httpClient.WebSocket?.State == System.Net.WebSockets.WebSocketState.Open && await _httpClient.Send(SocketMessageType.HeartBeat, _currentProbeId) == SocketResult.Success;
+                        }
+                        if (!sendSuccess)
+                        {
+                            throw new ConnectFailedException();
+                        }
+                        else
                         {
                             await Task.Delay(4 * 1000);
-                            if (!_lastHeartbeatReceived) AddHeartBeatFaileds();
+                            lock (_probeLock)
+                            {
+                                if (_currentProbeId == probeId) throw new TimeOutException();
+                            }
                         }
-                        else AddHeartBeatFaileds();
-                        await Task.Delay(20 * 1000);
                     }
-                }
-                else if (_httpClient != null)
-                {
-                    while (_httpClient.WebSocket?.State == System.Net.WebSockets.WebSocketState.Open)
+                    catch
                     {
-                        if (!SendingHeartBeat) _sendingHeartBeat = true;
-                        // 发送心跳包
-                        _lastHeartbeatReceived = false;
-                        if (await _httpClient.Send(SocketMessageType.HeartBeat) == SocketResult.Success)
-                        {
-                            await Task.Delay(4 * 1000);
-                            if (!_lastHeartbeatReceived) AddHeartBeatFaileds();
-                        }
-                        else AddHeartBeatFaileds();
-                        await Task.Delay(20 * 1000);
+                        AddHeartBeatFaileds();
                     }
+                    await Task.Delay(20 * 1000);
                 }
-                _sendingHeartBeat = false;
             }
             catch (System.Exception e)
             {
@@ -102,12 +113,18 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
                     _httpClient.Close();
                 }
             }
+            finally
+            {
+                _sendingHeartBeat = false;
+            }
         }
 
         private void AddHeartBeatFaileds()
         {
+            _currentProbeId = "";
+            _ping = 999;
             // 超过三次没回应心跳，服务器连接失败。
-            if (_heartBeatFaileds++ >= 3)
+            if (++_heartBeatFaileds >= 3)
             {
                 _socket?.Close();
                 _httpClient?.Close();
@@ -119,8 +136,22 @@ namespace Milimoe.FunGame.Core.Library.Common.Architecture
         {
             if (obj.SocketType == SocketMessageType.HeartBeat)
             {
-                _lastHeartbeatReceived = true;
-                _heartBeatFaileds = 0;
+                string receivedId = "";
+                if (obj.Length > 0)
+                {
+                    receivedId = obj.GetParam<string>(0) ?? "";
+                }
+                lock (_probeLock)
+                {
+                    if (receivedId == _currentProbeId && !string.IsNullOrEmpty(_currentProbeId))
+                    {
+                        long elapsedTicks = Stopwatch.GetTimestamp() - _lastSentTimestamp;
+                        double rttMs = elapsedTicks * 1000.0 / Stopwatch.Frequency;
+                        _ping = (int)Math.Round(rttMs);
+                        _heartBeatFaileds = 0;
+                        _currentProbeId = "";
+                    }
+                }
             }
         }
     }
