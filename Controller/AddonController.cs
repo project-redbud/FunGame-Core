@@ -99,6 +99,58 @@ namespace Milimoe.FunGame.Core.Controller
         }
 
         /// <summary>
+        /// 基于本地已连接的Socket创建非标准的数据请求（<see cref="DataRequestType.Addon_Module"/> 或 <see cref="DataRequestType.Addon_Plugin"/>，具体类型由 <see cref="BaseAddonController{T}.Addon"/> 决定）
+        /// <para/>可以指定 <paramref name="targetAddon"/>，以便发送给一个已知的服务器模组或服务器插件
+        /// </summary>
+        /// <param name="targetAddon"></param>
+        /// <param name="longRunning"></param>
+        /// <returns></returns>
+        /// <exception cref="ConnectFailedException"></exception>
+        public DataRequest NewDataRequest(string targetAddon = "", bool longRunning = false)
+        {
+            if (Addon is IPlugin)
+            {
+                DataRequest request;
+                if (longRunning)
+                {
+                    request = NewLongRunningDataRequest(DataRequestType.Addon_Plugin);
+                }
+                else
+                {
+                    request = NewDataRequest(DataRequestType.Addon_Plugin);
+                }
+                request.AddRequestData(SocketSet.AddonDataRequestMark_FromPlugin, Addon.Name);
+                request.AddRequestData(SocketSet.AddonDataRequestMark_TargetPlugin, targetAddon);
+                return request;
+            }
+            else if (Addon is IGameModule)
+            {
+                DataRequest request;
+                if (longRunning)
+                {
+                    request = NewLongRunningDataRequest(DataRequestType.Addon_Module);
+                }
+                else
+                {
+                    request = NewDataRequest(DataRequestType.Addon_Module);
+                }
+                request.AddRequestData(SocketSet.AddonDataRequestMark_FromModule, Addon.Name);
+                request.AddRequestData(SocketSet.AddonDataRequestMark_TargetModule, targetAddon);
+                return request;
+            }
+            throw new ConnectFailedException();
+        }
+
+        /// <summary>
+        /// 基于本地已连接的Socket创建长时间运行的、非标准的数据请求（<see cref="DataRequestType.Addon_Module"/> 或 <see cref="DataRequestType.Addon_Plugin"/>，具体类型由 <see cref="BaseAddonController{T}.Addon"/> 决定）
+        /// <para/>可以指定 <paramref name="targetAddon"/>，以便发送给一个已知的服务器模组或服务器插件
+        /// </summary>
+        /// <param name="targetAddon"></param>
+        /// <returns></returns>
+        /// <exception cref="ConnectFailedException"></exception>
+        public DataRequest NewLongRunningDataRequest(string targetAddon = "") => NewDataRequest(targetAddon, true);
+
+        /// <summary>
         /// 新建一个AddonController
         /// </summary>
         /// <param name="addon"></param>

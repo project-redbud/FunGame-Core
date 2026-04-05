@@ -1,4 +1,5 @@
 using Milimoe.FunGame.Core.Library.Common.Addon;
+using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Service;
 
@@ -194,6 +195,29 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     server.AfterLoad(this, otherobjs);
                 }
             }
+        }
+
+        /// <summary>
+        /// 处理服务器广播的非标准 DataRequest 请求
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        public Dictionary<string, object> HandleDataRequest(Dictionary<string, object> data, AddonDataRequestEventArgs e)
+        {
+            Dictionary<string, object> result = [];
+            if (ModuleServers.Count > 0)
+            {
+                foreach (GameModuleServer module in ModuleServers.Values)
+                {
+                    Dictionary<string, object> moduleResult = module.HandleDataRequest(data, e);
+                    foreach (string key in moduleResult.Keys)
+                    {
+                        result[key] = moduleResult[key];
+                    }
+                }
+            }
+            return result;
         }
 
         /// <summary>

@@ -3,6 +3,7 @@ using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Controller;
 using Milimoe.FunGame.Core.Interface.Addons;
 using Milimoe.FunGame.Core.Interface.Base;
+using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Library.Common.Addon
@@ -126,6 +127,19 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         public virtual async Task<Dictionary<string, object>> AnonymousGameServerHandler(IServerModel model, Dictionary<string, object> data)
         {
             await Task.Delay(1);
+            return [];
+        }
+
+        /// <summary>
+        /// 此方法为可选实现，接收并处理非标准 DataRequest 请求<para/>
+        /// 此方法效率可能低于匿名服务器<para/>
+        /// <para/>请使用 <see cref="NetworkUtility.JsonDeserializeFromDictionary{T}(Dictionary{string, object}, string)"/> 方法获取 <paramref name="data"/> 成员
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="e"></param>
+        /// <returns>返回一个无需对成员序列化的字典</returns>
+        public virtual Dictionary<string, object> HandleDataRequest(Dictionary<string, object> data, AddonDataRequestEventArgs e)
+        {
             return [];
         }
 

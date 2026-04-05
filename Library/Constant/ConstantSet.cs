@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Milimoe.FunGame.Core.Interface.Addons;
 using Milimoe.FunGame.Core.Model;
 
 /**
@@ -104,7 +105,11 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const int MaxConnection_1C2G = 10;
         public const int MaxConnection_2C2G = 20;
         public const int MaxConnection_4C4G = 40;
-        public const string Plugins_Mark = "plugins_mark";
+        public const string Plugins_Mark = "$*plugins_mark*";
+        public const string AddonDataRequestMark_FromPlugin = "$*from_plugin*";
+        public const string AddonDataRequestMark_TargetPlugin = "$*target_plugin*";
+        public const string AddonDataRequestMark_FromModule = "$*from_module*";
+        public const string AddonDataRequestMark_TargetModule = "$*target_module*";
 
         public const string Socket = "Socket";
         public const string Unknown = "Unknown";
@@ -211,6 +216,11 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string Inventory_MakeOffer = "Inventory::MakeOffer";
         public const string Inventory_ReviseOffer = "Inventory::ReviseOffer";
         public const string Inventory_RespondOffer = "Inventory::RespondOffer";
+        /**
+         * Addon
+         */
+        public const string Addon_Plugin = "Addon::Plugin";
+        public const string Addon_Module = "Addon::Module";
 
         /// <summary>
         /// 获取Type的等效字符串
@@ -256,6 +266,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 DataRequestType.Inventory_MakeOffer => Inventory_MakeOffer,
                 DataRequestType.Inventory_ReviseOffer => Inventory_ReviseOffer,
                 DataRequestType.Inventory_RespondOffer => Inventory_RespondOffer,
+                DataRequestType.Addon_Module => Addon_Module,
+                DataRequestType.Addon_Plugin => Addon_Plugin,
                 _ => UnKnown
             };
         }
