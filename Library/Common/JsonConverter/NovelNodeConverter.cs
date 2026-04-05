@@ -34,14 +34,17 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 case nameof(NovelNode.Name):
                     result.Name = reader.GetString() ?? "";
                     break;
-                case nameof(NovelNode.Name2):
-                    result.Name2 = reader.GetString() ?? "";
-                    break;
                 case nameof(NovelNode.Content):
                     result.Content = reader.GetString() ?? "";
                     break;
-                case nameof(NovelNode.PortraitImagePath):
-                    result.PortraitImagePath = reader.GetString() ?? "";
+                case nameof(NovelNode.Character):
+                    result.Character = NetworkUtility.JsonDeserialize<NovelCharacterNode>(ref reader, options) ?? new()
+                    {
+                        StandOut = true
+                    };
+                    break;
+                case nameof(NovelNode.Opponents):
+                    result.Opponents = NetworkUtility.JsonDeserialize<List<NovelCharacterNode>>(ref reader, options) ?? [];
                     break;
                 case nameof(NovelNode.AndPredicates):
                     result.Values[nameof(NovelNode.AndPredicates)] = NetworkUtility.JsonDeserialize<List<string>>(ref reader, options) ?? [];
@@ -66,9 +69,14 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                 JsonSerializer.Serialize(writer, value.Options, options);
             }
             writer.WriteString(nameof(NovelNode.Name), value.Name);
-            if (value.Name2 != "") writer.WriteString(nameof(NovelNode.Name2), value.Name2);
             writer.WriteString(nameof(NovelNode.Content), value.Content);
-            if (value.PortraitImagePath != "") writer.WriteString(nameof(NovelNode.PortraitImagePath), value.PortraitImagePath);
+            writer.WritePropertyName(nameof(NovelNode.Character));
+            JsonSerializer.Serialize(writer, value.Character, options);
+            if (value.Opponents.Count > 0)
+            {
+                writer.WritePropertyName(nameof(NovelNode.Opponents));
+                JsonSerializer.Serialize(writer, value.Opponents, options);
+            }
             if (value.AndPredicates.Count > 0)
             {
                 writer.WritePropertyName(nameof(NovelNode.AndPredicates));

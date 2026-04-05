@@ -1,4 +1,6 @@
-﻿namespace Milimoe.FunGame.Core.Model
+﻿using Milimoe.FunGame.Core.Library.Constant;
+
+namespace Milimoe.FunGame.Core.Model
 {
     public class NovelNode
     {
@@ -6,13 +8,16 @@
         public int Priority { get; set; } = 0;
         public NovelNode? Previous { get; set; } = null;
         public List<NovelNode> NextNodes { get; set; } = [];
-        public NovelNode? Next => NextNodes.OrderByDescending(n => n.Priority).Where(n => n.ShowNode).FirstOrDefault();
+        public NovelNode? Next => NextNodes.OrderByDescending(n => n.Priority).FirstOrDefault(n => n.ShowNode);
         public List<NovelOption> Options { get; set; } = [];
         public List<NovelOption> AvailableOptions => [.. Options.Where(o => o.ShowOption)];
         public string Name { get; set; } = "";
-        public string Name2 { get; set; } = "";
         public string Content { get; set; } = "";
-        public string PortraitImagePath { get; set; } = "";
+        public NovelCharacterNode Character { get; set; } = new()
+        {
+            StandOut = true
+        };
+        public List<NovelCharacterNode> Opponents { get; set; } = [];
         public Dictionary<string, Func<bool>> AndPredicates { get; set; } = [];
         public Dictionary<string, Func<bool>> OrPredicates { get; set; } = [];
         public bool ShowNode
@@ -44,5 +49,13 @@
             }
         }
         internal Dictionary<string, object> Values { get; set; } = [];
+    }
+
+    public class NovelCharacterNode
+    {
+        public string Name { get; set; } = "";
+        public string PortraitImagePath { get; set; } = "";
+        public bool StandOut { get; set; } = false;
+        public PositionType PositionType { get; set; } = PositionType.Center;
     }
 }
