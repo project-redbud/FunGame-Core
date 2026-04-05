@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Interface.Entity;
+﻿using System.Collections.Concurrent;
+using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Milimoe.FunGame.Core.Entity
@@ -18,7 +19,7 @@ namespace Milimoe.FunGame.Core.Entity
         public bool HasPass => Password.Trim() != "";
         public string Password { get; set; } = "";
         public int MaxUsers { get; set; } = 0;
-        public Dictionary<User, bool> UserAndIsReady { get; } = [];
+        public ConcurrentDictionary<User, bool> UserAndIsReady { get; } = [];
         public GameStatistics Statistics { get; set; }
 
         internal Room()

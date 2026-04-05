@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Concurrent;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
@@ -6,9 +7,9 @@ namespace Milimoe.FunGame.Core.Model
 {
     public class RoomList : IEnumerable<Room>
     {
-        private readonly Dictionary<string, Room> _list = [];
-        private readonly Dictionary<string, List<User>> _userList = [];
-        private readonly Dictionary<string, List<User>> _readyUserList = [];
+        private readonly ConcurrentDictionary<string, Room> _list = [];
+        private readonly ConcurrentDictionary<string, List<User>> _userList = [];
+        private readonly ConcurrentDictionary<string, List<User>> _readyUserList = [];
 
         public Room this[string roomid] => GetRoom(roomid);
 
@@ -39,9 +40,9 @@ namespace Milimoe.FunGame.Core.Model
 
         public void AddRoom(Room room)
         {
-            _list.Add(room.Roomid, room);
-            _userList.Add(room.Roomid, []);
-            _readyUserList.Add(room.Roomid, []);
+            _list.TryAdd(room.Roomid, room);
+            _userList.TryAdd(room.Roomid, []);
+            _readyUserList.TryAdd(room.Roomid, []);
         }
 
         public void AddRooms(List<Room> rooms)
@@ -54,9 +55,9 @@ namespace Milimoe.FunGame.Core.Model
 
         public void RemoveRoom(string roomid)
         {
-            _list.Remove(roomid);
-            _userList.Remove(roomid);
-            _readyUserList.Remove(roomid);
+            _list.TryRemove(roomid, out _);
+            _userList.TryRemove(roomid, out _);
+            _readyUserList.TryRemove(roomid, out _);
         }
 
         public void RemoveRoom(Room room) => RemoveRoom(room.Roomid);
@@ -76,7 +77,7 @@ namespace Milimoe.FunGame.Core.Model
         {
             if (roomid != "-1" && user.Id != 0)
             {
-                this[roomid].UserAndIsReady.Remove(user);
+                this[roomid].UserAndIsReady.TryRemove(user, out _);
             }
         }
 
