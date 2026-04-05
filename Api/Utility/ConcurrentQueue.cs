@@ -1,33 +1,35 @@
-﻿namespace Milimoe.FunGame.Core.Api.Utility
+﻿using System.Collections;
+
+namespace Milimoe.FunGame.Core.Api.Utility
 {
-    public class ConcurrentQueue<T>
+    public class ConcurrentQueue<T> : IEnumerable<T>
     {
-        private bool Lock { get; set; }
+        private System.Collections.Concurrent.ConcurrentQueue<T> Instance { get; } = [];
 
-        private System.Collections.Concurrent.ConcurrentQueue<T> Instance { get; } = new();
+        public bool IsEmpty => Instance.IsEmpty;
 
-        public async void AddAsync(T obj)
+        public int Count => Instance.Count;
+
+        public void Clear() => Instance.Clear();
+
+        public void Add(T obj)
         {
-            if (Lock)
-            {
-                await Task.Run(() =>
-                {
-                    while (true)
-                    {
-                        if (!Lock) break;
-                        Thread.Sleep(100);
-                    }
-                });
-            }
-            Lock = true;
             Instance.Enqueue(obj);
         }
 
-        public bool Delete()
+        public bool GetFirst(out T? obj)
         {
-            bool result = Instance.TryDequeue(out _);
-            Lock = false;
-            return result;
+            return Instance.TryDequeue(out obj);
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return Instance.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }
