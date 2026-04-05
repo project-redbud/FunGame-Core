@@ -520,7 +520,7 @@ namespace Milimoe.FunGame.Core.Controller
         /// </summary>
         protected void StartReceiving()
         {
-            _ReceivingTask = Task.Factory.StartNew(() =>
+            _ReceivingTask = Task.Run(() =>
             {
                 Thread.Sleep(100);
                 _IsReceiving = true;
