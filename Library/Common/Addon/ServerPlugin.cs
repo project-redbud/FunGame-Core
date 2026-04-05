@@ -97,6 +97,18 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         public abstract void ProcessInput(string input);
 
         /// <summary>
+        /// 处理服务器广播的非标准 DataRequest 请求
+        /// <para/>请使用 <see cref="NetworkUtility.JsonDeserializeFromDictionary{T}(Dictionary{string, object}, string)"/> 方法获取 <paramref name="data"/> 成员
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="e"></param>
+        /// <returns>返回一个无需对成员序列化的字典</returns>
+        public virtual Dictionary<string, object> HandleDataRequest(Dictionary<string, object> data, AddonDataRequestEventArgs e)
+        {
+            return [];
+        }
+
+        /// <summary>
         /// 插件完全加载后需要做的事
         /// </summary>
         public virtual void AfterLoad(ServerPluginLoader loader, params object[] objs)

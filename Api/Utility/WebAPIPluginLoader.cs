@@ -81,6 +81,26 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
         }
 
+        /// <summary>
+        /// 处理服务器广播的非标准 DataRequest 请求
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        public Dictionary<string, object> HandleDataRequest(Dictionary<string, object> data, AddonDataRequestEventArgs e)
+        {
+            Dictionary<string, object> result = [];
+            foreach (WebAPIPlugin plugin in Plugins.Values)
+            {
+                Dictionary<string, object> pluginResult = plugin.HandleDataRequest(data, e);
+                foreach (string key in pluginResult.Keys)
+                {
+                    result[key] = pluginResult[key];
+                }
+            }
+            return result;
+        }
+
         public WebAPIPlugin this[string name]
         {
             get

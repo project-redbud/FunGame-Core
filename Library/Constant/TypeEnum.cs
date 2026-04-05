@@ -122,6 +122,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Inventory_MakeOffer,
         Inventory_ReviseOffer,
         Inventory_RespondOffer,
+        Addon_Plugin,
+        Addon_Module
     }
 
     /// <summary>
@@ -1117,5 +1119,14 @@ namespace Milimoe.FunGame.Core.Library.Constant
         TextInput,
         NumberInput,
         Custom
+    }
+
+    public enum PositionType
+    {
+        Center,
+        Left,
+        Right,
+        Top,
+        Bottom
     }
 }
