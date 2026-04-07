@@ -59,10 +59,10 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
 
         public override string Author => "FunGamer";
 
-        public override void ProcessInput(string input)
+        public override void ProcessInput(string order, string[] args)
         {
             // 该方法用于接收服务器控制台的输入并处理
-            if (input.Equals("info", StringComparison.CurrentCultureIgnoreCase))
+            if (order.Equals("info", StringComparison.CurrentCultureIgnoreCase))
             {
                 // 使用PluginController的输出方式
                 Controller.WriteLine($"This is {nameof(ExampleServerPlugin)}!!");

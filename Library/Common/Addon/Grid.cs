@@ -41,9 +41,41 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         public HashSet<Effect> Effects { get; set; } = [];
 
         /// <summary>
+        /// 格子上的交互点
+        /// </summary>
+        public HashSet<InteractionPoint> InteractionPoints { get; set; } = [];
+
+        /// <summary>
         /// 此格子呈现的颜色（默认为 <see cref="Color.Gray"/> ）
         /// </summary>
         public Color Color { get; set; } = Color.Gray;
+
+        public delegate void CharacterEnteredHandler(Character character);
+        /// <summary>
+        /// 角色进入格子事件
+        /// </summary>
+        public event CharacterEnteredHandler? CharacterEntered;
+        /// <summary>
+        /// 触发角色进入格子事件
+        /// </summary>
+        /// <param name="character"></param>
+        public void OnCharacterEntered(Character character)
+        {
+            CharacterEntered?.Invoke(character);
+        }
+        public delegate void CharacterExitedHandler(Character character);
+        /// <summary>
+        /// 角色离开格子事件
+        /// </summary>
+        public event CharacterExitedHandler? CharacterExited;
+        /// <summary>
+        /// 触发角色离开格子事件
+        /// </summary>
+        /// <param name="character"></param>
+        public void OnCharacterExited(Character character)
+        {
+            CharacterExited?.Invoke(character);
+        }
 
         /// <summary>
         /// 默认的字符串表示形式

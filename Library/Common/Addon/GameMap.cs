@@ -203,11 +203,16 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         public bool SetCharacterCurrentGrid(Character character, Grid target)
         {
             Grid? current = GetCharacterCurrentGrid(character);
-            current?.Characters.Remove(character);
+            if (current != null)
+            {
+                current.Characters.Remove(character);
+                current.OnCharacterExited(character);
+            }
             if (Grids.ContainsValue(target))
             {
                 target.Characters.Add(character);
                 Characters[character] = target;
+                target.OnCharacterEntered(character);
                 return true;
             }
             return false;
@@ -221,7 +226,11 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         public void RemoveCharacter(Character character)
         {
             Grid? current = GetCharacterCurrentGrid(character);
-            current?.Characters.Remove(character);
+            if (current != null)
+            {
+                current.Characters.Remove(character);
+                current.OnCharacterExited(character);
+            }
             Characters[character] = Grid.Empty;
         }
 

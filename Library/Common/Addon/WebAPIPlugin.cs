@@ -93,8 +93,9 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <summary>
         /// 接收服务器控制台的输入
         /// </summary>
-        /// <param name="input"></param>
-        public abstract void ProcessInput(string input);
+        /// <param name="order"></param>
+        /// <param name="args"></param>
+        public abstract void ProcessInput(string order, string[] args);
 
         /// <summary>
         /// 处理服务器广播的非标准 DataRequest 请求
