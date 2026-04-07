@@ -19,35 +19,35 @@ namespace Milimoe.FunGame.Core.Api.Utility
     /// <summary>
     /// 网络服务工具箱
     /// </summary>
-    public class NetworkUtility
+    public partial class NetworkUtility
     {
         /// <summary>
         /// 判断字符串是否是IP地址
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        public static bool IsIP(string str) => Regex.IsMatch(str, @"^((2[0-4]\d|25[0-5]|[01]?\d\d?)\.){3}(2[0-4]\d|25[0-5]|[01]?\d\d?)$");
+        public static bool IsIP(string str) => CheckIsIP().IsMatch(str);
 
         /// <summary>
         /// 判断字符串是否为邮箱地址
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        public static bool IsEmail(string str) => Regex.IsMatch(str, @"^(\w)+(\.\w)*@(\w)+((\.\w+)+)$");
+        public static bool IsEmail(string str) => CheckIsEmail().IsMatch(str);
 
         /// <summary>
         /// 判断字符串是否是正常的用户名（只有中英文和数字）
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        public static bool IsUserName(string str) => Regex.IsMatch(str, @"^[\u4e00-\u9fffA-Za-z0-9]+$");
+        public static bool IsUserName(string str) => CheckIsUserName().IsMatch(str);
 
         /// <summary>
         /// 判断字符串是否是全中文的字符
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        public static bool IsChineseName(string str) => Regex.IsMatch(str, @"^[\u4e00-\u9fff]+$");
+        public static bool IsChineseName(string str) => CheckIsChineseName().IsMatch(str);
 
         /// <summary>
         /// 获取用户名长度
@@ -315,6 +315,15 @@ namespace Milimoe.FunGame.Core.Api.Utility
             }
             return default;
         }
+
+        [GeneratedRegex(@"^(?:(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)$")]
+        private static partial Regex CheckIsIP();
+        [GeneratedRegex(@"^(\w)+(\.\w)*@(\w)+((\.\w+)+)$")]
+        private static partial Regex CheckIsEmail();
+        [GeneratedRegex(@"^[\u4e00-\u9fffA-Za-z0-9]+$")]
+        private static partial Regex CheckIsUserName();
+        [GeneratedRegex(@"^[\u4e00-\u9fff]+$")]
+        private static partial Regex CheckIsChineseName();
     }
 
     #endregion
