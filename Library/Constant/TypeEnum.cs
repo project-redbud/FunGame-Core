@@ -78,7 +78,8 @@ namespace Milimoe.FunGame.Core.Library.Constant
         StartGame,
         EndGame,
         Gaming,
-        AnonymousGameServer
+        AnonymousGameServer,
+        ReconnectToGame
     }
 
     /// <summary>

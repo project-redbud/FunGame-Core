@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Controller;
+using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Addons;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Common.Event;
@@ -198,12 +199,73 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon
         /// <param name="obj"></param>
         public virtual async void SendEndGame(GamingObject obj)
         {
+            obj.Running = false;
             GamingObjects.TryRemove(obj.Room.Roomid, out _);
             await Send(obj.All.Values, SocketMessageType.EndGame, obj.Room, obj.Users);
             foreach (IServerModel model in obj.All.Values)
             {
                 model.NowGamingServer = null;
             }
+        }
+
+        /// <summary>
+        /// 获取玩家所在的游戏对象
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public GamingObject? GetGamingObjectOfUser(long id)
+        {
+            GamingObject? obj = GamingObjects.Values.FirstOrDefault(obj => obj.HasUser(id));
+            return obj;
+        }
+
+        /// <summary>
+        /// 获取玩家所在的房间
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public Room GetRoomOfUser(long id, GamingObject? obj = null)
+        {
+            obj ??= GamingObjects.Values.FirstOrDefault(obj => obj.HasUser(id));
+            return obj?.Room ?? Room.Empty;
+        }
+
+        /// <summary>
+        /// 这是一个用于等待的通用辅助方法
+        /// </summary>
+        /// <param name="waitSeconds">等待时间（秒）</param>
+        /// <param name="waitSomething">等待的条件</param>
+        /// <param name="delay">检查间隔（毫秒）</param>
+        /// <param name="onTimeout">任务超时则...</param>
+        /// <param name="onCompleted">任务完成则...</param>
+        /// <returns></returns>
+        protected virtual async Task WaitForUsers(int waitSeconds, Func<Task<bool>> waitSomething, int delay, Func<Task> onTimeout, Func<Task> onCompleted)
+        {
+            using CancellationTokenSource cts = new(TimeSpan.FromSeconds(waitSeconds));
+            CancellationToken ct = cts.Token;
+
+            while (!ct.IsCancellationRequested)
+            {
+                try
+                {
+                    if (await waitSomething())
+                    {
+                        await onCompleted();
+                        return;
+                    }
+                    await Task.Delay(delay, ct);
+                }
+                catch (System.Exception e) when (e is not OperationCanceledException)
+                {
+                    Controller.Error(e);
+                    await onTimeout();
+                    return;
+                }
+            }
+
+            // 异常和超时都走超时逻辑
+            await onTimeout();
         }
 
         /// <summary>

@@ -277,7 +277,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             Workers.Remove(obj.Room.Roomid, out _);
         }
 
-        private async Task WaitForUsers(int waitSeconds, Func<Task<bool>> waitSomething, int delay, Func<Task> onTimeout, Func<Task> onCompleted)
+        protected override async Task WaitForUsers(int waitSeconds, Func<Task<bool>> waitSomething, int delay, Func<Task> onTimeout, Func<Task> onCompleted)
         {
             // 这是一个用于等待的通用辅助方法
             using CancellationTokenSource cts = new(TimeSpan.FromSeconds(waitSeconds));
@@ -433,7 +433,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
                                 hp.TryAdd(c, Calculation.Round4Digits(c.HP / c.MaxHP));
                             }
                             double maxhp = hp.Values.Max();
-                            Character winner = hp.Keys.Where(c => hp[c] == maxhp).First();
+                            Character winner = hp.Keys.First(c => hp[c] == maxhp);
                             await SendAllTextMessage(obj, "[ " + winner + " ] 成为了天选之人！！");
                             foreach (Character c in finalList.Where(c => c != winner && c.HP > 0))
                             {

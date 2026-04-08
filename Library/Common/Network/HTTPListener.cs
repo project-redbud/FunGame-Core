@@ -1,8 +1,10 @@
-﻿using System.Net;
+﻿using System.Collections.Concurrent;
+using System.Net;
 using System.Net.WebSockets;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Interface.HTTP;
+using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Service;
 
@@ -16,6 +18,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         public Guid Token { get; } = Guid.Empty;
         public ConcurrentModelList<IServerModel> ClientList { get; } = [];
         public ConcurrentModelList<IServerModel> UserList { get; } = [];
+        public ConcurrentDictionary<long, GameModuleServer> NowGamingServers { get; } = [];
         public List<string> BannedList { get; } = [];
 
         private HTTPListener(HttpListener instance)

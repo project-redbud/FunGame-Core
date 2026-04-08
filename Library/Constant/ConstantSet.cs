@@ -127,6 +127,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         public const string EndGame = "EndGame";
         public const string Gaming = "Gaming";
         public const string AnonymousGameServer = "AnonymousGameServer";
+        public const string ReconnectToGame = "ReconnectToGame";
 
         /// <summary>
         /// 将通信类型的枚举转换为字符串

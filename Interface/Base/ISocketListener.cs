@@ -1,4 +1,6 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
+﻿using System.Collections.Concurrent;
+using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Library.Common.Addon;
 
 namespace Milimoe.FunGame.Core.Interface.Base
 {
@@ -15,9 +17,14 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public ConcurrentModelList<IServerModel> ClientList { get; }
 
         /// <summary>
-        ///  已登录的用户列表
+        /// 已登录的用户列表
         /// </summary>
         public ConcurrentModelList<IServerModel> UserList { get; }
+
+        /// <summary>
+        /// 记录玩家与正在游戏的服务器
+        /// </summary>
+        public ConcurrentDictionary<long, GameModuleServer> NowGamingServers { get; }
 
         /// <summary>
         /// 黑名单IP地址列表
