@@ -23,7 +23,7 @@ namespace Milimoe.FunGame.Core.Model
                     .Select(kv => $"[ {kv.Key} ] {kv.Value.Kills} 分"))}\r\n剩余存活人数：{_queue.Count}");
             }
 
-            if (!_queue.Any(c => c != killer && (c.Master is null || c.Master != killer)))
+            if (_queue.All(c => IsSameFactionAs(c, killer)))
             {
                 // 没有其他的角色了，游戏结束
                 EndGameInfo(killer);

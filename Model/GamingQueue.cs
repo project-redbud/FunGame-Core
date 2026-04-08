@@ -2058,7 +2058,7 @@ namespace Milimoe.FunGame.Core.Model
         /// <param name="assists"></param>
         protected virtual void AfterDeathCalculation(Character death, Character? killer, Character[] assists)
         {
-            if (!_queue.Any(c => c != killer && (c.Master is null || c.Master != killer)))
+            if (_queue.All(c => IsSameFactionAs(c, killer)))
             {
                 // 没有其他的角色了，游戏结束
                 if (killer != null)
@@ -3826,6 +3826,28 @@ namespace Milimoe.FunGame.Core.Model
 
             if (IsDebug) WriteLine($"[ {character} ] 回合开始，补充 {pointsToAdd} 决策点，当前 {dp.CurrentDecisionPoints}/{dp.MaxDecisionPoints} 决策点。");
             return dp;
+        }
+
+        /// <summary>
+        /// 判断两个角色是否是同一阵营（仅用于混战模式，团队模式下请用 <see cref="IsTeammate"/>）
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        public static bool IsSameFactionAs(Character character, Character? target)
+        {
+            if (target == null) return false;
+
+            // 双方互相为上级
+            if (character.Master == target || target.Master == character)
+                return true;
+
+            // 双方都没有上级
+            if (character.Master == null && target.Master == null)
+                return character == target;
+
+            // 是否是同一上级
+            return character.Master == target.Master;
         }
 
         #endregion
