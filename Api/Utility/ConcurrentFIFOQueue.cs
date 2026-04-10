@@ -2,7 +2,7 @@
 
 namespace Milimoe.FunGame.Core.Api.Utility
 {
-    public class ConcurrentQueue<T> : IEnumerable<T>
+    public class ConcurrentFIFOQueue<T> : IEnumerable<T>
     {
         private System.Collections.Concurrent.ConcurrentQueue<T> Instance { get; } = [];
 
@@ -17,7 +17,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
             Instance.Enqueue(obj);
         }
 
-        public bool GetFirst(out T? obj)
+        public bool Dequeue(out T? obj)
         {
             return Instance.TryDequeue(out obj);
         }
