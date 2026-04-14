@@ -205,22 +205,26 @@ namespace Milimoe.FunGame.Core.Interface.Base
         /// </summary>
         /// <param name="caster"></param>
         /// <param name="skill"></param>
+        /// <param name="allEnemys"></param>
+        /// <param name="allTeammates"></param>
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
         /// <param name="castRange"></param>
         /// <returns></returns>
-        public List<Character> SelectTargets(Character caster, Skill skill, List<Character> enemys, List<Character> teammates, List<Grid> castRange);
+        public List<Character> SelectTargets(Character caster, Skill skill, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates, List<Grid> castRange);
 
         /// <summary>
         /// 选取普通攻击目标
         /// </summary>
         /// <param name="character"></param>
         /// <param name="attack"></param>
+        /// <param name="allEnemys"></param>
+        /// <param name="allTeammates"></param>
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
         /// <param name="attackRange"></param>
         /// <returns></returns>
-        public List<Character> SelectTargets(Character character, NormalAttack attack, List<Character> enemys, List<Character> teammates, List<Grid> attackRange);
+        public List<Character> SelectTargets(Character character, NormalAttack attack, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates, List<Grid> attackRange);
 
         /// <summary>
         /// 获取某角色的敌人列表
