@@ -392,10 +392,10 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
                     //queue.TurnEndEvent += Queue_TurnEndEvent;
 
                     // 我们示范两个事件，一是选择技能目标，需要和客户端交互的事件
-                    queue.SelectSkillTargetsEvent += (queue, caster, skill, enemys, teammates, castRange) =>
+                    queue.SelectSkillTargetsEvent += (queue, caster, skill, allEnemys, allTeammates, enemys, teammates, castRange) =>
                     {
                         /// 如果你的逻辑都写在 <see cref="ModuleServerWorker"/> 里就不用这么麻烦每次都传 obj 和 worker 了。
-                        return Queue_SelectSkillTargetsEvent(worker, caster, skill, enemys, teammates, castRange);
+                        return Queue_SelectSkillTargetsEvent(worker, caster, skill, allEnemys, allTeammates, enemys, teammates, castRange);
                     };
 
                     // 二是角色行动完毕，需要通知客户端更新状态的事件
@@ -511,21 +511,23 @@ namespace Milimoe.FunGame.Core.Library.Common.Addon.Example
             });
         }
 
-        private List<Character> Queue_SelectSkillTargetsEvent(ModuleServerWorker worker, Character caster, Skill skill, List<Character> enemys, List<Character> teammates, List<Grid> castRange)
+        private List<Character> Queue_SelectSkillTargetsEvent(ModuleServerWorker worker, Character caster, Skill skill, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates, List<Grid> castRange)
         {
             // 这是一个需要与客户端交互的事件，其他的选择事件与之做法相同
             // SyncAwaiter是一个允许同步方法安全等待异步任务完成的工具类
-            return SyncAwaiter.WaitResult(RequestClientSelectSkillTargets(worker, caster, skill, enemys, teammates, castRange));
+            return SyncAwaiter.WaitResult(RequestClientSelectSkillTargets(worker, caster, skill, allEnemys, allTeammates, enemys, teammates, castRange));
         }
 
-        private async Task<List<Character>> RequestClientSelectSkillTargets(ModuleServerWorker worker, Character caster, Skill skill, List<Character> enemys, List<Character> teammates, List<Grid> castRange)
+        private async Task<List<Character>> RequestClientSelectSkillTargets(ModuleServerWorker worker, Character caster, Skill skill, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates, List<Grid> castRange)
         {
             List<Character> selectTargets = [];
             Dictionary<string, object> data = [];
             data.Add("event", "SelectSkillTargets");
             data.Add("caster", caster.Id);
             data.Add("skill", skill.Id);
+            data.Add("allenemys", allEnemys.Select(c => c.Id));
             data.Add("enemys", enemys.Select(c => c.Id));
+            data.Add("allteammates", allTeammates.Select(c => c.Id));
             data.Add("teammates", teammates.Select(c => c.Id));
             data.Add("castRange", castRange.Select(g => g.Id));
             await SendGamingMessage(_clientModels, GamingType.Skill, data);

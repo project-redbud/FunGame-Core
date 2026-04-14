@@ -162,7 +162,7 @@ namespace Milimoe.FunGame.Core.Controller
 
                 if (normalAttackReachableEnemys.Count > 0)
                 {
-                    List<Character> targets = SelectTargets(character, character.NormalAttack, normalAttackReachableEnemys, []);
+                    List<Character> targets = SelectTargets(character, character.NormalAttack, allEnemysInGame, allTeammatesInGame, normalAttackReachableEnemys, []);
                     if (targets.Count > 0)
                     {
                         double currentScore = EvaluateNormalAttack(character, targets) - movePenalty;
@@ -223,7 +223,7 @@ namespace Milimoe.FunGame.Core.Controller
 
                             if (skillReachableEnemys.Count > 0 || skillReachableTeammates.Count > 0)
                             {
-                                List<Character> targets = SelectTargets(character, skill, skillReachableEnemys, skillReachableTeammates);
+                                List<Character> targets = SelectTargets(character, skill, allEnemysInGame, allTeammatesInGame, skillReachableEnemys, skillReachableTeammates);
                                 if (targets.Count > 0)
                                 {
                                     double currentScore = EvaluateSkill(character, skill, targets, cost) - movePenalty;
@@ -288,7 +288,7 @@ namespace Milimoe.FunGame.Core.Controller
 
                             if (itemSkillReachableEnemys.Count > 0 || itemSkillReachableTeammates.Count > 0)
                             {
-                                List<Character> targetsForItem = SelectTargets(character, itemSkill, itemSkillReachableEnemys, itemSkillReachableTeammates);
+                                List<Character> targetsForItem = SelectTargets(character, itemSkill, allEnemysInGame, allTeammatesInGame, itemSkillReachableEnemys, itemSkillReachableTeammates);
                                 if (targetsForItem.Count > 0)
                                 {
                                     double currentScore = EvaluateItem(character, item, targetsForItem, cost) - movePenalty;
@@ -484,9 +484,9 @@ namespace Milimoe.FunGame.Core.Controller
         }
 
         // 选择技能的最佳目标
-        private static List<Character> SelectTargets(Character character, ISkill skill, List<Character> enemys, List<Character> teammates)
+        private static List<Character> SelectTargets(Character character, ISkill skill, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates)
         {
-            List<Character> targets = skill.GetSelectableTargets(character, enemys, teammates);
+            List<Character> targets = skill.GetSelectableTargets(character, allEnemys, allTeammates, enemys, teammates);
             int count = skill.RealCanSelectTargetCount(enemys, teammates);
             return [.. targets.OrderBy(o => Random.Shared.Next()).Take(count)];
         }

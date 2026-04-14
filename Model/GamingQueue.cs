@@ -1270,9 +1270,6 @@ namespace Milimoe.FunGame.Core.Model
                             // 启用战棋地图时的专属 AI 决策方法
                             if (isAI && ai != null && startGrid != null)
                             {
-                                List<Character> allEnemysInGame = [.. allEnemys.Where(canAttackGridsByStartGrid.Union(canCastGridsByStartGrid).SelectMany(g => g.Characters).Contains)];
-                                List<Character> allTeammatesInGame = [.. allTeammates.Where(canAttackGridsByStartGrid.Union(canCastGridsByStartGrid).SelectMany(g => g.Characters).Contains)];
-
                                 aiDecision = ai.DecideAIAction(character, dp, startGrid, canMoveGrids, skills, items, allEnemys, allTeammates, enemys, teammates, pUseItem, pCastSkill, pNormalAttack);
                                 type = aiDecision.ActionType;
                             }
@@ -1386,7 +1383,7 @@ namespace Milimoe.FunGame.Core.Model
                                     enemys = [.. enemys.Where(attackRange.SelectMany(g => g.Characters).Contains)];
                                     teammates = [.. teammates.Where(attackRange.SelectMany(g => g.Characters).Contains)];
                                 }
-                                targets = SelectTargets(character, character.NormalAttack, enemys, teammates, attackRange);
+                                targets = SelectTargets(character, character.NormalAttack, allEnemys, allTeammates, enemys, teammates, attackRange);
                             }
                             if (targets.Count > 0)
                             {
@@ -2972,7 +2969,7 @@ namespace Milimoe.FunGame.Core.Model
                 if (aiDecision != null) targets = aiDecision.Targets;
                 if (targets.Count == 0)
                 {
-                    targets = SelectTargets(character, skill, enemys, teammates, castRange);
+                    targets = SelectTargets(character, skill, allEnemys, allTeammates, enemys, teammates, castRange);
                 }
                 if (skill.CanSelectTargetRange > 0)
                 {
@@ -3283,21 +3280,23 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         /// <param name="caster"></param>
         /// <param name="skill"></param>
+        /// <param name="allEnemys"></param>
+        /// <param name="allTeammates"></param>
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
         /// <param name="castRange"></param>
         /// <returns></returns>
-        public List<Character> SelectTargets(Character caster, Skill skill, List<Character> enemys, List<Character> teammates, List<Grid> castRange)
+        public List<Character> SelectTargets(Character caster, Skill skill, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates, List<Grid> castRange)
         {
             List<Effect> effects = [.. caster.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
             foreach (Effect effect in effects)
             {
-                effect.AlterSelectListBeforeSelection(caster, skill, enemys, teammates);
+                effect.AlterSelectListBeforeSelection(caster, skill, allEnemys, allTeammates, enemys, teammates);
             }
-            List<Character> targets = OnSelectSkillTargetsEvent(caster, skill, enemys, teammates, castRange);
+            List<Character> targets = OnSelectSkillTargetsEvent(caster, skill, allEnemys, allTeammates, enemys, teammates, castRange);
             if (targets.Count == 0 && IsCharacterInAIControlling(caster))
             {
-                targets = skill.SelectTargets(caster, enemys, teammates);
+                targets = skill.SelectTargets(caster, allEnemys, allTeammates, enemys, teammates);
             }
             return targets;
         }
@@ -3326,21 +3325,23 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         /// <param name="character"></param>
         /// <param name="attack"></param>
+        /// <param name="allEnemys"></param>
+        /// <param name="allTeammates"></param>
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
         /// <param name="attackRange"></param>
         /// <returns></returns>
-        public List<Character> SelectTargets(Character character, NormalAttack attack, List<Character> enemys, List<Character> teammates, List<Grid> attackRange)
+        public List<Character> SelectTargets(Character character, NormalAttack attack, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates, List<Grid> attackRange)
         {
             List<Effect> effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
             foreach (Effect effect in effects)
             {
-                effect.AlterSelectListBeforeSelection(character, attack, enemys, teammates);
+                effect.AlterSelectListBeforeSelection(character, attack, allEnemys, allTeammates, enemys, teammates);
             }
-            List<Character> targets = OnSelectNormalAttackTargetsEvent(character, attack, enemys, teammates, attackRange);
+            List<Character> targets = OnSelectNormalAttackTargetsEvent(character, attack, allEnemys, allTeammates, enemys, teammates, attackRange);
             if (targets.Count == 0 && IsCharacterInAIControlling(character))
             {
-                targets = character.NormalAttack.SelectTargets(character, enemys, teammates);
+                targets = character.NormalAttack.SelectTargets(character, allEnemys, allTeammates, enemys, teammates);
             }
             return targets;
         }
@@ -4698,7 +4699,7 @@ namespace Milimoe.FunGame.Core.Model
             return SelectTargetGridEvent?.Invoke(this, character, enemys, teammates, map, moveRange) ?? Grid.Empty;
         }
 
-        public delegate List<Character> SelectSkillTargetsEventHandler(GamingQueue queue, Character caster, Skill skill, List<Character> enemys, List<Character> teammates, List<Grid> castRange);
+        public delegate List<Character> SelectSkillTargetsEventHandler(GamingQueue queue, Character caster, Skill skill, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates, List<Grid> castRange);
         /// <summary>
         /// 选取技能目标事件
         /// </summary>
@@ -4708,13 +4709,15 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         /// <param name="caster"></param>
         /// <param name="skill"></param>
+        /// <param name="allEnemys"></param>
+        /// <param name="allTeammates"></param>
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
         /// <param name="castRange"></param>
         /// <returns></returns>
-        protected List<Character> OnSelectSkillTargetsEvent(Character caster, Skill skill, List<Character> enemys, List<Character> teammates, List<Grid> castRange)
+        protected List<Character> OnSelectSkillTargetsEvent(Character caster, Skill skill, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates, List<Grid> castRange)
         {
-            return SelectSkillTargetsEvent?.Invoke(this, caster, skill, enemys, teammates, castRange) ?? [];
+            return SelectSkillTargetsEvent?.Invoke(this, caster, skill, allEnemys, allTeammates, enemys, teammates, castRange) ?? [];
         }
 
         public delegate List<Grid> SelectNonDirectionalSkillTargetsEventHandler(GamingQueue queue, Character caster, Skill skill, List<Character> enemys, List<Character> teammates, List<Grid> castRange);
@@ -4736,7 +4739,7 @@ namespace Milimoe.FunGame.Core.Model
             return SelectNonDirectionalSkillTargetsEvent?.Invoke(this, caster, skill, enemys, teammates, castRange) ?? [];
         }
 
-        public delegate List<Character> SelectNormalAttackTargetsEventHandler(GamingQueue queue, Character character, NormalAttack attack, List<Character> enemys, List<Character> teammates, List<Grid> attackRange);
+        public delegate List<Character> SelectNormalAttackTargetsEventHandler(GamingQueue queue, Character character, NormalAttack attack, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates, List<Grid> attackRange);
         /// <summary>
         /// 选取普通攻击目标事件
         /// </summary>
@@ -4746,13 +4749,15 @@ namespace Milimoe.FunGame.Core.Model
         /// </summary>
         /// <param name="character"></param>
         /// <param name="attack"></param>
+        /// <param name="allEnemys"></param>
+        /// <param name="allTeammates"></param>
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
         /// <param name="attackRange"></param>
         /// <returns></returns>
-        protected List<Character> OnSelectNormalAttackTargetsEvent(Character character, NormalAttack attack, List<Character> enemys, List<Character> teammates, List<Grid> attackRange)
+        protected List<Character> OnSelectNormalAttackTargetsEvent(Character character, NormalAttack attack, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates, List<Grid> attackRange)
         {
-            return SelectNormalAttackTargetsEvent?.Invoke(this, character, attack, enemys, teammates, attackRange) ?? [];
+            return SelectNormalAttackTargetsEvent?.Invoke(this, character, attack, allEnemys, allTeammates, enemys, teammates, attackRange) ?? [];
         }
 
         public delegate void InterruptCastingEventHandler(GamingQueue queue, Character cast, Skill? skill, Character interrupter);

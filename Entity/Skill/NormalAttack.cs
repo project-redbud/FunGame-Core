@@ -248,10 +248,12 @@ namespace Milimoe.FunGame.Core.Entity
         /// 获取可选择的目标列表
         /// </summary>
         /// <param name="attacker"></param>
+        /// <param name="allEnemys"></param>
+        /// <param name="allTeammates"></param>
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
         /// <returns></returns>
-        public List<Character> GetSelectableTargets(Character attacker, List<Character> enemys, List<Character> teammates)
+        public List<Character> GetSelectableTargets(Character attacker, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates)
         {
             List<Character> selectable = [];
 
@@ -300,12 +302,14 @@ namespace Milimoe.FunGame.Core.Entity
         /// 选取普攻目标
         /// </summary>
         /// <param name="attacker"></param>
+        /// <param name="allEnemys"></param>
+        /// <param name="allTeammates"></param>
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
         /// <returns></returns>
-        public List<Character> SelectTargets(Character attacker, List<Character> enemys, List<Character> teammates)
+        public List<Character> SelectTargets(Character attacker, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates)
         {
-            List<Character> tobeSelected = GetSelectableTargets(attacker, enemys, teammates);
+            List<Character> tobeSelected = GetSelectableTargets(attacker, allEnemys, allTeammates, enemys, teammates);
 
             List<Character> targets = [];
 

@@ -112,10 +112,12 @@ namespace Milimoe.FunGame.Core.Interface.Entity
         /// 获取可选择的目标列表
         /// </summary>
         /// <param name="caster"></param>
+        /// <param name="allEnemys"></param>
+        /// <param name="allTeammates"></param>
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
         /// <returns></returns>
-        public List<Character> GetSelectableTargets(Character caster, List<Character> enemys, List<Character> teammates);
+        public List<Character> GetSelectableTargets(Character caster, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates);
 
         /// <summary>
         /// 实际可选取的目标数量

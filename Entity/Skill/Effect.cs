@@ -714,9 +714,11 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         /// <param name="character"></param>
         /// <param name="skill"></param>
+        /// <param name="allEnemys"></param>
+        /// <param name="allTeammates"></param>
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
-        public virtual void AlterSelectListBeforeSelection(Character character, ISkill skill, List<Character> enemys, List<Character> teammates)
+        public virtual void AlterSelectListBeforeSelection(Character character, ISkill skill, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates)
         {
 
         }

@@ -180,7 +180,7 @@ namespace Milimoe.FunGame.Core.Entity
         public virtual bool AllowSelectNoCharacterGrid { get; set; } = false;
 
         /// <summary>
-        /// 是否可以选择已死亡的角色。仅 <see cref="IsNonDirectional"/> = true 时有效。
+        /// 是否可以选择已死亡的角色
         /// </summary>
         public virtual bool AllowSelectDead { get; set; } = false;
 
@@ -485,10 +485,12 @@ namespace Milimoe.FunGame.Core.Entity
         /// 获取可选择的目标列表
         /// </summary>
         /// <param name="caster"></param>
+        /// <param name="allEnemys"></param>
+        /// <param name="allTeammates"></param>
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
         /// <returns></returns>
-        public virtual List<Character> GetSelectableTargets(Character caster, List<Character> enemys, List<Character> teammates)
+        public virtual List<Character> GetSelectableTargets(Character caster, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates)
         {
             List<Character> selectable = [];
 
@@ -503,21 +505,34 @@ namespace Milimoe.FunGame.Core.Entity
                 checkType |= ImmuneType.Magical;
             }
 
-            foreach (Character character in enemys)
+            if (CanSelectEnemy)
             {
-                IEnumerable<Effect> effects = Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority);
-                if (CanSelectEnemy && ((character.ImmuneType & checkType) == ImmuneType.None ||
-                    effects.Any(e => e.IgnoreImmune == ImmuneType.All || e.IgnoreImmune == ImmuneType.Skilled || (IsMagic && e.IgnoreImmune == ImmuneType.Magical))))
+                foreach (Character character in enemys)
                 {
-                    selectable.Add(character);
+                    IEnumerable<Effect> effects = Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority);
+                    if ((character.ImmuneType & checkType) == ImmuneType.None ||
+                        effects.Any(e => e.IgnoreImmune == ImmuneType.All || e.IgnoreImmune == ImmuneType.Skilled || (IsMagic && e.IgnoreImmune == ImmuneType.Magical)))
+                    {
+                        selectable.Add(character);
+                    }
+                }
+
+                if (AllowSelectDead)
+                {
+                    selectable.AddRange(allEnemys.Where(c => c.HP == 0));
                 }
             }
 
-            foreach (Character character in teammates)
+            if (CanSelectTeammate)
             {
-                if (CanSelectTeammate)
+                foreach (Character character in teammates)
                 {
                     selectable.Add(character);
+                }
+
+                if (AllowSelectDead)
+                {
+                    selectable.AddRange(allTeammates.Where(c => c.HP == 0));
                 }
             }
 
@@ -548,12 +563,14 @@ namespace Milimoe.FunGame.Core.Entity
         /// 选取技能目标
         /// </summary>
         /// <param name="caster"></param>
+        /// <param name="allEnemys"></param>
+        /// <param name="allTeammates"></param>
         /// <param name="enemys"></param>
         /// <param name="teammates"></param>
         /// <returns></returns>
-        public virtual List<Character> SelectTargets(Character caster, List<Character> enemys, List<Character> teammates)
+        public virtual List<Character> SelectTargets(Character caster, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates)
         {
-            List<Character> tobeSelected = GetSelectableTargets(caster, enemys, teammates);
+            List<Character> tobeSelected = GetSelectableTargets(caster, allEnemys, allTeammates, enemys, teammates);
 
             List<Character> targets = [];
 
