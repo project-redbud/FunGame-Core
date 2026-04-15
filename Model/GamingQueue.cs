@@ -2125,6 +2125,12 @@ namespace Milimoe.FunGame.Core.Model
             {
                 return;
             }
+            
+            // 伤害不应小于0
+            if (damage < 0)
+            {
+                damage = 0;
+            }
 
             // 不管有没有暴击，都尝试往回合记录中添加目标，不暴击时不会修改原先值
             if (!LastRound.IsCritical.TryAdd(enemy, damageResult == DamageResult.Critical) && damageResult == DamageResult.Critical)
