@@ -30,7 +30,7 @@
     <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <VersionPrefix>2.0.0-dev</VersionPrefix>
+    <VersionPrefix>2.0.0-rc</VersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' == ''">$([System.DateTime]::Now.ToString("MMdd"))</VersionSuffix>
   </PropertyGroup>
 
