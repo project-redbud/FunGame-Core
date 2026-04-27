@@ -24,19 +24,44 @@ namespace Milimoe.FunGame.Core.Model
         public string InGameTime { get; set; } = "时间";
 
         /// <summary>
-        /// 晋升点数上限
+        /// 晋升点数上限 - X级
         /// </summary>
-        public Dictionary<string, int> PromotionsUpperLimit { get; set; } = new()
-        {
-            { "X", 999 },
-            { "S", 998 },
-            { "A+", 850 },
-            { "A", 700 },
-            { "B", 550 },
-            { "C", 400 },
-            { "D", 300 },
-            { "E", 200 },
-        };
+        public int PromotionXUpperLimit { get; set; } = 999;
+
+        /// <summary>
+        /// 晋升点数上限 - S级
+        /// </summary>
+        public int PromotionSUpperLimit { get; set; } = 998;
+
+        /// <summary>
+        /// 晋升点数上限 - A+级
+        /// </summary>
+        public int PromotionAPlusUpperLimit { get; set; } = 850;
+
+        /// <summary>
+        /// 晋升点数上限 - A级
+        /// </summary>
+        public int PromotionAUpperLimit { get; set; } = 700;
+
+        /// <summary>
+        /// 晋升点数上限 - B级
+        /// </summary>
+        public int PromotionBUpperLimit { get; set; } = 550;
+
+        /// <summary>
+        /// 晋升点数上限 - C级
+        /// </summary>
+        public int PromotionCUpperLimit { get; set; } = 400;
+
+        /// <summary>
+        /// 晋升点数上限 - D级
+        /// </summary>
+        public int PromotionDUpperLimit { get; set; } = 300;
+
+        /// <summary>
+        /// 晋升点数上限 - E级
+        /// </summary>
+        public int PromotionEUpperLimit { get; set; } = 200;
 
         /// <summary>
         /// 使用的魔法类型
@@ -62,7 +87,7 @@ namespace Milimoe.FunGame.Core.Model
         public int MaxLevel { get; set; } = 60;
 
         /// <summary>
-        /// 经验值上限
+        /// 经验值上限（key = 等级，value = 该等级的上限）
         /// </summary>
         public Dictionary<int, double> EXPUpperLimit { get; set; } = new()
         {

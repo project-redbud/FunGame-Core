@@ -107,6 +107,21 @@ namespace Milimoe.FunGame.Core.Library.Common.Network
         /// <summary>
         /// 发送 POST 请求
         /// </summary>
+        /// <param name="url"></param>
+        /// <param name="json"></param>
+        /// <returns></returns>
+        public async Task HttpPost(string url, string json)
+        {
+            HttpContent content = new StringContent(json, General.DefaultEncoding, "application/json");
+            HttpResponseMessage response = await Instance.PostAsync(url, content);
+            response.EnsureSuccessStatusCode();
+            
+            await response.Content.ReadAsStringAsync();
+        }
+
+        /// <summary>
+        /// 发送 POST 请求
+        /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="url"></param>
         /// <param name="json"></param>

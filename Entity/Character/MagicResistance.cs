@@ -11,47 +11,83 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 无属性魔法抗性
         /// </summary>
-        public double None { get; set; } = 0;
+        public double None
+        {
+            get => field;
+            set => field = Math.Min(1, value);
+        }
 
         /// <summary>
         /// 星痕魔法抗性
         /// </summary>
-        public double Starmark { get; set; } = 0;
+        public double Starmark
+        {
+            get => field;
+            set => field = Math.Min(1, value);
+        }
 
         /// <summary>
         /// 纯粹结晶魔法抗性
         /// </summary>
-        public double PurityNatural { get; set; } = 0;
+        public double PurityNatural
+        {
+            get => field;
+            set => field = Math.Min(1, value);
+        }
 
         /// <summary>
         /// 纯现代结晶魔法抗性
         /// </summary>
-        public double PurityContemporary { get; set; } = 0;
+        public double PurityContemporary
+        {
+            get => field;
+            set => field = Math.Min(1, value);
+        }
 
         /// <summary>
         /// 光魔法抗性
         /// </summary>
-        public double Bright { get; set; } = 0;
+        public double Bright
+        {
+            get => field;
+            set => field = Math.Min(1, value);
+        }
 
         /// <summary>
         /// 影魔法抗性
         /// </summary>
-        public double Shadow { get; set; } = 0;
+        public double Shadow
+        {
+            get => field;
+            set => field = Math.Min(1, value);
+        }
 
         /// <summary>
         /// 元素魔法抗性
         /// </summary>
-        public double Element { get; set; } = 0;
+        public double Element
+        {
+            get => field;
+            set => field = Math.Min(1, value);
+        }
 
         /// <summary>
         /// 紫宛魔法抗性
         /// </summary>
-        public double Aster { get; set; } = 0;
+        public double Aster
+        {
+            get => field;
+            set => field = Math.Min(1, value);
+        }
 
         /// <summary>
         /// 时空魔法抗性
         /// </summary>
-        public double SpatioTemporal { get; set; } = 0;
+        public double SpatioTemporal
+        {
+            get => field;
+            set => field = Math.Min(1, value);
+        }
 
         /// <summary>
         /// 平均魔法抗性

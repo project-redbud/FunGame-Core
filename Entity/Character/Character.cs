@@ -73,31 +73,31 @@ namespace Milimoe.FunGame.Core.Entity
         {
             get
             {
-                if (Promotion > GameplayEquilibriumConstant.PromotionsUpperLimit["S"])
+                if (Promotion > GameplayEquilibriumConstant.PromotionSUpperLimit)
                 {
                     return RoleRating.X;
                 }
-                else if (Promotion > GameplayEquilibriumConstant.PromotionsUpperLimit["A+"] && Promotion <= GameplayEquilibriumConstant.PromotionsUpperLimit["S"])
+                else if (Promotion > GameplayEquilibriumConstant.PromotionAPlusUpperLimit && Promotion <= GameplayEquilibriumConstant.PromotionSUpperLimit)
                 {
                     return RoleRating.S;
                 }
-                else if (Promotion > GameplayEquilibriumConstant.PromotionsUpperLimit["A"] && Promotion <= GameplayEquilibriumConstant.PromotionsUpperLimit["A+"])
+                else if (Promotion > GameplayEquilibriumConstant.PromotionAUpperLimit && Promotion <= GameplayEquilibriumConstant.PromotionAPlusUpperLimit)
                 {
                     return RoleRating.APlus;
                 }
-                else if (Promotion > GameplayEquilibriumConstant.PromotionsUpperLimit["B"] && Promotion <= GameplayEquilibriumConstant.PromotionsUpperLimit["A"])
+                else if (Promotion > GameplayEquilibriumConstant.PromotionBUpperLimit && Promotion <= GameplayEquilibriumConstant.PromotionAUpperLimit)
                 {
                     return RoleRating.A;
                 }
-                else if (Promotion > GameplayEquilibriumConstant.PromotionsUpperLimit["C"] && Promotion <= GameplayEquilibriumConstant.PromotionsUpperLimit["B"])
+                else if (Promotion > GameplayEquilibriumConstant.PromotionCUpperLimit && Promotion <= GameplayEquilibriumConstant.PromotionBUpperLimit)
                 {
                     return RoleRating.B;
                 }
-                else if (Promotion > GameplayEquilibriumConstant.PromotionsUpperLimit["D"] && Promotion <= GameplayEquilibriumConstant.PromotionsUpperLimit["C"])
+                else if (Promotion > GameplayEquilibriumConstant.PromotionDUpperLimit && Promotion <= GameplayEquilibriumConstant.PromotionCUpperLimit)
                 {
                     return RoleRating.C;
                 }
-                else if (Promotion > GameplayEquilibriumConstant.PromotionsUpperLimit["E"] && Promotion <= GameplayEquilibriumConstant.PromotionsUpperLimit["D"])
+                else if (Promotion > GameplayEquilibriumConstant.PromotionEUpperLimit && Promotion <= GameplayEquilibriumConstant.PromotionDUpperLimit)
                 {
                     return RoleRating.D;
                 }
@@ -445,7 +445,7 @@ namespace Milimoe.FunGame.Core.Entity
             get
             {
                 double value = (DEF / (DEF + GameplayEquilibriumConstant.DEFReductionFactor)) + ExPDR;
-                return Calculation.PercentageCheck(value);
+                return Math.Min(1, value);
             }
         }
 

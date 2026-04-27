@@ -174,7 +174,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <typeparam name="T"></typeparam>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static string JsonSerialize<T>(T obj) => Service.JsonManager.GetString(obj);
+        public static string JsonSerialize<T>(T obj) => JsonManager.GetString(obj);
 
         /// <summary>
         /// 返回目标对象的Json字符串 可指定反序列化选项
@@ -183,7 +183,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="obj"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static string JsonSerialize<T>(T obj, JsonSerializerOptions options) => Service.JsonManager.GetString(obj, options);
+        public static string JsonSerialize<T>(T obj, JsonSerializerOptions options) => JsonManager.GetString(obj, options);
 
         /// <summary>
         /// 反序列化Json对象
@@ -191,7 +191,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <typeparam name="T"></typeparam>
         /// <param name="json"></param>
         /// <returns></returns>
-        public static T? JsonDeserialize<T>(string json) => Service.JsonManager.GetObject<T>(json);
+        public static T? JsonDeserialize<T>(string json) => JsonManager.GetObject<T>(json);
 
         /// <summary>
         /// 反序列化Json对象 使用 <paramref name="reader"/> 可指定反序列化选项
@@ -200,7 +200,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="reader"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static T? JsonDeserialize<T>(ref Utf8JsonReader reader, JsonSerializerOptions options) => Service.JsonManager.GetObject<T>(ref reader, options);
+        public static T? JsonDeserialize<T>(ref Utf8JsonReader reader, JsonSerializerOptions options) => JsonManager.GetObject<T>(ref reader, options);
 
         /// <summary>
         /// 反序列化Json对象 可指定反序列化选项
@@ -209,7 +209,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="json"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static T? JsonDeserialize<T>(string json, JsonSerializerOptions options) => Service.JsonManager.GetObject<T>(json, options);
+        public static T? JsonDeserialize<T>(string json, JsonSerializerOptions options) => JsonManager.GetObject<T>(json, options);
 
         /// <summary>
         /// 反序列化Hashtable中的Json对象
@@ -218,7 +218,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="hashtable"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        public static T? JsonDeserializeFromHashtable<T>(Hashtable hashtable, string key) => Service.JsonManager.GetObject<T>(hashtable, key);
+        public static T? JsonDeserializeFromHashtable<T>(Hashtable hashtable, string key) => JsonManager.GetObject<T>(hashtable, key);
 
         /// <summary>
         /// 反序列化Dictionary中的Json对象
@@ -227,7 +227,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="dict"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        public static T? JsonDeserializeFromDictionary<T>(Dictionary<string, object> dict, string key) => Service.JsonManager.GetObject<T>(dict, key);
+        public static T? JsonDeserializeFromDictionary<T>(Dictionary<string, object> dict, string key) => JsonManager.GetObject<T>(dict, key);
 
         /// <summary>
         /// 反序列化IEnumerable中的Json对象
@@ -236,7 +236,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="e"></param>
         /// <param name="index"></param>
         /// <returns></returns>
-        public static T? JsonDeserializeFromIEnumerable<T>(IEnumerable<object> e, int index) => Service.JsonManager.GetObject<T>(e, index);
+        public static T? JsonDeserializeFromIEnumerable<T>(IEnumerable<object> e, int index) => JsonManager.GetObject<T>(e, index);
 
         /// <summary>
         /// 反序列化IEnumerable中的Json对象 可指定反序列化选项
@@ -246,7 +246,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="index"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static T? JsonDeserializeFromIEnumerable<T>(IEnumerable<object> e, int index, JsonSerializerOptions options) => Service.JsonManager.GetObject<T>(e, index, options);
+        public static T? JsonDeserializeFromIEnumerable<T>(IEnumerable<object> e, int index, JsonSerializerOptions options) => JsonManager.GetObject<T>(e, index, options);
 
         /// <summary>
         /// 反序列化Hashtable中的Json对象 可指定反序列化选项
@@ -256,7 +256,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <param name="key"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static T? JsonDeserializeFromHashtable<T>(Hashtable hashtable, string key, JsonSerializerOptions options) => Service.JsonManager.GetObject<T>(hashtable, key, options);
+        public static T? JsonDeserializeFromHashtable<T>(Hashtable hashtable, string key, JsonSerializerOptions options) => JsonManager.GetObject<T>(hashtable, key, options);
 
         /// <summary>
         /// 创建一个静态 HttpClient 实例，供整个应用程序生命周期使用
