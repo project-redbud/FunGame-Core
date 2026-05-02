@@ -58,7 +58,7 @@ namespace Milimoe.FunGame.Core.Entity
             DateTime now = DateTime.Now;
             DateTime? upComingTime = StartTime?.AddHours(-16);
 
-            if (Predecessor != -1 && PredecessorStatus != ActivityState.Ended)
+            if (Predecessor != -1 && PredecessorStatus != ActivityState.Ended && PredecessorStatus != ActivityState.ClaimPeriod)
             {
                 // 如果有前置活动且前置活动未结束，则当前活动状态为未来
                 newState = ActivityState.Future;
@@ -81,6 +81,11 @@ namespace Milimoe.FunGame.Core.Entity
             else
             {
                 newState = ActivityState.Ended;
+            }
+
+            if (newState != ActivityState.Ended && Quests.All(q => q.Status == QuestState.Completed))
+            {
+                newState = ActivityState.ClaimPeriod;
             }
 
             if (Status != newState)
@@ -179,7 +184,7 @@ namespace Milimoe.FunGame.Core.Entity
 
         public string GetTimeString(bool full = true)
         {
-            if (Predecessor != -1 && PredecessorStatus != ActivityState.Ended)
+            if (Predecessor != -1 && PredecessorStatus != ActivityState.Ended && PredecessorStatus != ActivityState.ClaimPeriod)
             {
                 return $"在前置活动结束后开启";
             }
