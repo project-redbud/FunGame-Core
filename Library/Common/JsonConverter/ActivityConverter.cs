@@ -60,6 +60,13 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.PredecessorStatus = (ActivityState)reader.GetInt32();
                     result.UpdateState();
                     break;
+                case nameof(Activity.QuestsAwardedUsers):
+                    Dictionary<long, HashSet<long>> questAwardedUsers = NetworkUtility.JsonDeserialize<Dictionary<long, HashSet<long>>>(ref reader, options) ?? [];
+                    foreach (long key in questAwardedUsers.Keys)
+                    {
+                        result.QuestsAwardedUsers[key] = questAwardedUsers[key];
+                    }
+                    break;
             }
         }
 
@@ -81,6 +88,8 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             JsonSerializer.Serialize(writer, value.Quests, options);
             writer.WriteNumber(nameof(Activity.Predecessor), value.Predecessor);
             writer.WriteNumber(nameof(Activity.PredecessorStatus), (int)value.PredecessorStatus);
+            writer.WritePropertyName(nameof(Activity.QuestsAwardedUsers));
+            JsonSerializer.Serialize(writer, value.QuestsAwardedUsers, options);
 
             writer.WriteEndObject();
         }

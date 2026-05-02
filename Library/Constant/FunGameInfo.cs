@@ -1,4 +1,6 @@
-﻿namespace Milimoe.FunGame.Core.Library.Constant
+﻿using System.Reflection;
+
+namespace Milimoe.FunGame.Core.Library.Constant
 {
     public class FunGameInfo
     {
@@ -27,21 +29,21 @@
         {
             get
             {
-                string patch = FunGame_VersionPatch.StartsWith('.') ? FunGame_VersionPatch : $".{FunGame_VersionPatch}";
-                return $"{FunGame_Version_Major}.{FunGame_Version_Minor}{patch}";
+                Assembly assembly = Assembly.GetExecutingAssembly();
+                AssemblyInformationalVersionAttribute? informationalVersionAttribute = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+                return informationalVersionAttribute?.InformationalVersion ?? $"{FunGame_Version_Major}.{FunGame_Version_Minor}{(FunGame_VersionPatch.StartsWith('.') ? FunGame_VersionPatch : $".{FunGame_VersionPatch}")}";
             }
         }
+
+        public const int FunGame_Version_Major = 2;
+        public const int FunGame_Version_Minor = 0;
+        public const string FunGame_VersionPatch = "0";
 
         public const string FunGame_Core = "FunGame Core";
         public const string FunGame_Core_Api = "FunGame Core Api";
         public const string FunGame_Console = "FunGame Console";
         public const string FunGame_Desktop = "FunGame Desktop";
         public const string FunGame_Server = "FunGame Server Console";
-
-        public const int FunGame_Version_Major = 2;
-        public const int FunGame_Version_Minor = 0;
-        public const string FunGame_VersionPatch = "0-dev";
-        public const string FunGame_Version_Build = "";
 
         public const string FunGameCoreTitle = @"  _____ _   _ _   _  ____    _    __  __ _____    ____ ___  ____  _____ 
  |  ___| | | | \ | |/ ___|  / \  |  \/  | ____|  / ___/ _ \|  _ \| ____|

@@ -114,6 +114,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Future,
         Upcoming,
         InProgress,
+        ClaimPeriod,
         Ended
     }
 
