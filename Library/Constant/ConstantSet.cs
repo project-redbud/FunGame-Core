@@ -42,7 +42,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
                 ActivityState.Future => "预告中",
                 ActivityState.Upcoming => "即将开始",
                 ActivityState.InProgress => "进行中",
-                ActivityState.ClaimPeriod => "可领取奖励",
+                ActivityState.ClaimPeriod => "领奖中",
                 _ => "已结束"
             };
         }
