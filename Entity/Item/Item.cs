@@ -176,6 +176,11 @@ namespace Milimoe.FunGame.Core.Entity
         public bool IsRemoveAfterUse { get; set; } = true;
 
         /// <summary>
+        /// 堆叠数量
+        /// </summary>
+        public int StackCount { get; set; } = 1;
+
+        /// <summary>
         /// 物品所属的角色（只有装备物品，才需要设置）
         /// </summary>
         public Character? Character
