@@ -176,6 +176,11 @@ namespace Milimoe.FunGame.Core.Entity
         public bool IsRemoveAfterUse { get; set; } = true;
 
         /// <summary>
+        /// 是否允许堆叠
+        /// </summary>
+        public bool Stackable { get; set; } = false;
+
+        /// <summary>
         /// 堆叠数量
         /// </summary>
         public int StackCount { get; set; } = 1;
