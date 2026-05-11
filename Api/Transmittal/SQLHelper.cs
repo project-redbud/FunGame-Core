@@ -77,6 +77,11 @@ namespace Milimoe.FunGame.Core.Api.Transmittal
         public bool ClearParametersAfterExecute { get; set; } = true;
 
         /// <summary>
+        /// 最后一次执行命令时发生的异常
+        /// </summary>
+        public abstract Exception? LastException { get; }
+
+        /// <summary>
         /// 执行现有命令（<see cref="Script"/>）
         /// </summary>
         /// <returns>影响的行数</returns>

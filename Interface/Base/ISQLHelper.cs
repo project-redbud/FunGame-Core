@@ -17,6 +17,7 @@ namespace Milimoe.FunGame.Core.Interface.Base
         public long LastInsertId { get; }
         public DataSet DataSet { get; }
         public bool Success { get; }
+        public Exception? LastException { get; }
 
         public int Execute();
         public DataSet ExecuteDataSet();
