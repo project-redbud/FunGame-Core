@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Text;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
 
@@ -6,14 +6,6 @@ namespace Milimoe.FunGame.Core.Api.Utility
 {
     public partial class INIHelper
     {
-        /*
-         * 声明API函数
-         */
-        [LibraryImport("kernel32.dll", EntryPoint = "WritePrivateProfileStringW", StringMarshalling = StringMarshalling.Utf16)]
-        private static partial long WritePrivateProfileString(string section, string key, string val, string filePath);
-        [LibraryImport("Kernel32.dll", EntryPoint = "GetPrivateProfileStringW", StringMarshalling = StringMarshalling.Utf16)]
-        private static partial int GetPrivateProfileString(string section, string key, string def, char[] val, int size, string filePath);
-
         /// <summary>
         /// 默认的配置文件名称
         /// </summary>
@@ -40,10 +32,7 @@ namespace Milimoe.FunGame.Core.Api.Utility
         /// <returns>读取到的值</returns>
         public static string ReadINI(string Section, string Key, string FileName = DefaultFileName)
         {
-            char[] val = new char[General.StreamByteSize];
-            _ = GetPrivateProfileString(Section, Key, "", val, General.StreamByteSize, AppDomain.CurrentDomain.BaseDirectory + FileName);
-            string? read = new(val);
-            return read != null ? read.Trim('\0') : "";
+            return ReadPrivateProfileString(Section, Key, "", AppDomain.CurrentDomain.BaseDirectory + FileName);
         }
 
         /// <summary>
@@ -135,6 +124,130 @@ namespace Milimoe.FunGame.Core.Api.Utility
                     WriteINI("Mailer", "SSL", "true");
                     break;
             }
+        }
+
+        /// <summary>
+        /// 读取ini文件内容
+        /// </summary>
+        /// <param name="section"></param>
+        /// <param name="key"></param>
+        /// <param name="def"></param>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        private static string ReadPrivateProfileString(string section, string key, string def, string filePath)
+        {
+            if (!File.Exists(filePath)) return def;
+            var lines = File.ReadAllLines(filePath, Encoding.UTF8);
+            string sectionHeader = "[" + section.Trim() + "]";
+            bool inSection = false;
+
+            foreach (string rawLine in lines)
+            {
+                string line = rawLine.Trim();
+                // 跳过空行和注释
+                if (string.IsNullOrEmpty(line) || line.StartsWith(';') || line.StartsWith('#'))
+                    continue;
+
+                // 检测节头
+                if (line.StartsWith('[') && line.EndsWith(']'))
+                {
+                    inSection = string.Equals(line, sectionHeader, StringComparison.OrdinalIgnoreCase);
+                    continue;
+                }
+
+                // 在目标节内查找键
+                if (inSection)
+                {
+                    int eqIndex = line.IndexOf('=');
+                    if (eqIndex > 0)
+                    {
+                        string currentKey = line[..eqIndex].Trim();
+                        if (string.Equals(currentKey, key.Trim(), StringComparison.OrdinalIgnoreCase))
+                        {
+                            return line[(eqIndex + 1)..].Trim();
+                        }
+                    }
+                }
+            }
+            return def;
+        }
+
+        /// <summary>
+        /// 写入ini文件内容，如果节或键不存在则创建
+        /// </summary>
+        /// <param name="section"></param>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="filePath"></param>
+        private static void WritePrivateProfileString(string section, string key, string value, string filePath)
+        {
+            // 确保目录存在
+            string? dir = Path.GetDirectoryName(filePath);
+            if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+
+            List<string> lines = [];
+            if (File.Exists(filePath))
+                lines.AddRange(File.ReadAllLines(filePath, Encoding.UTF8));
+
+            string sectionHeader = "[" + section.Trim() + "]";
+            bool sectionFound = false;
+            bool keyUpdated = false;
+
+            for (int i = 0; i < lines.Count; i++)
+            {
+                string trimmed = lines[i].Trim();
+                if (trimmed.StartsWith('[') && trimmed.EndsWith(']'))
+                {
+                    if (string.Equals(trimmed, sectionHeader, StringComparison.OrdinalIgnoreCase))
+                    {
+                        sectionFound = true;
+                        // 在此节内查找键（直到下一个节或文件尾）
+                        for (int j = i + 1; j < lines.Count; j++)
+                        {
+                            string line = lines[j].Trim();
+                            if (line.StartsWith('[') && line.EndsWith(']'))
+                                break; // 进入下一节，停止查找
+
+                            if (!string.IsNullOrEmpty(line) && !line.StartsWith(';') && !line.StartsWith('#'))
+                            {
+                                int eqIndex = line.IndexOf('=');
+                                if (eqIndex > 0)
+                                {
+                                    string currentKey = line[..eqIndex].Trim();
+                                    if (string.Equals(currentKey, key.Trim(), StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        lines[j] = key.Trim() + "=" + value; // 更新
+                                        keyUpdated = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        // 若未找到键，则在节末尾插入
+                        if (!keyUpdated)
+                        {
+                            int insertPos = i + 1;
+                            while (insertPos < lines.Count && !(lines[insertPos].Trim().StartsWith('[') && lines[insertPos].Trim().EndsWith(']')))
+                            {
+                                insertPos++;
+                            }
+                            lines.Insert(insertPos, key.Trim() + "=" + value);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // 若未找到节，则追加新节
+            if (!sectionFound)
+            {
+                if (lines.Count > 0 && !string.IsNullOrEmpty(lines[^1])) lines.Add(""); // 加空行分隔
+                lines.Add(sectionHeader);
+                lines.Add(key.Trim() + "=" + value);
+            }
+
+            File.WriteAllLines(filePath, lines, Encoding.UTF8);
         }
     }
 
