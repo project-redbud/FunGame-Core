@@ -1,7 +1,7 @@
-﻿using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Event;
+﻿using FunGame.Core.Entity;
+using FunGame.Core.Library.Common.Event;
 
-namespace Milimoe.FunGame.Core.Model
+namespace FunGame.Core.Model
 {
     public class EventCenter
     {

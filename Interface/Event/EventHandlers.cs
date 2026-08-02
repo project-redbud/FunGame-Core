@@ -1,6 +1,6 @@
-﻿using Milimoe.FunGame.Core.Library.Common.Event;
+﻿using FunGame.Core.Library.Common.Event;
 
-namespace Milimoe.FunGame.Core.Interface
+namespace FunGame.Core.Interface
 {
     /// <summary>
     /// 窗体继承这些接口便能实现事件，或为插件预留。

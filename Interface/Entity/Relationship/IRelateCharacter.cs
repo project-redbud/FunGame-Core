@@ -1,6 +1,6 @@
-﻿using Milimoe.FunGame.Core.Entity;
+﻿using FunGame.Core.Entity;
 
-namespace Milimoe.FunGame.Core.Interface.Entity
+namespace FunGame.Core.Interface.Entity
 {
     public interface IRelateCharacter
     {

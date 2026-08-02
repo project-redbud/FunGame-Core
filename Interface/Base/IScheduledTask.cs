@@ -1,4 +1,4 @@
-﻿namespace Milimoe.FunGame.Core.Interface.Base
+﻿namespace FunGame.Core.Interface.Base
 {
     public interface IScheduledTask
     {

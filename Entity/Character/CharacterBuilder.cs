@@ -1,7 +1,6 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Library.Constant;
+﻿using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Entity
+namespace FunGame.Core.Entity
 {
     public class CharacterBuilder
     {
@@ -107,25 +106,27 @@ namespace Milimoe.FunGame.Core.Entity
         /// <returns>构建的新角色</returns>
         public Character Build(IEnumerable<Skill> skills, IEnumerable<Item> items, bool newItemGuid = true, EquipSlot? equips = null, Inventory? inventory = null, IEnumerable<Item>? itemsDefined = null, IEnumerable<Skill>? skillsDefined = null)
         {
-            Character character = Factory.GetCharacter();
-            character.Id = Id;
-            character.Name = Name;
-            character.FirstName = FirstName;
-            character.NickName = NickName;
-            character.PrimaryAttribute = PrimaryAttribute;
-            character.InitialATK = InitialATK;
-            character.InitialDEF = InitialDEF;
-            character.InitialHP = InitialHP;
-            character.InitialMP = InitialMP;
-            character.InitialSTR = InitialSTR;
-            character.STRGrowth = STRGrowth;
-            character.InitialAGI = InitialAGI;
-            character.AGIGrowth = AGIGrowth;
-            character.InitialINT = InitialINT;
-            character.INTGrowth = INTGrowth;
-            character.InitialSPD = InitialSPD;
-            character.InitialHR = InitialHR;
-            character.InitialMR = InitialMR;
+            Character character = new()
+            {
+                Id = Id,
+                Name = Name,
+                FirstName = FirstName,
+                NickName = NickName,
+                PrimaryAttribute = PrimaryAttribute,
+                InitialATK = InitialATK,
+                InitialDEF = InitialDEF,
+                InitialHP = InitialHP,
+                InitialMP = InitialMP,
+                InitialSTR = InitialSTR,
+                STRGrowth = STRGrowth,
+                InitialAGI = InitialAGI,
+                AGIGrowth = AGIGrowth,
+                InitialINT = InitialINT,
+                INTGrowth = INTGrowth,
+                InitialSPD = InitialSPD,
+                InitialHR = InitialHR,
+                InitialMR = InitialMR
+            };
             foreach (Skill skill in skills)
             {
                 // 主动技能的Guid表示与其关联的物品

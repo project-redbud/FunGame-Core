@@ -1,6 +1,6 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
+﻿using FunGame.Core.Api;
 
-namespace Milimoe.FunGame.Core.Entity
+namespace FunGame.Core.Entity
 {
     /// <summary>
     /// 用于记录对哪个角色造成了多少伤害

@@ -1,4 +1,4 @@
-﻿namespace Milimoe.FunGame.Core.Interface
+﻿namespace FunGame.Core.Interface
 {
     /// <summary>
     /// 这是最基本的接口，要求客户端实现

@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace Milimoe.FunGame.Core.Library.Constant
+namespace FunGame.Core.Library.Constant
 {
     public class FunGameInfo
     {

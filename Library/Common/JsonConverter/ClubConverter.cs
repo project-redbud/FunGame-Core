@@ -1,10 +1,10 @@
 ﻿using System.Text.Json;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Architecture;
-using Milimoe.FunGame.Core.Library.Constant;
+using FunGame.Core.Api;
+using FunGame.Core.Entity;
+using FunGame.Core.Library.Architecture;
+using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
+namespace FunGame.Core.Library.Common.JsonConverter
 {
     public class ClubConverter : BaseEntityConverter<Club>
     {
@@ -21,7 +21,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.Id = reader.GetInt64();
                     break;
                 case nameof(Club.Guid):
-                    result.Guid = NetworkUtility.JsonDeserialize<Guid>(ref reader, options);
+                    result.Guid = JsonService.GetObject<Guid>(ref reader, options);
                     break;
                 case nameof(Club.Name):
                     result.Name = reader.GetString() ?? "";
@@ -53,49 +53,49 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.Master = new(master);
                     break;
                 case nameof(Club.Admins):
-                    List<long> admins = NetworkUtility.JsonDeserialize<List<long>>(ref reader, options) ?? [];
+                    List<long> admins = JsonService.GetObject<List<long>>(ref reader, options) ?? [];
                     foreach (long id in admins)
                     {
                         result.Admins[id] = new(id);
                     }
                     break;
                 case nameof(Club.Members):
-                    List<long> members = NetworkUtility.JsonDeserialize<List<long>>(ref reader, options) ?? [];
+                    List<long> members = JsonService.GetObject<List<long>>(ref reader, options) ?? [];
                     foreach (long id in members)
                     {
                         result.Members[id] = new(id);
                     }
                     break;
                 case nameof(Club.Applicants):
-                    List<long> applicants = NetworkUtility.JsonDeserialize<List<long>>(ref reader, options) ?? [];
+                    List<long> applicants = JsonService.GetObject<List<long>>(ref reader, options) ?? [];
                     foreach (long id in applicants)
                     {
                         result.Applicants[id] = new(id);
                     }
                     break;
                 case nameof(Club.Invitees):
-                    List<long> invitees = NetworkUtility.JsonDeserialize<List<long>>(ref reader, options) ?? [];
+                    List<long> invitees = JsonService.GetObject<List<long>>(ref reader, options) ?? [];
                     foreach (long id in invitees)
                     {
                         result.Invitees[id] = new(id);
                     }
                     break;
                 case nameof(Club.MemberJoinTime):
-                    Dictionary<long, DateTime> memberJoinTime = NetworkUtility.JsonDeserialize<Dictionary<long, DateTime>>(ref reader, options) ?? [];
+                    Dictionary<long, DateTime> memberJoinTime = JsonService.GetObject<Dictionary<long, DateTime>>(ref reader, options) ?? [];
                     foreach (long id in memberJoinTime.Keys)
                     {
                         result.MemberJoinTime[id] = memberJoinTime[id];
                     }
                     break;
                 case nameof(Club.ApplicationTime):
-                    Dictionary<long, DateTime> applicationTime = NetworkUtility.JsonDeserialize<Dictionary<long, DateTime>>(ref reader, options) ?? [];
+                    Dictionary<long, DateTime> applicationTime = JsonService.GetObject<Dictionary<long, DateTime>>(ref reader, options) ?? [];
                     foreach (long id in applicationTime.Keys)
                     {
                         result.ApplicationTime[id] = applicationTime[id];
                     }
                     break;
                 case nameof(Club.InvitedTime):
-                    Dictionary<long, DateTime> invitedTime = NetworkUtility.JsonDeserialize<Dictionary<long, DateTime>>(ref reader, options) ?? [];
+                    Dictionary<long, DateTime> invitedTime = JsonService.GetObject<Dictionary<long, DateTime>>(ref reader, options) ?? [];
                     foreach (long id in invitedTime.Keys)
                     {
                         result.InvitedTime[id] = invitedTime[id];

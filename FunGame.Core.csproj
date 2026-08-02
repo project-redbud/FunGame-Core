@@ -8,11 +8,11 @@
     <BaseOutputPath>bin\</BaseOutputPath>
     <Company>$(Author)</Company>
     <Authors>Project Redbud</Authors>
-    <AssemblyVersion>2.1.0</AssemblyVersion>
-    <FileVersion>2.1.0</FileVersion>
+    <AssemblyVersion>3.0.0</AssemblyVersion>
+    <FileVersion>3.0.0</FileVersion>
     <PackageOutputPath>bin</PackageOutputPath>
     <Title>FunGame Core</Title>
-    <RootNamespace>Milimoe.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <RootNamespace>$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -30,7 +30,8 @@
     <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <VersionPrefix>2.1.0</VersionPrefix>
+    <VersionPrefix>3.0.0-dev</VersionPrefix>
+	<VersionSuffix Condition="'$(VersionSuffix)' == ''">$([System.DateTime]::Now.ToString("MMdd"))</VersionSuffix>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

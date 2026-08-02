@@ -1,6 +1,6 @@
-﻿using Milimoe.FunGame.Core.Library.Constant;
+﻿using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Library.Common.Event
+namespace FunGame.Core.Library.Common.Event
 {
     public class ConnectEventArgs : GeneralEventArgs
     {

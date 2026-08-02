@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
-using Milimoe.FunGame.Core.Library.Common.Architecture;
-using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Core.Model;
+using FunGame.Core.Library.Architecture;
+using FunGame.Core.Library.Constant;
+using FunGame.Core.Model;
 
-namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
+namespace FunGame.Core.Library.Common.JsonConverter
 {
     public class NovelCharacterNodeConverter : BaseEntityConverter<NovelCharacterNode>
     {

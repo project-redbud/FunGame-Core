@@ -1,8 +1,8 @@
 ﻿using System.Text.Json;
-using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Architecture;
+using FunGame.Core.Entity;
+using FunGame.Core.Library.Architecture;
 
-namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
+namespace FunGame.Core.Library.Common.JsonConverter
 {
     public class EffectConverter : BaseEntityConverter<Effect>
     {

@@ -1,7 +1,7 @@
-﻿using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Interface.Base;
+﻿using FunGame.Core.Entity;
+using FunGame.Core.Interface.Base;
 
-namespace Milimoe.FunGame.Core.Interface.Entity
+namespace FunGame.Core.Interface.Entity
 {
     /// <summary>
     /// ISkill 是技能的通用接口，包含一些基本属性，实现类：<see cref="NormalAttack"/> 和 <see cref="Skill"/>

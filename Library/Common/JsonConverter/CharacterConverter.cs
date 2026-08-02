@@ -1,16 +1,16 @@
 ﻿using System.Text.Json;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Architecture;
-using Milimoe.FunGame.Core.Library.Constant;
+using FunGame.Core.Api;
+using FunGame.Core.Entity;
+using FunGame.Core.Library.Architecture;
+using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
+namespace FunGame.Core.Library.Common.JsonConverter
 {
     public class CharacterConverter : BaseEntityConverter<Character>
     {
         public override Character NewInstance()
         {
-            return Factory.GetCharacter();
+            return new();
         }
 
         public override void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref Character result, Dictionary<string, object> convertingContext)
@@ -33,10 +33,10 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.NickName = reader.GetString() ?? "";
                     break;
                 case nameof(Character.Profile):
-                    result.Profile = NetworkUtility.JsonDeserialize<CharacterProfile>(ref reader, options) ?? new(result.Name, result.FirstName, result.NickName);
+                    result.Profile = JsonService.GetObject<CharacterProfile>(ref reader, options) ?? new(result.Name, result.FirstName, result.NickName);
                     break;
                 case nameof(Character.EquipSlot):
-                    result.EquipSlot = NetworkUtility.JsonDeserialize<EquipSlot>(ref reader, options) ?? new();
+                    result.EquipSlot = JsonService.GetObject<EquipSlot>(ref reader, options) ?? new();
                     break;
                 case nameof(Character.MagicType):
                     result.MagicType = (MagicType)reader.GetInt32();
@@ -129,7 +129,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.ExDEFPercentage = reader.GetDouble();
                     break;
                 case nameof(Character.MDF):
-                    result.MDF = NetworkUtility.JsonDeserialize<MagicResistance>(ref reader, options) ?? new();
+                    result.MDF = JsonService.GetObject<MagicResistance>(ref reader, options) ?? new();
                     break;
                 case nameof(Character.PhysicalPenetration):
                     result.PhysicalPenetration = reader.GetDouble();
@@ -225,10 +225,10 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.Lifesteal = reader.GetDouble();
                     break;
                 case nameof(Character.Shield):
-                    result.Shield = NetworkUtility.JsonDeserialize<Shield>(ref reader, options) ?? new();
+                    result.Shield = JsonService.GetObject<Shield>(ref reader, options) ?? new();
                     break;
                 case nameof(Character.NormalAttack):
-                    NormalAttack normalAttack = NetworkUtility.JsonDeserialize<NormalAttack>(ref reader, options) ?? new NormalAttack(result);
+                    NormalAttack normalAttack = JsonService.GetObject<NormalAttack>(ref reader, options) ?? new NormalAttack(result);
                     result.NormalAttack.Level = normalAttack.Level;
                     result.NormalAttack.ExDamage = normalAttack.ExDamage;
                     result.NormalAttack.ExDamage2 = normalAttack.ExDamage2;
@@ -237,14 +237,14 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.NormalAttack.SetMagicType(normalAttack.IsMagic, normalAttack.MagicType);
                     break;
                 case nameof(Character.Skills):
-                    HashSet<Skill> skills = NetworkUtility.JsonDeserialize<HashSet<Skill>>(ref reader, options) ?? [];
+                    HashSet<Skill> skills = JsonService.GetObject<HashSet<Skill>>(ref reader, options) ?? [];
                     foreach (Skill skill in skills)
                     {
                         result.Skills.Add(skill);
                     }
                     break;
                 case nameof(Character.Items):
-                    HashSet<Item> items = NetworkUtility.JsonDeserialize<HashSet<Item>>(ref reader, options) ?? [];
+                    HashSet<Item> items = JsonService.GetObject<HashSet<Item>>(ref reader, options) ?? [];
                     foreach (Item item in items)
                     {
                         result.Items.Add(item);

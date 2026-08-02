@@ -1,6 +1,6 @@
-﻿using Milimoe.FunGame.Core.Library.Constant;
+﻿using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Entity
+namespace FunGame.Core.Entity
 {
     public class UserProfile
     {

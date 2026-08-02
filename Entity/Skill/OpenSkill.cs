@@ -1,6 +1,6 @@
-﻿using Milimoe.FunGame.Core.Library.Constant;
+﻿using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Entity
+namespace FunGame.Core.Entity
 {
     /// <summary>
     /// 用于动态扩展技能，<see cref="Description"/> 返回所有特效的描述

@@ -1,9 +1,10 @@
 using System.Text;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Interface.Entity;
-using Milimoe.FunGame.Core.Library.Constant;
+using FunGame.Core.Api;
+using FunGame.Core.Interface.Entity;
+using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.Framework;
 
-namespace Milimoe.FunGame.Core.Entity
+namespace FunGame.Core.Entity
 {
     /// <summary>
     /// 角色需要使用 Factory.Get 的方式来构造，并赋值 <see cref="InitRequired"/> 标记的属性<para />
@@ -161,7 +162,7 @@ namespace Milimoe.FunGame.Core.Entity
         public double EXP { get; set; } = 0;
 
         /// <summary>
-        /// 等级突破进度 [ 对应 <see cref="Model.EquilibriumConstant.LevelBreakList"/> 中的索引 ]
+        /// 等级突破进度 [ 对应 <see cref="EquilibriumConstant.LevelBreakList"/> 中的索引 ]
         /// </summary>
         public int LevelBreak { get; set; } = -1;
 
@@ -944,7 +945,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// </summary>
         public HashSet<Item> Items { get; } = [];
 
-        protected Character()
+        public Character()
         {
             User = General.UnknownUserInstance;
             Profile = new(Name, FirstName, NickName);
@@ -957,11 +958,6 @@ namespace Milimoe.FunGame.Core.Entity
             Shield = new();
             NormalAttack = new(this);
             Class = new(this);
-        }
-
-        internal static Character GetInstance()
-        {
-            return new();
         }
 
         /// <summary>

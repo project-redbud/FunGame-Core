@@ -1,8 +1,8 @@
 ﻿using System.Text;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Library.Constant;
+using FunGame.Core.Api;
+using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Entity
+namespace FunGame.Core.Entity
 {
     /// <summary>
     /// <see cref="Unit"/> 是一个用于描述生物的单元对象（单位），而 <see cref="Character"/> 是一种高级单位（单位单位/英雄单位）<para />

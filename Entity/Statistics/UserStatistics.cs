@@ -1,4 +1,4 @@
-namespace Milimoe.FunGame.Core.Entity
+namespace FunGame.Core.Entity
 {
     /// <summary>
     /// 记录 <see cref="Entity.User"/> 的生涯、赛季统计数据<para/>

@@ -1,6 +1,6 @@
-﻿using Milimoe.FunGame.Core.Interface.Entity;
+﻿using FunGame.Core.Interface.Entity;
 
-namespace Milimoe.FunGame.Core.Entity
+namespace FunGame.Core.Entity
 {
     public class InteractionPoint : BaseEntity
     {

@@ -1,11 +1,14 @@
 ## 项目简介
 
-`FunGame` 是一套基于 `C#.NET` 设计的回合制战斗系统解决方案，旨在打造充满策略趣味的战棋回合制游戏。
+`FunGame.Core` 是一套基于 `C#.NET` 设计的轻量、可扩展的回合制战斗系统类库，旨在打造充满策略趣味的战棋回合制游戏。
 
-配套服务器解决方案：[FunGameServer](https://github.com/project-redbud/FunGame-Server)（基于 `ASP.NET Core Web API` 的跨平台高性能服务器控制台）
+### v3.0 重大变更
 
-本仓库 `FunGame.Core` 项目是 `FunGame` 框架的核心模块，包含了框架的基础组件。
-本项目不局限于服务器端开发，在支持 `.NET` 编程的客户端项目中也能使用。
+v3.0 是一次大型重写，允许破坏性变更：
+
+- **通信服务剥离**：核心库不再提供网络传输层（Socket/HTTP/WebSocket、DataRequest 等），只保留数据契约与抽象，传输由外部项目自实现。
+- **数据库结构移出**：SQLHelper、SQL 脚本等数据库相关代码已移出核心库。
+- **回合日志重构**：修复行动记录不完整、数据错位等问题；事件负载改为不可变快照。
 
 ## 安装
 
@@ -15,7 +18,7 @@
 dotnet add package FunGame.Core
 ```
 
-- 在 [Release](https://github.com/project-redbud/FunGame-Core/releases) 页面中下载最新发布版本。
+- 在 [Release](https://github.com/project-redbud/FunGame-Core/releases) 页面中下载指定发布版本的源代码，并编译为 DLL。
 
 - 克隆本仓库。
 

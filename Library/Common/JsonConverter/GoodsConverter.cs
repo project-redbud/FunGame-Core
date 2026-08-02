@@ -1,10 +1,10 @@
 ﻿using System.Text.Json;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Architecture;
-using Milimoe.FunGame.Core.Library.Constant;
+using FunGame.Core.Api;
+using FunGame.Core.Entity;
+using FunGame.Core.Library.Architecture;
+using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
+namespace FunGame.Core.Library.Common.JsonConverter
 {
     public class GoodsConverter : BaseEntityConverter<Goods>
     {
@@ -21,7 +21,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.Id = reader.GetInt64();
                     break;
                 case nameof(Goods.Items):
-                    List<Item> items = NetworkUtility.JsonDeserialize<List<Item>>(ref reader, options) ?? [];
+                    List<Item> items = JsonService.GetObject<List<Item>>(ref reader, options) ?? [];
                     foreach (Item item in items)
                     {
                         result.Items.Add(item);
@@ -40,14 +40,14 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.Description = reader.GetString() ?? "";
                     break;
                 case nameof(Goods.Prices):
-                    Dictionary<string, double> prices = NetworkUtility.JsonDeserialize<Dictionary<string, double>>(ref reader, options) ?? [];
+                    Dictionary<string, double> prices = JsonService.GetObject<Dictionary<string, double>>(ref reader, options) ?? [];
                     foreach (string needy in prices.Keys)
                     {
                         result.Prices[needy] = prices[needy];
                     }
                     break;
                 case nameof(Goods.UsersBuyCount):
-                    Dictionary<long, int> buyCount = NetworkUtility.JsonDeserialize<Dictionary<long, int>>(ref reader, options) ?? [];
+                    Dictionary<long, int> buyCount = JsonService.GetObject<Dictionary<long, int>>(ref reader, options) ?? [];
                     foreach (long uid in buyCount.Keys)
                     {
                         result.UsersBuyCount[uid] = buyCount[uid];

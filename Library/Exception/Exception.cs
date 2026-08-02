@@ -1,4 +1,4 @@
-﻿namespace Milimoe.FunGame
+﻿namespace FunGame.Core
 {
     public class SystemError : Exception
     {

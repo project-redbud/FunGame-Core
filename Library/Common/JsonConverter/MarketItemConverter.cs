@@ -1,10 +1,10 @@
 ﻿using System.Text.Json;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Architecture;
-using Milimoe.FunGame.Core.Library.Constant;
+using FunGame.Core.Api;
+using FunGame.Core.Entity;
+using FunGame.Core.Library.Architecture;
+using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
+namespace FunGame.Core.Library.Common.JsonConverter
 {
     public class MarketItemConverter : BaseEntityConverter<MarketItem>
     {
@@ -27,7 +27,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.Username = reader.GetString() ?? "";
                     break;
                 case nameof(MarketItem.Item):
-                    result.Item = NetworkUtility.JsonDeserialize<Item>(ref reader, options) ?? Factory.GetItem();
+                    result.Item = JsonService.GetObject<Item>(ref reader, options) ?? new();
                     break;
                 case nameof(MarketItem.Stock):
                     result.Stock = Convert.ToInt32(reader.GetInt64());
@@ -64,7 +64,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.Status = (MarketItemState)reader.GetInt32();
                     break;
                 case nameof(MarketItem.Buyers):
-                    result.Buyers = NetworkUtility.JsonDeserialize<HashSet<long>>(ref reader, options) ?? [];
+                    result.Buyers = JsonService.GetObject<HashSet<long>>(ref reader, options) ?? [];
                     break;
             }
         }

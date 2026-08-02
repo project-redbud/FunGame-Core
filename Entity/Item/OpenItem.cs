@@ -1,4 +1,4 @@
-﻿namespace Milimoe.FunGame.Core.Entity
+﻿namespace FunGame.Core.Entity
 {
     /// <summary>
     /// 用于动态扩展物品

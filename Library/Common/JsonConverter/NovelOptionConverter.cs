@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Library.Common.Architecture;
-using Milimoe.FunGame.Core.Model;
+using FunGame.Core.Api;
+using FunGame.Core.Library.Architecture;
+using FunGame.Core.Model;
 
-namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
+namespace FunGame.Core.Library.Common.JsonConverter
 {
     public class NovelOptionConverter : BaseEntityConverter<NovelOption>
     {
@@ -23,13 +23,13 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.Name = reader.GetString() ?? "";
                     break;
                 case nameof(NovelOption.Targets):
-                    result.Values[nameof(NovelOption.Targets)] = NetworkUtility.JsonDeserialize<List<string>>(ref reader, options) ?? [];
+                    result.Values[nameof(NovelOption.Targets)] = JsonService.GetObject<List<string>>(ref reader, options) ?? [];
                     break;
                 case nameof(NovelNode.AndPredicates):
-                    result.Values[nameof(NovelNode.AndPredicates)] = NetworkUtility.JsonDeserialize<List<string>>(ref reader, options) ?? [];
+                    result.Values[nameof(NovelNode.AndPredicates)] = JsonService.GetObject<List<string>>(ref reader, options) ?? [];
                     break;
                 case nameof(NovelNode.OrPredicates):
-                    result.Values[nameof(NovelNode.OrPredicates)] = NetworkUtility.JsonDeserialize<List<string>>(ref reader, options) ?? [];
+                    result.Values[nameof(NovelNode.OrPredicates)] = JsonService.GetObject<List<string>>(ref reader, options) ?? [];
                     break;
             }
         }

@@ -1,11 +1,11 @@
 ﻿using System.Collections.Concurrent;
-using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Interface.Entity;
-using Milimoe.FunGame.Core.Library.Common.Addon;
-using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Core.Model;
+using FunGame.Core.Entity;
+using FunGame.Core.Interface.Entity;
+using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.Framework;
+using FunGame.Core.Model.Queue;
 
-namespace Milimoe.FunGame.Core.Controller
+namespace FunGame.Core.Controller
 {
     public class AIController(GamingQueue queue, GameMap map)
     {

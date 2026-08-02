@@ -1,8 +1,7 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Interface.Entity;
-using Milimoe.FunGame.Core.Library.Constant;
+﻿using FunGame.Core.Interface.Entity;
+using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Entity
+namespace FunGame.Core.Entity
 {
     public class MarketItem : BaseEntity
     {
@@ -28,7 +27,7 @@ namespace Milimoe.FunGame.Core.Entity
 
         public MarketItem()
         {
-            Item = Factory.GetItem();
+            Item = new();
         }
     }
 }

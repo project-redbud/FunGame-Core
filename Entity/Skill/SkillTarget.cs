@@ -1,6 +1,6 @@
-﻿using Milimoe.FunGame.Core.Library.Common.Addon;
+﻿using FunGame.Core.Model.Framework;
 
-namespace Milimoe.FunGame.Core.Entity
+namespace FunGame.Core.Entity
 {
     /// <summary>
     /// 技能和它的目标结构体

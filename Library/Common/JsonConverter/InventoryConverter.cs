@@ -1,15 +1,15 @@
 ﻿using System.Text.Json;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Architecture;
+using FunGame.Core.Api;
+using FunGame.Core.Entity;
+using FunGame.Core.Library.Architecture;
 
-namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
+namespace FunGame.Core.Library.Common.JsonConverter
 {
     public class InventoryConverter : BaseEntityConverter<Inventory>
     {
         public override Inventory NewInstance()
         {
-            return Factory.GetInventory();
+            return new(new());
         }
 
         public override void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref Inventory result, Dictionary<string, object> convertingContext)
@@ -26,35 +26,35 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.Materials = reader.GetDouble();
                     break;
                 case nameof(Inventory.Characters):
-                    HashSet<Character> characters = NetworkUtility.JsonDeserialize<HashSet<Character>>(ref reader, options) ?? [];
+                    HashSet<Character> characters = JsonService.GetObject<HashSet<Character>>(ref reader, options) ?? [];
                     foreach (Character character in characters)
                     {
                         result.Characters.Add(character);
                     }
                     break;
                 case nameof(Inventory.Items):
-                    HashSet<Item> items = NetworkUtility.JsonDeserialize<HashSet<Item>>(ref reader, options) ?? [];
+                    HashSet<Item> items = JsonService.GetObject<HashSet<Item>>(ref reader, options) ?? [];
                     foreach (Item item in items)
                     {
                         result.Items.Add(item);
                     }
                     break;
                 case nameof(Inventory.MainCharacter):
-                    Character? mc = NetworkUtility.JsonDeserialize<Character>(ref reader, options);
+                    Character? mc = JsonService.GetObject<Character>(ref reader, options);
                     if (mc != null)
                     {
                         result.MainCharacter = mc;
                     }
                     break;
                 case nameof(Inventory.Squad):
-                    HashSet<long> squad = NetworkUtility.JsonDeserialize<HashSet<long>>(ref reader, options) ?? [];
+                    HashSet<long> squad = JsonService.GetObject<HashSet<long>>(ref reader, options) ?? [];
                     foreach (long cid in squad)
                     {
                         result.Squad.Add(cid);
                     }
                     break;
                 case nameof(Inventory.Training):
-                    Dictionary<long, DateTime> training = NetworkUtility.JsonDeserialize<Dictionary<long, DateTime>>(ref reader, options) ?? [];
+                    Dictionary<long, DateTime> training = JsonService.GetObject<Dictionary<long, DateTime>>(ref reader, options) ?? [];
                     foreach (long cid in training.Keys)
                     {
                         result.Training.Add(cid, training[cid]);

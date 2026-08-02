@@ -1,10 +1,10 @@
 ﻿using System.Text.Json;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Architecture;
-using Milimoe.FunGame.Core.Library.Constant;
+using FunGame.Core.Api;
+using FunGame.Core.Entity;
+using FunGame.Core.Library.Architecture;
+using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
+namespace FunGame.Core.Library.Common.JsonConverter
 {
     public class ActivityConverter : BaseEntityConverter<Activity>
     {
@@ -21,7 +21,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.Id = reader.GetInt64();
                     break;
                 case nameof(Activity.Guid):
-                    result.Guid = NetworkUtility.JsonDeserialize<Guid>(ref reader, options);
+                    result.Guid = JsonService.GetObject<Guid>(ref reader, options);
                     break;
                 case nameof(Activity.Name):
                     result.Name = reader.GetString() ?? "";
@@ -46,7 +46,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.UpdateState();
                     break;
                 case nameof(Activity.Quests):
-                    List<Quest> quests = NetworkUtility.JsonDeserialize<List<Quest>>(ref reader, options) ?? [];
+                    List<Quest> quests = JsonService.GetObject<List<Quest>>(ref reader, options) ?? [];
                     foreach (Quest quest in quests)
                     {
                         result.Quests.Add(quest);
@@ -61,7 +61,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.UpdateState();
                     break;
                 case nameof(Activity.QuestsAwardedUsers):
-                    Dictionary<long, HashSet<long>> questAwardedUsers = NetworkUtility.JsonDeserialize<Dictionary<long, HashSet<long>>>(ref reader, options) ?? [];
+                    Dictionary<long, HashSet<long>> questAwardedUsers = JsonService.GetObject<Dictionary<long, HashSet<long>>>(ref reader, options) ?? [];
                     foreach (long key in questAwardedUsers.Keys)
                     {
                         result.QuestsAwardedUsers[key] = questAwardedUsers[key];
