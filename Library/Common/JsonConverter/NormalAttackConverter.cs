@@ -1,16 +1,15 @@
 ﻿using System.Text.Json;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Architecture;
-using Milimoe.FunGame.Core.Library.Constant;
+using FunGame.Core.Entity;
+using FunGame.Core.Library.Architecture;
+using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
+namespace FunGame.Core.Library.Common.JsonConverter
 {
     public class NormalAttackConverter : BaseEntityConverter<NormalAttack>
     {
         public override NormalAttack NewInstance()
         {
-            return new NormalAttack(Factory.GetCharacter());
+            return new NormalAttack(new());
         }
 
         public override void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref NormalAttack result, Dictionary<string, object> convertingContext)

@@ -1,7 +1,7 @@
-﻿using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Constant;
+﻿using FunGame.Core.Entity;
+using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Model.PrefabricatedEntity
+namespace FunGame.Core.Model.PrefabricatedEntity
 {
     /// <summary>
     /// 魔法卡包的基础实现

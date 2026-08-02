@@ -1,10 +1,10 @@
 ﻿using System.Text.Json;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Architecture;
-using Milimoe.FunGame.Core.Library.Constant;
+using FunGame.Core.Api;
+using FunGame.Core.Entity;
+using FunGame.Core.Library.Architecture;
+using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
+namespace FunGame.Core.Library.Common.JsonConverter
 {
     public class QuestConverter : BaseEntityConverter<Quest>
     {
@@ -21,7 +21,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.Id = reader.GetInt64();
                     break;
                 case nameof(Quest.Guid):
-                    result.Guid = NetworkUtility.JsonDeserialize<Guid>(ref reader, options);
+                    result.Guid = JsonService.GetObject<Guid>(ref reader, options);
                     break;
                 case nameof(Quest.Name):
                     result.Name = reader.GetString() ?? "";
@@ -57,14 +57,14 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.MaterialsAward = reader.GetDouble();
                     break;
                 case nameof(Quest.Awards):
-                    List<Item> awards = NetworkUtility.JsonDeserialize<List<Item>>(ref reader, options) ?? [];
+                    List<Item> awards = JsonService.GetObject<List<Item>>(ref reader, options) ?? [];
                     foreach (Item item in awards)
                     {
                         result.Awards.Add(item);
                     }
                     break;
                 case nameof(Quest.AwardsCount):
-                    Dictionary<string, int> dict = NetworkUtility.JsonDeserialize<Dictionary<string, int>>(ref reader, options) ?? [];
+                    Dictionary<string, int> dict = JsonService.GetObject<Dictionary<string, int>>(ref reader, options) ?? [];
                     foreach (string key in dict.Keys)
                     {
                         result.AwardsCount[key] = dict[key];

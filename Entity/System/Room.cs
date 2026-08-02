@@ -1,8 +1,8 @@
 ﻿using System.Collections.Concurrent;
-using Milimoe.FunGame.Core.Interface.Entity;
-using Milimoe.FunGame.Core.Library.Constant;
+using FunGame.Core.Interface.Entity;
+using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Entity
+namespace FunGame.Core.Entity
 {
     public class Room : BaseEntity
     {
@@ -22,12 +22,12 @@ namespace Milimoe.FunGame.Core.Entity
         public ConcurrentDictionary<User, bool> UserAndIsReady { get; } = [];
         public GameStatistics Statistics { get; set; }
 
-        internal Room()
+        public Room()
         {
             Statistics = new(this);
         }
 
-        internal Room(long id = 0, string roomid = "-1", DateTime? createTime = null, User? roomMaster = null, RoomType roomType = RoomType.All, string gameModule = "", string gameMap = "", RoomState roomState = RoomState.Created, bool isRank = false, string password = "", int maxUsers = 4)
+        public Room(long id = 0, string roomid = "-1", DateTime? createTime = null, User? roomMaster = null, RoomType roomType = RoomType.All, string gameModule = "", string gameMap = "", RoomState roomState = RoomState.Created, bool isRank = false, string password = "", int maxUsers = 4)
         {
             Id = id;
             Roomid = roomid;

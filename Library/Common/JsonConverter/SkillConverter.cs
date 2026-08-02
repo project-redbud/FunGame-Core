@@ -1,10 +1,10 @@
 ﻿using System.Text.Json;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Architecture;
-using Milimoe.FunGame.Core.Library.Constant;
+using FunGame.Core.Api;
+using FunGame.Core.Entity;
+using FunGame.Core.Library.Architecture;
+using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
+namespace FunGame.Core.Library.Common.JsonConverter
 {
     public class SkillConverter : BaseEntityConverter<Skill>
     {
@@ -117,14 +117,14 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.MagicBottleneck = reader.GetDouble();
                     break;
                 case nameof(Skill.Effects):
-                    HashSet<Effect> effects = NetworkUtility.JsonDeserialize<HashSet<Effect>>(ref reader, options) ?? [];
+                    HashSet<Effect> effects = JsonService.GetObject<HashSet<Effect>>(ref reader, options) ?? [];
                     foreach (Effect effect in effects)
                     {
                         result.Effects.Add(effect);
                     }
                     break;
                 case nameof(Skill.Values):
-                    Dictionary<string, object> values = NetworkUtility.JsonDeserialize<Dictionary<string, object>>(ref reader, options) ?? [];
+                    Dictionary<string, object> values = JsonService.GetObject<Dictionary<string, object>>(ref reader, options) ?? [];
                     foreach (string key in values.Keys)
                     {
                         result.Values.Add(key, values[key]);

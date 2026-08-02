@@ -8,11 +8,11 @@
     <BaseOutputPath>bin\</BaseOutputPath>
     <Company>$(Author)</Company>
     <Authors>Project Redbud</Authors>
-    <AssemblyVersion>2.0.0</AssemblyVersion>
-    <FileVersion>2.0.0</FileVersion>
+    <AssemblyVersion>3.0.0</AssemblyVersion>
+    <FileVersion>3.0.0</FileVersion>
     <PackageOutputPath>bin</PackageOutputPath>
     <Title>FunGame Core</Title>
-    <RootNamespace>Milimoe.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <RootNamespace>$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -23,14 +23,14 @@
     <Description>FunGame.Core: A C#.NET library for turn-based games.</Description>
     <PackageTags>game;turn-based;server;framework;dotnet;csharp;gamedev</PackageTags>
     <PackageReleaseNotes>
-		We are excited to introduce the official version 2.0.0. See github releases for details on the latest changes.
+		See github releases for details on the latest changes.
 	</PackageReleaseNotes>
     <RepositoryUrl>https://github.com/project-redbud/FunGame-Core</RepositoryUrl>
     <PackageProjectUrl>https://github.com/project-redbud</PackageProjectUrl>
     <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <VersionPrefix>2.0.0</VersionPrefix>
+    <VersionPrefix>3.0.0</VersionPrefix>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

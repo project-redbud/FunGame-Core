@@ -1,10 +1,10 @@
 ﻿using System.Text.Json;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Architecture;
-using Milimoe.FunGame.Core.Library.Constant;
+using FunGame.Core.Api;
+using FunGame.Core.Entity;
+using FunGame.Core.Library.Architecture;
+using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
+namespace FunGame.Core.Library.Common.JsonConverter
 {
     public class EquipSlotConverter : BaseEntityConverter<EquipSlot>
     {
@@ -19,42 +19,42 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
             switch (propertyName)
             {
                 case nameof(EquipSlot.MagicCardPack):
-                    temp = NetworkUtility.JsonDeserialize<Item>(ref reader, options) ?? new();
+                    temp = JsonService.GetObject<Item>(ref reader, options) ?? new();
                     if (temp.EquipSlotType == EquipSlotType.MagicCardPack)
                     {
                         result.MagicCardPack = temp;
                     }
                     break;
                 case nameof(EquipSlot.Weapon):
-                    temp = NetworkUtility.JsonDeserialize<Item>(ref reader, options) ?? new();
+                    temp = JsonService.GetObject<Item>(ref reader, options) ?? new();
                     if (temp.EquipSlotType == EquipSlotType.Weapon)
                     {
                         result.Weapon = temp;
                     }
                     break;
                 case nameof(EquipSlot.Armor):
-                    temp = NetworkUtility.JsonDeserialize<Item>(ref reader, options) ?? new();
+                    temp = JsonService.GetObject<Item>(ref reader, options) ?? new();
                     if (temp.EquipSlotType == EquipSlotType.Armor)
                     {
                         result.Armor = temp;
                     }
                     break;
                 case nameof(EquipSlot.Shoes):
-                    temp = NetworkUtility.JsonDeserialize<Item>(ref reader, options) ?? new();
+                    temp = JsonService.GetObject<Item>(ref reader, options) ?? new();
                     if (temp.EquipSlotType == EquipSlotType.Shoes)
                     {
                         result.Shoes = temp;
                     }
                     break;
                 case nameof(EquipSlot.Accessory1):
-                    temp = NetworkUtility.JsonDeserialize<Item>(ref reader, options) ?? new();
+                    temp = JsonService.GetObject<Item>(ref reader, options) ?? new();
                     if (temp.EquipSlotType == EquipSlotType.Accessory1)
                     {
                         result.Accessory1 = temp;
                     }
                     break;
                 case nameof(EquipSlot.Accessory2):
-                    temp = NetworkUtility.JsonDeserialize<Item>(ref reader, options) ?? new();
+                    temp = JsonService.GetObject<Item>(ref reader, options) ?? new();
                     if (temp.EquipSlotType == EquipSlotType.Accessory2)
                     {
                         result.Accessory2 = temp;

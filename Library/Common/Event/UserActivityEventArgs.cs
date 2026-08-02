@@ -1,7 +1,7 @@
-﻿using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Constant;
+﻿using FunGame.Core.Entity;
+using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Library.Common.Event
+namespace FunGame.Core.Library.Common.Event
 {
     public class ActivityEventArgs(long userId, long questId, Activity activity) : EventArgs
     {

@@ -1,6 +1,6 @@
-﻿using Milimoe.FunGame.Core.Entity;
+﻿using FunGame.Core.Entity;
 
-namespace Milimoe.FunGame.Core.Library.Common.Event
+namespace FunGame.Core.Library.Common.Event
 {
     public class GamingEventArgs(Room room, List<User> users, params object[] objs) : GeneralEventArgs(objs)
     {

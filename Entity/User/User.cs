@@ -1,8 +1,8 @@
 using System.Text;
-using Milimoe.FunGame.Core.Interface.Entity;
-using Milimoe.FunGame.Core.Library.Constant;
+using FunGame.Core.Interface.Entity;
+using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Entity
+namespace FunGame.Core.Entity
 {
     public class User : BaseEntity
     {
@@ -23,14 +23,14 @@ namespace Milimoe.FunGame.Core.Entity
         public UserStatistics Statistics { get; }
         public Inventory Inventory { get; }
 
-        internal User()
+        public User()
         {
             Profile = new();
             Statistics = new(this);
             Inventory = new(this);
         }
 
-        internal User(long Id = 0, string Username = "", DateTime? RegTime = null, DateTime? LastTime = null, string Email = "", string NickName = "", bool IsAdmin = false, bool IsOperator = false, bool IsEnable = true, double GameTime = 0, string AutoKey = "")
+        public User(long Id = 0, string Username = "", DateTime? RegTime = null, DateTime? LastTime = null, string Email = "", string NickName = "", bool IsAdmin = false, bool IsOperator = false, bool IsEnable = true, double GameTime = 0, string AutoKey = "")
         {
             this.Id = Id;
             this.Username = Username;
@@ -48,7 +48,7 @@ namespace Milimoe.FunGame.Core.Entity
             Inventory = new(this);
         }
 
-        internal User(UserType usertype)
+        public User(UserType usertype)
         {
             switch (usertype)
             {

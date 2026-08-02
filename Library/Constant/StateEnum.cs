@@ -1,7 +1,7 @@
 ﻿/**
  * 此文件保存State（状态）的枚举
  */
-namespace Milimoe.FunGame.Core.Library.Constant
+namespace FunGame.Core.Library.Constant
 {
     public enum EntityState
     {
@@ -9,14 +9,6 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Added,
         Modified,
         Deleted
-    }
-
-    public enum StartMatchState
-    {
-        Matching,
-        Success,
-        Enable,
-        Cancel
     }
 
     public enum RoomState
@@ -74,15 +66,6 @@ namespace Milimoe.FunGame.Core.Library.Constant
         PreCastSuperSkill
     }
 
-    public enum SelectState
-    {
-        None,
-        SelectingOne,
-        SelectingMultiple,
-        SelectingRange,
-        SelectingLine
-    }
-
     public enum OnlineState
     {
         Offline,
@@ -90,14 +73,6 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Matching,
         InRoom,
         Gaming
-    }
-
-    public enum ClientState
-    {
-        WaitConnect,
-        WaitLogin,
-        Online,
-        InRoom
     }
 
     public enum QuestState

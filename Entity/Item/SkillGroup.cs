@@ -1,4 +1,4 @@
-﻿namespace Milimoe.FunGame.Core.Entity
+﻿namespace FunGame.Core.Entity
 {
     /// <summary>
     /// 物品只有一个主动技能，但是可以有很多个被动技能

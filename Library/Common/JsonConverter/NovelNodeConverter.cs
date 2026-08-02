@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Library.Common.Architecture;
-using Milimoe.FunGame.Core.Model;
+using FunGame.Core.Api;
+using FunGame.Core.Library.Architecture;
+using FunGame.Core.Model;
 
-namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
+namespace FunGame.Core.Library.Common.JsonConverter
 {
     public class NovelNodeConverter : BaseEntityConverter<NovelNode>
     {
@@ -26,10 +26,10 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.Values[nameof(NovelNode.Previous)] = reader.GetString() ?? "";
                     break;
                 case nameof(NovelNode.NextNodes):
-                    result.Values[nameof(NovelNode.NextNodes)] = NetworkUtility.JsonDeserialize<List<string>>(ref reader, options) ?? [];
+                    result.Values[nameof(NovelNode.NextNodes)] = JsonService.GetObject<List<string>>(ref reader, options) ?? [];
                     break;
                 case nameof(NovelNode.Options):
-                    result.Options = NetworkUtility.JsonDeserialize<List<NovelOption>>(ref reader, options) ?? [];
+                    result.Options = JsonService.GetObject<List<NovelOption>>(ref reader, options) ?? [];
                     break;
                 case nameof(NovelNode.Name):
                     result.Name = reader.GetString() ?? "";
@@ -38,19 +38,19 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.Content = reader.GetString() ?? "";
                     break;
                 case nameof(NovelNode.Character):
-                    result.Character = NetworkUtility.JsonDeserialize<NovelCharacterNode>(ref reader, options) ?? new()
+                    result.Character = JsonService.GetObject<NovelCharacterNode>(ref reader, options) ?? new()
                     {
                         StandOut = true
                     };
                     break;
                 case nameof(NovelNode.Opponents):
-                    result.Opponents = NetworkUtility.JsonDeserialize<List<NovelCharacterNode>>(ref reader, options) ?? [];
+                    result.Opponents = JsonService.GetObject<List<NovelCharacterNode>>(ref reader, options) ?? [];
                     break;
                 case nameof(NovelNode.AndPredicates):
-                    result.Values[nameof(NovelNode.AndPredicates)] = NetworkUtility.JsonDeserialize<List<string>>(ref reader, options) ?? [];
+                    result.Values[nameof(NovelNode.AndPredicates)] = JsonService.GetObject<List<string>>(ref reader, options) ?? [];
                     break;
                 case nameof(NovelNode.OrPredicates):
-                    result.Values[nameof(NovelNode.OrPredicates)] = NetworkUtility.JsonDeserialize<List<string>>(ref reader, options) ?? [];
+                    result.Values[nameof(NovelNode.OrPredicates)] = JsonService.GetObject<List<string>>(ref reader, options) ?? [];
                     break;
             }
         }

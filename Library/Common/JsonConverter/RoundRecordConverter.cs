@@ -1,10 +1,11 @@
 ﻿using System.Text.Json;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Architecture;
-using Milimoe.FunGame.Core.Library.Constant;
+using FunGame.Core.Api;
+using FunGame.Core.Entity;
+using FunGame.Core.Library.Architecture;
+using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.Framework;
 
-namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
+namespace FunGame.Core.Library.Common.JsonConverter
 {
     public class RoundRecordConverter : BaseEntityConverter<RoundRecord>
     {
@@ -21,17 +22,17 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.Round = reader.GetInt32();
                     break;
                 case nameof(RoundRecord.Actor):
-                    result.Actor = NetworkUtility.JsonDeserialize<Character>(ref reader, options) ?? Factory.GetCharacter();
+                    result.Actor = JsonService.GetObject<Character>(ref reader, options) ?? new();
                     break;
                 case nameof(RoundRecord.Targets):
-                    Dictionary<CharacterActionType, List<Character>> targets = NetworkUtility.JsonDeserialize<Dictionary<CharacterActionType, List<Character>>>(ref reader, options) ?? [];
+                    Dictionary<CharacterActionType, List<Character>> targets = JsonService.GetObject<Dictionary<CharacterActionType, List<Character>>>(ref reader, options) ?? [];
                     foreach (CharacterActionType type in targets.Keys)
                     {
                         result.Targets[type] = targets[type];
                     }
                     break;
                 case nameof(RoundRecord.Damages):
-                    Dictionary<Guid, double> damagesGuid = NetworkUtility.JsonDeserialize<Dictionary<Guid, double>>(ref reader, options) ?? [];
+                    Dictionary<Guid, double> damagesGuid = JsonService.GetObject<Dictionary<Guid, double>>(ref reader, options) ?? [];
                     foreach (KeyValuePair<Guid, double> kvp in damagesGuid)
                     {
                         Character? character = FindCharacterByGuid(kvp.Key, result);
@@ -43,35 +44,35 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     break;
 
                 case nameof(RoundRecord.ActionTypes):
-                    List<CharacterActionType> types = NetworkUtility.JsonDeserialize<List<CharacterActionType>>(ref reader, options) ?? [];
+                    List<CharacterActionType> types = JsonService.GetObject<List<CharacterActionType>>(ref reader, options) ?? [];
                     foreach (CharacterActionType type in types)
                     {
                         result.ActionTypes.Add(type);
                     }
                     break;
                 case nameof(RoundRecord.Skills):
-                    Dictionary<CharacterActionType, Skill> skills = NetworkUtility.JsonDeserialize<Dictionary<CharacterActionType, Skill>>(ref reader, options) ?? [];
+                    Dictionary<CharacterActionType, Skill> skills = JsonService.GetObject<Dictionary<CharacterActionType, Skill>>(ref reader, options) ?? [];
                     foreach (CharacterActionType type in skills.Keys)
                     {
                         result.Skills[type] = skills[type];
                     }
                     break;
                 case nameof(RoundRecord.SkillsCost):
-                    Dictionary<Skill, string> skillsCost = NetworkUtility.JsonDeserialize<Dictionary<Skill, string>>(ref reader, options) ?? [];
+                    Dictionary<Skill, string> skillsCost = JsonService.GetObject<Dictionary<Skill, string>>(ref reader, options) ?? [];
                     foreach (Skill skill in skillsCost.Keys)
                     {
                         result.SkillsCost[skill] = skillsCost[skill];
                     }
                     break;
                 case nameof(RoundRecord.Items):
-                    Dictionary<CharacterActionType, Item> items = NetworkUtility.JsonDeserialize<Dictionary<CharacterActionType, Item>>(ref reader, options) ?? [];
+                    Dictionary<CharacterActionType, Item> items = JsonService.GetObject<Dictionary<CharacterActionType, Item>>(ref reader, options) ?? [];
                     foreach (CharacterActionType type in items.Keys)
                     {
                         result.Items[type] = items[type];
                     }
                     break;
                 case nameof(RoundRecord.ItemsCost):
-                    Dictionary<Item, string> itemsCost = NetworkUtility.JsonDeserialize<Dictionary<Item, string>>(ref reader, options) ?? [];
+                    Dictionary<Item, string> itemsCost = JsonService.GetObject<Dictionary<Item, string>>(ref reader, options) ?? [];
                     foreach (Item item in itemsCost.Keys)
                     {
                         result.ItemsCost[item] = itemsCost[item];
@@ -81,12 +82,12 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.HasKill = reader.GetBoolean();
                     break;
                 case nameof(RoundRecord.Assists):
-                    List<Character> assists = NetworkUtility.JsonDeserialize<List<Character>>(ref reader, options) ?? [];
+                    List<Character> assists = JsonService.GetObject<List<Character>>(ref reader, options) ?? [];
                     result.Assists.AddRange(assists);
                     break;
 
                 case nameof(RoundRecord.IsCritical):
-                    Dictionary<Guid, bool> isCriticalGuid = NetworkUtility.JsonDeserialize<Dictionary<Guid, bool>>(ref reader, options) ?? [];
+                    Dictionary<Guid, bool> isCriticalGuid = JsonService.GetObject<Dictionary<Guid, bool>>(ref reader, options) ?? [];
                     foreach (KeyValuePair<Guid, bool> kvp in isCriticalGuid)
                     {
                         Character? character = FindCharacterByGuid(kvp.Key, result);
@@ -97,7 +98,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     }
                     break;
                 case nameof(RoundRecord.IsEvaded):
-                    Dictionary<Guid, bool> isEvadedGuid = NetworkUtility.JsonDeserialize<Dictionary<Guid, bool>>(ref reader, options) ?? [];
+                    Dictionary<Guid, bool> isEvadedGuid = JsonService.GetObject<Dictionary<Guid, bool>>(ref reader, options) ?? [];
                     foreach (KeyValuePair<Guid, bool> kvp in isEvadedGuid)
                     {
                         Character? character = FindCharacterByGuid(kvp.Key, result);
@@ -108,7 +109,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     }
                     break;
                 case nameof(RoundRecord.IsImmune):
-                    Dictionary<Guid, bool> isImmuneGuid = NetworkUtility.JsonDeserialize<Dictionary<Guid, bool>>(ref reader, options) ?? [];
+                    Dictionary<Guid, bool> isImmuneGuid = JsonService.GetObject<Dictionary<Guid, bool>>(ref reader, options) ?? [];
                     foreach (KeyValuePair<Guid, bool> kvp in isImmuneGuid)
                     {
                         Character? character = FindCharacterByGuid(kvp.Key, result);
@@ -119,7 +120,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     }
                     break;
                 case nameof(RoundRecord.Heals):
-                    Dictionary<Guid, double> healsGuid = NetworkUtility.JsonDeserialize<Dictionary<Guid, double>>(ref reader, options) ?? [];
+                    Dictionary<Guid, double> healsGuid = JsonService.GetObject<Dictionary<Guid, double>>(ref reader, options) ?? [];
                     foreach (KeyValuePair<Guid, double> kvp in healsGuid)
                     {
                         Character? character = FindCharacterByGuid(kvp.Key, result);
@@ -130,8 +131,8 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     }
                     break;
                 case nameof(RoundRecord.Effects):
-                    Dictionary<Guid, Effect> effectsGuid = NetworkUtility.JsonDeserialize<Dictionary<Guid, Effect>>(ref reader, options) ?? [];
-                    foreach (KeyValuePair<Guid, Effect> kvp in effectsGuid)
+                    Dictionary<Guid, Skill> effectsGuid = JsonService.GetObject<Dictionary<Guid, Skill>>(ref reader, options) ?? [];
+                    foreach (KeyValuePair<Guid, Skill> kvp in effectsGuid)
                     {
                         Character? character = FindCharacterByGuid(kvp.Key, result);
                         if (character != null)
@@ -141,7 +142,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     }
                     break;
                 case nameof(RoundRecord.ApplyEffects):
-                    Dictionary<Guid, List<EffectType>> applyEffectsGuid = NetworkUtility.JsonDeserialize<Dictionary<Guid, List<EffectType>>>(ref reader, options) ?? [];
+                    Dictionary<Guid, List<EffectType>> applyEffectsGuid = JsonService.GetObject<Dictionary<Guid, List<EffectType>>>(ref reader, options) ?? [];
                     result.ApplyEffects.Clear();
                     foreach (KeyValuePair<Guid, List<EffectType>> kvp in applyEffectsGuid)
                     {
@@ -153,11 +154,11 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     }
                     break;
                 case nameof(RoundRecord.ActorContinuousKilling):
-                    List<string> actorCK = NetworkUtility.JsonDeserialize<List<string>>(ref reader, options) ?? [];
+                    List<string> actorCK = JsonService.GetObject<List<string>>(ref reader, options) ?? [];
                     result.ActorContinuousKilling.AddRange(actorCK);
                     break;
                 case nameof(RoundRecord.DeathContinuousKilling):
-                    List<string> deathCK = NetworkUtility.JsonDeserialize<List<string>>(ref reader, options) ?? [];
+                    List<string> deathCK = JsonService.GetObject<List<string>>(ref reader, options) ?? [];
                     result.DeathContinuousKilling.AddRange(deathCK);
                     break;
                 case nameof(RoundRecord.CastTime):
@@ -167,7 +168,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.HardnessTime = reader.GetDouble();
                     break;
                 case nameof(RoundRecord.RespawnCountdowns):
-                    Dictionary<Guid, double> respawnCountdownGuid = NetworkUtility.JsonDeserialize<Dictionary<Guid, double>>(ref reader, options) ?? [];
+                    Dictionary<Guid, double> respawnCountdownGuid = JsonService.GetObject<Dictionary<Guid, double>>(ref reader, options) ?? [];
                     foreach (KeyValuePair<Guid, double> kvp in respawnCountdownGuid)
                     {
                         Character? character = FindCharacterByGuid(kvp.Key, result);
@@ -178,15 +179,15 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     }
                     break;
                 case nameof(RoundRecord.Respawns):
-                    List<Character> respawns = NetworkUtility.JsonDeserialize<List<Character>>(ref reader, options) ?? [];
+                    List<Character> respawns = JsonService.GetObject<List<Character>>(ref reader, options) ?? [];
                     result.Respawns.AddRange(respawns);
                     break;
                 case nameof(RoundRecord.RoundRewards):
-                    List<Skill> rewards = NetworkUtility.JsonDeserialize<List<Skill>>(ref reader, options) ?? [];
+                    List<Skill> rewards = JsonService.GetObject<List<Skill>>(ref reader, options) ?? [];
                     result.RoundRewards.AddRange(rewards);
                     break;
                 case nameof(RoundRecord.OtherMessages):
-                    List<string> messages = NetworkUtility.JsonDeserialize<List<string>>(ref reader, options) ?? [];
+                    List<string> messages = JsonService.GetObject<List<string>>(ref reader, options) ?? [];
                     result.OtherMessages.AddRange(messages);
                     break;
 

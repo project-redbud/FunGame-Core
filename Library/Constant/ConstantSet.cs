@@ -1,11 +1,10 @@
-﻿using System.Text;
-using Milimoe.FunGame.Core.Interface.Addons;
-using Milimoe.FunGame.Core.Model;
+using System.Text;
+using FunGame.Core.Model.Framework;
 
 /**
  * 此文件用于保存字符串常量（String Set）
  */
-namespace Milimoe.FunGame.Core.Library.Constant
+namespace FunGame.Core.Library.Constant
 {
     public class CommonSet
     {
@@ -78,7 +77,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
     }
 
     /// <summary>
-    /// 配合 <see cref="InterfaceMethod"/> <see cref="InterfaceType"/> 使用，也别忘了修改 <see cref="Api.Utility.Implement"/>
+    /// 配合 <see cref="InterfaceType"/> 使用
     /// </summary>
     public class InterfaceSet
     {
@@ -97,183 +96,7 @@ namespace Milimoe.FunGame.Core.Library.Constant
         }
     }
 
-    /// <summary>
-    /// 需要同步更新 <see cref="SocketMessageType"/>
-    /// </summary>
-    public class SocketSet
-    {
-        public const int MaxRetryTimes = 20;
-        public const int MaxConnection_1C2G = 10;
-        public const int MaxConnection_2C2G = 20;
-        public const int MaxConnection_4C4G = 40;
-        public const string Plugins_Mark = "$*plugins_mark*";
-        public const string AddonDataRequestMark_FromPlugin = "$*from_plugin*";
-        public const string AddonDataRequestMark_TargetPlugin = "$*target_plugin*";
-        public const string AddonDataRequestMark_FromModule = "$*from_module*";
-        public const string AddonDataRequestMark_TargetModule = "$*target_module*";
 
-        public const string Socket = "Socket";
-        public const string Unknown = "Unknown";
-        public const string DataRequest = "DataRequest";
-        public const string GamingRequest = "GamingRequest";
-        public const string Connect = "Connect";
-        public const string Disconnect = "Disconnect";
-        public const string System = "System";
-        public const string HeartBeat = "HeartBeat";
-        public const string ForceLogout = "ForceLogout";
-        public const string Chat = "Chat";
-        public const string UpdateRoomMaster = "UpdateRoomMaster";
-        public const string MatchRoom = "MatchRoom";
-        public const string StartGame = "StartGame";
-        public const string EndGame = "EndGame";
-        public const string Gaming = "Gaming";
-        public const string AnonymousGameServer = "AnonymousGameServer";
-        public const string ReconnectToGame = "ReconnectToGame";
-
-        /// <summary>
-        /// 将通信类型的枚举转换为字符串
-        /// </summary>
-        /// <param name="type">通信类型</param>
-        /// <returns>等效字符串</returns>
-        public static string GetTypeString(SocketMessageType type)
-        {
-            return type switch
-            {
-                SocketMessageType.DataRequest => DataRequest,
-                SocketMessageType.Connect => Connect,
-                SocketMessageType.Disconnect => Disconnect,
-                SocketMessageType.System => System,
-                SocketMessageType.HeartBeat => HeartBeat,
-                SocketMessageType.ForceLogout => ForceLogout,
-                SocketMessageType.Chat => Chat,
-                SocketMessageType.UpdateRoomMaster => UpdateRoomMaster,
-                SocketMessageType.MatchRoom => MatchRoom,
-                SocketMessageType.StartGame => StartGame,
-                SocketMessageType.EndGame => EndGame,
-                SocketMessageType.Gaming => Gaming,
-                _ => Unknown
-            };
-        }
-    }
-
-    /// <summary>
-    /// 需要同步更新 <see cref="DataRequestType"/>
-    /// </summary>
-    public class DataRequestSet
-    {
-        public const string UnKnown = "UnKnown";
-        /**
-         * RunTime
-         */
-        public const string RunTime_Logout = "RunTime::Logout";
-        /**
-         * Main
-         */
-        public const string Main_GetNotice = "Main::GetNotice";
-        public const string Main_IntoRoom = "Main::IntoRoom";
-        public const string Main_QuitRoom = "Main::QuitRoom";
-        public const string Main_CreateRoom = "Main::CreateRoom";
-        public const string Main_UpdateRoom = "Main::UpdateRoom";
-        public const string Main_MatchRoom = "Main::MatchRoom";
-        public const string Main_Chat = "Main::Chat";
-        public const string Main_Ready = "Main::Ready";
-        public const string Main_CancelReady = "Main::CancelReady";
-        public const string Main_StartGame = "Main::StartGame";
-        /**
-         * Register
-         */
-        public const string Reg_Reg = "Reg::Reg";
-        /**
-         * Login
-         */
-        public const string Login_Login = "Login::Login";
-        public const string Login_GetFindPasswordVerifyCode = "Login::GetFindPasswordVerifyCode";
-        public const string Login_UpdatePassword = "Login::UpdatePassword";
-        /**
-         * Room
-         */
-        public const string Room_UpdateRoomSettings = "Room::UpdateRoomSettings";
-        public const string Room_GetRoomPlayerCount = "Room::GetRoomPlayerCount";
-        public const string Room_UpdateRoomMaster = "Room::UpdateRoomMaster";
-        /**
-         * UserCenter
-         */
-        public const string UserCenter_UpdateUser = "UserCenter::UpdateUser";
-        public const string UserCenter_UpdatePassword = "UserCenter::UpdatePassword";
-        public const string UserCenter_DailySignIn = "UserCenter::DailySignIn";
-        /**
-         * Inventory
-         */
-        public const string Inventory_GetStore = "Inventory::GetStore";
-        public const string Inventory_GetMarket = "Inventory::GetMarket";
-        public const string Inventory_StoreBuy = "Inventory::StoreBuy";
-        public const string Inventory_MarketBuy = "Inventory::MarketBuy";
-        public const string Inventory_UpdateInventory = "Inventory::UpdateInventory";
-        public const string Inventory_Use = "Inventory::Use";
-        public const string Inventory_StoreSell = "Inventory::StoreSell";
-        public const string Inventory_MarketSell = "Inventory::MarketSell";
-        public const string Inventory_MarketDelist = "Inventory::MarketDelist";
-        public const string Inventory_UpdateMarketPrice = "Inventory::UpdateMarketPrice";
-        public const string Inventory_GetOffer = "Inventory::GetOffer";
-        public const string Inventory_MakeOffer = "Inventory::MakeOffer";
-        public const string Inventory_ReviseOffer = "Inventory::ReviseOffer";
-        public const string Inventory_RespondOffer = "Inventory::RespondOffer";
-        /**
-         * Addon
-         */
-        public const string Addon_Plugin = "Addon::Plugin";
-        public const string Addon_Module = "Addon::Module";
-
-        /// <summary>
-        /// 获取Type的等效字符串
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static string GetTypeString(DataRequestType type)
-        {
-            return type switch
-            {
-                DataRequestType.RunTime_Logout => RunTime_Logout,
-                DataRequestType.Main_GetNotice => Main_GetNotice,
-                DataRequestType.Main_CreateRoom => Main_CreateRoom,
-                DataRequestType.Main_UpdateRoom => Main_UpdateRoom,
-                DataRequestType.Main_IntoRoom => Main_IntoRoom,
-                DataRequestType.Main_QuitRoom => Main_QuitRoom,
-                DataRequestType.Main_MatchRoom => Main_MatchRoom,
-                DataRequestType.Main_Chat => Main_Chat,
-                DataRequestType.Main_Ready => Main_Ready,
-                DataRequestType.Main_CancelReady => Main_CancelReady,
-                DataRequestType.Main_StartGame => Main_StartGame,
-                DataRequestType.Reg_Reg => Reg_Reg,
-                DataRequestType.Login_Login => Login_Login,
-                DataRequestType.Login_GetFindPasswordVerifyCode => Login_GetFindPasswordVerifyCode,
-                DataRequestType.Login_UpdatePassword => Login_UpdatePassword,
-                DataRequestType.Room_UpdateRoomSettings => Room_UpdateRoomSettings,
-                DataRequestType.Room_GetRoomPlayerCount => Room_GetRoomPlayerCount,
-                DataRequestType.Room_UpdateRoomMaster => Room_UpdateRoomMaster,
-                DataRequestType.UserCenter_UpdateUser => UserCenter_UpdateUser,
-                DataRequestType.UserCenter_UpdatePassword => UserCenter_UpdatePassword,
-                DataRequestType.UserCenter_DailySignIn => UserCenter_DailySignIn,
-                DataRequestType.Inventory_GetStore => Inventory_GetStore,
-                DataRequestType.Inventory_GetMarket => Inventory_GetMarket,
-                DataRequestType.Inventory_StoreBuy => Inventory_StoreBuy,
-                DataRequestType.Inventory_MarketBuy => Inventory_MarketBuy,
-                DataRequestType.Inventory_UpdateInventory => Inventory_UpdateInventory,
-                DataRequestType.Inventory_Use => Inventory_Use,
-                DataRequestType.Inventory_StoreSell => Inventory_StoreSell,
-                DataRequestType.Inventory_MarketSell => Inventory_MarketSell,
-                DataRequestType.Inventory_MarketDelist => Inventory_MarketDelist,
-                DataRequestType.Inventory_UpdateMarketPrice => Inventory_UpdateMarketPrice,
-                DataRequestType.Inventory_GetOffer => Inventory_GetOffer,
-                DataRequestType.Inventory_MakeOffer => Inventory_MakeOffer,
-                DataRequestType.Inventory_ReviseOffer => Inventory_ReviseOffer,
-                DataRequestType.Inventory_RespondOffer => Inventory_RespondOffer,
-                DataRequestType.Addon_Module => Addon_Module,
-                DataRequestType.Addon_Plugin => Addon_Plugin,
-                _ => UnKnown
-            };
-        }
-    }
 
     public class GamingSet
     {

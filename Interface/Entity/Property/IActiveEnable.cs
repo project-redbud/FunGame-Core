@@ -1,4 +1,4 @@
-﻿namespace Milimoe.FunGame.Core.Interface.Entity
+﻿namespace FunGame.Core.Interface.Entity
 {
     public interface IActiveEnable
     {

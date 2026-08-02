@@ -1,10 +1,9 @@
-﻿using Milimoe.FunGame.Core.Library.Common.Addon;
-using Milimoe.FunGame.Core.Library.Common.Event;
+﻿using FunGame.Core.Library.Common.Event;
 
-namespace Milimoe.FunGame.Core.Interface
+namespace FunGame.Core.Interface
 {
     /// <summary>
-    /// 局内事件的接口，与 <see cref="GameModule"/> 配套使用
+    /// 局内事件的接口，与 <see cref="IGameEventHandler"/> 配套使用
     /// </summary>
     public interface IGamingEventHandler
     {
@@ -149,5 +148,16 @@ namespace Milimoe.FunGame.Core.Interface
         public event GamingEventHandler? GamingPunish;
 
         public void OnGamingPunishEvent(object sender, GamingEventArgs e, Dictionary<string, object> data);
+    }
+
+    /// <summary>
+    /// 局内事件处理器聚合接口<para/>
+    /// 实现此接口即可接收所有局内事件(GamingHandler 的分发目标)<para/>
+    /// v3.0 起替代旧 <c>GameModule</c> 的事件部分
+    /// </summary>
+    public interface IGameEventHandler : IGamingConnectEventHandler, IGamingDisconnectEventHandler, IGamingReconnectEventHandler, IGamingBanCharacterEventHandler, IGamingPickCharacterEventHandler,
+        IGamingRandomEventHandler, IGamingRoundEventHandler, IGamingLevelUpEventHandler, IGamingMoveEventHandler, IGamingAttackEventHandler, IGamingSkillEventHandler, IGamingItemEventHandler, IGamingMagicEventHandler,
+        IGamingBuyEventHandler, IGamingSuperSkillEventHandler, IGamingPauseEventHandler, IGamingUnpauseEventHandler, IGamingSurrenderEventHandler, IGamingUpdateInfoEventHandler, IGamingPunishEventHandler
+    {
     }
 }

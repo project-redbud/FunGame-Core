@@ -1,12 +1,11 @@
 ﻿using System.Text;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Interface.Entity;
-using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Core.Model;
+using FunGame.Core.Interface.Entity;
+using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.Framework;
 
-namespace Milimoe.FunGame.Core.Entity
+namespace FunGame.Core.Entity
 {
-    public class Inventory : BaseEntity
+    public class Inventory(User user) : BaseEntity
     {
         /// <summary>
         /// 库存 ID 与用户 ID 绑定
@@ -22,16 +21,13 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 return field.Trim() == "" ? User.Username + "的库存" : field;
             }
-            set
-            {
-                field = value;
-            }
+            set;
         } = "";
 
         /// <summary>
         /// 库存属于哪个玩家
         /// </summary>
-        public User User { get; }
+        public User User { get; } = user;
 
         /// <summary>
         /// 玩家持有 <see cref="EquilibriumConstant.InGameCurrency"/> 的数量
@@ -69,12 +65,9 @@ namespace Milimoe.FunGame.Core.Entity
                     field = Characters.First();
                     return field;
                 }
-                return Factory.GetCharacter();
+                return new Character();
             }
-            set
-            {
-                field = value;
-            }
+            set;
         }
 
         /// <summary>
@@ -86,11 +79,6 @@ namespace Milimoe.FunGame.Core.Entity
         /// 练级中的角色
         /// </summary>
         public Dictionary<long, DateTime> Training { get; set; } = [];
-
-        internal Inventory(User user)
-        {
-            User = user;
-        }
 
         public override string ToString()
         {

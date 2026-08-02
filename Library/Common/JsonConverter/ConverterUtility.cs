@@ -1,8 +1,8 @@
 ﻿using System.Data;
 using System.Text.Json;
-using Milimoe.FunGame.Core.Library.Constant;
+using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
+namespace FunGame.Core.Library.Common.JsonConverter
 {
     internal class ConverterUtility
     {

@@ -1,12 +1,11 @@
 ﻿using System.Text;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Interface.Base;
-using Milimoe.FunGame.Core.Interface.Entity;
-using Milimoe.FunGame.Core.Library.Common.Addon;
-using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Core.Model;
+using FunGame.Core.Api;
+using FunGame.Core.Interface.Base;
+using FunGame.Core.Interface.Entity;
+using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.Framework;
 
-namespace Milimoe.FunGame.Core.Entity
+namespace FunGame.Core.Entity
 {
     /// <summary>
     /// 特殊效果类，需要继承
@@ -244,9 +243,9 @@ namespace Milimoe.FunGame.Core.Entity
             }
         }
 
-        internal Effect()
+        public Effect()
         {
-            Skill = Factory.GetSkill();
+            Skill = new();
         }
 
         /// <summary>

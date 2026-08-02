@@ -1,30 +1,29 @@
 ﻿using System.Text.Json;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Architecture;
-using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Core.Library.SQLScript.Entity;
+using FunGame.Core.Api;
+using FunGame.Core.Entity;
+using FunGame.Core.Library.Architecture;
+using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
+namespace FunGame.Core.Library.Common.JsonConverter
 {
     public class UserConverter : BaseEntityConverter<User>
     {
         public override User NewInstance()
         {
-            return Factory.GetUser();
+            return new();
         }
 
         public override void ReadPropertyName(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options, ref User result, Dictionary<string, object> convertingContext)
         {
             switch (propertyName)
             {
-                case UserQuery.Column_Id:
+                case "Id":
                     result.Id = reader.GetInt64();
                     break;
-                case UserQuery.Column_Username:
+                case "Username":
                     result.Username = reader.GetString() ?? "";
                     break;
-                case UserQuery.Column_RegTime:
+                case "RegTime":
                     string regTime = reader.GetString() ?? "";
                     if (DateTime.TryParseExact(regTime, General.GeneralDateTimeFormat, null, System.Globalization.DateTimeStyles.None, out DateTime RegTime))
                     {
@@ -32,7 +31,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     }
                     else result.RegTime = General.DefaultTime;
                     break;
-                case UserQuery.Column_LastTime:
+                case "LastTime":
                     string lastTime = reader.GetString() ?? "";
                     if (DateTime.TryParseExact(lastTime, General.GeneralDateTimeFormat, null, System.Globalization.DateTimeStyles.None, out DateTime LastTime))
                     {
@@ -40,29 +39,29 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     }
                     else result.LastTime = General.DefaultTime;
                     break;
-                case UserQuery.Column_Email:
+                case "Email":
                     result.Email = reader.GetString() ?? "";
                     break;
-                case UserQuery.Column_Nickname:
+                case "Nickname":
                     result.NickName = reader.GetString() ?? "";
                     break;
-                case UserQuery.Column_IsAdmin:
+                case "IsAdmin":
                     result.IsAdmin = reader.GetBoolean();
                     break;
-                case UserQuery.Column_IsOperator:
+                case "IsOperator":
                     result.IsOperator = reader.GetBoolean();
                     break;
-                case UserQuery.Column_IsEnable:
+                case "IsEnable":
                     result.IsEnable = reader.GetBoolean();
                     break;
-                case UserQuery.Column_GameTime:
+                case "GameTime":
                     result.GameTime = reader.GetDouble();
                     break;
-                case UserQuery.Column_AutoKey:
+                case "AutoKey":
                     result.AutoKey = reader.GetString() ?? "";
                     break;
                 case nameof(Inventory):
-                    Inventory inventory = NetworkUtility.JsonDeserialize<Inventory>(ref reader, options) ?? Factory.GetInventory();
+                    Inventory inventory = JsonService.GetObject<Inventory>(ref reader, options) ?? new(result);
                     result.Inventory.Name = inventory.Name;
                     result.Inventory.Credits = inventory.Credits;
                     result.Inventory.Materials = inventory.Materials;
@@ -91,17 +90,17 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
         {
             writer.WriteStartObject();
 
-            writer.WriteNumber(UserQuery.Column_Id, value.Id);
-            writer.WriteString(UserQuery.Column_Username, value.Username);
-            writer.WriteString(UserQuery.Column_RegTime, value.RegTime.ToString(General.GeneralDateTimeFormat));
-            writer.WriteString(UserQuery.Column_LastTime, value.LastTime.ToString(General.GeneralDateTimeFormat));
-            writer.WriteString(UserQuery.Column_Email, value.Email);
-            writer.WriteString(UserQuery.Column_Nickname, value.NickName);
-            writer.WriteBoolean(UserQuery.Column_IsAdmin, value.IsAdmin);
-            writer.WriteBoolean(UserQuery.Column_IsOperator, value.IsOperator);
-            writer.WriteBoolean(UserQuery.Column_IsEnable, value.IsEnable);
-            writer.WriteNumber(UserQuery.Column_GameTime, value.GameTime);
-            writer.WriteString(UserQuery.Column_AutoKey, value.AutoKey);
+            writer.WriteNumber("Id", value.Id);
+            writer.WriteString("Username", value.Username);
+            writer.WriteString("RegTime", value.RegTime.ToString(General.GeneralDateTimeFormat));
+            writer.WriteString("LastTime", value.LastTime.ToString(General.GeneralDateTimeFormat));
+            writer.WriteString("Email", value.Email);
+            writer.WriteString("Nickname", value.NickName);
+            writer.WriteBoolean("IsAdmin", value.IsAdmin);
+            writer.WriteBoolean("IsOperator", value.IsOperator);
+            writer.WriteBoolean("IsEnable", value.IsEnable);
+            writer.WriteNumber("GameTime", value.GameTime);
+            writer.WriteString("AutoKey", value.AutoKey);
             writer.WritePropertyName(nameof(Inventory));
             JsonSerializer.Serialize(writer, value.Inventory, options);
 

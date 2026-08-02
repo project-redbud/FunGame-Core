@@ -1,7 +1,7 @@
-﻿using Milimoe.FunGame.Core.Library.Common.Event;
+﻿using FunGame.Core.Library.Common.Event;
 
 // 插件需要实现什么事件就继承什么接口
-namespace Milimoe.FunGame.Core.Interface
+namespace FunGame.Core.Interface
 {
     public interface IConnectEvent
     {

@@ -1,10 +1,10 @@
 ﻿using System.Text.Json;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Architecture;
-using Milimoe.FunGame.Core.Library.Constant;
+using FunGame.Core.Api;
+using FunGame.Core.Entity;
+using FunGame.Core.Library.Architecture;
+using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
+namespace FunGame.Core.Library.Common.JsonConverter
 {
     public class StoreConverter : BaseEntityConverter<Store>
     {
@@ -68,7 +68,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     }
                     break;
                 case nameof(Store.Goods):
-                    Dictionary<long, Goods> goods = NetworkUtility.JsonDeserialize<Dictionary<long, Goods>>(ref reader, options) ?? [];
+                    Dictionary<long, Goods> goods = JsonService.GetObject<Dictionary<long, Goods>>(ref reader, options) ?? [];
                     foreach (long id in goods.Keys)
                     {
                         result.Goods[id] = goods[id];
@@ -89,7 +89,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     }
                     break;
                 case nameof(Store.NextRefreshGoods):
-                    Dictionary<long, Goods> goods2 = NetworkUtility.JsonDeserialize<Dictionary<long, Goods>>(ref reader, options) ?? [];
+                    Dictionary<long, Goods> goods2 = JsonService.GetObject<Dictionary<long, Goods>>(ref reader, options) ?? [];
                     foreach (long id in goods2.Keys)
                     {
                         result.NextRefreshGoods[id] = goods2[id];

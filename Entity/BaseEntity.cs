@@ -1,9 +1,9 @@
 ﻿using System.Text.Json.Serialization;
-using Milimoe.FunGame.Core.Interface.Entity;
-using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Core.Model;
+using FunGame.Core.Interface.Entity;
+using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.Framework;
 
-namespace Milimoe.FunGame.Core.Entity
+namespace FunGame.Core.Entity
 {
     public abstract class BaseEntity : IBaseEntity
     {

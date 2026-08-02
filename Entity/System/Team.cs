@@ -1,4 +1,4 @@
-﻿namespace Milimoe.FunGame.Core.Entity
+﻿namespace FunGame.Core.Entity
 {
     public class Team(string name, IEnumerable<Character> charaters)
     {

@@ -1,4 +1,4 @@
-﻿namespace Milimoe.FunGame.Core.Library.Common.Event
+﻿namespace FunGame.Core.Library.Common.Event
 {
     public class SendTalkEventArgs(string message = "") : GeneralEventArgs
     {

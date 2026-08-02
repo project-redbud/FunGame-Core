@@ -1,8 +1,7 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Constant;
+﻿using FunGame.Core.Entity;
+using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Library.Common.Event
+namespace FunGame.Core.Library.Common.Event
 {
     public class RoomEventArgs : GeneralEventArgs
     {
@@ -22,7 +21,7 @@ namespace Milimoe.FunGame.Core.Library.Common.Event
             RoomType = type;
             RoomTypeString = RoomSet.GetTypeString(type);
             Password = password;
-            Room = Factory.GetRoom(roomType: RoomType, password: Password);
+            Room = new(roomType: RoomType, password: Password);
         }
 
         public RoomEventArgs(Room room)

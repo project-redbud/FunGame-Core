@@ -1,28 +1,10 @@
 ﻿/**
  * 此文件保存Type（类型）的枚举
  */
-namespace Milimoe.FunGame.Core.Library.Constant
+namespace FunGame.Core.Library.Constant
 {
-    public enum FormType
-    {
-        Main,
-        Register,
-        Login,
-        Inventory,
-        RoomSetting,
-        Store,
-        UserCenter,
-        ForgetPassword
-    }
-
-    public enum OpenFormType
-    {
-        General,
-        Dialog
-    }
-
     /// <summary>
-    /// 配合 <see cref="InterfaceMethod"/> <see cref="InterfaceSet"/> 使用，也别忘了修改 <see cref="Api.Utility.Implement"/>
+    /// 配合 <see cref="InterfaceSet"/> 使用
     /// </summary>
     public enum InterfaceType
     {
@@ -41,90 +23,6 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Solo,
         FastAuto,
         Custom
-    }
-
-    public enum MessageButtonType
-    {
-        OK,
-        OKCancel,
-        YesNo,
-        RetryCancel,
-        Input
-    }
-
-    public enum LightType
-    {
-        Green,
-        Yellow,
-        Red
-    }
-
-    /// <summary>
-    /// 需要同步更新 <see cref="SocketSet"/>
-    /// </summary>
-    public enum SocketMessageType
-    {
-        Unknown,
-        DataRequest,
-        GamingRequest,
-        Connect,
-        Disconnect,
-        System,
-        HeartBeat,
-        ForceLogout,
-        Chat,
-        UpdateRoomMaster,
-        MatchRoom,
-        StartGame,
-        EndGame,
-        Gaming,
-        AnonymousGameServer,
-        ReconnectToGame
-    }
-
-    /// <summary>
-    /// 需要同步更新 <see cref="DataRequestSet"/>
-    /// </summary>
-    public enum DataRequestType
-    {
-        UnKnown,
-        RunTime_Logout,
-        Main_GetNotice,
-        Main_CreateRoom,
-        Main_UpdateRoom,
-        Main_IntoRoom,
-        Main_QuitRoom,
-        Main_MatchRoom,
-        Main_Chat,
-        Main_Ready,
-        Main_CancelReady,
-        Main_StartGame,
-        Reg_Reg,
-        Login_Login,
-        Login_GetFindPasswordVerifyCode,
-        Login_UpdatePassword,
-        Room_UpdateRoomSettings,
-        Room_GetRoomPlayerCount,
-        Room_UpdateRoomMaster,
-        UserCenter_UpdateUser,
-        UserCenter_UpdatePassword,
-        UserCenter_DailySignIn,
-        Inventory_GetStore,
-        Inventory_GetMarket,
-        Inventory_StoreBuy,
-        Inventory_MarketBuy,
-        Inventory_UpdateInventory,
-        Inventory_Use,
-        Inventory_StoreSell,
-        Inventory_MarketSell,
-        Inventory_MarketDelist,
-        Inventory_UpdateMarketPrice,
-        Inventory_GetOffer,
-        Inventory_MakeOffer,
-        Inventory_ReviseOffer,
-        Inventory_RespondOffer,
-        Addon_Plugin,
-        Addon_Module
     }
 
     /// <summary>
@@ -153,52 +51,6 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Surrender,
         UpdateInfo,
         Punish
-    }
-
-    public enum TransmittalType
-    {
-        Socket,
-        WebSocket
-    }
-
-    public enum SocketRuntimeType
-    {
-        Client,
-        Server,
-        Addon
-    }
-
-    public enum ErrorIPAddressType
-    {
-        None,
-        IsNotAddress,
-        IsNotPort,
-        WrongFormat
-    }
-
-    public enum EventType
-    {
-        ConnectEvent,
-        DisconnectEvent,
-        LoginEvent,
-        LogoutEvent,
-        RegEvent,
-        IntoRoomEvent,
-        SendTalkEvent,
-        CreateRoomEvent,
-        QuitRoomEvent,
-        ChangeRoomSettingEvent,
-        StartMatchEvent,
-        StartGameEvent,
-        ChangeProfileEvent,
-        ChangeAccountSettingEvent,
-        OpenStockEvent,
-        SignInEvent,
-        OpenStoreEvent,
-        BuyItemEvent,
-        ShowRankingEvent,
-        UseItemEvent,
-        EndGameEvent
     }
 
     public enum SkillType
@@ -616,19 +468,6 @@ namespace Milimoe.FunGame.Core.Library.Constant
         LocalUser
     }
 
-    public enum ShowMessageType
-    {
-        None,
-        General,
-        Tip,
-        Warning,
-        Error,
-        YesNo,
-        OKCancel,
-        RetryCancel,
-        Input,
-        InputCancel
-    }
 
     public enum TimeType
     {
@@ -825,61 +664,6 @@ namespace Milimoe.FunGame.Core.Library.Constant
         FiveStar
     }
 
-    public enum RunTimeInvokeType
-    {
-        None,
-        GetServerConnection,
-        Connect,
-        Connected,
-        Disconnect,
-        Disconnected,
-        AutoLogin,
-        Close
-    }
-
-    public enum MainInvokeType
-    {
-        None,
-        Connected,
-        Disconnected,
-        Disconnect,
-        SetGreen,
-        SetGreenAndPing,
-        SetRed,
-        SetYellow,
-        WaitConnectAndSetYellow,
-        WaitLoginAndSetYellow,
-        LogOut,
-        LogIn,
-        SetUser,
-        IntoRoom,
-        QuitRoom,
-        UpdateRoom,
-        CreateRoom,
-        Chat,
-        MatchRoom,
-        UpdateRoomMaster,
-        GetRoomPlayerCount,
-        StartGame,
-        EndGame
-    }
-
-    public enum RegInvokeType
-    {
-        None,
-        DuplicateUserName,
-        DuplicateEmail,
-        InputVerifyCode
-    }
-
-    public enum AuthenticationType
-    {
-        None,
-        ScriptOnly,
-        Column,
-        Username
-    }
-
     public enum InvokeMessageType
     {
         None,
@@ -892,13 +676,6 @@ namespace Milimoe.FunGame.Core.Library.Constant
         Plugin,
         GameModule,
         Warning
-    }
-
-    public enum SQLMode
-    {
-        None,
-        MySQL,
-        SQLite
     }
 
     public enum QuestType

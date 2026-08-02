@@ -1,9 +1,8 @@
-﻿using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Addon;
-using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Core.Model;
+﻿using FunGame.Core.Entity;
+using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.Framework;
 
-namespace Milimoe.FunGame.Core.Interface.Base
+namespace FunGame.Core.Interface.Base
 {
     /// <summary>
     /// 回合制游戏的基础队列

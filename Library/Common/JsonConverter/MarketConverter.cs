@@ -1,10 +1,10 @@
 ﻿using System.Text.Json;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Architecture;
-using Milimoe.FunGame.Core.Library.Constant;
+using FunGame.Core.Api;
+using FunGame.Core.Entity;
+using FunGame.Core.Library.Architecture;
+using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
+namespace FunGame.Core.Library.Common.JsonConverter
 {
     public class MarketConverter : BaseEntityConverter<Market>
     {
@@ -68,7 +68,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     }
                     break;
                 case nameof(Market.MarketItems):
-                    Dictionary<long, MarketItem> marketItems = NetworkUtility.JsonDeserialize<Dictionary<long, MarketItem>>(ref reader, options) ?? [];
+                    Dictionary<long, MarketItem> marketItems = JsonService.GetObject<Dictionary<long, MarketItem>>(ref reader, options) ?? [];
                     foreach (long id in marketItems.Keys)
                     {
                         result.MarketItems[id] = marketItems[id];

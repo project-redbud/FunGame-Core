@@ -1,9 +1,9 @@
 ﻿using System.Text;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Model;
+using FunGame.Core.Api;
+using FunGame.Core.Entity;
+using FunGame.Core.Model.Framework;
 
-namespace Milimoe.FunGame.Core.Library.Constant
+namespace FunGame.Core.Library.Constant
 {
     /// <summary>
     /// 此类保存常用的对象常量
@@ -77,11 +77,6 @@ namespace Milimoe.FunGame.Core.Library.Constant
         #region Const
 
         /// <summary>
-        /// 最多自动重试连接次数
-        /// </summary>
-        public const int MaxRetryTimes = 20;
-
-        /// <summary>
         /// 1C2G推荐的任务数量
         /// </summary>
         public const int MaxTask_1C2G = 10;
@@ -95,16 +90,6 @@ namespace Milimoe.FunGame.Core.Library.Constant
         /// 4C4G推荐的任务数量
         /// </summary>
         public const int MaxTask_4C4G = 40;
-
-        /// <summary>
-        /// 默认Socket数据包大小
-        /// </summary>
-        public const int SocketByteSize = 512 * 1024;
-
-        /// <summary>
-        /// 默认Stream传输大小
-        /// </summary>
-        public const int StreamByteSize = 2048;
 
         #endregion
     }

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace Milimoe.FunGame.Core.Interface.Base
+namespace FunGame.Core.Interface.Base
 {
     public interface IEntityConverter<T>
     {

@@ -1,10 +1,10 @@
 ﻿using System.Text.Json;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Common.Architecture;
-using Milimoe.FunGame.Core.Library.Constant;
+using FunGame.Core.Api;
+using FunGame.Core.Entity;
+using FunGame.Core.Library.Architecture;
+using FunGame.Core.Library.Constant;
 
-namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
+namespace FunGame.Core.Library.Common.JsonConverter
 {
     public class ItemConverter : BaseEntityConverter<Item>
     {
@@ -39,7 +39,7 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     result.Category = reader.GetString() ?? "";
                     break;
                 case nameof(Item.Tags):
-                    string[] tags = NetworkUtility.JsonDeserialize<string[]>(ref reader, options) ?? [];
+                    string[] tags = JsonService.GetObject<string[]>(ref reader, options) ?? [];
                     foreach (string tag in tags)
                     {
                         result.Tags.Add(tag);
@@ -113,13 +113,13 @@ namespace Milimoe.FunGame.Core.Library.Common.JsonConverter
                     }
                     break;
                 case nameof(Item.Skills):
-                    SkillGroup skills = NetworkUtility.JsonDeserialize<SkillGroup>(ref reader, options) ?? new();
+                    SkillGroup skills = JsonService.GetObject<SkillGroup>(ref reader, options) ?? new();
                     result.Skills.Active = skills.Active;
                     result.Skills.Passives = skills.Passives;
                     result.Skills.Magics = skills.Magics;
                     break;
                 case nameof(Item.Others):
-                    Dictionary<string, object> values = NetworkUtility.JsonDeserialize<Dictionary<string, object>>(ref reader, options) ?? [];
+                    Dictionary<string, object> values = JsonService.GetObject<Dictionary<string, object>>(ref reader, options) ?? [];
                     foreach (string key in values.Keys)
                     {
                         result.Others.Add(key, values[key]);

@@ -1,4 +1,4 @@
-﻿namespace Milimoe.FunGame.Core.Interface
+﻿namespace FunGame.Core.Interface
 {
     /// <summary>
     /// 服务器需要实现此接口

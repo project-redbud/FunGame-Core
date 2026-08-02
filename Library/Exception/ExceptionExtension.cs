@@ -1,4 +1,4 @@
-﻿namespace Milimoe.FunGame.Core.Library.Exception
+﻿namespace FunGame.Core.Library.Exception
 {
     public static class ExceptionExtension
     {
