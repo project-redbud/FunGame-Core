@@ -189,7 +189,7 @@ namespace FunGame.Core.Entity
         /// </summary>
         public Character? Character
         {
-            get => field;
+            get;
             set
             {
                 field = value;
@@ -452,13 +452,13 @@ namespace FunGame.Core.Entity
 
         }
 
-        protected Item(ItemType type, bool isInGame = true)
+        public Item(ItemType type, bool isInGame = true)
         {
             ItemType = type;
             IsInGameItem = isInGame;
         }
 
-        internal Item() { }
+        public Item() { }
 
         /// <summary>
         /// 显示物品的详细信息
