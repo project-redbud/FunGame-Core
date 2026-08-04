@@ -9,6 +9,11 @@ namespace FunGame.Core.Library.Common.JsonConverter
 {
     public class RoundRecordConverter : BaseEntityConverter<RoundRecord>
     {
+        /// <summary>
+        /// 序列化时额外输出的角色引用集合属性名，用于反序列化时恢复以角色为 key 的字典
+        /// </summary>
+        private const string AllCharactersProperty = "AllCharacters";
+
         public override RoundRecord NewInstance()
         {
             return new RoundRecord(0);
@@ -21,6 +26,9 @@ namespace FunGame.Core.Library.Common.JsonConverter
                 case nameof(RoundRecord.Round):
                     result.Round = reader.GetInt32();
                     break;
+                case AllCharactersProperty:
+                    convertingContext[AllCharactersProperty] = JsonService.GetObject<List<Character>>(ref reader, options) ?? new List<Character>();
+                    break;
                 case nameof(RoundRecord.Actor):
                     result.Actor = JsonService.GetObject<Character>(ref reader, options) ?? new();
                     break;
@@ -32,15 +40,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
                     }
                     break;
                 case nameof(RoundRecord.Damages):
-                    Dictionary<Guid, double> damagesGuid = JsonService.GetObject<Dictionary<Guid, double>>(ref reader, options) ?? [];
-                    foreach (KeyValuePair<Guid, double> kvp in damagesGuid)
-                    {
-                        Character? character = FindCharacterByGuid(kvp.Key, result);
-                        if (character != null)
-                        {
-                            result.Damages[character] = kvp.Value;
-                        }
-                    }
+                    convertingContext[nameof(RoundRecord.Damages)] = JsonService.GetObject<Dictionary<Guid, double>>(ref reader, options) ?? [];
                     break;
 
                 case nameof(RoundRecord.ActionTypes):
@@ -51,31 +51,55 @@ namespace FunGame.Core.Library.Common.JsonConverter
                     }
                     break;
                 case nameof(RoundRecord.Skills):
-                    Dictionary<CharacterActionType, Skill> skills = JsonService.GetObject<Dictionary<CharacterActionType, Skill>>(ref reader, options) ?? [];
-                    foreach (CharacterActionType type in skills.Keys)
+                    using (JsonDocument doc = JsonDocument.ParseValue(ref reader))
                     {
-                        result.Skills[type] = skills[type];
+                        foreach (JsonProperty property in doc.RootElement.EnumerateObject())
+                        {
+                            CharacterActionType? type = ParseActionTypeKey(property.Name);
+                            if (type != null)
+                            {
+                                Skill? skill = property.Value.Deserialize<Skill>(options);
+                                if (skill != null) result.Skills[type.Value] = skill;
+                            }
+                        }
                     }
                     break;
                 case nameof(RoundRecord.SkillsCost):
-                    Dictionary<Skill, string> skillsCost = JsonService.GetObject<Dictionary<Skill, string>>(ref reader, options) ?? [];
-                    foreach (Skill skill in skillsCost.Keys)
+                    // SkillsCost 的 key 以 Id.Name 字符串写入，这里按 Id.Name 匹配回 Skills 中的技能实例
+                    using (JsonDocument costDoc = JsonDocument.ParseValue(ref reader))
                     {
-                        result.SkillsCost[skill] = skillsCost[skill];
+                        foreach (JsonProperty property in costDoc.RootElement.EnumerateObject())
+                        {
+                            string cost = property.Value.GetString() ?? "";
+                            Skill? skill = result.Skills.Values.FirstOrDefault(s => s.GetIdName() == property.Name);
+                            if (skill != null) result.SkillsCost[skill] = cost;
+                        }
                     }
                     break;
                 case nameof(RoundRecord.Items):
-                    Dictionary<CharacterActionType, Item> items = JsonService.GetObject<Dictionary<CharacterActionType, Item>>(ref reader, options) ?? [];
-                    foreach (CharacterActionType type in items.Keys)
+                    using (JsonDocument itemDoc = JsonDocument.ParseValue(ref reader))
                     {
-                        result.Items[type] = items[type];
+                        foreach (JsonProperty property in itemDoc.RootElement.EnumerateObject())
+                        {
+                            CharacterActionType? type = ParseActionTypeKey(property.Name);
+                            if (type != null)
+                            {
+                                Item? item = property.Value.Deserialize<Item>(options);
+                                if (item != null) result.Items[type.Value] = item;
+                            }
+                        }
                     }
                     break;
                 case nameof(RoundRecord.ItemsCost):
-                    Dictionary<Item, string> itemsCost = JsonService.GetObject<Dictionary<Item, string>>(ref reader, options) ?? [];
-                    foreach (Item item in itemsCost.Keys)
+                    // ItemsCost 的 key 以 Id.Name 字符串写入，这里按 Id.Name 匹配回 Items 中的物品实例
+                    using (JsonDocument itemCostDoc = JsonDocument.ParseValue(ref reader))
                     {
-                        result.ItemsCost[item] = itemsCost[item];
+                        foreach (JsonProperty property in itemCostDoc.RootElement.EnumerateObject())
+                        {
+                            string cost = property.Value.GetString() ?? "";
+                            Item? item = result.Items.Values.FirstOrDefault(i => i.GetIdName() == property.Name);
+                            if (item != null) result.ItemsCost[item] = cost;
+                        }
                     }
                     break;
                 case nameof(RoundRecord.HasKill):
@@ -87,71 +111,23 @@ namespace FunGame.Core.Library.Common.JsonConverter
                     break;
 
                 case nameof(RoundRecord.IsCritical):
-                    Dictionary<Guid, bool> isCriticalGuid = JsonService.GetObject<Dictionary<Guid, bool>>(ref reader, options) ?? [];
-                    foreach (KeyValuePair<Guid, bool> kvp in isCriticalGuid)
-                    {
-                        Character? character = FindCharacterByGuid(kvp.Key, result);
-                        if (character != null)
-                        {
-                            result.IsCritical[character] = kvp.Value;
-                        }
-                    }
+                    convertingContext[nameof(RoundRecord.IsCritical)] = JsonService.GetObject<Dictionary<Guid, bool>>(ref reader, options) ?? [];
                     break;
                 case nameof(RoundRecord.IsEvaded):
-                    Dictionary<Guid, bool> isEvadedGuid = JsonService.GetObject<Dictionary<Guid, bool>>(ref reader, options) ?? [];
-                    foreach (KeyValuePair<Guid, bool> kvp in isEvadedGuid)
-                    {
-                        Character? character = FindCharacterByGuid(kvp.Key, result);
-                        if (character != null)
-                        {
-                            result.IsEvaded[character] = kvp.Value;
-                        }
-                    }
+                    convertingContext[nameof(RoundRecord.IsEvaded)] = JsonService.GetObject<Dictionary<Guid, bool>>(ref reader, options) ?? [];
                     break;
                 case nameof(RoundRecord.IsImmune):
-                    Dictionary<Guid, bool> isImmuneGuid = JsonService.GetObject<Dictionary<Guid, bool>>(ref reader, options) ?? [];
-                    foreach (KeyValuePair<Guid, bool> kvp in isImmuneGuid)
-                    {
-                        Character? character = FindCharacterByGuid(kvp.Key, result);
-                        if (character != null)
-                        {
-                            result.IsImmune[character] = kvp.Value;
-                        }
-                    }
+                    convertingContext[nameof(RoundRecord.IsImmune)] = JsonService.GetObject<Dictionary<Guid, bool>>(ref reader, options) ?? [];
                     break;
                 case nameof(RoundRecord.Heals):
-                    Dictionary<Guid, double> healsGuid = JsonService.GetObject<Dictionary<Guid, double>>(ref reader, options) ?? [];
-                    foreach (KeyValuePair<Guid, double> kvp in healsGuid)
-                    {
-                        Character? character = FindCharacterByGuid(kvp.Key, result);
-                        if (character != null)
-                        {
-                            result.Heals[character] = kvp.Value;
-                        }
-                    }
+                    convertingContext[nameof(RoundRecord.Heals)] = JsonService.GetObject<Dictionary<Guid, double>>(ref reader, options) ?? [];
                     break;
                 case nameof(RoundRecord.Effects):
-                    Dictionary<Guid, Skill> effectsGuid = JsonService.GetObject<Dictionary<Guid, Skill>>(ref reader, options) ?? [];
-                    foreach (KeyValuePair<Guid, Skill> kvp in effectsGuid)
-                    {
-                        Character? character = FindCharacterByGuid(kvp.Key, result);
-                        if (character != null)
-                        {
-                            result.Effects[character] = kvp.Value;
-                        }
-                    }
+                    convertingContext[nameof(RoundRecord.Effects)] = JsonService.GetObject<Dictionary<Guid, Skill>>(ref reader, options) ?? [];
                     break;
                 case nameof(RoundRecord.ApplyEffects):
-                    Dictionary<Guid, List<EffectType>> applyEffectsGuid = JsonService.GetObject<Dictionary<Guid, List<EffectType>>>(ref reader, options) ?? [];
                     result.ApplyEffects.Clear();
-                    foreach (KeyValuePair<Guid, List<EffectType>> kvp in applyEffectsGuid)
-                    {
-                        Character? character = FindCharacterByGuid(kvp.Key, result);
-                        if (character != null)
-                        {
-                            result.ApplyEffects[character] = kvp.Value;
-                        }
-                    }
+                    convertingContext[nameof(RoundRecord.ApplyEffects)] = JsonService.GetObject<Dictionary<Guid, List<EffectType>>>(ref reader, options) ?? [];
                     break;
                 case nameof(RoundRecord.ActorContinuousKilling):
                     List<string> actorCK = JsonService.GetObject<List<string>>(ref reader, options) ?? [];
@@ -168,15 +144,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
                     result.HardnessTime = reader.GetDouble();
                     break;
                 case nameof(RoundRecord.RespawnCountdowns):
-                    Dictionary<Guid, double> respawnCountdownGuid = JsonService.GetObject<Dictionary<Guid, double>>(ref reader, options) ?? [];
-                    foreach (KeyValuePair<Guid, double> kvp in respawnCountdownGuid)
-                    {
-                        Character? character = FindCharacterByGuid(kvp.Key, result);
-                        if (character != null)
-                        {
-                            result.RespawnCountdowns[character] = kvp.Value;
-                        }
-                    }
+                    convertingContext[nameof(RoundRecord.RespawnCountdowns)] = JsonService.GetObject<Dictionary<Guid, double>>(ref reader, options) ?? [];
                     break;
                 case nameof(RoundRecord.Respawns):
                     List<Character> respawns = JsonService.GetObject<List<Character>>(ref reader, options) ?? [];
@@ -201,6 +169,12 @@ namespace FunGame.Core.Library.Common.JsonConverter
         {
             writer.WriteStartObject();
             writer.WriteNumber(nameof(RoundRecord.Round), value.Round);
+            // 收集所有涉及的角色引用，供反序列化时恢复以角色为 key 的字典（Damages/Heals/Effects/ApplyEffects 等）
+            List<Character> allCharacters = [value.Actor, .. value.Targets.Values.SelectMany(c => c), .. value.Assists, .. value.Respawns];
+            allCharacters.AddRange([.. value.Damages.Keys, .. value.Heals.Keys, .. value.Effects.Keys, .. value.ApplyEffects.Keys, .. value.IsCritical.Keys, .. value.IsEvaded.Keys, .. value.IsImmune.Keys, .. value.RespawnCountdowns.Keys]);
+            allCharacters = [.. allCharacters.Where(c => c != null && c.Guid != Guid.Empty).DistinctBy(c => c.Guid)];
+            writer.WritePropertyName(AllCharactersProperty);
+            JsonSerializer.Serialize(writer, allCharacters, options);
             writer.WritePropertyName(nameof(RoundRecord.Actor));
             JsonSerializer.Serialize(writer, value.Actor, options);
             writer.WritePropertyName(nameof(RoundRecord.Targets));
@@ -210,11 +184,11 @@ namespace FunGame.Core.Library.Common.JsonConverter
             writer.WritePropertyName(nameof(RoundRecord.ActionTypes));
             JsonSerializer.Serialize(writer, value.ActionTypes.Select(type => (int)type), options);
             writer.WritePropertyName(nameof(RoundRecord.Skills));
-            JsonSerializer.Serialize(writer, value.Skills.ToDictionary(kv => kv.Key.ToString(), kv => kv.Value), options);
+            JsonSerializer.Serialize(writer, value.Skills.ToDictionary(kv => (int)kv.Key, kv => kv.Value), options);
             writer.WritePropertyName(nameof(RoundRecord.SkillsCost));
             JsonSerializer.Serialize(writer, value.SkillsCost.ToDictionary(kv => kv.Key.GetIdName(), kv => kv.Value), options);
             writer.WritePropertyName(nameof(RoundRecord.Items));
-            JsonSerializer.Serialize(writer, value.Items.ToDictionary(kv => kv.Key.ToString(), kv => kv.Value), options);
+            JsonSerializer.Serialize(writer, value.Items.ToDictionary(kv => (int)kv.Key, kv => kv.Value), options);
             writer.WritePropertyName(nameof(RoundRecord.ItemsCost));
             JsonSerializer.Serialize(writer, value.ItemsCost.ToDictionary(kv => kv.Key.GetIdName(), kv => kv.Value), options);
             writer.WriteBoolean(nameof(RoundRecord.HasKill), value.HasKill);
@@ -249,15 +223,62 @@ namespace FunGame.Core.Library.Common.JsonConverter
             writer.WriteEndObject();
         }
 
-        private static Character? FindCharacterByGuid(Guid guid, RoundRecord record)
+        public override void AfterConvert(ref RoundRecord result, Dictionary<string, object> convertingContext)
         {
-            Character? character = record.Targets.Values.SelectMany(c => c).FirstOrDefault(c => c.Guid == guid);
-            if (character != null) return character;
+            RoundRecord record = result;
+            List<Character>? allCharacters = convertingContext.TryGetValue(AllCharactersProperty, out object? ac) ? ac as List<Character> : null;
+
+            ResolveCharacterKeyed<double>(record, convertingContext, nameof(RoundRecord.Damages), allCharacters, (c, v) => record.Damages[c] = v);
+            ResolveCharacterKeyed<bool>(record, convertingContext, nameof(RoundRecord.IsCritical), allCharacters, (c, v) => record.IsCritical[c] = v);
+            ResolveCharacterKeyed<bool>(record, convertingContext, nameof(RoundRecord.IsEvaded), allCharacters, (c, v) => record.IsEvaded[c] = v);
+            ResolveCharacterKeyed<bool>(record, convertingContext, nameof(RoundRecord.IsImmune), allCharacters, (c, v) => record.IsImmune[c] = v);
+            ResolveCharacterKeyed<double>(record, convertingContext, nameof(RoundRecord.Heals), allCharacters, (c, v) => record.Heals[c] = v);
+            ResolveCharacterKeyed<Skill>(record, convertingContext, nameof(RoundRecord.Effects), allCharacters, (c, v) => record.Effects[c] = v);
+            ResolveCharacterKeyed<List<EffectType>>(record, convertingContext, nameof(RoundRecord.ApplyEffects), allCharacters, (c, v) => record.ApplyEffects[c] = v);
+            ResolveCharacterKeyed<double>(record, convertingContext, nameof(RoundRecord.RespawnCountdowns), allCharacters, (c, v) => record.RespawnCountdowns[c] = v);
+        }
+
+        /// <summary>
+        /// 将反序列化时暂存的 Guid 键字典解析为以角色引用为 key 的字典
+        /// </summary>
+        private static void ResolveCharacterKeyed<T>(RoundRecord result, Dictionary<string, object> convertingContext, string propertyName, List<Character>? allCharacters, Action<Character, T> set)
+        {
+            if (convertingContext.TryGetValue(propertyName, out object? raw) && raw is Dictionary<Guid, T> dict)
+            {
+                foreach (KeyValuePair<Guid, T> kvp in dict)
+                {
+                    Character? character = FindCharacterByGuid(kvp.Key, result, allCharacters);
+                    if (character != null) set(character, kvp.Value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 解析字典键为 <see cref="CharacterActionType"/>，兼容数字枚举值与字符串枚举名两种写法
+        /// </summary>
+        private static CharacterActionType? ParseActionTypeKey(string key)
+        {
+            if (int.TryParse(key, out int value)) return (CharacterActionType)value;
+            if (Enum.TryParse(key, out CharacterActionType type)) return type;
+            return null;
+        }
+
+        private static Character? FindCharacterByGuid(Guid guid, RoundRecord record, List<Character>? allCharacters)
+        {
+            if (allCharacters != null)
+            {
+                Character? character = allCharacters.FirstOrDefault(c => c.Guid == guid);
+                if (character != null) return character;
+            }
+
+            // 兼容旧存档（无 AllCharacters 字段）：从既有字段中查找
+            Character? fallback = record.Targets.Values.SelectMany(c => c).FirstOrDefault(c => c.Guid == guid);
+            if (fallback != null) return fallback;
             if (record.Actor != null && record.Actor.Guid == guid) return record.Actor;
-            character = record.Assists.FirstOrDefault(c => c.Guid == guid);
-            if (character != null) return character;
-            character = record.Respawns.FirstOrDefault(c => c.Guid == guid);
-            if (character != null) return character;
+            fallback = record.Assists.FirstOrDefault(c => c.Guid == guid);
+            if (fallback != null) return fallback;
+            fallback = record.Respawns.FirstOrDefault(c => c.Guid == guid);
+            if (fallback != null) return fallback;
             return null;
         }
     }

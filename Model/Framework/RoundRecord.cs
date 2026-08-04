@@ -173,8 +173,9 @@ namespace FunGame.Core.Model.Framework
         }
 
         /// <summary>
-        /// 深拷贝当前记录的不可变快照<para/>
-        /// 用于事件分发,保证订阅端看到的是事件时刻的回合状态,而不是后续被修改的引用
+        /// 生成当前记录的结构快照<para/>
+        /// 所有集合与字典均为独立副本，但其中的实体引用（<see cref="Character"/> / <see cref="Skill"/> / <see cref="Item"/>）与当前记录共享；<para/>
+        /// 用于事件分发与回合归档，保证订阅端看到的是快照时刻的回合状态，不受后续对集合结构的修改（新增、覆盖、删除条目）影响
         /// </summary>
         /// <returns></returns>
         public RoundRecord Snapshot()

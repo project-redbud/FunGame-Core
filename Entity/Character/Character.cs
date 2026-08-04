@@ -1350,6 +1350,15 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 获取角色的哈希值（与 <see cref="Equals(IBaseEntity?)"/> 保持一致，基于 <see cref="ToString()"/>）
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            return ToString().GetHashCode();
+        }
+
+        /// <summary>
         /// 获取角色实例的昵称以及所属玩家，如果没有昵称，则用名字代替
         /// </summary>
         /// <returns></returns>

@@ -649,6 +649,15 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 获取物品的哈希值（与 <see cref="Equals(IBaseEntity?)"/> 保持一致，基于 Id.Name）
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            return GetIdName().GetHashCode();
+        }
+
+        /// <summary>
         /// 设置一些属性给从工厂构造出来的 <paramref name="newbyFactory"/> 对象
         /// </summary>
         /// <param name="newbyFactory"></param>

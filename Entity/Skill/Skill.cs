@@ -1006,6 +1006,15 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 获取技能的哈希值（与 <see cref="Equals(IBaseEntity?)"/> 保持一致，基于 Id.Name）
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            return GetIdName().GetHashCode();
+        }
+
+        /// <summary>
         /// 复制一个技能
         /// </summary>
         /// <returns></returns>

@@ -705,8 +705,9 @@ namespace FunGame.Core.Model.Queue
             {
                 // 进入下一回合
                 TotalRound++;
+                // 将上一回合记录以结构快照的形式归档，防止后续写入（例如时间流逝中的复活结算）污染已归档的历史记录
+                if (TotalRound > 1) Rounds.Add(LastRound.Snapshot());
                 LastRound = new(TotalRound) { Actor = character };
-                Rounds.Add(LastRound);
 
                 if (TotalRound == 1)
                 {
@@ -1911,6 +1912,19 @@ namespace FunGame.Core.Model.Queue
                 _stats[character].ActionTurn += 1;
             }
 
+            // 提前结算硬直时间，使决策完成事件快照包含本回合的硬直/吟唱数据
+            double newHardnessTime = baseTime;
+            if (character.CharacterState != CharacterState.Casting)
+            {
+                newHardnessTime = Calculation.Round2Digits(baseTime);
+                LastRound.HardnessTime = newHardnessTime;
+            }
+            else
+            {
+                newHardnessTime = Calculation.Round2Digits(baseTime);
+                LastRound.CastTime = newHardnessTime;
+            }
+
             AfterCharacterDecision(character, dp);
             OnCharacterDecisionCompletedEvent(character, dp, LastRound.Snapshot());
             effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
@@ -1937,20 +1951,15 @@ namespace FunGame.Core.Model.Queue
             }
 
             // 减少硬直时间
-            double newHardnessTime = baseTime;
             if (character.CharacterState != CharacterState.Casting)
             {
-                newHardnessTime = Calculation.Round2Digits(baseTime);
                 WriteLine($"[ {character} ] 回合结束，获得硬直时间：{newHardnessTime} {GameplayEquilibriumConstant.InGameTime}");
             }
             else
             {
-                newHardnessTime = Calculation.Round2Digits(baseTime);
                 WriteLine($"[ {character} ] 进行吟唱，持续时间：{newHardnessTime} {GameplayEquilibriumConstant.InGameTime}");
-                LastRound.CastTime = newHardnessTime;
             }
             AddCharacter(character, newHardnessTime, isCheckProtected);
-            LastRound.HardnessTime = newHardnessTime;
             OnQueueUpdatedEvent(_queue, character, dp, newHardnessTime, QueueUpdatedReason.Action, "设置角色行动后的硬直时间。");
 
             effects = [.. character.Effects.OrderByDescending(e => e.Priority)];
