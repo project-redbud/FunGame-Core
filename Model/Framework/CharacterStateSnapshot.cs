@@ -60,6 +60,11 @@ namespace FunGame.Core.Model.Framework
         public List<SkillStateSnapshot> Skills { get; } = [];
 
         /// <summary>
+        /// 物品栏（背包）列表（物品 ID、名称）
+        /// </summary>
+        public List<ItemStateSnapshot> Items { get; } = [];
+
+        /// <summary>
         /// 状态栏特效列表（特效 ID、名称、类型、剩余时间）
         /// </summary>
         public List<EffectStateSnapshot> Effects { get; } = [];
@@ -89,6 +94,22 @@ namespace FunGame.Core.Model.Framework
         /// 当前冷却时间
         /// </summary>
         public double CurrentCD { get; set; } = 0;
+    }
+
+    /// <summary>
+    /// 物品状态快照
+    /// </summary>
+    public class ItemStateSnapshot
+    {
+        /// <summary>
+        /// 物品 ID
+        /// </summary>
+        public long ItemId { get; set; } = 0;
+
+        /// <summary>
+        /// 物品名称（展示用）
+        /// </summary>
+        public string ItemName { get; set; } = "";
     }
 
     /// <summary>

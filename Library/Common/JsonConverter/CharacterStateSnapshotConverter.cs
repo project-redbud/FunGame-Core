@@ -51,6 +51,9 @@ namespace FunGame.Core.Library.Common.JsonConverter
                 case nameof(CharacterStateSnapshot.Skills):
                     result.Skills.AddRange(JsonService.GetObject<List<SkillStateSnapshot>>(ref reader, options) ?? []);
                     break;
+                case nameof(CharacterStateSnapshot.Items):
+                    result.Items.AddRange(JsonService.GetObject<List<ItemStateSnapshot>>(ref reader, options) ?? []);
+                    break;
                 case nameof(CharacterStateSnapshot.Effects):
                     result.Effects.AddRange(JsonService.GetObject<List<EffectStateSnapshot>>(ref reader, options) ?? []);
                     break;
@@ -77,6 +80,8 @@ namespace FunGame.Core.Library.Common.JsonConverter
             JsonSerializer.Serialize(writer, value.Equipments.ToDictionary(kv => (int)kv.Key, kv => kv.Value), options);
             writer.WritePropertyName(nameof(CharacterStateSnapshot.Skills));
             JsonSerializer.Serialize(writer, value.Skills, options);
+            writer.WritePropertyName(nameof(CharacterStateSnapshot.Items));
+            JsonSerializer.Serialize(writer, value.Items, options);
             writer.WritePropertyName(nameof(CharacterStateSnapshot.Effects));
             JsonSerializer.Serialize(writer, value.Effects, options);
             writer.WriteEndObject();

@@ -59,6 +59,11 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
+        /// 返回角色所属队伍名（用于回合记录的角色队伍归属标记）
+        /// </summary>
+        protected override string? GetCharacterTeamName(Character character) => GetTeam(character)?.Name;
+
+        /// <summary>
         /// 从已淘汰的团队中获取角色的团队
         /// </summary>
         /// <param name="character"></param>
@@ -241,6 +246,7 @@ namespace FunGame.Core.Model.Queue
             WriteLine("");
             WriteLine("=== 排名 ===");
             WriteLine("");
+            LastRound.GameResult.Clear();
 
             _eliminatedTeams.Add(winner);
             _teams.Remove(winner.Name);
@@ -248,6 +254,31 @@ namespace FunGame.Core.Model.Queue
             for (int i = _eliminatedTeams.Count - 1; i >= 0; i--)
             {
                 Team team = _eliminatedTeams[i];
+                int teamKills = 0;
+                int teamDeaths = 0;
+                int teamAssists = 0;
+                int teamEarned = 0;
+                foreach (Character ec in team.Members)
+                {
+                    CharacterStatistics statistics = CharacterStatistics[ec];
+                    teamKills += statistics.Kills;
+                    teamDeaths += statistics.Deaths;
+                    teamAssists += statistics.Assists;
+                    teamEarned += _earnedMoney.TryGetValue(ec, out int earned) ? earned : 0;
+                }
+                // 结构化排名条目（团队引用 + 聚合统计，按名次顺序；消费端可定制渲染）
+                LastRound.GameResult.Add(new RankingEntry
+                {
+                    Rank = top,
+                    IsWinner = team == winner,
+                    IsTeam = true,
+                    Team = team,
+                    Kills = teamKills,
+                    Deaths = teamDeaths,
+                    Assists = teamAssists,
+                    TotalEarnedMoney = teamEarned,
+                    Score = team.Score
+                });
                 string topTeam = "";
                 if (top == 1)
                 {

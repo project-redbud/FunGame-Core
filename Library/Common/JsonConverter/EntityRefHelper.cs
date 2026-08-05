@@ -78,6 +78,53 @@ namespace FunGame.Core.Library.Common.JsonConverter
     }
 
     /// <summary>
+    /// 团队引用（轻量快照）的读写辅助：保留 Id、名称、得分、胜者标记与成员角色引用
+    /// </summary>
+    internal static class TeamRefHelper
+    {
+        public static void Write(Utf8JsonWriter writer, Team? team)
+        {
+            writer.WriteStartObject();
+            writer.WriteString(nameof(Team.Id), team?.Id ?? Guid.Empty);
+            writer.WriteString(nameof(Team.Name), team?.Name ?? "");
+            writer.WriteNumber(nameof(Team.Score), team?.Score ?? 0);
+            writer.WriteBoolean(nameof(Team.IsWinner), team?.IsWinner ?? false);
+            writer.WritePropertyName(nameof(Team.Members));
+            CharacterRefHelper.WriteList(writer, team?.Members ?? []);
+            writer.WriteEndObject();
+        }
+
+        public static Team? Read(ref Utf8JsonReader reader)
+        {
+            using JsonDocument doc = JsonDocument.ParseValue(ref reader);
+            return ReadElement(doc.RootElement);
+        }
+
+        internal static Team? ReadElement(JsonElement root)
+        {
+            Guid id = root.TryGetProperty(nameof(Team.Id), out JsonElement idElement) && idElement.ValueKind == JsonValueKind.String ? idElement.GetGuid() : Guid.Empty;
+            string name = root.TryGetProperty(nameof(Team.Name), out JsonElement nameElement) && nameElement.ValueKind == JsonValueKind.String ? nameElement.GetString() ?? "" : "";
+            Team team = new(name, []) { Id = id };
+            if (root.TryGetProperty(nameof(Team.Score), out JsonElement scoreElement) && scoreElement.ValueKind == JsonValueKind.Number)
+            {
+                team.Score = scoreElement.GetInt32();
+            }
+            if (root.TryGetProperty(nameof(Team.IsWinner), out JsonElement winnerElement) && winnerElement.ValueKind == JsonValueKind.True || winnerElement.ValueKind == JsonValueKind.False)
+            {
+                team.IsWinner = winnerElement.GetBoolean();
+            }
+            if (root.TryGetProperty(nameof(Team.Members), out JsonElement membersElement) && membersElement.ValueKind == JsonValueKind.Array)
+            {
+                foreach (JsonElement element in membersElement.EnumerateArray())
+                {
+                    team.Members.Add(CharacterRefHelper.ReadElement(element));
+                }
+            }
+            return team;
+        }
+    }
+
+    /// <summary>
     /// 技能引用（轻量快照）的读写辅助：只保留 Id 与名称，供展示与消耗匹配
     /// </summary>
     internal static class SkillRefHelper

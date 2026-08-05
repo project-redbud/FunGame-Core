@@ -196,6 +196,12 @@ namespace FunGame.Core.Library.Common.JsonConverter
                 case nameof(RoundRecord.TotalTime):
                     result.TotalTime = reader.GetDouble();
                     break;
+                case nameof(RoundRecord.GameResult):
+                    result.GameResult.AddRange(JsonService.GetObject<List<RankingEntry>>(ref reader, options) ?? []);
+                    break;
+                case nameof(RoundRecord.TeamMap):
+                    result.TeamMap = JsonService.GetObject<Dictionary<Guid, string>>(ref reader, options) ?? new Dictionary<Guid, string>();
+                    break;
 
                 default:
                     reader.Skip();
@@ -307,6 +313,10 @@ namespace FunGame.Core.Library.Common.JsonConverter
                 writer.WriteNullValue();
             }
             writer.WriteNumber(nameof(RoundRecord.TotalTime), value.TotalTime);
+            writer.WritePropertyName(nameof(RoundRecord.GameResult));
+            JsonSerializer.Serialize(writer, value.GameResult, options);
+            writer.WritePropertyName(nameof(RoundRecord.TeamMap));
+            JsonSerializer.Serialize(writer, value.TeamMap, options);
             writer.WriteEndObject();
         }
 
