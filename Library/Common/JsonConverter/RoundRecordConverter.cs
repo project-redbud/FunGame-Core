@@ -27,16 +27,29 @@ namespace FunGame.Core.Library.Common.JsonConverter
                     result.Round = reader.GetInt32();
                     break;
                 case AllCharactersProperty:
-                    convertingContext[AllCharactersProperty] = JsonService.GetObject<List<Character>>(ref reader, options) ?? new List<Character>();
+                    List<Character> allCharacters = CharacterRefHelper.ReadList(ref reader);
+                    result.AllCharacters.AddRange(allCharacters);
+                    convertingContext[AllCharactersProperty] = allCharacters;
                     break;
                 case nameof(RoundRecord.Actor):
-                    result.Actor = JsonService.GetObject<Character>(ref reader, options) ?? new();
+                    result.Actor = CharacterRefHelper.Read(ref reader);
                     break;
                 case nameof(RoundRecord.Targets):
-                    Dictionary<CharacterActionType, List<Character>> targets = JsonService.GetObject<Dictionary<CharacterActionType, List<Character>>>(ref reader, options) ?? [];
-                    foreach (CharacterActionType type in targets.Keys)
+                    using (JsonDocument targetDoc = JsonDocument.ParseValue(ref reader))
                     {
-                        result.Targets[type] = targets[type];
+                        foreach (JsonProperty property in targetDoc.RootElement.EnumerateObject())
+                        {
+                            CharacterActionType? type = ParseActionTypeKey(property.Name);
+                            if (type != null)
+                            {
+                                List<Character> list = [];
+                                foreach (JsonElement element in property.Value.EnumerateArray())
+                                {
+                                    list.Add(CharacterRefHelper.ReadElement(element));
+                                }
+                                result.Targets[type.Value] = list;
+                            }
+                        }
                     }
                     break;
                 case nameof(RoundRecord.Damages):
@@ -58,7 +71,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
                             CharacterActionType? type = ParseActionTypeKey(property.Name);
                             if (type != null)
                             {
-                                Skill? skill = property.Value.Deserialize<Skill>(options);
+                                Skill? skill = SkillRefHelper.ReadElement(property.Value);
                                 if (skill != null) result.Skills[type.Value] = skill;
                             }
                         }
@@ -84,7 +97,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
                             CharacterActionType? type = ParseActionTypeKey(property.Name);
                             if (type != null)
                             {
-                                Item? item = property.Value.Deserialize<Item>(options);
+                                Item? item = ItemRefHelper.ReadElement(property.Value);
                                 if (item != null) result.Items[type.Value] = item;
                             }
                         }
@@ -106,8 +119,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
                     result.HasKill = reader.GetBoolean();
                     break;
                 case nameof(RoundRecord.Assists):
-                    List<Character> assists = JsonService.GetObject<List<Character>>(ref reader, options) ?? [];
-                    result.Assists.AddRange(assists);
+                    result.Assists.AddRange(CharacterRefHelper.ReadList(ref reader));
                     break;
 
                 case nameof(RoundRecord.IsCritical):
@@ -123,7 +135,19 @@ namespace FunGame.Core.Library.Common.JsonConverter
                     convertingContext[nameof(RoundRecord.Heals)] = JsonService.GetObject<Dictionary<Guid, double>>(ref reader, options) ?? [];
                     break;
                 case nameof(RoundRecord.Effects):
-                    convertingContext[nameof(RoundRecord.Effects)] = JsonService.GetObject<Dictionary<Guid, Skill>>(ref reader, options) ?? [];
+                    Dictionary<Guid, Skill> effects = [];
+                    using (JsonDocument effectDoc = JsonDocument.ParseValue(ref reader))
+                    {
+                        foreach (JsonProperty property in effectDoc.RootElement.EnumerateObject())
+                        {
+                            if (Guid.TryParse(property.Name, out Guid guid))
+                            {
+                                Skill? skill = SkillRefHelper.ReadElement(property.Value);
+                                if (skill != null) effects[guid] = skill;
+                            }
+                        }
+                    }
+                    convertingContext[nameof(RoundRecord.Effects)] = effects;
                     break;
                 case nameof(RoundRecord.ApplyEffects):
                     result.ApplyEffects.Clear();
@@ -147,16 +171,30 @@ namespace FunGame.Core.Library.Common.JsonConverter
                     convertingContext[nameof(RoundRecord.RespawnCountdowns)] = JsonService.GetObject<Dictionary<Guid, double>>(ref reader, options) ?? [];
                     break;
                 case nameof(RoundRecord.Respawns):
-                    List<Character> respawns = JsonService.GetObject<List<Character>>(ref reader, options) ?? [];
-                    result.Respawns.AddRange(respawns);
+                    result.Respawns.AddRange(CharacterRefHelper.ReadList(ref reader));
                     break;
                 case nameof(RoundRecord.RoundRewards):
-                    List<Skill> rewards = JsonService.GetObject<List<Skill>>(ref reader, options) ?? [];
-                    result.RoundRewards.AddRange(rewards);
+                    using (JsonDocument rewardDoc = JsonDocument.ParseValue(ref reader))
+                    {
+                        foreach (JsonElement element in rewardDoc.RootElement.EnumerateArray())
+                        {
+                            Skill? skill = SkillRefHelper.ReadElement(element);
+                            if (skill != null) result.RoundRewards.Add(skill);
+                        }
+                    }
                     break;
                 case nameof(RoundRecord.OtherMessages):
                     List<string> messages = JsonService.GetObject<List<string>>(ref reader, options) ?? [];
                     result.OtherMessages.AddRange(messages);
+                    break;
+                case nameof(RoundRecord.Actions):
+                    result.Actions.AddRange(JsonService.GetObject<List<ActionRecord>>(ref reader, options) ?? []);
+                    break;
+                case nameof(RoundRecord.Checkpoint):
+                    result.Checkpoint = JsonService.GetObject<List<CharacterStateSnapshot>>(ref reader, options);
+                    break;
+                case nameof(RoundRecord.TotalTime):
+                    result.TotalTime = reader.GetDouble();
                     break;
 
                 default:
@@ -169,31 +207,57 @@ namespace FunGame.Core.Library.Common.JsonConverter
         {
             writer.WriteStartObject();
             writer.WriteNumber(nameof(RoundRecord.Round), value.Round);
-            // 收集所有涉及的角色引用，供反序列化时恢复以角色为 key 的字典（Damages/Heals/Effects/ApplyEffects 等）
-            List<Character> allCharacters = [value.Actor, .. value.Targets.Values.SelectMany(c => c), .. value.Assists, .. value.Respawns];
-            allCharacters.AddRange([.. value.Damages.Keys, .. value.Heals.Keys, .. value.Effects.Keys, .. value.ApplyEffects.Keys, .. value.IsCritical.Keys, .. value.IsEvaded.Keys, .. value.IsImmune.Keys, .. value.RespawnCountdowns.Keys]);
-            allCharacters = [.. allCharacters.Where(c => c != null && c.Guid != Guid.Empty).DistinctBy(c => c.Guid)];
+            // 收集角色引用：优先使用显式设置的全角色清单（开局时写入），否则动态收集本回合出现的角色
+            List<Character> allCharacters;
+            if (value.AllCharacters.Count > 0)
+            {
+                allCharacters = [.. value.AllCharacters.Where(c => c != null && c.Guid != Guid.Empty).DistinctBy(c => c.Guid)];
+            }
+            else
+            {
+                allCharacters = [value.Actor, .. value.Targets.Values.SelectMany(c => c), .. value.Assists, .. value.Respawns];
+                allCharacters.AddRange([.. value.Damages.Keys, .. value.Heals.Keys, .. value.Effects.Keys, .. value.ApplyEffects.Keys, .. value.IsCritical.Keys, .. value.IsEvaded.Keys, .. value.IsImmune.Keys, .. value.RespawnCountdowns.Keys]);
+                allCharacters = [.. allCharacters.Where(c => c != null && c.Guid != Guid.Empty).DistinctBy(c => c.Guid)];
+            }
             writer.WritePropertyName(AllCharactersProperty);
-            JsonSerializer.Serialize(writer, allCharacters, options);
+            CharacterRefHelper.WriteList(writer, allCharacters);
             writer.WritePropertyName(nameof(RoundRecord.Actor));
-            JsonSerializer.Serialize(writer, value.Actor, options);
+            CharacterRefHelper.Write(writer, value.Actor);
             writer.WritePropertyName(nameof(RoundRecord.Targets));
-            JsonSerializer.Serialize(writer, value.Targets, options);
+            writer.WriteStartObject();
+            foreach (KeyValuePair<CharacterActionType, List<Character>> kv in value.Targets)
+            {
+                writer.WritePropertyName(((int)kv.Key).ToString());
+                CharacterRefHelper.WriteList(writer, kv.Value);
+            }
+            writer.WriteEndObject();
             writer.WritePropertyName(nameof(RoundRecord.Damages));
             JsonSerializer.Serialize(writer, value.Damages.ToDictionary(kv => kv.Key.Guid, kv => kv.Value), options);
             writer.WritePropertyName(nameof(RoundRecord.ActionTypes));
             JsonSerializer.Serialize(writer, value.ActionTypes.Select(type => (int)type), options);
             writer.WritePropertyName(nameof(RoundRecord.Skills));
-            JsonSerializer.Serialize(writer, value.Skills.ToDictionary(kv => (int)kv.Key, kv => kv.Value), options);
+            writer.WriteStartObject();
+            foreach (KeyValuePair<CharacterActionType, Skill> kv in value.Skills)
+            {
+                writer.WritePropertyName(((int)kv.Key).ToString());
+                SkillRefHelper.Write(writer, kv.Value);
+            }
+            writer.WriteEndObject();
             writer.WritePropertyName(nameof(RoundRecord.SkillsCost));
             JsonSerializer.Serialize(writer, value.SkillsCost.ToDictionary(kv => kv.Key.GetIdName(), kv => kv.Value), options);
             writer.WritePropertyName(nameof(RoundRecord.Items));
-            JsonSerializer.Serialize(writer, value.Items.ToDictionary(kv => (int)kv.Key, kv => kv.Value), options);
+            writer.WriteStartObject();
+            foreach (KeyValuePair<CharacterActionType, Item> kv in value.Items)
+            {
+                writer.WritePropertyName(((int)kv.Key).ToString());
+                ItemRefHelper.Write(writer, kv.Value);
+            }
+            writer.WriteEndObject();
             writer.WritePropertyName(nameof(RoundRecord.ItemsCost));
             JsonSerializer.Serialize(writer, value.ItemsCost.ToDictionary(kv => kv.Key.GetIdName(), kv => kv.Value), options);
             writer.WriteBoolean(nameof(RoundRecord.HasKill), value.HasKill);
             writer.WritePropertyName(nameof(RoundRecord.Assists));
-            JsonSerializer.Serialize(writer, value.Assists, options);
+            CharacterRefHelper.WriteList(writer, value.Assists);
             writer.WritePropertyName(nameof(RoundRecord.IsCritical));
             JsonSerializer.Serialize(writer, value.IsCritical.ToDictionary(kv => kv.Key.Guid, kv => kv.Value), options);
             writer.WritePropertyName(nameof(RoundRecord.IsEvaded));
@@ -203,7 +267,13 @@ namespace FunGame.Core.Library.Common.JsonConverter
             writer.WritePropertyName(nameof(RoundRecord.Heals));
             JsonSerializer.Serialize(writer, value.Heals.ToDictionary(kv => kv.Key.Guid, kv => kv.Value), options);
             writer.WritePropertyName(nameof(RoundRecord.Effects));
-            JsonSerializer.Serialize(writer, value.Effects.ToDictionary(kv => kv.Key.Guid, kv => kv.Value), options);
+            writer.WriteStartObject();
+            foreach (KeyValuePair<Character, Skill> kv in value.Effects)
+            {
+                writer.WritePropertyName(kv.Key.Guid.ToString());
+                SkillRefHelper.Write(writer, kv.Value);
+            }
+            writer.WriteEndObject();
             writer.WritePropertyName(nameof(RoundRecord.ApplyEffects));
             JsonSerializer.Serialize(writer, value.ApplyEffects.ToDictionary(kv => kv.Key.Guid, kv => kv.Value), options);
             writer.WritePropertyName(nameof(RoundRecord.ActorContinuousKilling));
@@ -215,11 +285,28 @@ namespace FunGame.Core.Library.Common.JsonConverter
             writer.WritePropertyName(nameof(RoundRecord.RespawnCountdowns));
             JsonSerializer.Serialize(writer, value.RespawnCountdowns.ToDictionary(kv => kv.Key.Guid, kv => kv.Value), options);
             writer.WritePropertyName(nameof(RoundRecord.Respawns));
-            JsonSerializer.Serialize(writer, value.Respawns, options);
+            CharacterRefHelper.WriteList(writer, value.Respawns);
             writer.WritePropertyName(nameof(RoundRecord.RoundRewards));
-            JsonSerializer.Serialize(writer, value.RoundRewards, options);
+            writer.WriteStartArray();
+            foreach (Skill skill in value.RoundRewards)
+            {
+                SkillRefHelper.Write(writer, skill);
+            }
+            writer.WriteEndArray();
             writer.WritePropertyName(nameof(RoundRecord.OtherMessages));
             JsonSerializer.Serialize(writer, value.OtherMessages, options);
+            writer.WritePropertyName(nameof(RoundRecord.Actions));
+            JsonSerializer.Serialize(writer, value.Actions, options);
+            writer.WritePropertyName(nameof(RoundRecord.Checkpoint));
+            if (value.Checkpoint != null)
+            {
+                JsonSerializer.Serialize(writer, value.Checkpoint, options);
+            }
+            else
+            {
+                writer.WriteNullValue();
+            }
+            writer.WriteNumber(nameof(RoundRecord.TotalTime), value.TotalTime);
             writer.WriteEndObject();
         }
 

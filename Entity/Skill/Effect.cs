@@ -1391,7 +1391,15 @@ namespace FunGame.Core.Entity
         /// </summary>
         /// <param name="character"></param>
         /// <param name="types"></param>
-        public void RecordCharacterApplyEffects(Character character, params List<EffectType> types) => GamingQueue?.LastRound.AddApplyEffects(character, types);
+        public void RecordCharacterApplyEffects(Character character, params List<EffectType> types)
+        {
+            if (GamingQueue == null) return;
+            GamingQueue.LastRound.AddApplyEffects(character, types);
+            if (GamingQueue.CurrentAction is ActionRecord action)
+            {
+                action.AddApplyEffects(character, types);
+            }
+        }
 
         /// <summary>
         /// 返回特效详情

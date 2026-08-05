@@ -8,6 +8,10 @@ namespace FunGame.Core.Model.Framework
     {
         public int Round { get; set; } = round;
         public Character Actor { get; set; } = new();
+        /// <summary>
+        /// 本回合内的全部操作记录（决策点系统允许一回合多次操作，按执行顺序排列，<see cref="ActionRecord.ActionIndex"/> 从 1 开始）
+        /// </summary>
+        public List<ActionRecord> Actions { get; } = [];
         public HashSet<CharacterActionType> ActionTypes { get; } = [];
         public Dictionary<CharacterActionType, List<Character>> Targets { get; } = [];
         public Dictionary<CharacterActionType, Skill> Skills { get; } = [];
@@ -32,6 +36,21 @@ namespace FunGame.Core.Model.Framework
         public List<Skill> RoundRewards { get; set; } = [];
         public List<string> OtherMessages { get; set; } = [];
 
+        /// <summary>
+        /// 全角色清单（开局时由队列写入所有参与角色，供回放端在开局获取完整角色列表；后续回合由序列化时动态收集出现的角色）
+        /// </summary>
+        public List<Character> AllCharacters { get; set; } = [];
+
+        /// <summary>
+        /// 回合结束时的游戏总时间（状态推算的时间轴基准）
+        /// </summary>
+        public double TotalTime { get; set; } = 0;
+
+        /// <summary>
+        /// 状态检查点（周期性生成的全角色状态快照列表，每个元素为一个角色状态，作为状态推算的精确基准；非检查点回合为 null）
+        /// </summary>
+        public List<CharacterStateSnapshot>? Checkpoint { get; set; } = null;
+
         public void AddApplyEffects(Character character, params IEnumerable<EffectType> types)
         {
             if (ApplyEffects.TryGetValue(character, out List<EffectType>? list) && list != null)
@@ -51,12 +70,12 @@ namespace FunGame.Core.Model.Framework
             builder.AppendLine($"=== Round {Round} ===");
             if (RoundRewards.Count > 0)
             {
-                builder.AppendLine($"[ {Actor} ] 回合奖励 -> {string.Join(" / ", RoundRewards.Select(s => s.Description)).Trim()}");
+                builder.AppendLine($"[ {Actor} ] 回合奖励 -> {string.Join(" / ", RoundRewards.Select(s => s.Name)).Trim()}");
             }
 
             if (Effects.Count > 0)
             {
-                builder.AppendLine($"[ {Actor} ] 发动了技能：{string.Join("，", Effects.Where(kv => kv.Key == Actor).Select(e => e.Value.Name))}");
+                builder.AppendLine($"[ {Actor} ] 发动了技能：{string.Join("，", Effects.Where(kv => kv.Key.Guid == Actor.Guid).Select(e => e.Value.Name))}");
             }
 
             foreach (CharacterActionType type in ActionTypes)
@@ -160,7 +179,7 @@ namespace FunGame.Core.Model.Framework
                         hasEvaded = "技能免疫";
                     }
                 }
-                if (IsImmune.TryGetValue(target, out bool isImmune) && isImmune && target != Actor)
+                if (IsImmune.TryGetValue(target, out bool isImmune) && isImmune && target.Guid != Actor.Guid)
                 {
                     hasDamage = "免疫";
                 }
@@ -216,6 +235,17 @@ namespace FunGame.Core.Model.Framework
             {
                 snapshot.Skills[kv.Key] = kv.Value;
             }
+            foreach (ActionRecord action in Actions)
+            {
+                snapshot.Actions.Add(action.Snapshot());
+            }
+            // 检查点列表拷贝（元素共享，防快照后对列表结构的修改）
+            if (Checkpoint != null)
+            {
+                snapshot.Checkpoint = [.. Checkpoint];
+            }
+            snapshot.AllCharacters = [.. AllCharacters];
+            snapshot.TotalTime = TotalTime;
             return snapshot;
         }
     }
