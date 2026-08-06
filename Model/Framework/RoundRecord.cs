@@ -158,8 +158,8 @@ namespace FunGame.Core.Model.Framework
                         if (state.EquipmentsDetail.Count > 0) details.Add("装备: " + string.Join(" / ", state.EquipmentsDetail.Select(e => $"{ItemSet.GetEquipSlotTypeName(e.Slot)}={e.ItemName}")));
                         else if (state.Equipments.Count > 0) details.Add("装备: " + string.Join(" / ", state.Equipments.Select(e => $"{ItemSet.GetEquipSlotTypeName(e.Key)}={e.Value}")));
                         if (state.Items.Count > 0) details.Add("物品: " + string.Join(" / ", state.Items.Select(i => i.ItemName)));
-                        if (state.Skills.Count > 0) details.Add("技能: " + string.Join(" / ", state.Skills.Select(s => $"{s.SkillName} Lv{s.Level} CD{s.CurrentCD:0.##}")));
-                        if (state.Effects.Count > 0) details.Add("状态: " + string.Join(" / ", state.Effects.Select(e => $"{e.EffectName} 剩余{e.RemainDuration:0.##}")));
+                        if (state.Skills.Count > 0) details.Add("技能: " + string.Join(" / ", state.Skills.Select(s => s.CurrentCD > 0 ? $"{s.SkillName} Lv{s.Level} CD{s.CurrentCD:0.##}" : $"{s.SkillName} Lv{s.Level}")));
+                        if (state.Effects.Count > 0) details.Add("状态: " + string.Join(" / ", state.Effects.Select(e => e.RemainDurationTurn > 0 ? $"{e.EffectName} 剩余{e.RemainDurationTurn}R" : e.RemainDuration > 0 ? $"{e.EffectName} 剩余{e.RemainDuration:0.##}" : e.EffectName)));
                         if (details.Count > 0) builder.AppendLine("\r\n  " + string.Join("\r\n  ", details));
                         else builder.AppendLine();
                     }
