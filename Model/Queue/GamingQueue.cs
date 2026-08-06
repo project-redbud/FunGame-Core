@@ -2132,6 +2132,9 @@ namespace FunGame.Core.Model.Queue
                     LastRound.Checkpoint = CreateStateCheckpoint();
                 }
 
+                // 游戏结束时加入所有角色的最终统计数据
+                LastRound.CharacterStatistics = new(_stats);
+
                 // 游戏结束回合归档（无下一回合，NextCharacter 不会归档本回合记录）
                 Rounds.Add(LastRound.Snapshot());
 
@@ -2266,14 +2269,38 @@ namespace FunGame.Core.Model.Queue
                     MR = character.MR
                 };
 
-                // 装备栏（物品 ID）
+                // 装备栏（物品 ID + 名字明细）
                 EquipSlot slot = character.EquipSlot;
-                if (slot.Weapon != null) state.Equipments[EquipSlotType.Weapon] = slot.Weapon.Id;
-                if (slot.Armor != null) state.Equipments[EquipSlotType.Armor] = slot.Armor.Id;
-                if (slot.Shoes != null) state.Equipments[EquipSlotType.Shoes] = slot.Shoes.Id;
-                if (slot.Accessory1 != null) state.Equipments[EquipSlotType.Accessory1] = slot.Accessory1.Id;
-                if (slot.Accessory2 != null) state.Equipments[EquipSlotType.Accessory2] = slot.Accessory2.Id;
-                if (slot.MagicCardPack != null) state.Equipments[EquipSlotType.MagicCardPack] = slot.MagicCardPack.Id;
+                if (slot.Weapon != null)
+                {
+                    state.Equipments[EquipSlotType.Weapon] = slot.Weapon.Id;
+                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.Weapon, ItemId = slot.Weapon.Id, ItemName = slot.Weapon.Name });
+                }
+                if (slot.Armor != null)
+                {
+                    state.Equipments[EquipSlotType.Armor] = slot.Armor.Id;
+                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.Armor, ItemId = slot.Armor.Id, ItemName = slot.Armor.Name });
+                }
+                if (slot.Shoes != null)
+                {
+                    state.Equipments[EquipSlotType.Shoes] = slot.Shoes.Id;
+                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.Shoes, ItemId = slot.Shoes.Id, ItemName = slot.Shoes.Name });
+                }
+                if (slot.Accessory1 != null)
+                {
+                    state.Equipments[EquipSlotType.Accessory1] = slot.Accessory1.Id;
+                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.Accessory1, ItemId = slot.Accessory1.Id, ItemName = slot.Accessory1.Name });
+                }
+                if (slot.Accessory2 != null)
+                {
+                    state.Equipments[EquipSlotType.Accessory2] = slot.Accessory2.Id;
+                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.Accessory2, ItemId = slot.Accessory2.Id, ItemName = slot.Accessory2.Name });
+                }
+                if (slot.MagicCardPack != null)
+                {
+                    state.Equipments[EquipSlotType.MagicCardPack] = slot.MagicCardPack.Id;
+                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.MagicCardPack, ItemId = slot.MagicCardPack.Id, ItemName = slot.MagicCardPack.Name });
+                }
 
                 // 技能状态
                 foreach (Skill skill in character.Skills)

@@ -47,6 +47,11 @@ namespace FunGame.Core.Model.Framework
         public Dictionary<Guid, string> TeamMap { get; set; } = [];
 
         /// <summary>
+        /// 所有角色的最终统计数据（游戏结束时由队列写入所有参与角色的 <see cref="CharacterStatistics"/>，其他回合为空）
+        /// </summary>
+        public Dictionary<Character, CharacterStatistics> CharacterStatistics { get; set; } = [];
+
+        /// <summary>
         /// 游戏结束信息（胜者与排名条目，按名次顺序排列；游戏结束时由队列写入，非游戏结束回合为空）
         /// </summary>
         public List<RankingEntry> GameResult { get; set; } = [];
@@ -125,6 +130,19 @@ namespace FunGame.Core.Model.Framework
                 }
             }
 
+            // 角色最终统计数据（游戏结束时写入）
+            if (CharacterStatistics.Count > 0)
+            {
+                builder.AppendLine("");
+                builder.AppendLine("=== 角色统计 ===");
+                foreach (KeyValuePair<Character, CharacterStatistics> kv in CharacterStatistics)
+                {
+                    CharacterStatistics s = kv.Value;
+                    string teamTag = TeamMap.TryGetValue(kv.Key.Guid, out string? team) && team != "" ? $"[{team}] " : "";
+                    builder.AppendLine($"{teamTag}[ {kv.Key} ] 伤害 {s.TotalDamage:0.##} / 治疗 {s.TotalHeal:0.##} / 击杀 {s.Kills} / 死亡 {s.Deaths} / 助攻 {s.Assists} / 金币 {s.TotalEarnedMoney}");
+                }
+            }
+
             // 开局（第 1 回合）与游戏结束回合输出全角色状态（装备/物品/技能/状态栏）
             if (Round == 1 || GameResult.Count > 0)
             {
@@ -137,7 +155,8 @@ namespace FunGame.Core.Model.Framework
                         string teamTag = TeamMap.TryGetValue(state.Character.Guid, out string? team) && team != "" ? $"[{team}] " : "";
                         builder.Append($"{teamTag}[ {state.Character} ] HP {state.HP:0.##}/{state.MaxHP:0.##} MP {state.MP:0.##}/{state.MaxMP:0.##} EP {state.EP:0.##}");
                         List<string> details = [];
-                        if (state.Equipments.Count > 0) details.Add("装备: " + string.Join(" / ", state.Equipments.Select(e => $"{e.Key}={e.Value}")));
+                        if (state.EquipmentsDetail.Count > 0) details.Add("装备: " + string.Join(" / ", state.EquipmentsDetail.Select(e => $"{ItemSet.GetEquipSlotTypeName(e.Slot)}={e.ItemName}")));
+                        else if (state.Equipments.Count > 0) details.Add("装备: " + string.Join(" / ", state.Equipments.Select(e => $"{ItemSet.GetEquipSlotTypeName(e.Key)}={e.Value}")));
                         if (state.Items.Count > 0) details.Add("物品: " + string.Join(" / ", state.Items.Select(i => i.ItemName)));
                         if (state.Skills.Count > 0) details.Add("技能: " + string.Join(" / ", state.Skills.Select(s => $"{s.SkillName} Lv{s.Level} CD{s.CurrentCD:0.##}")));
                         if (state.Effects.Count > 0) details.Add("状态: " + string.Join(" / ", state.Effects.Select(e => $"{e.EffectName} 剩余{e.RemainDuration:0.##}")));
@@ -206,6 +225,7 @@ namespace FunGame.Core.Model.Framework
             snapshot.AllCharacters = [.. AllCharacters];
             snapshot.TeamMap = new(TeamMap);
             snapshot.GameResult = [.. GameResult];
+            snapshot.CharacterStatistics = new(CharacterStatistics);
             snapshot.TotalTime = TotalTime;
             return snapshot;
         }

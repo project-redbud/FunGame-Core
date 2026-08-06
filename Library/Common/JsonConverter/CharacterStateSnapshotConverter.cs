@@ -48,6 +48,9 @@ namespace FunGame.Core.Library.Common.JsonConverter
                         result.Equipments[(EquipSlotType)kvp.Key] = kvp.Value;
                     }
                     break;
+                case nameof(CharacterStateSnapshot.EquipmentsDetail):
+                    result.EquipmentsDetail.AddRange(JsonService.GetObject<List<EquipmentStateSnapshot>>(ref reader, options) ?? []);
+                    break;
                 case nameof(CharacterStateSnapshot.Skills):
                     result.Skills.AddRange(JsonService.GetObject<List<SkillStateSnapshot>>(ref reader, options) ?? []);
                     break;
@@ -78,6 +81,8 @@ namespace FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(CharacterStateSnapshot.MR), value.MR);
             writer.WritePropertyName(nameof(CharacterStateSnapshot.Equipments));
             JsonSerializer.Serialize(writer, value.Equipments.ToDictionary(kv => (int)kv.Key, kv => kv.Value), options);
+            writer.WritePropertyName(nameof(CharacterStateSnapshot.EquipmentsDetail));
+            JsonSerializer.Serialize(writer, value.EquipmentsDetail, options);
             writer.WritePropertyName(nameof(CharacterStateSnapshot.Skills));
             JsonSerializer.Serialize(writer, value.Skills, options);
             writer.WritePropertyName(nameof(CharacterStateSnapshot.Items));

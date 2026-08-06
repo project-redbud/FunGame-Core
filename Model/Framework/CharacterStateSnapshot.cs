@@ -55,6 +55,11 @@ namespace FunGame.Core.Model.Framework
         public Dictionary<EquipSlotType, long> Equipments { get; set; } = [];
 
         /// <summary>
+        /// 装备栏明细（槽位 + 物品 ID + 物品名字，用于展示；序列化后名字可直接使用）
+        /// </summary>
+        public List<EquipmentStateSnapshot> EquipmentsDetail { get; set; } = [];
+
+        /// <summary>
         /// 技能状态列表（技能 ID、名称、等级、当前冷却）
         /// </summary>
         public List<SkillStateSnapshot> Skills { get; } = [];

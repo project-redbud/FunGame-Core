@@ -200,7 +200,10 @@ namespace FunGame.Core.Library.Common.JsonConverter
                     result.GameResult.AddRange(JsonService.GetObject<List<RankingEntry>>(ref reader, options) ?? []);
                     break;
                 case nameof(RoundRecord.TeamMap):
-                    result.TeamMap = JsonService.GetObject<Dictionary<Guid, string>>(ref reader, options) ?? new Dictionary<Guid, string>();
+                    result.TeamMap = JsonService.GetObject<Dictionary<Guid, string>>(ref reader, options) ?? [];
+                    break;
+                case nameof(RoundRecord.CharacterStatistics):
+                    convertingContext[nameof(RoundRecord.CharacterStatistics)] = JsonService.GetObject<Dictionary<Guid, CharacterStatistics>>(ref reader, options) ?? [];
                     break;
 
                 default:
@@ -317,6 +320,8 @@ namespace FunGame.Core.Library.Common.JsonConverter
             JsonSerializer.Serialize(writer, value.GameResult, options);
             writer.WritePropertyName(nameof(RoundRecord.TeamMap));
             JsonSerializer.Serialize(writer, value.TeamMap, options);
+            writer.WritePropertyName(nameof(RoundRecord.CharacterStatistics));
+            JsonSerializer.Serialize(writer, value.CharacterStatistics.ToDictionary(kv => kv.Key.Guid, kv => kv.Value), options);
             writer.WriteEndObject();
         }
 
@@ -333,6 +338,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
             ResolveCharacterKeyed<Skill>(record, convertingContext, nameof(RoundRecord.Effects), allCharacters, (c, v) => record.Effects[c] = v);
             ResolveCharacterKeyed<List<EffectType>>(record, convertingContext, nameof(RoundRecord.ApplyEffects), allCharacters, (c, v) => record.ApplyEffects[c] = v);
             ResolveCharacterKeyed<double>(record, convertingContext, nameof(RoundRecord.RespawnCountdowns), allCharacters, (c, v) => record.RespawnCountdowns[c] = v);
+            ResolveCharacterKeyed<CharacterStatistics>(record, convertingContext, nameof(RoundRecord.CharacterStatistics), allCharacters, (c, v) => record.CharacterStatistics[c] = v);
         }
 
         /// <summary>
