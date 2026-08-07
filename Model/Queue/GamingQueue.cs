@@ -1642,6 +1642,7 @@ namespace FunGame.Core.Model.Queue
                                             LastRound.Effects[character] = skill;
                                             if (_currentAction != null)
                                             {
+                                                _currentAction.ActionType = skillType;
                                                 _currentAction.Skill = skill;
                                                 _currentAction.Targets.AddRange(targets);
                                                 _currentAction.DecisionPointsCost = costDP;

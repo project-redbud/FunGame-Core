@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FunGame.Core.Entity;
+using FunGame.Core.Library.Constant;
 
 namespace FunGame.Core.Library.Common.JsonConverter
 {
@@ -134,6 +135,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
             writer.WriteStartObject();
             writer.WriteNumber(nameof(Skill.Id), skill?.Id ?? 0);
             writer.WriteString(nameof(Skill.Name), skill?.Name ?? "");
+            writer.WriteNumber(nameof(Skill.SkillType), (int)(skill?.SkillType ?? SkillType.Magic));
             writer.WriteEndObject();
         }
 
@@ -147,7 +149,8 @@ namespace FunGame.Core.Library.Common.JsonConverter
         {
             long id = root.TryGetProperty(nameof(Skill.Id), out JsonElement idElement) && idElement.ValueKind == JsonValueKind.Number ? idElement.GetInt64() : 0;
             string name = root.TryGetProperty(nameof(Skill.Name), out JsonElement nameElement) && nameElement.ValueKind == JsonValueKind.String ? nameElement.GetString() ?? "" : "";
-            return id == 0 && name == "" ? null : new OpenSkill(id, name, []);
+            SkillType skillType = root.TryGetProperty(nameof(Skill.SkillType), out JsonElement stElement) && stElement.ValueKind == JsonValueKind.Number ? (SkillType)stElement.GetInt32() : SkillType.Magic;
+            return id == 0 && name == "" ? null : new OpenSkill(id, name, []) { SkillType = skillType };
         }
     }
 
