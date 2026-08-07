@@ -121,9 +121,22 @@ namespace FunGame.Core.Model.Queue
         public ActionRecord? CurrentAction => _currentAction;
 
         /// <summary>
-        /// 回合记录外发通道（可为 null；设置后操作完成/回合决策完成时即时外发）
+        /// 本队列的 Guid（用于即时外发数据包的 g 字段）
         /// </summary>
-        public IRoundRecordSink? RoundRecordSink { get; set; } = null;
+        public Guid Guid { get; } = Guid.NewGuid();
+
+        /// <summary>
+        /// 回合记录外发通道（可为 null；设置后操作完成/回合结束/检查点回合时即时外发，并立即发起签名验证握手）
+        /// </summary>
+        public IRoundRecordSink? RoundRecordSink
+        {
+            get => _roundRecordSink;
+            set
+            {
+                _roundRecordSink = value;
+                value?.Attach(Guid);
+            }
+        }
 
         /// <summary>
         /// 状态检查点生成间隔（回合数）；大于 0 时每 N 回合在回合记录上附带一次全角色状态快照，0 或负数表示不生成
@@ -326,6 +339,11 @@ namespace FunGame.Core.Model.Queue
         /// 当前正在执行的操作记录
         /// </summary>
         protected ActionRecord? _currentAction = null;
+
+        /// <summary>
+        /// 回合记录外发通道
+        /// </summary>
+        private IRoundRecordSink? _roundRecordSink = null;
 
         #endregion
 
@@ -2063,10 +2081,13 @@ namespace FunGame.Core.Model.Queue
                     endTurn = true;
                 }
 
-                // 操作结算完成，即时外发单次操作记录
+                // 操作结算完成，即时外发单次操作记录与当前回合数据
                 if (_currentAction != null)
                 {
                     RoundRecordSink?.SendAction(_currentAction.Snapshot());
+                    RoundRecordSink?.SendRound(LastRound.Snapshot());
+                    RoundRecordSink?.SendQueueData(_hardnessTimes.ToDictionary(kv => kv.Key.Guid, kv => kv.Value));
+                    RoundRecordSink?.SendEliminatedCharacters(_eliminated.Select(c => c.Guid.ToString()));
                     // 操作已成功结算，清空当前操作，避免与下一轮行动混淆
                     _currentAction = null;
                 }
@@ -2141,8 +2162,10 @@ namespace FunGame.Core.Model.Queue
 
                 _isInRound = false;
                 _currentAction = null;
-                // 游戏结束时也外发最终回合记录，含死亡结算数据
-                RoundRecordSink?.SendRound(LastRound.Snapshot());
+                // 游戏结束时也外发最终回合数据（检查点回合记录/统计数据/全角色/团队），含死亡结算数据
+                SendRoundEndData();
+                // 游戏结束，通知外发通道停止签名验证重试等
+                RoundRecordSink?.End();
                 return _isGameEnd;
             }
 
@@ -2158,8 +2181,8 @@ namespace FunGame.Core.Model.Queue
             AddCharacter(character, newHardnessTime, isCheckProtected);
             OnQueueUpdatedEvent(_queue, character, dp, newHardnessTime, QueueUpdatedReason.Action, "设置角色行动后的硬直时间。");
 
-            // 回合结算完成（含死亡/连杀/复活/硬直），即时外发回合记录
-            RoundRecordSink?.SendRound(LastRound.Snapshot());
+            // 回合结算完成（含死亡/连杀/复活/硬直），即时外发回合结束数据（检查点回合记录/统计数据/全角色/团队）
+            SendRoundEndData();
 
             effects = [.. character.Effects.OrderByDescending(e => e.Priority)];
             foreach (Effect effect in effects)
@@ -2206,6 +2229,31 @@ namespace FunGame.Core.Model.Queue
             WillPreCastSuperSkill();
 
             return _isGameEnd;
+        }
+
+        /// <summary>
+        /// 回合结算完成后即时外发回合结束数据（检查点回合记录 + 统计数据 + 全角色 + 团队 + 淘汰团队名单）
+        /// </summary>
+        private void SendRoundEndData()
+        {
+            // 检查点回合才外发内容更多的回合记录（事件 "2"）
+            if (LastRound.Checkpoint != null)
+            {
+                RoundRecordSink?.SendCheckpointRound(LastRound.Snapshot());
+            }
+            RoundRecordSink?.SendCharacterStatistics(_stats.ToDictionary(kv => kv.Key.Guid, kv => kv.Value));
+            RoundRecordSink?.SendCharacters([.. AllCharacters]);
+
+            // 可供扩展
+            AfterSendRoundEndData();
+        }
+
+        /// <summary>
+        /// 在 <see cref="SendRoundEndData"/> 之后触发，允许子类在回合结束后进行额外的即时外发操作
+        /// </summary>
+        protected virtual void AfterSendRoundEndData()
+        {
+
         }
 
         /// <summary>
