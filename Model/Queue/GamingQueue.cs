@@ -116,6 +116,21 @@ namespace FunGame.Core.Model.Queue
         public RoundRecord LastRound { get; set; } = new(0);
 
         /// <summary>
+        /// 当前正在执行的操作记录
+        /// </summary>
+        public ActionRecord? CurrentAction => _currentAction;
+
+        /// <summary>
+        /// 回合记录外发通道（可为 null；设置后操作完成/回合决策完成时即时外发）
+        /// </summary>
+        public IRoundRecordSink? RoundRecordSink { get; set; } = null;
+
+        /// <summary>
+        /// 状态检查点生成间隔（回合数）；大于 0 时每 N 回合在回合记录上附带一次全角色状态快照，0 或负数表示不生成
+        /// </summary>
+        public int CheckpointInterval { get; set; } = 50;
+
+        /// <summary>
         /// 所有回合的记录
         /// </summary>
         public List<RoundRecord> Rounds { get; } = [];
@@ -306,6 +321,11 @@ namespace FunGame.Core.Model.Queue
         /// 使用的地图
         /// </summary>
         protected GameMap? _map = null;
+
+        /// <summary>
+        /// 当前正在执行的操作记录
+        /// </summary>
+        protected ActionRecord? _currentAction = null;
 
         #endregion
 
@@ -705,11 +725,23 @@ namespace FunGame.Core.Model.Queue
             {
                 // 进入下一回合
                 TotalRound++;
-                LastRound = new(TotalRound) { Actor = character };
-                Rounds.Add(LastRound);
+                // 将上一回合记录以结构快照的形式归档，防止后续写入（例如时间流逝中的复活结算）污染已归档的历史记录
+                if (TotalRound > 1) Rounds.Add(LastRound.Snapshot());
+                LastRound = new(TotalRound)
+                {
+                    Actor = character, // 每回合记录所有参与角色与队伍归属，供回放端任意回合自包含获取（团队模式 TeamMap 含队伍名，其他模式为空）
+                    AllCharacters = [.. _allCharacters.Union(_queue).Distinct()]
+                };
+                foreach (Character c in LastRound.AllCharacters)
+                {
+                    string? teamName = GetCharacterTeamName(c);
+                    if (teamName != null) LastRound.TeamMap[c.Guid] = teamName;
+                }
 
                 if (TotalRound == 1)
                 {
+                    // 开局状态检查点（装备/物品/技能/状态栏）
+                    LastRound.Checkpoint = CreateStateCheckpoint();
                     // 触发游戏开始事件
                     OnGameStartEvent();
                     Effect[] effects = [.. _queue.SelectMany(c => c.Effects).Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
@@ -1313,6 +1345,32 @@ namespace FunGame.Core.Model.Queue
                         effect.OnCharacterActionStart(character, dp, type);
                     }
 
+                    // 创建当前操作记录，每次行动对应一条操作记录
+                    if (type != CharacterActionType.None && type != CharacterActionType.EndTurn)
+                    {
+                        // 上一轮尝试若未成功执行（未标记失败且未决策，即被取消），移除其记录，避免空记录残留
+                        if (_currentAction != null && LastRound.Actions.Count > 0 && ReferenceEquals(LastRound.Actions[^1], _currentAction) && _currentAction.IsSuccess)
+                        {
+                            LastRound.Actions.RemoveAt(LastRound.Actions.Count - 1);
+                        }
+                        _currentAction = new(TotalRound)
+                        {
+                            Actor = character,
+                            ActionType = type,
+                            ActionIndex = LastRound.Actions.Count + 1
+                        };
+                        LastRound.Actions.Add(_currentAction);
+                    }
+                    else
+                    {
+                        // 若上一轮尝试被取消（未标记失败），移除其空记录，避免残留
+                        if (_currentAction != null && LastRound.Actions.Count > 0 && ReferenceEquals(LastRound.Actions[^1], _currentAction) && _currentAction.IsSuccess)
+                        {
+                            LastRound.Actions.RemoveAt(LastRound.Actions.Count - 1);
+                        }
+                        _currentAction = null;
+                    }
+
                     if (type == CharacterActionType.Move)
                     {
                         if (_map != null)
@@ -1360,13 +1418,17 @@ namespace FunGame.Core.Model.Queue
                         }
                         else if (dp.CurrentDecisionPoints < costDP)
                         {
-                            LastRound.OtherMessages.Add($"[ {character} ] 想要发起普通攻击，但决策点不足，无法使用普通攻击！");
-                            if (IsDebug) WriteLine($"[ {character} ] 想要发起普通攻击，但决策点不足，无法使用普通攻击！");
+                            string failMsg = $"[ {character} ] 想要发起普通攻击，但决策点不足，无法使用普通攻击！";
+                            LastRound.OtherMessages.Add(failMsg);
+                            RecordCurrentActionFailure(failMsg);
+                            if (IsDebug) WriteLine(failMsg);
                         }
                         else if (!dp.CheckActionTypeQuota(CharacterActionType.NormalAttack))
                         {
-                            LastRound.OtherMessages.Add($"[ {character} ] 想要发起普通攻击，但该回合使用普通攻击的次数已超过决策点配额，无法再次使用普通攻击！");
-                            if (IsDebug) WriteLine($"[ {character} ] 想要发起普通攻击，但该回合使用普通攻击的次数已超过决策点配额，无法再次使用普通攻击！");
+                            string failMsg = $"[ {character} ] 想要发起普通攻击，但该回合使用普通攻击的次数已超过决策点配额，无法再次使用普通攻击！";
+                            LastRound.OtherMessages.Add(failMsg);
+                            RecordCurrentActionFailure(failMsg);
+                            if (IsDebug) WriteLine(failMsg);
                         }
                         else
                         {
@@ -1391,6 +1453,12 @@ namespace FunGame.Core.Model.Queue
                             {
                                 LastRound.Targets[CharacterActionType.NormalAttack] = [.. targets];
                                 LastRound.ActionTypes.Add(CharacterActionType.NormalAttack);
+                                if (_currentAction != null)
+                                {
+                                    _currentAction.Targets.AddRange(targets);
+                                    _currentAction.DecisionPointsCost = costDP;
+                                    _currentAction.Cost = $"-{costDP:0.##} DP";
+                                }
                                 _stats[statsCharacter].UseDecisionPoints += costDP;
                                 _stats[statsCharacter].TurnDecisions++;
                                 dp.AddActionType(CharacterActionType.NormalAttack);
@@ -1458,8 +1526,10 @@ namespace FunGame.Core.Model.Queue
                                     int costDP = dp.GetActionPointCost(type, skill);
                                     if (dp.CurrentDecisionPoints < costDP)
                                     {
-                                        LastRound.OtherMessages.Add($"[ {character} ] 想要释放 [ {skill.Name} ]，但决策点不足，无法释放技能！");
-                                        if (IsDebug) WriteLine($"[ {character} ] 想要释放 [ {skill.Name} ]，但决策点不足，无法释放技能！");
+                                        string failMsg = $"[ {character} ] 想要释放 [ {skill.Name} ]，但决策点不足，无法释放技能！";
+                                        LastRound.OtherMessages.Add(failMsg);
+                                        RecordCurrentActionFailure(failMsg);
+                                        if (IsDebug) WriteLine(failMsg);
                                     }
                                     else if (CheckCanCast(character, skill, out double cost))
                                     {
@@ -1485,6 +1555,12 @@ namespace FunGame.Core.Model.Queue
                                             LastRound.Targets[CharacterActionType.PreCastSkill] = [.. targets];
                                             LastRound.ActionTypes.Add(CharacterActionType.PreCastSkill);
                                             LastRound.Effects[character] = skill;
+                                            if (_currentAction != null)
+                                            {
+                                                _currentAction.Skill = skill;
+                                                _currentAction.Targets.AddRange(targets);
+                                                _currentAction.DecisionPointsCost = costDP;
+                                            }
                                             _stats[statsCharacter].UseDecisionPoints += costDP;
                                             _stats[statsCharacter].TurnDecisions++;
                                             dp.AddActionType(CharacterActionType.PreCastSkill, skill);
@@ -1509,7 +1585,11 @@ namespace FunGame.Core.Model.Queue
                                         }
                                         else
                                         {
-                                            if (IsDebug) WriteLine($"[ {character} ] 想要吟唱 [ {skill.Name} ]，但是没有目标！");
+                                            string failMsg = $"[ {character} ] 想要吟唱 [ {skill.Name} ]，但是没有目标！";
+                                            LastRound.OtherMessages.Add(failMsg);
+                                            _currentAction?.Skill = skill;
+                                            RecordCurrentActionFailure(failMsg);
+                                            if (IsDebug) WriteLine(failMsg);
                                         }
                                     }
                                 }
@@ -1560,6 +1640,13 @@ namespace FunGame.Core.Model.Queue
                                             LastRound.Targets[skillType] = [.. targets];
                                             LastRound.ActionTypes.Add(skillType);
                                             LastRound.Effects[character] = skill;
+                                            if (_currentAction != null)
+                                            {
+                                                _currentAction.ActionType = skillType;
+                                                _currentAction.Skill = skill;
+                                                _currentAction.Targets.AddRange(targets);
+                                                _currentAction.DecisionPointsCost = costDP;
+                                            }
                                             if (skill is not CourageCommandSkill)
                                             {
                                                 _stats[statsCharacter].UseDecisionPoints += costDP;
@@ -1592,6 +1679,12 @@ namespace FunGame.Core.Model.Queue
                                             skill.CurrentCD = skill.RealCD;
                                             skill.Enable = false;
                                             LastRound.SkillsCost[skill] = $"{-cost:0.##} EP";
+                                            if (_currentAction != null)
+                                            {
+                                                _currentAction.Cost = $"{-cost:0.##} EP";
+                                                _currentAction.EPCost = cost;
+                                                _currentAction.SkillCD = skill.RealCD;
+                                            }
                                             WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
 
                                             OnCharacterCastSkillEvent(character, dp, skillTarget, cost);
@@ -1614,7 +1707,11 @@ namespace FunGame.Core.Model.Queue
                                         }
                                         else
                                         {
-                                            if (IsDebug) WriteLine($"[ {character} ] 想要释放 [ {skill.Name} ]，但是没有目标！");
+                                            string failMsg = $"[ {character} ] 想要释放 [ {skill.Name} ]，但是没有目标！";
+                                            LastRound.OtherMessages.Add(failMsg);
+                                            _currentAction?.Skill = skill;
+                                            RecordCurrentActionFailure(failMsg);
+                                            if (IsDebug) WriteLine(failMsg);
                                         }
                                     }
                                 }
@@ -1661,6 +1758,11 @@ namespace FunGame.Core.Model.Queue
                                 LastRound.Targets[CharacterActionType.CastSkill] = [.. targets];
                                 LastRound.Skills[CharacterActionType.CastSkill] = skill;
                                 LastRound.ActionTypes.Add(CharacterActionType.CastSkill);
+                                if (_currentAction != null)
+                                {
+                                    _currentAction.Skill = skill;
+                                    _currentAction.Targets.AddRange(targets);
+                                }
                                 _castingSkills.Remove(character);
 
                                 skill.BeforeSkillCasted(character, targets, grids);
@@ -1670,6 +1772,12 @@ namespace FunGame.Core.Model.Queue
                                 skill.CurrentCD = skill.RealCD;
                                 skill.Enable = false;
                                 LastRound.SkillsCost[skill] = $"{-cost:0.##} MP";
+                                if (_currentAction != null)
+                                {
+                                    _currentAction.Cost = $"{-cost:0.##} MP";
+                                    _currentAction.MPCost = cost;
+                                    _currentAction.SkillCD = skill.RealCD;
+                                }
                                 WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点魔法值，释放了魔法 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
 
                                 OnCharacterCastSkillEvent(character, dp, skillTarget, cost);
@@ -1694,7 +1802,20 @@ namespace FunGame.Core.Model.Queue
                             {
                                 if (!hasTarget)
                                 {
-                                    WriteLine($"[ {character} ] 想要释放 [ {skill.Name} ]，但是没有目标！");
+                                    string failMsg = $"[ {character} ] 想要释放 [ {skill.Name} ]，但是没有目标！";
+                                    LastRound.OtherMessages.Add(failMsg);
+                                    _currentAction?.Skill = skill;
+                                    RecordCurrentActionFailure(failMsg);
+                                    WriteLine(failMsg);
+                                }
+                                else
+                                {
+                                    // 有目标但无法释放（魔法值不足/技能冷却等），记录为明确失败
+                                    string failMsg = $"[ {character} ] 想要释放 [ {skill.Name} ]，但无法释放（魔法值不足或技能冷却中）！";
+                                    LastRound.OtherMessages.Add(failMsg);
+                                    _currentAction?.Skill = skill;
+                                    RecordCurrentActionFailure(failMsg);
+                                    WriteLine(failMsg);
                                 }
                                 WriteLine($"[ {character} ] 放弃释放技能！");
                                 character.CharacterState = CharacterState.Actionable;
@@ -1707,7 +1828,11 @@ namespace FunGame.Core.Model.Queue
                         }
                         else
                         {
-                            // 原吟唱的技能丢失（被打断或者被取消），允许角色再次决策
+                            // 原吟唱的技能丢失（被打断或者被取消），记录为明确失败并允许角色再次决策
+                            string failMsg = $"[ {character} ] 吟唱被打断，技能丢失！";
+                            LastRound.OtherMessages.Add(failMsg);
+                            RecordCurrentActionFailure(failMsg);
+                            if (IsDebug) WriteLine(failMsg);
                             character.CharacterState = CharacterState.Actionable;
                             character.UpdateCharacterState();
                         }
@@ -1725,6 +1850,7 @@ namespace FunGame.Core.Model.Queue
                         Skill skill = _castingSuperSkills[character];
                         LastRound.Skills[CharacterActionType.CastSuperSkill] = skill;
                         LastRound.Effects[character] = skill;
+                        _currentAction?.Skill = skill;
                         _castingSuperSkills.Remove(character);
 
                         // 判断是否能够释放技能
@@ -1736,6 +1862,7 @@ namespace FunGame.Core.Model.Queue
                             // 免疫检定
                             CheckSkilledImmune(character, targets, skill);
                             LastRound.Targets[CharacterActionType.CastSuperSkill] = [.. targets];
+                            _currentAction?.Targets.AddRange(targets);
 
                             skill.BeforeSkillCasted(character, targets, grids);
 
@@ -1744,6 +1871,12 @@ namespace FunGame.Core.Model.Queue
                             skill.CurrentCD = skill.RealCD;
                             skill.Enable = false;
                             LastRound.SkillsCost[skill] = $"{-cost:0.##} EP";
+                            if (_currentAction != null)
+                            {
+                                _currentAction.Cost = $"{-cost:0.##} EP";
+                                _currentAction.EPCost = cost;
+                                _currentAction.SkillCD = skill.RealCD;
+                            }
                             WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点能量值，释放了爆发技 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
 
                             SkillTarget skillTarget = new(skill, targets, grids);
@@ -1767,7 +1900,10 @@ namespace FunGame.Core.Model.Queue
                         }
                         else
                         {
-                            WriteLine($"[ {character} ] 因能量不足放弃释放爆发技！");
+                            string failMsg = $"[ {character} ] 因能量不足放弃释放爆发技！";
+                            LastRound.OtherMessages.Add(failMsg);
+                            RecordCurrentActionFailure(failMsg);
+                            WriteLine(failMsg);
                             character.CharacterState = CharacterState.Actionable;
                             character.UpdateCharacterState();
                             // 放弃释放技能会获得3的硬直时间
@@ -1822,13 +1958,17 @@ namespace FunGame.Core.Model.Queue
                             int costDP = dp.GetActionPointCost(type);
                             if (dp.CurrentDecisionPoints < costDP)
                             {
-                                LastRound.OtherMessages.Add($"[ {character} ] 想要使用物品 [ {item.Name} ]，但决策点不足，无法使用物品！");
-                                if (IsDebug) WriteLine($"[ {character} ] 想要使用物品 [ {item.Name} ]，但决策点不足，无法使用物品！");
+                                string failMsg = $"[ {character} ] 想要使用物品 [ {item.Name} ]，但决策点不足，无法使用物品！";
+                                LastRound.OtherMessages.Add(failMsg);
+                                RecordCurrentActionFailure(failMsg);
+                                if (IsDebug) WriteLine(failMsg);
                             }
                             else if (!dp.CheckActionTypeQuota(CharacterActionType.UseItem))
                             {
-                                LastRound.OtherMessages.Add($"[ {character} ] 想要使用物品 [ {item.Name} ]，但该回合使用物品的次数已超过决策点配额，无法再使用物品！");
-                                if (IsDebug) WriteLine($"[ {character} ] 想要使用物品 [ {item.Name} ]，但该回合使用物品的次数已超过决策点配额，无法再使用物品！");
+                                string failMsg = $"[ {character} ] 想要使用物品 [ {item.Name} ]，但该回合使用物品的次数已超过决策点配额，无法再使用物品！";
+                                LastRound.OtherMessages.Add(failMsg);
+                                RecordCurrentActionFailure(failMsg);
+                                if (IsDebug) WriteLine(failMsg);
                             }
                             else if (UseItem(item, character, dp, enemys, teammates, castRange, allEnemys, allTeammates, aiDecision))
                             {
@@ -1838,6 +1978,11 @@ namespace FunGame.Core.Model.Queue
                                 dp.CurrentDecisionPoints -= costDP;
                                 LastRound.ActionTypes.Add(CharacterActionType.UseItem);
                                 LastRound.Items[CharacterActionType.UseItem] = item;
+                                if (_currentAction != null)
+                                {
+                                    _currentAction.Item = item;
+                                    _currentAction.DecisionPointsCost = costDP;
+                                }
                                 decided = true;
                                 baseTime += skill.RealHardnessTime > 0 ? skill.RealHardnessTime : 5;
                                 effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
@@ -1845,6 +1990,15 @@ namespace FunGame.Core.Model.Queue
                                 {
                                     effect.AlterHardnessTimeAfterCastSkill(character, skill, ref baseTime, ref isCheckProtected);
                                 }
+                            }
+                            else
+                            {
+                                // 物品使用失败（没有目标等），记录为明确失败
+                                string failMsg = $"[ {character} ] 想要使用物品 [ {item.Name} ]，但使用失败！";
+                                LastRound.OtherMessages.Add(failMsg);
+                                _currentAction?.Item = item;
+                                RecordCurrentActionFailure(failMsg);
+                                if (IsDebug) WriteLine(failMsg);
                             }
                         }
                     }
@@ -1873,6 +2027,15 @@ namespace FunGame.Core.Model.Queue
 
                 if (!decided && (isAI || cancelTimes == 0))
                 {
+                    // 行动被取消（AI 决策次数耗尽等），取消的操作不予记录、不予外发
+                    if (_currentAction != null)
+                    {
+                        if (LastRound.Actions.Count > 0 && ReferenceEquals(LastRound.Actions[^1], _currentAction) && _currentAction.IsSuccess)
+                        {
+                            LastRound.Actions.RemoveAt(LastRound.Actions.Count - 1);
+                        }
+                        _currentAction = null;
+                    }
                     endTurn = true;
                     baseTime += 3;
                     type = CharacterActionType.EndTurn;
@@ -1899,6 +2062,14 @@ namespace FunGame.Core.Model.Queue
                 {
                     endTurn = true;
                 }
+
+                // 操作结算完成，即时外发单次操作记录
+                if (_currentAction != null)
+                {
+                    RoundRecordSink?.SendAction(_currentAction.Snapshot());
+                    // 操作已成功结算，清空当前操作，避免与下一轮行动混淆
+                    _currentAction = null;
+                }
             }
 
             if (character.CharacterState != CharacterState.Casting && dp.ActionsHardnessTime.Count > 0)
@@ -1909,6 +2080,21 @@ namespace FunGame.Core.Model.Queue
             if (character.Master is null)
             {
                 _stats[character].ActionTurn += 1;
+            }
+
+            // 提前结算硬直时间，使决策完成事件快照包含本回合的硬直/吟唱数据
+            double newHardnessTime = baseTime;
+            if (character.CharacterState != CharacterState.Casting)
+            {
+                newHardnessTime = Calculation.Round2Digits(baseTime);
+                LastRound.HardnessTime = newHardnessTime;
+                _currentAction?.HardnessTime = newHardnessTime;
+            }
+            else
+            {
+                newHardnessTime = Calculation.Round2Digits(baseTime);
+                LastRound.CastTime = newHardnessTime;
+                _currentAction?.CastTime = newHardnessTime;
             }
 
             AfterCharacterDecision(character, dp);
@@ -1922,6 +2108,15 @@ namespace FunGame.Core.Model.Queue
             // 统一在回合结束时处理角色的死亡
             ProcessCharacterDeath();
 
+            // 记录回合结束时间，状态推算的时间轴基准
+            LastRound.TotalTime = TotalTime;
+
+            // 周期性生成状态检查点：死亡结算后，状态为最新；gameEnd 也会生成
+            if (CheckpointInterval > 0 && TotalRound % CheckpointInterval == 0)
+            {
+                LastRound.Checkpoint = CreateStateCheckpoint();
+            }
+
             // 移除回合奖励
             RemoveRoundRewards(character, rewards);
 
@@ -1932,26 +2127,39 @@ namespace FunGame.Core.Model.Queue
 
                 AfterTurn(character);
 
+                // 游戏结束时强制生成状态检查点（若该回合未按周期生成，用于输出最终角色状态）
+                if (LastRound.Checkpoint == null)
+                {
+                    LastRound.Checkpoint = CreateStateCheckpoint();
+                }
+
+                // 游戏结束时加入所有角色的最终统计数据
+                LastRound.CharacterStatistics = new(_stats);
+
+                // 游戏结束回合归档（无下一回合，NextCharacter 不会归档本回合记录）
+                Rounds.Add(LastRound.Snapshot());
+
                 _isInRound = false;
+                _currentAction = null;
+                // 游戏结束时也外发最终回合记录，含死亡结算数据
+                RoundRecordSink?.SendRound(LastRound.Snapshot());
                 return _isGameEnd;
             }
 
             // 减少硬直时间
-            double newHardnessTime = baseTime;
             if (character.CharacterState != CharacterState.Casting)
             {
-                newHardnessTime = Calculation.Round2Digits(baseTime);
                 WriteLine($"[ {character} ] 回合结束，获得硬直时间：{newHardnessTime} {GameplayEquilibriumConstant.InGameTime}");
             }
             else
             {
-                newHardnessTime = Calculation.Round2Digits(baseTime);
                 WriteLine($"[ {character} ] 进行吟唱，持续时间：{newHardnessTime} {GameplayEquilibriumConstant.InGameTime}");
-                LastRound.CastTime = newHardnessTime;
             }
             AddCharacter(character, newHardnessTime, isCheckProtected);
-            LastRound.HardnessTime = newHardnessTime;
             OnQueueUpdatedEvent(_queue, character, dp, newHardnessTime, QueueUpdatedReason.Action, "设置角色行动后的硬直时间。");
+
+            // 回合结算完成（含死亡/连杀/复活/硬直），即时外发回合记录
+            RoundRecordSink?.SendRound(LastRound.Snapshot());
 
             effects = [.. character.Effects.OrderByDescending(e => e.Priority)];
             foreach (Effect effect in effects)
@@ -1992,6 +2200,7 @@ namespace FunGame.Core.Model.Queue
 
             WriteLine("");
             _isInRound = false;
+            _currentAction = null;
 
             // 有人想要插队吗？
             WillPreCastSuperSkill();
@@ -2016,6 +2225,105 @@ namespace FunGame.Core.Model.Queue
                 }
             }
             _roundDeaths.Clear();
+        }
+
+        /// <summary>
+        /// 将当前操作标记为失败并记录失败原因
+        /// </summary>
+        /// <param name="failMsg">失败原因文本</param>
+        private void RecordCurrentActionFailure(string failMsg)
+        {
+            if (_currentAction != null)
+            {
+                _currentAction.IsSuccess = false;
+                _currentAction.FailReason = failMsg;
+                _currentAction.Messages.Add(failMsg);
+            }
+        }
+
+        /// <summary>
+        /// 获取角色所属队伍名（团队模式返回队伍名，其他模式返回 null；用于回合记录的角色队伍归属标记）
+        /// </summary>
+        /// <param name="character">角色</param>
+        /// <returns>队伍名或 null</returns>
+        protected virtual string? GetCharacterTeamName(Character character) => null;
+
+        /// <summary>
+        /// 生成全角色状态检查点（每个角色一条状态快照，含 HP/MP/EP、装备栏、技能状态、状态栏特效）
+        /// </summary>
+        /// <returns></returns>
+        protected List<CharacterStateSnapshot> CreateStateCheckpoint()
+        {
+            List<CharacterStateSnapshot> snapshots = [];
+            List<Character> characters = [.. _allCharacters.Union(_queue).Distinct()];
+            foreach (Character character in characters)
+            {
+                CharacterStateSnapshot state = new()
+                {
+                    Character = character,
+                    HP = character.HP,
+                    MaxHP = character.MaxHP,
+                    MP = character.MP,
+                    MaxMP = character.MaxMP,
+                    EP = character.EP,
+                    HR = character.HR,
+                    MR = character.MR
+                };
+
+                // 装备栏（物品 ID + 名字明细）
+                EquipSlot slot = character.EquipSlot;
+                if (slot.Weapon != null)
+                {
+                    state.Equipments[EquipSlotType.Weapon] = slot.Weapon.Id;
+                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.Weapon, ItemId = slot.Weapon.Id, ItemName = slot.Weapon.Name });
+                }
+                if (slot.Armor != null)
+                {
+                    state.Equipments[EquipSlotType.Armor] = slot.Armor.Id;
+                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.Armor, ItemId = slot.Armor.Id, ItemName = slot.Armor.Name });
+                }
+                if (slot.Shoes != null)
+                {
+                    state.Equipments[EquipSlotType.Shoes] = slot.Shoes.Id;
+                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.Shoes, ItemId = slot.Shoes.Id, ItemName = slot.Shoes.Name });
+                }
+                if (slot.Accessory1 != null)
+                {
+                    state.Equipments[EquipSlotType.Accessory1] = slot.Accessory1.Id;
+                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.Accessory1, ItemId = slot.Accessory1.Id, ItemName = slot.Accessory1.Name });
+                }
+                if (slot.Accessory2 != null)
+                {
+                    state.Equipments[EquipSlotType.Accessory2] = slot.Accessory2.Id;
+                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.Accessory2, ItemId = slot.Accessory2.Id, ItemName = slot.Accessory2.Name });
+                }
+                if (slot.MagicCardPack != null)
+                {
+                    state.Equipments[EquipSlotType.MagicCardPack] = slot.MagicCardPack.Id;
+                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.MagicCardPack, ItemId = slot.MagicCardPack.Id, ItemName = slot.MagicCardPack.Name });
+                }
+
+                // 技能状态
+                foreach (Skill skill in character.Skills)
+                {
+                    state.Skills.Add(new SkillStateSnapshot { SkillId = skill.Id, SkillName = skill.Name, Level = skill.Level, CurrentCD = skill.CurrentCD });
+                }
+
+                // 物品栏（背包）
+                foreach (Item item in character.Items)
+                {
+                    state.Items.Add(new ItemStateSnapshot { ItemId = item.Id, ItemName = item.Name });
+                }
+
+                // 状态栏特效
+                foreach (Effect effect in character.Effects.Where(e => e.ShowInStatusBar && e.IsInEffect))
+                {
+                    state.Effects.Add(new EffectStateSnapshot { EffectId = effect.Id, EffectName = effect.Name, EffectType = effect.EffectType, RemainDuration = effect.RemainDuration, RemainDurationTurn = effect.RemainDurationTurn });
+                }
+
+                snapshots.Add(state);
+            }
+            return snapshots;
         }
 
         /// <summary>
@@ -2146,6 +2454,10 @@ namespace FunGame.Core.Model.Queue
                 // 暴击了修改目标对应的值为 true
                 LastRound.IsCritical[enemy] = true;
             }
+            if (_currentAction != null && !_currentAction.IsCritical.TryAdd(enemy, damageResult == DamageResult.Critical) && damageResult == DamageResult.Critical)
+            {
+                _currentAction.IsCritical[enemy] = true;
+            }
 
             List<Character> characters = [actor, enemy];
             bool isEvaded = damageResult == DamageResult.Evaded;
@@ -2242,6 +2554,7 @@ namespace FunGame.Core.Model.Queue
                         // 免疫
                         damageResult = DamageResult.Immune;
                         LastRound.IsImmune[enemy] = true;
+                        _currentAction?.IsImmune[enemy] = true;
                         WriteLine($"[ {enemy} ] 免疫了此伤害！");
                         actualDamage = 0;
                     }
@@ -2523,6 +2836,7 @@ namespace FunGame.Core.Model.Queue
             else
             {
                 LastRound.IsEvaded[enemy] = true;
+                _currentAction?.IsEvaded[enemy] = true;
                 actualDamage = 0;
             }
 
@@ -2678,21 +2992,23 @@ namespace FunGame.Core.Model.Queue
                 money += (coefficient + 1) * 60;
                 string termination = CharacterSet.GetContinuousKilling(coefficient);
                 string msg = $"[ {killer} ] 终结了 [ {death} ]{(termination != "" ? " 的" + termination : "")}，获得 {money} {GameplayEquilibriumConstant.InGameCurrency}！";
-                LastRound.DeathContinuousKilling.Add(msg);
                 if (assists.Length > 1)
                 {
                     msg += "助攻：[ " + string.Join(" ] / [ ", assists.Where(c => c != killer)) + " ]";
                 }
+                LastRound.DeathContinuousKilling.Add(msg);
+                _currentAction?.Messages.Add(msg);
                 WriteLine(msg);
             }
             else
             {
                 string msg = $"[ {killer} ] 杀死了 [ {death} ]，获得 {money} {GameplayEquilibriumConstant.InGameCurrency}！";
-                LastRound.DeathContinuousKilling.Add(msg);
                 if (assists.Length > 1)
                 {
                     msg += "助攻：[ " + string.Join(" ] / [ ", assists.Where(c => c != killer)) + " ]";
                 }
+                LastRound.DeathContinuousKilling.Add(msg);
+                _currentAction?.Messages.Add(msg);
                 WriteLine(msg);
             }
             dr.Assists = assists;
@@ -2706,6 +3022,7 @@ namespace FunGame.Core.Model.Queue
                 string firstKill = $"[ {killer} ] 拿下了第一滴血！额外奖励 200 {GameplayEquilibriumConstant.InGameCurrency}！！";
                 WriteLine(firstKill);
                 LastRound.ActorContinuousKilling.Add(firstKill);
+                _currentAction?.Messages.Add(firstKill);
             }
 
             if (!_earnedMoney.TryAdd(killer, money)) _earnedMoney[killer] += money;
@@ -2733,6 +3050,7 @@ namespace FunGame.Core.Model.Queue
             if (actorContinuousKilling != "")
             {
                 LastRound.ActorContinuousKilling.Add(actorContinuousKilling);
+                _currentAction?.Messages.Add(actorContinuousKilling);
                 WriteLine(actorContinuousKilling);
             }
 
@@ -2765,6 +3083,7 @@ namespace FunGame.Core.Model.Queue
                     _continuousKilling[killer] -= 1;
                 }
                 LastRound.DeathContinuousKilling.Add(msg);
+                _currentAction?.Messages.Add(msg);
                 WriteLine(msg);
             }
 
@@ -2856,6 +3175,10 @@ namespace FunGame.Core.Model.Queue
                 if (!LastRound.Heals.TryAdd(target, heal))
                 {
                     LastRound.Heals[target] += heal;
+                }
+                if (_currentAction != null && !_currentAction.Heals.TryAdd(target, heal))
+                {
+                    _currentAction.Heals[target] += heal;
                 }
             }
 
@@ -3106,6 +3429,11 @@ namespace FunGame.Core.Model.Queue
                     if (targets.Count > 0 && CheckCanCast(character, skill, out double cost))
                     {
                         LastRound.Targets[CharacterActionType.UseItem] = [.. targets];
+                        if (_currentAction != null)
+                        {
+                            _currentAction.Skill = skill;
+                            _currentAction.Targets.AddRange(targets);
+                        }
 
                         WriteLine($"[ {character} ] 使用了物品 [ {item.Name} ]！");
                         item.ReduceTimesAndRemove();
@@ -3133,6 +3461,11 @@ namespace FunGame.Core.Model.Queue
                         {
                             character.MP -= costMP;
                             LastRound.ItemsCost[item] = $"{-costMP:0.##} MP";
+                            if (_currentAction != null)
+                            {
+                                _currentAction.Cost = $"{-costMP:0.##} MP";
+                                _currentAction.MPCost = costMP;
+                            }
                             line += $"消耗了 {costMP:0.##} 点魔法值，";
                         }
 
@@ -3141,6 +3474,11 @@ namespace FunGame.Core.Model.Queue
                             character.EP -= costEP;
                             if (LastRound.ItemsCost[item] != "") LastRound.ItemsCost[item] += " / ";
                             LastRound.ItemsCost[item] += $"{-costEP:0.##} EP";
+                            if (_currentAction != null)
+                            {
+                                _currentAction.Cost += (_currentAction.Cost != "" ? " / " : "") + $"{-costEP:0.##} EP";
+                                _currentAction.EPCost = costEP;
+                            }
                             line += $"消耗了 {costEP:0.##} 点能量，";
                         }
 
@@ -4528,6 +4866,17 @@ namespace FunGame.Core.Model.Queue
             else
             {
                 LastRound.Damages[characterTaken] = damage;
+            }
+            if (_currentAction != null)
+            {
+                if (_currentAction.Damages.TryGetValue(characterTaken, out double actionDamage))
+                {
+                    _currentAction.Damages[characterTaken] = actionDamage + damage;
+                }
+                else
+                {
+                    _currentAction.Damages[characterTaken] = damage;
+                }
             }
         }
 

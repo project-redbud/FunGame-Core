@@ -1,5 +1,6 @@
 ﻿using FunGame.Core.Entity;
 using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.Framework;
 
 namespace FunGame.Core.Model.Queue
 {
@@ -92,14 +93,31 @@ namespace FunGame.Core.Model.Queue
             int top = 1;
             WriteLine("");
             WriteLine("=== 排名 ===");
+            LastRound.GameResult.Clear();
             for (int i = _eliminated.Count - 1; i >= 0; i--)
             {
                 Character ec = _eliminated[i];
                 CharacterStatistics statistics = CharacterStatistics[ec];
+                _earnedMoney.TryGetValue(ec, out int earned);
+                _maxContinuousKilling.TryGetValue(ec, out int kills);
+                // 结构化排名条目（引用 + 统计，按名次顺序；消费端可定制渲染）
+                LastRound.GameResult.Add(new RankingEntry
+                {
+                    Rank = top,
+                    IsWinner = ec == winner,
+                    IsTeam = false,
+                    Character = ec,
+                    Kills = statistics.Kills,
+                    Deaths = statistics.Deaths,
+                    Assists = statistics.Assists,
+                    FirstKills = statistics.FirstKills,
+                    TotalEarnedMoney = earned,
+                    MaxContinuousKilling = kills
+                });
                 string topCharacter = ec.ToString() +
                     (statistics.FirstKills > 0 ? " [ 第一滴血 ]" : "") +
-                    (_maxContinuousKilling.TryGetValue(ec, out int kills) && kills > 1 ? $" [ {CharacterSet.GetContinuousKilling(kills)} ]" : "") +
-                    (_earnedMoney.TryGetValue(ec, out int earned) ? $" [ 已赚取 {earned} {GameplayEquilibriumConstant.InGameCurrency} ]" : "");
+                    (kills > 1 ? $" [ {CharacterSet.GetContinuousKilling(kills)} ]" : "") +
+                    (earned > 0 ? $" [ 已赚取 {earned} {GameplayEquilibriumConstant.InGameCurrency} ]" : "");
                 if (top == 1)
                 {
                     WriteLine("冠军：" + topCharacter);

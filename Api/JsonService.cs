@@ -22,7 +22,7 @@ namespace FunGame.Core.Api
                 new CharacterConverter(), new MagicResistanceConverter(), new EquipSlotConverter(), new SkillConverter(), new EffectConverter(), new ItemConverter(),
                 new InventoryConverter(), new NormalAttackConverter(), new ClubConverter(), new GoodsConverter(), new StoreConverter(),
                 new NovelOptionConverter(), new NovelNodeConverter(), new NovelCharacterNodeConverter(), new ShieldConverter(), new RoundRecordConverter(), new ActivityConverter(),
-                new QuestConverter(), new MarketConverter(), new MarketItemConverter()
+                new QuestConverter(), new MarketConverter(), new MarketItemConverter(), new ActionRecordConverter(), new CharacterStateSnapshotConverter(), new RankingEntryConverter()
             }
         };
 

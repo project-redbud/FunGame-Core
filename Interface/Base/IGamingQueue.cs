@@ -40,6 +40,11 @@ namespace FunGame.Core.Interface.Base
         public RoundRecord LastRound { get; set; }
 
         /// <summary>
+        /// 当前正在执行的操作记录
+        /// </summary>
+        public ActionRecord? CurrentAction { get; }
+
+        /// <summary>
         /// 所有回合的记录
         /// </summary>
         public List<RoundRecord> Rounds { get; }
