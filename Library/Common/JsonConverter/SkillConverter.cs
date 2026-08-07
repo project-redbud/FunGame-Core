@@ -26,6 +26,9 @@ namespace FunGame.Core.Library.Common.JsonConverter
                 case nameof(Skill.Guid):
                     result.Guid = reader.GetGuid();
                     break;
+                case nameof(Skill.AssociatedItemGuid):
+                    result.AssociatedItemGuid = reader.GetGuid();
+                    break;
                 case nameof(Skill.Description):
                     result.Description = reader.GetString() ?? "";
                     break;
@@ -143,6 +146,11 @@ namespace FunGame.Core.Library.Common.JsonConverter
             {
                 writer.WritePropertyName(nameof(Skill.Guid));
                 JsonSerializer.Serialize(writer, value.Guid, options);
+            }
+            if (value.AssociatedItemGuid != Guid.Empty)
+            {
+                writer.WritePropertyName(nameof(Skill.AssociatedItemGuid));
+                JsonSerializer.Serialize(writer, value.AssociatedItemGuid, options);
             }
             writer.WriteNumber(nameof(Skill.SkillType), (int)value.SkillType);
             writer.WriteString(nameof(Skill.Description), value.Description);
