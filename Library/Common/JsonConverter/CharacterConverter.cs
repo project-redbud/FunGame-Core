@@ -334,7 +334,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
             writer.WritePropertyName(nameof(Character.NormalAttack));
             JsonSerializer.Serialize(writer, value.NormalAttack, options);
             writer.WritePropertyName(nameof(Character.Skills));
-            JsonSerializer.Serialize(writer, value.Skills.Where(s => s.Guid == Guid.Empty), options);
+            JsonSerializer.Serialize(writer, value.Skills.Where(s => s.AssociatedItemGuid == Guid.Empty), options);
             writer.WritePropertyName(nameof(Character.Items));
             JsonSerializer.Serialize(writer, value.Items, options);
             writer.WriteEndObject();

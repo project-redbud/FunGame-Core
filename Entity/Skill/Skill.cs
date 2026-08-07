@@ -13,10 +13,14 @@ namespace FunGame.Core.Entity
     public class Skill : BaseEntity, ISkill, IActiveEnable
     {
         /// <summary>
-        /// 唯一标识符 [ 只有物品技能需要赋值，用于表示与其关联的物品：<see cref="Item.Guid"/> ]
-        /// <para>其他情况请保持此属性为 <see cref="Guid.Empty"/></para>
+        /// 唯一标识符
         /// </summary>
-        public override Guid Guid { get; set; } = Guid.Empty;
+        public override Guid Guid { get; set; } = Guid.NewGuid();
+        
+        /// <summary>
+        /// 关联的物品 Guid [ 用于表示与其关联的物品：<see cref="Item.Guid"/>，以便反序列化时找回 ]
+        /// </summary>
+        public Guid AssociatedItemGuid { get; set; } = Guid.Empty;
 
         /// <summary>
         /// 此技能所属的角色
@@ -1002,7 +1006,7 @@ namespace FunGame.Core.Entity
         /// <returns></returns>
         public override bool Equals(IBaseEntity? other)
         {
-            return other is Skill c && c.Id + "." + c.Name == Id + "." + Name;
+            return other is Skill s && s.GetIdName() == GetIdName();
         }
 
         /// <summary>

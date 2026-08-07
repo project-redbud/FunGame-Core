@@ -129,8 +129,8 @@ namespace FunGame.Core.Entity
             };
             foreach (Skill skill in skills)
             {
-                // 主动技能的Guid表示与其关联的物品
-                if (skill.Guid == Guid.Empty)
+                // 主动技能需寻找与其关联的物品
+                if (skill.AssociatedItemGuid == Guid.Empty)
                 {
                     Skill newskill = skill.Copy(true, skillsDefined);
                     newskill.Character = character;

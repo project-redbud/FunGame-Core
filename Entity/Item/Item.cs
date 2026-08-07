@@ -645,7 +645,7 @@ namespace FunGame.Core.Entity
         /// <returns></returns>
         public override bool Equals(IBaseEntity? other)
         {
-            return other is Item c && c.Id + "." + c.Name == Id + "." + Name;
+            return other is Item i && i.GetIdName() == GetIdName();
         }
 
         /// <summary>
@@ -718,14 +718,14 @@ namespace FunGame.Core.Entity
                 if (item.Skills.Active != null)
                 {
                     item.Skills.Active.Level = copyLevel ? (itemDefined.Skills.Active?.Level ?? 1) : 1;
-                    item.Skills.Active.Guid = item.Guid;
+                    item.Skills.Active.AssociatedItemGuid = item.Guid;
                 }
                 foreach (Skill skill in itemDefined.Skills.Passives)
                 {
                     Skill newskill = skill.Copy(true, skillsDefined);
                     newskill.Item = item;
                     newskill.Level = copyLevel ? skill.Level : 1;
-                    newskill.Guid = item.Guid;
+                    newskill.AssociatedItemGuid = item.Guid;
                     item.Skills.Passives.Add(newskill);
                 }
                 foreach (Skill skill in itemDefined.Skills.Magics)
@@ -733,7 +733,7 @@ namespace FunGame.Core.Entity
                     Skill newskill = skill.Copy(true, skillsDefined);
                     newskill.Item = item;
                     newskill.Level = copyLevel ? skill.Level : 1;
-                    newskill.Guid = item.Guid;
+                    newskill.AssociatedItemGuid = item.Guid;
                     item.Skills.Magics.Add(newskill);
                 }
             }

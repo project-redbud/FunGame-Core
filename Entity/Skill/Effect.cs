@@ -1475,7 +1475,7 @@ namespace FunGame.Core.Entity
         /// <returns></returns>
         public override bool Equals(IBaseEntity? other)
         {
-            return other is Effect c && c.Id + "." + Name == Id + "." + Name;
+            return other is Effect e && e.GetIdName() == GetIdName();
         }
 
         /// <summary>
