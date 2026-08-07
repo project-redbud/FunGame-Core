@@ -6,14 +6,15 @@ namespace FunGame.Core.Api
     /// <summary>
     /// 简易的实体模组配置文件生成器，适用范围：动态扩展技能和物品、保存玩家的存档<para/>
     /// 仅支持继承了 <see cref="BaseEntity"/> 的实体类型，每个 <see cref="EntityModuleConfig{T}"/> 仅保存一种实体类型的数据
-    /// <para/>文件会保存为：程序目录/configs/<see cref="ModuleName"/>/<see cref="FileName"/>.json
+    /// <para/>文件会保存为：程序目录/<see cref="ModuleDirectory"/>/<see cref="ModuleName"/>/<see cref="FileName"/>.json
     /// </summary>
     /// <remarks>
-    /// 新建一个配置文件，文件会保存为：程序目录/configs/<paramref name="module_name"/>/<paramref name="file_name"/>.json
+    /// 新建一个配置文件，文件会保存为：程序目录/<paramref name="module_directory"/>/<paramref name="module_name"/>/<paramref name="file_name"/>.json
     /// </remarks>
     /// <param name="module_name"></param>
     /// <param name="file_name"></param>
-    public class EntityModuleConfig<T>(string module_name, string file_name) : Dictionary<string, T> where T : BaseEntity
+    /// <param name="module_directory">默认为 modules</param>
+    public class EntityModuleConfig<T>(string module_name, string file_name, string module_directory = "modules") : Dictionary<string, T> where T : BaseEntity
     {
         /// <summary>
         /// 模组的名称
@@ -24,6 +25,11 @@ namespace FunGame.Core.Api
         /// 配置文件的名称（后缀将是.json）
         /// </summary>
         public string FileName { get; set; } = file_name;
+
+        /// <summary>
+        /// 模组的目录，默认为 modules
+        /// </summary>
+        public string ModuleDirectory { get; set; } = module_directory;
 
         /// <summary>
         /// 使用索引器给指定key赋值，不存在key会新增
@@ -72,7 +78,7 @@ namespace FunGame.Core.Api
         /// </summary>
         public void LoadConfig()
         {
-            string dpath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/{ModuleName}";
+            string dpath = $@"{AppDomain.CurrentDomain.BaseDirectory}{ModuleDirectory}/{ModuleName}";
             string fpath = $@"{dpath}/{FileName}.json";
             if (Directory.Exists(dpath) && File.Exists(fpath))
             {
@@ -93,7 +99,7 @@ namespace FunGame.Core.Api
         public void SaveConfig()
         {
             string json = NetworkUtility.JsonSerialize((Dictionary<string, T>)this);
-            string dpath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/{ModuleName}";
+            string dpath = $@"{AppDomain.CurrentDomain.BaseDirectory}{ModuleDirectory}/{ModuleName}";
             string fpath = $@"{dpath}/{FileName}.json";
             if (!Directory.Exists(dpath))
             {
