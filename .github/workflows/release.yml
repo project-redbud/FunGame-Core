@@ -1,0 +1,78 @@
+# NuGet Trusted Publishing 发布工作流
+# 参考：https://www.nuget.org/publish/trusted-publishing
+
+name: Publish to NuGet
+
+on:
+  # 推送 tag 触发发布：vx.y.z 或 x.y.z
+  # 开发/预发布 tag 不会触发发布
+  push:
+    tags:
+      - 'v*'
+      - '[0-9]*'
+  # 手动触发：须在输入框中指定版本号
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'NuGet 包版本号，如 3.0.0 或 3.0.0-rc.1，必填'
+        required: true
+
+jobs:
+  publish:
+    name: Pack & Publish to NuGet
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Trusted Publishing（OIDC）必需，用于向 NuGet 证明本次运行来自本项目
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Resolve package version
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            # tag 触发正式版本发布
+            VERSION="${GITHUB_REF_NAME#v}"
+            if [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+            else
+              # 开发/预发布 tag 静默跳过，不产生失败记录
+              echo "tag $GITHUB_REF_NAME 不是正式版本，本次跳过发布。"
+              echo "skipped=true" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            # 手动触发：必须填写版本号，任意版本皆可
+            VERSION="${{ inputs.version }}"
+            if [ -z "$VERSION" ]; then
+              echo "手动触发时请填写 version 输入。" >&2
+              exit 1
+            fi
+            if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+              echo "无效的版本号：$VERSION" >&2
+              exit 1
+            fi
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Pack
+        if: steps.version.outputs.skipped != 'true'
+        run: dotnet pack FunGame.Core.csproj --no-restore --no-build --configuration Release -o ./nupkg -p:PackageVersion=${{ steps.version.outputs.version }}
+
+      - name: Push to NuGet (Trusted Publishing)
+        if: steps.version.outputs.skipped != 'true'
+        # --api-key 为占位符：Trusted Publishing 模式下 NuGet 通过 OIDC 完成认证，忽略该值
+        # --skip-duplicate：同版本已存在时跳过而非失败，便于重试
+        run: dotnet nuget push ./nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --api-key az --skip-duplicate
