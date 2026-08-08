@@ -134,6 +134,15 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
+        /// 回合结束后外发团队数据
+        /// </summary>
+        protected override void AfterSendRoundEndData()
+        {
+            RoundRecordSink?.SendTeams([.. _teams.Values]);
+            RoundRecordSink?.SendEliminatedTeams([.. _eliminatedTeams.Select(t => t.Name)]);
+        }
+
+        /// <summary>
         /// 死亡结算时
         /// </summary>
         /// <param name="death"></param>
@@ -341,6 +350,8 @@ namespace FunGame.Core.Model.Queue
             }
             WriteLine("");
             _isGameEnd = true;
+            // 游戏结束，通知外发通道停止签名验证重试等
+            RoundRecordSink?.End();
         }
 
         /// <summary>

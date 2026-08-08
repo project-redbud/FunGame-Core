@@ -147,6 +147,8 @@ namespace FunGame.Core.Model.Queue
                 top++;
             }
             WriteLine("");
+            // 游戏结束，通知外发通道停止签名验证重试等
+            RoundRecordSink?.End();
         }
 
         /// <summary>
