@@ -986,6 +986,7 @@ namespace FunGame.Core.Model.Framework
                         if (effect.RemainDuration < timeToReduce)
                         {
                             // 移除特效前也完成剩余时间内的效果
+                            effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnTimeElapsed));
                             effect.OnTimeElapsed(grid, effect.RemainDuration);
                             effect.RemainDuration = 0;
                             grid.Effects.Remove(effect);
@@ -993,11 +994,13 @@ namespace FunGame.Core.Model.Framework
                         else
                         {
                             effect.RemainDuration -= timeToReduce;
+                            effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnTimeElapsed));
                             effect.OnTimeElapsed(grid, timeToReduce);
                         }
                     }
                     else
                     {
+                        effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnTimeElapsed));
                         effect.OnTimeElapsed(grid, timeToReduce);
                     }
                 }

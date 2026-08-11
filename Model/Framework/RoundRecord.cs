@@ -25,6 +25,10 @@ namespace FunGame.Core.Model.Framework
         public Dictionary<Character, bool> IsEvaded { get; set; } = [];
         public Dictionary<Character, bool> IsImmune { get; set; } = [];
         public Dictionary<Character, double> Heals { get; set; } = [];
+        /// <summary>
+        /// 角色 -> 技能。施放技能时由队列写入 [施法者 -> 技能]；
+        /// 特效钩子被触发时由框架自动写入（仅当开发者重写了对应钩子方法），key 优先取技能持有者（施法者），其次取特效作用对象。
+        /// </summary>
         public Dictionary<Character, Skill> Effects { get; set; } = [];
         public Dictionary<Character, List<EffectType>> ApplyEffects { get; set; } = [];
         public List<string> ActorContinuousKilling { get; set; } = [];
