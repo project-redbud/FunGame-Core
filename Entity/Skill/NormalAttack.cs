@@ -10,6 +10,11 @@ namespace FunGame.Core.Entity
     public class NormalAttack(Character character, bool isMagic = false, MagicType magicType = MagicType.None) : BaseEntity, ISkill
     {
         /// <summary>
+        /// 普通攻击实例的唯一标识
+        /// </summary>
+        public override Guid Guid { get; set; } = Guid.NewGuid();
+
+        /// <summary>
         /// 普通攻击名称
         /// </summary>
         public override string Name => "普通攻击";
@@ -450,13 +455,30 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 比较两个普攻对象
+        /// 比较两个普攻对象 检查Guid（实例身份）
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
         public override bool Equals(IBaseEntity? other)
         {
-            return other is NormalAttack c && c.Name == Name;
+            return other is NormalAttack c && c.Guid == Guid;
+        }
+
+        /// <summary>
+        /// 与 <see cref="Equals(IBaseEntity?)"/> 保持一致（字典默认比较器使用 <see cref="object.Equals(object?)"/>）
+        /// </summary>
+        public override bool Equals(object? obj)
+        {
+            return obj is IBaseEntity other && Equals(other);
+        }
+
+        /// <summary>
+        /// 获取普攻的哈希值（与 <see cref="Equals(IBaseEntity?)"/> 保持一致，基于 Guid）
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            return Guid.GetHashCode();
         }
 
         /// <summary>
