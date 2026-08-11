@@ -16,7 +16,7 @@ namespace FunGame.Core.Entity
         /// 唯一标识符
         /// </summary>
         public override Guid Guid { get; set; } = Guid.NewGuid();
-        
+
         /// <summary>
         /// 关联的物品 Guid [ 用于表示与其关联的物品：<see cref="Item.Guid"/>，以便反序列化时找回 ]
         /// </summary>
