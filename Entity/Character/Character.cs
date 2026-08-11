@@ -1305,6 +1305,7 @@ namespace FunGame.Core.Entity
                 Effect[] effects = [.. Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                 foreach (Effect e in effects)
                 {
+                    e.RecordEffectTriggeredIfOverridden(nameof(Effect.OnOwnerLevelUp), this);
                     e.OnOwnerLevelUp(this, Level);
                 }
             }
@@ -1334,6 +1335,7 @@ namespace FunGame.Core.Entity
             List<Effect> effects = [.. Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
             foreach (Effect effect in effects)
             {
+                effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnAttributeChanged), this);
                 effect.OnAttributeChanged(this);
             }
             NormalAttack.SetMagicType(null, null, null);
@@ -2136,6 +2138,7 @@ namespace FunGame.Core.Entity
             List<Effect> effects = [.. Effects.OrderByDescending(e => e.Priority)];
             foreach (Effect e in effects)
             {
+                e.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEffectLost), this);
                 e.OnEffectLost(this);
             }
             Effects.Clear();

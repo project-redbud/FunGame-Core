@@ -237,6 +237,7 @@ namespace FunGame.Core.Entity
                         if (Character != null && !Character.Effects.Contains(e))
                         {
                             Character.Effects.Add(e);
+                            e.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEffectGained), Character);
                             e.OnEffectGained(Character);
                         }
                     }

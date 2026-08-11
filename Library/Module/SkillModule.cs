@@ -53,6 +53,8 @@ namespace FunGame.Core.Library.Module
                 // 注册工厂
                 Factory.OpenFactory.RegisterFactory(SkillFactory());
                 Factory.OpenFactory.RegisterFactory(EffectFactory());
+                // 反射当前已加载程序集中的所有特效类型，预填充钩子重写缓存（供自动记录 RoundRecord.Effects 使用）
+                EffectHookCache.ScanAllAssemblies();
                 // 如果加载后需要执行代码，请重写AfterLoad方法
                 AfterLoad();
             }

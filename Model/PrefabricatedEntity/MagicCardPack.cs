@@ -100,6 +100,7 @@ namespace FunGame.Core.Model.PrefabricatedEntity
             if (NeuralCalibration != null)
             {
                 character.Effects.Add(NeuralCalibration);
+                NeuralCalibration.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEffectGained), character);
                 NeuralCalibration.OnEffectGained(character);
             }
             if (CourageCommand != null)
@@ -124,7 +125,11 @@ namespace FunGame.Core.Model.PrefabricatedEntity
             if (NeuralCalibration != null)
             {
                 character.Effects.Remove(NeuralCalibration);
-                if (NeuralCalibration.IsInEffect) NeuralCalibration.OnEffectLost(character);
+                if (NeuralCalibration.IsInEffect)
+                {
+                    NeuralCalibration.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEffectLost), character);
+                    NeuralCalibration.OnEffectLost(character);
+                }
             }
             CourageCommand?.RemoveSkillFromCharacter(character);
             Soulbound?.RemoveSkillFromCharacter(character);
