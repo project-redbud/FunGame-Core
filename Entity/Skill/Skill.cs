@@ -1000,13 +1000,13 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 判断两个技能是否相同 检查Id.Name
+        /// 判断两个技能是否相同 检查Guid
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
         public override bool Equals(IBaseEntity? other)
         {
-            return other is Skill s && s.GetIdName() == GetIdName();
+            return other is Skill s && s.Guid == Guid;
         }
 
         /// <summary>
@@ -1018,12 +1018,12 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 获取技能的哈希值（与 <see cref="Equals(IBaseEntity?)"/> 保持一致，基于 Id.Name）
+        /// 获取技能的哈希值（与 <see cref="Equals(IBaseEntity?)"/> 保持一致，基于 Guid）
         /// </summary>
         /// <returns></returns>
         public override int GetHashCode()
         {
-            return GetIdName().GetHashCode();
+            return Guid.GetHashCode();
         }
 
         /// <summary>
