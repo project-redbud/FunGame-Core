@@ -20,6 +20,11 @@ namespace FunGame.Core.Interface.Base
         public Action<string> WriteLine { get; }
 
         /// <summary>
+        /// 调试模式（开启时输出更多运行细节，如特效触发日志）
+        /// </summary>
+        public bool IsDebug { get; set; }
+
+        /// <summary>
         /// 原始的角色字典
         /// </summary>
         public Dictionary<Guid, Character> Original { get; }

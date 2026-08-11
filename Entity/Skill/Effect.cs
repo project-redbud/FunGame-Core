@@ -1409,14 +1409,13 @@ namespace FunGame.Core.Entity
         /// 框架会在调用开发者重写的钩子前自动调用此方法，开发者无需手动记录。
         /// </summary>
         /// <param name="hookName">被触发的钩子方法名</param>
-        /// <param name="owners">特效的潜在归属角色；key 优先取 <see cref="Skill.Character"/>（施法者/技能持有者），其次取包含此特效的角色（引用比较），再次取第一个非空角色</param>
+        /// <param name="owners">特效的潜在归属角色；key 优先取状态栏包含此特效的角色（<see cref="Character.Effects"/>，引用比较），其次取 <see cref="Skill.Character"/>（施法者/技能持有者），再次取第一个非空角色</param>
         public void RecordEffectTriggeredIfOverridden(string hookName, params Character?[] owners)
         {
             if (GamingQueue?.LastRound is not RoundRecord round) return;
             if (Skill is null || !EffectHookCache.IsOverridden(GetType(), hookName)) return;
-            Character? owner = Skill.Character
-                ?? owners.FirstOrDefault(c => c != null && c.Effects.Any(e => ReferenceEquals(e, this)))
-                ?? owners.FirstOrDefault(c => c != null);
+            // 特效在谁的状态栏（Effects）中就归谁：框架遍历特效时均来自角色/队列的 Effects 集合
+            Character? owner = owners.FirstOrDefault(c => c != null && c.Effects.Any(e => ReferenceEquals(e, this))) ?? Skill.Character ?? owners.FirstOrDefault(c => c != null);
             if (owner != null)
             {
                 round.Effects[owner] = Skill;

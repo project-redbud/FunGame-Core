@@ -27,7 +27,7 @@ namespace FunGame.Core.Model.Framework
         public Dictionary<Character, double> Heals { get; set; } = [];
         /// <summary>
         /// 角色 -> 技能。施放技能时由队列写入 [施法者 -> 技能]；
-        /// 特效钩子被触发时由框架自动写入（仅当开发者重写了对应钩子方法），key 优先取技能持有者（施法者），其次取特效作用对象。
+        /// 特效钩子被触发时由框架自动写入（仅当开发者重写了对应钩子方法），key 取特效所在状态栏的角色（<see cref="Character.Effects"/> 归属），施法者/技能持有者未知时回退。
         /// </summary>
         public Dictionary<Character, Skill> Effects { get; set; } = [];
         public Dictionary<Character, List<EffectType>> ApplyEffects { get; set; } = [];
@@ -100,6 +100,12 @@ namespace FunGame.Core.Model.Framework
 
             // 回合级杂项消息
             if (OtherMessages.Count > 0) builder.AppendLine(string.Join("\r\n", OtherMessages));
+
+            // 本回合被施加的特效类型
+            foreach (KeyValuePair<Character, List<EffectType>> kv in ApplyEffects)
+            {
+                builder.AppendLine($"[ {kv.Key} ] 被施加了 [ {string.Join(" ] / [ ", kv.Value.Select(t => SkillSet.GetEffectTypeName(t)))} ]");
+            }
 
             if (CastTime > 0)
             {
