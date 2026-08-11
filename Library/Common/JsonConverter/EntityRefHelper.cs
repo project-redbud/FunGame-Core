@@ -126,13 +126,14 @@ namespace FunGame.Core.Library.Common.JsonConverter
     }
 
     /// <summary>
-    /// 技能引用（轻量快照）的读写辅助：只保留 Id 与名称，供展示与消耗匹配
+    /// 技能引用（轻量快照）的读写辅助：保留 Guid、Id、名称与类型，供展示与消耗匹配
     /// </summary>
     internal static class SkillRefHelper
     {
         public static void Write(Utf8JsonWriter writer, Skill? skill)
         {
             writer.WriteStartObject();
+            writer.WriteString(nameof(Skill.Guid), skill?.Guid ?? Guid.Empty);
             writer.WriteNumber(nameof(Skill.Id), skill?.Id ?? 0);
             writer.WriteString(nameof(Skill.Name), skill?.Name ?? "");
             writer.WriteNumber(nameof(Skill.SkillType), (int)(skill?.SkillType ?? SkillType.Magic));
@@ -147,21 +148,23 @@ namespace FunGame.Core.Library.Common.JsonConverter
 
         internal static Skill? ReadElement(JsonElement root)
         {
+            Guid guid = root.TryGetProperty(nameof(Skill.Guid), out JsonElement guidElement) && guidElement.ValueKind == JsonValueKind.String ? guidElement.GetGuid() : Guid.Empty;
             long id = root.TryGetProperty(nameof(Skill.Id), out JsonElement idElement) && idElement.ValueKind == JsonValueKind.Number ? idElement.GetInt64() : 0;
             string name = root.TryGetProperty(nameof(Skill.Name), out JsonElement nameElement) && nameElement.ValueKind == JsonValueKind.String ? nameElement.GetString() ?? "" : "";
             SkillType skillType = root.TryGetProperty(nameof(Skill.SkillType), out JsonElement stElement) && stElement.ValueKind == JsonValueKind.Number ? (SkillType)stElement.GetInt32() : SkillType.Magic;
-            return id == 0 && name == "" ? null : new OpenSkill(id, name, []) { SkillType = skillType };
+            return id == 0 && name == "" ? null : new OpenSkill(id, name, []) { SkillType = skillType, Guid = guid };
         }
     }
 
     /// <summary>
-    /// 物品引用（轻量快照）的读写辅助：只保留 Id 与名称，供展示与消耗匹配
+    /// 物品引用（轻量快照）的读写辅助：保留 Guid、Id 与名称，供展示与消耗匹配
     /// </summary>
     internal static class ItemRefHelper
     {
         public static void Write(Utf8JsonWriter writer, Item? item)
         {
             writer.WriteStartObject();
+            writer.WriteString(nameof(Item.Guid), item?.Guid ?? Guid.Empty);
             writer.WriteNumber(nameof(Item.Id), item?.Id ?? 0);
             writer.WriteString(nameof(Item.Name), item?.Name ?? "");
             writer.WriteEndObject();
@@ -175,9 +178,10 @@ namespace FunGame.Core.Library.Common.JsonConverter
 
         internal static Item? ReadElement(JsonElement root)
         {
+            Guid guid = root.TryGetProperty(nameof(Item.Guid), out JsonElement guidElement) && guidElement.ValueKind == JsonValueKind.String ? guidElement.GetGuid() : Guid.Empty;
             long id = root.TryGetProperty(nameof(Item.Id), out JsonElement idElement) && idElement.ValueKind == JsonValueKind.Number ? idElement.GetInt64() : 0;
             string name = root.TryGetProperty(nameof(Item.Name), out JsonElement nameElement) && nameElement.ValueKind == JsonValueKind.String ? nameElement.GetString() ?? "" : "";
-            return id == 0 && name == "" ? null : new OpenItem(id, name, []);
+            return id == 0 && name == "" ? null : new OpenItem(id, name, []) { Guid = guid };
         }
     }
 }

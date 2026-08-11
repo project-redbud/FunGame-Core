@@ -1342,13 +1342,13 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 比较一个角色 检查Id.Name
+        /// 比较一个角色 检查Guid
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
         public override bool Equals(IBaseEntity? other)
         {
-            return other is Character c && c.GetIdName() == GetIdName();
+            return other is Character c && c.Guid == Guid;
         }
 
         /// <summary>
@@ -1360,12 +1360,12 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 获取角色的哈希值（与 <see cref="Equals(IBaseEntity?)"/> 保持一致，基于 Id.Name）
+        /// 获取角色的哈希值（与 <see cref="Equals(IBaseEntity?)"/> 保持一致，基于 Guid）
         /// </summary>
         /// <returns></returns>
         public override int GetHashCode()
         {
-            return GetIdName().GetHashCode();
+            return Guid.GetHashCode();
         }
 
         /// <summary>
