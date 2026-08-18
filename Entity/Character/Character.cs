@@ -1724,42 +1724,95 @@ namespace FunGame.Core.Entity
         public string GetAttributeInfo(bool showGrowth = true)
         {
             StringBuilder builder = new();
+            foreach (KeyValuePair<string, string> pair in GetAttributeInfoPairs(showGrowth))
+            {
+                if (pair.Key == "魔法抗性")
+                {
+                    builder.AppendLine(pair.Value);
+                }
+                else
+                {
+                    builder.AppendLine($"{pair.Key}：{pair.Value}");
+                }
+            }
+            return builder.ToString();
+        }
+
+        /// <summary>
+        /// 构建角色属性键值对（属性名 -> 展示值），与 <see cref="GetAttributeInfo(bool)"/> 展示的属性一一对应<para/>
+        /// 魔法抗性使用 <see cref="GetMagicResistanceInfo()"/> 的完整文本作为值（可能包含多行）
+        /// </summary>
+        /// <param name="showGrowth">是否包含成长值（力量/敏捷/智力 +X/Lv）</param>
+        /// <returns></returns>
+        private List<KeyValuePair<string, string>> GetAttributeInfoPairs(bool showGrowth)
+        {
+            List<KeyValuePair<string, string>> pairs = [];
             double exHP = ExHP + ExHP2 + ExHP3;
             List<string> shield = [];
             if (Shield.TotalPhysical > 0) shield.Add($"物理：{Shield.TotalPhysical:0.##}");
             if (Shield.TotalMagical > 0) shield.Add($"魔法：{Shield.TotalMagical:0.##}");
             if (Shield.TotalMix > 0) shield.Add($"混合：{Shield.TotalMix:0.##}");
-            builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : "") + (shield.Count > 0 ? $"（{string.Join("，", shield)}）" : ""));
+            pairs.Add(new("生命值", $"{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : "") + (shield.Count > 0 ? $"（{string.Join("，", shield)}）" : "")));
             double exMP = ExMP + ExMP2 + ExMP3;
-            builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
-            builder.AppendLine($"能量值：{EP:0.##} / {GameplayEquilibriumConstant.MaxEP:0.##}");
+            pairs.Add(new("魔法值", $"{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : "")));
+            pairs.Add(new("能量值", $"{EP:0.##} / {GameplayEquilibriumConstant.MaxEP:0.##}"));
             double exATK = ExATK + ExATK2 + ExATK3;
-            builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
+            pairs.Add(new("攻击力", $"{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : "")));
             double exDEF = ExDEF + ExDEF2 + ExDEF3;
-            builder.AppendLine($"物理护甲：{DEF:0.##}" + (exDEF != 0 ? $" [{BaseDEF:0.##} {(exDEF >= 0 ? "+" : "-")} {Math.Abs(exDEF):0.##}]" : "") + $" ({PDR * 100:0.##}%)");
-            builder.AppendLine(GetMagicResistanceInfo().Trim());
+            pairs.Add(new("物理护甲", $"{DEF:0.##}" + (exDEF != 0 ? $" [{BaseDEF:0.##} {(exDEF >= 0 ? "+" : "-")} {Math.Abs(exDEF):0.##}]" : "") + $" ({PDR * 100:0.##}%)"));
+            pairs.Add(new("魔法抗性", GetMagicResistanceInfo().Trim()));
             double exSPD = AGI * GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
-            builder.AppendLine($"行动速度：{SPD:0.##}" + (exSPD != 0 ? $" [{InitialSPD:0.##} {(exSPD >= 0 ? "+" : "-")} {Math.Abs(exSPD):0.##}]" : "") + $" ({ActionCoefficient * 100:0.##}%)");
-            builder.AppendLine($"核心属性：{CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)}");
+            pairs.Add(new("行动速度", $"{SPD:0.##}" + (exSPD != 0 ? $" [{InitialSPD:0.##} {(exSPD >= 0 ? "+" : "-")} {Math.Abs(exSPD):0.##}]" : "") + $" ({ActionCoefficient * 100:0.##}%)"));
+            pairs.Add(new("核心属性", CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)));
             double exSTR = ExSTR + ExSTR2;
-            builder.AppendLine($"力量：{STR:0.##}" + (exSTR != 0 ? $" [{BaseSTR:0.##} {(exSTR >= 0 ? "+" : "-")} {Math.Abs(exSTR):0.##}]" : "") + (showGrowth ? $"（{(STRGrowth >= 0 ? "+" : "-")}{Math.Abs(STRGrowth)}/Lv）" : "") + $"（{STRExemption * 100:0.##}%）");
+            pairs.Add(new("力量", $"{STR:0.##}" + (exSTR != 0 ? $" [{BaseSTR:0.##} {(exSTR >= 0 ? "+" : "-")} {Math.Abs(exSTR):0.##}]" : "") + (showGrowth ? $"（{(STRGrowth >= 0 ? "+" : "-")}{Math.Abs(STRGrowth)}/Lv）" : "") + $"（{STRExemption * 100:0.##}%）"));
             double exAGI = ExAGI + ExAGI2;
-            builder.AppendLine($"敏捷：{AGI:0.##}" + (exAGI != 0 ? $" [{BaseAGI:0.##} {(exAGI >= 0 ? "+" : "-")} {Math.Abs(exAGI):0.##}]" : "") + (showGrowth ? $"（{(AGIGrowth >= 0 ? "+" : "-")}{Math.Abs(AGIGrowth)}/Lv）" : "") + $"（{AGIExemption * 100:0.##}%）");
+            pairs.Add(new("敏捷", $"{AGI:0.##}" + (exAGI != 0 ? $" [{BaseAGI:0.##} {(exAGI >= 0 ? "+" : "-")} {Math.Abs(exAGI):0.##}]" : "") + (showGrowth ? $"（{(AGIGrowth >= 0 ? "+" : "-")}{Math.Abs(AGIGrowth)}/Lv）" : "") + $"（{AGIExemption * 100:0.##}%）"));
             double exINT = ExINT + ExINT2;
-            builder.AppendLine($"智力：{INT:0.##}" + (exINT != 0 ? $" [{BaseINT:0.##} {(exINT >= 0 ? "+" : "-")} {Math.Abs(exINT):0.##}]" : "") + (showGrowth ? $"（{(INTGrowth >= 0 ? "+" : "-")}{Math.Abs(INTGrowth)}/Lv）" : "") + $"（{INTExemption * 100:0.##}%）");
-            builder.AppendLine($"生命回复：{HR:0.##}" + (ExHR != 0 ? $" [{InitialHR + STR * GameplayEquilibriumConstant.STRtoHRFactor:0.##} {(ExHR >= 0 ? "+" : "-")} {Math.Abs(ExHR):0.##}]" : ""));
-            builder.AppendLine($"魔法回复：{MR:0.##}" + (ExMR != 0 ? $" [{InitialMR + INT * GameplayEquilibriumConstant.INTtoMRFactor:0.##} {(ExMR >= 0 ? "+" : "-")} {Math.Abs(ExMR):0.##}]" : ""));
-            builder.AppendLine($"暴击率：{CritRate * 100:0.##}%");
-            builder.AppendLine($"暴击伤害：{CritDMG * 100:0.##}%");
-            builder.AppendLine($"闪避率：{EvadeRate * 100:0.##}%");
-            builder.AppendLine($"生命偷取：{Lifesteal * 100:0.##}%");
-            builder.AppendLine($"冷却缩减：{CDR * 100:0.##}%");
-            builder.AppendLine($"加速系数：{AccelerationCoefficient * 100:0.##}%");
-            builder.AppendLine($"物理穿透：{PhysicalPenetration * 100:0.##}%");
-            builder.AppendLine($"魔法穿透：{MagicalPenetration * 100:0.##}%");
-            builder.AppendLine($"魔法消耗减少：{INT * GameplayEquilibriumConstant.INTtoCastMPReduce * 100:0.##}%");
-            builder.AppendLine($"能量消耗减少：{INT * GameplayEquilibriumConstant.INTtoCastEPReduce * 100:0.##}%");
-            return builder.ToString();
+            pairs.Add(new("智力", $"{INT:0.##}" + (exINT != 0 ? $" [{BaseINT:0.##} {(exINT >= 0 ? "+" : "-")} {Math.Abs(exINT):0.##}]" : "") + (showGrowth ? $"（{(INTGrowth >= 0 ? "+" : "-")}{Math.Abs(INTGrowth)}/Lv）" : "") + $"（{INTExemption * 100:0.##}%）"));
+            pairs.Add(new("生命回复", $"{HR:0.##}" + (ExHR != 0 ? $" [{InitialHR + STR * GameplayEquilibriumConstant.STRtoHRFactor:0.##} {(ExHR >= 0 ? "+" : "-")} {Math.Abs(ExHR):0.##}]" : "")));
+            pairs.Add(new("魔法回复", $"{MR:0.##}" + (ExMR != 0 ? $" [{InitialMR + INT * GameplayEquilibriumConstant.INTtoMRFactor:0.##} {(ExMR >= 0 ? "+" : "-")} {Math.Abs(ExMR):0.##}]" : "")));
+            pairs.Add(new("暴击率", $"{CritRate * 100:0.##}%"));
+            pairs.Add(new("暴击伤害", $"{CritDMG * 100:0.##}%"));
+            pairs.Add(new("闪避率", $"{EvadeRate * 100:0.##}%"));
+            pairs.Add(new("生命偷取", $"{Lifesteal * 100:0.##}%"));
+            pairs.Add(new("冷却缩减", $"{CDR * 100:0.##}%"));
+            pairs.Add(new("加速系数", $"{AccelerationCoefficient * 100:0.##}%"));
+            pairs.Add(new("物理穿透", $"{PhysicalPenetration * 100:0.##}%"));
+            pairs.Add(new("魔法穿透", $"{MagicalPenetration * 100:0.##}%"));
+            pairs.Add(new("魔法消耗减少", $"{INT * GameplayEquilibriumConstant.INTtoCastMPReduce * 100:0.##}%"));
+            pairs.Add(new("能量消耗减少", $"{INT * GameplayEquilibriumConstant.INTtoCastEPReduce * 100:0.##}%"));
+            return pairs;
+        }
+
+        /// <summary>
+        /// 获取角色全部属性（属性名 -> 展示值），覆盖 <see cref="GetInfo(bool, bool, bool, bool)"/> 中出现的所有属性
+        /// （等级/经验值/属性与能力值/移动距离/攻击距离/状态），供检查点回合完整记录<para/>
+        /// 属性块与 <see cref="GetAttributeInfo(bool)"/> 展示的内容一致
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, string> GetAttributeValues()
+        {
+            Dictionary<string, string> values = [];
+            values["等级"] = $"{Level} / {GameplayEquilibriumConstant.MaxLevel}";
+            values["经验值"] = $"{EXP:0.##}";
+            foreach (KeyValuePair<string, string> pair in GetAttributeInfoPairs(true))
+            {
+                values[pair.Key] = pair.Value;
+            }
+            values["移动距离"] = $"{MOV}";
+            values["攻击距离"] = $"{ATR}";
+            if (CharacterState != CharacterState.Actionable)
+            {
+                values["角色状态"] = CharacterSet.GetCharacterState(CharacterState);
+            }
+            if ((ImmuneType & ImmuneType.Physical) != ImmuneType.None) values["物理免疫"] = "是";
+            if ((ImmuneType & ImmuneType.Magical) != ImmuneType.None) values["魔法免疫"] = "是";
+            if ((ImmuneType & ImmuneType.Skilled) != ImmuneType.None) values["技能免疫"] = "是";
+            if ((ImmuneType & ImmuneType.All) != ImmuneType.None) values["完全免疫"] = "是";
+            if (IsNeutral) values["无敌"] = "是";
+            if (IsUnselectable) values["不可选中"] = "是";
+            return values;
         }
 
         /// <summary>
