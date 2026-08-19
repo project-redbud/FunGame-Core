@@ -174,11 +174,11 @@ namespace FunGame.Core.Api
             }
             foreach (SkillStateSnapshot skill in source.Skills)
             {
-                copy.Skills.Add(new SkillStateSnapshot { SkillId = skill.SkillId, SkillName = skill.SkillName, Level = skill.Level, CurrentCD = skill.CurrentCD });
+                copy.Skills.Add(new SkillStateSnapshot { SkillId = skill.SkillId, SkillName = skill.SkillName, Level = skill.Level, CurrentCD = skill.CurrentCD, Description = skill.Description });
             }
             foreach (EffectStateSnapshot effect in source.Effects)
             {
-                copy.Effects.Add(new EffectStateSnapshot { EffectId = effect.EffectId, EffectName = effect.EffectName, EffectType = effect.EffectType, RemainDuration = effect.RemainDuration, RemainDurationTurn = effect.RemainDurationTurn, SourceGuid = effect.SourceGuid });
+                copy.Effects.Add(new EffectStateSnapshot { EffectId = effect.EffectId, EffectName = effect.EffectName, EffectType = effect.EffectType, RemainDuration = effect.RemainDuration, RemainDurationTurn = effect.RemainDurationTurn, SourceGuid = effect.SourceGuid, Description = effect.Description });
             }
             return copy;
         }
