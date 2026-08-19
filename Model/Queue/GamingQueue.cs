@@ -2379,50 +2379,50 @@ namespace FunGame.Core.Model.Queue
                 if (slot.Weapon != null)
                 {
                     state.Equipments[EquipSlotType.Weapon] = slot.Weapon.Id;
-                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.Weapon, ItemId = slot.Weapon.Id, ItemName = slot.Weapon.Name });
+                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.Weapon, ItemId = slot.Weapon.Id, ItemName = slot.Weapon.Name, Description = slot.Weapon.Description });
                 }
                 if (slot.Armor != null)
                 {
                     state.Equipments[EquipSlotType.Armor] = slot.Armor.Id;
-                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.Armor, ItemId = slot.Armor.Id, ItemName = slot.Armor.Name });
+                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.Armor, ItemId = slot.Armor.Id, ItemName = slot.Armor.Name, Description = slot.Armor.Description });
                 }
                 if (slot.Shoes != null)
                 {
                     state.Equipments[EquipSlotType.Shoes] = slot.Shoes.Id;
-                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.Shoes, ItemId = slot.Shoes.Id, ItemName = slot.Shoes.Name });
+                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.Shoes, ItemId = slot.Shoes.Id, ItemName = slot.Shoes.Name, Description = slot.Shoes.Description });
                 }
                 if (slot.Accessory1 != null)
                 {
                     state.Equipments[EquipSlotType.Accessory1] = slot.Accessory1.Id;
-                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.Accessory1, ItemId = slot.Accessory1.Id, ItemName = slot.Accessory1.Name });
+                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.Accessory1, ItemId = slot.Accessory1.Id, ItemName = slot.Accessory1.Name, Description = slot.Accessory1.Description });
                 }
                 if (slot.Accessory2 != null)
                 {
                     state.Equipments[EquipSlotType.Accessory2] = slot.Accessory2.Id;
-                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.Accessory2, ItemId = slot.Accessory2.Id, ItemName = slot.Accessory2.Name });
+                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.Accessory2, ItemId = slot.Accessory2.Id, ItemName = slot.Accessory2.Name, Description = slot.Accessory2.Description });
                 }
                 if (slot.MagicCardPack != null)
                 {
                     state.Equipments[EquipSlotType.MagicCardPack] = slot.MagicCardPack.Id;
-                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.MagicCardPack, ItemId = slot.MagicCardPack.Id, ItemName = slot.MagicCardPack.Name });
+                    state.EquipmentsDetail.Add(new EquipmentStateSnapshot { Slot = EquipSlotType.MagicCardPack, ItemId = slot.MagicCardPack.Id, ItemName = slot.MagicCardPack.Name, Description = slot.MagicCardPack.Description });
                 }
 
                 // 技能状态
                 foreach (Skill skill in character.Skills)
                 {
-                    state.Skills.Add(new SkillStateSnapshot { SkillId = skill.Id, SkillName = skill.Name, Level = skill.Level, CurrentCD = skill.CurrentCD });
+                    state.Skills.Add(new SkillStateSnapshot { SkillId = skill.Id, SkillName = skill.Name, Level = skill.Level, CurrentCD = skill.CurrentCD, Description = skill.Description });
                 }
 
                 // 物品栏（背包）
                 foreach (Item item in character.Items)
                 {
-                    state.Items.Add(new ItemStateSnapshot { ItemId = item.Id, ItemName = item.Name });
+                    state.Items.Add(new ItemStateSnapshot { ItemId = item.Id, ItemName = item.Name, Description = item.Description });
                 }
 
                 // 状态栏特效
                 foreach (Effect effect in character.Effects.Where(e => e.ShowInStatusBar && e.IsInEffect))
                 {
-                    state.Effects.Add(new EffectStateSnapshot { EffectId = effect.Id, EffectName = effect.Name, EffectType = effect.EffectType, RemainDuration = effect.RemainDuration, RemainDurationTurn = effect.RemainDurationTurn, SourceGuid = effect.Source?.Guid ?? Guid.Empty });
+                    state.Effects.Add(new EffectStateSnapshot { EffectId = effect.Id, EffectName = effect.Name, EffectType = effect.EffectType, RemainDuration = effect.RemainDuration, RemainDurationTurn = effect.RemainDurationTurn, SourceGuid = effect.Source?.Guid ?? Guid.Empty, Description = effect.Description });
                 }
 
                 snapshots.Add(state);

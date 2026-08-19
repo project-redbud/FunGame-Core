@@ -105,6 +105,11 @@ namespace FunGame.Core.Model.Framework
         /// 当前冷却时间
         /// </summary>
         public double CurrentCD { get; set; } = 0;
+
+        /// <summary>
+        /// 技能描述
+        /// </summary>
+        public string Description { get; set; } = "";
     }
 
     /// <summary>
@@ -121,6 +126,11 @@ namespace FunGame.Core.Model.Framework
         /// 物品名称（展示用）
         /// </summary>
         public string ItemName { get; set; } = "";
+
+        /// <summary>
+        /// 物品描述
+        /// </summary>
+        public string Description { get; set; } = "";
     }
 
     /// <summary>
@@ -157,5 +167,10 @@ namespace FunGame.Core.Model.Framework
         /// 特效施加者（Source 角色）的 Guid（无施加者时为 <see cref="Guid.Empty"/>）
         /// </summary>
         public Guid SourceGuid { get; set; } = Guid.Empty;
+
+        /// <summary>
+        /// 特效描述
+        /// </summary>
+        public string Description { get; set; } = "";
     }
 }

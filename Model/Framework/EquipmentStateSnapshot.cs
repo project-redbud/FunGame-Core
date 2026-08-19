@@ -21,5 +21,10 @@ namespace FunGame.Core.Model.Framework
         /// 物品名字
         /// </summary>
         public string ItemName { get; set; } = "";
+
+        /// <summary>
+        /// 物品描述
+        /// </summary>
+        public string Description { get; set; } = "";
     }
 }
