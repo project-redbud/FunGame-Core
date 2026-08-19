@@ -1,4 +1,4 @@
-﻿using FunGame.Core.Api;
+using FunGame.Core.Api;
 using FunGame.Core.Controller;
 using FunGame.Core.Entity;
 using FunGame.Core.Interface.Base;
@@ -2369,7 +2369,9 @@ namespace FunGame.Core.Model.Queue
                     MaxMP = character.MaxMP,
                     EP = character.EP,
                     HR = character.HR,
-                    MR = character.MR
+                    MR = character.MR,
+                    // 角色全部属性（与 Character.GetInfo() 中出现的属性一致，检查点回合完整记录）
+                    Attributes = character.GetAttributeValues()
                 };
 
                 // 装备栏（物品 ID + 名字明细）
@@ -2420,7 +2422,7 @@ namespace FunGame.Core.Model.Queue
                 // 状态栏特效
                 foreach (Effect effect in character.Effects.Where(e => e.ShowInStatusBar && e.IsInEffect))
                 {
-                    state.Effects.Add(new EffectStateSnapshot { EffectId = effect.Id, EffectName = effect.Name, EffectType = effect.EffectType, RemainDuration = effect.RemainDuration, RemainDurationTurn = effect.RemainDurationTurn });
+                    state.Effects.Add(new EffectStateSnapshot { EffectId = effect.Id, EffectName = effect.Name, EffectType = effect.EffectType, RemainDuration = effect.RemainDuration, RemainDurationTurn = effect.RemainDurationTurn, SourceGuid = effect.Source?.Guid ?? Guid.Empty });
                 }
 
                 snapshots.Add(state);
@@ -5143,6 +5145,21 @@ namespace FunGame.Core.Model.Queue
                 effect.OnCharacterInquiry(character, options, response);
             }
             return response;
+        }
+
+        /// <summary>
+        /// 记录角色被施加的特效类型（同时写入回合级 <see cref="LastRound"/> 与当前操作级 <see cref="CurrentAction"/> 记录，供回放展示）<para/>
+        /// 相比直接调用 <see cref="RoundRecord.AddApplyEffects(Character, IEnumerable{EffectType})"/>，此方法确保特效同时出现在行动记录中
+        /// </summary>
+        /// <param name="character">被施加特效的角色</param>
+        /// <param name="types">特效类型列表</param>
+        public void AddApplyEffects(Character character, params EffectType[] types)
+        {
+            LastRound.AddApplyEffects(character, types);
+            if (_currentAction is ActionRecord action)
+            {
+                action.AddApplyEffects(character, types);
+            }
         }
 
         #endregion

@@ -164,6 +164,10 @@ namespace FunGame.Core.Api
                 HR = source.HR,
                 MR = source.MR
             };
+            foreach (KeyValuePair<string, string> kv in source.Attributes)
+            {
+                copy.Attributes[kv.Key] = kv.Value;
+            }
             foreach (KeyValuePair<EquipSlotType, long> kv in source.Equipments)
             {
                 copy.Equipments[kv.Key] = kv.Value;
@@ -174,7 +178,7 @@ namespace FunGame.Core.Api
             }
             foreach (EffectStateSnapshot effect in source.Effects)
             {
-                copy.Effects.Add(new EffectStateSnapshot { EffectId = effect.EffectId, EffectName = effect.EffectName, EffectType = effect.EffectType, RemainDuration = effect.RemainDuration, RemainDurationTurn = effect.RemainDurationTurn });
+                copy.Effects.Add(new EffectStateSnapshot { EffectId = effect.EffectId, EffectName = effect.EffectName, EffectType = effect.EffectType, RemainDuration = effect.RemainDuration, RemainDurationTurn = effect.RemainDurationTurn, SourceGuid = effect.SourceGuid });
             }
             return copy;
         }

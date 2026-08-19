@@ -169,7 +169,8 @@ namespace FunGame.Core.Model.Framework
                         else if (state.Equipments.Count > 0) details.Add("装备: " + string.Join(" / ", state.Equipments.Select(e => $"{ItemSet.GetEquipSlotTypeName(e.Key)}={e.Value}")));
                         if (state.Items.Count > 0) details.Add("物品: " + string.Join(" / ", state.Items.Select(i => i.ItemName)));
                         if (state.Skills.Count > 0) details.Add("技能: " + string.Join(" / ", state.Skills.Select(s => s.CurrentCD > 0 ? $"{s.SkillName} Lv{s.Level} CD{s.CurrentCD:0.##}" : $"{s.SkillName} Lv{s.Level}")));
-                        if (state.Effects.Count > 0) details.Add("状态: " + string.Join(" / ", state.Effects.Select(e => e.RemainDurationTurn > 0 ? $"{e.EffectName} 剩余{e.RemainDurationTurn}R" : e.RemainDuration > 0 ? $"{e.EffectName} 剩余{e.RemainDuration:0.##}" : e.EffectName)));
+                        if (state.Effects.Count > 0) details.Add("状态: " + string.Join(" / ", state.Effects.Select(e => (e.RemainDurationTurn > 0 ? $"{e.EffectName} 剩余{e.RemainDurationTurn}R" : e.RemainDuration > 0 ? $"{e.EffectName} 剩余{e.RemainDuration:0.##}" : e.EffectName) + (e.SourceGuid != Guid.Empty ? $" 来源:{e.SourceGuid}" : ""))));
+                        if (state.Attributes.Count > 0) details.Add("属性: " + string.Join(" / ", state.Attributes.Select(kv => $"{kv.Key} {kv.Value}")));
                         if (details.Count > 0) builder.AppendLine("\r\n  " + string.Join("\r\n  ", details));
                         else builder.AppendLine();
                     }

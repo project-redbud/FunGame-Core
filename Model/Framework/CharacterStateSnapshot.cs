@@ -40,6 +40,12 @@ namespace FunGame.Core.Model.Framework
         public double EP { get; set; } = 0;
 
         /// <summary>
+        /// 角色全部属性（属性名 -> 展示值，与 Character.GetInfo() 中出现的属性一致，检查点回合完整记录）<para/>
+        /// 由队列在生成检查点时写入 Character.GetAttributeValues() 的结果
+        /// </summary>
+        public Dictionary<string, string> Attributes { get; set; } = [];
+
+        /// <summary>
         /// 生命回复速率（随时间流逝回复，用于状态推算）
         /// </summary>
         public double HR { get; set; } = 0;
@@ -146,5 +152,10 @@ namespace FunGame.Core.Model.Framework
         /// 剩余持续回合数
         /// </summary>
         public int RemainDurationTurn { get; set; } = 0;
+
+        /// <summary>
+        /// 特效施加者（Source 角色）的 Guid（无施加者时为 <see cref="Guid.Empty"/>）
+        /// </summary>
+        public Guid SourceGuid { get; set; } = Guid.Empty;
     }
 }

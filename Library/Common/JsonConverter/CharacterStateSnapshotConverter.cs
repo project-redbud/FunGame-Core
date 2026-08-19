@@ -35,6 +35,9 @@ namespace FunGame.Core.Library.Common.JsonConverter
                 case nameof(CharacterStateSnapshot.EP):
                     result.EP = reader.GetDouble();
                     break;
+                case nameof(CharacterStateSnapshot.Attributes):
+                    result.Attributes = JsonService.GetObject<Dictionary<string, string>>(ref reader, options) ?? [];
+                    break;
                 case nameof(CharacterStateSnapshot.HR):
                     result.HR = reader.GetDouble();
                     break;
@@ -79,6 +82,8 @@ namespace FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(CharacterStateSnapshot.EP), value.EP);
             writer.WriteNumber(nameof(CharacterStateSnapshot.HR), value.HR);
             writer.WriteNumber(nameof(CharacterStateSnapshot.MR), value.MR);
+            writer.WritePropertyName(nameof(CharacterStateSnapshot.Attributes));
+            JsonSerializer.Serialize(writer, value.Attributes, options);
             writer.WritePropertyName(nameof(CharacterStateSnapshot.Equipments));
             JsonSerializer.Serialize(writer, value.Equipments.ToDictionary(kv => (int)kv.Key, kv => kv.Value), options);
             writer.WritePropertyName(nameof(CharacterStateSnapshot.EquipmentsDetail));

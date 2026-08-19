@@ -1,4 +1,4 @@
-﻿using FunGame.Core.Entity;
+using FunGame.Core.Entity;
 using FunGame.Core.Library.Constant;
 using FunGame.Core.Model.Framework;
 
@@ -323,5 +323,13 @@ namespace FunGame.Core.Interface.Base
         /// <param name="options"></param>
         /// <returns></returns>
         public InquiryResponse Inquiry(Character character, InquiryOptions options);
+
+        /// <summary>
+        /// 记录角色被施加的特效类型（同时写入回合级 <see cref="LastRound"/> 与当前操作级 <see cref="CurrentAction"/> 记录，供回放展示）<para/>
+        /// 相比直接调用 <see cref="RoundRecord.AddApplyEffects(Character, IEnumerable{EffectType})"/>，此方法确保特效同时出现在行动记录中
+        /// </summary>
+        /// <param name="character">被施加特效的角色</param>
+        /// <param name="types">特效类型列表</param>
+        public void AddApplyEffects(Character character, params EffectType[] types);
     }
 }

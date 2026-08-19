@@ -30,6 +30,12 @@ namespace FunGame.Core.Library.Common.JsonConverter
                 case nameof(Effect.DurationTurn):
                     result.DurationTurn = reader.GetInt32();
                     break;
+                case "SourceGuid":
+                    if (Guid.TryParse(reader.GetString(), out Guid sourceGuid))
+                    {
+                        result.Source = new Character { Guid = sourceGuid };
+                    }
+                    break;
                 default:
                     if (reader.TokenType == JsonTokenType.Number)
                     {
@@ -56,6 +62,12 @@ namespace FunGame.Core.Library.Common.JsonConverter
             writer.WriteBoolean(nameof(Effect.Durative), value.Durative);
             writer.WriteNumber(nameof(Effect.Duration), value.Duration);
             writer.WriteNumber(nameof(Effect.DurationTurn), value.DurationTurn);
+
+            // 追加记录施加者（Source 角色）的 Guid
+            if (value.Source != null && value.Source.Guid != Guid.Empty)
+            {
+                writer.WriteString("SourceGuid", value.Source.Guid.ToString());
+            }
 
             foreach (var kvp in value.Values)
             {
