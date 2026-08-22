@@ -1,6 +1,7 @@
 ﻿using FunGame.Core.Api;
 using FunGame.Core.Entity;
 using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.EffectContext;
 using FunGame.Core.Model.Framework;
 
 namespace FunGame.Core.Library.Module.Example
@@ -46,12 +47,12 @@ namespace FunGame.Core.Library.Module.Example
         public override string Description => $"立即将角色传送到范围内的任意{Skill.TargetDescription()}。";
         public override string DispelDescription => "";
 
-        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(SkillCastContext ctx)
         {
             // 只有开启了地图模式才有效
-            if (GamingQueue?.Map is GameMap map && grids.Count > 0)
+            if (ctx.Actor is Character caster && GamingQueue?.Map is GameMap map && ctx.Grids.Count > 0)
             {
-                map.CharacterMove(caster, map.GetCharacterCurrentGrid(caster), grids[0]);
+                map.CharacterMove(caster, map.GetCharacterCurrentGrid(caster), ctx.Grids[0]);
             }
         }
     }
@@ -85,15 +86,18 @@ namespace FunGame.Core.Library.Module.Example
             MagicType = magicType;
         }
 
-        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(SkillCastContext ctx)
         {
-            foreach (Character enemy in targets)
+            if (ctx.Actor is Character caster)
             {
-                DamageToEnemy(caster, enemy, DamageType, MagicType, Damage);
+                foreach (Character enemy in ctx.Targets)
+                {
+                    DamageToEnemy(caster, enemy, DamageType, MagicType, Damage);
+                }
             }
             // 或者：
             //double damage = Damage;
-            //foreach (Character enemy in targets)
+            //foreach (Character enemy in ctx.Targets)
             //{
             //    DamageToEnemy(caster, enemy, DamageType, MagicType, damage);
             //}
@@ -174,14 +178,17 @@ namespace FunGame.Core.Library.Module.Example
             GamingQueue = skill.GamingQueue;
         }
 
-        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(SkillCastContext ctx)
         {
-            foreach (Character target in targets)
+            if (ctx.Actor is Character caster)
             {
-                // 这是另一种豁免检定方式，在技能实现时，自行调用 CheckExemption，只对该特效有效
-                if (!CheckExemption(caster, target, this))
+                foreach (Character target in ctx.Targets)
                 {
-                    InterruptCasting(target, caster);
+                    // 这是另一种豁免检定方式，在技能实现时，自行调用 CheckExemption，只对该特效有效
+                    if (!CheckExemption(caster, target, this))
+                    {
+                        InterruptCasting(target, caster);
+                    }
                 }
             }
         }
@@ -226,19 +233,19 @@ namespace FunGame.Core.Library.Module.Example
         private bool IsNested = false;
 
         // 该钩子属于伤害计算流程的特效乘区2
-        public override double AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult, ref bool isEvaded, Dictionary<Effect, double> totalDamageBonus)
+        public override double AlterActualDamageAfterCalculation(DamageContext ctx)
         {
-            if (character == Skill.Character && IsNested && isNormalAttack && damage > 0)
+            if (ctx.Actor == Skill.Character && IsNested && ctx.IsNormalAttack && ctx.Damage > 0)
             {
                 // 此方法返回的是加值
-                return -(damage / 2);
+                return -(ctx.Damage / 2);
             }
             return 0;
         }
 
-        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult)
+        public override void AfterDamageCalculation(DamageContext ctx)
         {
-            if (character == Skill.Character && isNormalAttack && CurrentCD == 0 && !IsNested && GamingQueue != null && enemy.HP > 0)
+            if (ctx.Actor is Character character && ctx.Enemy is Character enemy && character == Skill.Character && ctx.IsNormalAttack && CurrentCD == 0 && !IsNested && GamingQueue != null && enemy.HP > 0)
             {
                 WriteLine($"[ {character} ] 发动了{Skill.Name}！额外进行一次普通攻击！");
                 CurrentCD = CD;
@@ -246,18 +253,18 @@ namespace FunGame.Core.Library.Module.Example
                 character.NormalAttack.Attack(GamingQueue, character, null, enemy);
             }
 
-            if (character == Skill.Character && IsNested)
+            if (ctx.Actor == Skill.Character && IsNested)
             {
                 IsNested = false;
             }
         }
 
-        public override void OnTimeElapsed(Character character, double elapsed)
+        public override void OnTimeElapsed(TimeLapseContext ctx)
         {
             // 时间流逝时，手动减少CD。如果借用了技能的冷却时间属性，就不需要写了
             if (CurrentCD > 0)
             {
-                CurrentCD -= elapsed;
+                CurrentCD -= ctx.Elapsed;
                 if (CurrentCD <= 0)
                 {
                     CurrentCD = 0;
@@ -265,10 +272,10 @@ namespace FunGame.Core.Library.Module.Example
             }
         }
 
-        public override void AlterHardnessTimeAfterNormalAttack(Character character, ref double baseHardnessTime, ref bool isCheckProtected)
+        public override void AlterHardnessTimeAfterNormalAttack(HardnessContext ctx)
         {
             // 普攻后调整硬直时间。ref 变量直接修改
-            baseHardnessTime *= 0.8;
+            ctx.BaseHardnessTime *= 0.8;
         }
     }
 
@@ -315,8 +322,9 @@ namespace FunGame.Core.Library.Module.Example
         private double ActualPhysicalPenetrationBonus = 0;
         private double ActualEvadeRateBonus = 0;
 
-        public override void OnEffectGained(Character character)
+        public override void OnEffectGained(HookContext ctx)
         {
+            if (ctx.Actor is not Character character) return;
             // 记录状态并修改属性
             ActualATKBonus = ATKBonus;
             ActualPhysicalPenetrationBonus = PhysicalPenetrationBonus;
@@ -331,8 +339,9 @@ namespace FunGame.Core.Library.Module.Example
             }
         }
 
-        public override void OnEffectLost(Character character)
+        public override void OnEffectLost(HookContext ctx)
         {
+            if (ctx.Actor is not Character character) return;
             // 从记录的状态中恢复
             character.ExATK2 -= ActualATKBonus;
             character.PhysicalPenetration -= ActualPhysicalPenetrationBonus;
@@ -343,30 +352,31 @@ namespace FunGame.Core.Library.Module.Example
             }
         }
 
-        public override CharacterActionType AlterActionTypeBeforeAction(Character character, DecisionPoints dp, CharacterState state, ref bool canUseItem, ref bool canCastSkill, ref double pUseItem, ref double pCastSkill, ref double pNormalAttack, ref bool forceAction)
+        public override CharacterActionType AlterActionTypeBeforeAction(DecisionContext ctx)
         {
             // 对于 AI，可以提高角色的普攻积极性，调整决策偏好，这样可以充分利用技能效果
-            pNormalAttack += 0.1;
+            ctx.PNormalAttack += 0.1;
             return CharacterActionType.None;
         }
 
-        public override double AlterExpectedDamageBeforeCalculation(Character character, Character enemy, double damage, bool isNormalAttack, DamageType damageType, MagicType magicType, Dictionary<Effect, double> totalDamageBonus)
+        public override double AlterExpectedDamageBeforeCalculation(DamageContext ctx)
         {
-            if (character == Skill.Character && isNormalAttack)
+            if (ctx.Actor == Skill.Character && ctx.IsNormalAttack)
             {
                 return DamageBonus;
             }
             return 0;
         }
 
-        public override void AlterHardnessTimeAfterNormalAttack(Character character, ref double baseHardnessTime, ref bool isCheckProtected)
+        public override void AlterHardnessTimeAfterNormalAttack(HardnessContext ctx)
         {
             // 可以和上面的心灵之弦叠加，最终硬直时间=硬直时间*0.8*0.8
-            baseHardnessTime *= 0.8;
+            ctx.BaseHardnessTime *= 0.8;
         }
 
-        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(SkillCastContext ctx)
         {
+            if (ctx.Actor is not Character caster) return;
             ActualATKBonus = 0;
             ActualPhysicalPenetrationBonus = 0;
             ActualEvadeRateBonus = 0;
@@ -377,7 +387,7 @@ namespace FunGame.Core.Library.Module.Example
             {
                 // 加也是加 this
                 caster.Effects.Add(this);
-                OnEffectGained(caster);
+                OnEffectGained(new HookContext(GamingQueue, caster));
             }
             // 施加状态记录到回合日志中
             RecordCharacterApplyEffects(caster, EffectType.DamageBoost, EffectType.PenetrationBoost);

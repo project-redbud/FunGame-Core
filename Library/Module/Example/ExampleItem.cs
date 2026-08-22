@@ -1,6 +1,7 @@
 ﻿using FunGame.Core.Api;
 using FunGame.Core.Entity;
 using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.EffectContext;
 
 namespace FunGame.Core.Library.Module.Example
 {
@@ -69,8 +70,9 @@ namespace FunGame.Core.Library.Module.Example
         private readonly double BonusFactor = 0;
         private double ActualBonus = 0;
 
-        public override void OnEffectGained(Character character)
+        public override void OnEffectGained(HookContext ctx)
         {
+            if (ctx.Actor is not Character character) return;
             if (Durative && RemainDuration == 0)
             {
                 RemainDuration = Duration;
@@ -83,16 +85,17 @@ namespace FunGame.Core.Library.Module.Example
             character.ExATKPercentage += BonusFactor;
         }
 
-        public override void OnEffectLost(Character character)
+        public override void OnEffectLost(HookContext ctx)
         {
+            if (ctx.Actor is not Character character) return;
             character.ExATKPercentage -= BonusFactor;
         }
 
-        public override void OnAttributeChanged(Character character)
+        public override void OnAttributeChanged(HookContext ctx)
         {
             // 刷新加成
-            OnEffectLost(character);
-            OnEffectGained(character);
+            OnEffectLost(ctx);
+            OnEffectGained(ctx);
         }
 
         public ExampleOpenEffectExATK2(Skill skill, Dictionary<string, object> args, Character? source = null) : base(skill, args)

@@ -1,6 +1,6 @@
 ﻿using FunGame.Core.Entity;
 using FunGame.Core.Library.Constant;
-using FunGame.Core.Model.Framework;
+using FunGame.Core.Model.EffectContext;
 
 namespace FunGame.Core.Model.PrefabricatedEntity
 {
@@ -49,12 +49,12 @@ namespace FunGame.Core.Model.PrefabricatedEntity
 
         private double? _improvement = null;
 
-        public override void BeforeSkillCasted(Character caster, List<Character> targets, List<Grid> grids, double mpCost = 0, double epCost = 0)
+        public override void BeforeSkillCasted(SkillCastContext ctx)
         {
-            _improvement = (epCost - skill.MinCostEP) / 20.0 * 0.1;
+            _improvement = (ctx.EPCost - skill.MinCostEP) / 20.0 * 0.1;
         }
 
-        public override void AfterSkillCasted(Character caster, List<Character> targets, List<Grid> grids)
+        public override void AfterSkillCasted(SkillCastContext ctx)
         {
             _improvement = null;
         }

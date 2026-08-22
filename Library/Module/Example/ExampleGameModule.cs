@@ -2,6 +2,7 @@ using FunGame.Core.Api;
 using FunGame.Core.Entity;
 using FunGame.Core.Interface.Base;
 using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.EffectContext;
 using FunGame.Core.Model.Framework;
 using FunGame.Core.Model.Queue;
 
@@ -57,7 +58,7 @@ namespace FunGame.Core.Library.Module.Example
             return map;
         }
 
-        private Grid Gq_SelectTargetGrid(GamingQueue queue, Character character, List<Character> enemys, List<Character> teammates, GameMap map, List<Grid> canMoveGrids)
+        private Grid Gq_SelectTargetGrid(SelectionContext ctx)
         {
             // 介入选择，假设这里更新界面，让玩家选择目的地
             return Grid.Empty;

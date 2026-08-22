@@ -1,5 +1,6 @@
 using FunGame.Core.Entity;
 using FunGame.Core.Interface.Base;
+using FunGame.Core.Model.EffectContext;
 
 namespace FunGame.Core.Model.Framework
 {
@@ -987,7 +988,7 @@ namespace FunGame.Core.Model.Framework
                         {
                             // 移除特效前也完成剩余时间内的效果
                             effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnTimeElapsed));
-                            effect.OnTimeElapsed(grid, effect.RemainDuration);
+                            effect.OnTimeElapsed(new TimeLapseContext(null) { Grid = grid, Elapsed = effect.RemainDuration });
                             effect.RemainDuration = 0;
                             grid.Effects.Remove(effect);
                         }
@@ -995,13 +996,13 @@ namespace FunGame.Core.Model.Framework
                         {
                             effect.RemainDuration -= timeToReduce;
                             effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnTimeElapsed));
-                            effect.OnTimeElapsed(grid, timeToReduce);
+                            effect.OnTimeElapsed(new TimeLapseContext(null) { Grid = grid, Elapsed = timeToReduce });
                         }
                     }
                     else
                     {
                         effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnTimeElapsed));
-                        effect.OnTimeElapsed(grid, timeToReduce);
+                        effect.OnTimeElapsed(new TimeLapseContext(null) { Grid = grid, Elapsed = timeToReduce });
                     }
                 }
             }

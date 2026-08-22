@@ -3,6 +3,7 @@ using FunGame.Core.Api;
 using FunGame.Core.Interface.Base;
 using FunGame.Core.Interface.Entity;
 using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.EffectContext;
 using FunGame.Core.Model.Framework;
 
 namespace FunGame.Core.Entity
@@ -425,7 +426,7 @@ namespace FunGame.Core.Entity
                     {
                         Character.Effects.Add(e);
                         e.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEffectGained), Character);
-                        e.OnEffectGained(Character);
+                        e.OnEffectGained(new HookContext(GamingQueue, Character));
                     }
                 }
             }
@@ -436,7 +437,7 @@ namespace FunGame.Core.Entity
                 {
                     e.GamingQueue = GamingQueue;
                     e.RecordEffectTriggeredIfOverridden(nameof(Effect.OnSkillLevelUp), Character);
-                    e.OnSkillLevelUp(Character, Level);
+                    e.OnSkillLevelUp(new LevelUpContext(Character, Level));
                 }
             }
         }
@@ -739,11 +740,12 @@ namespace FunGame.Core.Entity
         public void OnSkillCasting(IGamingQueue queue, Character caster, List<Character> targets, List<Grid> grids)
         {
             GamingQueue = queue;
+            SkillCastContext ctx = new(queue, caster) { Targets = targets, Grids = grids };
             foreach (Effect e in Effects.OrderByDescending(e => e.Priority))
             {
                 e.GamingQueue = GamingQueue;
                 e.RecordEffectTriggeredIfOverridden(nameof(Effect.OnSkillCasting), caster);
-                e.OnSkillCasting(caster, targets, grids);
+                e.OnSkillCasting(ctx);
             }
         }
 
@@ -754,11 +756,12 @@ namespace FunGame.Core.Entity
         {
             LastCostMP = RealMPCost;
             LastCostEP = RealEPCost;
+            SkillCastContext ctx = new(GamingQueue, caster) { Targets = targets, Grids = grids, MPCost = LastCostMP, EPCost = LastCostEP };
             foreach (Effect e in Effects.OrderByDescending(e => e.Priority))
             {
                 e.GamingQueue = GamingQueue;
                 e.RecordEffectTriggeredIfOverridden(nameof(Effect.BeforeSkillCasted), caster);
-                e.BeforeSkillCasted(caster, targets, grids, LastCostMP, LastCostEP);
+                e.BeforeSkillCasted(ctx);
             }
         }
 
@@ -783,6 +786,7 @@ namespace FunGame.Core.Entity
                     }
                 }
             }
+            SkillCastContext ctx = new(queue, caster) { Targets = targets, Grids = grids, Others = Values };
             Character[] characters = [caster, .. targets];
             foreach (Character target in characters)
             {
@@ -790,8 +794,9 @@ namespace FunGame.Core.Entity
                 foreach (Effect e in effects)
                 {
                     e.GamingQueue = GamingQueue;
-                    e.RecordEffectTriggeredIfOverridden(nameof(Effect.BeforeSkillCasted), target);
-                    if (!e.BeforeSkillCasted(caster, this, targets, grids, Values))
+                    e.RecordEffectTriggeredIfOverridden(nameof(Effect.BeforeSkillCastedOnStatus), target);
+                    SkillCastContext statusCtx = new(queue, caster) { Skill = this, Targets = targets, Grids = grids, Others = Values };
+                    if (!e.BeforeSkillCastedOnStatus(statusCtx))
                     {
                         targets.Remove(target);
                     }
@@ -801,7 +806,7 @@ namespace FunGame.Core.Entity
             {
                 e.GamingQueue = GamingQueue;
                 e.RecordEffectTriggeredIfOverridden(nameof(Effect.OnSkillCasted), caster);
-                e.OnSkillCasted(caster, targets, grids, Values);
+                e.OnSkillCasted(ctx);
             }
         }
 
@@ -810,11 +815,12 @@ namespace FunGame.Core.Entity
         /// </summary>
         public void AfterSkillCasted(Character caster, List<Character> targets, List<Grid> grids)
         {
+            SkillCastContext ctx = new(GamingQueue, caster) { Targets = targets, Grids = grids };
             foreach (Effect e in Effects.OrderByDescending(e => e.Priority))
             {
                 e.GamingQueue = GamingQueue;
                 e.RecordEffectTriggeredIfOverridden(nameof(Effect.AfterSkillCasted), caster);
-                e.AfterSkillCasted(caster, targets, grids);
+                e.AfterSkillCasted(ctx);
             }
         }
 
@@ -825,9 +831,10 @@ namespace FunGame.Core.Entity
         /// <param name="targets"></param>
         public void OnSkillCasted(User user, List<Character> targets)
         {
+            SkillCastContext ctx = new(null, null) { User = user, Targets = targets, Others = Values };
             foreach (Effect e in Effects.OrderByDescending(e => e.Priority))
             {
-                e.OnSkillCasted(user, targets, Values);
+                e.OnSkillCastedOutside(ctx);
             }
         }
 
@@ -865,7 +872,7 @@ namespace FunGame.Core.Entity
                     e.GamingQueue = GamingQueue;
                     Character.Effects.Add(e);
                     e.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEffectGained), Character);
-                    e.OnEffectGained(Character);
+                    e.OnEffectGained(new HookContext(GamingQueue, Character));
                 }
                 // 如果是纯被动技能，则不会添加到角色技能组中
                 if (IsActive)
@@ -890,7 +897,7 @@ namespace FunGame.Core.Entity
                 {
                     e.GamingQueue = GamingQueue;
                     e.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEffectLost), character);
-                    e.OnEffectLost(character);
+                    e.OnEffectLost(new HookContext(GamingQueue, character));
                 }
             }
             character.Skills.Remove(this);
