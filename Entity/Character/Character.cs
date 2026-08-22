@@ -2,6 +2,7 @@ using System.Text;
 using FunGame.Core.Api;
 using FunGame.Core.Interface.Entity;
 using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.EffectContext;
 using FunGame.Core.Model.Framework;
 
 namespace FunGame.Core.Entity
