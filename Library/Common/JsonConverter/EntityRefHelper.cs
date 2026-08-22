@@ -132,22 +132,36 @@ namespace FunGame.Core.Library.Common.JsonConverter
     {
         public static void Write(Utf8JsonWriter writer, Skill? skill)
         {
+            if (skill == null)
+            {
+                // null 技能（如普通攻击的操作记录）写 JSON null，避免占位对象被展示端误读为真实技能
+                writer.WriteNullValue();
+                return;
+            }
             writer.WriteStartObject();
-            writer.WriteString(nameof(Skill.Guid), skill?.Guid ?? Guid.Empty);
-            writer.WriteNumber(nameof(Skill.Id), skill?.Id ?? 0);
-            writer.WriteString(nameof(Skill.Name), skill?.Name ?? "");
-            writer.WriteNumber(nameof(Skill.SkillType), (int)(skill?.SkillType ?? SkillType.Magic));
+            writer.WriteString(nameof(Skill.Guid), skill.Guid);
+            writer.WriteNumber(nameof(Skill.Id), skill.Id);
+            writer.WriteString(nameof(Skill.Name), skill.Name);
+            writer.WriteNumber(nameof(Skill.SkillType), (int)skill.SkillType);
             writer.WriteEndObject();
         }
 
         public static Skill? Read(ref Utf8JsonReader reader)
         {
             using JsonDocument doc = JsonDocument.ParseValue(ref reader);
+            if (doc.RootElement.ValueKind == JsonValueKind.Null)
+            {
+                return null;
+            }
             return ReadElement(doc.RootElement);
         }
 
         internal static Skill? ReadElement(JsonElement root)
         {
+            if (root.ValueKind != JsonValueKind.Object)
+            {
+                return null;
+            }
             Guid guid = root.TryGetProperty(nameof(Skill.Guid), out JsonElement guidElement) && guidElement.ValueKind == JsonValueKind.String ? guidElement.GetGuid() : Guid.Empty;
             long id = root.TryGetProperty(nameof(Skill.Id), out JsonElement idElement) && idElement.ValueKind == JsonValueKind.Number ? idElement.GetInt64() : 0;
             string name = root.TryGetProperty(nameof(Skill.Name), out JsonElement nameElement) && nameElement.ValueKind == JsonValueKind.String ? nameElement.GetString() ?? "" : "";

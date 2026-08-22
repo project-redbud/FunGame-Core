@@ -21,6 +21,10 @@ namespace FunGame.Core.Model.Framework
         public bool HasKill { get; set; } = false;
         public List<Character> Assists { get; set; } = [];
         public Dictionary<Character, double> Damages { get; set; } = [];
+        /// <summary>
+        /// 每个目标按伤害类型分桶的伤害值（物理/魔法/真实；各桶之和与 <see cref="Damages"/> 一致）
+        /// </summary>
+        public Dictionary<Character, Dictionary<DamageType, double>> DamageDetails { get; set; } = [];
         public Dictionary<Character, bool> IsCritical { get; set; } = [];
         public Dictionary<Character, bool> IsEvaded { get; set; } = [];
         public Dictionary<Character, bool> IsImmune { get; set; } = [];
@@ -194,6 +198,7 @@ namespace FunGame.Core.Model.Framework
                 HasKill = HasKill,
                 Assists = [.. Assists],
                 Damages = new(Damages),
+                DamageDetails = DamageDetails.ToDictionary(kv => kv.Key, kv => new Dictionary<DamageType, double>(kv.Value)),
                 IsCritical = new(IsCritical),
                 IsEvaded = new(IsEvaded),
                 IsImmune = new(IsImmune),

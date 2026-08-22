@@ -65,6 +65,9 @@ namespace FunGame.Core.Library.Common.JsonConverter
                 case nameof(ActionRecord.Damages):
                     convertingContext[nameof(ActionRecord.Damages)] = JsonService.GetObject<Dictionary<Guid, double>>(ref reader, options) ?? [];
                     break;
+                case nameof(ActionRecord.DamageDetails):
+                    convertingContext[nameof(ActionRecord.DamageDetails)] = JsonService.GetObject<Dictionary<Guid, Dictionary<int, double>>>(ref reader, options) ?? [];
+                    break;
                 case nameof(ActionRecord.IsCritical):
                     convertingContext[nameof(ActionRecord.IsCritical)] = JsonService.GetObject<Dictionary<Guid, bool>>(ref reader, options) ?? [];
                     break;
@@ -108,6 +111,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
             List<Character>? allCharacters = convertingContext.TryGetValue(AllCharactersProperty, out object? ac) ? ac as List<Character> : null;
 
             ResolveKeyed<double>(record, convertingContext, nameof(ActionRecord.Damages), allCharacters, (c, v) => record.Damages[c] = v);
+            ResolveKeyed<Dictionary<int, double>>(record, convertingContext, nameof(ActionRecord.DamageDetails), allCharacters, (c, v) => record.DamageDetails[c] = v.ToDictionary(kv => (DamageType)kv.Key, kv => kv.Value));
             ResolveKeyed<bool>(record, convertingContext, nameof(ActionRecord.IsCritical), allCharacters, (c, v) => record.IsCritical[c] = v);
             ResolveKeyed<bool>(record, convertingContext, nameof(ActionRecord.IsEvaded), allCharacters, (c, v) => record.IsEvaded[c] = v);
             ResolveKeyed<bool>(record, convertingContext, nameof(ActionRecord.IsImmune), allCharacters, (c, v) => record.IsImmune[c] = v);
@@ -169,6 +173,11 @@ namespace FunGame.Core.Library.Common.JsonConverter
             CharacterRefHelper.WriteList(writer, value.Targets);
             writer.WritePropertyName(nameof(ActionRecord.Damages));
             JsonSerializer.Serialize(writer, value.Damages.ToDictionary(kv => kv.Key.Guid, kv => kv.Value), options);
+            if (value.DamageDetails.Count > 0)
+            {
+                writer.WritePropertyName(nameof(ActionRecord.DamageDetails));
+                JsonSerializer.Serialize(writer, value.DamageDetails.ToDictionary(kv => kv.Key.Guid, kv => kv.Value.ToDictionary(kv2 => (int)kv2.Key, kv2 => kv2.Value)), options);
+            }
             writer.WritePropertyName(nameof(ActionRecord.IsCritical));
             JsonSerializer.Serialize(writer, value.IsCritical.ToDictionary(kv => kv.Key.Guid, kv => kv.Value), options);
             writer.WritePropertyName(nameof(ActionRecord.IsEvaded));
