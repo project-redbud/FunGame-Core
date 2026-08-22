@@ -1,5 +1,6 @@
 ﻿using FunGame.Core.Entity;
 using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.EffectContext;
 
 namespace FunGame.Core.Model.PrefabricatedEntity
 {
@@ -101,7 +102,7 @@ namespace FunGame.Core.Model.PrefabricatedEntity
             {
                 character.Effects.Add(NeuralCalibration);
                 NeuralCalibration.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEffectGained), character);
-                NeuralCalibration.OnEffectGained(character);
+                NeuralCalibration.OnEffectGained(new HookContext(null, character));
             }
             if (CourageCommand != null)
             {
@@ -128,7 +129,7 @@ namespace FunGame.Core.Model.PrefabricatedEntity
                 if (NeuralCalibration.IsInEffect)
                 {
                     NeuralCalibration.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEffectLost), character);
-                    NeuralCalibration.OnEffectLost(character);
+                    NeuralCalibration.OnEffectLost(new HookContext(null, character));
                 }
             }
             CourageCommand?.RemoveSkillFromCharacter(character);

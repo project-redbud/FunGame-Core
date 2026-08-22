@@ -1306,7 +1306,7 @@ namespace FunGame.Core.Entity
                 foreach (Effect e in effects)
                 {
                     e.RecordEffectTriggeredIfOverridden(nameof(Effect.OnOwnerLevelUp), this);
-                    e.OnOwnerLevelUp(this, Level);
+                    e.OnOwnerLevelUp(new LevelUpContext(this, Level));
                 }
             }
         }
@@ -1336,7 +1336,7 @@ namespace FunGame.Core.Entity
             foreach (Effect effect in effects)
             {
                 effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnAttributeChanged), this);
-                effect.OnAttributeChanged(this);
+                effect.OnAttributeChanged(new HookContext(null, this));
             }
             NormalAttack.SetMagicType(null, null, null);
         }
@@ -2192,7 +2192,7 @@ namespace FunGame.Core.Entity
             foreach (Effect e in effects)
             {
                 e.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEffectLost), this);
-                e.OnEffectLost(this);
+                e.OnEffectLost(new HookContext(null, this));
             }
             Effects.Clear();
             Skills.Clear();

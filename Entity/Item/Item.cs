@@ -238,7 +238,7 @@ namespace FunGame.Core.Entity
                         {
                             Character.Effects.Add(e);
                             e.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEffectGained), Character);
-                            e.OnEffectGained(Character);
+                            e.OnEffectGained(new HookContext(skill.GamingQueue, Character));
                         }
                     }
                 }

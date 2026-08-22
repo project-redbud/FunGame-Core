@@ -1,5 +1,6 @@
 ﻿using FunGame.Core.Entity;
 using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.EffectContext;
 using FunGame.Core.Model.Framework;
 
 namespace FunGame.Core.Model.Queue
@@ -85,7 +86,7 @@ namespace FunGame.Core.Model.Queue
             _queue.Clear();
             _isGameEnd = true;
 
-            if (!OnGameEndEvent(winner))
+            if (!OnGameEndEvent(new HookContext(this, winner)))
             {
                 return;
             }

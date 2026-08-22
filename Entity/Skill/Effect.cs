@@ -3,6 +3,7 @@ using FunGame.Core.Api;
 using FunGame.Core.Interface.Base;
 using FunGame.Core.Interface.Entity;
 using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.EffectContext;
 using FunGame.Core.Model.Framework;
 
 namespace FunGame.Core.Entity
@@ -251,8 +252,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 获得此特效时
         /// </summary>
-        /// <param name="character"></param>
-        public virtual void OnEffectGained(Character character)
+        /// <param name="ctx"></param>
+        public virtual void OnEffectGained(HookContext ctx)
         {
 
         }
@@ -260,8 +261,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 失去此特效时
         /// </summary>
-        /// <param name="character"></param>
-        public virtual void OnEffectLost(Character character)
+        /// <param name="ctx"></param>
+        public virtual void OnEffectLost(HookContext ctx)
         {
 
         }
@@ -269,7 +270,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 游戏开始时触发（第一回合开始前）
         /// </summary>
-        public virtual void OnGameStart()
+        /// <param name="ctx"></param>
+        public virtual void OnGameStart(HookContext ctx)
         {
 
         }
@@ -277,12 +279,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在伤害计算前修改伤害类型
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="enemy"></param>
-        /// <param name="isNormalAttack"></param>
-        /// <param name="damageType"></param>
-        /// <param name="magicType"></param>
-        public virtual void AlterDamageTypeBeforeCalculation(Character character, Character enemy, ref bool isNormalAttack, ref DamageType damageType, ref MagicType magicType)
+        /// <param name="ctx"></param>
+        public virtual void AlterDamageTypeBeforeCalculation(DamageContext ctx)
         {
 
         }
@@ -290,15 +288,9 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在伤害计算前修改预期伤害
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="enemy"></param>
-        /// <param name="damage"></param>
-        /// <param name="isNormalAttack"></param>
-        /// <param name="damageType"></param>
-        /// <param name="magicType"></param>
-        /// <param name="totalDamageBonus"></param>
+        /// <param name="ctx"></param>
         /// <returns>返回伤害增减值</returns>
-        public virtual double AlterExpectedDamageBeforeCalculation(Character character, Character enemy, double damage, bool isNormalAttack, DamageType damageType, MagicType magicType, Dictionary<Effect, double> totalDamageBonus)
+        public virtual double AlterExpectedDamageBeforeCalculation(DamageContext ctx)
         {
             return 0;
         }
@@ -306,17 +298,9 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在伤害计算完成后修改实际伤害 [ 允许取消伤害 ]
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="enemy"></param>
-        /// <param name="damage"></param>
-        /// <param name="isNormalAttack"></param>
-        /// <param name="damageType"></param>
-        /// <param name="magicType"></param>
-        /// <param name="damageResult"></param>
-        /// <param name="isEvaded"></param>
-        /// <param name="totalDamageBonus"></param>
+        /// <param name="ctx"></param>
         /// <returns>返回伤害增减值</returns>
-        public virtual double AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult, ref bool isEvaded, Dictionary<Effect, double> totalDamageBonus)
+        public virtual double AlterActualDamageAfterCalculation(DamageContext ctx)
         {
             return 0;
         }
@@ -324,13 +308,9 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在应用真实伤害前修改伤害 [ 允许取消伤害 ]
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="enemy"></param>
-        /// <param name="damage"></param>
-        /// <param name="isNormalAttack"></param>
-        /// <param name="damageResult"></param>
+        /// <param name="ctx"></param>
         /// <returns>返回 true 取消伤害</returns>
-        public virtual bool BeforeApplyTrueDamage(Character character, Character enemy, double damage, bool isNormalAttack, DamageResult damageResult)
+        public virtual bool BeforeApplyTrueDamage(DamageContext ctx)
         {
             return false;
         }
@@ -338,17 +318,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 伤害应用时触发
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="enemy"></param>
-        /// <param name="damage"></param>
-        /// <param name="actualDamage"></param>
-        /// <param name="isNormalAttack"></param>
-        /// <param name="damageType"></param>
-        /// <param name="magicType"></param>
-        /// <param name="damageResult"></param>
-        /// <param name="shieldMessage"></param>
-        /// <param name="originalMessage"></param>
-        public virtual void OnApplyDamage(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult, string shieldMessage, ref string originalMessage)
+        /// <param name="ctx"></param>
+        public virtual void OnApplyDamage(DamageContext ctx)
         {
 
         }
@@ -356,10 +327,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在完成普通攻击动作之后修改硬直时间
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="baseHardnessTime"></param>
-        /// <param name="isCheckProtected"></param>
-        public virtual void AlterHardnessTimeAfterNormalAttack(Character character, ref double baseHardnessTime, ref bool isCheckProtected)
+        /// <param name="ctx"></param>
+        public virtual void AlterHardnessTimeAfterNormalAttack(HardnessContext ctx)
         {
 
         }
@@ -367,11 +336,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在完成释放技能动作之后修改硬直时间
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="skill"></param>
-        /// <param name="baseHardnessTime"></param>
-        /// <param name="isCheckProtected"></param>
-        public virtual void AlterHardnessTimeAfterCastSkill(Character character, Skill skill, ref double baseHardnessTime, ref bool isCheckProtected)
+        /// <param name="ctx"></param>
+        public virtual void AlterHardnessTimeAfterCastSkill(HardnessContext ctx)
         {
 
         }
@@ -379,9 +345,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在造成伤害时，修改获得的能量
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="baseEP"></param>
-        public virtual void AlterEPAfterDamage(Character character, ref double baseEP)
+        /// <param name="ctx"></param>
+        public virtual void AlterEPAfterDamage(DamageContext ctx)
         {
 
         }
@@ -389,9 +354,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在受到伤害时，修改获得的能量
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="baseEP"></param>
-        public virtual void AlterEPAfterGetDamage(Character character, ref double baseEP)
+        /// <param name="ctx"></param>
+        public virtual void AlterEPAfterGetDamage(DamageContext ctx)
         {
 
         }
@@ -399,10 +363,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 技能开始吟唱时 [ 爆发技插队可触发此项 ]
         /// </summary>
-        /// <param name="caster"></param>
-        /// <param name="targets"></param>
-        /// <param name="grids"></param>
-        public virtual void OnSkillCasting(Character caster, List<Character> targets, List<Grid> grids)
+        /// <param name="ctx"></param>
+        public virtual void OnSkillCasting(SkillCastContext ctx)
         {
 
         }
@@ -410,11 +372,9 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 技能吟唱被打断前触发
         /// </summary>
-        /// <param name="caster"></param>
-        /// <param name="skill"></param>
-        /// <param name="interrupter"></param>
+        /// <param name="ctx"></param>
         /// <returns>返回 false 阻止打断</returns>
-        public virtual bool BeforeSkillCastWillBeInterrupted(Character caster, Skill skill, Character interrupter)
+        public virtual bool BeforeSkillCastWillBeInterrupted(SkillCastContext ctx)
         {
             return true;
         }
@@ -422,10 +382,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 技能吟唱被打断时
         /// </summary>
-        /// <param name="caster"></param>
-        /// <param name="skill"></param>
-        /// <param name="interrupter"></param>
-        public virtual void OnSkillCastInterrupted(Character caster, Skill skill, Character interrupter)
+        /// <param name="ctx"></param>
+        public virtual void OnSkillCastInterrupted(SkillCastContext ctx)
         {
 
         }
@@ -433,11 +391,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 吟唱结束后释放技能（魔法）/ 直接释放技能（战技/爆发技）
         /// </summary>
-        /// <param name="caster"></param>
-        /// <param name="targets"></param>
-        /// <param name="grids"></param>
-        /// <param name="others"></param>
-        public virtual void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        /// <param name="ctx"></param>
+        public virtual void OnSkillCasted(SkillCastContext ctx)
         {
 
         }
@@ -445,10 +400,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 对目标触发技能效果（局外）
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="targets"></param>
-        /// <param name="others"></param>
-        public virtual void OnSkillCasted(User user, List<Character> targets, Dictionary<string, object> others)
+        /// <param name="ctx"></param>
+        public virtual void OnSkillCastedOutside(SkillCastContext ctx)
         {
 
         }
@@ -456,12 +409,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在技能释放前触发 [ 技能的特效组 ]
         /// </summary>
-        /// <param name="caster"></param>
-        /// <param name="targets"></param>
-        /// <param name="grids"></param>
-        /// <param name="mpCost"></param>
-        /// <param name="epCost"></param>
-        public virtual void BeforeSkillCasted(Character caster, List<Character> targets, List<Grid> grids, double mpCost = 0, double epCost = 0)
+        /// <param name="ctx"></param>
+        public virtual void BeforeSkillCasted(SkillCastContext ctx)
         {
 
         }
@@ -469,13 +418,9 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在技能释放前触发 [ 状态栏特效 ]
         /// </summary>
-        /// <param name="caster"></param>
-        /// <param name="skill"></param>
-        /// <param name="targets"></param>
-        /// <param name="grids"></param>
-        /// <param name="others"></param>
+        /// <param name="ctx"></param>
         /// <returns>返回 false 将角色从目标集合中移除</returns>
-        public virtual bool BeforeSkillCasted(Character caster, Skill skill, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public virtual bool BeforeSkillCastedOnStatus(SkillCastContext ctx)
         {
             return true;
         }
@@ -483,10 +428,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在技能释放后触发 [ 技能的特效组 ]
         /// </summary>
-        /// <param name="caster"></param>
-        /// <param name="targets"></param>
-        /// <param name="grids"></param>
-        public virtual void AfterSkillCasted(Character caster, List<Character> targets, List<Grid> grids)
+        /// <param name="ctx"></param>
+        public virtual void AfterSkillCasted(SkillCastContext ctx)
         {
 
         }
@@ -494,31 +437,18 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在时间流逝期间应用生命/魔法回复前修改 [ 允许取消回复 ]
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="hr"></param>
-        /// <param name="mr"></param>
+        /// <param name="ctx"></param>
         /// <returns>返回 false 取消回复</returns>
-        public virtual bool BeforeApplyRecoveryAtTimeLapsing(Character character, ref double hr, ref double mr)
+        public virtual bool BeforeApplyRecoveryAtTimeLapsing(TimeLapseContext ctx)
         {
             return true;
         }
 
         /// <summary>
-        /// 时间流逝时
+        /// 时间流逝时（<see cref="HookContext.Actor"/> 角色版与 <see cref="TimeLapseContext.Grid"/> 地图格版共用此钩子）
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="elapsed"></param>
-        public virtual void OnTimeElapsed(Character character, double elapsed)
-        {
-
-        }
-
-        /// <summary>
-        /// 时间流逝时 [ 地图用 ]
-        /// </summary>
-        /// <param name="grid"></param>
-        /// <param name="elapsed"></param>
-        public virtual void OnTimeElapsed(Grid grid, double elapsed)
+        /// <param name="ctx"></param>
+        public virtual void OnTimeElapsed(TimeLapseContext ctx)
         {
 
         }
@@ -526,15 +456,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在完成伤害结算后
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="enemy"></param>
-        /// <param name="damage"></param>
-        /// <param name="actualDamage"></param>
-        /// <param name="isNormalAttack"></param>
-        /// <param name="damageType"></param>
-        /// <param name="magicType"></param>
-        /// <param name="damageResult"></param>
-        public virtual void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult)
+        /// <param name="ctx"></param>
+        public virtual void AfterDamageCalculation(DamageContext ctx)
         {
 
         }
@@ -542,12 +465,9 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在治疗结算前触发
         /// </summary>
-        /// <param name="actor"></param>
-        /// <param name="target"></param>
-        /// <param name="heal"></param>
-        /// <param name="canRespawn"></param>
+        /// <param name="ctx"></param>
         /// <returns>返回 false 取消治疗</returns>
-        public virtual bool BeforeHealToTarget(Character actor, Character target, double heal, bool canRespawn)
+        public virtual bool BeforeHealToTarget(HealContext ctx)
         {
             return true;
         }
@@ -555,13 +475,9 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在 <see cref="BeforeHealToTarget"/> 后、治疗结算前修改治疗值
         /// </summary>
-        /// <param name="actor"></param>
-        /// <param name="target"></param>
-        /// <param name="heal"></param>
-        /// <param name="canRespawn"></param>
-        /// <param name="totalHealBonus"></param>
+        /// <param name="ctx"></param>
         /// <returns>返回治疗增减值</returns>
-        public virtual double AlterHealValueBeforeHealToTarget(Character actor, Character target, double heal, ref bool canRespawn, Dictionary<Effect, double> totalHealBonus)
+        public virtual double AlterHealValueBeforeHealToTarget(HealContext ctx)
         {
             return 0;
         }
@@ -569,12 +485,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在特效持有者的回合开始前
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="enemys"></param>
-        /// <param name="teammates"></param>
-        /// <param name="skills"></param>
-        /// <param name="items"></param>
-        public virtual void OnTurnStart(Character character, List<Character> enemys, List<Character> teammates, List<Skill> skills, List<Item> items)
+        /// <param name="ctx"></param>
+        public virtual void OnTurnStart(TurnContext ctx)
         {
 
         }
@@ -582,8 +494,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在特效持有者的回合结束后
         /// </summary>
-        /// <param name="character"></param>
-        public virtual void OnTurnEnd(Character character)
+        /// <param name="ctx"></param>
+        public virtual void OnTurnEnd(TurnContext ctx)
         {
 
         }
@@ -591,9 +503,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 技能被升级时
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="level"></param>
-        public virtual void OnSkillLevelUp(Character character, double level)
+        /// <param name="ctx"></param>
+        public virtual void OnSkillLevelUp(LevelUpContext ctx)
         {
 
         }
@@ -601,9 +512,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 特效持有者升级时
         /// </summary>
-        /// <param name="owner"></param>
-        /// <param name="level"></param>
-        public virtual void OnOwnerLevelUp(Character owner, double level)
+        /// <param name="ctx"></param>
+        public virtual void OnOwnerLevelUp(LevelUpContext ctx)
         {
 
         }
@@ -611,13 +521,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在完成死亡结算后 [ 全体广播 ]
         /// </summary>
-        /// <param name="death"></param>
-        /// <param name="hasMaster"></param>
-        /// <param name="killer"></param>
-        /// <param name="continuousKilling"></param>
-        /// <param name="earnedMoney"></param>
-        /// <param name="assists"></param>
-        public virtual void AfterDeathCalculation(Character death, bool hasMaster, Character? killer, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney, Character[] assists)
+        /// <param name="ctx"></param>
+        public virtual void AfterDeathCalculation(DeathContext ctx)
         {
 
         }
@@ -625,11 +530,9 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 闪避检定前触发
         /// </summary>
-        /// <param name="actor"></param>
-        /// <param name="enemy"></param>
-        /// <param name="throwingBonus"></param>
+        /// <param name="ctx"></param>
         /// <returns>返回 false 表示不进行闪避检定</returns>
-        public virtual bool BeforeEvadeCheck(Character actor, Character enemy, ref double throwingBonus)
+        public virtual bool BeforeEvadeCheck(DamageContext ctx)
         {
             return true;
         }
@@ -637,11 +540,9 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在触发闪避时
         /// </summary>
-        /// <param name="actor"></param>
-        /// <param name="enemy"></param>
-        /// <param name="dice"></param>
+        /// <param name="ctx"></param>
         /// <returns>返回 true 表示无视闪避</returns>
-        public virtual bool OnEvadedTriggered(Character actor, Character enemy, double dice)
+        public virtual bool OnEvadedTriggered(DamageContext ctx)
         {
             return false;
         }
@@ -649,12 +550,9 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 暴击检定前触发
         /// </summary>
-        /// <param name="actor"></param>
-        /// <param name="enemy"></param>
-        /// <param name="isNormalAttack"></param>
-        /// <param name="throwingBonus"></param>
+        /// <param name="ctx"></param>
         /// <returns>返回 false 表示不进行暴击检定</returns>
-        public virtual bool BeforeCriticalCheck(Character actor, Character enemy, bool isNormalAttack, ref double throwingBonus)
+        public virtual bool BeforeCriticalCheck(DamageContext ctx)
         {
             return true;
         }
@@ -662,10 +560,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在触发暴击时
         /// </summary>
-        /// <param name="actor"></param>
-        /// <param name="enemy"></param>
-        /// <param name="dice"></param>
-        public virtual void OnCriticalDamageTriggered(Character actor, Character enemy, double dice)
+        /// <param name="ctx"></param>
+        public virtual void OnCriticalDamageTriggered(DamageContext ctx)
         {
 
         }
@@ -673,23 +569,18 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 角色属性发生变化
         /// </summary>
-        /// <param name="character"></param>
-        public virtual void OnAttributeChanged(Character character)
+        /// <param name="ctx"></param>
+        public virtual void OnAttributeChanged(HookContext ctx)
         {
 
         }
 
         /// <summary>
-        /// 行动开始前，修改可选择的 <paramref name="enemys"/>, <paramref name="teammates"/>, <paramref name="skills"/> 列表<para/>
-        /// 注意 <paramref name="continuousKilling"/> 和 <paramref name="earnedMoney"/> 是副本，修改无效
+        /// 行动开始前，修改可选择的 <see cref="SelectionContext.Enemys"/>, <see cref="SelectionContext.Teammates"/>, <see cref="SelectionContext.Skills"/> 列表<para/>
+        /// 注意 <see cref="SelectionContext.ContinuousKilling"/> 和 <see cref="SelectionContext.EarnedMoney"/> 是副本，修改无效
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="enemys"></param>
-        /// <param name="teammates"></param>
-        /// <param name="skills"></param>
-        /// <param name="continuousKilling"></param>
-        /// <param name="earnedMoney"></param>
-        public virtual void AlterSelectListBeforeAction(Character character, List<Character> enemys, List<Character> teammates, List<Skill> skills, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney)
+        /// <param name="ctx"></param>
+        public virtual void AlterSelectListBeforeAction(SelectionContext ctx)
         {
 
         }
@@ -697,27 +588,18 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 开始选择移动目标前
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="enemys"></param>
-        /// <param name="teammates"></param>
-        /// <param name="map"></param>
-        /// <param name="moveRange"></param>
-        public virtual void BeforeSelectTargetGrid(Character character, List<Character> enemys, List<Character> teammates, GameMap map, List<Grid> moveRange)
+        /// <param name="ctx"></param>
+        public virtual void BeforeSelectTargetGrid(SelectionContext ctx)
         {
 
         }
 
         /// <summary>
-        /// 开始选择目标前，修改可选择的 <paramref name="enemys"/>, <paramref name="teammates"/> 列表<para/>
-        /// <see cref="ISkill"/> 有两种，使用时注意判断是 <see cref="Entity.Skill"/> 还是 <see cref="NormalAttack"/>
+        /// 开始选择目标前，修改可选择的 <see cref="SelectionContext.Enemys"/>, <see cref="SelectionContext.Teammates"/> 列表<para/>
+        /// <see cref="SelectionContext.Skill"/> 有两种，使用时注意判断是 <see cref="Entity.Skill"/> 还是 <see cref="NormalAttack"/>
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="skill"></param>
-        /// <param name="allEnemys"></param>
-        /// <param name="allTeammates"></param>
-        /// <param name="enemys"></param>
-        /// <param name="teammates"></param>
-        public virtual void AlterSelectListBeforeSelection(Character character, ISkill skill, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates)
+        /// <param name="ctx"></param>
+        public virtual void AlterSelectListBeforeSelection(SelectionContext ctx)
         {
 
         }
@@ -725,17 +607,9 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 行动开始前，指定角色的行动，而不是使用顺序表自带的逻辑；或者修改对应的操作触发概率
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="dp"></param>
-        /// <param name="state"></param>
-        /// <param name="canUseItem"></param>
-        /// <param name="canCastSkill"></param>
-        /// <param name="pUseItem"></param>
-        /// <param name="pCastSkill"></param>
-        /// <param name="pNormalAttack"></param>
-        /// <param name="forceAction"></param>
+        /// <param name="ctx"></param>
         /// <returns></returns>
-        public virtual CharacterActionType AlterActionTypeBeforeAction(Character character, DecisionPoints dp, CharacterState state, ref bool canUseItem, ref bool canCastSkill, ref double pUseItem, ref double pCastSkill, ref double pNormalAttack, ref bool forceAction)
+        public virtual CharacterActionType AlterActionTypeBeforeAction(DecisionContext ctx)
         {
             return CharacterActionType.None;
         }
@@ -743,12 +617,13 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 可重写对某个特效的驱散实现，适用于特殊驱散类型
         /// </summary>
-        /// <param name="dispeller"></param>
-        /// <param name="target"></param>
-        /// <param name="effect"></param>
-        /// <param name="isEnemy"></param>
-        public virtual void OnDispellingEffect(Character dispeller, Character target, Effect effect, bool isEnemy)
+        /// <param name="ctx"></param>
+        public virtual void OnDispellingEffect(DispelContext ctx)
         {
+            Character? target = ctx.Target;
+            Effect? effect = ctx.Effect;
+            if (target == null || effect == null) return;
+            bool isEnemy = ctx.IsEnemy;
             bool isDispel = false;
             // 先看特效整体是不是能被驱散的
             switch (effect.DispelledType)
@@ -828,7 +703,7 @@ namespace FunGame.Core.Entity
                         WriteLine($"[ {target} ] 失去了 [ {effect.Name} ] 效果。");
                     }
                     effect.RecordEffectTriggeredIfOverridden(nameof(OnEffectLost), target);
-                    effect.OnEffectLost(target);
+                    effect.OnEffectLost(new HookContext(GamingQueue, target));
                 }
             }
         }
@@ -836,12 +711,9 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 当特效被驱散时的
         /// </summary>
-        /// <param name="dispeller"></param>
-        /// <param name="target"></param>
-        /// <param name="dispellerEffect"></param>
-        /// <param name="isEnemy"></param>
+        /// <param name="ctx"></param>
         /// <returns>返回 false 可以阻止驱散</returns>
-        public virtual bool OnEffectIsBeingDispelled(Character dispeller, Character target, Effect dispellerEffect, bool isEnemy)
+        public virtual bool OnEffectIsBeingDispelled(DispelContext ctx)
         {
             return true;
         }
@@ -849,12 +721,9 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 当角色触发生命偷取前
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="enemy"></param>
-        /// <param name="damage"></param>
-        /// <param name="steal"></param>
+        /// <param name="ctx"></param>
         /// <returns>返回 false 取消生命偷取</returns>
-        public virtual bool BeforeLifesteal(Character character, Character enemy, double damage, double steal)
+        public virtual bool BeforeLifesteal(LifestealContext ctx)
         {
             return true;
         }
@@ -862,11 +731,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 当角色触发生命偷取后
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="enemy"></param>
-        /// <param name="damage"></param>
-        /// <param name="steal"></param>
-        public virtual void AfterLifesteal(Character character, Character enemy, double damage, double steal)
+        /// <param name="ctx"></param>
+        public virtual void AfterLifesteal(LifestealContext ctx)
         {
 
         }
@@ -874,15 +740,9 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在角色护盾结算前触发
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="attacker"></param>
-        /// <param name="damageType"></param>
-        /// <param name="magicType"></param>
-        /// <param name="damage"></param>
-        /// <param name="damageReduce"></param>
-        /// <param name="message"></param>
+        /// <param name="ctx"></param>
         /// <returns>返回 false 可以跳过护盾结算</returns>
-        public virtual bool BeforeShieldCalculation(Character character, Character attacker, DamageType damageType, MagicType magicType, double damage, ref double damageReduce, ref string message)
+        public virtual bool BeforeShieldCalculation(ShieldContext ctx)
         {
             return true;
         }
@@ -890,39 +750,18 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在角色护盾有效防御时 [ 破碎本身不会触发此钩子，但破碎后化解可触发 ]
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="attacker"></param>
-        /// <param name="damageType"></param>
-        /// <param name="magicType"></param>
-        /// <param name="damage"></param>
-        /// <param name="shieldType"></param>
-        public virtual void OnShieldNeutralizeDamage(Character character, Character attacker, DamageType damageType, MagicType magicType, double damage, ShieldType shieldType)
+        /// <param name="ctx"></param>
+        public virtual void OnShieldNeutralizeDamage(ShieldContext ctx)
         {
 
         }
 
         /// <summary>
-        /// 当角色护盾破碎时 [ 非绑定特效，只有同种类型的总护盾值小于等于 0 时触发 ]
+        /// 当角色护盾破碎时 [ <see cref="ShieldContext.ShieldType"/> 非绑定特效版与 <see cref="ShieldContext.ShieldEffect"/> 绑定特效版共用此钩子 ]
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="attacker"></param>
-        /// <param name="type"></param>
-        /// <param name="overFlowing"></param>
+        /// <param name="ctx"></param>
         /// <returns>返回 false 可以阻止后续扣除角色生命值</returns>
-        public virtual bool OnShieldBroken(Character character, Character attacker, ShieldType type, double overFlowing)
-        {
-            return true;
-        }
-
-        /// <summary>
-        /// 当角色护盾破碎时 [ 绑定特效的护盾值小于等于 0 时便会触发 ]
-        /// </summary>
-        /// <param name="character"></param>
-        /// <param name="attacker"></param>
-        /// <param name="effect"></param>
-        /// <param name="overFlowing"></param>
-        /// <returns>返回 false 可以阻止后续扣除角色生命值</returns>
-        public virtual bool OnShieldBroken(Character character, Character attacker, Effect effect, double overFlowing)
+        public virtual bool OnShieldBroken(ShieldContext ctx)
         {
             return true;
         }
@@ -930,12 +769,9 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在免疫检定时
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="target"></param>
-        /// <param name="skill"></param>
-        /// <param name="item"></param>
+        /// <param name="ctx"></param>
         /// <returns>false：免疫检定不通过</returns>
-        public virtual bool OnImmuneCheck(Character character, Character target, ISkill skill, Item? item = null)
+        public virtual bool OnImmuneCheck(ImmuneContext ctx)
         {
             return true;
         }
@@ -943,14 +779,9 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在伤害免疫检定时
         /// </summary>
-        /// <param name="actor"></param>
-        /// <param name="enemy"></param>
-        /// <param name="isNormalAttack"></param>
-        /// <param name="damageType"></param>
-        /// <param name="magicType"></param>
-        /// <param name="damage"></param>
+        /// <param name="ctx"></param>
         /// <returns>false：免疫检定不通过</returns>
-        public virtual bool OnDamageImmuneCheck(Character actor, Character enemy, bool isNormalAttack, DamageType damageType, MagicType magicType, double damage)
+        public virtual bool OnDamageImmuneCheck(DamageContext ctx)
         {
             return true;
         }
@@ -958,13 +789,9 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在特效豁免检定时
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="source"></param>
-        /// <param name="effect"></param>
-        /// <param name="isEvade"></param>
-        /// <param name="throwingBonus"></param>
+        /// <param name="ctx"></param>
         /// <returns>false：跳过豁免检定</returns>
-        public virtual bool OnExemptionCheck(Character character, Character? source, Effect effect, bool isEvade, ref double throwingBonus)
+        public virtual bool OnExemptionCheck(ImmuneContext ctx)
         {
             return true;
         }
@@ -972,10 +799,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在角色开始行动时触发
         /// </summary>
-        /// <param name="actor"></param>
-        /// <param name="dp"></param>
-        /// <param name="type"></param>
-        public virtual void OnCharacterActionStart(Character actor, DecisionPoints dp, CharacterActionType type)
+        /// <param name="ctx"></param>
+        public virtual void OnCharacterActionStart(ActionContext ctx)
         {
 
         }
@@ -983,10 +808,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在角色行动后触发，注意这个钩子是广播队列所有角色
         /// </summary>
-        /// <param name="actor"></param>
-        /// <param name="dp"></param>
-        /// <param name="type"></param>
-        public virtual void OnCharacterActionTaken(Character actor, DecisionPoints dp, CharacterActionType type)
+        /// <param name="ctx"></param>
+        public virtual void OnCharacterActionTaken(ActionContext ctx)
         {
 
         }
@@ -994,9 +817,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在角色回合决策结束后触发
         /// </summary>
-        /// <param name="actor"></param>
-        /// <param name="dp"></param>
-        public virtual void OnCharacterDecisionCompleted(Character actor, DecisionPoints dp)
+        /// <param name="ctx"></param>
+        public virtual void OnCharacterDecisionCompleted(ActionContext ctx)
         {
 
         }
@@ -1004,10 +826,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在角色取得询问反应的答复时触发
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="options"></param>
-        /// <param name="response"></param>
-        public virtual void OnCharacterInquiry(Character character, InquiryOptions options, InquiryResponse response)
+        /// <param name="ctx"></param>
+        public virtual void OnCharacterInquiry(InquiryContext ctx)
         {
 
         }
@@ -1015,9 +835,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 角色完成移动后
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="target"></param>
-        public virtual void AfterCharacterMove(Character character, Grid target)
+        /// <param name="ctx"></param>
+        public virtual void AfterCharacterMove(MoveContext ctx)
         {
 
         }
@@ -1025,10 +844,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 角色完成普通攻击后
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="normalAttack"></param>
-        /// <param name="targets"></param>
-        public virtual void AfterCharacterNormalAttack(Character character, NormalAttack normalAttack, List<Character> targets)
+        /// <param name="ctx"></param>
+        public virtual void AfterCharacterNormalAttack(NormalAttackContext ctx)
         {
 
         }
@@ -1036,10 +853,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 角色开始吟唱后
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="skill"></param>
-        /// <param name="targets"></param>
-        public virtual void AfterCharacterStartCasting(Character character, Skill skill, List<Character> targets)
+        /// <param name="ctx"></param>
+        public virtual void AfterCharacterStartCasting(SkillCastContext ctx)
         {
 
         }
@@ -1047,10 +862,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 角色释放技能后
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="skill"></param>
-        /// <param name="targets"></param>
-        public virtual void AfterCharacterCastSkill(Character character, Skill skill, List<Character> targets)
+        /// <param name="ctx"></param>
+        public virtual void AfterCharacterCastSkill(SkillCastContext ctx)
         {
 
         }
@@ -1058,11 +871,8 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 角色使用物品后
         /// </summary>
-        /// <param name="character"></param>
-        /// <param name="item"></param>
-        /// <param name="skill"></param>
-        /// <param name="targets"></param>
-        public virtual void AfterCharacterUseItem(Character character, Item item, Skill skill, List<Character> targets)
+        /// <param name="ctx"></param>
+        public virtual void AfterCharacterUseItem(ItemUseContext ctx)
         {
 
         }
@@ -1307,11 +1117,12 @@ namespace FunGame.Core.Entity
             Effect[] effects = [.. target.Effects.Where(e => e.ShowInStatusBar).OrderByDescending(e => e.Priority)];
             foreach (Effect effect in effects)
             {
+                DispelContext ctx = new(GamingQueue, dispeller, target) { Effect = effect, DispellerEffect = this, IsEnemy = isEnemy };
                 effect.RecordEffectTriggeredIfOverridden(nameof(OnEffectIsBeingDispelled), dispeller, target);
-                if (effect.OnEffectIsBeingDispelled(dispeller, target, this, isEnemy))
+                if (effect.OnEffectIsBeingDispelled(ctx))
                 {
                     RecordEffectTriggeredIfOverridden(nameof(OnDispellingEffect), dispeller, target);
-                    OnDispellingEffect(dispeller, target, effect, isEnemy);
+                    OnDispellingEffect(ctx);
                 }
             }
         }
