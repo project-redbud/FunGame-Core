@@ -13,7 +13,7 @@ namespace FunGame.Core.Model.Queue
     /// 提供一个基础的回合制游戏队列基类实现，可继承扩展
     /// <para/>该默认实现为混战模式 <see cref="RoomType.Mix"/>
     /// </summary>
-    public class GamingQueue : IGamingQueue
+    public partial class GamingQueue : IGamingQueue
     {
         #region 公开属性
 
@@ -762,14 +762,7 @@ namespace FunGame.Core.Model.Queue
                     LastRound.Checkpoint = CreateStateCheckpoint();
                     // 触发游戏开始事件
                     OnGameStartEvent(new HookContext(this, null));
-                    Effect[] effects = [.. _queue.SelectMany(c => c.Effects).Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
-                    Character[] gameStartCharacters = [.. _queue];
-                    foreach (Effect effect in effects)
-                    {
-                        effect.GamingQueue = this;
-                        effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnGameStart), gameStartCharacters);
-                        effect.OnGameStart(new HookContext(this, null));
-                    }
+                    TriggerOnGameStart();
                 }
 
                 _queue.Remove(character);
@@ -847,18 +840,8 @@ namespace FunGame.Core.Model.Queue
                 double needMP = character.MaxMP - character.MP;
                 double reallyReHP = needHP >= recoveryHP ? recoveryHP : needHP;
                 double reallyReMP = needMP >= recoveryMP ? recoveryMP : needMP;
-                bool allowRecovery = true;
-                Effect[] effects = [.. character.Effects.OrderByDescending(e => e.Priority)];
                 TimeLapseContext recoveryCtx = new(this, character) { HR = reallyReHP, MR = reallyReMP };
-                foreach (Effect effect in effects)
-                {
-                    effect.GamingQueue = this;
-                    effect.RecordEffectTriggeredIfOverridden(nameof(Effect.BeforeApplyRecoveryAtTimeLapsing), character);
-                    if (!effect.BeforeApplyRecoveryAtTimeLapsing(recoveryCtx))
-                    {
-                        allowRecovery = false;
-                    }
-                }
+                bool allowRecovery = TriggerBeforeApplyRecoveryAtTimeLapsing(character, recoveryCtx);
                 reallyReHP = recoveryCtx.HR;
                 reallyReMP = recoveryCtx.MR;
 
@@ -905,7 +888,7 @@ namespace FunGame.Core.Model.Queue
                 _map?.OnTimeElapsed(timeToReduce);
 
                 // 移除到时间的特效
-                effects = [.. character.Effects.OrderByDescending(e => e.Priority)];
+                Effect[] effects = [.. character.Effects.OrderByDescending(e => e.Priority)];
                 foreach (Effect effect in effects)
                 {
                     if (!character.Shield.ShieldOfEffects.ContainsKey(effect))
@@ -922,17 +905,13 @@ namespace FunGame.Core.Model.Queue
                     if (!effect.Durative)
                     {
                         // 防止特效在时间流逝后，持续时间已结束还能继续生效的情况
-                        effect.GamingQueue = this;
-                        effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnTimeElapsed), character);
-                        effect.OnTimeElapsed(new TimeLapseContext(this, character) { Elapsed = timeToReduce });
+                        FireEffect(effect, nameof(Effect.OnTimeElapsed), e => e.OnTimeElapsed(new TimeLapseContext(this, character) { Elapsed = timeToReduce }), character);
                     }
 
                     if (effect.IsBeingTemporaryDispelled)
                     {
                         effect.IsBeingTemporaryDispelled = false;
-                        effect.GamingQueue = this;
-                        effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEffectGained), character);
-                        effect.OnEffectGained(new HookContext(this, character));
+                        FireEffect(effect, nameof(Effect.OnEffectGained), e => e.OnEffectGained(new HookContext(this, character)), character);
                     }
 
                     // 自身被动不会考虑
@@ -961,22 +940,16 @@ namespace FunGame.Core.Model.Queue
                         if (effect.RemainDuration < timeToReduce)
                         {
                             // 移除特效前也完成剩余时间内的效果
-                            effect.GamingQueue = this;
-                            effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnTimeElapsed), character);
-                            effect.OnTimeElapsed(new TimeLapseContext(this, character) { Elapsed = effect.RemainDuration });
+                            FireEffect(effect, nameof(Effect.OnTimeElapsed), e => e.OnTimeElapsed(new TimeLapseContext(this, character) { Elapsed = effect.RemainDuration }), character);
                             effect.RemainDuration = 0;
                             character.Effects.Remove(effect);
-                            effect.GamingQueue = this;
-                            effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEffectLost), character);
-                            effect.OnEffectLost(new HookContext(this, character));
+                            FireEffect(effect, nameof(Effect.OnEffectLost), e => e.OnEffectLost(new HookContext(this, character)), character);
                             WriteLine($"[ {character} ] 失去了 [ {effect.Name} ] 效果。");
                         }
                         else
                         {
                             effect.RemainDuration -= timeToReduce;
-                            effect.GamingQueue = this;
-                            effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnTimeElapsed), character);
-                            effect.OnTimeElapsed(new TimeLapseContext(this, character) { Elapsed = timeToReduce });
+                            FireEffect(effect, nameof(Effect.OnTimeElapsed), e => e.OnTimeElapsed(new TimeLapseContext(this, character) { Elapsed = timeToReduce }), character);
                         }
                     }
                 }
@@ -1109,13 +1082,7 @@ namespace FunGame.Core.Model.Queue
                 skillTurnStart.OnTurnStart(character, selectableEnemys, selectableTeammates, skills, items);
             }
 
-            effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
-            foreach (Effect effect in effects)
-            {
-                effect.GamingQueue = this;
-                effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnTurnStart), character);
-                effect.OnTurnStart(turnStartCtx);
-            }
+            TriggerOnTurnStart(character, turnStartCtx);
 
             // 角色的起始地点，确保角色该回合移动的范围不超过 MOV
             Grid? startGrid = null;
@@ -1214,7 +1181,6 @@ namespace FunGame.Core.Model.Queue
                     // 行动开始前，可以修改可选取的角色列表
                     Dictionary<Character, int> continuousKillingTemp = new(_continuousKilling);
                     Dictionary<Character, int> earnedMoneyTemp = new(_earnedMoney);
-                    effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                     SelectionContext selectListCtx = new(this, character)
                     {
                         Enemys = enemys,
@@ -1223,12 +1189,7 @@ namespace FunGame.Core.Model.Queue
                         ContinuousKilling = continuousKillingTemp,
                         EarnedMoney = earnedMoneyTemp
                     };
-                    foreach (Effect effect in effects)
-                    {
-                        effect.GamingQueue = this;
-                        effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AlterSelectListBeforeAction), character);
-                        effect.AlterSelectListBeforeAction(selectListCtx);
-                    }
+                    TriggerAlterSelectListBeforeAction(character, selectListCtx);
                     enemys = selectListCtx.Enemys;
                     teammates = selectListCtx.Teammates;
                     skills = selectListCtx.Skills;
@@ -1257,8 +1218,6 @@ namespace FunGame.Core.Model.Queue
                     // 不允许在吟唱和预释放状态下，修改角色的行动
                     if (character.CharacterState != CharacterState.Casting && character.CharacterState != CharacterState.PreCastSuperSkill)
                     {
-                        CharacterActionType actionTypeTemp = CharacterActionType.None;
-                        effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                         DecisionContext decisionCtx = new(this, character, dp, character.CharacterState)
                         {
                             CanUseItem = canUseItem,
@@ -1267,20 +1226,7 @@ namespace FunGame.Core.Model.Queue
                             PCastSkill = pCastSkill,
                             PNormalAttack = pNormalAttack
                         };
-                        foreach (Effect effect in effects)
-                        {
-                            effect.GamingQueue = this;
-                            effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AlterActionTypeBeforeAction), character);
-                            decisionCtx.ForceAction = false;
-                            CharacterActionType forceType = effect.AlterActionTypeBeforeAction(decisionCtx);
-                            bool force = decisionCtx.ForceAction;
-                            if (force && forceType != CharacterActionType.None)
-                            {
-                                forceAction = true;
-                                actionTypeTemp = forceType;
-                                break;
-                            }
-                        }
+                        (CharacterActionType actionTypeTemp, forceAction) = TriggerAlterActionTypeBeforeAction(character, decisionCtx);
                         canUseItem = decisionCtx.CanUseItem;
                         canCastSkill = decisionCtx.CanCastSkill;
                         pUseItem = decisionCtx.PUseItem;
@@ -1417,14 +1363,8 @@ namespace FunGame.Core.Model.Queue
                         moved = CharacterMove(character, dp, aiDecision.TargetMoveGrid, startGrid);
                     }
 
-                    effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                     ActionContext actionStartCtx = new(this, character, dp) { ActionType = type };
-                    foreach (Effect effect in effects)
-                    {
-                        effect.GamingQueue = this;
-                        effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnCharacterActionStart), character);
-                        effect.OnCharacterActionStart(actionStartCtx);
-                    }
+                    TriggerOnCharacterActionStart(character, actionStartCtx);
 
                     // 创建当前操作记录，每次行动对应一条操作记录
                     if (type != CharacterActionType.None && type != CharacterActionType.EndTurn)
@@ -1550,24 +1490,12 @@ namespace FunGame.Core.Model.Queue
 
                                 character.NormalAttack.Attack(this, character, null, targets);
 
-                                effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                                 NormalAttackContext normalAttackCtx = new(this, character, dp) { NormalAttack = character.NormalAttack, Targets = targets };
-                                foreach (Effect effect in effects)
-                                {
-                                    effect.GamingQueue = this;
-                                    effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AfterCharacterNormalAttack), character);
-                                    effect.AfterCharacterNormalAttack(normalAttackCtx);
-                                }
+                                TriggerAfterCharacterNormalAttack(character, normalAttackCtx);
 
                                 baseTime += character.NormalAttack.RealHardnessTime;
-                                effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                                 HardnessContext hardnessCtx = new(this, character) { BaseHardnessTime = baseTime, IsCheckProtected = isCheckProtected };
-                                foreach (Effect effect in effects)
-                                {
-                                    effect.GamingQueue = this;
-                                    effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AlterHardnessTimeAfterNormalAttack), character);
-                                    effect.AlterHardnessTimeAfterNormalAttack(hardnessCtx);
-                                }
+                                TriggerAlterHardnessTimeAfterNormalAttack(character, hardnessCtx);
                                 baseTime = hardnessCtx.BaseHardnessTime;
                                 isCheckProtected = hardnessCtx.IsCheckProtected;
                             }
@@ -1666,13 +1594,7 @@ namespace FunGame.Core.Model.Queue
                                             isCheckProtected = false;
                                             skill.OnSkillCasting(this, character, targets, grids);
 
-                                            effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
-                                            foreach (Effect effect in effects)
-                                            {
-                                                effect.GamingQueue = this;
-                                                effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AfterCharacterStartCasting), character);
-                                                effect.AfterCharacterStartCasting(new SkillCastContext(this, character) { Skill = skill, Targets = targets });
-                                            }
+                                            TriggerAfterCharacterStartCasting(character, skill, targets);
                                         }
                                         else
                                         {
@@ -1757,13 +1679,7 @@ namespace FunGame.Core.Model.Queue
 
                                             skill.OnSkillCasting(this, character, targets, grids);
 
-                                            effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
-                                            foreach (Effect effect in effects)
-                                            {
-                                                effect.GamingQueue = this;
-                                                effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AfterCharacterStartCasting), character);
-                                                effect.AfterCharacterStartCasting(new SkillCastContext(this, character) { Skill = skill, Targets = targets });
-                                            }
+                                            TriggerAfterCharacterStartCasting(character, skill, targets);
 
                                             skill.BeforeSkillCasted(character, targets, grids);
 
@@ -1786,22 +1702,10 @@ namespace FunGame.Core.Model.Queue
 
                                             skill.AfterSkillCasted(character, targets, grids);
 
-                                            effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
-                                            foreach (Effect effect in effects)
-                                            {
-                                                effect.GamingQueue = this;
-                                                effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AfterCharacterCastSkill), character);
-                                                effect.AfterCharacterCastSkill(new SkillCastContext(this, character) { Skill = skill, Targets = targets });
-                                            }
+                                            TriggerAfterCharacterCastSkill(character, skill, targets);
 
-                                            effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                                             HardnessContext castHardnessCtx = new(this, character) { Skill = skill, BaseHardnessTime = baseTime, IsCheckProtected = isCheckProtected };
-                                            foreach (Effect effect in effects)
-                                            {
-                                                effect.GamingQueue = this;
-                                                effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AlterHardnessTimeAfterCastSkill), character);
-                                                effect.AlterHardnessTimeAfterCastSkill(castHardnessCtx);
-                                            }
+                                            TriggerAlterHardnessTimeAfterCastSkill(character, castHardnessCtx);
                                             baseTime = castHardnessCtx.BaseHardnessTime;
                                             isCheckProtected = castHardnessCtx.IsCheckProtected;
                                         }
@@ -1886,22 +1790,10 @@ namespace FunGame.Core.Model.Queue
 
                                 skill.AfterSkillCasted(character, targets, grids);
 
-                                effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
-                                foreach (Effect effect in effects)
-                                {
-                                    effect.GamingQueue = this;
-                                    effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AfterCharacterCastSkill), character);
-                                    effect.AfterCharacterCastSkill(new SkillCastContext(this, character) { Skill = skill, Targets = targets });
-                                }
+                                TriggerAfterCharacterCastSkill(character, skill, targets);
 
-                                effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                                 HardnessContext castHardnessCtx = new(this, character) { Skill = skill, BaseHardnessTime = baseTime, IsCheckProtected = isCheckProtected };
-                                foreach (Effect effect in effects)
-                                {
-                                    effect.GamingQueue = this;
-                                    effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AlterHardnessTimeAfterCastSkill), character);
-                                    effect.AlterHardnessTimeAfterCastSkill(castHardnessCtx);
-                                }
+                                TriggerAlterHardnessTimeAfterCastSkill(character, castHardnessCtx);
                                 baseTime = castHardnessCtx.BaseHardnessTime;
                                 isCheckProtected = castHardnessCtx.IsCheckProtected;
                             }
@@ -1993,22 +1885,10 @@ namespace FunGame.Core.Model.Queue
 
                             skill.AfterSkillCasted(character, targets, grids);
 
-                            effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
-                            foreach (Effect effect in effects)
-                            {
-                                effect.GamingQueue = this;
-                                effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AfterCharacterCastSkill), character);
-                                effect.AfterCharacterCastSkill(new SkillCastContext(this, character) { Skill = skill, Targets = targets });
-                            }
+                            TriggerAfterCharacterCastSkill(character, skill, targets);
 
-                            effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                             HardnessContext castHardnessCtx = new(this, character) { Skill = skill, BaseHardnessTime = baseTime, IsCheckProtected = isCheckProtected };
-                            foreach (Effect effect in effects)
-                            {
-                                effect.GamingQueue = this;
-                                effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AlterHardnessTimeAfterCastSkill), character);
-                                effect.AlterHardnessTimeAfterCastSkill(castHardnessCtx);
-                            }
+                            TriggerAlterHardnessTimeAfterCastSkill(character, castHardnessCtx);
                             baseTime = castHardnessCtx.BaseHardnessTime;
                             isCheckProtected = castHardnessCtx.IsCheckProtected;
                         }
@@ -2099,14 +1979,8 @@ namespace FunGame.Core.Model.Queue
                                 }
                                 decided = true;
                                 baseTime += skill.RealHardnessTime > 0 ? skill.RealHardnessTime : 5;
-                                effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                                 HardnessContext itemHardnessCtx = new(this, character) { Skill = skill, BaseHardnessTime = baseTime, IsCheckProtected = isCheckProtected };
-                                foreach (Effect effect in effects)
-                                {
-                                    effect.GamingQueue = this;
-                                    effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AlterHardnessTimeAfterCastSkill), character);
-                                    effect.AlterHardnessTimeAfterCastSkill(itemHardnessCtx);
-                                }
+                                TriggerAlterHardnessTimeAfterCastSkill(character, itemHardnessCtx);
                                 baseTime = itemHardnessCtx.BaseHardnessTime;
                                 isCheckProtected = itemHardnessCtx.IsCheckProtected;
                             }
@@ -2171,15 +2045,8 @@ namespace FunGame.Core.Model.Queue
 
                 OnCharacterActionTakenEvent(new ActionContext(this, character, dp) { ActionType = type, Record = LastRound.Snapshot() });
 
-                effects = [.. _queue.Union([character]).SelectMany(c => c.Effects).Where(e => e.IsInEffect).OrderByDescending(e => e.Priority).Distinct()];
-                Character[] actionTakenCharacters = [.. _queue.Union([character])];
                 ActionContext actionTakenCtx = new(this, character, dp) { ActionType = type };
-                foreach (Effect effect in effects)
-                {
-                    effect.GamingQueue = this;
-                    effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnCharacterActionTaken), actionTakenCharacters);
-                    effect.OnCharacterActionTaken(actionTakenCtx);
-                }
+                TriggerOnCharacterActionTaken(character, actionTakenCtx);
 
                 if (!AfterCharacterAction(character, type))
                 {
@@ -2225,13 +2092,7 @@ namespace FunGame.Core.Model.Queue
 
             AfterCharacterDecision(character, dp);
             OnCharacterDecisionCompletedEvent(new ActionContext(this, character, dp) { Record = LastRound.Snapshot() });
-            effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
-            foreach (Effect effect in effects)
-            {
-                effect.GamingQueue = this;
-                effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnCharacterDecisionCompleted), character);
-                effect.OnCharacterDecisionCompleted(new ActionContext(this, character, dp));
-            }
+            TriggerOnCharacterDecisionCompleted(character, dp);
 
             // 统一在回合结束时处理角色的死亡
             ProcessCharacterDeath();
@@ -2297,9 +2158,7 @@ namespace FunGame.Core.Model.Queue
             {
                 if (effect.IsInEffect)
                 {
-                    effect.GamingQueue = this;
-                    effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnTurnEnd), character);
-                    effect.OnTurnEnd(turnEndCtx);
+                    FireEffect(effect, nameof(Effect.OnTurnEnd), e => e.OnTurnEnd(turnEndCtx), character);
                 }
 
                 // 自身被动不会考虑
@@ -2317,9 +2176,7 @@ namespace FunGame.Core.Model.Queue
                     {
                         effect.RemainDurationTurn = 0;
                         character.Effects.Remove(effect);
-                        effect.GamingQueue = this;
-                        effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEffectLost), character);
-                        effect.OnEffectLost(new HookContext(this, character));
+                        FireEffect(effect, nameof(Effect.OnEffectLost), e => e.OnEffectLost(new HookContext(this, character)), character);
                         WriteLine($"[ {character} ] 失去了 [ {effect.Name} ] 效果。");
                     }
                 }
@@ -2621,9 +2478,7 @@ namespace FunGame.Core.Model.Queue
                 _currentAction.IsCritical[enemy] = true;
             }
 
-            List<Character> characters = [actor, enemy];
             bool isEvaded = damageResult == DamageResult.Evaded;
-            List<Effect> effects = [];
             options ??= new(actor);
             if (options.ExpectedDamage == 0) options.ExpectedDamage = damage;
 
@@ -2633,7 +2488,6 @@ namespace FunGame.Core.Model.Queue
                 // 真实伤害跳过伤害加成区间
                 if (damageType != DamageType.True)
                 {
-                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
                     DamageContext afterCalcCtx = new(this, actor, enemy)
                     {
                         Damage = damage,
@@ -2644,31 +2498,12 @@ namespace FunGame.Core.Model.Queue
                         IsEvaded = isEvaded,
                         TotalDamageBonus = totalDamageBonus
                     };
-                    foreach (Effect effect in effects)
-                    {
-                        effect.GamingQueue = this;
-                        effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AlterActualDamageAfterCalculation), actor, enemy);
-                        double damageBonus = effect.AlterActualDamageAfterCalculation(afterCalcCtx);
-                        if (damageBonus != 0) totalDamageBonus[effect] = damageBonus;
-                        if (afterCalcCtx.IsEvaded)
-                        {
-                            damageResult = DamageResult.Evaded;
-                        }
-                    }
+                    damageResult = TriggerAlterActualDamageAfterCalculation(actor, enemy, afterCalcCtx, damageResult);
                     damage += totalDamageBonus.Sum(kv => kv.Value);
                 }
                 else
                 {
-                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
-                    foreach (Effect effect in effects)
-                    {
-                        effect.GamingQueue = this;
-                        effect.RecordEffectTriggeredIfOverridden(nameof(Effect.BeforeApplyTrueDamage), actor, enemy);
-                        if (effect.BeforeApplyTrueDamage(new DamageContext(this, actor, enemy) { Damage = damage, IsNormalAttack = isNormalAttack, DamageResult = damageResult }))
-                        {
-                            damageResult = DamageResult.Evaded;
-                        }
-                    }
+                    damageResult = TriggerBeforeApplyTrueDamage(actor, enemy, damage, isNormalAttack, damageResult);
                 }
             }
             options.AfterDamageBonus = totalDamageBonus;
@@ -2709,16 +2544,7 @@ namespace FunGame.Core.Model.Queue
                                 ignore = true;
                             }
                         }
-                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
-                        foreach (Effect effect in effects)
-                        {
-                            effect.GamingQueue = this;
-                            effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnDamageImmuneCheck), actor, enemy);
-                            if (!effect.OnDamageImmuneCheck(new DamageContext(this, actor, enemy) { IsNormalAttack = isNormalAttack, DamageType = damageType, MagicType = magicType, Damage = damage }))
-                            {
-                                ignore = true;
-                            }
-                        }
+                        ignore = TriggerOnDamageImmuneCheck(actor, enemy, isNormalAttack, damageType, magicType, damage);
                     }
 
                     if (ignore)
@@ -2751,17 +2577,11 @@ namespace FunGame.Core.Model.Queue
                     {
                         // 在护盾结算前，特效可以有自己的逻辑
                         bool change = false;
-                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
                         ShieldContext beforeShieldCtx = new(this, enemy, actor) { DamageType = damageType, MagicType = magicType, Damage = damage, Message = shieldMsg };
-                        foreach (Effect effect in effects)
+                        foreach (Effect effect in EffectsOf(actor, enemy))
                         {
                             beforeShieldCtx.DamageReduce = 0;
-                            effect.GamingQueue = this;
-                            effect.RecordEffectTriggeredIfOverridden(nameof(Effect.BeforeShieldCalculation), enemy, actor);
-                            if (!effect.BeforeShieldCalculation(beforeShieldCtx))
-                            {
-                                change = true;
-                            }
+                            FireEffect(effect, nameof(Effect.BeforeShieldCalculation), e => { if (!e.BeforeShieldCalculation(beforeShieldCtx)) change = true; }, enemy, actor);
                             shieldMsg = beforeShieldCtx.Message;
                             if (beforeShieldCtx.DamageReduce != 0)
                             {
@@ -2776,7 +2596,7 @@ namespace FunGame.Core.Model.Queue
                             double remain = actualDamage;
 
                             // 检查特效护盾
-                            effects = [.. enemy.Shield.ShieldOfEffects.Keys.OrderByDescending(e => e.Priority)];
+                            List<Effect> effects = [.. enemy.Shield.ShieldOfEffects.Keys.OrderByDescending(e => e.Priority)];
                             foreach (Effect effect in effects)
                             {
                                 ShieldOfEffect soe = enemy.Shield.ShieldOfEffects[effect];
@@ -2805,27 +2625,11 @@ namespace FunGame.Core.Model.Queue
                                     {
                                         WriteLine($"[ {enemy} ] 发动了 [ {effect.Skill.Name} ] 的护盾效果，抵消了 {effectShield:0.##} 点{damageTypeString}，护盾已破碎！");
                                         remain -= effectShield;
-                                        Effect[] effects2 = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
-                                        foreach (Effect effect2 in effects2)
-                                        {
-                                            effect2.GamingQueue = this;
-                                            effect2.RecordEffectTriggeredIfOverridden(nameof(Effect.OnShieldBroken), enemy, actor);
-                                            if (!effect2.OnShieldBroken(new ShieldContext(this, enemy, actor) { ShieldEffect = effect, OverFlowing = remain }))
-                                            {
-                                                WriteLine($"[ {(enemy.Effects.Contains(effect2) ? enemy : actor)} ] 因护盾破碎而发动了 [ {effect2.Skill.Name} ]，化解了本次伤害！");
-                                                remain = 0;
-                                            }
-                                        }
+                                        remain = TriggerOnShieldBroken(actor, enemy, () => new ShieldContext(this, enemy, actor) { ShieldEffect = effect, OverFlowing = remain }, remain);
                                     }
                                     if (remain <= 0)
                                     {
-                                        Effect[] effects2 = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
-                                        foreach (Effect effect2 in effects2)
-                                        {
-                                            effect2.GamingQueue = this;
-                                            effect2.RecordEffectTriggeredIfOverridden(nameof(Effect.OnShieldNeutralizeDamage), enemy, actor);
-                                            effect2.OnShieldNeutralizeDamage(new ShieldContext(this, enemy, actor) { DamageType = damageType, MagicType = magicType, Damage = damage, ShieldType = ShieldType.Effect });
-                                        }
+                                        TriggerOnShieldNeutralizeDamage(actor, enemy, () => new ShieldContext(this, enemy, actor) { DamageType = damageType, MagicType = magicType, Damage = damage, ShieldType = ShieldType.Effect });
                                         break;
                                     }
                                 }
@@ -2847,13 +2651,7 @@ namespace FunGame.Core.Model.Queue
                                         WriteLine($"[ {enemy} ] 的{shieldTypeString}护盾抵消了 {remain:0.##} 点{damageTypeString}！");
                                         enemy.Shield[isMagicDamage, magicType] -= remain;
                                         remain = 0;
-                                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
-                                        foreach (Effect effect in effects)
-                                        {
-                                            effect.GamingQueue = this;
-                                            effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnShieldNeutralizeDamage), enemy, actor);
-                                            effect.OnShieldNeutralizeDamage(new ShieldContext(this, enemy, actor) { DamageType = damageType, MagicType = magicType, Damage = damage, ShieldType = shieldType });
-                                        }
+                                        TriggerOnShieldNeutralizeDamage(actor, enemy, () => new ShieldContext(this, enemy, actor) { DamageType = damageType, MagicType = magicType, Damage = damage, ShieldType = shieldType });
                                     }
                                     else
                                     {
@@ -2862,17 +2660,7 @@ namespace FunGame.Core.Model.Queue
                                         enemy.Shield[isMagicDamage, magicType] = 0;
                                         if (isMagicDamage && enemy.Shield.TotalMagical <= 0 || !isMagicDamage && enemy.Shield.TotalPhysical <= 0)
                                         {
-                                            effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
-                                            foreach (Effect effect in effects)
-                                            {
-                                                effect.GamingQueue = this;
-                                                effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnShieldBroken), enemy, actor);
-                                                if (!effect.OnShieldBroken(new ShieldContext(this, enemy, actor) { ShieldType = shieldType, OverFlowing = remain }))
-                                                {
-                                                    WriteLine($"[ {(enemy.Effects.Contains(effect) ? enemy : actor)} ] 因护盾破碎而发动了 [ {effect.Skill.Name} ]，化解了本次伤害！");
-                                                    remain = 0;
-                                                }
-                                            }
+                                            remain = TriggerOnShieldBroken(actor, enemy, () => new ShieldContext(this, enemy, actor) { ShieldType = shieldType, OverFlowing = remain }, remain);
                                         }
                                     }
                                 }
@@ -2887,30 +2675,14 @@ namespace FunGame.Core.Model.Queue
                                         WriteLine($"[ {enemy} ] 的混合护盾抵消了 {remain:0.##} 点{damageTypeString}！");
                                         enemy.Shield.Mix -= remain;
                                         remain = 0;
-                                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
-                                        foreach (Effect effect in effects)
-                                        {
-                                            effect.GamingQueue = this;
-                                            effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnShieldNeutralizeDamage), enemy, actor);
-                                            effect.OnShieldNeutralizeDamage(new ShieldContext(this, enemy, actor) { DamageType = damageType, MagicType = magicType, Damage = damage, ShieldType = ShieldType.Mix });
-                                        }
+                                        TriggerOnShieldNeutralizeDamage(actor, enemy, () => new ShieldContext(this, enemy, actor) { DamageType = damageType, MagicType = magicType, Damage = damage, ShieldType = ShieldType.Mix });
                                     }
                                     else
                                     {
                                         WriteLine($"[ {enemy} ] 的混合护盾抵消了 {enemy.Shield.TotalMix:0.##} 点{damageTypeString}并破碎！");
                                         remain -= enemy.Shield.TotalMix;
                                         enemy.Shield.Mix = 0;
-                                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
-                                        foreach (Effect effect in effects)
-                                        {
-                                            effect.GamingQueue = this;
-                                            effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnShieldBroken), enemy, actor);
-                                            if (!effect.OnShieldBroken(new ShieldContext(this, enemy, actor) { ShieldType = ShieldType.Mix, OverFlowing = remain }))
-                                            {
-                                                WriteLine($"[ {(enemy.Effects.Contains(effect) ? enemy : actor)} ] 因护盾破碎而发动了 [ {effect.Skill.Name} ]，化解了本次伤害！");
-                                                remain = 0;
-                                            }
-                                        }
+                                        remain = TriggerOnShieldBroken(actor, enemy, () => new ShieldContext(this, enemy, actor) { ShieldType = ShieldType.Mix, OverFlowing = remain }, remain);
                                     }
                                 }
                             }
@@ -2937,7 +2709,6 @@ namespace FunGame.Core.Model.Queue
                     options.ActualDamage = actualDamage;
                     enemy.HP -= actualDamage;
                     string strDamageMessage = $"[ {enemy} ] 受到了 {actualDamage:0.##} 点{damageTypeString}！{shieldMsg}";
-                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
                     DamageContext applyDamageCtx = new(this, enemy, actor)
                     {
                         Damage = damage,
@@ -2949,12 +2720,7 @@ namespace FunGame.Core.Model.Queue
                         ShieldMessage = shieldMsg,
                         OriginalMessage = strDamageMessage
                     };
-                    foreach (Effect effect in effects)
-                    {
-                        effect.GamingQueue = this;
-                        effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnApplyDamage), enemy, actor);
-                        effect.OnApplyDamage(applyDamageCtx);
-                    }
+                    TriggerOnApplyDamage(actor, enemy, applyDamageCtx);
                     strDamageMessage = applyDamageCtx.OriginalMessage;
                     if (IsDebug)
                     {
@@ -2978,56 +2744,28 @@ namespace FunGame.Core.Model.Queue
 
                     // 生命偷取
                     double steal = actualDamage * actor.Lifesteal;
-                    bool allowSteal = true;
-                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
                     LifestealContext lifestealCtx = new(this, actor, enemy) { Damage = damage, Steal = steal };
-                    foreach (Effect effect in effects)
-                    {
-                        effect.GamingQueue = this;
-                        effect.RecordEffectTriggeredIfOverridden(nameof(Effect.BeforeLifesteal), actor, enemy);
-                        if (!effect.BeforeLifesteal(lifestealCtx))
-                        {
-                            allowSteal = false;
-                        }
-                    }
+                    bool allowSteal = TriggerBeforeLifesteal(actor, enemy, lifestealCtx);
                     if (allowSteal)
                     {
                         HealToTarget(actor, actor, steal, false, true);
-                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
-                        foreach (Effect effect in effects)
-                        {
-                            effect.GamingQueue = this;
-                            effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AfterLifesteal), actor, enemy);
-                            effect.AfterLifesteal(lifestealCtx);
-                        }
+                        TriggerAfterLifesteal(actor, enemy, lifestealCtx);
                     }
 
                     // 造成伤害和受伤都可以获得能量。护盾抵消的伤害不算
                     double ep = GetEP(actualDamage, GameplayEquilibriumConstant.DamageGetEPFactor, GameplayEquilibriumConstant.DamageGetEPMax);
                     if (ep > 0)
                     {
-                        effects = [.. actor.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                         DamageContext actorEPCtx = new(this, actor, enemy) { BaseEP = ep };
-                        foreach (Effect effect in effects)
-                        {
-                            effect.GamingQueue = this;
-                            effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AlterEPAfterDamage), actor);
-                            effect.AlterEPAfterDamage(actorEPCtx);
-                        }
+                        TriggerAlterEPAfterDamage(actor, enemy, actorEPCtx);
                         ep = actorEPCtx.BaseEP;
                         actor.EP += ep;
                     }
                     ep = GetEP(actualDamage, GameplayEquilibriumConstant.TakenDamageGetEPFactor, GameplayEquilibriumConstant.TakenDamageGetEPMax);
                     if (ep > 0)
                     {
-                        effects = [.. enemy.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                         DamageContext enemyEPCtx = new(this, enemy, actor) { BaseEP = ep };
-                        foreach (Effect effect in effects)
-                        {
-                            effect.GamingQueue = this;
-                            effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AlterEPAfterGetDamage), enemy);
-                            effect.AlterEPAfterGetDamage(enemyEPCtx);
-                        }
+                        TriggerAlterEPAfterGetDamage(actor, enemy, enemyEPCtx);
                         ep = enemyEPCtx.BaseEP;
                         enemy.EP += ep;
                     }
@@ -3073,7 +2811,6 @@ namespace FunGame.Core.Model.Queue
 
             if (options.TriggerEffects)
             {
-                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
                 DamageContext afterDamageCtx = new(this, actor, enemy)
                 {
                     Damage = damage,
@@ -3083,12 +2820,7 @@ namespace FunGame.Core.Model.Queue
                     MagicType = magicType,
                     DamageResult = damageResult
                 };
-                foreach (Effect effect in effects)
-                {
-                    effect.GamingQueue = this;
-                    effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AfterDamageCalculation), actor, enemy);
-                    effect.AfterDamageCalculation(afterDamageCtx);
-                }
+                TriggerAfterDamageCalculation(actor, enemy, afterDamageCtx);
             }
 
             if (enemy.HP <= 0 && !_eliminated.Contains(enemy) && !_respawnCountdown.ContainsKey(enemy))
@@ -3352,18 +3084,8 @@ namespace FunGame.Core.Model.Queue
                 return;
             }
 
-            bool allowHealing = true;
-            List<Effect> effects = [.. actor.Effects.Union(target.Effects).Distinct().Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
             HealContext healCtx = new(this, actor, target) { Heal = heal, CanRespawn = canRespawn };
-            foreach (Effect effect in effects)
-            {
-                effect.GamingQueue = this;
-                effect.RecordEffectTriggeredIfOverridden(nameof(Effect.BeforeHealToTarget), actor, target);
-                if (!effect.BeforeHealToTarget(healCtx))
-                {
-                    allowHealing = false;
-                }
-            }
+            bool allowHealing = TriggerBeforeHealToTarget(actor, target, healCtx);
 
             if (!allowHealing)
             {
@@ -3377,24 +3099,8 @@ namespace FunGame.Core.Model.Queue
             if (triggerEffects)
             {
                 Dictionary<Effect, double> totalHealBonus = [];
-                effects = [.. actor.Effects.Union(target.Effects).Distinct().Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                 healCtx = new(this, actor, target) { Heal = heal, CanRespawn = canRespawn, TotalHealBonus = totalHealBonus };
-                foreach (Effect effect in effects)
-                {
-                    effect.GamingQueue = this;
-                    effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AlterHealValueBeforeHealToTarget), actor, target);
-                    healCtx.CanRespawn = false;
-                    double healBonus = effect.AlterHealValueBeforeHealToTarget(healCtx);
-                    if (healCtx.CanRespawn && !canRespawn)
-                    {
-                        canRespawn = true;
-                    }
-                    if (healBonus != 0)
-                    {
-                        totalHealBonus[effect] = healBonus;
-                        healStrings.Add($"{(healBonus > 0 ? " + " : " - ")}{Math.Abs(healBonus):0.##}（{effect.Name}）");
-                    }
-                }
+                canRespawn = TriggerAlterHealValueBeforeHealToTarget(actor, target, healCtx, healStrings, canRespawn);
                 heal += totalHealBonus.Sum(kv => kv.Value);
             }
 
@@ -3573,8 +3279,6 @@ namespace FunGame.Core.Model.Queue
         public void DealWithCharacterDied(Character killer, Character death, Character[] assists)
         {
             // 给所有角色的特效广播角色死亡结算
-            List<Effect> effects = [.. _queue.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).Union(killer.Effects).Distinct().OrderByDescending(e => e.Priority)];
-            Character[] deathBroadcastCharacters = [.. _queue.Union([killer])];
             DeathContext deathCtx = new(this, death, killer)
             {
                 HasMaster = death.Master != null,
@@ -3582,12 +3286,7 @@ namespace FunGame.Core.Model.Queue
                 EarnedMoney = _earnedMoney,
                 Assists = assists
             };
-            foreach (Effect effect in effects)
-            {
-                effect.GamingQueue = this;
-                effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AfterDeathCalculation), deathBroadcastCharacters);
-                effect.AfterDeathCalculation(deathCtx);
-            }
+            TriggerAfterDeathCalculation(killer, deathCtx);
             // 将死者移出队列
             _queue.Remove(death);
 
@@ -3701,13 +3400,7 @@ namespace FunGame.Core.Model.Queue
 
                         skill.OnSkillCasting(this, character, targets, grids);
 
-                        Effect[] effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
-                        foreach (Effect effect in effects)
-                        {
-                            effect.GamingQueue = this;
-                            effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AfterCharacterStartCasting), character);
-                            effect.AfterCharacterStartCasting(new SkillCastContext(this, character) { Skill = skill, Targets = targets });
-                        }
+                        TriggerAfterCharacterStartCasting(character, skill, targets);
 
                         skill.BeforeSkillCasted(character, targets, grids);
 
@@ -3750,21 +3443,9 @@ namespace FunGame.Core.Model.Queue
 
                         skill.AfterSkillCasted(character, targets, grids);
 
-                        effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
-                        foreach (Effect effect in effects)
-                        {
-                            effect.GamingQueue = this;
-                            effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AfterCharacterCastSkill), character);
-                            effect.AfterCharacterCastSkill(new SkillCastContext(this, character) { Skill = skill, Targets = targets });
-                        }
+                        TriggerAfterCharacterCastSkill(character, skill, targets);
 
-                        effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
-                        foreach (Effect effect in effects)
-                        {
-                            effect.GamingQueue = this;
-                            effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AfterCharacterUseItem), character);
-                            effect.AfterCharacterUseItem(new ItemUseContext(this, character, dp) { Item = item, Skill = skill, Targets = targets });
-                        }
+                        TriggerAfterCharacterUseItem(character, dp, item, skill, targets);
                         return true;
                     }
                 }
@@ -3869,13 +3550,7 @@ namespace FunGame.Core.Model.Queue
         /// <returns></returns>
         public Grid SelectTargetGrid(Character character, List<Character> enemys, List<Character> teammates, GameMap map, List<Grid> moveRange)
         {
-            List<Effect> effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
-            foreach (Effect effect in effects)
-            {
-                effect.GamingQueue = this;
-                effect.RecordEffectTriggeredIfOverridden(nameof(Effect.BeforeSelectTargetGrid), character);
-                effect.BeforeSelectTargetGrid(new SelectionContext(this, character) { Enemys = enemys, Teammates = teammates, Map = map, MoveRange = moveRange });
-            }
+            TriggerBeforeSelectTargetGrid(character, enemys, teammates, map, moveRange);
             SelectionContext selectGridCtx = new(this, character) { Enemys = enemys, Teammates = teammates, Map = map, MoveRange = moveRange };
             Grid target = OnSelectTargetGridEvent(selectGridCtx);
             if (target.Id != -1)
@@ -3905,7 +3580,6 @@ namespace FunGame.Core.Model.Queue
         /// <returns></returns>
         public List<Character> SelectTargets(Character caster, Skill skill, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates, List<Grid> castRange)
         {
-            List<Effect> effects = [.. caster.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
             SelectionContext selectCtx = new(this, caster)
             {
                 Skill = skill,
@@ -3915,12 +3589,7 @@ namespace FunGame.Core.Model.Queue
                 Teammates = teammates,
                 CastRange = castRange
             };
-            foreach (Effect effect in effects)
-            {
-                effect.GamingQueue = this;
-                effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AlterSelectListBeforeSelection), caster);
-                effect.AlterSelectListBeforeSelection(selectCtx);
-            }
+            TriggerAlterSelectListBeforeSelection(caster, selectCtx);
             enemys = selectCtx.Enemys;
             teammates = selectCtx.Teammates;
             List<Character> targets = OnSelectSkillTargetsEvent(selectCtx);
@@ -3963,7 +3632,6 @@ namespace FunGame.Core.Model.Queue
         /// <returns></returns>
         public List<Character> SelectTargets(Character character, NormalAttack attack, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates, List<Grid> attackRange)
         {
-            List<Effect> effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
             SelectionContext selectCtx = new(this, character)
             {
                 Skill = attack,
@@ -3974,12 +3642,7 @@ namespace FunGame.Core.Model.Queue
                 Teammates = teammates,
                 CastRange = attackRange
             };
-            foreach (Effect effect in effects)
-            {
-                effect.GamingQueue = this;
-                effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AlterSelectListBeforeSelection), character);
-                effect.AlterSelectListBeforeSelection(selectCtx);
-            }
+            TriggerAlterSelectListBeforeSelection(character, selectCtx);
             enemys = selectCtx.Enemys;
             teammates = selectCtx.Teammates;
             List<Character> targets = OnSelectNormalAttackTargetsEvent(selectCtx);
@@ -4082,22 +3745,15 @@ namespace FunGame.Core.Model.Queue
         {
             options ??= new(actor);
             if (options.ExpectedDamage == 0) options.ExpectedDamage = expectedDamage;
-            List<Character> characters = [actor, enemy];
             DamageType damageType = DamageType.Physical;
             MagicType magicType = MagicType.None;
-            List<Effect> effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
             Dictionary<Effect, double> totalDamageBonus = [];
             if (options.TriggerEffects)
             {
                 if (changeCount < 3)
                 {
                     DamageContext alterTypeCtx = new(this, actor, enemy) { IsNormalAttack = isNormalAttack, DamageType = DamageType.Physical, MagicType = MagicType.None };
-                    foreach (Effect effect in effects)
-                    {
-                        effect.GamingQueue = this;
-                        effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AlterDamageTypeBeforeCalculation), actor, enemy);
-                        effect.AlterDamageTypeBeforeCalculation(alterTypeCtx);
-                    }
+                    TriggerAlterDamageTypeBeforeCalculation(actor, enemy, alterTypeCtx);
                     isNormalAttack = alterTypeCtx.IsNormalAttack;
                     damageType = alterTypeCtx.DamageType;
                     magicType = alterTypeCtx.MagicType;
@@ -4108,21 +3764,7 @@ namespace FunGame.Core.Model.Queue
                     }
                 }
 
-                effects = [.. actor.Effects.Union(enemy.Effects).Distinct().Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
-                foreach (Effect effect in effects)
-                {
-                    effect.GamingQueue = this;
-                    effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AlterExpectedDamageBeforeCalculation), actor, enemy);
-                    double damageBonus = effect.AlterExpectedDamageBeforeCalculation(new DamageContext(this, actor, enemy)
-                    {
-                        Damage = expectedDamage,
-                        IsNormalAttack = isNormalAttack,
-                        DamageType = DamageType.Physical,
-                        MagicType = MagicType.None,
-                        TotalDamageBonus = totalDamageBonus
-                    });
-                    if (damageBonus != 0) totalDamageBonus[effect] = damageBonus;
-                }
+                TriggerAlterExpectedDamageBeforeCalculation(actor, enemy, UnionEffectsOf(actor, enemy), expectedDamage, isNormalAttack, DamageType.Physical, MagicType.None, totalDamageBonus);
                 expectedDamage += totalDamageBonus.Sum(kv => kv.Value);
             }
             options.BeforeDamageBonus = totalDamageBonus;
@@ -4133,17 +3775,8 @@ namespace FunGame.Core.Model.Queue
             bool checkCritical = true;
             if (isNormalAttack && options.CalculateEvade)
             {
-                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
                 DamageContext evadeCheckCtx = new(this, actor, enemy) { ThrowingBonus = throwingBonus };
-                foreach (Effect effect in effects)
-                {
-                    effect.GamingQueue = this;
-                    effect.RecordEffectTriggeredIfOverridden(nameof(Effect.BeforeEvadeCheck), actor, enemy);
-                    if (!effect.BeforeEvadeCheck(evadeCheckCtx))
-                    {
-                        checkEvade = false;
-                    }
-                }
+                checkEvade = TriggerBeforeEvadeCheck(actor, enemy, evadeCheckCtx);
                 throwingBonus = evadeCheckCtx.ThrowingBonus;
 
                 if (checkEvade)
@@ -4151,17 +3784,7 @@ namespace FunGame.Core.Model.Queue
                     // 闪避检定
                     if (dice < (enemy.EvadeRate + throwingBonus))
                     {
-                        bool isAlterEvaded = false;
-                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
-                        foreach (Effect effect in effects)
-                        {
-                            effect.GamingQueue = this;
-                            effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEvadedTriggered), actor, enemy);
-                            if (effect.OnEvadedTriggered(new DamageContext(this, actor, enemy) { Dice = dice }))
-                            {
-                                isAlterEvaded = true;
-                            }
-                        }
+                        bool isAlterEvaded = TriggerOnEvadedTriggered(actor, enemy, dice);
                         if (!isAlterEvaded)
                         {
                             finalDamage = 0;
@@ -4190,17 +3813,8 @@ namespace FunGame.Core.Model.Queue
             if (options.CalculateCritical)
             {
                 // 暴击检定
-                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
                 DamageContext criticalCheckCtx = new(this, actor, enemy) { IsNormalAttack = isNormalAttack, ThrowingBonus = throwingBonus };
-                foreach (Effect effect in effects)
-                {
-                    effect.GamingQueue = this;
-                    effect.RecordEffectTriggeredIfOverridden(nameof(Effect.BeforeCriticalCheck), actor, enemy);
-                    if (!effect.BeforeCriticalCheck(criticalCheckCtx))
-                    {
-                        checkCritical = false;
-                    }
-                }
+                checkCritical = TriggerBeforeCriticalCheck(actor, enemy, criticalCheckCtx);
                 throwingBonus = criticalCheckCtx.ThrowingBonus;
 
                 if (checkCritical)
@@ -4211,13 +3825,7 @@ namespace FunGame.Core.Model.Queue
                         options.CriticalDamage = finalDamage * (actor.CritDMG - 1);
                         finalDamage *= actor.CritDMG; // 暴击伤害倍率加成
                         WriteLine("暴击生效！！");
-                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
-                        foreach (Effect effect in effects)
-                        {
-                            effect.GamingQueue = this;
-                            effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnCriticalDamageTriggered), actor, enemy);
-                            effect.OnCriticalDamageTriggered(new DamageContext(this, actor, enemy) { Dice = dice });
-                        }
+                        TriggerOnCriticalDamageTriggered(actor, enemy, dice);
                         return DamageResult.Critical;
                     }
                 }
@@ -4243,21 +3851,14 @@ namespace FunGame.Core.Model.Queue
         {
             options ??= new(actor);
             if (options.ExpectedDamage == 0) options.ExpectedDamage = expectedDamage;
-            List<Character> characters = [actor, enemy];
             DamageType damageType = DamageType.Magical;
-            List<Effect> effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
             Dictionary<Effect, double> totalDamageBonus = [];
             if (options.TriggerEffects)
             {
                 if (changeCount < 3)
                 {
                     DamageContext alterTypeCtx = new(this, actor, enemy) { IsNormalAttack = isNormalAttack, DamageType = DamageType.Magical, MagicType = magicType };
-                    foreach (Effect effect in effects)
-                    {
-                        effect.GamingQueue = this;
-                        effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AlterDamageTypeBeforeCalculation), actor, enemy);
-                        effect.AlterDamageTypeBeforeCalculation(alterTypeCtx);
-                    }
+                    TriggerAlterDamageTypeBeforeCalculation(actor, enemy, alterTypeCtx);
                     isNormalAttack = alterTypeCtx.IsNormalAttack;
                     damageType = alterTypeCtx.DamageType;
                     magicType = alterTypeCtx.MagicType;
@@ -4268,21 +3869,7 @@ namespace FunGame.Core.Model.Queue
                     }
                 }
 
-                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
-                foreach (Effect effect in effects)
-                {
-                    effect.GamingQueue = this;
-                    effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AlterExpectedDamageBeforeCalculation), actor, enemy);
-                    double damageBonus = effect.AlterExpectedDamageBeforeCalculation(new DamageContext(this, actor, enemy)
-                    {
-                        Damage = expectedDamage,
-                        IsNormalAttack = isNormalAttack,
-                        DamageType = DamageType.Magical,
-                        MagicType = magicType,
-                        TotalDamageBonus = totalDamageBonus
-                    });
-                    if (damageBonus != 0) totalDamageBonus[effect] = damageBonus;
-                }
+                TriggerAlterExpectedDamageBeforeCalculation(actor, enemy, EffectsOf(actor, enemy), expectedDamage, isNormalAttack, DamageType.Magical, magicType, totalDamageBonus);
                 expectedDamage += totalDamageBonus.Sum(kv => kv.Value);
             }
             options.BeforeDamageBonus = totalDamageBonus;
@@ -4293,17 +3880,8 @@ namespace FunGame.Core.Model.Queue
             bool checkCritical = true;
             if (isNormalAttack && options.CalculateEvade)
             {
-                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
                 DamageContext evadeCheckCtx = new(this, actor, enemy) { ThrowingBonus = throwingBonus };
-                foreach (Effect effect in effects)
-                {
-                    effect.GamingQueue = this;
-                    effect.RecordEffectTriggeredIfOverridden(nameof(Effect.BeforeEvadeCheck), actor, enemy);
-                    if (!effect.BeforeEvadeCheck(evadeCheckCtx))
-                    {
-                        checkEvade = false;
-                    }
-                }
+                checkEvade = TriggerBeforeEvadeCheck(actor, enemy, evadeCheckCtx);
                 throwingBonus = evadeCheckCtx.ThrowingBonus;
 
                 if (checkEvade)
@@ -4311,17 +3889,7 @@ namespace FunGame.Core.Model.Queue
                     // 闪避检定
                     if (dice < (enemy.EvadeRate + throwingBonus))
                     {
-                        bool isAlterEvaded = false;
-                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
-                        foreach (Effect effect in effects)
-                        {
-                            effect.GamingQueue = this;
-                            effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEvadedTriggered), actor, enemy);
-                            if (effect.OnEvadedTriggered(new DamageContext(this, actor, enemy) { Dice = dice }))
-                            {
-                                isAlterEvaded = true;
-                            }
-                        }
+                        bool isAlterEvaded = TriggerOnEvadedTriggered(actor, enemy, dice);
                         if (!isAlterEvaded)
                         {
                             finalDamage = 0;
@@ -4350,17 +3918,8 @@ namespace FunGame.Core.Model.Queue
             if (options.CalculateCritical)
             {
                 // 暴击检定
-                effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
                 DamageContext criticalCheckCtx = new(this, actor, enemy) { IsNormalAttack = isNormalAttack, ThrowingBonus = throwingBonus };
-                foreach (Effect effect in effects)
-                {
-                    effect.GamingQueue = this;
-                    effect.RecordEffectTriggeredIfOverridden(nameof(Effect.BeforeCriticalCheck), actor, enemy);
-                    if (!effect.BeforeCriticalCheck(criticalCheckCtx))
-                    {
-                        checkCritical = false;
-                    }
-                }
+                checkCritical = TriggerBeforeCriticalCheck(actor, enemy, criticalCheckCtx);
                 throwingBonus = criticalCheckCtx.ThrowingBonus;
 
                 if (checkCritical)
@@ -4371,13 +3930,7 @@ namespace FunGame.Core.Model.Queue
                         options.CriticalDamage = finalDamage * (actor.CritDMG - 1);
                         finalDamage *= actor.CritDMG; // 暴击伤害倍率加成
                         WriteLine("暴击生效！！");
-                        effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
-                        foreach (Effect effect in effects)
-                        {
-                            effect.GamingQueue = this;
-                            effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnCriticalDamageTriggered), actor, enemy);
-                            effect.OnCriticalDamageTriggered(new DamageContext(this, actor, enemy) { Dice = dice });
-                        }
+                        TriggerOnCriticalDamageTriggered(actor, enemy, dice);
                         return DamageResult.Critical;
                     }
                 }
@@ -4644,8 +4197,7 @@ namespace FunGame.Core.Model.Queue
             {
                 foreach (Effect e in skill.Effects)
                 {
-                    e.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEffectLost), character);
-                    e.OnEffectLost(new HookContext(null, character));
+                    FireEffectWithoutQueue(e, nameof(Effect.OnEffectLost), x => x.OnEffectLost(new HookContext(null, character)), character);
                     character.Effects.Remove(e);
                 }
                 character.Skills.Remove(skill);
@@ -4705,29 +4257,13 @@ namespace FunGame.Core.Model.Queue
             }
             if (skill != null)
             {
-                bool interruption = true;
-                List<Effect> effects = [.. caster.Effects.Union(interrupter.Effects).Distinct().Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                 SkillCastContext interruptCtx = new(this, caster) { Skill = skill, Interrupter = interrupter };
-                foreach (Effect e in effects)
-                {
-                    e.GamingQueue = this;
-                    e.RecordEffectTriggeredIfOverridden(nameof(Effect.BeforeSkillCastWillBeInterrupted), caster, interrupter);
-                    if (!e.BeforeSkillCastWillBeInterrupted(interruptCtx))
-                    {
-                        interruption = false;
-                    }
-                }
+                bool interruption = TriggerBeforeSkillCastWillBeInterrupted(caster, interrupter, interruptCtx);
                 if (interruption)
                 {
                     _castingSkills.Remove(caster);
                     WriteLine($"[ {caster} ] 的施法被 [ {interrupter} ] 打断了！！");
-                    effects = [.. caster.Effects.Union(interrupter.Effects).Distinct().Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
-                    foreach (Effect e in effects)
-                    {
-                        e.GamingQueue = this;
-                        e.RecordEffectTriggeredIfOverridden(nameof(Effect.OnSkillCastInterrupted), caster, interrupter);
-                        e.OnSkillCastInterrupted(interruptCtx);
-                    }
+                    TriggerOnSkillCastInterrupted(caster, interrupter, interruptCtx);
                     OnInterruptCastingEvent(interruptCtx);
                 }
             }
@@ -4747,14 +4283,8 @@ namespace FunGame.Core.Model.Queue
                 {
                     Skill skill = skillTarget.Skill;
                     WriteLine($"[ {caster} ] 丢失了施法目标！！");
-                    List<Effect> effects = [.. caster.Effects.Union(interrupter.Effects).Distinct().Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
                     SkillCastContext interruptCtx = new(this, caster) { Skill = skill, Interrupter = interrupter };
-                    foreach (Effect effect in effects)
-                    {
-                        effect.GamingQueue = this;
-                        effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnSkillCastInterrupted), caster, interrupter);
-                        effect.OnSkillCastInterrupted(interruptCtx);
-                    }
+                    TriggerOnSkillCastInterrupted(caster, interrupter, interruptCtx);
                     OnInterruptCastingEvent(interruptCtx);
                 }
             }
@@ -4863,13 +4393,7 @@ namespace FunGame.Core.Model.Queue
 
                 AddCharacter(character, newHardnessTime, false);
                 skill.OnSkillCasting(this, character, [], []);
-                Effect[] effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
-                foreach (Effect effect in effects)
-                {
-                    effect.GamingQueue = this;
-                    effect.RecordEffectTriggeredIfOverridden(nameof(Effect.AfterCharacterStartCasting), character);
-                    effect.AfterCharacterStartCasting(new SkillCastContext(this, character) { Skill = skill, Targets = [] });
-                }
+                TriggerAfterCharacterStartCasting(character, skill, []);
                 OnQueueUpdatedEvent(new QueueUpdatedContext(this, character, dp) { Characters = [.. _queue], HardnessTime = 0, Reason = QueueUpdatedReason.PreCastSuperSkill, Message = "设置角色预释放爆发技的硬直时间。" });
             }
         }
@@ -5061,18 +4585,8 @@ namespace FunGame.Core.Model.Queue
                 }
                 if (!ignore)
                 {
-                    Character[] characters = [character, target];
-                    effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
-                    foreach (Effect effect in effects)
-                    {
-                        effect.GamingQueue = this;
-                        effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnImmuneCheck), character, target);
-                        // 特效免疫检定不通过可无视免疫
-                        if (!effect.OnImmuneCheck(new ImmuneContext(this, character) { Target = target, Skill = skill, Item = item }))
-                        {
-                            ignore = true;
-                        }
-                    }
+                    // 特效免疫检定不通过可无视免疫
+                    ignore = TriggerOnImmuneCheck(character, target, skill, item);
                 }
             }
             if (ignore)
@@ -5108,17 +4622,8 @@ namespace FunGame.Core.Model.Queue
             bool checkExempted = true;
             double throwingBonus = 0;
             Character[] characters = source != null ? [character, source] : [character];
-            Effect[] effects = [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
             ImmuneContext exemptionCtx = new(this, character) { Source = source, Effect = effect, IsEvade = isEvade, ThrowingBonus = throwingBonus };
-            foreach (Effect e in effects)
-            {
-                e.GamingQueue = this;
-                e.RecordEffectTriggeredIfOverridden(nameof(Effect.OnExemptionCheck), characters);
-                if (!e.OnExemptionCheck(exemptionCtx))
-                {
-                    checkExempted = false;
-                }
-            }
+            checkExempted = TriggerOnExemptionCheck(characters, exemptionCtx);
             throwingBonus = exemptionCtx.ThrowingBonus;
             if (checkExempted)
             {
@@ -5162,9 +4667,7 @@ namespace FunGame.Core.Model.Queue
                     if (remove)
                     {
                         character.Effects.Remove(effect);
-                        effect.GamingQueue = this;
-                        effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEffectLost), character);
-                        effect.OnEffectLost(new HookContext(this, character));
+                        FireEffect(effect, nameof(Effect.OnEffectLost), e => e.OnEffectLost(new HookContext(this, character)), character);
                         description += $"\r\n[ {character} ] 失去了 [ {effect.Name} ] 效果。";
                     }
                     WriteLine($"[ {character} ] 的{CharacterSet.GetPrimaryAttributeName(effect.ExemptionType)}豁免检定通过！{description}");
@@ -5310,13 +4813,7 @@ namespace FunGame.Core.Model.Queue
             InquiryContext inquiryCtx = new(this, character, options) { DP = dp };
             InquiryResponse response = OnCharacterInquiryEvent(inquiryCtx);
             inquiryCtx.Response = response;
-            Effect[] effects = [.. character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
-            foreach (Effect effect in effects)
-            {
-                effect.GamingQueue = this;
-                effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnCharacterInquiry), character);
-                effect.OnCharacterInquiry(inquiryCtx);
-            }
+            TriggerOnCharacterInquiry(character, inquiryCtx);
             return response;
         }
 
