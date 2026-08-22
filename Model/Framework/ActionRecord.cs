@@ -78,6 +78,11 @@ namespace FunGame.Core.Model.Framework
         public Dictionary<Character, double> Damages { get; } = [];
 
         /// <summary>
+        /// 每个目标按伤害类型分桶的伤害值（物理/魔法/真实；各桶之和与 <see cref="Damages"/> 一致）
+        /// </summary>
+        public Dictionary<Character, Dictionary<DamageType, double>> DamageDetails { get; } = [];
+
+        /// <summary>
         /// 每个目标是否暴击
         /// </summary>
         public Dictionary<Character, bool> IsCritical { get; } = [];
@@ -227,6 +232,10 @@ namespace FunGame.Core.Model.Framework
             foreach (KeyValuePair<Character, double> kv in Damages)
             {
                 snapshot.Damages[kv.Key] = kv.Value;
+            }
+            foreach (KeyValuePair<Character, Dictionary<DamageType, double>> kv in DamageDetails)
+            {
+                snapshot.DamageDetails[kv.Key] = new(kv.Value);
             }
             foreach (KeyValuePair<Character, bool> kv in IsCritical)
             {

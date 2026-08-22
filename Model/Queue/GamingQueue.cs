@@ -4735,6 +4735,7 @@ namespace FunGame.Core.Model.Queue
             {
                 LastRound.Damages[characterTaken] = damage;
             }
+            RecordDamageDetails(LastRound.DamageDetails, characterTaken, damageType, damage);
             if (_currentAction != null)
             {
                 if (_currentAction.Damages.TryGetValue(characterTaken, out double actionDamage))
@@ -4745,7 +4746,25 @@ namespace FunGame.Core.Model.Queue
                 {
                     _currentAction.Damages[characterTaken] = damage;
                 }
+                RecordDamageDetails(_currentAction.DamageDetails, characterTaken, damageType, damage);
             }
+        }
+
+        /// <summary>
+        /// 将伤害值按类型分桶累加到明细记录中
+        /// </summary>
+        /// <param name="details"></param>
+        /// <param name="characterTaken"></param>
+        /// <param name="damageType"></param>
+        /// <param name="damage"></param>
+        private static void RecordDamageDetails(Dictionary<Character, Dictionary<DamageType, double>> details, Character characterTaken, DamageType damageType, double damage)
+        {
+            if (!details.TryGetValue(characterTaken, out Dictionary<DamageType, double>? buckets) || buckets == null)
+            {
+                buckets = [];
+                details[characterTaken] = buckets;
+            }
+            buckets[damageType] = buckets.TryGetValue(damageType, out double total) ? total + damage : damage;
         }
 
         #endregion

@@ -55,6 +55,9 @@ namespace FunGame.Core.Library.Common.JsonConverter
                 case nameof(RoundRecord.Damages):
                     convertingContext[nameof(RoundRecord.Damages)] = JsonService.GetObject<Dictionary<Guid, double>>(ref reader, options) ?? [];
                     break;
+                case nameof(RoundRecord.DamageDetails):
+                    convertingContext[nameof(RoundRecord.DamageDetails)] = JsonService.GetObject<Dictionary<Guid, Dictionary<int, double>>>(ref reader, options) ?? [];
+                    break;
 
                 case nameof(RoundRecord.ActionTypes):
                     List<CharacterActionType> types = JsonService.GetObject<List<CharacterActionType>>(ref reader, options) ?? [];
@@ -242,6 +245,11 @@ namespace FunGame.Core.Library.Common.JsonConverter
             writer.WriteEndObject();
             writer.WritePropertyName(nameof(RoundRecord.Damages));
             JsonSerializer.Serialize(writer, value.Damages.ToDictionary(kv => kv.Key.Guid, kv => kv.Value), options);
+            if (value.DamageDetails.Count > 0)
+            {
+                writer.WritePropertyName(nameof(RoundRecord.DamageDetails));
+                JsonSerializer.Serialize(writer, value.DamageDetails.ToDictionary(kv => kv.Key.Guid, kv => kv.Value.ToDictionary(kv2 => (int)kv2.Key, kv2 => kv2.Value)), options);
+            }
             writer.WritePropertyName(nameof(RoundRecord.ActionTypes));
             JsonSerializer.Serialize(writer, value.ActionTypes.Select(type => (int)type), options);
             writer.WritePropertyName(nameof(RoundRecord.Skills));
@@ -331,6 +339,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
             List<Character>? allCharacters = convertingContext.TryGetValue(AllCharactersProperty, out object? ac) ? ac as List<Character> : null;
 
             ResolveCharacterKeyed<double>(record, convertingContext, nameof(RoundRecord.Damages), allCharacters, (c, v) => record.Damages[c] = v);
+            ResolveCharacterKeyed<Dictionary<int, double>>(record, convertingContext, nameof(RoundRecord.DamageDetails), allCharacters, (c, v) => record.DamageDetails[c] = v.ToDictionary(kv => (DamageType)kv.Key, kv => kv.Value));
             ResolveCharacterKeyed<bool>(record, convertingContext, nameof(RoundRecord.IsCritical), allCharacters, (c, v) => record.IsCritical[c] = v);
             ResolveCharacterKeyed<bool>(record, convertingContext, nameof(RoundRecord.IsEvaded), allCharacters, (c, v) => record.IsEvaded[c] = v);
             ResolveCharacterKeyed<bool>(record, convertingContext, nameof(RoundRecord.IsImmune), allCharacters, (c, v) => record.IsImmune[c] = v);
