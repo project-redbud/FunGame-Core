@@ -7,6 +7,8 @@ namespace FunGame.Core.Library.Common.JsonConverter
 {
     public class InventoryConverter : BaseEntityConverter<Inventory>
     {
+        private const string MainCharacterIdKey = "MainCharacterId";
+
         public override Inventory NewInstance()
         {
             return new(new());
@@ -40,10 +42,17 @@ namespace FunGame.Core.Library.Common.JsonConverter
                     }
                     break;
                 case nameof(Inventory.MainCharacter):
-                    Character? mc = JsonService.GetObject<Character>(ref reader, options);
-                    if (mc != null)
+                    if (reader.TokenType == JsonTokenType.StartObject)
                     {
-                        result.MainCharacter = mc;
+                        Character? legacyMainCharacter = JsonService.GetObject<Character>(ref reader, options);
+                        if (legacyMainCharacter != null)
+                        {
+                            result.MainCharacter = legacyMainCharacter;
+                        }
+                    }
+                    else if (reader.TokenType == JsonTokenType.Number)
+                    {
+                        convertingContext[MainCharacterIdKey] = reader.GetInt64();
                     }
                     break;
                 case nameof(Inventory.Squad):
@@ -63,6 +72,19 @@ namespace FunGame.Core.Library.Common.JsonConverter
             }
         }
 
+        public override void AfterConvert(ref Inventory result, Dictionary<string, object> convertingContext)
+        {
+            // 按 Id 从 Characters 中取回角色
+            if (convertingContext.TryGetValue(MainCharacterIdKey, out object? value) && value is long mainCharacterId)
+            {
+                Character? mainCharacter = result.Characters.FirstOrDefault(c => c.Id == mainCharacterId);
+                if (mainCharacter != null)
+                {
+                    result.MainCharacter = mainCharacter;
+                }
+            }
+        }
+
         public override void Write(Utf8JsonWriter writer, Inventory value, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
@@ -74,8 +96,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
             JsonSerializer.Serialize(writer, value.Characters, options);
             writer.WritePropertyName(nameof(Inventory.Items));
             JsonSerializer.Serialize(writer, value.Items, options);
-            writer.WritePropertyName(nameof(Inventory.MainCharacter));
-            JsonSerializer.Serialize(writer, value.MainCharacter, options);
+            writer.WriteNumber(nameof(Inventory.MainCharacter), value.Characters.Count > 0 ? value.MainCharacter.Id : 0);
             writer.WritePropertyName(nameof(Inventory.Squad));
             JsonSerializer.Serialize(writer, value.Squad, options);
             writer.WritePropertyName(nameof(Inventory.Training));
