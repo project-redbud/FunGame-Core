@@ -12,16 +12,16 @@ namespace FunGame.Core.Model.EffectContext
         /// <summary>
         /// 角色当前的决策点
         /// </summary>
-        public DecisionPoints? DP { get; set; } = dp;
+        public DecisionPoints? DP { get; internal set; } = dp;
 
         /// <summary>
         /// 普通攻击实例
         /// </summary>
-        public NormalAttack? NormalAttack { get; set; } = null;
+        public NormalAttack? NormalAttack { get; internal set; } = null;
 
         /// <summary>
         /// 攻击目标列表
         /// </summary>
-        public List<Character> Targets { get; set; } = [];
+        public List<Character> Targets { get; internal set; } = [];
     }
 }

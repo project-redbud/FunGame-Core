@@ -4,6 +4,7 @@ using FunGame.Core.Entity;
 using FunGame.Core.Interface.Base;
 using FunGame.Core.Library.Constant;
 using FunGame.Core.Model.EffectContext;
+using FunGame.Core.Model.EffectResult;
 using FunGame.Core.Model.Framework;
 using FunGame.Core.Model.PrefabricatedEntity;
 
@@ -2611,14 +2612,17 @@ namespace FunGame.Core.Model.Queue
                         ShieldContext beforeShieldCtx = new(this, enemy, actor) { DamageType = damageType, MagicType = magicType, Damage = damage, Message = shieldMsg };
                         foreach (Effect effect in EffectsOf(actor, enemy))
                         {
-                            beforeShieldCtx.DamageReduce = 0;
-                            FireEffect(effect, nameof(Effect.BeforeShieldCalculation), e => { if (!e.BeforeShieldCalculation(beforeShieldCtx)) change = true; }, enemy, actor);
-                            shieldMsg = beforeShieldCtx.Message;
-                            if (beforeShieldCtx.DamageReduce != 0)
+                            FireEffect(effect, nameof(Effect.BeforeShieldCalculation), e =>
                             {
-                                actualDamage -= beforeShieldCtx.DamageReduce;
-                                if (actualDamage < 0) actualDamage = 0;
-                            }
+                                BeforeShieldCalculationResult result = e.BeforeShieldCalculation(beforeShieldCtx);
+                                if (result.SkipShield) change = true;
+                                if (result.Message != null) shieldMsg = result.Message;
+                                if (result.DamageReduce != 0)
+                                {
+                                    actualDamage -= result.DamageReduce;
+                                    if (actualDamage < 0) actualDamage = 0;
+                                }
+                            }, enemy, actor);
                         }
 
                         // 检查护盾
@@ -3825,9 +3829,7 @@ namespace FunGame.Core.Model.Queue
             {
                 // 闪避检定
                 ctx.Dice = dice;
-                ctx.ThrowingBonus = 0;
-                checkEvade = TriggerBeforeEvadeCheck(actor, enemy, ctx);
-                throwingBonus = ctx.ThrowingBonus;
+                (checkEvade, throwingBonus) = TriggerBeforeEvadeCheck(actor, enemy, ctx);
 
                 if (checkEvade)
                 {
@@ -3864,9 +3866,7 @@ namespace FunGame.Core.Model.Queue
             if (options.CalculateCritical)
             {
                 // 暴击检定
-                ctx.ThrowingBonus = 0;
-                checkCritical = TriggerBeforeCriticalCheck(actor, enemy, ctx);
-                throwingBonus = ctx.ThrowingBonus;
+                (checkCritical, throwingBonus) = TriggerBeforeCriticalCheck(actor, enemy, ctx);
 
                 if (checkCritical)
                 {
@@ -3943,9 +3943,7 @@ namespace FunGame.Core.Model.Queue
             {
                 // 闪避检定
                 ctx.Dice = dice;
-                ctx.ThrowingBonus = 0;
-                checkEvade = TriggerBeforeEvadeCheck(actor, enemy, ctx);
-                throwingBonus = ctx.ThrowingBonus;
+                (checkEvade, throwingBonus) = TriggerBeforeEvadeCheck(actor, enemy, ctx);
 
                 if (checkEvade)
                 {
@@ -3982,9 +3980,7 @@ namespace FunGame.Core.Model.Queue
             if (options.CalculateCritical)
             {
                 // 暴击检定
-                ctx.ThrowingBonus = 0;
-                checkCritical = TriggerBeforeCriticalCheck(actor, enemy, ctx);
-                throwingBonus = ctx.ThrowingBonus;
+                (checkCritical, throwingBonus) = TriggerBeforeCriticalCheck(actor, enemy, ctx);
 
                 if (checkCritical)
                 {
@@ -4900,7 +4896,8 @@ namespace FunGame.Core.Model.Queue
             InquiryResponse response = OnCharacterInquiryEvent(inquiryCtx);
             inquiryCtx.Response = response;
             TriggerOnCharacterInquiry(character, inquiryCtx);
-            return response;
+            // 特效/事件对 ctx.Response 的修改在此生效（修复：原先返回的是事件原始结果，特效修改被丢弃）
+            return inquiryCtx.Response;
         }
 
         /// <summary>

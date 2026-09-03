@@ -12,11 +12,11 @@ namespace FunGame.Core.Model.EffectContext
         /// <summary>
         /// 角色当前的决策点
         /// </summary>
-        public DecisionPoints? DP { get; set; } = dp;
+        public DecisionPoints? DP { get; internal set; } = dp;
 
         /// <summary>
         /// 移动目标格子
         /// </summary>
-        public Grid Target { get; set; } = Grid.Empty;
+        public Grid Target { get; internal set; } = Grid.Empty;
     }
 }

@@ -798,7 +798,7 @@ namespace FunGame.Core.Entity
                 {
                     e.GamingQueue = GamingQueue;
                     e.RecordEffectTriggeredIfOverridden(nameof(Effect.BeforeSkillCastedOnStatus), target);
-                    if (!e.BeforeSkillCastedOnStatus(ctx))
+                    if (e.BeforeSkillCastedOnStatus(ctx).RemoveFromTargets)
                     {
                         targets.Remove(target);
                     }

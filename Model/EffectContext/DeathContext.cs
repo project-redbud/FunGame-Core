@@ -11,26 +11,26 @@ namespace FunGame.Core.Model.EffectContext
         /// <summary>
         /// 击杀者
         /// </summary>
-        public Character? Killer { get; set; } = killer;
+        public Character? Killer { get; internal set; } = killer;
 
         /// <summary>
         /// 亡者是否有主人（召唤物/随从）
         /// </summary>
-        public bool HasMaster { get; set; } = false;
+        public bool HasMaster { get; internal set; } = false;
 
         /// <summary>
         /// 连杀统计
         /// </summary>
-        public Dictionary<Character, int> ContinuousKilling { get; set; } = [];
+        public Dictionary<Character, int> ContinuousKilling { get; internal set; } = [];
 
         /// <summary>
         /// 金币获取统计
         /// </summary>
-        public Dictionary<Character, int> EarnedMoney { get; set; } = [];
+        public Dictionary<Character, int> EarnedMoney { get; internal set; } = [];
 
         /// <summary>
         /// 助攻角色
         /// </summary>
-        public Character[] Assists { get; set; } = [];
+        public Character[] Assists { get; internal set; } = [];
     }
 }

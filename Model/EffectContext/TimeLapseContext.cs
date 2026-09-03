@@ -1,5 +1,6 @@
 ﻿using FunGame.Core.Entity;
 using FunGame.Core.Interface.Base;
+using FunGame.Core.Model.EffectResult;
 using FunGame.Core.Model.Framework;
 
 namespace FunGame.Core.Model.EffectContext
@@ -10,23 +11,25 @@ namespace FunGame.Core.Model.EffectContext
     public class TimeLapseContext(IGamingQueue? queue, Character? character = null) : HookContext(queue, character)
     {
         /// <summary>
-        /// 地图格版时间流逝时的目标格子（角色版为 null）
+        /// 地图格版时间流逝时的目标格子（角色版为 null；框架填充，模组只读）
         /// </summary>
-        public Grid? Grid { get; set; } = null;
+        public Grid? Grid { get; internal set; } = null;
 
         /// <summary>
-        /// 流逝的时间
+        /// 流逝的时间（框架填充，模组只读）
         /// </summary>
-        public double Elapsed { get; set; } = 0;
+        public double Elapsed { get; internal set; } = 0;
 
         /// <summary>
-        /// 生命回复值（可修改）
+        /// 本回合生命回复值（框架先按自然回复填入，触发后回读；模组禁止写入，
+        /// 修改请通过 <see cref="BeforeApplyRecoveryResult.HROverride"/> 返回）
         /// </summary>
-        public double HR { get; set; } = 0;
+        public double HR { get; internal set; } = 0;
 
         /// <summary>
-        /// 魔法回复值（可修改）
+        /// 本回合魔法回复值（框架先按自然回复填入，触发后回读；模组禁止写入，
+        /// 修改请通过 <see cref="BeforeApplyRecoveryResult.MROverride"/> 返回）
         /// </summary>
-        public double MR { get; set; } = 0;
+        public double MR { get; internal set; } = 0;
     }
 }

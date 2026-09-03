@@ -1,5 +1,6 @@
 ﻿using FunGame.Core.Entity;
 using FunGame.Core.Interface.Base;
+using FunGame.Core.Model.EffectResult;
 
 namespace FunGame.Core.Model.EffectContext
 {
@@ -9,18 +10,19 @@ namespace FunGame.Core.Model.EffectContext
     public class HardnessContext(IGamingQueue queue, Character actor) : HookContext(queue, actor)
     {
         /// <summary>
-        /// 刚刚释放的技能（普通攻击后为 null）
+        /// 刚刚释放的技能（普通攻击后为 null；框架填充，模组只读）
         /// </summary>
-        public Skill? Skill { get; set; } = null;
+        public Skill? Skill { get; internal set; } = null;
 
         /// <summary>
-        /// 基础硬直时间（可修改）
+        /// 当前基础硬直时间（框架维护最新值；模组禁止写入，修改请通过
+        /// <see cref="AlterHardnessTimeResult"/> 的 Factor/ClearHardnessTime/OverrideCheckProtected 返回）
         /// </summary>
-        public double BaseHardnessTime { get; set; } = 0;
+        public double BaseHardnessTime { get; internal set; } = 0;
 
         /// <summary>
-        /// 是否使用插队保护机制（可修改）
+        /// 是否使用插队保护机制（框架维护；模组禁止写入，见 <see cref="AlterHardnessTimeResult"/>）
         /// </summary>
-        public bool IsCheckProtected { get; set; } = false;
+        public bool IsCheckProtected { get; internal set; } = false;
     }
 }

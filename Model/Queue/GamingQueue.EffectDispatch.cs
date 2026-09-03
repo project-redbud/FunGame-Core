@@ -1,6 +1,7 @@
 using FunGame.Core.Entity;
 using FunGame.Core.Library.Constant;
 using FunGame.Core.Model.EffectContext;
+using FunGame.Core.Model.EffectResult;
 using FunGame.Core.Model.Framework;
 
 namespace FunGame.Core.Model.Queue
@@ -87,7 +88,8 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 触发 AlterActionTypeBeforeAction，存在强制行动时短路并返回 (行动类型, 是否强制)
+        /// 触发 AlterActionTypeBeforeAction：各特效通过回读对象声明行动/覆盖，框架维护 ctx 概率与可用性最新值；
+        /// 存在强制行动时短路并返回 (行动类型, 是否强制)
         /// </summary>
         private (CharacterActionType Type, bool Force) TriggerAlterActionTypeBeforeAction(Character character, DecisionContext ctx)
         {
@@ -95,18 +97,23 @@ namespace FunGame.Core.Model.Queue
             bool forceAction = false;
             foreach (Effect effect in EffectsOf(character))
             {
-                CharacterActionType forceType = CharacterActionType.None;
-                bool force = false;
                 FireEffect(effect, nameof(Effect.AlterActionTypeBeforeAction), e =>
                 {
-                    ctx.ForceAction = false;
-                    forceType = e.AlterActionTypeBeforeAction(ctx);
-                    force = ctx.ForceAction;
+                    AlterActionTypeResult result = e.AlterActionTypeBeforeAction(ctx);
+                    // 应用覆盖到 ctx（internal set：仅框架可写），后续特效可读到最新值
+                    if (result.CanUseItem.HasValue) ctx.CanUseItem = result.CanUseItem.Value;
+                    if (result.CanCastSkill.HasValue) ctx.CanCastSkill = result.CanCastSkill.Value;
+                    if (result.PUseItem.HasValue) ctx.PUseItem = result.PUseItem.Value;
+                    if (result.PCastSkill.HasValue) ctx.PCastSkill = result.PCastSkill.Value;
+                    if (result.PNormalAttack.HasValue) ctx.PNormalAttack = result.PNormalAttack.Value;
+                    if (result.ForceAction && result.ActionType != CharacterActionType.None)
+                    {
+                        forceAction = true;
+                        actionType = result.ActionType;
+                    }
                 }, character);
-                if (force && forceType != CharacterActionType.None)
+                if (forceAction)
                 {
-                    forceAction = true;
-                    actionType = forceType;
                     break;
                 }
             }
@@ -136,13 +143,34 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 触发 AlterHardnessTimeAfterNormalAttack
+        /// 触发 AlterHardnessTimeAfterNormalAttack：按回读对象维护 ctx.BaseHardnessTime / IsCheckProtected 最新值
         /// </summary>
         private void TriggerAlterHardnessTimeAfterNormalAttack(Character character, HardnessContext ctx)
         {
             foreach (Effect effect in EffectsOf(character))
             {
-                FireEffect(effect, nameof(Effect.AlterHardnessTimeAfterNormalAttack), e => e.AlterHardnessTimeAfterNormalAttack(ctx), character);
+                FireEffect(effect, nameof(Effect.AlterHardnessTimeAfterNormalAttack), e =>
+                {
+                    ApplyAlterHardnessTimeResult(ctx, e.AlterHardnessTimeAfterNormalAttack(ctx));
+                }, character);
+            }
+        }
+
+        /// <summary>
+        /// 将单条 <see cref="AlterHardnessTimeResult"/> 应用到硬直上下文（保持原链式执行语义）
+        /// </summary>
+        private static void ApplyAlterHardnessTimeResult(HardnessContext ctx, AlterHardnessTimeResult result)
+        {
+            if (result.ClearHardnessTime)
+            {
+                ctx.BaseHardnessTime = 0;
+                ctx.IsCheckProtected = false;
+                return;
+            }
+            ctx.BaseHardnessTime *= 1 + result.Factor;
+            if (result.OverrideCheckProtected.HasValue)
+            {
+                ctx.IsCheckProtected = result.OverrideCheckProtected.Value;
             }
         }
 
@@ -171,13 +199,16 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 触发 AlterHardnessTimeAfterCastSkill
+        /// 触发 AlterHardnessTimeAfterCastSkill：按回读对象维护 ctx.BaseHardnessTime / IsCheckProtected 最新值
         /// </summary>
         private void TriggerAlterHardnessTimeAfterCastSkill(Character character, HardnessContext ctx)
         {
             foreach (Effect effect in EffectsOf(character))
             {
-                FireEffect(effect, nameof(Effect.AlterHardnessTimeAfterCastSkill), e => e.AlterHardnessTimeAfterCastSkill(ctx), character);
+                FireEffect(effect, nameof(Effect.AlterHardnessTimeAfterCastSkill), e =>
+                {
+                    ApplyAlterHardnessTimeResult(ctx, e.AlterHardnessTimeAfterCastSkill(ctx));
+                }, character);
             }
         }
 
@@ -211,7 +242,7 @@ namespace FunGame.Core.Model.Queue
         #region 伤害结算钩子包装
 
         /// <summary>
-        /// 触发 AlterActualDamageAfterCalculation，加成逐特效记入 ctx.TotalDamageBonus，闪避改写返回结果
+        /// 触发 AlterActualDamageAfterCalculation：DamageDelta(SUM) 逐特效记入 ctx.TotalDamageBonus，IsEvaded(OR) 改写返回结果
         /// </summary>
         private DamageResult TriggerAlterActualDamageAfterCalculation(Character actor, Character enemy, DamageContext ctx, DamageResult damageResult)
         {
@@ -219,9 +250,9 @@ namespace FunGame.Core.Model.Queue
             {
                 FireEffect(effect, nameof(Effect.AlterActualDamageAfterCalculation), e =>
                 {
-                    double damageBonus = e.AlterActualDamageAfterCalculation(ctx);
-                    if (damageBonus != 0) ctx.TotalDamageBonus[e] = damageBonus;
-                    if (ctx.IsEvaded)
+                    AlterActualDamageResult result = e.AlterActualDamageAfterCalculation(ctx);
+                    if (result.DamageDelta != 0) ctx.TotalDamageBonus[e] = result.DamageDelta;
+                    if (result.IsEvaded)
                     {
                         damageResult = DamageResult.Evaded;
                     }
@@ -231,7 +262,7 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 触发 BeforeApplyTrueDamage（共用本次结算的 <paramref name="ctx"/>），返回 true 时伤害结果改为闪避
+        /// 触发 BeforeApplyTrueDamage（共用本次结算的 <paramref name="ctx"/>），NullifyDamage(OR) 聚合：任一化解则伤害结果改为闪避
         /// </summary>
         private DamageResult TriggerBeforeApplyTrueDamage(Character actor, Character enemy, DamageContext ctx, DamageResult damageResult)
         {
@@ -239,7 +270,8 @@ namespace FunGame.Core.Model.Queue
             {
                 FireEffect(effect, nameof(Effect.BeforeApplyTrueDamage), e =>
                 {
-                    if (e.BeforeApplyTrueDamage(ctx))
+                    BeforeApplyTrueDamageResult result = e.BeforeApplyTrueDamage(ctx);
+                    if (result.NullifyDamage)
                     {
                         damageResult = DamageResult.Evaded;
                     }
@@ -249,7 +281,7 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 触发 OnDamageImmuneCheck（共用本次结算的 <paramref name="ctx"/>），返回 true 表示无视免疫
+        /// 触发 OnDamageImmuneCheck（共用本次结算的 <paramref name="ctx"/>），IgnoreDamageImmunity(OR) 聚合：任一无视则免疫不生效
         /// </summary>
         private bool TriggerOnDamageImmuneCheck(Character actor, Character enemy, DamageContext ctx)
         {
@@ -258,7 +290,8 @@ namespace FunGame.Core.Model.Queue
             {
                 FireEffect(effect, nameof(Effect.OnDamageImmuneCheck), e =>
                 {
-                    if (!e.OnDamageImmuneCheck(ctx))
+                    OnDamageImmuneCheckResult result = e.OnDamageImmuneCheck(ctx);
+                    if (result.IgnoreDamageImmunity)
                     {
                         ignore = true;
                     }
@@ -268,7 +301,7 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 触发 OnShieldBroken（同一次破碎共用 <paramref name="ctx"/>），返回 false 的特效化解本次伤害（剩余伤害归零）<para/>
+        /// 触发 OnShieldBroken（同一次破碎共用 <paramref name="ctx"/>），NullifyRemainingDamage(OR) 聚合：任一特效化解则剩余伤害归零<para/>
         /// <see cref="ShieldContext.OverFlowing"/> 在分发前同步为当前剩余伤害，使特效观察到最新值。
         /// </summary>
         private double TriggerOnShieldBroken(Character actor, Character enemy, ShieldContext ctx, double remain)
@@ -278,7 +311,8 @@ namespace FunGame.Core.Model.Queue
                 FireEffect(effect, nameof(Effect.OnShieldBroken), e =>
                 {
                     ctx.OverFlowing = remain;
-                    if (!e.OnShieldBroken(ctx))
+                    OnShieldBrokenResult result = e.OnShieldBroken(ctx);
+                    if (result.NullifyRemainingDamage)
                     {
                         WriteLine($"[ {(enemy.Effects.Contains(e) ? enemy : actor)} ] 因护盾破碎而发动了 [ {e.Skill.Name} ]，化解了本次伤害！");
                         remain = 0;
@@ -300,25 +334,29 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 触发 OnApplyDamage
+        /// 触发 OnApplyDamage：OriginalMessage(覆盖后者胜) 应用到 ctx，供主线回读
         /// </summary>
         private void TriggerOnApplyDamage(Character actor, Character enemy, DamageContext ctx)
         {
             foreach (Effect effect in EffectsOf(actor, enemy))
             {
-                FireEffect(effect, nameof(Effect.OnApplyDamage), e => e.OnApplyDamage(ctx), enemy, actor);
+                FireEffect(effect, nameof(Effect.OnApplyDamage), e =>
+                {
+                    OnApplyDamageResult result = e.OnApplyDamage(ctx);
+                    if (result.OriginalMessage != null) ctx.OriginalMessage = result.OriginalMessage;
+                }, enemy, actor);
             }
         }
 
         /// <summary>
-        /// 触发 BeforeLifesteal，返回 false 的特效取消生命偷取
+        /// 触发 BeforeLifesteal，CancelLifesteal(OR) 聚合：任一特效取消则本次生命偷取不生效
         /// </summary>
         private bool TriggerBeforeLifesteal(Character actor, Character enemy, LifestealContext ctx)
         {
             bool allow = true;
             foreach (Effect effect in EffectsOf(actor, enemy))
             {
-                FireEffect(effect, nameof(Effect.BeforeLifesteal), e => { if (!e.BeforeLifesteal(ctx)) allow = false; }, actor, enemy);
+                FireEffect(effect, nameof(Effect.BeforeLifesteal), e => { if (e.BeforeLifesteal(ctx).CancelLifesteal) allow = false; }, actor, enemy);
             }
             return allow;
         }
@@ -335,24 +373,32 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 触发 AlterEPAfterDamage（仅攻击者特效）
+        /// 触发 AlterEPAfterDamage（仅攻击者特效）：BaseEP 覆盖应用到 ctx，供主线回读
         /// </summary>
         private void TriggerAlterEPAfterDamage(Character actor, Character enemy, DamageContext ctx)
         {
             foreach (Effect effect in EffectsOf(actor))
             {
-                FireEffect(effect, nameof(Effect.AlterEPAfterDamage), e => e.AlterEPAfterDamage(ctx), actor);
+                FireEffect(effect, nameof(Effect.AlterEPAfterDamage), e =>
+                {
+                    AlterEPResult result = e.AlterEPAfterDamage(ctx);
+                    if (result.BaseEP.HasValue) ctx.BaseEP = result.BaseEP.Value;
+                }, actor);
             }
         }
 
         /// <summary>
-        /// 触发 AlterEPAfterGetDamage（仅受击者特效）
+        /// 触发 AlterEPAfterGetDamage（仅受击者特效）：BaseEP 覆盖应用到 ctx，供主线回读
         /// </summary>
         private void TriggerAlterEPAfterGetDamage(Character actor, Character enemy, DamageContext ctx)
         {
             foreach (Effect effect in EffectsOf(enemy))
             {
-                FireEffect(effect, nameof(Effect.AlterEPAfterGetDamage), e => e.AlterEPAfterGetDamage(ctx), enemy);
+                FireEffect(effect, nameof(Effect.AlterEPAfterGetDamage), e =>
+                {
+                    AlterEPResult result = e.AlterEPAfterGetDamage(ctx);
+                    if (result.BaseEP.HasValue) ctx.BaseEP = result.BaseEP.Value;
+                }, enemy);
             }
         }
 
@@ -372,13 +418,19 @@ namespace FunGame.Core.Model.Queue
         #region 伤害计算钩子包装
 
         /// <summary>
-        /// 触发 AlterDamageTypeBeforeCalculation
+        /// 触发 AlterDamageTypeBeforeCalculation：覆盖值应用到 ctx（类型转换判定以 ctx 最新值为准）
         /// </summary>
         private void TriggerAlterDamageTypeBeforeCalculation(Character actor, Character enemy, DamageContext ctx)
         {
             foreach (Effect effect in EffectsOf(actor, enemy))
             {
-                FireEffect(effect, nameof(Effect.AlterDamageTypeBeforeCalculation), e => e.AlterDamageTypeBeforeCalculation(ctx), actor, enemy);
+                FireEffect(effect, nameof(Effect.AlterDamageTypeBeforeCalculation), e =>
+                {
+                    AlterDamageTypeResult result = e.AlterDamageTypeBeforeCalculation(ctx);
+                    if (result.IsNormalAttack.HasValue) ctx.IsNormalAttack = result.IsNormalAttack.Value;
+                    if (result.DamageType.HasValue) ctx.DamageType = result.DamageType.Value;
+                    if (result.MagicType.HasValue) ctx.MagicType = result.MagicType.Value;
+                }, actor, enemy);
             }
         }
 
@@ -398,42 +450,58 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 触发 BeforeEvadeCheck，返回 false 的特效禁用闪避检定
+        /// 触发 BeforeEvadeCheck，收集回读对象并聚合：SkipEvadeCheck(OR) → 是否跳过检定；ThrowingBonusDelta(SUM) → 检定加值
         /// </summary>
-        private bool TriggerBeforeEvadeCheck(Character actor, Character enemy, DamageContext ctx)
+        private (bool CheckEvade, double ThrowingBonus) TriggerBeforeEvadeCheck(Character actor, Character enemy, DamageContext ctx)
         {
-            bool checkEvade = true;
+            bool skipEvadeCheck = false;
+            double throwingBonus = 0;
             foreach (Effect effect in EffectsOf(actor, enemy))
             {
-                FireEffect(effect, nameof(Effect.BeforeEvadeCheck), e => { if (!e.BeforeEvadeCheck(ctx)) checkEvade = false; }, actor, enemy);
+                FireEffect(effect, nameof(Effect.BeforeEvadeCheck), e =>
+                {
+                    BeforeEvadeCheckResult result = e.BeforeEvadeCheck(ctx);
+                    if (result.SkipEvadeCheck) skipEvadeCheck = true;
+                    throwingBonus += result.ThrowingBonusDelta;
+                }, actor, enemy);
             }
-            return checkEvade;
+            return (!skipEvadeCheck, throwingBonus);
         }
 
         /// <summary>
-        /// 触发 OnEvadedTriggered（共用本次结算的 <paramref name="ctx"/>），返回 true 表示无视本次闪避
+        /// 触发 OnEvadedTriggered（共用本次结算的 <paramref name="ctx"/>），IgnoreEvaded(OR) 聚合：任一无视则本次闪避无效
         /// </summary>
         private bool TriggerOnEvadedTriggered(Character actor, Character enemy, DamageContext ctx)
         {
             bool isAlterEvaded = false;
             foreach (Effect effect in EffectsOf(actor, enemy))
             {
-                FireEffect(effect, nameof(Effect.OnEvadedTriggered), e => { if (e.OnEvadedTriggered(ctx)) isAlterEvaded = true; }, actor, enemy);
+                FireEffect(effect, nameof(Effect.OnEvadedTriggered), e =>
+                {
+                    OnEvadedTriggeredResult result = e.OnEvadedTriggered(ctx);
+                    if (result.IgnoreEvaded) isAlterEvaded = true;
+                }, actor, enemy);
             }
             return isAlterEvaded;
         }
 
         /// <summary>
-        /// 触发 BeforeCriticalCheck，返回 false 的特效禁用暴击检定
+        /// 触发 BeforeCriticalCheck，收集回读对象并聚合：SkipCriticalCheck(OR) → 是否跳过检定；ThrowingBonusDelta(SUM) → 检定加值
         /// </summary>
-        private bool TriggerBeforeCriticalCheck(Character actor, Character enemy, DamageContext ctx)
+        private (bool CheckCritical, double ThrowingBonus) TriggerBeforeCriticalCheck(Character actor, Character enemy, DamageContext ctx)
         {
-            bool checkCritical = true;
+            bool skipCriticalCheck = false;
+            double throwingBonus = 0;
             foreach (Effect effect in EffectsOf(actor, enemy))
             {
-                FireEffect(effect, nameof(Effect.BeforeCriticalCheck), e => { if (!e.BeforeCriticalCheck(ctx)) checkCritical = false; }, actor, enemy);
+                FireEffect(effect, nameof(Effect.BeforeCriticalCheck), e =>
+                {
+                    BeforeCriticalCheckResult result = e.BeforeCriticalCheck(ctx);
+                    if (result.SkipCriticalCheck) skipCriticalCheck = true;
+                    throwingBonus += result.ThrowingBonusDelta;
+                }, actor, enemy);
             }
-            return checkCritical;
+            return (!skipCriticalCheck, throwingBonus);
         }
 
         /// <summary>
@@ -465,33 +533,43 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 触发 BeforeApplyRecoveryAtTimeLapsing（遍历全部特效，不过滤生效状态），返回 false 的特效阻止回复
+        /// 触发 BeforeApplyRecoveryAtTimeLapsing（遍历全部特效，不过滤生效状态）：取消回复 OR 聚合；
+        /// 各特效可覆盖 HR/MR（框架直接写入 ctx 供主线回读）
         /// </summary>
         private bool TriggerBeforeApplyRecoveryAtTimeLapsing(Character character, TimeLapseContext ctx)
         {
             bool allowRecovery = true;
             foreach (Effect effect in AllEffectsOf(character))
             {
-                FireEffect(effect, nameof(Effect.BeforeApplyRecoveryAtTimeLapsing), e => { if (!e.BeforeApplyRecoveryAtTimeLapsing(ctx)) allowRecovery = false; }, character);
+                FireEffect(effect, nameof(Effect.BeforeApplyRecoveryAtTimeLapsing), e =>
+                {
+                    BeforeApplyRecoveryResult result = e.BeforeApplyRecoveryAtTimeLapsing(ctx);
+                    if (result.CancelRecovery) allowRecovery = false;
+                    if (result.HROverride.HasValue) ctx.HR = result.HROverride.Value;
+                    if (result.MROverride.HasValue) ctx.MR = result.MROverride.Value;
+                }, character);
             }
             return allowRecovery;
         }
 
         /// <summary>
-        /// 触发 BeforeHealToTarget，返回 false 的特效取消治疗
+        /// 触发 BeforeHealToTarget：取消治疗 OR 聚合
         /// </summary>
         private bool TriggerBeforeHealToTarget(Character actor, Character target, HealContext ctx)
         {
             bool allow = true;
             foreach (Effect effect in EffectsOf(actor, target))
             {
-                FireEffect(effect, nameof(Effect.BeforeHealToTarget), e => { if (!e.BeforeHealToTarget(ctx)) allow = false; }, actor, target);
+                FireEffect(effect, nameof(Effect.BeforeHealToTarget), e =>
+                {
+                    if (e.BeforeHealToTarget(ctx).CancelHeal) allow = false;
+                }, actor, target);
             }
             return allow;
         }
 
         /// <summary>
-        /// 触发 AlterHealValueBeforeHealToTarget，加成逐特效记入 ctx.TotalHealBonus 并追加明细，返回是否允许复活
+        /// 触发 AlterHealValueBeforeHealToTarget：治疗增量 SUM 聚合、复活请求 OR 聚合，追加明细到 healStrings，返回是否允许复活
         /// </summary>
         private bool TriggerAlterHealValueBeforeHealToTarget(Character actor, Character target, HealContext ctx, List<string> healStrings, bool canRespawn)
         {
@@ -499,16 +577,15 @@ namespace FunGame.Core.Model.Queue
             {
                 FireEffect(effect, nameof(Effect.AlterHealValueBeforeHealToTarget), e =>
                 {
-                    ctx.CanRespawn = false;
-                    double healBonus = e.AlterHealValueBeforeHealToTarget(ctx);
-                    if (ctx.CanRespawn && !canRespawn)
+                    AlterHealValueResult result = e.AlterHealValueBeforeHealToTarget(ctx);
+                    if (result.AllowRespawn && !canRespawn)
                     {
                         canRespawn = true;
                     }
-                    if (healBonus != 0)
+                    if (result.HealDelta != 0)
                     {
-                        ctx.TotalHealBonus[e] = healBonus;
-                        healStrings.Add($"{(healBonus > 0 ? " + " : " - ")}{Math.Abs(healBonus):0.##}（{e.Name}）");
+                        ctx.TotalHealBonus[e] = result.HealDelta;
+                        healStrings.Add($"{(result.HealDelta > 0 ? " + " : " - ")}{Math.Abs(result.HealDelta):0.##}（{e.Name}）");
                     }
                 }, actor, target);
             }
@@ -564,14 +641,17 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 触发 BeforeSkillCastWillBeInterrupted，返回 false 的特效阻止打断
+        /// 触发 BeforeSkillCastWillBeInterrupted，BlockInterruption(OR) 聚合：任一特效阻止则打断不生效
         /// </summary>
         private bool TriggerBeforeSkillCastWillBeInterrupted(Character caster, Character interrupter, SkillCastContext ctx)
         {
             bool interruption = true;
             foreach (Effect effect in EffectsOf(caster, interrupter))
             {
-                FireEffect(effect, nameof(Effect.BeforeSkillCastWillBeInterrupted), e => { if (!e.BeforeSkillCastWillBeInterrupted(ctx)) interruption = false; }, caster, interrupter);
+                FireEffect(effect, nameof(Effect.BeforeSkillCastWillBeInterrupted), e =>
+                {
+                    if (e.BeforeSkillCastWillBeInterrupted(ctx).BlockInterruption) interruption = false;
+                }, caster, interrupter);
             }
             return interruption;
         }
@@ -596,22 +676,31 @@ namespace FunGame.Core.Model.Queue
             ImmuneContext ctx = new(this, character) { Target = target, Skill = skill, Item = item };
             foreach (Effect effect in EffectsOf(character, target))
             {
-                FireEffect(effect, nameof(Effect.OnImmuneCheck), e => { if (!e.OnImmuneCheck(ctx)) ignore = true; }, character, target);
+                FireEffect(effect, nameof(Effect.OnImmuneCheck), e =>
+                {
+                    OnImmuneCheckResult result = e.OnImmuneCheck(ctx);
+                    if (result.IgnoreImmunity) ignore = true;
+                }, character, target);
             }
             return ignore;
         }
 
         /// <summary>
-        /// 触发 OnExemptionCheck，返回 false 的特效跳过豁免检定
+        /// 触发 OnExemptionCheck：SkipExemptionCheck(OR) 决定是否跳过豁免检定；ThrowingBonusDelta(SUM) 累加到 ctx.ThrowingBonus
         /// </summary>
         private bool TriggerOnExemptionCheck(Character[] characters, ImmuneContext ctx)
         {
-            bool checkExempted = true;
+            bool skipExemptionCheck = false;
             foreach (Effect effect in EffectsOf(characters))
             {
-                FireEffect(effect, nameof(Effect.OnExemptionCheck), e => { if (!e.OnExemptionCheck(ctx)) checkExempted = false; }, characters);
+                FireEffect(effect, nameof(Effect.OnExemptionCheck), e =>
+                {
+                    OnExemptionCheckResult result = e.OnExemptionCheck(ctx);
+                    if (result.SkipExemptionCheck) skipExemptionCheck = true;
+                    if (result.ThrowingBonusDelta != 0) ctx.ThrowingBonus += result.ThrowingBonusDelta;
+                }, characters);
             }
-            return checkExempted;
+            return !skipExemptionCheck;
         }
 
         /// <summary>

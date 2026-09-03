@@ -11,21 +11,21 @@ namespace FunGame.Core.Model.EffectContext
         /// <summary>
         /// 被驱散的角色
         /// </summary>
-        public Character? Target { get; set; } = target;
+        public Character? Target { get; internal set; } = target;
 
         /// <summary>
         /// 被驱散的特效
         /// </summary>
-        public Effect? Effect { get; set; } = null;
+        public Effect? Effect { get; internal set; } = null;
 
         /// <summary>
         /// 驱散源特效（即正在执行驱散的特效）
         /// </summary>
-        public Effect? DispellerEffect { get; set; } = null;
+        public Effect? DispellerEffect { get; internal set; } = null;
 
         /// <summary>
         /// 是否对敌方施放驱散
         /// </summary>
-        public bool IsEnemy { get; set; } = false;
+        public bool IsEnemy { get; internal set; } = false;
     }
 }

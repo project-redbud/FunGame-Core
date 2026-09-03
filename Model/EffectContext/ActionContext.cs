@@ -13,16 +13,16 @@ namespace FunGame.Core.Model.EffectContext
         /// <summary>
         /// 角色当前的决策点
         /// </summary>
-        public DecisionPoints? DP { get; set; } = dp;
+        public DecisionPoints? DP { get; internal set; } = dp;
 
         /// <summary>
         /// 行动类型
         /// </summary>
-        public CharacterActionType ActionType { get; set; } = CharacterActionType.None;
+        public CharacterActionType ActionType { get; internal set; } = CharacterActionType.None;
 
         /// <summary>
         /// 行动/决策对应的回合记录快照（事件时使用）
         /// </summary>
-        public RoundRecord? Record { get; set; } = null;
+        public RoundRecord? Record { get; internal set; } = null;
     }
 }

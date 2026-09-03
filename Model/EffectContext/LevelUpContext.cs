@@ -10,6 +10,6 @@ namespace FunGame.Core.Model.EffectContext
         /// <summary>
         /// 升级后的等级
         /// </summary>
-        public double Level { get; set; } = level;
+        public double Level { get; internal set; } = level;
     }
 }

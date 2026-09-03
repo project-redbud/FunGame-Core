@@ -11,16 +11,16 @@ namespace FunGame.Core.Model.EffectContext
         /// <summary>
         /// 被偷取方
         /// </summary>
-        public Character? Enemy { get; set; } = enemy;
+        public Character? Enemy { get; internal set; } = enemy;
 
         /// <summary>
         /// 造成的基础伤害
         /// </summary>
-        public double Damage { get; set; } = 0;
+        public double Damage { get; internal set; } = 0;
 
         /// <summary>
         /// 偷取的生命值
         /// </summary>
-        public double Steal { get; set; } = 0;
+        public double Steal { get; internal set; } = 0;
     }
 }

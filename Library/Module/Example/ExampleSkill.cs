@@ -2,6 +2,7 @@
 using FunGame.Core.Entity;
 using FunGame.Core.Library.Constant;
 using FunGame.Core.Model.EffectContext;
+using FunGame.Core.Model.EffectResult;
 using FunGame.Core.Model.Framework;
 
 namespace FunGame.Core.Library.Module.Example
@@ -233,14 +234,14 @@ namespace FunGame.Core.Library.Module.Example
         private bool IsNested = false;
 
         // 该钩子属于伤害计算流程的特效乘区2
-        public override double AlterActualDamageAfterCalculation(DamageContext ctx)
+        public override AlterActualDamageResult AlterActualDamageAfterCalculation(DamageContext ctx)
         {
             if (ctx.Trigger == Skill.Character && IsNested && ctx.IsNormalAttack && ctx.Damage > 0)
             {
                 // 此方法返回的是加值
-                return -(ctx.Damage / 2);
+                return new() { DamageDelta = -(ctx.Damage / 2) };
             }
-            return 0;
+            return default;
         }
 
         public override void AfterDamageCalculation(DamageContext ctx)
@@ -272,10 +273,10 @@ namespace FunGame.Core.Library.Module.Example
             }
         }
 
-        public override void AlterHardnessTimeAfterNormalAttack(HardnessContext ctx)
+        public override AlterHardnessTimeResult AlterHardnessTimeAfterNormalAttack(HardnessContext ctx)
         {
-            // 普攻后调整硬直时间。ref 变量直接修改
-            ctx.BaseHardnessTime *= 0.8;
+            // 普攻后调整硬直时间：减少 20%
+            return new() { Factor = -0.2 };
         }
     }
 
@@ -352,11 +353,10 @@ namespace FunGame.Core.Library.Module.Example
             }
         }
 
-        public override CharacterActionType AlterActionTypeBeforeAction(DecisionContext ctx)
+        public override AlterActionTypeResult AlterActionTypeBeforeAction(DecisionContext ctx)
         {
             // 对于 AI，可以提高角色的普攻积极性，调整决策偏好，这样可以充分利用技能效果
-            ctx.PNormalAttack += 0.1;
-            return CharacterActionType.None;
+            return new() { PNormalAttack = ctx.PNormalAttack + 0.1 };
         }
 
         public override double AlterExpectedDamageBeforeCalculation(DamageContext ctx)
@@ -368,10 +368,10 @@ namespace FunGame.Core.Library.Module.Example
             return 0;
         }
 
-        public override void AlterHardnessTimeAfterNormalAttack(HardnessContext ctx)
+        public override AlterHardnessTimeResult AlterHardnessTimeAfterNormalAttack(HardnessContext ctx)
         {
             // 可以和上面的心灵之弦叠加，最终硬直时间=硬直时间*0.8*0.8
-            ctx.BaseHardnessTime *= 0.8;
+            return new() { Factor = -0.2 };
         }
 
         public override void OnSkillCasted(SkillCastContext ctx)
