@@ -72,7 +72,7 @@ namespace FunGame.Core.Library.Module.Example
 
         public override void OnEffectGained(HookContext ctx)
         {
-            if (ctx.Actor is not Character character) return;
+            if (ctx.Trigger is not Character character) return;
             if (Durative && RemainDuration == 0)
             {
                 RemainDuration = Duration;
@@ -87,7 +87,7 @@ namespace FunGame.Core.Library.Module.Example
 
         public override void OnEffectLost(HookContext ctx)
         {
-            if (ctx.Actor is not Character character) return;
+            if (ctx.Trigger is not Character character) return;
             character.ExATKPercentage -= BonusFactor;
         }
 

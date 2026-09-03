@@ -980,6 +980,8 @@ namespace FunGame.Core.Model.Framework
             foreach (Grid grid in Grids.Values)
             {
                 List<Effect> effects = [.. grid.Effects.OrderByDescending(e => e.Priority)];
+                // 同一格子的时间流逝共用一份上下文，分发前同步本次流逝量
+                TimeLapseContext ctx = new(null) { Grid = grid };
                 foreach (Effect effect in effects)
                 {
                     if (effect.Durative)
@@ -987,22 +989,25 @@ namespace FunGame.Core.Model.Framework
                         if (effect.RemainDuration < timeToReduce)
                         {
                             // 移除特效前也完成剩余时间内的效果
+                            ctx.Elapsed = effect.RemainDuration;
                             effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnTimeElapsed));
-                            effect.OnTimeElapsed(new TimeLapseContext(null) { Grid = grid, Elapsed = effect.RemainDuration });
+                            effect.OnTimeElapsed(ctx);
                             effect.RemainDuration = 0;
                             grid.Effects.Remove(effect);
                         }
                         else
                         {
                             effect.RemainDuration -= timeToReduce;
+                            ctx.Elapsed = timeToReduce;
                             effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnTimeElapsed));
-                            effect.OnTimeElapsed(new TimeLapseContext(null) { Grid = grid, Elapsed = timeToReduce });
+                            effect.OnTimeElapsed(ctx);
                         }
                     }
                     else
                     {
+                        ctx.Elapsed = timeToReduce;
                         effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnTimeElapsed));
-                        effect.OnTimeElapsed(new TimeLapseContext(null) { Grid = grid, Elapsed = timeToReduce });
+                        effect.OnTimeElapsed(ctx);
                     }
                 }
             }

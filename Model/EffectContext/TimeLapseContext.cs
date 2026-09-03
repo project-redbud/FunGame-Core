@@ -5,9 +5,9 @@ using FunGame.Core.Model.Framework;
 namespace FunGame.Core.Model.EffectContext
 {
     /// <summary>
-    /// 时间流逝域上下文：时间流逝回复、时间流逝时（角色版/地图格版共用，<see cref="HookContext.Actor"/> 与 <see cref="Grid"/> 二选一）
+    /// 时间流逝域上下文：时间流逝回复、时间流逝时（角色版/地图格版共用，<see cref="HookContext.Trigger"/> 与 <see cref="Grid"/> 二选一）
     /// </summary>
-    public class TimeLapseContext(IGamingQueue? queue, Character? actor = null) : HookContext(queue, actor)
+    public class TimeLapseContext(IGamingQueue? queue, Character? character = null) : HookContext(queue, character)
     {
         /// <summary>
         /// 地图格版时间流逝时的目标格子（角色版为 null）

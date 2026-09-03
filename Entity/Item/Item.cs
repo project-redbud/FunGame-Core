@@ -232,6 +232,7 @@ namespace FunGame.Core.Entity
             {
                 if (!skill.IsActive && skill.Level > 0)
                 {
+                    HookContext ctx = new(skill.GamingQueue, Character);
                     foreach (Effect e in skill.AddPassiveEffectToCharacter())
                     {
                         e.GamingQueue = skill.GamingQueue;
@@ -239,7 +240,7 @@ namespace FunGame.Core.Entity
                         {
                             Character.Effects.Add(e);
                             e.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEffectGained), Character);
-                            e.OnEffectGained(new HookContext(skill.GamingQueue, Character));
+                            e.OnEffectGained(ctx);
                         }
                     }
                 }

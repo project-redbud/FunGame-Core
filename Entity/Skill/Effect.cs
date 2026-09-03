@@ -445,7 +445,7 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 时间流逝时（<see cref="HookContext.Actor"/> 角色版与 <see cref="TimeLapseContext.Grid"/> 地图格版共用此钩子）
+        /// 时间流逝时（<see cref="HookContext.Trigger"/> 角色版与 <see cref="TimeLapseContext.Grid"/> 地图格版共用此钩子）
         /// </summary>
         /// <param name="ctx"></param>
         public virtual void OnTimeElapsed(TimeLapseContext ctx)
@@ -895,6 +895,8 @@ namespace FunGame.Core.Entity
                 DamageResult result = DamageResult.Normal;
                 double damage = expectedDamage;
                 options ??= new(actor);
+                // 每次调用都是一次独立的伤害结算，重置共用快照，避免嵌套伤害（钩子内造成伤害）复用外层上下文
+                options.Context = null;
                 options.Skill = Skill;
                 if (options.ExpectedDamage == 0) options.ExpectedDamage = expectedDamage;
                 if (options.NeedCalculate && damageType != DamageType.True)
@@ -937,6 +939,54 @@ namespace FunGame.Core.Entity
         public void InterruptCasting(Character interrupter)
         {
             GamingQueue?.InterruptCasting(interrupter);
+        }
+
+        /// <summary>
+        /// 将此特效施加到目标角色身上 [ 尽可能的调用此方法，而不是手动调用 <see cref="OnEffectGained"/> ]<para/>
+        /// 依次完成：挂载到 <see cref="Character.Effects"/> → 记录触发（若重写了钩子）→ 触发 <see cref="OnEffectGained"/>。
+        /// 此方法不写入回合的 ApplyEffects 记录；战斗中需要记录时请另行调用 <see cref="RecordCharacterApplyEffects"/>。
+        /// </summary>
+        /// <param name="target">被施加的目标角色</param>
+        public void AddToCharacter(Character target)
+        {
+            if (target is null) return;
+            if (GamingQueue is null && Skill?.GamingQueue is IGamingQueue gq) GamingQueue = gq;
+            target.Effects.Add(this);
+            RecordEffectTriggeredIfOverridden(nameof(OnEffectGained), target);
+            OnEffectGained(new HookContext(GamingQueue, target));
+        }
+
+        /// <summary>
+        /// 将此特效从目标角色身上移除 [ 尽可能的调用此方法，而不是手动调用 <see cref="OnEffectLost"/> ]<para/>
+        /// 依次完成：从 <see cref="Character.Effects"/> 移除 → 记录触发（若重写了钩子）→ 触发 <see cref="OnEffectLost"/>。
+        /// 若目标身上不存在此特效，则不做任何事。
+        /// </summary>
+        /// <param name="target">被移除的目标角色</param>
+        public void RemoveFromCharacter(Character target)
+        {
+            if (target is null) return;
+            if (GamingQueue is null && Skill?.GamingQueue is IGamingQueue gq) GamingQueue = gq;
+            if (target.Effects.Remove(this))
+            {
+                RecordEffectTriggeredIfOverridden(nameof(OnEffectLost), target);
+                OnEffectLost(new HookContext(GamingQueue, target));
+            }
+        }
+
+        /// <summary>
+        /// 激活此效果执行器（触发 <see cref="OnSkillCasted"/>），使其立即作用到目标<para/>
+        /// 注意：这里只执行本特效的效果，不模拟完整技能施放（吟唱 / 释放前 / 释放后由 <see cref="GamingQueue"/> 施放管线负责）。<para/>
+        /// [ 尽可能的调用此方法，而不是手动调用 <see cref="OnSkillCasted(SkillCastContext)"/> ]
+        /// </summary>
+        /// <param name="caster">施放角色</param>
+        /// <param name="targets">目标角色</param>
+        /// <param name="grids">目标格子</param>
+        /// <param name="others">随技能传递的动态参数</param>
+        public void Activate(Character caster, IEnumerable<Character>? targets = null, IEnumerable<Grid>? grids = null, Dictionary<string, object>? others = null)
+        {
+            if (caster is null) return;
+            if (GamingQueue is null && Skill?.GamingQueue is IGamingQueue gq) GamingQueue = gq;
+            OnSkillCasted(new SkillCastContext(GamingQueue, caster) { Skill = Skill, Targets = targets is null ? [] : [.. targets], Grids = grids is null ? [] : [.. grids], Others = others ?? [] });
         }
 
         /// <summary>
@@ -1301,13 +1351,14 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 比较两个特效
+        /// 比较两个特效<para/>
+        /// 注意特效允许同名实例叠加，必须使用引用比较
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
         public override bool Equals(IBaseEntity? other)
         {
-            return other is Effect e && e.GetIdName() == GetIdName();
+            return ReferenceEquals(this, other);
         }
 
         /// <summary>

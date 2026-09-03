@@ -50,7 +50,7 @@ namespace FunGame.Core.Library.Module.Example
         public override void OnSkillCasted(SkillCastContext ctx)
         {
             // 只有开启了地图模式才有效
-            if (ctx.Actor is Character caster && GamingQueue?.Map is GameMap map && ctx.Grids.Count > 0)
+            if (ctx.Trigger is Character caster && GamingQueue?.Map is GameMap map && ctx.Grids.Count > 0)
             {
                 map.CharacterMove(caster, map.GetCharacterCurrentGrid(caster), ctx.Grids[0]);
             }
@@ -88,7 +88,7 @@ namespace FunGame.Core.Library.Module.Example
 
         public override void OnSkillCasted(SkillCastContext ctx)
         {
-            if (ctx.Actor is Character caster)
+            if (ctx.Trigger is Character caster)
             {
                 foreach (Character enemy in ctx.Targets)
                 {
@@ -180,7 +180,7 @@ namespace FunGame.Core.Library.Module.Example
 
         public override void OnSkillCasted(SkillCastContext ctx)
         {
-            if (ctx.Actor is Character caster)
+            if (ctx.Trigger is Character caster)
             {
                 foreach (Character target in ctx.Targets)
                 {
@@ -235,7 +235,7 @@ namespace FunGame.Core.Library.Module.Example
         // 该钩子属于伤害计算流程的特效乘区2
         public override double AlterActualDamageAfterCalculation(DamageContext ctx)
         {
-            if (ctx.Actor == Skill.Character && IsNested && ctx.IsNormalAttack && ctx.Damage > 0)
+            if (ctx.Trigger == Skill.Character && IsNested && ctx.IsNormalAttack && ctx.Damage > 0)
             {
                 // 此方法返回的是加值
                 return -(ctx.Damage / 2);
@@ -245,7 +245,7 @@ namespace FunGame.Core.Library.Module.Example
 
         public override void AfterDamageCalculation(DamageContext ctx)
         {
-            if (ctx.Actor is Character character && ctx.Enemy is Character enemy && character == Skill.Character && ctx.IsNormalAttack && CurrentCD == 0 && !IsNested && GamingQueue != null && enemy.HP > 0)
+            if (ctx.Trigger is Character character && ctx.Enemy is Character enemy && character == Skill.Character && ctx.IsNormalAttack && CurrentCD == 0 && !IsNested && GamingQueue != null && enemy.HP > 0)
             {
                 WriteLine($"[ {character} ] 发动了{Skill.Name}！额外进行一次普通攻击！");
                 CurrentCD = CD;
@@ -253,7 +253,7 @@ namespace FunGame.Core.Library.Module.Example
                 character.NormalAttack.Attack(GamingQueue, character, null, enemy);
             }
 
-            if (ctx.Actor == Skill.Character && IsNested)
+            if (ctx.Trigger == Skill.Character && IsNested)
             {
                 IsNested = false;
             }
@@ -324,7 +324,7 @@ namespace FunGame.Core.Library.Module.Example
 
         public override void OnEffectGained(HookContext ctx)
         {
-            if (ctx.Actor is not Character character) return;
+            if (ctx.Trigger is not Character character) return;
             // 记录状态并修改属性
             ActualATKBonus = ATKBonus;
             ActualPhysicalPenetrationBonus = PhysicalPenetrationBonus;
@@ -341,7 +341,7 @@ namespace FunGame.Core.Library.Module.Example
 
         public override void OnEffectLost(HookContext ctx)
         {
-            if (ctx.Actor is not Character character) return;
+            if (ctx.Trigger is not Character character) return;
             // 从记录的状态中恢复
             character.ExATK2 -= ActualATKBonus;
             character.PhysicalPenetration -= ActualPhysicalPenetrationBonus;
@@ -361,7 +361,7 @@ namespace FunGame.Core.Library.Module.Example
 
         public override double AlterExpectedDamageBeforeCalculation(DamageContext ctx)
         {
-            if (ctx.Actor == Skill.Character && ctx.IsNormalAttack)
+            if (ctx.Trigger == Skill.Character && ctx.IsNormalAttack)
             {
                 return DamageBonus;
             }
@@ -376,7 +376,7 @@ namespace FunGame.Core.Library.Module.Example
 
         public override void OnSkillCasted(SkillCastContext ctx)
         {
-            if (ctx.Actor is not Character caster) return;
+            if (ctx.Trigger is not Character caster) return;
             ActualATKBonus = 0;
             ActualPhysicalPenetrationBonus = 0;
             ActualEvadeRateBonus = 0;

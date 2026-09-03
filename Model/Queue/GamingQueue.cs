@@ -833,6 +833,10 @@ namespace FunGame.Core.Model.Queue
                 _stats[statsCharacter].DamagePerTurn = _stats[statsCharacter].ActionTurn == 0 ? 0 : _stats[statsCharacter].TotalDamage / _stats[statsCharacter].ActionTurn;
                 _stats[statsCharacter].DamagePerSecond = _stats[statsCharacter].LiveTime == 0 ? 0 : _stats[statsCharacter].TotalDamage / _stats[statsCharacter].LiveTime;
 
+                // 本角色的时间流逝共用一份上下文，随阶段推进更新（回复阶段写入 HR/MR，特效阶段写入 Elapsed）
+                TimeLapseContext timeLapseCtx = new(this, character) { Elapsed = timeToReduce };
+                HookContext hookCtx = new(this, character);
+
                 // 回血回蓝
                 double recoveryHP = character.HR * timeToReduce;
                 double recoveryMP = character.MR * timeToReduce;
@@ -840,10 +844,11 @@ namespace FunGame.Core.Model.Queue
                 double needMP = character.MaxMP - character.MP;
                 double reallyReHP = needHP >= recoveryHP ? recoveryHP : needHP;
                 double reallyReMP = needMP >= recoveryMP ? recoveryMP : needMP;
-                TimeLapseContext recoveryCtx = new(this, character) { HR = reallyReHP, MR = reallyReMP };
-                bool allowRecovery = TriggerBeforeApplyRecoveryAtTimeLapsing(character, recoveryCtx);
-                reallyReHP = recoveryCtx.HR;
-                reallyReMP = recoveryCtx.MR;
+                timeLapseCtx.HR = reallyReHP;
+                timeLapseCtx.MR = reallyReMP;
+                bool allowRecovery = TriggerBeforeApplyRecoveryAtTimeLapsing(character, timeLapseCtx);
+                reallyReHP = timeLapseCtx.HR;
+                reallyReMP = timeLapseCtx.MR;
 
                 if (allowRecovery)
                 {
@@ -905,13 +910,14 @@ namespace FunGame.Core.Model.Queue
                     if (!effect.Durative)
                     {
                         // 防止特效在时间流逝后，持续时间已结束还能继续生效的情况
-                        FireEffect(effect, nameof(Effect.OnTimeElapsed), e => e.OnTimeElapsed(new TimeLapseContext(this, character) { Elapsed = timeToReduce }), character);
+                        timeLapseCtx.Elapsed = timeToReduce;
+                        FireEffect(effect, nameof(Effect.OnTimeElapsed), e => e.OnTimeElapsed(timeLapseCtx), character);
                     }
 
                     if (effect.IsBeingTemporaryDispelled)
                     {
                         effect.IsBeingTemporaryDispelled = false;
-                        FireEffect(effect, nameof(Effect.OnEffectGained), e => e.OnEffectGained(new HookContext(this, character)), character);
+                        FireEffect(effect, nameof(Effect.OnEffectGained), e => e.OnEffectGained(hookCtx), character);
                     }
 
                     // 自身被动不会考虑
@@ -940,16 +946,18 @@ namespace FunGame.Core.Model.Queue
                         if (effect.RemainDuration < timeToReduce)
                         {
                             // 移除特效前也完成剩余时间内的效果
-                            FireEffect(effect, nameof(Effect.OnTimeElapsed), e => e.OnTimeElapsed(new TimeLapseContext(this, character) { Elapsed = effect.RemainDuration }), character);
+                            timeLapseCtx.Elapsed = effect.RemainDuration;
+                            FireEffect(effect, nameof(Effect.OnTimeElapsed), e => e.OnTimeElapsed(timeLapseCtx), character);
                             effect.RemainDuration = 0;
                             character.Effects.Remove(effect);
-                            FireEffect(effect, nameof(Effect.OnEffectLost), e => e.OnEffectLost(new HookContext(this, character)), character);
+                            FireEffect(effect, nameof(Effect.OnEffectLost), e => e.OnEffectLost(hookCtx), character);
                             WriteLine($"[ {character} ] 失去了 [ {effect.Name} ] 效果。");
                         }
                         else
                         {
                             effect.RemainDuration -= timeToReduce;
-                            FireEffect(effect, nameof(Effect.OnTimeElapsed), e => e.OnTimeElapsed(new TimeLapseContext(this, character) { Elapsed = timeToReduce }), character);
+                            timeLapseCtx.Elapsed = timeToReduce;
+                            FireEffect(effect, nameof(Effect.OnTimeElapsed), e => e.OnTimeElapsed(timeLapseCtx), character);
                         }
                     }
                 }
@@ -2109,10 +2117,14 @@ namespace FunGame.Core.Model.Queue
             // 移除回合奖励
             RemoveRoundRewards(character, rewards);
 
+            // 本回合结束共用一份上下文，结束事件与特效钩子观察同一份快照
+            TurnContext turnEndCtx = new(this, character, dp);
+            HookContext hookCtx = new(this, character);
+
             if (_isGameEnd)
             {
                 // 回合结束事件
-                OnTurnEndEvent(new TurnContext(this, character, dp));
+                OnTurnEndEvent(turnEndCtx);
 
                 AfterTurn(character);
 
@@ -2153,7 +2165,6 @@ namespace FunGame.Core.Model.Queue
             SendRoundEndData();
 
             effects = [.. character.Effects.OrderByDescending(e => e.Priority)];
-            TurnContext turnEndCtx = new(this, character, dp);
             foreach (Effect effect in effects)
             {
                 if (effect.IsInEffect)
@@ -2176,7 +2187,7 @@ namespace FunGame.Core.Model.Queue
                     {
                         effect.RemainDurationTurn = 0;
                         character.Effects.Remove(effect);
-                        FireEffect(effect, nameof(Effect.OnEffectLost), e => e.OnEffectLost(new HookContext(this, character)), character);
+                        FireEffect(effect, nameof(Effect.OnEffectLost), e => e.OnEffectLost(hookCtx), character);
                         WriteLine($"[ {character} ] 失去了 [ {effect.Name} ] 效果。");
                     }
                 }
@@ -2186,7 +2197,7 @@ namespace FunGame.Core.Model.Queue
             dp.ClearTempActionQuota();
 
             // 回合结束事件
-            OnTurnEndEvent(new TurnContext(this, character, dp));
+            OnTurnEndEvent(turnEndCtx);
 
             AfterTurn(character);
 
@@ -2443,6 +2454,22 @@ namespace FunGame.Core.Model.Queue
         #region 回合内-结算
 
         /// <summary>
+        /// 取用本次伤害结算共用的上下文实例<para/>
+        /// 仅当既有快照确实属于同一组 actor/enemy 时才复用，否则重建。
+        /// 调用方可能以同一份 <see cref="DamageCalculationOptions"/> 依次对多个目标结算
+        /// （例如 <see cref="Entity.NormalAttack"/> 的群攻循环），若不加校验，
+        /// 后续目标会复用到前一个目标的上下文，使钩子观察到错误的 <see cref="DamageContext.Enemy"/>。
+        /// </summary>
+        private DamageContext GetDamageContext(DamageCalculationOptions options, Character actor, Character enemy)
+        {
+            if (options.Context is DamageContext ctx && ReferenceEquals(ctx.Trigger, actor) && ReferenceEquals(ctx.Enemy, enemy))
+            {
+                return ctx;
+            }
+            return options.Context = new DamageContext(this, actor, enemy);
+        }
+
+        /// <summary>
         /// 对敌人造成伤害
         /// </summary>
         /// <param name="actor"></param>
@@ -2483,27 +2510,29 @@ namespace FunGame.Core.Model.Queue
             if (options.ExpectedDamage == 0) options.ExpectedDamage = damage;
 
             Dictionary<Effect, double> totalDamageBonus = [];
+            // 复用伤害计算阶段建立的快照（未经过计算时新建），使应用阶段与计算阶段观察同一份持续更新的上下文
+            DamageContext ctx = GetDamageContext(options, actor, enemy);
+            ctx.Damage = damage;
+            ctx.IsNormalAttack = isNormalAttack;
+            ctx.DamageType = damageType;
+            ctx.MagicType = magicType;
+            ctx.DamageResult = damageResult;
+            ctx.IsEvaded = isEvaded;
             if (options.TriggerEffects)
             {
                 // 真实伤害跳过伤害加成区间
                 if (damageType != DamageType.True)
                 {
-                    DamageContext afterCalcCtx = new(this, actor, enemy)
-                    {
-                        Damage = damage,
-                        IsNormalAttack = isNormalAttack,
-                        DamageType = damageType,
-                        MagicType = magicType,
-                        DamageResult = damageResult,
-                        IsEvaded = isEvaded,
-                        TotalDamageBonus = totalDamageBonus
-                    };
-                    damageResult = TriggerAlterActualDamageAfterCalculation(actor, enemy, afterCalcCtx, damageResult);
+                    ctx.TotalDamageBonus = totalDamageBonus;
+                    damageResult = TriggerAlterActualDamageAfterCalculation(actor, enemy, ctx, damageResult);
                     damage += totalDamageBonus.Sum(kv => kv.Value);
+                    ctx.Damage = damage;
+                    ctx.DamageResult = damageResult;
                 }
                 else
                 {
-                    damageResult = TriggerBeforeApplyTrueDamage(actor, enemy, damage, isNormalAttack, damageResult);
+                    damageResult = TriggerBeforeApplyTrueDamage(actor, enemy, ctx, damageResult);
+                    ctx.DamageResult = damageResult;
                 }
             }
             options.AfterDamageBonus = totalDamageBonus;
@@ -2517,6 +2546,7 @@ namespace FunGame.Core.Model.Queue
 
             options.FinalDamage = damage;
             double actualDamage = damage;
+            ctx.Damage = damage;
 
             // 闪避了就没伤害了
             if (damageResult != DamageResult.Evaded)
@@ -2544,7 +2574,8 @@ namespace FunGame.Core.Model.Queue
                                 ignore = true;
                             }
                         }
-                        ignore = TriggerOnDamageImmuneCheck(actor, enemy, isNormalAttack, damageType, magicType, damage);
+                        // 普攻固有无视免疫与特效意见是并列关系，取或而非覆盖
+                        ignore |= TriggerOnDamageImmuneCheck(actor, enemy, ctx);
                     }
 
                     if (ignore)
@@ -2625,11 +2656,11 @@ namespace FunGame.Core.Model.Queue
                                     {
                                         WriteLine($"[ {enemy} ] 发动了 [ {effect.Skill.Name} ] 的护盾效果，抵消了 {effectShield:0.##} 点{damageTypeString}，护盾已破碎！");
                                         remain -= effectShield;
-                                        remain = TriggerOnShieldBroken(actor, enemy, () => new ShieldContext(this, enemy, actor) { ShieldEffect = effect, OverFlowing = remain }, remain);
+                                        remain = TriggerOnShieldBroken(actor, enemy, new ShieldContext(this, enemy, actor) { ShieldEffect = effect, OverFlowing = remain }, remain);
                                     }
                                     if (remain <= 0)
                                     {
-                                        TriggerOnShieldNeutralizeDamage(actor, enemy, () => new ShieldContext(this, enemy, actor) { DamageType = damageType, MagicType = magicType, Damage = damage, ShieldType = ShieldType.Effect });
+                                        TriggerOnShieldNeutralizeDamage(actor, enemy, new ShieldContext(this, enemy, actor) { DamageType = damageType, MagicType = magicType, Damage = damage, ShieldType = ShieldType.Effect });
                                         break;
                                     }
                                 }
@@ -2651,7 +2682,7 @@ namespace FunGame.Core.Model.Queue
                                         WriteLine($"[ {enemy} ] 的{shieldTypeString}护盾抵消了 {remain:0.##} 点{damageTypeString}！");
                                         enemy.Shield[isMagicDamage, magicType] -= remain;
                                         remain = 0;
-                                        TriggerOnShieldNeutralizeDamage(actor, enemy, () => new ShieldContext(this, enemy, actor) { DamageType = damageType, MagicType = magicType, Damage = damage, ShieldType = shieldType });
+                                        TriggerOnShieldNeutralizeDamage(actor, enemy, new ShieldContext(this, enemy, actor) { DamageType = damageType, MagicType = magicType, Damage = damage, ShieldType = shieldType });
                                     }
                                     else
                                     {
@@ -2660,7 +2691,7 @@ namespace FunGame.Core.Model.Queue
                                         enemy.Shield[isMagicDamage, magicType] = 0;
                                         if (isMagicDamage && enemy.Shield.TotalMagical <= 0 || !isMagicDamage && enemy.Shield.TotalPhysical <= 0)
                                         {
-                                            remain = TriggerOnShieldBroken(actor, enemy, () => new ShieldContext(this, enemy, actor) { ShieldType = shieldType, OverFlowing = remain }, remain);
+                                            remain = TriggerOnShieldBroken(actor, enemy, new ShieldContext(this, enemy, actor) { ShieldType = shieldType, OverFlowing = remain }, remain);
                                         }
                                     }
                                 }
@@ -2675,14 +2706,14 @@ namespace FunGame.Core.Model.Queue
                                         WriteLine($"[ {enemy} ] 的混合护盾抵消了 {remain:0.##} 点{damageTypeString}！");
                                         enemy.Shield.Mix -= remain;
                                         remain = 0;
-                                        TriggerOnShieldNeutralizeDamage(actor, enemy, () => new ShieldContext(this, enemy, actor) { DamageType = damageType, MagicType = magicType, Damage = damage, ShieldType = ShieldType.Mix });
+                                        TriggerOnShieldNeutralizeDamage(actor, enemy, new ShieldContext(this, enemy, actor) { DamageType = damageType, MagicType = magicType, Damage = damage, ShieldType = ShieldType.Mix });
                                     }
                                     else
                                     {
                                         WriteLine($"[ {enemy} ] 的混合护盾抵消了 {enemy.Shield.TotalMix:0.##} 点{damageTypeString}并破碎！");
                                         remain -= enemy.Shield.TotalMix;
                                         enemy.Shield.Mix = 0;
-                                        remain = TriggerOnShieldBroken(actor, enemy, () => new ShieldContext(this, enemy, actor) { ShieldType = ShieldType.Mix, OverFlowing = remain }, remain);
+                                        remain = TriggerOnShieldBroken(actor, enemy, new ShieldContext(this, enemy, actor) { ShieldType = ShieldType.Mix, OverFlowing = remain }, remain);
                                     }
                                 }
                             }
@@ -2756,15 +2787,26 @@ namespace FunGame.Core.Model.Queue
                     double ep = GetEP(actualDamage, GameplayEquilibriumConstant.DamageGetEPFactor, GameplayEquilibriumConstant.DamageGetEPMax);
                     if (ep > 0)
                     {
-                        DamageContext actorEPCtx = new(this, actor, enemy) { BaseEP = ep };
-                        TriggerAlterEPAfterDamage(actor, enemy, actorEPCtx);
-                        ep = actorEPCtx.BaseEP;
+                        ctx.BaseEP = ep;
+                        ctx.ActualDamage = actualDamage;
+                        TriggerAlterEPAfterDamage(actor, enemy, ctx);
+                        ep = ctx.BaseEP;
                         actor.EP += ep;
                     }
                     ep = GetEP(actualDamage, GameplayEquilibriumConstant.TakenDamageGetEPFactor, GameplayEquilibriumConstant.TakenDamageGetEPMax);
                     if (ep > 0)
                     {
-                        DamageContext enemyEPCtx = new(this, enemy, actor) { BaseEP = ep };
+                        // 受击者视角：Actor 为受击者，此为既有语义（模组据此判定归属），不并入共用快照
+                        DamageContext enemyEPCtx = new(this, enemy, actor)
+                        {
+                            BaseEP = ep,
+                            Damage = ctx.Damage,
+                            ActualDamage = actualDamage,
+                            IsNormalAttack = isNormalAttack,
+                            DamageType = damageType,
+                            MagicType = magicType,
+                            DamageResult = damageResult
+                        };
                         TriggerAlterEPAfterGetDamage(actor, enemy, enemyEPCtx);
                         ep = enemyEPCtx.BaseEP;
                         enemy.EP += ep;
@@ -2811,16 +2853,13 @@ namespace FunGame.Core.Model.Queue
 
             if (options.TriggerEffects)
             {
-                DamageContext afterDamageCtx = new(this, actor, enemy)
-                {
-                    Damage = damage,
-                    ActualDamage = actualDamage,
-                    IsNormalAttack = isNormalAttack,
-                    DamageType = damageType,
-                    MagicType = magicType,
-                    DamageResult = damageResult
-                };
-                TriggerAfterDamageCalculation(actor, enemy, afterDamageCtx);
+                ctx.Damage = damage;
+                ctx.ActualDamage = actualDamage;
+                ctx.IsNormalAttack = isNormalAttack;
+                ctx.DamageType = damageType;
+                ctx.MagicType = magicType;
+                ctx.DamageResult = damageResult;
+                TriggerAfterDamageCalculation(actor, enemy, ctx);
             }
 
             if (enemy.HP <= 0 && !_eliminated.Contains(enemy) && !_respawnCountdown.ContainsKey(enemy))
@@ -3099,7 +3138,8 @@ namespace FunGame.Core.Model.Queue
             if (triggerEffects)
             {
                 Dictionary<Effect, double> totalHealBonus = [];
-                healCtx = new(this, actor, target) { Heal = heal, CanRespawn = canRespawn, TotalHealBonus = totalHealBonus };
+                // 复用 healCtx，使「修改治疗值」钩子能观察到「取消治疗」钩子对上下文的写入
+                healCtx.TotalHealBonus = totalHealBonus;
                 canRespawn = TriggerAlterHealValueBeforeHealToTarget(actor, target, healCtx, healStrings, canRespawn);
                 heal += totalHealBonus.Sum(kv => kv.Value);
             }
@@ -3748,15 +3788,21 @@ namespace FunGame.Core.Model.Queue
             DamageType damageType = DamageType.Physical;
             MagicType magicType = MagicType.None;
             Dictionary<Effect, double> totalDamageBonus = [];
+            // 本次伤害结算共用的快照，伤害应用阶段（DamageToEnemy）将复用同一实例
+            DamageContext ctx = GetDamageContext(options, actor, enemy);
+            ctx.Damage = expectedDamage;
+            ctx.IsNormalAttack = isNormalAttack;
+            ctx.DamageType = damageType;
+            ctx.MagicType = magicType;
+            ctx.ThrowingBonus = 0;
             if (options.TriggerEffects)
             {
                 if (changeCount < 3)
                 {
-                    DamageContext alterTypeCtx = new(this, actor, enemy) { IsNormalAttack = isNormalAttack, DamageType = DamageType.Physical, MagicType = MagicType.None };
-                    TriggerAlterDamageTypeBeforeCalculation(actor, enemy, alterTypeCtx);
-                    isNormalAttack = alterTypeCtx.IsNormalAttack;
-                    damageType = alterTypeCtx.DamageType;
-                    magicType = alterTypeCtx.MagicType;
+                    TriggerAlterDamageTypeBeforeCalculation(actor, enemy, ctx);
+                    isNormalAttack = ctx.IsNormalAttack;
+                    damageType = ctx.DamageType;
+                    magicType = ctx.MagicType;
                     if (damageType == DamageType.Magical)
                     {
                         changeCount++;
@@ -3764,8 +3810,10 @@ namespace FunGame.Core.Model.Queue
                     }
                 }
 
-                TriggerAlterExpectedDamageBeforeCalculation(actor, enemy, UnionEffectsOf(actor, enemy), expectedDamage, isNormalAttack, DamageType.Physical, MagicType.None, totalDamageBonus);
+                ctx.TotalDamageBonus = totalDamageBonus;
+                TriggerAlterExpectedDamageBeforeCalculation(actor, enemy, EffectsOf(actor, enemy), ctx, totalDamageBonus);
                 expectedDamage += totalDamageBonus.Sum(kv => kv.Value);
+                ctx.Damage = expectedDamage;
             }
             options.BeforeDamageBonus = totalDamageBonus;
 
@@ -3775,16 +3823,18 @@ namespace FunGame.Core.Model.Queue
             bool checkCritical = true;
             if (isNormalAttack && options.CalculateEvade)
             {
-                DamageContext evadeCheckCtx = new(this, actor, enemy) { ThrowingBonus = throwingBonus };
-                checkEvade = TriggerBeforeEvadeCheck(actor, enemy, evadeCheckCtx);
-                throwingBonus = evadeCheckCtx.ThrowingBonus;
+                // 闪避检定
+                ctx.Dice = dice;
+                ctx.ThrowingBonus = 0;
+                checkEvade = TriggerBeforeEvadeCheck(actor, enemy, ctx);
+                throwingBonus = ctx.ThrowingBonus;
 
                 if (checkEvade)
                 {
                     // 闪避检定
                     if (dice < (enemy.EvadeRate + throwingBonus))
                     {
-                        bool isAlterEvaded = TriggerOnEvadedTriggered(actor, enemy, dice);
+                        bool isAlterEvaded = TriggerOnEvadedTriggered(actor, enemy, ctx);
                         if (!isAlterEvaded)
                         {
                             finalDamage = 0;
@@ -3809,23 +3859,26 @@ namespace FunGame.Core.Model.Queue
                 options.DefenseReduction = expectedDamage * Calculation.PercentageCheck(physicalDamageReduction + enemy.ExPDR);
                 finalDamage = expectedDamage - options.DefenseReduction;
             }
+            ctx.Damage = finalDamage;
 
             if (options.CalculateCritical)
             {
                 // 暴击检定
-                DamageContext criticalCheckCtx = new(this, actor, enemy) { IsNormalAttack = isNormalAttack, ThrowingBonus = throwingBonus };
-                checkCritical = TriggerBeforeCriticalCheck(actor, enemy, criticalCheckCtx);
-                throwingBonus = criticalCheckCtx.ThrowingBonus;
+                ctx.ThrowingBonus = 0;
+                checkCritical = TriggerBeforeCriticalCheck(actor, enemy, ctx);
+                throwingBonus = ctx.ThrowingBonus;
 
                 if (checkCritical)
                 {
                     dice = Random.Shared.NextDouble();
+                    ctx.Dice = dice;
                     if (dice < (actor.CritRate + throwingBonus))
                     {
                         options.CriticalDamage = finalDamage * (actor.CritDMG - 1);
                         finalDamage *= actor.CritDMG; // 暴击伤害倍率加成
+                        ctx.Damage = finalDamage;
                         WriteLine("暴击生效！！");
-                        TriggerOnCriticalDamageTriggered(actor, enemy, dice);
+                        TriggerOnCriticalDamageTriggered(actor, enemy, ctx);
                         return DamageResult.Critical;
                     }
                 }
@@ -3853,15 +3906,21 @@ namespace FunGame.Core.Model.Queue
             if (options.ExpectedDamage == 0) options.ExpectedDamage = expectedDamage;
             DamageType damageType = DamageType.Magical;
             Dictionary<Effect, double> totalDamageBonus = [];
+            // 本次伤害结算共用的快照，伤害应用阶段（DamageToEnemy）将复用同一实例
+            DamageContext ctx = GetDamageContext(options, actor, enemy);
+            ctx.Damage = expectedDamage;
+            ctx.IsNormalAttack = isNormalAttack;
+            ctx.DamageType = damageType;
+            ctx.MagicType = magicType;
+            ctx.ThrowingBonus = 0;
             if (options.TriggerEffects)
             {
                 if (changeCount < 3)
                 {
-                    DamageContext alterTypeCtx = new(this, actor, enemy) { IsNormalAttack = isNormalAttack, DamageType = DamageType.Magical, MagicType = magicType };
-                    TriggerAlterDamageTypeBeforeCalculation(actor, enemy, alterTypeCtx);
-                    isNormalAttack = alterTypeCtx.IsNormalAttack;
-                    damageType = alterTypeCtx.DamageType;
-                    magicType = alterTypeCtx.MagicType;
+                    TriggerAlterDamageTypeBeforeCalculation(actor, enemy, ctx);
+                    isNormalAttack = ctx.IsNormalAttack;
+                    damageType = ctx.DamageType;
+                    magicType = ctx.MagicType;
                     if (damageType == DamageType.Physical)
                     {
                         changeCount++;
@@ -3869,8 +3928,10 @@ namespace FunGame.Core.Model.Queue
                     }
                 }
 
-                TriggerAlterExpectedDamageBeforeCalculation(actor, enemy, EffectsOf(actor, enemy), expectedDamage, isNormalAttack, DamageType.Magical, magicType, totalDamageBonus);
+                ctx.TotalDamageBonus = totalDamageBonus;
+                TriggerAlterExpectedDamageBeforeCalculation(actor, enemy, EffectsOf(actor, enemy), ctx, totalDamageBonus);
                 expectedDamage += totalDamageBonus.Sum(kv => kv.Value);
+                ctx.Damage = expectedDamage;
             }
             options.BeforeDamageBonus = totalDamageBonus;
 
@@ -3880,16 +3941,18 @@ namespace FunGame.Core.Model.Queue
             bool checkCritical = true;
             if (isNormalAttack && options.CalculateEvade)
             {
-                DamageContext evadeCheckCtx = new(this, actor, enemy) { ThrowingBonus = throwingBonus };
-                checkEvade = TriggerBeforeEvadeCheck(actor, enemy, evadeCheckCtx);
-                throwingBonus = evadeCheckCtx.ThrowingBonus;
+                // 闪避检定
+                ctx.Dice = dice;
+                ctx.ThrowingBonus = 0;
+                checkEvade = TriggerBeforeEvadeCheck(actor, enemy, ctx);
+                throwingBonus = ctx.ThrowingBonus;
 
                 if (checkEvade)
                 {
                     // 闪避检定
                     if (dice < (enemy.EvadeRate + throwingBonus))
                     {
-                        bool isAlterEvaded = TriggerOnEvadedTriggered(actor, enemy, dice);
+                        bool isAlterEvaded = TriggerOnEvadedTriggered(actor, enemy, ctx);
                         if (!isAlterEvaded)
                         {
                             finalDamage = 0;
@@ -3914,23 +3977,26 @@ namespace FunGame.Core.Model.Queue
                 // 最终的魔法伤害
                 finalDamage = expectedDamage - options.DefenseReduction;
             }
+            ctx.Damage = finalDamage;
 
             if (options.CalculateCritical)
             {
                 // 暴击检定
-                DamageContext criticalCheckCtx = new(this, actor, enemy) { IsNormalAttack = isNormalAttack, ThrowingBonus = throwingBonus };
-                checkCritical = TriggerBeforeCriticalCheck(actor, enemy, criticalCheckCtx);
-                throwingBonus = criticalCheckCtx.ThrowingBonus;
+                ctx.ThrowingBonus = 0;
+                checkCritical = TriggerBeforeCriticalCheck(actor, enemy, ctx);
+                throwingBonus = ctx.ThrowingBonus;
 
                 if (checkCritical)
                 {
                     dice = Random.Shared.NextDouble();
+                    ctx.Dice = dice;
                     if (dice < (actor.CritRate + throwingBonus))
                     {
                         options.CriticalDamage = finalDamage * (actor.CritDMG - 1);
                         finalDamage *= actor.CritDMG; // 暴击伤害倍率加成
+                        ctx.Damage = finalDamage;
                         WriteLine("暴击生效！！");
-                        TriggerOnCriticalDamageTriggered(actor, enemy, dice);
+                        TriggerOnCriticalDamageTriggered(actor, enemy, ctx);
                         return DamageResult.Critical;
                     }
                 }
@@ -4193,11 +4259,12 @@ namespace FunGame.Core.Model.Queue
         /// <param name="skills"></param>
         protected static void RemoveRoundRewards(Character character, List<Skill> skills)
         {
+            HookContext ctx = new(null, character);
             foreach (Skill skill in skills)
             {
                 foreach (Effect e in skill.Effects)
                 {
-                    FireEffectWithoutQueue(e, nameof(Effect.OnEffectLost), x => x.OnEffectLost(new HookContext(null, character)), character);
+                    FireEffectWithoutQueue(e, nameof(Effect.OnEffectLost), x => x.OnEffectLost(ctx), character);
                     character.Effects.Remove(e);
                 }
                 character.Skills.Remove(skill);
@@ -5247,11 +5314,11 @@ namespace FunGame.Core.Model.Queue
 
         public delegate bool GameEndEventHandler(HookContext ctx);
         /// <summary>
-        /// 游戏结束事件（<see cref="HookContext.Actor"/> 为胜者）
+        /// 游戏结束事件（<see cref="HookContext.Trigger"/> 为胜者）
         /// </summary>
         public event GameEndEventHandler? GameEndEvent;
         /// <summary>
-        /// 游戏结束事件（<see cref="HookContext.Actor"/> 为胜者）
+        /// 游戏结束事件（<see cref="HookContext.Trigger"/> 为胜者）
         /// </summary>
         /// <param name="ctx"></param>
         /// <returns></returns>

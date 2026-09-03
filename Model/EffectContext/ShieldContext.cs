@@ -7,7 +7,7 @@ namespace FunGame.Core.Model.EffectContext
     /// <summary>
     /// 护盾域上下文：护盾结算前、护盾化解伤害、护盾破碎
     /// </summary>
-    public class ShieldContext(IGamingQueue? queue, Character actor, Character? attacker = null) : HookContext(queue, actor)
+    public class ShieldContext(IGamingQueue? queue, Character trigger, Character? attacker = null) : HookContext(queue, trigger)
     {
         /// <summary>
         /// 攻击方

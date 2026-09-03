@@ -10,7 +10,7 @@ namespace FunGame.Core.Model.EffectContext
     public class SkillCastContext(IGamingQueue? queue, Character? caster = null) : HookContext(queue, caster)
     {
         /// <summary>
-        /// 局外触发者（局外对目标触发技能效果时使用，此时 <see cref="HookContext.Actor"/> 为 null）
+        /// 局外触发者（局外对目标触发技能效果时使用，此时 <see cref="HookContext.Trigger"/> 为 null）
         /// </summary>
         public User? User { get; set; } = null;
 

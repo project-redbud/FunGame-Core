@@ -37,19 +37,11 @@ namespace FunGame.Core.Model.Queue
         #region 特效集合构建
 
         /// <summary>
-        /// 单/多角色生效中的特效并集（镜像 SelectMany 调用点形状）
+        /// 单/多角色生效中的特效并集，按 <see cref="Effect.Priority"/> 降序<para/>
         /// </summary>
         private static Effect[] EffectsOf(params Character[] characters)
         {
             return [.. characters.SelectMany(c => c.Effects.Where(e => e.IsInEffect)).OrderByDescending(e => e.Priority).Distinct()];
-        }
-
-        /// <summary>
-        /// 双角色特效 Union 并集（镜像 Union 调用点形状）
-        /// </summary>
-        private static Effect[] UnionEffectsOf(Character character1, Character character2)
-        {
-            return [.. character1.Effects.Union(character2.Effects).Distinct().Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
         }
 
         /// <summary>
@@ -155,24 +147,26 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 触发 AfterCharacterStartCasting（每特效独立上下文）
+        /// 触发 AfterCharacterStartCasting（同一次吟唱共用一份上下文）
         /// </summary>
         private void TriggerAfterCharacterStartCasting(Character character, Skill skill, List<Character> targets)
         {
+            SkillCastContext ctx = new(this, character) { Skill = skill, Targets = targets };
             foreach (Effect effect in EffectsOf(character))
             {
-                FireEffect(effect, nameof(Effect.AfterCharacterStartCasting), e => e.AfterCharacterStartCasting(new SkillCastContext(this, character) { Skill = skill, Targets = targets }), character);
+                FireEffect(effect, nameof(Effect.AfterCharacterStartCasting), e => e.AfterCharacterStartCasting(ctx), character);
             }
         }
 
         /// <summary>
-        /// 触发 AfterCharacterCastSkill（每特效独立上下文）
+        /// 触发 AfterCharacterCastSkill（同一次施放共用一份上下文）
         /// </summary>
         private void TriggerAfterCharacterCastSkill(Character character, Skill skill, List<Character> targets)
         {
+            SkillCastContext ctx = new(this, character) { Skill = skill, Targets = targets };
             foreach (Effect effect in EffectsOf(character))
             {
-                FireEffect(effect, nameof(Effect.AfterCharacterCastSkill), e => e.AfterCharacterCastSkill(new SkillCastContext(this, character) { Skill = skill, Targets = targets }), character);
+                FireEffect(effect, nameof(Effect.AfterCharacterCastSkill), e => e.AfterCharacterCastSkill(ctx), character);
             }
         }
 
@@ -201,13 +195,14 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 触发 OnCharacterDecisionCompleted（每特效独立上下文）
+        /// 触发 OnCharacterDecisionCompleted（同一次决策共用一份上下文）
         /// </summary>
         private void TriggerOnCharacterDecisionCompleted(Character character, DecisionPoints dp)
         {
+            ActionContext ctx = new(this, character, dp);
             foreach (Effect effect in EffectsOf(character))
             {
-                FireEffect(effect, nameof(Effect.OnCharacterDecisionCompleted), e => e.OnCharacterDecisionCompleted(new ActionContext(this, character, dp)), character);
+                FireEffect(effect, nameof(Effect.OnCharacterDecisionCompleted), e => e.OnCharacterDecisionCompleted(ctx), character);
             }
         }
 
@@ -236,15 +231,15 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 触发 BeforeApplyTrueDamage（每特效独立上下文），返回 true 时伤害结果改为闪避并影响后续特效的上下文
+        /// 触发 BeforeApplyTrueDamage（共用本次结算的 <paramref name="ctx"/>），返回 true 时伤害结果改为闪避
         /// </summary>
-        private DamageResult TriggerBeforeApplyTrueDamage(Character actor, Character enemy, double damage, bool isNormalAttack, DamageResult damageResult)
+        private DamageResult TriggerBeforeApplyTrueDamage(Character actor, Character enemy, DamageContext ctx, DamageResult damageResult)
         {
             foreach (Effect effect in EffectsOf(actor, enemy))
             {
                 FireEffect(effect, nameof(Effect.BeforeApplyTrueDamage), e =>
                 {
-                    if (e.BeforeApplyTrueDamage(new DamageContext(this, actor, enemy) { Damage = damage, IsNormalAttack = isNormalAttack, DamageResult = damageResult }))
+                    if (e.BeforeApplyTrueDamage(ctx))
                     {
                         damageResult = DamageResult.Evaded;
                     }
@@ -254,16 +249,16 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 触发 OnDamageImmuneCheck（每特效独立上下文），返回 true 表示无视免疫
+        /// 触发 OnDamageImmuneCheck（共用本次结算的 <paramref name="ctx"/>），返回 true 表示无视免疫
         /// </summary>
-        private bool TriggerOnDamageImmuneCheck(Character actor, Character enemy, bool isNormalAttack, DamageType damageType, MagicType magicType, double damage)
+        private bool TriggerOnDamageImmuneCheck(Character actor, Character enemy, DamageContext ctx)
         {
             bool ignore = false;
             foreach (Effect effect in EffectsOf(actor, enemy))
             {
                 FireEffect(effect, nameof(Effect.OnDamageImmuneCheck), e =>
                 {
-                    if (!e.OnDamageImmuneCheck(new DamageContext(this, actor, enemy) { IsNormalAttack = isNormalAttack, DamageType = damageType, MagicType = magicType, Damage = damage }))
+                    if (!e.OnDamageImmuneCheck(ctx))
                     {
                         ignore = true;
                     }
@@ -273,15 +268,17 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 触发 OnShieldBroken（每特效独立上下文），返回 false 的特效化解本次伤害（剩余伤害归零）
+        /// 触发 OnShieldBroken（同一次破碎共用 <paramref name="ctx"/>），返回 false 的特效化解本次伤害（剩余伤害归零）<para/>
+        /// <see cref="ShieldContext.OverFlowing"/> 在分发前同步为当前剩余伤害，使特效观察到最新值。
         /// </summary>
-        private double TriggerOnShieldBroken(Character actor, Character enemy, Func<ShieldContext> createContext, double remain)
+        private double TriggerOnShieldBroken(Character actor, Character enemy, ShieldContext ctx, double remain)
         {
             foreach (Effect effect in EffectsOf(actor, enemy))
             {
                 FireEffect(effect, nameof(Effect.OnShieldBroken), e =>
                 {
-                    if (!e.OnShieldBroken(createContext()))
+                    ctx.OverFlowing = remain;
+                    if (!e.OnShieldBroken(ctx))
                     {
                         WriteLine($"[ {(enemy.Effects.Contains(e) ? enemy : actor)} ] 因护盾破碎而发动了 [ {e.Skill.Name} ]，化解了本次伤害！");
                         remain = 0;
@@ -292,13 +289,13 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 触发 OnShieldNeutralizeDamage（每特效独立上下文）
+        /// 触发 OnShieldNeutralizeDamage（同一次化解共用 <paramref name="ctx"/>）
         /// </summary>
-        private void TriggerOnShieldNeutralizeDamage(Character actor, Character enemy, Func<ShieldContext> createContext)
+        private void TriggerOnShieldNeutralizeDamage(Character actor, Character enemy, ShieldContext ctx)
         {
             foreach (Effect effect in EffectsOf(actor, enemy))
             {
-                FireEffect(effect, nameof(Effect.OnShieldNeutralizeDamage), e => e.OnShieldNeutralizeDamage(createContext()), enemy, actor);
+                FireEffect(effect, nameof(Effect.OnShieldNeutralizeDamage), e => e.OnShieldNeutralizeDamage(ctx), enemy, actor);
             }
         }
 
@@ -386,22 +383,15 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 触发 AlterExpectedDamageBeforeCalculation（每特效独立上下文），加成逐特效记入 totalDamageBonus
+        /// 触发 AlterExpectedDamageBeforeCalculation（共用本次结算的 <paramref name="ctx"/>），加成逐特效记入 totalDamageBonus
         /// </summary>
-        private void TriggerAlterExpectedDamageBeforeCalculation(Character actor, Character enemy, Effect[] effects, double expectedDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, Dictionary<Effect, double> totalDamageBonus)
+        private void TriggerAlterExpectedDamageBeforeCalculation(Character actor, Character enemy, Effect[] effects, DamageContext ctx, Dictionary<Effect, double> totalDamageBonus)
         {
             foreach (Effect effect in effects)
             {
                 FireEffect(effect, nameof(Effect.AlterExpectedDamageBeforeCalculation), e =>
                 {
-                    double damageBonus = e.AlterExpectedDamageBeforeCalculation(new DamageContext(this, actor, enemy)
-                    {
-                        Damage = expectedDamage,
-                        IsNormalAttack = isNormalAttack,
-                        DamageType = damageType,
-                        MagicType = magicType,
-                        TotalDamageBonus = totalDamageBonus
-                    });
+                    double damageBonus = e.AlterExpectedDamageBeforeCalculation(ctx);
                     if (damageBonus != 0) totalDamageBonus[e] = damageBonus;
                 }, actor, enemy);
             }
@@ -421,14 +411,14 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 触发 OnEvadedTriggered（每特效独立上下文），返回 true 表示无视本次闪避
+        /// 触发 OnEvadedTriggered（共用本次结算的 <paramref name="ctx"/>），返回 true 表示无视本次闪避
         /// </summary>
-        private bool TriggerOnEvadedTriggered(Character actor, Character enemy, double dice)
+        private bool TriggerOnEvadedTriggered(Character actor, Character enemy, DamageContext ctx)
         {
             bool isAlterEvaded = false;
             foreach (Effect effect in EffectsOf(actor, enemy))
             {
-                FireEffect(effect, nameof(Effect.OnEvadedTriggered), e => { if (e.OnEvadedTriggered(new DamageContext(this, actor, enemy) { Dice = dice })) isAlterEvaded = true; }, actor, enemy);
+                FireEffect(effect, nameof(Effect.OnEvadedTriggered), e => { if (e.OnEvadedTriggered(ctx)) isAlterEvaded = true; }, actor, enemy);
             }
             return isAlterEvaded;
         }
@@ -447,13 +437,13 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 触发 OnCriticalDamageTriggered（每特效独立上下文）
+        /// 触发 OnCriticalDamageTriggered（共用本次结算的 <paramref name="ctx"/>）
         /// </summary>
-        private void TriggerOnCriticalDamageTriggered(Character actor, Character enemy, double dice)
+        private void TriggerOnCriticalDamageTriggered(Character actor, Character enemy, DamageContext ctx)
         {
             foreach (Effect effect in EffectsOf(actor, enemy))
             {
-                FireEffect(effect, nameof(Effect.OnCriticalDamageTriggered), e => e.OnCriticalDamageTriggered(new DamageContext(this, actor, enemy) { Dice = dice }), actor, enemy);
+                FireEffect(effect, nameof(Effect.OnCriticalDamageTriggered), e => e.OnCriticalDamageTriggered(ctx), actor, enemy);
             }
         }
 
@@ -467,9 +457,10 @@ namespace FunGame.Core.Model.Queue
         private void TriggerOnGameStart()
         {
             Character[] characters = [.. _queue];
+            HookContext ctx = new(this, null);
             foreach (Effect effect in QueueEffects())
             {
-                FireEffect(effect, nameof(Effect.OnGameStart), e => e.OnGameStart(new HookContext(this, null)), characters);
+                FireEffect(effect, nameof(Effect.OnGameStart), e => e.OnGameStart(ctx), characters);
             }
         }
 
@@ -492,7 +483,7 @@ namespace FunGame.Core.Model.Queue
         private bool TriggerBeforeHealToTarget(Character actor, Character target, HealContext ctx)
         {
             bool allow = true;
-            foreach (Effect effect in UnionEffectsOf(actor, target))
+            foreach (Effect effect in EffectsOf(actor, target))
             {
                 FireEffect(effect, nameof(Effect.BeforeHealToTarget), e => { if (!e.BeforeHealToTarget(ctx)) allow = false; }, actor, target);
             }
@@ -504,7 +495,7 @@ namespace FunGame.Core.Model.Queue
         /// </summary>
         private bool TriggerAlterHealValueBeforeHealToTarget(Character actor, Character target, HealContext ctx, List<string> healStrings, bool canRespawn)
         {
-            foreach (Effect effect in UnionEffectsOf(actor, target))
+            foreach (Effect effect in EffectsOf(actor, target))
             {
                 FireEffect(effect, nameof(Effect.AlterHealValueBeforeHealToTarget), e =>
                 {
@@ -542,9 +533,10 @@ namespace FunGame.Core.Model.Queue
         /// </summary>
         private void TriggerAfterCharacterUseItem(Character character, DecisionPoints dp, Item item, Skill skill, List<Character> targets)
         {
+            ItemUseContext ctx = new(this, character, dp) { Item = item, Skill = skill, Targets = targets };
             foreach (Effect effect in EffectsOf(character))
             {
-                FireEffect(effect, nameof(Effect.AfterCharacterUseItem), e => e.AfterCharacterUseItem(new ItemUseContext(this, character, dp) { Item = item, Skill = skill, Targets = targets }), character);
+                FireEffect(effect, nameof(Effect.AfterCharacterUseItem), e => e.AfterCharacterUseItem(ctx), character);
             }
         }
 
@@ -553,9 +545,10 @@ namespace FunGame.Core.Model.Queue
         /// </summary>
         private void TriggerBeforeSelectTargetGrid(Character character, List<Character> enemys, List<Character> teammates, GameMap map, List<Grid> moveRange)
         {
+            SelectionContext ctx = new(this, character) { Enemys = enemys, Teammates = teammates, Map = map, MoveRange = moveRange };
             foreach (Effect effect in EffectsOf(character))
             {
-                FireEffect(effect, nameof(Effect.BeforeSelectTargetGrid), e => e.BeforeSelectTargetGrid(new SelectionContext(this, character) { Enemys = enemys, Teammates = teammates, Map = map, MoveRange = moveRange }), character);
+                FireEffect(effect, nameof(Effect.BeforeSelectTargetGrid), e => e.BeforeSelectTargetGrid(ctx), character);
             }
         }
 
@@ -576,7 +569,7 @@ namespace FunGame.Core.Model.Queue
         private bool TriggerBeforeSkillCastWillBeInterrupted(Character caster, Character interrupter, SkillCastContext ctx)
         {
             bool interruption = true;
-            foreach (Effect effect in UnionEffectsOf(caster, interrupter))
+            foreach (Effect effect in EffectsOf(caster, interrupter))
             {
                 FireEffect(effect, nameof(Effect.BeforeSkillCastWillBeInterrupted), e => { if (!e.BeforeSkillCastWillBeInterrupted(ctx)) interruption = false; }, caster, interrupter);
             }
@@ -588,7 +581,7 @@ namespace FunGame.Core.Model.Queue
         /// </summary>
         private void TriggerOnSkillCastInterrupted(Character caster, Character interrupter, SkillCastContext ctx)
         {
-            foreach (Effect effect in UnionEffectsOf(caster, interrupter))
+            foreach (Effect effect in EffectsOf(caster, interrupter))
             {
                 FireEffect(effect, nameof(Effect.OnSkillCastInterrupted), e => e.OnSkillCastInterrupted(ctx), caster, interrupter);
             }
@@ -600,9 +593,10 @@ namespace FunGame.Core.Model.Queue
         private bool TriggerOnImmuneCheck(Character character, Character target, Skill skill, Item? item)
         {
             bool ignore = false;
+            ImmuneContext ctx = new(this, character) { Target = target, Skill = skill, Item = item };
             foreach (Effect effect in EffectsOf(character, target))
             {
-                FireEffect(effect, nameof(Effect.OnImmuneCheck), e => { if (!e.OnImmuneCheck(new ImmuneContext(this, character) { Target = target, Skill = skill, Item = item })) ignore = true; }, character, target);
+                FireEffect(effect, nameof(Effect.OnImmuneCheck), e => { if (!e.OnImmuneCheck(ctx)) ignore = true; }, character, target);
             }
             return ignore;
         }
