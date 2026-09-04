@@ -829,19 +829,15 @@ namespace FunGame.Core.Entity
         {
             get
             {
-                int baseMOV = 3;
-                if (EquipSlot.Weapon != null)
+                int baseMOV = FirstRoleType switch
                 {
-                    baseMOV = FirstRoleType switch
-                    {
-                        RoleType.Core => GameplayEquilibriumConstant.RoleMOV_Core,
-                        RoleType.Vanguard => GameplayEquilibriumConstant.RoleMOV_Vanguard,
-                        RoleType.Guardian => GameplayEquilibriumConstant.RoleMOV_Guardian,
-                        RoleType.Support => GameplayEquilibriumConstant.RoleMOV_Support,
-                        RoleType.Medic => GameplayEquilibriumConstant.RoleMOV_Medic,
-                        _ => baseMOV
-                    };
-                }
+                    RoleType.Core => GameplayEquilibriumConstant.RoleMOV_Core,
+                    RoleType.Vanguard => GameplayEquilibriumConstant.RoleMOV_Vanguard,
+                    RoleType.Guardian => GameplayEquilibriumConstant.RoleMOV_Guardian,
+                    RoleType.Support => GameplayEquilibriumConstant.RoleMOV_Support,
+                    RoleType.Medic => GameplayEquilibriumConstant.RoleMOV_Medic,
+                    _ => 3
+                };
                 return Math.Max(0, baseMOV + ExMOV);
             }
         }
