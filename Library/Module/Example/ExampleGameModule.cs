@@ -152,17 +152,12 @@ namespace FunGame.Core.Library.Module.Example
             };
         }
 
-        protected override Factory.EntityFactoryDelegate<Effect> EffectFactory()
+        protected override Factory.EffectFactoryDelegate EffectFactory()
         {
-            return (id, name, args) =>
+            // 以下是一个示例，实际开发中 id,name,args 怎么处置，看你心情
+            return (id, name, skill, args) =>
             {
-                // 以下是一个示例，实际开发中 id,name,args 怎么处置，看你心情
-                Skill? skill = null;
-                if (args.TryGetValue("skill", out object? value) && value is Skill s)
-                {
-                    skill = s;
-                }
-                skill ??= new OpenSkill(id, name, args);
+                args ??= [];
                 /// 如 <see cref="ExampleOpenItemByJson"/> 中所说，特效需要在工厂中注册，方便重用
                 if (id == 1001)
                 {

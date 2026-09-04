@@ -4202,10 +4202,7 @@ namespace FunGame.Core.Model.Queue
                         }
                         Skill skill = Factory.OpenFactory.GetInstance<Skill>(effectID, "", args);
                         Dictionary<string, object> effectArgs = factoryEffects != null ? factoryEffects(effectID) : [];
-                        args.Clear();
-                        args.Add("skill", skill);
-                        args.Add("values", effectArgs);
-                        Effect effect = Factory.OpenFactory.GetInstance<Effect>(effectID, "", args);
+                        Effect effect = Factory.OpenFactory.GetInstance(effectID, "", skill, effectArgs);
                         skill.Effects.Add(effect);
                         skill.Name = $"[R] {effect.Name}";
                         skills.Add(skill);
@@ -4896,7 +4893,6 @@ namespace FunGame.Core.Model.Queue
             InquiryResponse response = OnCharacterInquiryEvent(inquiryCtx);
             inquiryCtx.Response = response;
             TriggerOnCharacterInquiry(character, inquiryCtx);
-            // 特效/事件对 ctx.Response 的修改在此生效（修复：原先返回的是事件原始结果，特效修改被丢弃）
             return inquiryCtx.Response;
         }
 

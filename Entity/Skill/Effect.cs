@@ -1039,9 +1039,9 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 将此特效施加到目标角色身上 [ 尽可能的调用此方法，而不是手动调用 <see cref="OnEffectGained"/> ]<para/>
-        /// 依次完成：挂载到 <see cref="Character.Effects"/> → 记录触发（若重写了钩子）→ 触发 <see cref="OnEffectGained"/>。
-        /// 此方法不写入回合的 ApplyEffects 记录；战斗中需要记录时请另行调用 <see cref="RecordCharacterApplyEffects"/>。
+        /// 将此特效施加到目标角色身上<para/>
+        /// 依次完成：挂载到 <see cref="Character.Effects"/> → 记录触发（若重写了钩子）→ 触发 <see cref="OnEffectGained"/><para/>
+        /// 此方法不写入回合的 ApplyEffects 记录；战斗中需要记录时请另行调用 <see cref="RecordCharacterApplyEffects"/>
         /// </summary>
         /// <param name="target">被施加的目标角色</param>
         public void AddToCharacter(Character target)
@@ -1054,9 +1054,9 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 将此特效从目标角色身上移除 [ 尽可能的调用此方法，而不是手动调用 <see cref="OnEffectLost"/> ]<para/>
-        /// 依次完成：从 <see cref="Character.Effects"/> 移除 → 记录触发（若重写了钩子）→ 触发 <see cref="OnEffectLost"/>。
-        /// 若目标身上不存在此特效，则不做任何事。
+        /// 将此特效从目标角色身上移除<para/>
+        /// 依次完成：从 <see cref="Character.Effects"/> 移除 → 记录触发（若重写了钩子）→ 触发 <see cref="OnEffectLost"/><para/>
+        /// 若目标身上不存在此特效，则不做任何事
         /// </summary>
         /// <param name="target">被移除的目标角色</param>
         public void RemoveFromCharacter(Character target)
@@ -1072,8 +1072,7 @@ namespace FunGame.Core.Entity
 
         /// <summary>
         /// 激活此效果执行器（触发 <see cref="OnSkillCasted"/>），使其立即作用到目标<para/>
-        /// 注意：这里只执行本特效的效果，不模拟完整技能施放（吟唱 / 释放前 / 释放后由 <see cref="GamingQueue"/> 施放管线负责）。<para/>
-        /// [ 尽可能的调用此方法，而不是手动调用 <see cref="OnSkillCasted(SkillCastContext)"/> ]
+        /// 注意：此方法不会触发完整技能施放流程（Casting / BeforeCasted / AfterCasted）
         /// </summary>
         /// <param name="caster">施放角色</param>
         /// <param name="targets">目标角色</param>
@@ -1420,12 +1419,7 @@ namespace FunGame.Core.Entity
         /// <returns></returns>
         public Effect Copy(Skill skill, bool copyByCode = false)
         {
-            Dictionary<string, object> args = new()
-            {
-                { "skill", skill },
-                { "values", Values }
-            };
-            Effect copy = Factory.OpenFactory.GetInstance<Effect>(Id, Name, args);
+            Effect copy = Factory.OpenFactory.GetInstance(Id, Name, skill, Values);
             if (!copyByCode)
             {
                 copy.Id = Id;

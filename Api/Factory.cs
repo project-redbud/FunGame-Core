@@ -12,12 +12,23 @@ namespace FunGame.Core.Api
         internal HashSet<EntityFactoryDelegate<Character>> CharacterFactories { get; } = [];
         internal HashSet<EntityFactoryDelegate<Inventory>> InventoryFactories { get; } = [];
         internal HashSet<EntityFactoryDelegate<Skill>> SkillFactories { get; } = [];
-        internal HashSet<EntityFactoryDelegate<Effect>> EffectFactories { get; } = [];
+        internal HashSet<EffectFactoryDelegate> EffectFactories { get; } = [];
         internal HashSet<EntityFactoryDelegate<Item>> ItemFactories { get; } = [];
         internal HashSet<EntityFactoryDelegate<Room>> RoomFactories { get; } = [];
         internal HashSet<EntityFactoryDelegate<User>> UserFactories { get; } = [];
 
         public delegate T? EntityFactoryDelegate<T>(long id, string name, Dictionary<string, object> args);
+
+        public delegate Effect? EffectFactoryDelegate(long id, string name, Skill skill, Dictionary<string, object>? args);
+
+        /// <summary>
+        /// 注册特效专用工厂方法
+        /// </summary>
+        /// <param name="d"></param>
+        public void RegisterFactory(EffectFactoryDelegate d)
+        {
+            EffectFactories.Add(d);
+        }
 
         /// <summary>
         /// 注册工厂方法
@@ -38,9 +49,9 @@ namespace FunGame.Core.Api
             {
                 SkillFactories.Add(skill);
             }
-            if (typeof(T) == typeof(Effect) && d is EntityFactoryDelegate<Effect> effect)
+            if (typeof(T) == typeof(Effect))
             {
-                EffectFactories.Add(effect);
+                throw new NotSupportedInstanceClassException();
             }
             if (typeof(T) == typeof(Item) && d is EntityFactoryDelegate<Item> item)
             {
@@ -54,6 +65,15 @@ namespace FunGame.Core.Api
             {
                 UserFactories.Add(user);
             }
+        }
+
+        /// <summary>
+        /// 移除特效专用工厂方法
+        /// </summary>
+        /// <param name="d"></param>
+        public void UnRegisterFactory(EffectFactoryDelegate d)
+        {
+            EffectFactories.Remove(d);
         }
 
         /// <summary>
@@ -75,9 +95,9 @@ namespace FunGame.Core.Api
             {
                 SkillFactories.Remove(skill);
             }
-            if (typeof(T) == typeof(Effect) && d is EntityFactoryDelegate<Effect> effect)
+            if (typeof(T) == typeof(Effect))
             {
-                EffectFactories.Remove(effect);
+                throw new NotSupportedInstanceClassException();
             }
             if (typeof(T) == typeof(Item) && d is EntityFactoryDelegate<Item> item)
             {
@@ -91,6 +111,35 @@ namespace FunGame.Core.Api
             {
                 UserFactories.Remove(user);
             }
+        }
+
+        /// <summary>
+        /// 构造一个特效实例<para/>
+        /// skill 与 args 是显式契约（对应 <see cref="Effect"/> 受保护构造函数的参数），
+        /// 旧的泛型路径 <see cref="GetInstance{T}(long, string, Dictionary{string, object})"/> 对 Effect 直接抛出异常，特效只能通过此方法构造
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="name"></param>
+        /// <param name="skill"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public Effect GetInstance(long id, string name, Skill skill, Dictionary<string, object>? args)
+        {
+            foreach (EffectFactoryDelegate d in EffectFactories)
+            {
+                try
+                {
+                    if (d.Invoke(id, name, skill, args) is Effect effect)
+                    {
+                        return effect;
+                    }
+                }
+                catch
+                {
+                    throw;
+                }
+            }
+            return new Effect();
         }
 
         /// <summary>
@@ -170,21 +219,7 @@ namespace FunGame.Core.Api
             }
             if (typeof(T) == typeof(Effect))
             {
-                foreach (EntityFactoryDelegate<Effect> d in EffectFactories)
-                {
-                    try
-                    {
-                        if (d.Invoke(id, name, args) is T effect)
-                        {
-                            return effect;
-                        }
-                    }
-                    catch
-                    {
-                        throw;
-                    }
-                }
-                return (T)(object)new Effect();
+                throw new NotSupportedInstanceClassException();
             }
             if (typeof(T) == typeof(Item))
             {
