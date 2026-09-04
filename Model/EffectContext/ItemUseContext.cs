@@ -12,21 +12,21 @@ namespace FunGame.Core.Model.EffectContext
         /// <summary>
         /// 角色当前的决策点
         /// </summary>
-        public DecisionPoints? DP { get; set; } = dp;
+        public DecisionPoints? DP { get; internal set; } = dp;
 
         /// <summary>
         /// 使用的物品
         /// </summary>
-        public Item? Item { get; set; } = null;
+        public Item? Item { get; internal set; } = null;
 
         /// <summary>
         /// 物品附带的技能
         /// </summary>
-        public Skill? Skill { get; set; } = null;
+        public Skill? Skill { get; internal set; } = null;
 
         /// <summary>
         /// 使用目标列表
         /// </summary>
-        public List<Character> Targets { get; set; } = [];
+        public List<Character> Targets { get; internal set; } = [];
     }
 }

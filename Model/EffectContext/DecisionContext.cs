@@ -23,31 +23,26 @@ namespace FunGame.Core.Model.EffectContext
         /// <summary>
         /// 是否可以使用物品
         /// </summary>
-        public bool CanUseItem { get; set; } = true;
+        public bool CanUseItem { get; internal set; } = true;
 
         /// <summary>
         /// 是否可以释放技能
         /// </summary>
-        public bool CanCastSkill { get; set; } = true;
+        public bool CanCastSkill { get; internal set; } = true;
 
         /// <summary>
         /// 使用物品的触发概率
         /// </summary>
-        public double PUseItem { get; set; } = 0;
+        public double PUseItem { get; internal set; } = 0;
 
         /// <summary>
         /// 释放技能的触发概率
         /// </summary>
-        public double PCastSkill { get; set; } = 0;
+        public double PCastSkill { get; internal set; } = 0;
 
         /// <summary>
         /// 普通攻击的触发概率
         /// </summary>
-        public double PNormalAttack { get; set; } = 0;
-
-        /// <summary>
-        /// 是否强制指定行动
-        /// </summary>
-        public bool ForceAction { get; set; } = false;
+        public double PNormalAttack { get; internal set; } = 0;
     }
 }

@@ -419,6 +419,7 @@ namespace FunGame.Core.Entity
         {
             if (!IsActive && Level > 0)
             {
+                HookContext ctx = new(GamingQueue, Character);
                 foreach (Effect e in AddPassiveEffectToCharacter())
                 {
                     e.GamingQueue = GamingQueue;
@@ -426,18 +427,19 @@ namespace FunGame.Core.Entity
                     {
                         Character.Effects.Add(e);
                         e.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEffectGained), Character);
-                        e.OnEffectGained(new HookContext(GamingQueue, Character));
+                        e.OnEffectGained(ctx);
                     }
                 }
             }
             if (Level > 0 && Character != null)
             {
                 Effect[] effects = [.. Character.Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
+                LevelUpContext ctx = new(Character, Level);
                 foreach (Effect e in effects)
                 {
                     e.GamingQueue = GamingQueue;
                     e.RecordEffectTriggeredIfOverridden(nameof(Effect.OnSkillLevelUp), Character);
-                    e.OnSkillLevelUp(new LevelUpContext(Character, Level));
+                    e.OnSkillLevelUp(ctx);
                 }
             }
         }
@@ -786,7 +788,8 @@ namespace FunGame.Core.Entity
                     }
                 }
             }
-            SkillCastContext ctx = new(queue, caster) { Targets = targets, Grids = grids, Others = Values };
+            // 同一流程共用一份上下文：状态栏钩子与技能特效组钩子观察到同一份、且随目标筛选持续更新的快照
+            SkillCastContext ctx = new(queue, caster) { Skill = this, Targets = targets, Grids = grids, Others = Values };
             Character[] characters = [caster, .. targets];
             foreach (Character target in characters)
             {
@@ -795,8 +798,7 @@ namespace FunGame.Core.Entity
                 {
                     e.GamingQueue = GamingQueue;
                     e.RecordEffectTriggeredIfOverridden(nameof(Effect.BeforeSkillCastedOnStatus), target);
-                    SkillCastContext statusCtx = new(queue, caster) { Skill = this, Targets = targets, Grids = grids, Others = Values };
-                    if (!e.BeforeSkillCastedOnStatus(statusCtx))
+                    if (e.BeforeSkillCastedOnStatus(ctx).RemoveFromTargets)
                     {
                         targets.Remove(target);
                     }
@@ -867,12 +869,13 @@ namespace FunGame.Core.Entity
             if (Level > 0)
             {
                 Character = character;
+                HookContext ctx = new(GamingQueue, Character);
                 foreach (Effect e in AddPassiveEffectToCharacter())
                 {
                     e.GamingQueue = GamingQueue;
                     Character.Effects.Add(e);
                     e.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEffectGained), Character);
-                    e.OnEffectGained(new HookContext(GamingQueue, Character));
+                    e.OnEffectGained(ctx);
                 }
                 // 如果是纯被动技能，则不会添加到角色技能组中
                 if (IsActive)
@@ -890,6 +893,7 @@ namespace FunGame.Core.Entity
         public void RemoveSkillFromCharacter(Character character)
         {
             List<Effect> effects = [.. character.Effects.Where(e => e.Skill == this).OrderByDescending(e => e.Priority)];
+            HookContext ctx = new(GamingQueue, character);
             foreach (Effect e in effects)
             {
                 character.Effects.Remove(e);
@@ -897,7 +901,7 @@ namespace FunGame.Core.Entity
                 {
                     e.GamingQueue = GamingQueue;
                     e.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEffectLost), character);
-                    e.OnEffectLost(new HookContext(GamingQueue, character));
+                    e.OnEffectLost(ctx);
                 }
             }
             character.Skills.Remove(this);

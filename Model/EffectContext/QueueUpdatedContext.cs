@@ -13,26 +13,26 @@ namespace FunGame.Core.Model.EffectContext
         /// <summary>
         /// 当前的行动顺序
         /// </summary>
-        public List<Character> Characters { get; set; } = [];
+        public List<Character> Characters { get; internal set; } = [];
 
         /// <summary>
         /// 角色当前的决策点
         /// </summary>
-        public DecisionPoints? DP { get; set; } = dp;
+        public DecisionPoints? DP { get; internal set; } = dp;
 
         /// <summary>
         /// 硬直时间
         /// </summary>
-        public double HardnessTime { get; set; } = 0;
+        public double HardnessTime { get; internal set; } = 0;
 
         /// <summary>
         /// 更新原因
         /// </summary>
-        public QueueUpdatedReason Reason { get; set; } = QueueUpdatedReason.Action;
+        public QueueUpdatedReason Reason { get; internal set; } = QueueUpdatedReason.Action;
 
         /// <summary>
         /// 说明消息
         /// </summary>
-        public string Message { get; set; } = "";
+        public string Message { get; internal set; } = "";
     }
 }

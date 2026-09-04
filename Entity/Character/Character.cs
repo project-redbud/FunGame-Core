@@ -1304,10 +1304,11 @@ namespace FunGame.Core.Entity
             {
                 Class.OnLevelUp();
                 Effect[] effects = [.. Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
+                LevelUpContext ctx = new(this, Level);
                 foreach (Effect e in effects)
                 {
                     e.RecordEffectTriggeredIfOverridden(nameof(Effect.OnOwnerLevelUp), this);
-                    e.OnOwnerLevelUp(new LevelUpContext(this, Level));
+                    e.OnOwnerLevelUp(ctx);
                 }
             }
         }
@@ -1334,10 +1335,11 @@ namespace FunGame.Core.Entity
         public void OnAttributeChanged()
         {
             List<Effect> effects = [.. Effects.Where(e => e.IsInEffect).OrderByDescending(e => e.Priority)];
+            HookContext ctx = new(null, this);
             foreach (Effect effect in effects)
             {
                 effect.RecordEffectTriggeredIfOverridden(nameof(Effect.OnAttributeChanged), this);
-                effect.OnAttributeChanged(new HookContext(null, this));
+                effect.OnAttributeChanged(ctx);
             }
             NormalAttack.SetMagicType(null, null, null);
         }
@@ -2190,10 +2192,11 @@ namespace FunGame.Core.Entity
             List<Item> items = [.. Items];
             Character c = original.Copy();
             List<Effect> effects = [.. Effects.OrderByDescending(e => e.Priority)];
+            HookContext ctx = new(null, this);
             foreach (Effect e in effects)
             {
                 e.RecordEffectTriggeredIfOverridden(nameof(Effect.OnEffectLost), this);
-                e.OnEffectLost(new HookContext(null, this));
+                e.OnEffectLost(ctx);
             }
             Effects.Clear();
             Skills.Clear();

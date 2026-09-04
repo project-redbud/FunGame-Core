@@ -1,5 +1,6 @@
 ﻿using FunGame.Core.Entity;
 using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.EffectContext;
 
 namespace FunGame.Core.Model.Framework
 {
@@ -12,6 +13,13 @@ namespace FunGame.Core.Model.Framework
         /// 伤害来源
         /// </summary>
         public Character Character { get; set; } = character;
+
+        /// <summary>
+        /// 本次伤害结算共用的上下文实例<para/>
+        /// 贯穿伤害应用阶段，使同一结算流程内的全部 <see cref="Effect"/> 钩子观察到同一份、且随管线推进持续更新的快照<para/>
+        /// 嵌套伤害（钩子内造成新伤害）由调用方将本属性置回 null，使各次结算互不影响
+        /// </summary>
+        internal DamageContext? Context { get; set; } = null;
 
         /// <summary>
         /// 完整计算伤害

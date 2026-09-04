@@ -2,6 +2,7 @@
 using FunGame.Core.Entity;
 using FunGame.Core.Library.Constant;
 using FunGame.Core.Model.EffectContext;
+using FunGame.Core.Model.EffectResult;
 using FunGame.Core.Model.Framework;
 
 namespace FunGame.Core.Library.Module.Example
@@ -50,7 +51,7 @@ namespace FunGame.Core.Library.Module.Example
         public override void OnSkillCasted(SkillCastContext ctx)
         {
             // 只有开启了地图模式才有效
-            if (ctx.Actor is Character caster && GamingQueue?.Map is GameMap map && ctx.Grids.Count > 0)
+            if (ctx.Trigger is Character caster && GamingQueue?.Map is GameMap map && ctx.Grids.Count > 0)
             {
                 map.CharacterMove(caster, map.GetCharacterCurrentGrid(caster), ctx.Grids[0]);
             }
@@ -88,7 +89,7 @@ namespace FunGame.Core.Library.Module.Example
 
         public override void OnSkillCasted(SkillCastContext ctx)
         {
-            if (ctx.Actor is Character caster)
+            if (ctx.Trigger is Character caster)
             {
                 foreach (Character enemy in ctx.Targets)
                 {
@@ -180,7 +181,7 @@ namespace FunGame.Core.Library.Module.Example
 
         public override void OnSkillCasted(SkillCastContext ctx)
         {
-            if (ctx.Actor is Character caster)
+            if (ctx.Trigger is Character caster)
             {
                 foreach (Character target in ctx.Targets)
                 {
@@ -233,19 +234,19 @@ namespace FunGame.Core.Library.Module.Example
         private bool IsNested = false;
 
         // 该钩子属于伤害计算流程的特效乘区2
-        public override double AlterActualDamageAfterCalculation(DamageContext ctx)
+        public override AlterActualDamageResult AlterActualDamageAfterCalculation(DamageContext ctx)
         {
-            if (ctx.Actor == Skill.Character && IsNested && ctx.IsNormalAttack && ctx.Damage > 0)
+            if (ctx.Trigger == Skill.Character && IsNested && ctx.IsNormalAttack && ctx.Damage > 0)
             {
                 // 此方法返回的是加值
-                return -(ctx.Damage / 2);
+                return new() { DamageDelta = -(ctx.Damage / 2) };
             }
-            return 0;
+            return default;
         }
 
         public override void AfterDamageCalculation(DamageContext ctx)
         {
-            if (ctx.Actor is Character character && ctx.Enemy is Character enemy && character == Skill.Character && ctx.IsNormalAttack && CurrentCD == 0 && !IsNested && GamingQueue != null && enemy.HP > 0)
+            if (ctx.Trigger is Character character && ctx.Enemy is Character enemy && character == Skill.Character && ctx.IsNormalAttack && CurrentCD == 0 && !IsNested && GamingQueue != null && enemy.HP > 0)
             {
                 WriteLine($"[ {character} ] 发动了{Skill.Name}！额外进行一次普通攻击！");
                 CurrentCD = CD;
@@ -253,7 +254,7 @@ namespace FunGame.Core.Library.Module.Example
                 character.NormalAttack.Attack(GamingQueue, character, null, enemy);
             }
 
-            if (ctx.Actor == Skill.Character && IsNested)
+            if (ctx.Trigger == Skill.Character && IsNested)
             {
                 IsNested = false;
             }
@@ -272,10 +273,10 @@ namespace FunGame.Core.Library.Module.Example
             }
         }
 
-        public override void AlterHardnessTimeAfterNormalAttack(HardnessContext ctx)
+        public override AlterHardnessTimeResult AlterHardnessTimeAfterNormalAttack(HardnessContext ctx)
         {
-            // 普攻后调整硬直时间。ref 变量直接修改
-            ctx.BaseHardnessTime *= 0.8;
+            // 普攻后调整硬直时间：减少 20%
+            return new() { Factor = -0.2 };
         }
     }
 
@@ -324,7 +325,7 @@ namespace FunGame.Core.Library.Module.Example
 
         public override void OnEffectGained(HookContext ctx)
         {
-            if (ctx.Actor is not Character character) return;
+            if (ctx.Trigger is not Character character) return;
             // 记录状态并修改属性
             ActualATKBonus = ATKBonus;
             ActualPhysicalPenetrationBonus = PhysicalPenetrationBonus;
@@ -341,7 +342,7 @@ namespace FunGame.Core.Library.Module.Example
 
         public override void OnEffectLost(HookContext ctx)
         {
-            if (ctx.Actor is not Character character) return;
+            if (ctx.Trigger is not Character character) return;
             // 从记录的状态中恢复
             character.ExATK2 -= ActualATKBonus;
             character.PhysicalPenetration -= ActualPhysicalPenetrationBonus;
@@ -352,31 +353,30 @@ namespace FunGame.Core.Library.Module.Example
             }
         }
 
-        public override CharacterActionType AlterActionTypeBeforeAction(DecisionContext ctx)
+        public override AlterActionTypeResult AlterActionTypeBeforeAction(DecisionContext ctx)
         {
             // 对于 AI，可以提高角色的普攻积极性，调整决策偏好，这样可以充分利用技能效果
-            ctx.PNormalAttack += 0.1;
-            return CharacterActionType.None;
+            return new() { PNormalAttack = ctx.PNormalAttack + 0.1 };
         }
 
         public override double AlterExpectedDamageBeforeCalculation(DamageContext ctx)
         {
-            if (ctx.Actor == Skill.Character && ctx.IsNormalAttack)
+            if (ctx.Trigger == Skill.Character && ctx.IsNormalAttack)
             {
                 return DamageBonus;
             }
             return 0;
         }
 
-        public override void AlterHardnessTimeAfterNormalAttack(HardnessContext ctx)
+        public override AlterHardnessTimeResult AlterHardnessTimeAfterNormalAttack(HardnessContext ctx)
         {
             // 可以和上面的心灵之弦叠加，最终硬直时间=硬直时间*0.8*0.8
-            ctx.BaseHardnessTime *= 0.8;
+            return new() { Factor = -0.2 };
         }
 
         public override void OnSkillCasted(SkillCastContext ctx)
         {
-            if (ctx.Actor is not Character caster) return;
+            if (ctx.Trigger is not Character caster) return;
             ActualATKBonus = 0;
             ActualPhysicalPenetrationBonus = 0;
             ActualEvadeRateBonus = 0;
