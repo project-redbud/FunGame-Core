@@ -253,7 +253,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 获得此特效时
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（获得本特效的角色，通常以 this 为判定）。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（获得本特效的角色）。</param>
         public virtual void OnEffectGained(HookContext ctx)
         {
 
@@ -262,7 +262,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 失去此特效时
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（失去本特效的角色）。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（失去本特效的角色）。</param>
         public virtual void OnEffectLost(HookContext ctx)
         {
 
@@ -271,7 +271,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 游戏开始时触发（第一回合开始前）
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger 为 null（全队列广播）；如需角色请遍历 GamingQueue。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/> 为 null（全队列广播）；需要角色时请遍历 <see cref="GamingQueue"/>。</param>
         public virtual void OnGameStart(HookContext ctx)
         {
 
@@ -282,8 +282,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="AlterDamageTypeResult"/>（默认 <c>default</c> = 不干预）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="DamageContext.Trigger"/>（攻击者）、<see cref="DamageContext.Enemy"/>（受击者）、<see cref="DamageContext.IsNormalAttack"/>（只读）、<see cref="DamageContext.DamageType"/>（只读）、<see cref="DamageContext.MagicType"/>（只读）。
-        /// 陷阱：不能直接写上述字段，类型转换请通过返回对象的 IsNormalAttack / DamageType / MagicType 表达。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（攻击者）、<see cref="DamageContext.Enemy"/>（受击者）、<see cref="DamageContext.IsNormalAttack"/>、<see cref="DamageContext.DamageType"/>、<see cref="DamageContext.MagicType"/>。
         /// </param>
         /// <returns>IsNormalAttack/DamageType/MagicType 非 null 时覆盖对应值，框架据此判断是否切换伤害算法。</returns>
         public virtual AlterDamageTypeResult AlterDamageTypeBeforeCalculation(DamageContext ctx)
@@ -295,7 +294,7 @@ namespace FunGame.Core.Entity
         /// 在伤害计算前修改预期伤害
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="DamageContext.Trigger"/>（攻击者）、<see cref="DamageContext.Enemy"/>（受击者）、<see cref="DamageContext.Damage"/>（当前预期伤害，只读）、<see cref="DamageContext.IsNormalAttack"/>、<see cref="DamageContext.TotalDamageBonus"/>。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（攻击者）、<see cref="DamageContext.Enemy"/>（受击者）、<see cref="DamageContext.Damage"/>（当前预期伤害）、<see cref="DamageContext.IsNormalAttack"/>、<see cref="DamageContext.TotalDamageBonus"/>。
         /// </param>
         /// <returns>返回伤害增减值（正为增、负为减；SUM 聚合）。</returns>
         public virtual double AlterExpectedDamageBeforeCalculation(DamageContext ctx)
@@ -308,8 +307,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="AlterActualDamageResult"/>（默认 <c>default</c> = 无增减、不化解）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="DamageContext.Trigger"/>（攻击者）、<see cref="DamageContext.Enemy"/>（受击者）、<see cref="DamageContext.Damage"/>（当前伤害，只读）、<see cref="DamageContext.DamageResult"/>（当前结算结果，只读）、<see cref="DamageContext.IsEvaded"/>（只读）、<see cref="DamageContext.TotalDamageBonus"/>。
-        /// 陷阱：不能直接写 <see cref="DamageContext.IsEvaded"/>，化解请通过返回对象的 IsEvaded 表达。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（攻击者）、<see cref="DamageContext.Enemy"/>（受击者）、<see cref="DamageContext.Damage"/>（当前伤害）、<see cref="DamageContext.DamageResult"/>（当前结算结果）、<see cref="DamageContext.IsEvaded"/>、<see cref="DamageContext.TotalDamageBonus"/>。
         /// </param>
         /// <returns>DamageDelta：实际伤害增减值；IsEvaded：置 true 化解本次伤害（结算结果改写为闪避）。</returns>
         public virtual AlterActualDamageResult AlterActualDamageAfterCalculation(DamageContext ctx)
@@ -322,7 +320,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="BeforeApplyTrueDamageResult"/>（默认 <c>default</c> = 正常结算真实伤害）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="DamageContext.Trigger"/>（攻击者）、<see cref="DamageContext.Enemy"/>（受击者）、<see cref="DamageContext.Damage"/>（本次伤害，只读）、<see cref="DamageContext.DamageResult"/>。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（攻击者）、<see cref="DamageContext.Enemy"/>（受击者）、<see cref="DamageContext.Damage"/>、<see cref="DamageContext.DamageResult"/>。
         /// </param>
         /// <returns>NullifyDamage 置 true 化解本次真实伤害（结算结果改写为闪避，伤害归零）。</returns>
         public virtual BeforeApplyTrueDamageResult BeforeApplyTrueDamage(DamageContext ctx)
@@ -335,8 +333,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="OnApplyDamageResult"/>（默认 <c>default</c> = 保留默认输出消息）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="DamageContext.Trigger"/>（受击方视角）、<see cref="DamageContext.Enemy"/>（攻击方）、<see cref="DamageContext.Damage"/> / <see cref="DamageContext.ActualDamage"/> / <see cref="DamageContext.DamageResult"/> / <see cref="DamageContext.ShieldMessage"/>（只读）、<see cref="DamageContext.OriginalMessage"/>（只读，默认输出消息）。
-        /// 陷阱：不能直接写 <see cref="DamageContext.OriginalMessage"/>，请通过返回的 OriginalMessage 覆盖。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（受击方视角）、<see cref="DamageContext.Enemy"/>（攻击方）、<see cref="DamageContext.Damage"/> / <see cref="DamageContext.ActualDamage"/> / <see cref="DamageContext.DamageResult"/> / <see cref="DamageContext.ShieldMessage"/> / <see cref="DamageContext.OriginalMessage"/>（默认输出消息）。
         /// </param>
         /// <returns>OriginalMessage 非 null 时覆盖伤害输出消息。</returns>
         public virtual OnApplyDamageResult OnApplyDamage(DamageContext ctx)
@@ -349,8 +346,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="AlterHardnessTimeResult"/>（默认 <c>default</c> = 不干预）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="HardnessContext.Trigger"/>（行动者）、<see cref="HardnessContext.BaseHardnessTime"/>（只读，当前基础硬直）、<see cref="HardnessContext.IsCheckProtected"/>（只读）。
-        /// 陷阱：不能直接写 <see cref="HardnessContext.BaseHardnessTime"/> / <see cref="HardnessContext.IsCheckProtected"/>，请通过返回对象的 Factor / ClearHardnessTime / OverrideCheckProtected 表达。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（行动者）、<see cref="HardnessContext.BaseHardnessTime"/>（当前基础硬直）、<see cref="HardnessContext.IsCheckProtected"/>。
         /// </param>
         /// <returns>Factor：硬直时间比率修正（最终硬直 = 当前 × (1 + Factor)）；ClearHardnessTime：清零硬直并解除插队保护；OverrideCheckProtected：插队保护覆盖。</returns>
         public virtual AlterHardnessTimeResult AlterHardnessTimeAfterNormalAttack(HardnessContext ctx)
@@ -363,8 +359,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="AlterHardnessTimeResult"/>（默认 <c>default</c> = 不干预）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="HardnessContext.Trigger"/>（行动者）、<see cref="HardnessContext.Skill"/>（刚释放的技能）、<see cref="HardnessContext.BaseHardnessTime"/>（只读）、<see cref="HardnessContext.IsCheckProtected"/>（只读）。
-        /// 陷阱：不能直接写 <see cref="HardnessContext.BaseHardnessTime"/> / <see cref="HardnessContext.IsCheckProtected"/>，请通过返回对象的 Factor / ClearHardnessTime / OverrideCheckProtected 表达。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（行动者）、<see cref="HardnessContext.Skill"/>（刚释放的技能）、<see cref="HardnessContext.BaseHardnessTime"/>、<see cref="HardnessContext.IsCheckProtected"/>。
         /// </param>
         /// <returns>同 <see cref="AlterHardnessTimeAfterNormalAttack(HardnessContext)"/> 的返回语义。</returns>
         public virtual AlterHardnessTimeResult AlterHardnessTimeAfterCastSkill(HardnessContext ctx)
@@ -377,8 +372,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="AlterEPResult"/>（默认 <c>default</c> = 不修改能量获取）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="DamageContext.Trigger"/>（攻击者，获得能量方）、<see cref="DamageContext.Enemy"/>、<see cref="DamageContext.BaseEP"/>（只读，当前基础能量获取值）。
-        /// 陷阱：不能直接写 <see cref="DamageContext.BaseEP"/>，请通过返回的 BaseEP 覆盖（需叠加时读当前值计算）。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（攻击者，获得能量方）、<see cref="DamageContext.Enemy"/>、<see cref="DamageContext.BaseEP"/>（当前基础能量获取值）。
         /// </param>
         /// <returns>BaseEP 非 null 时覆盖能量获取值。</returns>
         public virtual AlterEPResult AlterEPAfterDamage(DamageContext ctx)
@@ -391,8 +385,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="AlterEPResult"/>（默认 <c>default</c> = 不修改能量获取）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="DamageContext.Trigger"/>（受击者，获得能量方）、<see cref="DamageContext.Enemy"/>（攻击方视角，此为其既有语义）、<see cref="DamageContext.BaseEP"/>（只读，当前基础能量获取值）。
-        /// 陷阱：不能直接写 <see cref="DamageContext.BaseEP"/>，请通过返回的 BaseEP 覆盖（需叠加时读当前值计算）。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（受击者，获得能量方）、<see cref="DamageContext.Enemy"/>（攻击方视角，此为其既有语义）、<see cref="DamageContext.BaseEP"/>（当前基础能量获取值）。
         /// </param>
         /// <returns>BaseEP 非 null 时覆盖能量获取值。</returns>
         public virtual AlterEPResult AlterEPAfterGetDamage(DamageContext ctx)
@@ -403,7 +396,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 技能开始吟唱时 [ 爆发技插队可触发此项 ]
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（施法者）、Skill（正在吟唱的技能）、DP、Targets/Grids/Others（目标信息）。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（施法者）、<see cref="SkillCastContext.Skill"/>（正在吟唱的技能）、<see cref="SkillCastContext.DP"/>、<see cref="SkillCastContext.Targets"/> / <see cref="SkillCastContext.Grids"/> / <see cref="SkillCastContext.Others"/>（目标信息）。</param>
         public virtual void OnSkillCasting(SkillCastContext ctx)
         {
 
@@ -414,7 +407,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="BeforeSkillCastWillBeInterruptedResult"/>（默认 <c>default</c> = 允许打断）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="SkillCastContext.Trigger"/>（吟唱者）、<see cref="SkillCastContext.Skill"/>（正在吟唱的技能）、<see cref="SkillCastContext.Interrupter"/>（打断者）。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（吟唱者）、<see cref="SkillCastContext.Skill"/>（正在吟唱的技能）、<see cref="SkillCastContext.Interrupter"/>（打断者）。
         /// </param>
         /// <returns>BlockInterruption 置 true 阻止本次施法被打断。</returns>
         public virtual BeforeSkillCastWillBeInterruptedResult BeforeSkillCastWillBeInterrupted(SkillCastContext ctx)
@@ -425,7 +418,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 技能吟唱被打断时
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（施法者）、Skill（被打断的技能）、Interrupter（打断者）。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（施法者）、<see cref="SkillCastContext.Skill"/>（被打断的技能）、<see cref="SkillCastContext.Interrupter"/>（打断者）。</param>
         public virtual void OnSkillCastInterrupted(SkillCastContext ctx)
         {
 
@@ -434,7 +427,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 吟唱结束后释放技能（魔法）/ 直接释放技能（战技/爆发技）
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（施法者）、Skill、Targets/Grids/Others、Cost/EPCost/MPCost（本次消耗）。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（施法者）、<see cref="SkillCastContext.Skill"/>、<see cref="SkillCastContext.Targets"/> / <see cref="SkillCastContext.Grids"/> / <see cref="SkillCastContext.Others"/>、<see cref="SkillCastContext.Cost"/> / <see cref="SkillCastContext.EPCost"/> / <see cref="SkillCastContext.MPCost"/>（本次消耗）。</param>
         public virtual void OnSkillCasted(SkillCastContext ctx)
         {
 
@@ -443,7 +436,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 对目标触发技能效果（局外）
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（局外场景可能为 null）、Skill、Targets/Grids/Others。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（局外场景可能为 null）、<see cref="SkillCastContext.Skill"/>、<see cref="SkillCastContext.Targets"/> / <see cref="SkillCastContext.Grids"/> / <see cref="SkillCastContext.Others"/>。</param>
         public virtual void OnSkillCastedOutside(SkillCastContext ctx)
         {
 
@@ -452,7 +445,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在技能释放前触发 [ 技能的特效组 ]
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（施法者）、Skill、Targets/Grids/Others。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（施法者）、<see cref="SkillCastContext.Skill"/>、<see cref="SkillCastContext.Targets"/> / <see cref="SkillCastContext.Grids"/> / <see cref="SkillCastContext.Others"/>。</param>
         public virtual void BeforeSkillCasted(SkillCastContext ctx)
         {
 
@@ -463,7 +456,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="BeforeSkillCastedOnStatusResult"/>（默认 <c>default</c> = 保留目标）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="SkillCastContext.Trigger"/>（施法者）、<see cref="SkillCastContext.Skill"/>、<see cref="SkillCastContext.Targets"/> / <see cref="SkillCastContext.Grids"/> / <see cref="SkillCastContext.Others"/>。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（施法者）、<see cref="SkillCastContext.Skill"/>、<see cref="SkillCastContext.Targets"/> / <see cref="SkillCastContext.Grids"/> / <see cref="SkillCastContext.Others"/>。
         /// </param>
         /// <returns>RemoveFromTargets 置 true 将当前目标从技能目标集合中移除。</returns>
         public virtual BeforeSkillCastedOnStatusResult BeforeSkillCastedOnStatus(SkillCastContext ctx)
@@ -474,7 +467,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在技能释放后触发 [ 技能的特效组 ]
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（施法者）、Skill、Targets/Grids/Others。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（施法者）、<see cref="SkillCastContext.Skill"/>、<see cref="SkillCastContext.Targets"/> / <see cref="SkillCastContext.Grids"/> / <see cref="SkillCastContext.Others"/>。</param>
         public virtual void AfterSkillCasted(SkillCastContext ctx)
         {
 
@@ -485,8 +478,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="BeforeApplyRecoveryResult"/>（默认 <c>default</c> = 允许回复，不修改回复量）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="TimeLapseContext.Trigger"/>（角色版为角色，地图格版为 null）、<see cref="TimeLapseContext.Grid"/>（地图格版为目标格）、<see cref="TimeLapseContext.Elapsed"/>（流逝时间）、<see cref="TimeLapseContext.HR"/>（只读，本回合生命回复量）、<see cref="TimeLapseContext.MR"/>（只读，本回合魔法回复量）。
-        /// 陷阱：不能直接写 <see cref="TimeLapseContext.HR"/> / <see cref="TimeLapseContext.MR"/>，请通过返回对象的 HROverride / MROverride 表达。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（角色版为角色，地图格版为 null）、<see cref="TimeLapseContext.Grid"/>（地图格版为目标格）、<see cref="TimeLapseContext.Elapsed"/>（流逝时间）、<see cref="TimeLapseContext.HR"/>（本回合生命回复量）、<see cref="TimeLapseContext.MR"/>（本回合魔法回复量）。
         /// </param>
         /// <returns>CancelRecovery 置 true 取消本次回复；HROverride/MROverride 非 null 时覆盖对应回复量。</returns>
         public virtual BeforeApplyRecoveryResult BeforeApplyRecoveryAtTimeLapsing(TimeLapseContext ctx)
@@ -495,11 +487,10 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 时间流逝时（<see cref="HookContext.Trigger"/> 角色版与 <see cref="TimeLapseContext.Grid"/> 地图格版共用此钩子，纯通知）
+        /// 时间流逝时（角色版与地图格版共用此钩子）
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="TimeLapseContext.Trigger"/>（角色版为角色）、<see cref="TimeLapseContext.Grid"/>（地图格版为目标格）、<see cref="TimeLapseContext.Elapsed"/>（流逝时间）。
-        /// 注意：本钩子为只读通知，此时回复已结算完成，修改无效果。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（角色版为角色）、<see cref="TimeLapseContext.Grid"/>（地图格版为目标格）、<see cref="TimeLapseContext.Elapsed"/>（流逝时间）。
         /// </param>
         public virtual void OnTimeElapsed(TimeLapseContext ctx)
         {
@@ -509,7 +500,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在完成伤害结算后
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（攻击者）、Enemy（受击者）、Damage/ActualDamage/DamageResult/DamageType/MagicType/IsNormalAttack（本次结算全部结果）。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（攻击者）、<see cref="DamageContext.Enemy"/>（受击者）、<see cref="DamageContext.Damage"/> / <see cref="DamageContext.ActualDamage"/> / <see cref="DamageContext.DamageResult"/> / <see cref="DamageContext.DamageType"/> / <see cref="DamageContext.MagicType"/> / <see cref="DamageContext.IsNormalAttack"/>（本次结算结果）。</param>
         public virtual void AfterDamageCalculation(DamageContext ctx)
         {
 
@@ -520,7 +511,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="BeforeHealToTargetResult"/>（默认 <c>default</c> = 允许治疗）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="HealContext.Trigger"/>（治疗者）、<see cref="HealContext.Target"/>（被治疗者）、<see cref="HealContext.Heal"/>（本次治疗量，只读）。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（治疗者）、<see cref="HealContext.Target"/>（被治疗者）、<see cref="HealContext.Heal"/>（本次治疗量）。
         /// </param>
         /// <returns>CancelHeal 置 true 取消本次治疗。</returns>
         public virtual BeforeHealToTargetResult BeforeHealToTarget(HealContext ctx)
@@ -533,8 +524,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="AlterHealValueResult"/>（默认 <c>default</c> = 无增减、不请求复活）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="HealContext.Trigger"/>（治疗者）、<see cref="HealContext.Target"/>（被治疗者）、<see cref="HealContext.Heal"/>（本次治疗量，只读）、<see cref="HealContext.IsRespawn"/>、<see cref="HealContext.TotalHealBonus"/>。
-        /// 陷阱：不能直接写 <see cref="HealContext.CanRespawn"/>，复活请求请通过返回的 <see cref="AlterHealValueResult.AllowRespawn"/> 表达。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（治疗者）、<see cref="HealContext.Target"/>（被治疗者）、<see cref="HealContext.Heal"/>（本次治疗量）、<see cref="HealContext.IsRespawn"/>、<see cref="HealContext.CanRespawn"/>、<see cref="HealContext.TotalHealBonus"/>。
         /// </param>
         /// <returns>HealDelta：治疗量增减值（可为负）；AllowRespawn：请求复活许可。</returns>
         public virtual AlterHealValueResult AlterHealValueBeforeHealToTarget(HealContext ctx)
@@ -543,10 +533,10 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 在特效持有者的回合开始前（纯通知）
+        /// 在特效持有者的回合开始前
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="TurnContext.Trigger"/>（本回合行动角色）、<see cref="TurnContext.DP"/>、<see cref="TurnContext.Enemys"/> / <see cref="TurnContext.Teammates"/> / <see cref="TurnContext.Skills"/> / <see cref="TurnContext.Items"/>（当前可选列表；可就地修改内容，不可替换引用）。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（本回合行动角色）、<see cref="TurnContext.DP"/>、<see cref="TurnContext.Enemys"/> / <see cref="TurnContext.Teammates"/> / <see cref="TurnContext.Skills"/> / <see cref="TurnContext.Items"/>（当前可选列表，可就地修改内容）。
         /// </param>
         public virtual void OnTurnStart(TurnContext ctx)
         {
@@ -554,10 +544,10 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 在特效持有者的回合结束后（纯通知）
+        /// 在特效持有者的回合结束后
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="TurnContext.Trigger"/>（行动结束角色）、<see cref="TurnContext.DP"/>。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（行动结束角色）、<see cref="TurnContext.DP"/>。
         /// </param>
         public virtual void OnTurnEnd(TurnContext ctx)
         {
@@ -567,7 +557,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 技能被升级时
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（技能持有者）、Level（新等级）。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（技能持有者）、<see cref="LevelUpContext.Level"/>（新等级）。</param>
         public virtual void OnSkillLevelUp(LevelUpContext ctx)
         {
 
@@ -576,7 +566,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 特效持有者升级时
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（升级的角色）、Level（新等级）。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（升级的角色）、<see cref="LevelUpContext.Level"/>（新等级）。</param>
         public virtual void OnOwnerLevelUp(LevelUpContext ctx)
         {
 
@@ -585,7 +575,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在完成死亡结算后 [ 全体广播 ]
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（亡者）、Killer（击杀者，可为 null）、HasMaster、ContinuousKilling/EarnedMoney/Assists（统计快照，只读）。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（亡者）、<see cref="DeathContext.Killer"/>（击杀者，可为 null）、<see cref="DeathContext.HasMaster"/>、<see cref="DeathContext.ContinuousKilling"/> / <see cref="DeathContext.EarnedMoney"/> / <see cref="DeathContext.Assists"/>（统计快照）。</param>
         public virtual void AfterDeathCalculation(DeathContext ctx)
         {
 
@@ -596,8 +586,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="BeforeEvadeCheckResult"/>（默认 <c>default</c> = 正常检定，无加值）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="DamageContext.Trigger"/>（攻击者）、<see cref="DamageContext.Enemy"/>（受击者，通常为闪避方）、<see cref="DamageContext.IsNormalAttack"/>、<see cref="DamageContext.Dice"/>（本次检定骰子）、<see cref="DamageContext.ThrowingBonus"/>（只读）。
-        /// 陷阱：检定加值不能直接改 <see cref="DamageContext.ThrowingBonus"/>（只读），请通过返回的 <see cref="BeforeEvadeCheckResult.ThrowingBonusDelta"/> 施加。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（攻击者）、<see cref="DamageContext.Enemy"/>（受击者，通常为闪避方）、<see cref="DamageContext.IsNormalAttack"/>、<see cref="DamageContext.Dice"/>（本次检定骰子）、<see cref="DamageContext.ThrowingBonus"/>（当前检定加值）。
         /// </param>
         /// <returns>SkipEvadeCheck 置 true 可无视闪避（攻击必中）；ThrowingBonusDelta 提供检定加值增量。</returns>
         public virtual BeforeEvadeCheckResult BeforeEvadeCheck(DamageContext ctx)
@@ -610,7 +599,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="OnEvadedTriggeredResult"/>（默认 <c>default</c> = 闪避生效）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="DamageContext.Trigger"/>（攻击者）、<see cref="DamageContext.Enemy"/>（受击者，闪避方）、<see cref="DamageContext.Damage"/> / <see cref="DamageContext.DamageResult"/>（只读）、<see cref="DamageContext.Dice"/>。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（攻击者）、<see cref="DamageContext.Enemy"/>（受击者，闪避方）、<see cref="DamageContext.Damage"/> / <see cref="DamageContext.DamageResult"/>、<see cref="DamageContext.Dice"/>。
         /// </param>
         /// <returns>IgnoreEvaded 置 true 无视本次闪避（本次攻击判定为命中）。</returns>
         public virtual OnEvadedTriggeredResult OnEvadedTriggered(DamageContext ctx)
@@ -623,8 +612,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="BeforeCriticalCheckResult"/>（默认 <c>default</c> = 正常检定，无加值）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="DamageContext.Trigger"/>（攻击者）、<see cref="DamageContext.Enemy"/>（受击者）、<see cref="DamageContext.IsNormalAttack"/>、<see cref="DamageContext.Dice"/>（本次检定骰子）、<see cref="DamageContext.ThrowingBonus"/>（只读）。
-        /// 陷阱：检定加值不能直接改 <see cref="DamageContext.ThrowingBonus"/>（只读），请通过返回的 <see cref="BeforeCriticalCheckResult.ThrowingBonusDelta"/> 施加。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（攻击者）、<see cref="DamageContext.Enemy"/>（受击者）、<see cref="DamageContext.IsNormalAttack"/>、<see cref="DamageContext.Dice"/>（本次检定骰子）、<see cref="DamageContext.ThrowingBonus"/>（当前检定加值）。
         /// </param>
         /// <returns>SkipCriticalCheck 置 true 可跳过暴击检定（本次必不暴击）；ThrowingBonusDelta 提供检定加值增量。</returns>
         public virtual BeforeCriticalCheckResult BeforeCriticalCheck(DamageContext ctx)
@@ -635,7 +623,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在触发暴击时
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（攻击者）、Enemy、Damage（暴击后最终伤害）、Dice（暴击检定骰子）。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（攻击者）、<see cref="DamageContext.Enemy"/>、<see cref="DamageContext.Damage"/>（暴击后最终伤害）、<see cref="DamageContext.Dice"/>（暴击检定骰子）。</param>
         public virtual void OnCriticalDamageTriggered(DamageContext ctx)
         {
 
@@ -644,19 +632,17 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 角色属性发生变化
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（属性发生变化的角色）。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（属性发生变化的角色）。</param>
         public virtual void OnAttributeChanged(HookContext ctx)
         {
 
         }
 
         /// <summary>
-        /// 行动开始前，修改可选择的 <see cref="SelectionContext.Enemys"/>, <see cref="SelectionContext.Teammates"/>, <see cref="SelectionContext.Skills"/> 列表<para/>
-        /// 注意 <see cref="SelectionContext.ContinuousKilling"/> 和 <see cref="SelectionContext.EarnedMoney"/> 是副本，修改无效
+        /// 行动开始前，修改可选择的 <see cref="SelectionContext.Enemys"/>, <see cref="SelectionContext.Teammates"/>, <see cref="SelectionContext.Skills"/> 列表
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="SelectionContext.Trigger"/>（本回合行动角色）、<see cref="SelectionContext.Enemys"/> / <see cref="SelectionContext.Teammates"/> / <see cref="SelectionContext.Skills"/> / <see cref="SelectionContext.Items"/>（当前可选列表；可就地修改内容，框架最终读取该内容，不可替换引用）。
-        /// 陷阱：<see cref="SelectionContext.ContinuousKilling"/> / <see cref="SelectionContext.EarnedMoney"/> 为副本，修改无效。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（本回合行动角色）、<see cref="SelectionContext.Enemys"/> / <see cref="SelectionContext.Teammates"/> / <see cref="SelectionContext.Skills"/> / <see cref="SelectionContext.Items"/>（当前可选列表，可就地修改内容）、<see cref="SelectionContext.ContinuousKilling"/> / <see cref="SelectionContext.EarnedMoney"/>（统计副本）。
         /// </param>
         public virtual void AlterSelectListBeforeAction(SelectionContext ctx)
         {
@@ -667,7 +653,7 @@ namespace FunGame.Core.Entity
         /// 开始选择移动目标前
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="SelectionContext.Trigger"/>、<see cref="SelectionContext.Map"/>、<see cref="SelectionContext.MoveRange"/>（可移动范围；可就地修改内容）。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>、<see cref="SelectionContext.Map"/>、<see cref="SelectionContext.MoveRange"/>（可移动范围，可就地修改内容）。
         /// </param>
         public virtual void BeforeSelectTargetGrid(SelectionContext ctx)
         {
@@ -679,7 +665,7 @@ namespace FunGame.Core.Entity
         /// <see cref="SelectionContext.Skill"/> 有两种，使用时注意判断是 <see cref="Entity.Skill"/> 还是 <see cref="NormalAttack"/>
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="SelectionContext.Trigger"/>、<see cref="SelectionContext.Skill"/> / <see cref="SelectionContext.NormalAttack"/>、<see cref="SelectionContext.AllEnemys"/> / <see cref="SelectionContext.AllTeammates"/>（全量列表）、<see cref="SelectionContext.Enemys"/> / <see cref="SelectionContext.Teammates"/>（当前可选列表；可就地修改内容，框架最终读取该内容）。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>、<see cref="SelectionContext.Skill"/> / <see cref="SelectionContext.NormalAttack"/>、<see cref="SelectionContext.AllEnemys"/> / <see cref="SelectionContext.AllTeammates"/>（全量列表）、<see cref="SelectionContext.Enemys"/> / <see cref="SelectionContext.Teammates"/>（当前可选列表，可就地修改内容）。
         /// </param>
         public virtual void AlterSelectListBeforeSelection(SelectionContext ctx)
         {
@@ -691,10 +677,10 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="AlterActionTypeResult"/>（默认 <c>default</c> = 不干预）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="DecisionContext.Trigger"/>（决策角色）、<see cref="DecisionContext.DP"/>、<see cref="DecisionContext.State"/>、
-        /// <see cref="DecisionContext.CanUseItem"/> / <see cref="DecisionContext.CanCastSkill"/>（只读，当前可用判定）、
-        /// <see cref="DecisionContext.PUseItem"/> / <see cref="DecisionContext.PCastSkill"/> / <see cref="DecisionContext.PNormalAttack"/>（只读，当前触发概率）。
-        /// 陷阱：不能直接写上述字段，修改请通过返回对象表达；读取到的概率/可用性为"此前特效已生效"的最新值，可用 <c>ForceAction + ActionType</c> 强制行动短路后续特效。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（决策角色）、<see cref="DecisionContext.DP"/>、<see cref="DecisionContext.State"/>、
+        /// <see cref="DecisionContext.CanUseItem"/> / <see cref="DecisionContext.CanCastSkill"/>（当前可用判定）、
+        /// <see cref="DecisionContext.PUseItem"/> / <see cref="DecisionContext.PCastSkill"/> / <see cref="DecisionContext.PNormalAttack"/>（当前触发概率）。
+        /// 读取到的概率/可用性为“此前特效已生效”的最新值。
         /// </param>
         /// <returns>ActionType：行动类型（None = 不指定）；ForceAction：置 true 且 ActionType 非 None 时强制该行动；CanUseItem/CanCastSkill/PUseItem/PCastSkill/PNormalAttack：非 null 覆盖对应值。</returns>
         public virtual AlterActionTypeResult AlterActionTypeBeforeAction(DecisionContext ctx)
@@ -703,9 +689,9 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 可重写对某个特效的驱散实现，适用于特殊驱散类型
+        /// 可重写对某个特效的驱散实现，适用于特殊驱散类型 [ 覆盖本方法即接管驱散实现，可调用基类复用标准驱散 ]
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（驱散者）、Target（被驱散角色）、Effect（被驱散的特效）、DispellerEffect（即 this，正在执行驱散的特效）、IsEnemy（是否敌方驱散）。覆盖本方法即接管驱散实现（不会执行基类标准逻辑），可调用基类复用标准驱散。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（驱散者）、<see cref="DispelContext.Target"/>（被驱散角色）、<see cref="DispelContext.Effect"/>（被驱散的特效）、<see cref="DispelContext.DispellerEffect"/>（即 this，正在执行驱散的特效）、<see cref="DispelContext.IsEnemy"/>（是否敌方驱散）。</param>
         public virtual void OnDispellingEffect(DispelContext ctx)
         {
             Character? target = ctx.Target;
@@ -801,7 +787,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="OnEffectIsBeingDispelledResult"/>（默认 <c>default</c> = 允许被驱散）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="DispelContext.Trigger"/>（驱散者）、<see cref="DispelContext.Target"/>（被驱散角色）、<see cref="DispelContext.Effect"/>（被驱散的特效，即持有者自身）、<see cref="DispelContext.DispellerEffect"/>（正在执行驱散的特效）、<see cref="DispelContext.IsEnemy"/>。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（驱散者）、<see cref="DispelContext.Target"/>（被驱散角色）、<see cref="DispelContext.Effect"/>（被驱散的特效，即持有者自身）、<see cref="DispelContext.DispellerEffect"/>（正在执行驱散的特效）、<see cref="DispelContext.IsEnemy"/>。
         /// </param>
         /// <returns>BlockDispel 置 true 阻止本次驱散。</returns>
         public virtual OnEffectIsBeingDispelledResult OnEffectIsBeingDispelled(DispelContext ctx)
@@ -814,7 +800,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="BeforeLifestealResult"/>（默认 <c>default</c> = 允许生命偷取）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="LifestealContext.Trigger"/>（偷取者）、<see cref="LifestealContext.Enemy"/>（被偷取方）、<see cref="LifestealContext.Damage"/>（造成伤害，只读）、<see cref="LifestealContext.Steal"/>（偷取量，只读）。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（偷取者）、<see cref="LifestealContext.Enemy"/>（被偷取方）、<see cref="LifestealContext.Damage"/>（造成伤害）、<see cref="LifestealContext.Steal"/>（偷取量）。
         /// </param>
         /// <returns>CancelLifesteal 置 true 取消本次生命偷取。</returns>
         public virtual BeforeLifestealResult BeforeLifesteal(LifestealContext ctx)
@@ -825,7 +811,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 当角色触发生命偷取后
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（偷取者）、Enemy（被偷取方）、Damage/Steal（结算结果）。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（偷取者）、<see cref="LifestealContext.Enemy"/>（被偷取方）、<see cref="LifestealContext.Damage"/> / <see cref="LifestealContext.Steal"/>（结算结果）。</param>
         public virtual void AfterLifesteal(LifestealContext ctx)
         {
 
@@ -836,8 +822,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="BeforeShieldCalculationResult"/>（默认 <c>default</c> = 正常护盾结算）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="ShieldContext.Trigger"/>（受击方）、<see cref="ShieldContext.Attacker"/>（攻击方）、<see cref="ShieldContext.DamageType"/> / <see cref="ShieldContext.MagicType"/>、<see cref="ShieldContext.Damage"/>（本次伤害）。
-        /// 陷阱：不能直接写 <see cref="ShieldContext.DamageReduce"/> / <see cref="ShieldContext.Message"/>，请通过返回对象的 DamageReduce / Message 表达。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（受击方）、<see cref="ShieldContext.Attacker"/>（攻击方）、<see cref="ShieldContext.DamageType"/> / <see cref="ShieldContext.MagicType"/>、<see cref="ShieldContext.Damage"/>（本次伤害）、<see cref="ShieldContext.Message"/>。
         /// </param>
         /// <returns>SkipShield 置 true 跳过护盾结算；DamageReduce 提供护盾减伤；Message 覆盖输出消息。</returns>
         public virtual BeforeShieldCalculationResult BeforeShieldCalculation(ShieldContext ctx)
@@ -846,11 +831,10 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 在角色护盾有效防御时 [ 破碎本身不会触发此钩子，但破碎后化解可触发 ]（纯通知）
+        /// 在角色护盾有效防御时 [ 破碎本身不会触发此钩子，但破碎后化解可触发 ]
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="ShieldContext.Trigger"/>（护盾持有方）、<see cref="ShieldContext.Attacker"/>、<see cref="ShieldContext.DamageType"/> / <see cref="ShieldContext.MagicType"/>、<see cref="ShieldContext.Damage"/>、<see cref="ShieldContext.ShieldType"/>。
-        /// 注意：本钩子为只读通知，修改无效。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（护盾持有方）、<see cref="ShieldContext.Attacker"/>、<see cref="ShieldContext.DamageType"/> / <see cref="ShieldContext.MagicType"/>、<see cref="ShieldContext.Damage"/>、<see cref="ShieldContext.ShieldType"/>。
         /// </param>
         public virtual void OnShieldNeutralizeDamage(ShieldContext ctx)
         {
@@ -862,7 +846,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="OnShieldBrokenResult"/>（默认 <c>default</c> = 不化解，继续扣减生命）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="ShieldContext.Trigger"/>（护盾持有方）、<see cref="ShieldContext.Attacker"/>、<see cref="ShieldContext.OverFlowing"/>（当前溢出伤害）、<see cref="ShieldContext.ShieldType"/> 或 <see cref="ShieldContext.ShieldEffect"/>。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（护盾持有方）、<see cref="ShieldContext.Attacker"/>、<see cref="ShieldContext.OverFlowing"/>（当前溢出伤害）、<see cref="ShieldContext.ShieldType"/> 或 <see cref="ShieldContext.ShieldEffect"/>。
         /// </param>
         /// <returns>NullifyRemainingDamage 置 true 可化解剩余伤害（阻止后续扣除角色生命值）。</returns>
         public virtual OnShieldBrokenResult OnShieldBroken(ShieldContext ctx)
@@ -875,7 +859,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="OnImmuneCheckResult"/>（默认 <c>default</c> = 不无视免疫）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="ImmuneContext.Trigger"/>（施法者/攻击方）、<see cref="ImmuneContext.Target"/>（免疫检定目标）、<see cref="ImmuneContext.Skill"/>、<see cref="ImmuneContext.Item"/>。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（施法者/攻击方）、<see cref="ImmuneContext.Target"/>（免疫检定目标）、<see cref="ImmuneContext.Skill"/>、<see cref="ImmuneContext.Item"/>。
         /// </param>
         /// <returns>IgnoreImmunity 置 true 使免疫检定不通过（无视目标免疫）。</returns>
         public virtual OnImmuneCheckResult OnImmuneCheck(ImmuneContext ctx)
@@ -888,7 +872,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="OnDamageImmuneCheckResult"/>（默认 <c>default</c> = 免疫生效）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="DamageContext.Trigger"/>（攻击方）、<see cref="DamageContext.Enemy"/>（免疫检定目标）、<see cref="DamageContext.DamageType"/> / <see cref="DamageContext.MagicType"/>、<see cref="DamageContext.IsNormalAttack"/>。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（攻击方）、<see cref="DamageContext.Enemy"/>（免疫检定目标）、<see cref="DamageContext.DamageType"/> / <see cref="DamageContext.MagicType"/>、<see cref="DamageContext.IsNormalAttack"/>。
         /// </param>
         /// <returns>IgnoreDamageImmunity 置 true 使免疫检定不通过（本次伤害无视免疫）。</returns>
         public virtual OnDamageImmuneCheckResult OnDamageImmuneCheck(DamageContext ctx)
@@ -901,8 +885,7 @@ namespace FunGame.Core.Entity
         /// 返回 <see cref="OnExemptionCheckResult"/>（默认 <c>default</c> = 正常豁免检定、无加值）。
         /// </summary>
         /// <param name="ctx">
-        /// 此刻有值：<see cref="ImmuneContext.Trigger"/>（被检定角色）、<see cref="ImmuneContext.Source"/>（施加特效的来源）、<see cref="ImmuneContext.Effect"/>（被检定的特效）、<see cref="ImmuneContext.IsEvade"/>、<see cref="ImmuneContext.ThrowingBonus"/>（只读，当前检定加值）。
-        /// 陷阱：不能直接写 <see cref="ImmuneContext.ThrowingBonus"/>，加值请通过返回的 <see cref="OnExemptionCheckResult.ThrowingBonusDelta"/> 施加。
+        /// 此刻有值：<see cref="HookContext.Trigger"/>（被检定角色）、<see cref="ImmuneContext.Source"/>（施加特效的来源）、<see cref="ImmuneContext.Effect"/>（被检定的特效）、<see cref="ImmuneContext.IsEvade"/>、<see cref="ImmuneContext.ThrowingBonus"/>（当前检定加值）。
         /// </param>
         /// <returns>SkipExemptionCheck 置 true 跳过豁免检定；ThrowingBonusDelta 提供检定加值增量。</returns>
         public virtual OnExemptionCheckResult OnExemptionCheck(ImmuneContext ctx)
@@ -913,7 +896,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在角色开始行动时触发
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（即将行动的角色）、ActionType（已定行动类型）、DP。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（即将行动的角色）、<see cref="ActionContext.ActionType"/>（已定行动类型）、<see cref="ActionContext.DP"/>。</param>
         public virtual void OnCharacterActionStart(ActionContext ctx)
         {
 
@@ -922,7 +905,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在角色行动后触发，注意这个钩子是广播队列所有角色
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（已行动的角色）、ActionType、DP。全队列广播。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（已行动的角色）、<see cref="ActionContext.ActionType"/>、<see cref="ActionContext.DP"/>。全队列广播。</param>
         public virtual void OnCharacterActionTaken(ActionContext ctx)
         {
 
@@ -931,7 +914,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在角色回合决策结束后触发
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（决策完成角色）、DP。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（决策完成角色）、<see cref="ActionContext.DP"/>。</param>
         public virtual void OnCharacterDecisionCompleted(ActionContext ctx)
         {
 
@@ -940,7 +923,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 在角色取得询问反应的答复时触发
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（被询问角色）、Options（询问选项）、DP；Response 为事件处理器结果，只读建议。纯通知。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（被询问角色）、<see cref="InquiryContext.Options"/>（询问选项）、<see cref="InquiryContext.DP"/>、<see cref="InquiryContext.Response"/>（事件处理器给出的答复）。</param>
         public virtual void OnCharacterInquiry(InquiryContext ctx)
         {
 
@@ -949,7 +932,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 角色完成移动后
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（移动角色）、Target（移动目标格）、DP。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（移动角色）、<see cref="MoveContext.Target"/>（移动目标格）、<see cref="MoveContext.DP"/>。</param>
         public virtual void AfterCharacterMove(MoveContext ctx)
         {
 
@@ -958,7 +941,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 角色完成普通攻击后
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（攻击角色）、NormalAttack（攻击实例）、Targets（目标列表）、DP。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（攻击角色）、<see cref="NormalAttackContext.NormalAttack"/>（攻击实例）、<see cref="NormalAttackContext.Targets"/>（目标列表）、<see cref="NormalAttackContext.DP"/>。</param>
         public virtual void AfterCharacterNormalAttack(NormalAttackContext ctx)
         {
 
@@ -967,7 +950,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 角色开始吟唱后
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（施法者）、Skill、Targets（技能目标包，指向性）。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（施法者）、<see cref="SkillCastContext.Skill"/>、<see cref="SkillCastContext.Targets"/>（技能目标包，指向性）。</param>
         public virtual void AfterCharacterStartCasting(SkillCastContext ctx)
         {
 
@@ -976,7 +959,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 角色释放技能后
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（施法者）、Skill、Targets/Grids。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（施法者）、<see cref="SkillCastContext.Skill"/>、<see cref="SkillCastContext.Targets"/> / <see cref="SkillCastContext.Grids"/>。</param>
         public virtual void AfterCharacterCastSkill(SkillCastContext ctx)
         {
 
@@ -985,7 +968,7 @@ namespace FunGame.Core.Entity
         /// <summary>
         /// 角色使用物品后
         /// </summary>
-        /// <param name="ctx">此刻有值：Trigger（使用者）、Item（使用的物品）、Skill（物品附带技能）、Targets（目标列表）、DP。纯通知，修改无效。</param>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（使用者）、<see cref="ItemUseContext.Item"/>（使用的物品）、<see cref="ItemUseContext.Skill"/>（物品附带技能）、<see cref="ItemUseContext.Targets"/>（目标列表）、<see cref="ItemUseContext.DP"/>。</param>
         public virtual void AfterCharacterUseItem(ItemUseContext ctx)
         {
 

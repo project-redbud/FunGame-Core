@@ -14,7 +14,7 @@ public readonly record struct BeforeShieldCalculationResult
 
     /// <summary>
     /// 护盾减伤值，默认 0 = 不减伤。<para/>
-    /// [聚合: SUM] 各特效减伤值累加作用于本次伤害；对应原 <c>ctx.DamageReduce</c> 逐特效应用的语义。
+    /// [聚合: SUM] 各特效减伤值累加作用于本次伤害；原为逐特效写入上下文后累加的语义。
     /// </summary>
     public double DamageReduce { get; init; }
 

@@ -10,18 +10,17 @@ namespace FunGame.Core.Model.EffectContext
     public class HardnessContext(IGamingQueue queue, Character actor) : HookContext(queue, actor)
     {
         /// <summary>
-        /// 刚刚释放的技能（普通攻击后为 null；框架填充，模组只读）
+        /// 刚刚释放的技能（普通攻击后为 null）
         /// </summary>
         public Skill? Skill { get; internal set; } = null;
 
         /// <summary>
-        /// 当前基础硬直时间（框架维护最新值；模组禁止写入，修改请通过
-        /// <see cref="AlterHardnessTimeResult"/> 的 Factor/ClearHardnessTime/OverrideCheckProtected 返回）
+        /// 当前基础硬直时间
         /// </summary>
         public double BaseHardnessTime { get; internal set; } = 0;
 
         /// <summary>
-        /// 是否使用插队保护机制（框架维护；模组禁止写入，见 <see cref="AlterHardnessTimeResult"/>）
+        /// 是否使用插队保护机制
         /// </summary>
         public bool IsCheckProtected { get; internal set; } = false;
     }

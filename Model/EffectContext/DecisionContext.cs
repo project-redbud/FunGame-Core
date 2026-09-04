@@ -1,7 +1,6 @@
 ﻿using FunGame.Core.Entity;
 using FunGame.Core.Interface.Base;
 using FunGame.Core.Library.Constant;
-using FunGame.Core.Model.EffectResult;
 using FunGame.Core.Model.Framework;
 
 namespace FunGame.Core.Model.EffectContext
@@ -22,33 +21,28 @@ namespace FunGame.Core.Model.EffectContext
         public CharacterState State { get; } = state;
 
         /// <summary>
-        /// 是否可以使用物品（框架维护当前判定；模组禁止写入，修改请通过 <see cref="AlterActionTypeResult"/> 返回）
+        /// 是否可以使用物品
         /// </summary>
         public bool CanUseItem { get; internal set; } = true;
 
         /// <summary>
-        /// 是否可以释放技能（框架维护当前判定；模组禁止写入，修改请通过 <see cref="AlterActionTypeResult"/> 返回）
+        /// 是否可以释放技能
         /// </summary>
         public bool CanCastSkill { get; internal set; } = true;
 
         /// <summary>
-        /// 使用物品的触发概率（框架维护当前值；模组禁止写入，修改请通过 <see cref="AlterActionTypeResult"/> 返回）
+        /// 使用物品的触发概率
         /// </summary>
         public double PUseItem { get; internal set; } = 0;
 
         /// <summary>
-        /// 释放技能的触发概率（框架维护当前值；模组禁止写入，修改请通过 <see cref="AlterActionTypeResult"/> 返回）
+        /// 释放技能的触发概率
         /// </summary>
         public double PCastSkill { get; internal set; } = 0;
 
         /// <summary>
-        /// 普通攻击的触发概率（框架维护当前值；模组禁止写入，修改请通过 <see cref="AlterActionTypeResult"/> 返回）
+        /// 普通攻击的触发概率
         /// </summary>
         public double PNormalAttack { get; internal set; } = 0;
-
-        /// <summary>
-        /// 是否强制指定行动（框架在触发前重置为 false；模组禁止写入，请通过 <see cref="AlterActionTypeResult.ForceAction"/> 返回）
-        /// </summary>
-        public bool ForceAction { get; internal set; } = false;
     }
 }
