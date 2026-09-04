@@ -77,9 +77,10 @@ namespace FunGame.Core.Library.Module
         protected abstract Factory.EntityFactoryDelegate<Skill> SkillFactory();
 
         /// <summary>
-        /// 注册工厂（特效类）
+        /// 注册工厂（特效类）<para/>
+        /// 使用特效专用工厂委托 <see cref="Factory.EffectFactoryDelegate"/>，签名镜像 <see cref="Effect"/> 受保护构造函数的参数
         /// </summary>
-        protected abstract Factory.EntityFactoryDelegate<Effect> EffectFactory();
+        protected abstract Factory.EffectFactoryDelegate EffectFactory();
 
         /// <summary>
         /// 模组加载后需要做的事

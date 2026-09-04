@@ -159,9 +159,8 @@ namespace FunGame.Core.Library.Module.Example
 
             /// 如果1001这个特效已经过工厂注册，那么它的工作流程如下：
             Skill skill = new OpenSkill(2001, "木杖", []);
-            Effect effect = Factory.OpenFactory.GetInstance<Effect>(1001, "", new()
+            Effect effect = Factory.OpenFactory.GetInstance(1001, "", skill, new()
             {
-                { "skill", skill },
                 { "exatk", 20 }
             });
             skill.Effects.Add(effect);
