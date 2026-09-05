@@ -4229,6 +4229,8 @@ namespace FunGame.Core.Model.Queue
                     skill.GamingQueue = this;
                     skill.Character = character;
                     skill.Level = 1;
+                    // 回合奖励是战斗内临时获得的技能，不属于自身/职业技能，不参与核心天赋加成
+                    skill.Source = SkillSource.Reward;
                     LastRound.RoundRewards.Add(skill);
                     WriteLine($"[ {character} ] 获得了回合奖励！{skill.Description}".Trim());
                     if (skill.IsActive)
