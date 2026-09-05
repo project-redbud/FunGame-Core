@@ -221,27 +221,17 @@ namespace FunGame.Core.Model.Framework
 
         /// <summary>
         /// 激活 / 转换战斗天赋（始终至多 1 个生效；核心定位天赋的等级加成自动加减配对）
+        /// <para>委托 <see cref="CharacterClass.SwitchCombatTalent"/>，与【转换战斗天赋】战技共用同一路径。</para>
         /// </summary>
         /// <param name="roleType">要激活的已学天赋对应定位</param>
         public ClassPlanResult ActivateCombatTalent(RoleType roleType)
         {
-            if (!Plan.LearnedCombatTalents.TryGetValue(roleType, out Skill? talent))
+            if (!Plan.SwitchCombatTalent(roleType, out string? error))
             {
-                return ClassPlanResult.Fail($"{GetRoleTypeName(roleType)} 天赋尚未学习。");
+                return ClassPlanResult.Fail(error ?? "天赋转换失败。");
             }
-            if (ReferenceEquals(Plan.CombatTalent, talent))
-            {
-                return ClassPlanResult.Ok($"{GetRoleTypeName(roleType)} 天赋已处于激活状态。");
-            }
-            DeactivateTalent();
-            Plan.CombatTalent = talent;
-            Plan.CombatTalent.Source = SkillSource.CombatTalent;
-            Plan.CombatTalent.AddSkillToCharacter(Character);
-            if (Plan.IsCombatTalentCore)
-            {
-                Plan.SetCoreTalentLevelBonus(true);
-            }
-            Raise(ClassPlanPhase.ActivateTalent, true, $"已激活 {GetRoleTypeName(roleType)} 天赋【{talent.Name}】。");
+            Skill? talent = Plan.CombatTalent;
+            Raise(ClassPlanPhase.ActivateTalent, true, $"已激活 {GetRoleTypeName(roleType)} 天赋【{talent?.Name}】。");
             return ClassPlanResult.Ok();
         }
 

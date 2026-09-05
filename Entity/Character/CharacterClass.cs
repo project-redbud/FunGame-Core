@@ -67,6 +67,62 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 是否具备次要定位（已学天赋 ≥ 2），是授予 / 使用【转换战斗天赋】战技的前提
+        /// </summary>
+        public bool HasCombatTalentSwitch => LearnedCombatTalents.Count >= 2;
+
+        /// <summary>
+        /// 战斗内激活 / 转换已学战斗天赋（【转换战斗天赋】战技与上层共用）
+        /// <para>始终至多 1 个生效：撤销旧天赋的特效与核心加成 → 挂载新天赋 → 按需配对等级加成。
+        /// 非战斗时的自由转换由上层直接调用本方法即可，不经过决策点结算。</para>
+        /// </summary>
+        /// <param name="roleType">目标定位（必须已学习对应天赋）</param>
+        /// <param name="error">失败原因</param>
+        /// <returns>是否成功</returns>
+        public bool SwitchCombatTalent(RoleType roleType, out string? error)
+        {
+            error = null;
+            if (!LearnedCombatTalents.TryGetValue(roleType, out Skill? talent))
+            {
+                error = $"{GetRoleTypeName(roleType)}定位的战斗天赋尚未学习，无法转换。";
+                return false;
+            }
+            if (ReferenceEquals(CombatTalent, talent))
+            {
+                return true; // 目标天赋已处于激活状态
+            }
+            if (CombatTalent != null)
+            {
+                if (IsCoreTalentLevelBonusApplied)
+                {
+                    SetCoreTalentLevelBonus(false);
+                }
+                CombatTalent.RemoveSkillFromCharacter(Character);
+            }
+            CombatTalent = talent;
+            CombatTalent.Source = SkillSource.CombatTalent;
+            CombatTalent.AddSkillToCharacter(Character);
+            if (IsCombatTalentCore)
+            {
+                SetCoreTalentLevelBonus(true);
+            }
+            return true;
+        }
+
+        private static string GetRoleTypeName(RoleType roleType)
+        {
+            return roleType switch
+            {
+                RoleType.Core => "核心",
+                RoleType.Vanguard => "先锋",
+                RoleType.Guardian => "近卫",
+                RoleType.Support => "支援",
+                RoleType.Medic => "治疗",
+                _ => roleType.ToString()
+            };
+        }
+
+        /// <summary>
         /// 通过升级重新计算职业点数
         /// </summary>
         public void OnLevelUp()
