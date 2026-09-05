@@ -58,10 +58,9 @@ namespace FunGame.Core.Entity
         /// <param name="obj"></param>
         public void ReBuildCharacterClass(ClassObject obj)
         {
-            Character.FirstRoleType = RoleType.None;
-            Character.SecondRoleType = RoleType.None;
-            Character.ThirdRoleType = RoleType.None;
+            // 无论新计划是否带天赋，先清引用，防止旧对象悬垂
             CombatTalent?.RemoveSkillFromCharacter(Character);
+            CombatTalent = null;
             foreach (SubClass sc in SubClasses)
             {
                 foreach (Skill skill in sc.InherentPassives)
@@ -123,19 +122,23 @@ namespace FunGame.Core.Entity
                 CombatTalent = obj.CurrentCombatTalent;
                 CombatTalent.AddSkillToCharacter(Character);
             }
+            // 写回定位：obj 是重建后的完整状态，三个定位随重建一并生效
+            Character.FirstRoleType = obj.FirstRoleType;
+            Character.SecondRoleType = obj.SecondRoleType;
+            Character.ThirdRoleType = obj.ThirdRoleType;
         }
     }
 
     /// <summary>
     /// 决定如何构建角色的职业。这个类没有 JSON 转换器支持
     /// </summary>
-    public class ClassObject(Class[] c, SubClass[] s)
+    public class ClassObject(Class[] c, SubClass[] s, RoleType firstRoleType = RoleType.None, RoleType secondRoleType = RoleType.None, RoleType thirdRoleType = RoleType.None, Skill? currentCombatTalent = null)
     {
         public Class[] Classes { get; set; } = c;
         public SubClass[] SubClasses { get; set; } = s;
-        public RoleType FirstRoleType { get; set; } = RoleType.None;
-        public RoleType SecondRoleType { get; set; } = RoleType.None;
-        public RoleType ThirdRoleType { get; set; } = RoleType.None;
-        public Skill? CurrentCombatTalent { get; set; } = null;
+        public RoleType FirstRoleType { get; set; } = firstRoleType;
+        public RoleType SecondRoleType { get; set; } = secondRoleType;
+        public RoleType ThirdRoleType { get; set; } = thirdRoleType;
+        public Skill? CurrentCombatTalent { get; set; } = currentCombatTalent;
     }
 }

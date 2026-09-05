@@ -82,6 +82,48 @@ namespace FunGame.Core.Library.Constant
     }
 
     /// <summary>
+    /// 技能来源，用于区分角色自身的职业/流派/天赋技能与物品、战斗内临时获得的技能
+    /// <para>核心定位战斗天赋的等级加成只作用于自身与职业技能，需要此项区分。</para>
+    /// </summary>
+    public enum SkillSource
+    {
+        /// <summary>
+        /// 未标注（角色自带或既有模组），纳入核心天赋加成以兼容未标注来源的旧内容
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// 职业技能池
+        /// </summary>
+        Class,
+
+        /// <summary>
+        /// 流派固有被动
+        /// </summary>
+        SubClass,
+
+        /// <summary>
+        /// 战斗天赋
+        /// </summary>
+        CombatTalent,
+
+        /// <summary>
+        /// 装备的主动技能
+        /// </summary>
+        Item,
+
+        /// <summary>
+        /// 魔法卡包提供的魔法（含勇气指令、灵魂绑定）
+        /// </summary>
+        MagicCardPack,
+
+        /// <summary>
+        /// 战斗内临时获得的技能（如回合奖励）
+        /// </summary>
+        Reward
+    }
+
+    /// <summary>
     /// 注意：具有控制效果的特效，应该和技能本身的特效(一般此项为None)区分开来。此效果被赋值会改变一些判断的结果。
     /// <para>关联方法：</para>
     /// <para><see cref="SkillSet.GetCharacterStateByEffectType(EffectType)"/></para>

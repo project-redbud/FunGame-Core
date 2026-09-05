@@ -92,6 +92,12 @@ namespace FunGame.Core.Entity
         public SkillType SkillType { get; set; } = SkillType.Passive;
 
         /// <summary>
+        /// 技能来源，决定核心定位战斗天赋的等级加成是否作用于此技能
+        /// <para>由装配入口统一盖戳（<see cref="AddSkillToCharacter"/> 等）</para>
+        /// </summary>
+        public SkillSource Source { get; set; } = SkillSource.None;
+
+        /// <summary>
         /// 是否是主动技能 [ 此项为高优先级 ]
         /// </summary>
         public bool IsActive => SkillType != SkillType.Passive;
@@ -869,6 +875,11 @@ namespace FunGame.Core.Entity
             if (Level > 0)
             {
                 Character = character;
+                // 来源兜底：调用方未标注时，装备的主动技能按类型判定（其余类型无法区分，保持 None）
+                if (Source == SkillSource.None && SkillType == SkillType.Item)
+                {
+                    Source = SkillSource.Item;
+                }
                 HookContext ctx = new(GamingQueue, Character);
                 foreach (Effect e in AddPassiveEffectToCharacter())
                 {
@@ -1080,6 +1091,7 @@ namespace FunGame.Core.Entity
             skill.DispelDescription = skillDefined.DispelDescription;
             skill.ExemptionDescription = skillDefined.ExemptionDescription;
             skill.SkillType = skillDefined.SkillType;
+            skill.Source = skillDefined.Source;
             skill.MPCost = skillDefined.MPCost;
             skill.CastTime = skillDefined.CastTime;
             skill.EPCost = skillDefined.EPCost;
