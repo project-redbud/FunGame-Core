@@ -98,6 +98,21 @@ namespace FunGame.Core.Entity
         public SkillSource Source { get; set; } = SkillSource.None;
 
         /// <summary>
+        /// 学习此技能所需的流派（职业技能池的前置条件），null 表示无要求
+        /// </summary>
+        public SubClass? RequiredSubClass { get; set; } = null;
+
+        /// <summary>
+        /// 学习此技能所需达标的属性类型，null 表示无要求
+        /// </summary>
+        public PrimaryAttribute? RequiredAttribute { get; set; } = null;
+
+        /// <summary>
+        /// 学习此技能所需达标的属性值，仅当 <see cref="RequiredAttribute"/> 不为 null 时生效
+        /// </summary>
+        public double RequiredAttributeValue { get; set; } = 0;
+
+        /// <summary>
         /// 是否是主动技能 [ 此项为高优先级 ]
         /// </summary>
         public bool IsActive => SkillType != SkillType.Passive;
@@ -1092,6 +1107,9 @@ namespace FunGame.Core.Entity
             skill.ExemptionDescription = skillDefined.ExemptionDescription;
             skill.SkillType = skillDefined.SkillType;
             skill.Source = skillDefined.Source;
+            skill.RequiredSubClass = skillDefined.RequiredSubClass;
+            skill.RequiredAttribute = skillDefined.RequiredAttribute;
+            skill.RequiredAttributeValue = skillDefined.RequiredAttributeValue;
             skill.MPCost = skillDefined.MPCost;
             skill.CastTime = skillDefined.CastTime;
             skill.EPCost = skillDefined.EPCost;

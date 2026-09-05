@@ -96,18 +96,25 @@ namespace FunGame.Core.Entity
 
         /// <summary>
         /// 普通攻击等级
+        /// <para>getter 返回「基础等级 + <see cref="ExLevel"/>」，允许突破类型上限
+        /// （核心定位战斗天赋使普攻最高 9 级）；setter 仍按上限钳制基础等级。</para>
         /// </summary>
         public int Level
         {
             get
             {
-                return Math.Max(1, _level);
+                return Math.Max(1, _level + ExLevel);
             }
             set
             {
                 _level = Math.Min(Math.Max(1, value), GameplayEquilibriumConstant.MaxNormalAttackLevel);
             }
         }
+
+        /// <summary>
+        /// 额外等级（核心定位战斗天赋等来源的突破上限加成，语义同 <see cref="Skill.ExLevel"/>）
+        /// </summary>
+        public int ExLevel { get; set; } = 0;
 
         /// <summary>
         /// 是否是魔法伤害

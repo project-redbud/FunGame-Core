@@ -2113,6 +2113,8 @@ namespace FunGame.Core.Entity
                 INTGrowth = INTGrowth,
                 InitialSPD = InitialSPD
             };
+            // 职业规划随副本整体换主（计划是角色固有状态，见 #153 S5）
+            c.Class = Class.Copy(c);
             if (copyEx)
             {
                 c.ExHP2 = ExHP2;
@@ -2266,7 +2268,10 @@ namespace FunGame.Core.Entity
             {
                 Skill newskill = skill.Copy();
                 newskill.Character = this;
-                newskill.Level = skill.Level;
+                // 基础等级与突破加成分离保留：skill.Level 已含 ExLevel，直接赋值会被类型上限钳制，
+                // 导致核心天赋的破上限等级（战技 7 / 普攻 9）在复活时丢失（#153 §8-1）
+                newskill.Level = Math.Max(0, skill.Level - skill.ExLevel);
+                newskill.ExLevel = skill.ExLevel;
                 newskill.CurrentCD = skill.CurrentCD;
                 skill.OnCharacterRespawn(newskill);
                 Skills.Add(newskill);
@@ -2283,6 +2288,8 @@ namespace FunGame.Core.Entity
             if (s != null) Equip(s);
             if (ac1 != null) Equip(ac1);
             if (ac2 != null) Equip(ac2);
+            // 职业规划换主：从快照副本整体搬回复活实例（Respawn 是引擎内部行为，见 #153 §8-1）
+            Class = c.Class.Copy(this);
             Recovery(0D);
         }
     }
