@@ -40,6 +40,33 @@ namespace FunGame.Core.Entity
         public Skill? CombatTalent { get; set; } = null;
 
         /// <summary>
+        /// 1 级时选择的默认职业（洗点恢复用；满 20 级前不可修改，见平衡常数 MinLevelCanModifyDefaultClass）
+        /// </summary>
+        public HashSet<Class> DefaultClasses { get; set; } = [];
+
+        /// <summary>
+        /// 1 级时选择的默认流派（洗点恢复用）
+        /// </summary>
+        public HashSet<SubClass> DefaultSubClasses { get; set; } = [];
+
+        /// <summary>
+        /// 卸载计划授予角色的全部技能与特效（供洗点 / 重新规划 / 外部装配使用），并撤销核心天赋加成
+        /// </summary>
+        /// <param name="character">目标角色，null 时作用于 <see cref="Character"/></param>
+        public void UnapplyFromCharacter(Character? character = null)
+        {
+            if (character == null)
+            {
+                character = Character;
+            }
+            if (IsCoreTalentLevelBonusApplied)
+            {
+                SetCoreTalentLevelBonus(false);
+            }
+            RemovePlannedSkillsFromCharacter(character);
+        }
+
+        /// <summary>
         /// 通过升级重新计算职业点数
         /// </summary>
         public void OnLevelUp()
@@ -93,6 +120,9 @@ namespace FunGame.Core.Entity
                 copy.LearnedCombatTalents[kv.Key] = sc;
             }
             copy.CombatTalent = CombatTalent != null && talentMap.TryGetValue(CombatTalent, out Skill? talentMapped) ? talentMapped : CombatTalent != null ? Class.CopySkillState(CombatTalent) : null;
+            // 默认计划随副本携带（定义引用，洗点恢复时再实例化为记录）
+            copy.DefaultClasses = [.. DefaultClasses];
+            copy.DefaultSubClasses = [.. DefaultSubClasses];
             return copy;
         }
 
