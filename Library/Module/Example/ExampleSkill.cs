@@ -314,6 +314,15 @@ namespace FunGame.Core.Library.Module.Example
         private double Coefficient => 1.2 * (1 + 0.5 * (Skill.Level - 1));
         private double DamageBonus => Coefficient * Skill.Character?.AGI ?? 0;
         private double ATKMultiplier => Skill.Level > 0 ? 0.15 + 0.03 * (Skill.Level - 1) : 0.15;
+
+        /// <summary>
+        /// 这是「瞬间计算」型加成，与百分比加成是两种不同的技能设计方式，二者并不等效
+        /// <para/>此处按生效瞬间的 <see cref="Character.BaseATK"/> 算出具体点数，写入 <see cref="Character.ExATK2"/>（固定值）
+        /// <para/>之后基础攻击力再变化，已生效的这部分加成也不会跟随，因此本特效不需要重写 <see cref="Effect.OnAttributeChanged"/>
+        /// <para/>这属于刻意的取舍：释放时机成为策略的一部分，角色属性越高时释放收益越大
+        /// <para/>若希望加成随基础属性持续成长，应改为写入 <see cref="Character.ExATKPercentage"/>（百分比）
+        /// <para/>它会经由 <see cref="Character.ExATK3"/> 实时反映基础攻击力的变化，写法参见 <see cref="ExampleOpenEffectExATK2"/>
+        /// </summary>
         private double ATKBonus => ATKMultiplier * Skill.Character?.BaseATK ?? 0;
         private double PhysicalPenetrationBonus => Skill.Level > 0 ? 0.1 + 0.03 * (Skill.Level - 1) : 0.1;
         private double EvadeRateBonus => Skill.Level > 0 ? 0.1 + 0.02 * (Skill.Level - 1) : 0.1;
@@ -326,7 +335,7 @@ namespace FunGame.Core.Library.Module.Example
         public override void OnEffectGained(HookContext ctx)
         {
             if (ctx.Trigger is not Character character) return;
-            // 记录状态并修改属性
+            // 记录状态并修改属性：加成点数在此刻锁定，后续基础属性变化不影响它
             ActualATKBonus = ATKBonus;
             ActualPhysicalPenetrationBonus = PhysicalPenetrationBonus;
             ActualEvadeRateBonus = EvadeRateBonus;

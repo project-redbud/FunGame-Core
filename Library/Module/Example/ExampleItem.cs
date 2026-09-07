@@ -70,32 +70,57 @@ namespace FunGame.Core.Library.Module.Example
         private readonly double BonusFactor = 0;
         private double ActualBonus = 0;
 
+        /// <summary>
+        /// 加成是否已生效。配合 <see cref="AppliedBonusFactor"/> 记录实际套用的数值，
+        /// 保证重复触发时增减都只结算一次（<see cref="OnEffectLost"/> 直接扣减常量，本身不是幂等的）
+        /// </summary>
+        private bool BonusApplied = false;
+        private double AppliedBonusFactor = 0;
+
         public override void OnEffectGained(HookContext ctx)
         {
             if (ctx.Trigger is not Character character) return;
-            if (Durative && RemainDuration == 0)
+            if (!BonusApplied)
             {
-                RemainDuration = Duration;
+                // 仅首次获得时初始化剩余时间，避免后续刷新时被重置
+                if (Durative && RemainDuration == 0)
+                {
+                    RemainDuration = Duration;
+                }
+                else if (RemainDurationTurn == 0)
+                {
+                    RemainDurationTurn = DurationTurn;
+                }
             }
-            else if (RemainDurationTurn == 0)
+            else
             {
-                RemainDurationTurn = DurationTurn;
+                // 已生效过：先还原旧值再套用新值，避免重复叠加
+                character.ExATKPercentage -= AppliedBonusFactor;
             }
             ActualBonus = character.BaseATK * BonusFactor;
-            character.ExATKPercentage += BonusFactor;
+            AppliedBonusFactor = BonusFactor;
+            character.ExATKPercentage += AppliedBonusFactor;
+            BonusApplied = true;
         }
 
         public override void OnEffectLost(HookContext ctx)
         {
             if (ctx.Trigger is not Character character) return;
-            character.ExATKPercentage -= BonusFactor;
+            if (!BonusApplied) return;
+            character.ExATKPercentage -= AppliedBonusFactor;
+            AppliedBonusFactor = 0;
+            ActualBonus = 0;
+            BonusApplied = false;
         }
 
         public override void OnAttributeChanged(HookContext ctx)
         {
-            // 刷新加成
-            OnEffectLost(ctx);
-            OnEffectGained(ctx);
+            // 属性侧写入的是 ExATKPercentage（百分比），基础攻击力变化时会实时反映到 ExATK3，因此无需重新结算属性
+            // 调用 OnEffectLost + OnEffectGained 的方式已过时：那样既产生属性空档，又会重置剩余时间
+            if (ctx.Trigger is Character character && BonusApplied)
+            {
+                ActualBonus = character.BaseATK * BonusFactor;
+            }
         }
 
         public ExampleOpenEffectExATK2(Skill skill, Dictionary<string, object> args, Character? source = null) : base(skill, args)
