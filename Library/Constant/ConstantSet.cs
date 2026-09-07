@@ -354,6 +354,19 @@ namespace FunGame.Core.Library.Constant
                 _ => ""
             };
         }
+
+        public static string GetRoleTypeName(RoleType roleType)
+        {
+            return roleType switch
+            {
+                RoleType.Core => "核心",
+                RoleType.Vanguard => "先锋",
+                RoleType.Guardian => "近卫",
+                RoleType.Support => "支援",
+                RoleType.Medic => "治疗",
+                _ => roleType.ToString()
+            };
+        }
     }
 
     public class ItemSet

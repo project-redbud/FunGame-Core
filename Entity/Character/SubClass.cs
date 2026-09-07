@@ -35,7 +35,7 @@ namespace FunGame.Core.Entity
 
         /// <summary>
         /// 复制流派定义作为玩家职业记录，副本绑定到 <paramref name="ownerClass"/>
-        /// <para>流派的等级委托给所属职业（<see cref="Level"/>），因此副本必须绑到职业的副本上。</para>
+        /// <para>流派的等级委托给所属职业（<see cref="Level"/>），因此副本必须绑到职业的副本上</para>
         /// </summary>
         /// <param name="ownerClass">所属职业的副本</param>
         /// <returns>流派记录的副本</returns>

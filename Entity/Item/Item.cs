@@ -249,8 +249,10 @@ namespace FunGame.Core.Entity
             {
                 if (Character != null && skill.IsMagic && skill.Level > 0)
                 {
-                    // 基类入口兜底：物品注入的魔法一律视为魔法卡包来源，不依赖模组覆写方设值
-                    skill.Source = SkillSource.MagicCardPack;
+                    if (skill.Source == SkillSource.None)
+                    {
+                        skill.Source = SkillSource.MagicCardPack;
+                    }
                     Character.Skills.Add(skill);
                 }
             }

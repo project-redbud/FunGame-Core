@@ -96,8 +96,6 @@ namespace FunGame.Core.Entity
 
         /// <summary>
         /// 普通攻击等级
-        /// <para>getter 返回「基础等级 + <see cref="ExLevel"/>」，允许突破类型上限
-        /// （核心定位战斗天赋使普攻最高 9 级）；setter 仍按上限钳制基础等级。</para>
         /// </summary>
         public int Level
         {
@@ -112,7 +110,7 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 额外等级（核心定位战斗天赋等来源的突破上限加成，语义同 <see cref="Skill.ExLevel"/>）
+        /// 额外等级
         /// </summary>
         public int ExLevel { get; set; } = 0;
 

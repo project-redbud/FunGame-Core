@@ -83,7 +83,6 @@ namespace FunGame.Core.Library.Constant
 
     /// <summary>
     /// 技能来源，用于区分角色自身的职业/流派/天赋技能与物品、战斗内临时获得的技能
-    /// <para>核心定位战斗天赋的等级加成只作用于自身与职业技能，需要此项区分。</para>
     /// </summary>
     public enum SkillSource
     {

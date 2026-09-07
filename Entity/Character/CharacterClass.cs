@@ -1,4 +1,5 @@
 ﻿using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.Framework;
 
 namespace FunGame.Core.Entity
 {
@@ -30,7 +31,7 @@ namespace FunGame.Core.Entity
 
         /// <summary>
         /// 已学习的战斗天赋，与已选定位一一对应（至多 3 个）
-        /// <para>天赋绑定于职业：由已选流派反查其所属职业，再从该职业按定位索引的天赋池中选取。</para>
+        /// <para>天赋绑定于职业：由已选流派反查其所属职业，再从该职业按定位索引的天赋池中选取</para>
         /// </summary>
         public Dictionary<RoleType, Skill> LearnedCombatTalents { get; set; } = [];
 
@@ -40,7 +41,7 @@ namespace FunGame.Core.Entity
         public Skill? CombatTalent { get; set; } = null;
 
         /// <summary>
-        /// 1 级时选择的默认职业（洗点恢复用；满 20 级前不可修改，见平衡常数 MinLevelCanModifyDefaultClass）
+        /// 1 级时选择的默认职业（洗点恢复用；满 20 级前不可修改，见平衡常数 <see cref="EquilibriumConstant.MinLevelCanModifyDefaultClass"></see>）
         /// </summary>
         public HashSet<Class> DefaultClasses { get; set; } = [];
 
@@ -55,10 +56,7 @@ namespace FunGame.Core.Entity
         /// <param name="character">目标角色，null 时作用于 <see cref="Character"/></param>
         public void UnapplyFromCharacter(Character? character = null)
         {
-            if (character == null)
-            {
-                character = Character;
-            }
+            character ??= Character;
             if (IsCoreTalentLevelBonusApplied)
             {
                 SetCoreTalentLevelBonus(false);
@@ -142,13 +140,10 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 复制职业规划到新主人
-        /// <para>用于把已有角色身上的计划搬到新实例（装配/复制路径换主）。职业与流派记录深拷贝
-        /// （<see cref="Class.Copy"/> / <see cref="SubClass.Copy(Class)"/>），已学与激活天赋做技能
-        /// 实例副本——新老角色不共享职业等级与技能实例。</para>
+        /// 复制职业规划到新角色
         /// </summary>
-        /// <param name="owner">新计划的所属角色</param>
-        /// <returns>换主后的计划副本</returns>
+        /// <param name="owner"></param>
+        /// <returns>属于新角色的副本</returns>
         public CharacterClass Copy(Character owner)
         {
             CharacterClass copy = new(owner)
@@ -184,9 +179,6 @@ namespace FunGame.Core.Entity
 
         /// <summary>
         /// 把职业规划物化到角色身上：卸载计划旧技能 → 按职业等级门槛装载职业技能、流派固有被动与战斗天赋
-        /// <para>「规划 → 物化 → 返回可用角色」链路的核心装配动作。目标角色应为干净实例（无本计划
-        /// 以外的技能/加成）。职业技能来源盖 <see cref="SkillSource.Class"/>、固有被动盖
-        /// <see cref="SkillSource.SubClass"/>、天赋盖 <see cref="SkillSource.CombatTalent"/>。</para>
         /// </summary>
         /// <param name="character">目标角色，null 时作用于 <see cref="Character"/></param>
         public void ApplyTo(Character? character = null)
@@ -221,8 +213,7 @@ namespace FunGame.Core.Entity
 
         /// <summary>
         /// 应用 / 撤销核心定位天赋的等级加成（激活时 +1，失活时 −1）
-        /// <para>作用于普通攻击与所有「自身/职业」主动技能（来源非 装备/魔法卡包/回合奖励 者），
-        /// 由 <see cref="ApplyTo"/>、转换天赋等调用方保证加减配对。</para>
+        /// <para>作用于普通攻击与所有「自身/职业」主动技能</para>
         /// </summary>
         /// <param name="activate">true 为激活（+1），false 为撤销（−1）</param>
         public void SetCoreTalentLevelBonus(bool activate)

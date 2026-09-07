@@ -1,10 +1,10 @@
 namespace FunGame.Core.Model.Framework
 {
     /// <summary>
-    /// 职业升级路线图：某一职业等级的升级奖励（1→10 级默认表随库附带做实验，可整体替换）
-    /// <para>字段语义忠实于原始设定（2026-01-28）：
-    /// 「职业技能选择权」按类别计数；被动选择与数值提升是同一档的两种选法；
-    /// 「职业技能等级+1（魔法额外+1）」落在 SkillLevelUp / MagicExtraLevel。</para>
+    /// 职业升级路线图：某一职业等级的升级奖励
+    /// <para/>字段语义忠实于原始设定：
+    /// <para/>「职业技能选择权」按类别计数；被动选择与数值提升是同一档的两种选法；
+    /// <para/>「职业技能等级+1（魔法额外+1）」落在 SkillLevelUp / MagicExtraLevel。
     /// </summary>
     /// <param name="level">职业等级（1–10）</param>
     /// <param name="inherentPassive">获得流派固有被动的数量（1 / 6 级，与 SubClass 固有被动门槛一致）</param>

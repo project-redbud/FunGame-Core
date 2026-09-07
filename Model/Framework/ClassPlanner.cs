@@ -36,8 +36,6 @@ namespace FunGame.Core.Model.Framework
 
     /// <summary>
     /// 职业规划系统：把「规划操作 → 校验 → 写入 <see cref="Character.Class"/>」收敛为带事件推送的入口
-    /// <para>核心库只做合法性校验与状态写入；点数消耗策略、奖励内容、UI 流程由上层 / 默认表提供。
-    /// 校验与写法均显式，不依赖反射。</para>
     /// </summary>
     public class ClassPlanner
     {
@@ -59,8 +57,7 @@ namespace FunGame.Core.Model.Framework
         public EquilibriumConstant Eq => _character.GameplayEquilibriumConstant;
 
         /// <summary>
-        /// 每次成功动作后触发（供模组 / 上层监听；把 Interface/Event/ClassPlanEvents.cs 中
-        /// 各事件接口实例的监听方法挂载到此处即可）
+        /// 每次成功动作后触发（把 Interface/Event/ClassPlanEvents.cs 中各事件接口实例的监听方法挂载到此处）
         /// </summary>
         public event Action<ClassPlanner, ClassPlanEventArgs>? Planned;
 
@@ -79,9 +76,9 @@ namespace FunGame.Core.Model.Framework
 
         /// <summary>
         /// 选择职业与流派（新职业条目，含首职业与兼职），消耗 1 点职业点数
-        /// <para>1 级且尚无默认计划时，本次选择自动记录为默认职业 / 流派（洗点恢复用）。</para>
+        /// <para>1 级且尚无默认计划时，本次选择自动记录为默认职业 / 流派（洗点恢复用）</para>
         /// </summary>
-        /// <param name="classDef">职业定义（模组注册侧）</param>
+        /// <param name="classDef">职业定义</param>
         /// <param name="subClassDef">流派定义，必须属于 <paramref name="classDef"/></param>
         /// <returns>结果</returns>
         public ClassPlanResult SelectClass(Class classDef, SubClass subClassDef)
@@ -144,9 +141,9 @@ namespace FunGame.Core.Model.Framework
 
         /// <summary>
         /// 选择角色定位（覆盖式写回三个定位；至多 3 个且必须来自已选流派的候选并集）
-        /// <para>定位变化会使已学天赋与已激活天赋失效，本操作会一并清除，需重新选择天赋。</para>
+        /// <para>定位变化会使已学天赋与已激活天赋失效，本操作会一并清除，需重新选择天赋</para>
         /// </summary>
-        /// <param name="roleTypes">新定位（去重后按序写入 First/Second/Third）</param>
+        /// <param name="roleTypes">新定位，去重后按序写入 First/Second/Third</param>
         public ClassPlanResult SelectRoleTypes(IEnumerable<RoleType> roleTypes)
         {
             if (roleTypes == null)
@@ -176,7 +173,7 @@ namespace FunGame.Core.Model.Framework
             Character.FirstRoleType = selected.Length > 0 ? selected[0] : RoleType.None;
             Character.SecondRoleType = selected.Length > 1 ? selected[1] : RoleType.None;
             Character.ThirdRoleType = selected.Length > 2 ? selected[2] : RoleType.None;
-            Raise(ClassPlanPhase.SelectRoleTypes, true, $"已选择定位：{string.Join(" / ", selected.Select(GetRoleTypeName))}。");
+            Raise(ClassPlanPhase.SelectRoleTypes, true, $"已选择定位：{string.Join(" / ", selected.Select(CharacterSet.GetRoleTypeName))}。");
             return ClassPlanResult.Ok();
         }
 
@@ -198,7 +195,7 @@ namespace FunGame.Core.Model.Framework
             bool inPool = Plan.Classes.Any(c => c.CombatTalents.TryGetValue(roleType, out HashSet<Skill>? pool) && pool.Any(t => t.GetIdName() == talent.GetIdName()));
             if (!inPool)
             {
-                return ClassPlanResult.Fail($"天赋【{talent.Name}】不属于已选职业的 {GetRoleTypeName(roleType)} 天赋池。");
+                return ClassPlanResult.Fail($"天赋【{talent.Name}】不属于已选职业的 {CharacterSet.GetRoleTypeName(roleType)} 天赋池。");
             }
             int roleCount = new[] { Character.FirstRoleType, Character.SecondRoleType, Character.ThirdRoleType }.Where(r => r != RoleType.None).Distinct().Count();
             if (!Plan.LearnedCombatTalents.ContainsKey(roleType) && Plan.LearnedCombatTalents.Count >= roleCount)
@@ -215,13 +212,13 @@ namespace FunGame.Core.Model.Framework
                 existing.RemoveSkillFromCharacter(Character);
             }
             Plan.LearnedCombatTalents[roleType] = talent;
-            Raise(ClassPlanPhase.LearnTalent, true, $"已学习 {GetRoleTypeName(roleType)} 天赋【{talent.Name}】。");
+            Raise(ClassPlanPhase.LearnTalent, true, $"已学习 {CharacterSet.GetRoleTypeName(roleType)} 天赋【{talent.Name}】。");
             return ClassPlanResult.Ok();
         }
 
         /// <summary>
         /// 激活 / 转换战斗天赋（始终至多 1 个生效；核心定位天赋的等级加成自动加减配对）
-        /// <para>委托 <see cref="CharacterClass.SwitchCombatTalent"/>，与【转换战斗天赋】战技共用同一路径。</para>
+        /// <para>委托 <see cref="CharacterClass.SwitchCombatTalent"/>，与【转换战斗天赋】战技共用同一路径</para>
         /// </summary>
         /// <param name="roleType">要激活的已学天赋对应定位</param>
         public ClassPlanResult ActivateCombatTalent(RoleType roleType)
@@ -231,13 +228,12 @@ namespace FunGame.Core.Model.Framework
                 return ClassPlanResult.Fail(error ?? "天赋转换失败。");
             }
             Skill? talent = Plan.CombatTalent;
-            Raise(ClassPlanPhase.ActivateTalent, true, $"已激活 {GetRoleTypeName(roleType)} 天赋【{talent?.Name}】。");
+            Raise(ClassPlanPhase.ActivateTalent, true, $"已激活 {CharacterSet.GetRoleTypeName(roleType)} 天赋【{talent?.Name}】。");
             return ClassPlanResult.Ok();
         }
 
         /// <summary>
-        /// 洗点：清空当前职业规划（含已物化的技能与特效）；20 级前只能恢复到 1 级默认职业与流派，
-        /// 20 级起可完全重选。清空后点数按等级重算，由上层重新规划。
+        /// 洗点：清空当前职业规划（含已物化的技能与特效）；20 级前只能恢复到 1 级默认职业与流派，20 级起可完全重选。清空后点数按等级重算，由上层重新规划
         /// </summary>
         public ClassPlanResult ResetPlan()
         {
@@ -379,19 +375,12 @@ namespace FunGame.Core.Model.Framework
             Plan.LearnedCombatTalents.Clear();
         }
 
-        private static string GetRoleTypeName(RoleType roleType)
-        {
-            return roleType switch
-            {
-                RoleType.Core => "核心",
-                RoleType.Vanguard => "先锋",
-                RoleType.Guardian => "近卫",
-                RoleType.Support => "支援",
-                RoleType.Medic => "治疗",
-                _ => roleType.ToString()
-            };
-        }
-
+        /// <summary>
+        /// 推送规划事件
+        /// </summary>
+        /// <param name="phase"></param>
+        /// <param name="success"></param>
+        /// <param name="message"></param>
         private void Raise(ClassPlanPhase phase, bool success, string message)
         {
             if (Planned == null)

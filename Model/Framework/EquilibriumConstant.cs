@@ -677,8 +677,7 @@ namespace FunGame.Core.Model.Framework
 
         /// <summary>
         /// 职业升级路线图（key = 职业等级 1–10）
-        /// <para>默认表随库附带做实验（见 <see cref="ClassLevelUpReward.BuildDefaultTable"/>），
-        /// 需要差异化数值时整体替换本属性即可。</para>
+        /// <para/>默认表随库附带做实验（见 <see cref="ClassLevelUpReward.BuildDefaultTable"/>）
         /// </summary>
         public Dictionary<int, ClassLevelUpReward> ClassLevelUpRewards { get; set; } = ClassLevelUpReward.BuildDefaultTable();
 

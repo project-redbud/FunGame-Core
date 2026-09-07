@@ -2113,7 +2113,6 @@ namespace FunGame.Core.Entity
                 INTGrowth = INTGrowth,
                 InitialSPD = InitialSPD
             };
-            // 职业规划随副本整体换主（计划是角色固有状态，见 #153 S5）
             c.Class = Class.Copy(c);
             if (copyEx)
             {
