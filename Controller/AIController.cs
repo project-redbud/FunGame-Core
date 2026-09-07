@@ -470,7 +470,8 @@ namespace FunGame.Core.Controller
             && character.CharacterState != CharacterState.NotActionable
             && character.CharacterState != CharacterState.ActionRestricted
             && character.CharacterState != CharacterState.BattleRestricted
-            && character.CharacterState != CharacterState.SkillRestricted;
+            // 技能受限时，Reward 类型的技能不受限制
+            && (character.CharacterState != CharacterState.SkillRestricted || skill.Source == SkillSource.Reward);
         }
 
         // 检查角色是否能使用某个物品（基于状态）

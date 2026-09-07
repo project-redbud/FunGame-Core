@@ -950,9 +950,11 @@ namespace FunGame.Core.Model.Queue
                             timeLapseCtx.Elapsed = effect.RemainDuration;
                             FireEffect(effect, nameof(Effect.OnTimeElapsed), e => e.OnTimeElapsed(timeLapseCtx), character);
                             effect.RemainDuration = 0;
-                            character.Effects.Remove(effect);
-                            FireEffect(effect, nameof(Effect.OnEffectLost), e => e.OnEffectLost(hookCtx), character);
-                            WriteLine($"[ {character} ] 失去了 [ {effect.Name} ] 效果。");
+                            if (character.Effects.Remove(effect))
+                            {
+                                FireEffect(effect, nameof(Effect.OnEffectLost), e => e.OnEffectLost(hookCtx), character);
+                                WriteLine($"[ {character} ] 失去了 [ {effect.Name} ] 效果。");
+                            }
                         }
                         else
                         {
@@ -1310,16 +1312,17 @@ namespace FunGame.Core.Model.Queue
                             }
                             else if (character.CharacterState == CharacterState.SkillRestricted)
                             {
-                                // 技能受限，无法使用技能，可以普通攻击，可以使用物品
-                                skills.Clear();
+                                // 技能受限，无法使用常规技能，但战斗内临时获得的技能不受限制；可以普通攻击，可以使用物品
+                                skills = [.. skills.Where(s => s.Source == SkillSource.Reward)];
+                                bool canCastRewardSkill = skills.Count > 0;
                                 if (canUseItem)
                                 {
-                                    pCastSkill = 0;
+                                    if (!canCastRewardSkill) pCastSkill = 0;
                                 }
                                 else
                                 {
                                     pUseItem = 0;
-                                    pCastSkill = 0;
+                                    if (!canCastRewardSkill) pCastSkill = 0;
                                 }
                             }
                             else if (character.CharacterState == CharacterState.AttackRestricted)
@@ -1512,10 +1515,13 @@ namespace FunGame.Core.Model.Queue
                     }
                     else if (type == CharacterActionType.PreCastSkill)
                     {
+                        // 技能受限时，若可用技能均为战斗内临时获得的技能，则不受限制
+                        bool skillRestrictedBlocked = character.CharacterState == CharacterState.SkillRestricted &&
+                            !(skills.Count > 0 && skills.TrueForAll(s => s.Source == SkillSource.Reward));
                         if (!forceAction && (character.CharacterState == CharacterState.NotActionable ||
                             character.CharacterState == CharacterState.ActionRestricted ||
                             character.CharacterState == CharacterState.BattleRestricted ||
-                            character.CharacterState == CharacterState.SkillRestricted))
+                            skillRestrictedBlocked))
                         {
                             if (IsDebug) WriteLine($"[ {character} ] 的状态为：{CharacterSet.GetCharacterState(character.CharacterState)}，无法释放技能！");
                         }
@@ -2187,9 +2193,11 @@ namespace FunGame.Core.Model.Queue
                     if (effect.RemainDurationTurn <= 0)
                     {
                         effect.RemainDurationTurn = 0;
-                        character.Effects.Remove(effect);
-                        FireEffect(effect, nameof(Effect.OnEffectLost), e => e.OnEffectLost(hookCtx), character);
-                        WriteLine($"[ {character} ] 失去了 [ {effect.Name} ] 效果。");
+                        if (character.Effects.Remove(effect))
+                        {
+                            FireEffect(effect, nameof(Effect.OnEffectLost), e => e.OnEffectLost(hookCtx), character);
+                            WriteLine($"[ {character} ] 失去了 [ {effect.Name} ] 效果。");
+                        }
                     }
                 }
             }
@@ -4714,6 +4722,7 @@ namespace FunGame.Core.Model.Queue
                         if (effect.RemainDuration <= 0)
                         {
                             effect.RemainDuration = 0;
+                            remove = true;
                         }
                     }
                     else if (effect.RemainDurationTurn > 0)
@@ -4723,11 +4732,11 @@ namespace FunGame.Core.Model.Queue
                         if (effect.RemainDurationTurn <= 0)
                         {
                             effect.RemainDurationTurn = 0;
+                            remove = true;
                         }
                     }
-                    if (remove)
+                    if (remove && character.Effects.Remove(effect))
                     {
-                        character.Effects.Remove(effect);
                         FireEffect(effect, nameof(Effect.OnEffectLost), e => e.OnEffectLost(new HookContext(this, character)), character);
                         description += $"\r\n[ {character} ] 失去了 [ {effect.Name} ] 效果。";
                     }
