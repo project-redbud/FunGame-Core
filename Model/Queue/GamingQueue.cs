@@ -4229,6 +4229,7 @@ namespace FunGame.Core.Model.Queue
                     skill.GamingQueue = this;
                     skill.Character = character;
                     skill.Level = 1;
+                    skill.Source = SkillSource.Reward;
                     LastRound.RoundRewards.Add(skill);
                     WriteLine($"[ {character} ] 获得了回合奖励！{skill.Description}".Trim());
                     if (skill.IsActive)

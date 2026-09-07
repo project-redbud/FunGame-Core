@@ -101,13 +101,18 @@ namespace FunGame.Core.Entity
         {
             get
             {
-                return Math.Max(1, _level);
+                return Math.Max(1, _level + ExLevel);
             }
             set
             {
                 _level = Math.Min(Math.Max(1, value), GameplayEquilibriumConstant.MaxNormalAttackLevel);
             }
         }
+
+        /// <summary>
+        /// 额外等级
+        /// </summary>
+        public int ExLevel { get; set; } = 0;
 
         /// <summary>
         /// 是否是魔法伤害

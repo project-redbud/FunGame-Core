@@ -19,6 +19,9 @@ namespace FunGame.Core.Library.Common.JsonConverter
                 case nameof(NormalAttack.Level):
                     result.Level = reader.GetInt32();
                     break;
+                case nameof(NormalAttack.ExLevel):
+                    result.ExLevel = reader.GetInt32();
+                    break;
                 case nameof(NormalAttack.ExDamage):
                     result.ExDamage = reader.GetDouble();
                     break;
@@ -48,6 +51,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
             writer.WriteStartObject();
 
             writer.WriteNumber(nameof(NormalAttack.Level), value.Level);
+            if (value.ExLevel > 0) writer.WriteNumber(nameof(NormalAttack.ExLevel), value.ExLevel);
             writer.WriteNumber(nameof(NormalAttack.ExDamage), value.ExDamage);
             writer.WriteNumber(nameof(NormalAttack.ExDamage2), value.ExDamage2);
             writer.WriteNumber(nameof(NormalAttack.ExHardnessTime), value.ExHardnessTime);

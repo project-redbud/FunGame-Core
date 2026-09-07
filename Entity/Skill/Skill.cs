@@ -92,6 +92,27 @@ namespace FunGame.Core.Entity
         public SkillType SkillType { get; set; } = SkillType.Passive;
 
         /// <summary>
+        /// 技能来源，决定核心定位战斗天赋的等级加成是否作用于此技能
+        /// <para>由装配入口统一盖戳（<see cref="AddSkillToCharacter"/> 等）</para>
+        /// </summary>
+        public SkillSource Source { get; set; } = SkillSource.None;
+
+        /// <summary>
+        /// 学习此技能所需的流派（职业技能池的前置条件），null 表示无要求
+        /// </summary>
+        public SubClass? RequiredSubClass { get; set; } = null;
+
+        /// <summary>
+        /// 学习此技能所需达标的属性类型，null 表示无要求
+        /// </summary>
+        public PrimaryAttribute? RequiredAttribute { get; set; } = null;
+
+        /// <summary>
+        /// 学习此技能所需达标的属性值，仅当 <see cref="RequiredAttribute"/> 不为 null 时生效
+        /// </summary>
+        public double RequiredAttributeValue { get; set; } = 0;
+
+        /// <summary>
         /// 是否是主动技能 [ 此项为高优先级 ]
         /// </summary>
         public bool IsActive => SkillType != SkillType.Passive;
@@ -869,6 +890,11 @@ namespace FunGame.Core.Entity
             if (Level > 0)
             {
                 Character = character;
+                // 来源兜底：调用方未标注时，装备的主动技能按类型判定（其余类型无法区分，保持 None）
+                if (Source == SkillSource.None && SkillType == SkillType.Item)
+                {
+                    Source = SkillSource.Item;
+                }
                 HookContext ctx = new(GamingQueue, Character);
                 foreach (Effect e in AddPassiveEffectToCharacter())
                 {
@@ -1080,6 +1106,10 @@ namespace FunGame.Core.Entity
             skill.DispelDescription = skillDefined.DispelDescription;
             skill.ExemptionDescription = skillDefined.ExemptionDescription;
             skill.SkillType = skillDefined.SkillType;
+            skill.Source = skillDefined.Source;
+            skill.RequiredSubClass = skillDefined.RequiredSubClass;
+            skill.RequiredAttribute = skillDefined.RequiredAttribute;
+            skill.RequiredAttributeValue = skillDefined.RequiredAttributeValue;
             skill.MPCost = skillDefined.MPCost;
             skill.CastTime = skillDefined.CastTime;
             skill.EPCost = skillDefined.EPCost;

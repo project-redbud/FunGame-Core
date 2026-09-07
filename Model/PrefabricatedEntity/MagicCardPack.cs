@@ -106,10 +106,12 @@ namespace FunGame.Core.Model.PrefabricatedEntity
             }
             if (CourageCommand != null)
             {
+                CourageCommand.Source = SkillSource.MagicCardPack;
                 character.Skills.Add(CourageCommand);
             }
             if (Soulbound != null)
             {
+                Soulbound.Source = SkillSource.MagicCardPack;
                 character.Skills.Add(Soulbound);
             }
         }

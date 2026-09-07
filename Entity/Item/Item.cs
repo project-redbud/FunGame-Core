@@ -249,6 +249,10 @@ namespace FunGame.Core.Entity
             {
                 if (Character != null && skill.IsMagic && skill.Level > 0)
                 {
+                    if (skill.Source == SkillSource.None)
+                    {
+                        skill.Source = SkillSource.MagicCardPack;
+                    }
                     Character.Skills.Add(skill);
                 }
             }

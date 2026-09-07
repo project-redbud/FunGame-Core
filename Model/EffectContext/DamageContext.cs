@@ -1,7 +1,6 @@
 ﻿using FunGame.Core.Entity;
 using FunGame.Core.Interface.Base;
 using FunGame.Core.Library.Constant;
-using FunGame.Core.Model.EffectResult;
 
 namespace FunGame.Core.Model.EffectContext
 {

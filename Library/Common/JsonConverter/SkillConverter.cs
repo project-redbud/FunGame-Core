@@ -41,6 +41,9 @@ namespace FunGame.Core.Library.Common.JsonConverter
                 case nameof(Skill.SkillType):
                     result.SkillType = (SkillType)reader.GetInt32();
                     break;
+                case nameof(Skill.Source):
+                    result.Source = (SkillSource)reader.GetInt32();
+                    break;
                 case nameof(Skill.Level):
                     result.Level = reader.GetInt32();
                     break;
@@ -153,6 +156,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
                 JsonSerializer.Serialize(writer, value.AssociatedItemGuid, options);
             }
             writer.WriteNumber(nameof(Skill.SkillType), (int)value.SkillType);
+            if (value.Source != SkillSource.None) writer.WriteNumber(nameof(Skill.Source), (int)value.Source);
             writer.WriteString(nameof(Skill.Description), value.Description);
             if (value.GeneralDescription.Length > 0) writer.WriteString(nameof(Skill.GeneralDescription), value.GeneralDescription);
             if (value.Slogan.Length > 0) writer.WriteString(nameof(Skill.Slogan), value.Slogan);

@@ -1,4 +1,5 @@
 ﻿using FunGame.Core.Interface.Entity;
+using FunGame.Core.Library.Constant;
 
 namespace FunGame.Core.Entity
 {
@@ -46,6 +47,48 @@ namespace FunGame.Core.Entity
         /// 职业爆发技
         /// </summary>
         public HashSet<Skill> SuperSkills { get; set; } = [];
+
+        /// <summary>
+        /// 战斗天赋池，按角色定位索引
+        /// <para>战斗天赋绑定于职业而非流派：定位由已选流派提供，规划系统再由流派 <see cref="SubClass.Class"/> 反查所属职业，从此池取对应定位的天赋</para>
+        /// </summary>
+        public Dictionary<RoleType, HashSet<Skill>> CombatTalents { get; set; } = [];
+
+        /// <summary>
+        /// 复制技能并保留等级状态
+        /// <para>职业记录复制需要完整状态：基础等级写入副本基础，突破加成独立保留</para>
+        /// </summary>
+        internal static Skill CopySkillState(Skill skill)
+        {
+            Skill copy = skill.Copy();
+            copy.Level = Math.Max(0, skill.Level - skill.ExLevel);
+            copy.ExLevel = skill.ExLevel;
+            return copy;
+        }
+
+        /// <summary>
+        /// 复制职业定义作为玩家职业记录
+        /// <para>技能实例同步深拷贝，职业记录之间互不共享</para>
+        /// </summary>
+        /// <returns>职业记录的副本</returns>
+        public Class Copy()
+        {
+            Class copy = new()
+            {
+                Id = Id,
+                Name = Name,
+                Level = Level,
+                Skills = [.. Skills.Select(CopySkillState)],
+                Magics = [.. Magics.Select(CopySkillState)],
+                PassiveSkills = [.. PassiveSkills.Select(CopySkillState)],
+                SuperSkills = [.. SuperSkills.Select(CopySkillState)]
+            };
+            foreach (KeyValuePair<RoleType, HashSet<Skill>> kv in CombatTalents)
+            {
+                copy.CombatTalents[kv.Key] = [.. kv.Value.Select(CopySkillState)];
+            }
+            return copy;
+        }
 
         public override bool Equals(IBaseEntity? other)
         {
