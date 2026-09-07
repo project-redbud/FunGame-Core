@@ -1,4 +1,8 @@
-﻿/**
+﻿
+using FunGame.Core.Controller;
+using FunGame.Core.Model.Framework;
+
+/**
  * 此文件保存Type（类型）的枚举
  */
 namespace FunGame.Core.Library.Constant
@@ -938,6 +942,42 @@ namespace FunGame.Core.Library.Constant
         TextInput,
         NumberInput,
         Custom
+    }
+
+    /// <summary>
+    /// 询问答复的来源，用于日志与回放时归因
+    /// </summary>
+    public enum InquiryResponseSource
+    {
+        /// <summary>
+        /// 未设置
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// 外部事件（玩家或服务器权威）给出的答复
+        /// </summary>
+        External,
+
+        /// <summary>
+        /// 特效钩子 OnCharacterInquiry 给出的答复
+        /// </summary>
+        Effect,
+
+        /// <summary>
+        /// 自定义决策器（<see cref="InquiryOptions.FallbackResolver"/>）给出的答复
+        /// </summary>
+        Custom,
+
+        /// <summary>
+        /// AI 控制器 <see cref="AIController"/> 给出的答复
+        /// </summary>
+        AI,
+
+        /// <summary>
+        /// 内置默认规则，或答复校验失败后的回退
+        /// </summary>
+        Default
     }
 
     public enum PositionType

@@ -86,6 +86,9 @@ namespace FunGame.Core.Library.Common.JsonConverter
                 case nameof(ActionRecord.Messages):
                     result.Messages.AddRange(JsonService.GetObject<List<string>>(ref reader, options) ?? []);
                     break;
+                case nameof(ActionRecord.Inquiries):
+                    result.Inquiries.AddRange(InquiryRecordHelper.ReadList(ref reader, options));
+                    break;
                 case nameof(ActionRecord.IsSuccess):
                     result.IsSuccess = reader.GetBoolean();
                     break;
@@ -151,7 +154,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
             writer.WriteStartObject();
             writer.WriteNumber(nameof(ActionRecord.Round), value.Round);
             // 收集所有涉及的角色引用（含仅出现在结果字典 key 中的角色，如反弹/反击伤害目标）
-            List<Character> allCharacters = [value.Actor, .. value.Targets, .. value.Damages.Keys, .. value.Heals.Keys, .. value.IsCritical.Keys, .. value.IsEvaded.Keys, .. value.IsImmune.Keys];
+            List<Character> allCharacters = [value.Actor, .. value.Targets, .. value.Damages.Keys, .. value.Heals.Keys, .. value.IsCritical.Keys, .. value.IsEvaded.Keys, .. value.IsImmune.Keys, .. value.Inquiries.Select(i => i.Character)];
             allCharacters.AddRange([.. value.ApplyEffects.Keys]);
             allCharacters = [.. allCharacters.Where(c => c != null && c.Guid != Guid.Empty).DistinctBy(c => c.Guid)];
             writer.WritePropertyName(AllCharactersProperty);
@@ -190,6 +193,11 @@ namespace FunGame.Core.Library.Common.JsonConverter
             JsonSerializer.Serialize(writer, value.ApplyEffects.ToDictionary(kv => kv.Key.Guid, kv => kv.Value), options);
             writer.WritePropertyName(nameof(ActionRecord.Messages));
             JsonSerializer.Serialize(writer, value.Messages, options);
+            if (value.Inquiries.Count > 0)
+            {
+                writer.WritePropertyName(nameof(ActionRecord.Inquiries));
+                InquiryRecordHelper.WriteList(writer, value.Inquiries, options);
+            }
             writer.WriteBoolean(nameof(ActionRecord.IsSuccess), value.IsSuccess);
             writer.WriteString(nameof(ActionRecord.FailReason), value.FailReason);
             writer.WriteNumber(nameof(ActionRecord.CastTime), value.CastTime);

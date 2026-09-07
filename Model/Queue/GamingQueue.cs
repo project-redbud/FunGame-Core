@@ -4891,7 +4891,7 @@ namespace FunGame.Core.Model.Queue
         /// </summary>
         /// <param name="character"></param>
         /// <param name="options"></param>
-        /// <returns></returns>
+        /// <returns>非 null 的答复，参见 <see cref="InquiryResponse.Source"/> 区分其来源</returns>
         public InquiryResponse Inquiry(Character character, InquiryOptions options)
         {
             if (!_decisionPoints.TryGetValue(character, out DecisionPoints? dp) || dp is null)
@@ -4900,10 +4900,77 @@ namespace FunGame.Core.Model.Queue
                 _decisionPoints[character] = dp;
             }
             InquiryContext inquiryCtx = new(this, character, options) { DP = dp };
-            InquiryResponse response = OnCharacterInquiryEvent(inquiryCtx);
-            inquiryCtx.Response = response;
+
+            // 外部事件
+            inquiryCtx.Response = OnCharacterInquiryEvent(inquiryCtx);
+            inquiryCtx.Response?.Source = InquiryResponseSource.External;
+
+            // 特效钩子：可补充或改写答复，优先级高于外部事件
+            InquiryResponse? beforeEffectHooks = inquiryCtx.Response;
             TriggerOnCharacterInquiry(character, inquiryCtx);
-            return inquiryCtx.Response;
+            if (inquiryCtx.Response != null && !ReferenceEquals(inquiryCtx.Response, beforeEffectHooks))
+            {
+                inquiryCtx.Response.Source = InquiryResponseSource.Effect;
+            }
+
+            // 兜底阶段：自定义决策器 → AI → 内置默认规则
+            InquiryResponse response = inquiryCtx.Response ?? ResolveInquiryFallback(inquiryCtx);
+
+            // 合法性校验，非法则回退到内置默认规则
+            if (!IsInquiryResponseValid(response, options))
+            {
+                response = new InquiryResponse(options, InquiryResponseSource.Default);
+            }
+
+            inquiryCtx.Response = response;
+            // 记录询问概要，供回放与日志展示：回合记录汇总一份，当前操作记录再绑一份
+            LastRound.AddInquiry(character, options, response);
+            if (_currentAction is ActionRecord action)
+            {
+                action.AddInquiry(character, options, response);
+            }
+            return response;
+        }
+
+        /// <summary>
+        /// 询问的兜底阶段：外部事件与特效钩子都未给出答复时，决定最终结果
+        /// <para>依次为：自定义决策器 <see cref="InquiryOptions.FallbackResolver"/> → AI 控制器 → 内置默认规则</para>
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <returns>非 null 的答复</returns>
+        private static InquiryResponse ResolveInquiryFallback(InquiryContext ctx)
+        {
+            // 自定义决策器：模组或上层提供，可用于桥接外部 AI 逻辑
+            if (ctx.Options.FallbackResolver?.Invoke(ctx) is InquiryResponse custom)
+            {
+                custom.Source = InquiryResponseSource.Custom;
+                return custom;
+            }
+
+            // AI 控制器接入点
+            // todo
+
+            return new InquiryResponse(ctx.Options, InquiryResponseSource.Default);
+        }
+
+        /// <summary>
+        /// 校验答复是否符合询问选项的结构约束
+        /// <para>选择类要求所有选项都来自 <see cref="InquiryOptions.Choices"/>；数值类要求落在 <see cref="InquiryOptions.MinNumberValue"/> 与 <see cref="InquiryOptions.MaxNumberValue"/> 之间。</para>
+        /// </summary>
+        /// <param name="response">待校验的答复</param>
+        /// <param name="options">发起询问时的选项</param>
+        /// <returns>合法返回 true；非法则应由调用方回退到默认答复</returns>
+        private static bool IsInquiryResponseValid(InquiryResponse response, InquiryOptions options)
+        {
+            // 明确取消属于有效答复，不参与结构性校验
+            if (response.Cancel) return true;
+
+            return options.InquiryType switch
+            {
+                InquiryType.Choice or InquiryType.MultipleChoice or InquiryType.BinaryChoice => response.Choices.Count > 0 && response.Choices.All(options.Choices.ContainsKey),
+                InquiryType.NumberInput => options.MaxNumberValue <= options.MinNumberValue || (response.NumberResult >= options.MinNumberValue && response.NumberResult <= options.MaxNumberValue),
+                _ => true,
+            };
         }
 
         /// <summary>
@@ -5375,7 +5442,11 @@ namespace FunGame.Core.Model.Queue
             CharacterDecisionCompletedEvent?.Invoke(ctx);
         }
 
-        public delegate InquiryResponse CharacterInquiryEventHandler(InquiryContext ctx);
+        /// <summary>
+        /// 角色询问反应事件处理器
+        /// <para>返回 null 表示无人应答，交由后续的兜底阶段处理</para>
+        /// </summary>
+        public delegate InquiryResponse? CharacterInquiryEventHandler(InquiryContext ctx);
         /// <summary>
         /// 角色询问反应事件
         /// </summary>
@@ -5384,10 +5455,10 @@ namespace FunGame.Core.Model.Queue
         /// 角色询问反应事件
         /// </summary>
         /// <param name="ctx"></param>
-        /// <returns></returns>
-        protected InquiryResponse OnCharacterInquiryEvent(InquiryContext ctx)
+        /// <returns>无人应答（无订阅者或订阅者返回 null）时为 null</returns>
+        protected InquiryResponse? OnCharacterInquiryEvent(InquiryContext ctx)
         {
-            return CharacterInquiryEvent?.Invoke(ctx) ?? new(ctx.Options);
+            return CharacterInquiryEvent?.Invoke(ctx);
         }
 
         #endregion
