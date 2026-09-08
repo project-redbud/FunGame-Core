@@ -113,6 +113,12 @@ namespace FunGame.Core.Model.Framework
         public List<string> Messages { get; } = [];
 
         /// <summary>
+        /// 本次操作期间发生的全部询问概要（按发生顺序排列）
+        /// <para>由队列在每次询问取得答复后写入；同一条记录也会汇总到回合级 <see cref="RoundRecord.Inquiries"/></para>
+        /// </summary>
+        public List<InquiryRecord> Inquiries { get; } = [];
+
+        /// <summary>
         /// 操作是否成功执行（决策点不足/配额超限等失败时为 false）
         /// </summary>
         public bool IsSuccess { get; set; } = true;
@@ -147,6 +153,17 @@ namespace FunGame.Core.Model.Framework
             {
                 ApplyEffects.TryAdd(character, [.. types]);
             }
+        }
+
+        /// <summary>
+        /// 记录本次操作期间发生的一次询问及其答复
+        /// </summary>
+        /// <param name="character">被询问的角色</param>
+        /// <param name="options">发起询问时的选项</param>
+        /// <param name="response">最终答复</param>
+        public void AddInquiry(Character character, InquiryOptions options, InquiryResponse response)
+        {
+            Inquiries.Add(new(character, options, response));
         }
 
         /// <summary>
@@ -199,6 +216,12 @@ namespace FunGame.Core.Model.Framework
             {
                 builder.AppendLine();
                 builder.Append(string.Join("\r\n", Messages));
+            }
+
+            foreach (InquiryRecord inquiry in Inquiries)
+            {
+                builder.AppendLine();
+                builder.Append(inquiry.ToString());
             }
 
             return builder.ToString();
@@ -258,6 +281,8 @@ namespace FunGame.Core.Model.Framework
                 snapshot.ApplyEffects[kv.Key] = [.. kv.Value];
             }
             snapshot.Messages.AddRange(Messages);
+            // 询问概要写入后不再修改，直接共享元素引用即可
+            snapshot.Inquiries.AddRange(Inquiries);
             return snapshot;
         }
 

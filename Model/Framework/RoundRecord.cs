@@ -45,6 +45,12 @@ namespace FunGame.Core.Model.Framework
         public List<string> OtherMessages { get; set; } = [];
 
         /// <summary>
+        /// 本回合内发生的全部询问概要（按发生顺序排列）
+        /// <para>由队列在每次询问取得答复后写入，参见 <see cref="InquiryRecord"/></para>
+        /// </summary>
+        public List<InquiryRecord> Inquiries { get; } = [];
+
+        /// <summary>
         /// 全角色清单（开局时由队列写入所有参与角色，供回放端在开局获取完整角色列表；后续回合由序列化时动态收集出现的角色）
         /// </summary>
         public List<Character> AllCharacters { get; set; } = [];
@@ -86,6 +92,17 @@ namespace FunGame.Core.Model.Framework
             }
         }
 
+        /// <summary>
+        /// 记录一次询问及其答复到本回合
+        /// </summary>
+        /// <param name="character">被询问的角色</param>
+        /// <param name="options">发起询问时的选项</param>
+        /// <param name="response">最终答复</param>
+        public void AddInquiry(Character character, InquiryOptions options, InquiryResponse response)
+        {
+            Inquiries.Add(new(character, options, response));
+        }
+
         public override string ToString()
         {
             StringBuilder builder = new();
@@ -109,6 +126,12 @@ namespace FunGame.Core.Model.Framework
             foreach (KeyValuePair<Character, List<EffectType>> kv in ApplyEffects)
             {
                 builder.AppendLine($"[ {kv.Key} ] 被施加了 [ {string.Join(" ] / [ ", kv.Value.Select(t => SkillSet.GetEffectTypeName(t)))} ]");
+            }
+
+            // 本回合发生的询问及其答复
+            foreach (InquiryRecord inquiry in Inquiries)
+            {
+                builder.AppendLine(inquiry.ToString());
             }
 
             if (CastTime > 0)
@@ -232,6 +255,11 @@ namespace FunGame.Core.Model.Framework
             foreach (ActionRecord action in Actions)
             {
                 snapshot.Actions.Add(action.Snapshot());
+            }
+            // 询问概要写入后不再修改，直接共享元素引用即可
+            foreach (InquiryRecord inquiry in Inquiries)
+            {
+                snapshot.Inquiries.Add(inquiry);
             }
             // 检查点列表拷贝（元素共享，防快照后对列表结构的修改）
             if (Checkpoint != null)

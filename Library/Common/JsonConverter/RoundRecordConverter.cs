@@ -190,6 +190,9 @@ namespace FunGame.Core.Library.Common.JsonConverter
                     List<string> messages = JsonService.GetObject<List<string>>(ref reader, options) ?? [];
                     result.OtherMessages.AddRange(messages);
                     break;
+                case nameof(RoundRecord.Inquiries):
+                    result.Inquiries.AddRange(InquiryRecordHelper.ReadList(ref reader, options));
+                    break;
                 case nameof(RoundRecord.Actions):
                     result.Actions.AddRange(JsonService.GetObject<List<ActionRecord>>(ref reader, options) ?? []);
                     break;
@@ -227,7 +230,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
             }
             else
             {
-                allCharacters = [value.Actor, .. value.Targets.Values.SelectMany(c => c), .. value.Assists, .. value.Respawns];
+                allCharacters = [value.Actor, .. value.Targets.Values.SelectMany(c => c), .. value.Assists, .. value.Respawns, .. value.Inquiries.Select(i => i.Character)];
                 allCharacters.AddRange([.. value.Damages.Keys, .. value.Heals.Keys, .. value.Effects.Keys, .. value.ApplyEffects.Keys, .. value.IsCritical.Keys, .. value.IsEvaded.Keys, .. value.IsImmune.Keys, .. value.RespawnCountdowns.Keys]);
                 allCharacters = [.. allCharacters.Where(c => c != null && c.Guid != Guid.Empty).DistinctBy(c => c.Guid)];
             }
@@ -312,6 +315,11 @@ namespace FunGame.Core.Library.Common.JsonConverter
             writer.WriteEndArray();
             writer.WritePropertyName(nameof(RoundRecord.OtherMessages));
             JsonSerializer.Serialize(writer, value.OtherMessages, options);
+            if (value.Inquiries.Count > 0)
+            {
+                writer.WritePropertyName(nameof(RoundRecord.Inquiries));
+                InquiryRecordHelper.WriteList(writer, value.Inquiries, options);
+            }
             writer.WritePropertyName(nameof(RoundRecord.Actions));
             JsonSerializer.Serialize(writer, value.Actions, options);
             writer.WritePropertyName(nameof(RoundRecord.Checkpoint));
