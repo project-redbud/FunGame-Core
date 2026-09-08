@@ -648,7 +648,7 @@ namespace FunGame.Core.Entity
             foreach (Character selectedCharacter in selected)
             {
                 Grid? centerGrid = map.GetCharacterCurrentGrid(selectedCharacter);
-                if (centerGrid == null || centerGrid == Grid.Empty)
+                if (centerGrid is null || centerGrid == Grid.Empty)
                     continue;
 
                 // 使用曼哈顿距离获取以主要目标为中心、范围内的所有格子（包括中心格子本身）
@@ -722,7 +722,7 @@ namespace FunGame.Core.Entity
             int range = CanSelectTargetRange;
             List<Grid> targets = [];
 
-            if (GamingQueue?.Map == null || targetGrid == Grid.Empty || range < 0)
+            if (GamingQueue?.Map is null || targetGrid == Grid.Empty || range < 0)
             {
                 return targets;
             }

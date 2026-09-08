@@ -132,7 +132,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
     {
         public static void Write(Utf8JsonWriter writer, Skill? skill)
         {
-            if (skill == null)
+            if (skill is null)
             {
                 // null 技能（如普通攻击的操作记录）写 JSON null，避免占位对象被展示端误读为真实技能
                 writer.WriteNullValue();

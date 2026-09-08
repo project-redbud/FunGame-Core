@@ -293,7 +293,7 @@ namespace FunGame.Core.Api
                 };
                 string json = JsonSerializer.Serialize(payload, _serializerOptions);
                 using HttpResponseMessage? response = await PostAsync(json).ConfigureAwait(false);
-                if (response == null || !response.IsSuccessStatusCode)
+                if (response is null || !response.IsSuccessStatusCode)
                 {
                     return;
                 }
@@ -333,7 +333,7 @@ namespace FunGame.Core.Api
             {
                 return;
             }
-            if (!string.IsNullOrEmpty(Secret) && _signature == null)
+            if (!string.IsNullOrEmpty(Secret) && _signature is null)
             {
                 // 签名验证成功之前，其他所有的事件都不会外发
                 return;

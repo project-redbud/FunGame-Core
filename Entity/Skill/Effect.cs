@@ -696,7 +696,7 @@ namespace FunGame.Core.Entity
         {
             Character? target = ctx.Target;
             Effect? effect = ctx.Effect;
-            if (target == null || effect == null) return;
+            if (target is null || effect is null) return;
             bool isEnemy = ctx.IsEnemy;
             bool isDispel = false;
             // 先看特效整体是不是能被驱散的
@@ -1353,7 +1353,7 @@ namespace FunGame.Core.Entity
         /// <param name="types"></param>
         public void RecordCharacterApplyEffects(Character character, params List<EffectType> types)
         {
-            if (GamingQueue == null) return;
+            if (GamingQueue is null) return;
             GamingQueue.LastRound.AddApplyEffects(character, types);
             if (GamingQueue.CurrentAction is ActionRecord action)
             {

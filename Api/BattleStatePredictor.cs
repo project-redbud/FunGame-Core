@@ -23,14 +23,14 @@ namespace FunGame.Core.Api
             List<RoundRecord> ordered = [.. rounds.OrderBy(r => r.Round).DistinctBy(r => r.Round)];
             // 基准 = 目标回合之前（不含）的最近检查点，保证目标回合自身是检查点时仍以上一检查点为推算基准
             RoundRecord? baseRound = ordered.LastOrDefault(r => r.Round < targetRound && r.Checkpoint != null);
-            if (baseRound?.Checkpoint == null)
+            if (baseRound?.Checkpoint is null)
             {
                 return states;
             }
 
             foreach (CharacterStateSnapshot cp in baseRound.Checkpoint)
             {
-                if (cp.Character == null || cp.Character.Guid == Guid.Empty) continue;
+                if (cp.Character is null || cp.Character.Guid == Guid.Empty) continue;
                 states[cp.Character.Guid] = Copy(cp);
             }
 
@@ -98,7 +98,7 @@ namespace FunGame.Core.Api
         /// </summary>
         private static void ApplyAction(ActionRecord action, Dictionary<Guid, CharacterStateSnapshot> states)
         {
-            if (action.Actor == null || !states.TryGetValue(action.Actor.Guid, out CharacterStateSnapshot? actorState))
+            if (action.Actor is null || !states.TryGetValue(action.Actor.Guid, out CharacterStateSnapshot? actorState))
             {
                 return;
             }

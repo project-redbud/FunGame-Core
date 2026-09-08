@@ -358,7 +358,9 @@ namespace FunGame.Core.Model.Queue
         /// 创建一个团队游戏队列
         /// </summary>
         /// <param name="writer"></param>
-        public TeamGamingQueue(Action<string>? writer = null) : base(writer)
+        /// <param name="map">游戏地图</param>
+        /// <param name="enableAI">是否启用 AI 控制器</param>
+        public TeamGamingQueue(Action<string>? writer = null, GameMap? map = null, bool enableAI = true) : base(writer, map, enableAI)
         {
 
         }
@@ -368,7 +370,9 @@ namespace FunGame.Core.Model.Queue
         /// </summary>
         /// <param name="characters"></param>
         /// <param name="writer"></param>
-        public TeamGamingQueue(List<Character> characters, Action<string>? writer = null) : base(characters, writer)
+        /// <param name="map">游戏地图</param>
+        /// <param name="enableAI">是否启用 AI 控制器</param>
+        public TeamGamingQueue(List<Character> characters, Action<string>? writer = null, GameMap? map = null, bool enableAI = true) : base(characters, writer, map, enableAI)
         {
 
         }
