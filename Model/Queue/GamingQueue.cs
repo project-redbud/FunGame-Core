@@ -935,10 +935,14 @@ namespace FunGame.Core.Model.Queue
                         {
                             source = effect.Source.Master;
                         }
-                        _stats[source].ControlTime += timeToReduce;
-                        if (character.Master is null)
+                        Character controlled = character.Master ?? character;
+                        if (source != controlled)
                         {
-                            _assistDetail[source][character, TotalTime] += 1;
+                            _stats[source].ControlTime += timeToReduce;
+                            if (character.Master is null)
+                            {
+                                _assistDetail[source][character, TotalTime] += 1;
+                            }
                         }
                     }
 
