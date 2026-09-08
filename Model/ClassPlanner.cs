@@ -1,39 +1,10 @@
 using FunGame.Core.Entity;
 using FunGame.Core.Library.Common.Event;
 using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.Framework;
 
-namespace FunGame.Core.Model.Framework
+namespace FunGame.Core.Model
 {
-    /// <summary>
-    /// 职业规划操作结果
-    /// </summary>
-    /// <param name="success"></param>
-    /// <param name="message"></param>
-    /// <param name="data"></param>
-    public class ClassPlanResult(bool success, string message, Dictionary<string, object>? data = null)
-    {
-        /// <summary>
-        /// 是否成功
-        /// </summary>
-        public bool Success { get; } = success;
-
-        /// <summary>
-        /// 结果消息（失败原因 / 描述）
-        /// </summary>
-        public string Message { get; } = message;
-
-        /// <summary>
-        /// 附加数据（供上层 / 事件消费）
-        /// </summary>
-        public Dictionary<string, object>? Data { get; } = data;
-
-        public static ClassPlanResult Ok(string message = "") => new(true, message);
-
-        public static ClassPlanResult Fail(string message) => new(false, message);
-
-        public static implicit operator bool(ClassPlanResult result) => result.Success;
-    }
-
     /// <summary>
     /// 职业规划系统：把「规划操作 → 校验 → 写入 <see cref="Character.Class"/>」收敛为带事件推送的入口
     /// </summary>
@@ -83,7 +54,7 @@ namespace FunGame.Core.Model.Framework
         /// <returns>结果</returns>
         public ClassPlanResult SelectClass(Class classDef, SubClass subClassDef)
         {
-            if (classDef == null || subClassDef == null)
+            if (classDef is null || subClassDef is null)
             {
                 return ClassPlanResult.Fail("职业与流派不能为空。");
             }
@@ -121,7 +92,7 @@ namespace FunGame.Core.Model.Framework
         /// <param name="record"><see cref="CharacterClass.Classes"/> 中的职业记录</param>
         public ClassPlanResult UpgradeClass(Class record)
         {
-            if (record == null || !Plan.Classes.Contains(record))
+            if (record is null || !Plan.Classes.Contains(record))
             {
                 return ClassPlanResult.Fail("职业记录不存在于当前计划中。");
             }
@@ -146,7 +117,7 @@ namespace FunGame.Core.Model.Framework
         /// <param name="roleTypes">新定位，去重后按序写入 First/Second/Third</param>
         public ClassPlanResult SelectRoleTypes(IEnumerable<RoleType> roleTypes)
         {
-            if (roleTypes == null)
+            if (roleTypes is null)
             {
                 return ClassPlanResult.Fail("定位列表不能为空。");
             }
@@ -184,7 +155,7 @@ namespace FunGame.Core.Model.Framework
         /// <param name="talent">天赋技能（来自职业天赋池的实例）</param>
         public ClassPlanResult LearnCombatTalent(RoleType roleType, Skill talent)
         {
-            if (talent == null)
+            if (talent is null)
             {
                 return ClassPlanResult.Fail("天赋不能为空。");
             }
@@ -350,7 +321,7 @@ namespace FunGame.Core.Model.Framework
         /// </summary>
         private void DeactivateTalent()
         {
-            if (Plan.CombatTalent == null)
+            if (Plan.CombatTalent is null)
             {
                 return;
             }
@@ -383,7 +354,7 @@ namespace FunGame.Core.Model.Framework
         /// <param name="message"></param>
         private void Raise(ClassPlanPhase phase, bool success, string message)
         {
-            if (Planned == null)
+            if (Planned is null)
             {
                 return;
             }

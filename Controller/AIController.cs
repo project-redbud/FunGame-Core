@@ -2,15 +2,45 @@
 using FunGame.Core.Entity;
 using FunGame.Core.Interface.Entity;
 using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.EffectContext;
 using FunGame.Core.Model.Framework;
 using FunGame.Core.Model.Queue;
 
 namespace FunGame.Core.Controller
 {
-    public class AIController(GamingQueue queue, GameMap map)
+    /// <summary>
+    /// AI 决策控制器
+    /// <para>为 AI 托管角色评估行动与目标，同时可在无外部答复时生成询问答复</para>
+    /// <para>战棋地图模式下基于格子射程与可移动格评估；非地图模式（<paramref name="map"/> 为 null）退化为无距离限制、不产生移动的评估</para>
+    /// </summary>
+    /// <param name="queue">所属的游戏队列</param>
+    /// <param name="map">战棋地图，非地图模式传 null</param>
+    public class AIController(GamingQueue queue, GameMap? map)
     {
         private readonly GamingQueue _queue = queue;
-        private readonly GameMap _map = map;
+        private readonly GameMap? _map = map;
+
+        /// <summary>
+        /// 控制器当前使用的地图，非地图模式为 null
+        /// </summary>
+        public GameMap? Map => _map;
+
+        /// <summary>
+        /// 是否处于战棋地图模式
+        /// </summary>
+        public bool IsMapMode => _map != null;
+
+        /// <summary>
+        /// 询问答复委托：模组可订阅 <see cref="ResolveInquiryEvent"/> 完全接管 AI 的询问答复
+        /// </summary>
+        /// <param name="ctx">询问上下文</param>
+        /// <returns>返回 null 表示不介入，交由内置的默认规则处理</returns>
+        public delegate InquiryResponse? ResolveInquiryDelegate(InquiryContext ctx);
+
+        /// <summary>
+        /// AI 询问答复事件：模组可根据询问内容自行给出答复
+        /// </summary>
+        public static event ResolveInquiryDelegate? ResolveInquiryEvent;
 
         public delegate double EvaluateSkillDelegate(Character character, Skill skill, List<Character> targets, double cost);
         public delegate double EvaluateNormalAttackDelegate(Character character, NormalAttack normalAttack, List<Character> targets);
@@ -28,8 +58,8 @@ namespace FunGame.Core.Controller
         /// </summary>
         /// <param name="character">当前行动的AI角色</param>
         /// <param name="dp">角色的决策点</param>
-        /// <param name="startGrid">角色的起始格子</param>
-        /// <param name="allPossibleMoveGrids">从起始格子可达的所有移动格子（包括起始格子本身）</param>
+        /// <param name="startGrid">角色的起始格子，非战棋模式下为 null</param>
+        /// <param name="allPossibleMoveGrids">从起始格子可达的所有移动格子（包括起始格子本身），非战棋模式下为空</param>
         /// <param name="availableSkills">角色所有可用的技能（已过滤CD和EP/MP）</param>
         /// <param name="availableItems">角色所有可用的物品（已过滤CD和EP/MP）</param>
         /// <param name="allEnemysInGame">场上所有敌人</param>
@@ -40,10 +70,19 @@ namespace FunGame.Core.Controller
         /// <param name="pCastSkill">释放技能的概率</param>
         /// <param name="pNormalAttack">普通攻击的概率</param>
         /// <returns>包含最佳行动的AIDecision对象</returns>
-        public AIDecision DecideAIAction(Character character, DecisionPoints dp, Grid startGrid, List<Grid> allPossibleMoveGrids,
+        public AIDecision DecideAIAction(Character character, DecisionPoints dp, Grid? startGrid, List<Grid> allPossibleMoveGrids,
             List<Skill> availableSkills, List<Item> availableItems, List<Character> allEnemysInGame, List<Character> allTeammatesInGame,
             List<Character> selectableEnemys, List<Character> selectableTeammates, double pUseItem, double pCastSkill, double pNormalAttack)
         {
+            // 战棋模式下必须知道角色所在格子才能评估，角色不在地图上时不参与决策
+            if (_map != null && startGrid is null)
+            {
+                return CreateDefaultDecision(startGrid);
+            }
+
+            // 非战棋模式没有格子概念，退化为一个虚拟格，保证至少完成一次决策计算
+            List<Grid> moveGrids = allPossibleMoveGrids.Count > 0 ? allPossibleMoveGrids : [startGrid ?? Grid.Empty];
+
             // 控制最大并发数
             int maxConcurrency = Math.Max(1, Environment.ProcessorCount / 2);
             SemaphoreSlim semaphore = new(maxConcurrency);
@@ -60,24 +99,18 @@ namespace FunGame.Core.Controller
             double normalizedPCastSkill = normalizedProbs[1];
             double normalizedPNormalAttack = normalizedProbs[2];
 
-            // 获取偏好行动类型
-            CharacterActionType? preferredAction = GetPreferredActionType(pUseItem, pCastSkill, pNormalAttack);
+            // 获取偏好行动类型（使用调整并归一化后的概率，与模组调整保持同一口径）
+            CharacterActionType? preferredAction = GetPreferredActionType(normalizedPUseItem, normalizedPCastSkill, normalizedPNormalAttack);
 
             // 初始化一个默认的“结束回合”决策作为基准
-            AIDecision bestDecision = new()
-            {
-                ActionType = CharacterActionType.EndTurn,
-                TargetMoveGrid = startGrid,
-                Targets = [],
-                Score = -1000.0
-            };
+            AIDecision bestDecision = CreateDefaultDecision(startGrid);
 
             // 候选决策
             ConcurrentBag<AIDecision> candidateDecisions = [];
 
             // 封装单个移动格子的决策计算逻辑为异步任务
             List<Task> decisionTasks = [];
-            foreach (Grid potentialMoveGrid in allPossibleMoveGrids)
+            foreach (Grid potentialMoveGrid in moveGrids)
             {
                 // 捕获循环变量（避免闭包陷阱）
                 Grid currentMoveGrid = potentialMoveGrid;
@@ -116,6 +149,7 @@ namespace FunGame.Core.Controller
                 bestDecision = candidateDecisions
                     .OrderByDescending(d => d.Score * d.ProbabilityWeight)
                     .FirstOrDefault() ?? bestDecision;
+                bestDecision.HasCandidate = true;
             }
 
             return bestDecision;
@@ -140,25 +174,22 @@ namespace FunGame.Core.Controller
         /// <param name="preferredAction"></param>
         /// <param name="candidateDecisions"></param>
         private void CalculateDecisionForGrid(
-            Character character, DecisionPoints dp, Grid startGrid, Grid potentialMoveGrid,
+            Character character, DecisionPoints dp, Grid? startGrid, Grid potentialMoveGrid,
             List<Skill> availableSkills, List<Item> availableItems, List<Character> allEnemysInGame, List<Character> allTeammatesInGame,
             List<Character> selectableEnemys, List<Character> selectableTeammates,
             double normalizedPUseItem, double normalizedPCastSkill, double normalizedPNormalAttack,
             CharacterActionType? preferredAction,
             ConcurrentBag<AIDecision> candidateDecisions)
         {
-            // 计算移动惩罚
-            int moveDistance = GameMap.CalculateManhattanDistance(startGrid, potentialMoveGrid);
+            // 计算移动惩罚（非战棋模式使用虚拟格，距离为 0）
+            int moveDistance = GameMap.CalculateManhattanDistance(startGrid ?? Grid.Empty, potentialMoveGrid);
             double movePenalty = moveDistance * 0.5;
 
             // 计算普通攻击决策
             if (normalizedPNormalAttack > 0 && CanCharacterNormalAttack(character, dp))
             {
-                List<Grid> normalAttackReachableGrids = _map.GetGridsByRange(potentialMoveGrid, character.ATR, true);
-                List<Character> normalAttackReachableEnemys = [.. allEnemysInGame.Where(c =>
-                    normalAttackReachableGrids.SelectMany(g => g.Characters).Contains(c)
-                    && !c.IsUnselectable
-                    && selectableEnemys.Contains(c)).Distinct()];
+                List<Grid> normalAttackReachableGrids = GetReachableGrids(potentialMoveGrid, character.ATR, true);
+                List<Character> normalAttackReachableEnemys = FilterReachableEnemies(normalAttackReachableGrids, allEnemysInGame, selectableEnemys);
 
                 if (normalAttackReachableEnemys.Count > 0)
                 {
@@ -166,7 +197,8 @@ namespace FunGame.Core.Controller
                     if (targets.Count > 0)
                     {
                         double currentScore = EvaluateNormalAttack(character, targets) - movePenalty;
-                        double probabilityWeight = 1.0 + (normalizedPNormalAttack * 0.3);
+                        // 概率权重直接采用归一化后的行动概率，使模组调整的概率真实影响排序
+                        double probabilityWeight = normalizedPNormalAttack;
                         AIDecision attackDecision = new()
                         {
                             ActionType = CharacterActionType.NormalAttack,
@@ -193,13 +225,14 @@ namespace FunGame.Core.Controller
                 {
                     if (CanCharacterUseSkill(character, skill, dp) && _queue.CheckCanCast(character, skill, out double cost))
                     {
-                        List<Grid> skillReachableGrids = _map.GetGridsByRange(potentialMoveGrid, skill.CastRange, true);
+                        List<Grid> skillReachableGrids = GetReachableGrids(potentialMoveGrid, skill.CastRange, true);
 
-                        if (skill.IsNonDirectional)
+                        // 非战棋模式没有格子中心可枚举，非指向性技能退化为按可选目标直接评估
+                        if (skill.IsNonDirectional && _map != null)
                         {
                             AIDecision? nonDirDecision = EvaluateNonDirectionalSkill(
                                 character, skill, potentialMoveGrid, skillReachableGrids,
-                                allEnemysInGame, allTeammatesInGame, cost);
+                                allEnemysInGame, allTeammatesInGame, cost, normalizedPCastSkill);
 
                             if (nonDirDecision != null)
                             {
@@ -213,13 +246,8 @@ namespace FunGame.Core.Controller
                         }
                         else
                         {
-                            List<Character> skillReachableEnemys = [.. allEnemysInGame.Where(c =>
-                                skillReachableGrids.SelectMany(g => g.Characters).Contains(c)
-                                && !c.IsUnselectable
-                                && selectableEnemys.Contains(c)).Distinct()];
-                            List<Character> skillReachableTeammates = [.. allTeammatesInGame.Where(c =>
-                                skillReachableGrids.SelectMany(g => g.Characters).Contains(c)
-                                && selectableTeammates.Contains(c)).Distinct()];
+                            List<Character> skillReachableEnemys = FilterReachableEnemies(skillReachableGrids, allEnemysInGame, selectableEnemys);
+                            List<Character> skillReachableTeammates = FilterReachableTeammates(skillReachableGrids, allTeammatesInGame, selectableTeammates);
 
                             if (skillReachableEnemys.Count > 0 || skillReachableTeammates.Count > 0)
                             {
@@ -227,7 +255,8 @@ namespace FunGame.Core.Controller
                                 if (targets.Count > 0)
                                 {
                                     double currentScore = EvaluateSkill(character, skill, targets, cost) - movePenalty;
-                                    double probabilityWeight = 1.0 + (normalizedPCastSkill * 0.3);
+                                    // 概率权重直接采用归一化后的行动概率，使模组调整的概率真实影响排序
+                                    double probabilityWeight = normalizedPCastSkill;
                                     AIDecision skillDecision = new()
                                     {
                                         ActionType = CharacterActionType.PreCastSkill,
@@ -258,13 +287,14 @@ namespace FunGame.Core.Controller
                     if (item.Skills.Active != null && CanCharacterUseItem(character, item, dp) && _queue.CheckCanCast(character, item.Skills.Active, out double cost))
                     {
                         Skill itemSkill = item.Skills.Active;
-                        List<Grid> itemSkillReachableGrids = _map.GetGridsByRange(potentialMoveGrid, itemSkill.CastRange, true);
+                        List<Grid> itemSkillReachableGrids = GetReachableGrids(potentialMoveGrid, itemSkill.CastRange, true);
 
-                        if (itemSkill.IsNonDirectional)
+                        // 非战棋模式没有格子中心可枚举，非指向性技能退化为按可选目标直接评估
+                        if (itemSkill.IsNonDirectional && _map != null)
                         {
                             AIDecision? nonDirDecision = EvaluateNonDirectionalSkill(
                                 character, itemSkill, potentialMoveGrid, itemSkillReachableGrids,
-                                allEnemysInGame, allTeammatesInGame, cost);
+                                allEnemysInGame, allTeammatesInGame, cost, normalizedPUseItem);
 
                             if (nonDirDecision != null)
                             {
@@ -278,13 +308,8 @@ namespace FunGame.Core.Controller
                         }
                         else
                         {
-                            List<Character> itemSkillReachableEnemys = [.. allEnemysInGame.Where(c =>
-                                itemSkillReachableGrids.SelectMany(g => g.Characters).Contains(c)
-                                && !c.IsUnselectable
-                                && selectableEnemys.Contains(c)).Distinct()];
-                            List<Character> itemSkillReachableTeammates = [.. allTeammatesInGame.Where(c =>
-                                itemSkillReachableGrids.SelectMany(g => g.Characters).Contains(c)
-                                && selectableTeammates.Contains(c)).Distinct()];
+                            List<Character> itemSkillReachableEnemys = FilterReachableEnemies(itemSkillReachableGrids, allEnemysInGame, selectableEnemys);
+                            List<Character> itemSkillReachableTeammates = FilterReachableTeammates(itemSkillReachableGrids, allTeammatesInGame, selectableTeammates);
 
                             if (itemSkillReachableEnemys.Count > 0 || itemSkillReachableTeammates.Count > 0)
                             {
@@ -292,7 +317,8 @@ namespace FunGame.Core.Controller
                                 if (targetsForItem.Count > 0)
                                 {
                                     double currentScore = EvaluateItem(character, item, targetsForItem, cost) - movePenalty;
-                                    double probabilityWeight = 1.0 + (normalizedPUseItem * 0.3);
+                                    // 概率权重直接采用归一化后的行动概率，使模组调整的概率真实影响排序
+                                    double probabilityWeight = normalizedPUseItem;
                                     AIDecision itemDecision = new()
                                     {
                                         ActionType = CharacterActionType.UseItem,
@@ -316,8 +342,8 @@ namespace FunGame.Core.Controller
                 }
             }
 
-            // 计算纯移动决策
-            if (potentialMoveGrid != startGrid)
+            // 计算纯移动决策，仅战棋模式存在移动概念
+            if (_map != null && !ReferenceEquals(potentialMoveGrid, startGrid))
             {
                 double pureMoveScore = -movePenalty;
 
@@ -375,7 +401,7 @@ namespace FunGame.Core.Controller
 
         // --- AI 决策辅助方法 ---
 
-        // 获取偏好行动类型
+        // 获取偏好行动类型（传入的是归一化后的概率，总和为 1，占比过半即视为偏好）
         private static CharacterActionType? GetPreferredActionType(double pItem, double pSkill, double pAttack)
         {
             // 找出最高概率的行动类型
@@ -391,8 +417,8 @@ namespace FunGame.Core.Controller
             {
                 CharacterActionType preferredType = probabilities.FirstOrDefault(kvp => kvp.Value == maxProb).Key;
 
-                // 如果最高概率超过阈值，优先考虑该类型
-                if (maxProb > 0.7)
+                // 如果最高概率占比过半，优先考虑该类型
+                if (maxProb >= 0.5)
                 {
                     return preferredType;
                 }
@@ -516,7 +542,7 @@ namespace FunGame.Core.Controller
         }
 
         // 非指向性技能的评估
-        private AIDecision? EvaluateNonDirectionalSkill(Character character, Skill skill, Grid moveGrid, List<Grid> castableGrids, List<Character> allEnemys, List<Character> allTeammates, double cost)
+        private AIDecision? EvaluateNonDirectionalSkill(Character character, Skill skill, Grid moveGrid, List<Grid> castableGrids, List<Character> allEnemys, List<Character> allTeammates, double cost, double probabilityWeight)
         {
             double bestSkillScore = double.NegativeInfinity;
             List<Grid> bestTargetGrids = [];
@@ -546,7 +572,7 @@ namespace FunGame.Core.Controller
             if (bestSkillScore == double.NegativeInfinity)
                 return null; // 无有效格子
 
-            double movePenalty = GameMap.CalculateManhattanDistance(_map.GetCharacterCurrentGrid(character)!, moveGrid) * 0.5;
+            double movePenalty = GameMap.CalculateManhattanDistance(_map?.GetCharacterCurrentGrid(character) ?? Grid.Empty, moveGrid) * 0.5;
             double finalScore = bestSkillScore - movePenalty;
             finalScore += EvaluateNonDirectionalSkillEvent?.Invoke(character, skill, moveGrid, castableGrids, allEnemys, allTeammates, cost) ?? 0;
 
@@ -558,7 +584,7 @@ namespace FunGame.Core.Controller
                 Targets = [],
                 TargetGrids = bestTargetGrids,
                 Score = finalScore,
-                ProbabilityWeight = 1.0 // 非指向性技能默认权重
+                ProbabilityWeight = probabilityWeight // 与指向性技能一致，采用归一化后的行动概率
             };
         }
 
@@ -576,6 +602,90 @@ namespace FunGame.Core.Controller
             double value = Random.Shared.Next(1000);
             value += CalculateTargetValueEvent?.Invoke(target, skill) ?? 0;
             return value;
+        }
+
+        /// <summary>
+        /// 构造无候选的占位决策，表示 AI 未能评估出任何可行行动，交由宿主的回退逻辑处理
+        /// </summary>
+        /// <param name="startGrid">角色的起始格子，非战棋模式为 null</param>
+        private static AIDecision CreateDefaultDecision(Grid? startGrid) => new()
+        {
+            ActionType = CharacterActionType.EndTurn,
+            TargetMoveGrid = startGrid,
+            Targets = [],
+            Score = -1000.0,
+            HasCandidate = false
+        };
+
+        /// <summary>
+        /// 获取指定射程内的格子；非战棋模式没有格子概念，返回空列表
+        /// </summary>
+        /// <param name="from">中心格</param>
+        /// <param name="range">射程</param>
+        /// <param name="includeCharacter">是否包含角色所在的格子</param>
+        private List<Grid> GetReachableGrids(Grid? from, int range, bool includeCharacter)
+        {
+            return _map != null && from != null ? _map.GetGridsByRange(from, range, includeCharacter) : [];
+        }
+
+        /// <summary>
+        /// 过滤出实际可选的敌人
+        /// <para>战棋模式按射程内的格子裁剪；非战棋模式无距离限制，直接取可选取全集</para>
+        /// </summary>
+        /// <param name="reachableGrids">射程内的格子</param>
+        /// <param name="candidates">候选敌人</param>
+        /// <param name="selectable">可选取的敌人</param>
+        private List<Character> FilterReachableEnemies(List<Grid> reachableGrids, List<Character> candidates, List<Character> selectable)
+        {
+            HashSet<Character> selectableSet = [.. selectable];
+            if (_map is null)
+            {
+                return [.. candidates.Where(c => !c.IsUnselectable && selectableSet.Contains(c)).Distinct()];
+            }
+            HashSet<Character> onGrids = [.. reachableGrids.SelectMany(g => g.Characters)];
+            return [.. candidates.Where(c => onGrids.Contains(c) && !c.IsUnselectable && selectableSet.Contains(c)).Distinct()];
+        }
+
+        /// <summary>
+        /// 过滤出实际可选的队友
+        /// <para>战棋模式按射程内的格子裁剪；非战棋模式无距离限制，直接取可选取全集</para>
+        /// </summary>
+        /// <param name="reachableGrids">射程内的格子</param>
+        /// <param name="candidates">候选队友</param>
+        /// <param name="selectable">可选取的队友</param>
+        private List<Character> FilterReachableTeammates(List<Grid> reachableGrids, List<Character> candidates, List<Character> selectable)
+        {
+            HashSet<Character> selectableSet = [.. selectable];
+            if (_map is null)
+            {
+                return [.. candidates.Where(selectableSet.Contains).Distinct()];
+            }
+            HashSet<Character> onGrids = [.. reachableGrids.SelectMany(g => g.Characters)];
+            return [.. candidates.Where(c => onGrids.Contains(c) && selectableSet.Contains(c)).Distinct()];
+        }
+
+        /// <summary>
+        /// 为 AI 托管角色生成询问答复
+        /// <para>模组可通过 <see cref="ResolveInquiryEvent"/> 完全接管；未接管时按询问选项内置的默认规则构造答复，保证答复一定合法</para>
+        /// </summary>
+        /// <param name="ctx">询问上下文</param>
+        /// <returns>AI 给出的答复；非 AI 托管角色返回 null，交给框架的默认规则</returns>
+        public InquiryResponse? ResolveInquiry(InquiryContext ctx)
+        {
+            Character? character = ctx.Trigger;
+            if (character is null || !_queue.IsCharacterInAIControlling(character))
+            {
+                return null;
+            }
+
+            if (ResolveInquiryEvent?.Invoke(ctx) is InquiryResponse response)
+            {
+                // 模组接管给出的答复归为自定义来源，避免回放时误显示成 AI 决策
+                response.Source = InquiryResponseSource.Custom;
+                return response;
+            }
+
+            return new InquiryResponse(ctx.Options, InquiryResponseSource.AI);
         }
     }
 }

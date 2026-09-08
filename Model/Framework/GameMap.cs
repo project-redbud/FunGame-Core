@@ -526,7 +526,7 @@ namespace FunGame.Core.Model.Framework
                         break;
 
                     Grid? extendGrid = this[extendX, extendY, z];
-                    if (extendGrid == null) break;
+                    if (extendGrid is null) break;
 
                     if ((includeCharacter || extendGrid.Characters.Count == 0) && !grids.Contains(extendGrid))
                     {
@@ -624,7 +624,7 @@ namespace FunGame.Core.Model.Framework
                     int y = casterGrid.Y + dy;
 
                     Grid? candidate = this[x, y, z];
-                    if (candidate == null) continue;
+                    if (candidate is null) continue;
 
                     // 向量：从施法者到候选格子
                     double vecX = dx;
@@ -833,7 +833,7 @@ namespace FunGame.Core.Model.Framework
             }
 
             // 理论上 bestReachableGrid 不会是 null，因为 current 至少是可达的
-            if (bestReachableGrid == null)
+            if (bestReachableGrid is null)
             {
                 return -1;
             }

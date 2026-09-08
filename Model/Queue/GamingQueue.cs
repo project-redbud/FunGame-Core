@@ -193,6 +193,37 @@ namespace FunGame.Core.Model.Queue
         public GameMap? Map => _map;
 
         /// <summary>
+        /// 是否启用 AI 控制器
+        /// <para>关闭后 AI 托管角色不再经由 AI 决策，回退到模组事件与概率决策</para>
+        /// </summary>
+        public bool EnableAI
+        {
+            get => _enableAI;
+            set
+            {
+                if (_enableAI == value) return;
+                _enableAI = value;
+                if (!value) _ai = null;
+            }
+        }
+
+        /// <summary>
+        /// AI 控制器入口，受 <see cref="EnableAI"/> 控制，地图发生变化时自动重建
+        /// </summary>
+        protected AIController? AI
+        {
+            get
+            {
+                if (!_enableAI) return null;
+                if (_ai is null || !ReferenceEquals(_ai.Map, _map))
+                {
+                    _ai = new(this, _map);
+                }
+                return _ai;
+            }
+        }
+
+        /// <summary>
         /// 角色的决策点
         /// </summary>
         public Dictionary<Character, DecisionPoints> CharacterDecisionPoints => _decisionPoints;
@@ -337,6 +368,16 @@ namespace FunGame.Core.Model.Queue
         protected GameMap? _map = null;
 
         /// <summary>
+        /// 是否启用 AI 控制器
+        /// </summary>
+        protected bool _enableAI = true;
+
+        /// <summary>
+        /// AI 控制器实例，惰性创建
+        /// </summary>
+        private AIController? _ai = null;
+
+        /// <summary>
         /// 当前正在执行的操作记录
         /// </summary>
         protected ActionRecord? _currentAction = null;
@@ -355,13 +396,15 @@ namespace FunGame.Core.Model.Queue
         /// </summary>
         /// <param name="writer">用于文本输出</param>
         /// <param name="map">游戏地图</param>
-        public GamingQueue(Action<string>? writer = null, GameMap? map = null)
+        /// <param name="enableAI">是否启用 AI 控制器</param>
+        public GamingQueue(Action<string>? writer = null, GameMap? map = null, bool enableAI = true)
         {
             if (writer != null)
             {
                 WriteLine = writer;
             }
             WriteLine ??= new Action<string>(Console.WriteLine);
+            _enableAI = enableAI;
             if (map != null)
             {
                 LoadGameMap(map);
@@ -374,13 +417,15 @@ namespace FunGame.Core.Model.Queue
         /// <param name="characters">参与本次游戏的角色列表</param>
         /// <param name="writer">用于文本输出</param>
         /// <param name="map">游戏地图</param>
-        public GamingQueue(List<Character> characters, Action<string>? writer = null, GameMap? map = null)
+        /// <param name="enableAI">是否启用 AI 控制器</param>
+        public GamingQueue(List<Character> characters, Action<string>? writer = null, GameMap? map = null, bool enableAI = true)
         {
             if (writer != null)
             {
                 WriteLine = writer;
             }
             WriteLine ??= new Action<string>(Console.WriteLine);
+            _enableAI = enableAI;
             if (map != null)
             {
                 LoadGameMap(map);
@@ -1145,9 +1190,6 @@ namespace FunGame.Core.Model.Queue
                 // 此变量指示角色是否移动
                 bool moved = false;
 
-                // AI 决策控制器，适用于启用战棋地图的情况
-                AIController? ai = null;
-
                 // 循环条件：
                 // AI 控制下：未决策、取消次数大于0
                 // 手动控制下：未决策
@@ -1161,13 +1203,9 @@ namespace FunGame.Core.Model.Queue
                     List<Grid> willMoveGridWithSkill = [];
                     List<Character> enemys = [];
                     List<Character> teammates = [];
+
                     if (_map != null)
                     {
-                        if (isAI)
-                        {
-                            ai ??= new(this, _map);
-                        }
-
                         realGrid = _map.GetCharacterCurrentGrid(character);
 
                         if (realGrid != null)
@@ -1190,7 +1228,7 @@ namespace FunGame.Core.Model.Queue
                         teammates = selectableTeammates;
                     }
 
-                    // AI 决策结果（适用于启用战棋地图的情况）
+                    // AI 决策结果（战棋与非战棋模式均适用）
                     AIDecision? aiDecision = null;
 
                     // 行动开始前，可以修改可选取的角色列表
@@ -1339,16 +1377,24 @@ namespace FunGame.Core.Model.Queue
                                 }
                             }
 
-                            // 启用战棋地图时的专属 AI 决策方法
-                            if (isAI && ai != null && startGrid != null)
+                            // 模组可以通过此事件来决定角色的行动，模组事件优先于 AI
+                            if (type == CharacterActionType.None)
+                            {
+                                type = OnDecideActionEvent(new TurnContext(this, character, dp) { Enemys = enemys, Teammates = teammates, Skills = skills, Items = items });
+                            }
+                            // 模组未决策时，由 AI 控制器评估行动，战棋与非战棋模式均适用
+                            if (type == CharacterActionType.None && isAI && AI is AIController ai)
                             {
                                 aiDecision = ai.DecideAIAction(character, dp, startGrid, canMoveGrids, skills, items, allEnemys, allTeammates, enemys, teammates, pUseItem, pCastSkill, pNormalAttack);
-                                type = aiDecision.ActionType;
-                            }
-                            else
-                            {
-                                // 模组可以通过此事件来决定角色的行动
-                                type = OnDecideActionEvent(new TurnContext(this, character, dp) { Enemys = enemys, Teammates = teammates, Skills = skills, Items = items });
+                                if (aiDecision.HasCandidate)
+                                {
+                                    type = aiDecision.ActionType;
+                                }
+                                else
+                                {
+                                    // AI 未能评估出任何可行行动，不占用下游的目标选择
+                                    aiDecision = null;
+                                }
                             }
                             // 若事件未完成决策，则将通过概率对角色进行自动化决策
                             if (type == CharacterActionType.None)
@@ -1373,7 +1419,7 @@ namespace FunGame.Core.Model.Queue
                         }
                     }
 
-                    if (aiDecision != null && aiDecision.ActionType != CharacterActionType.Move && aiDecision.TargetMoveGrid != null)
+                    if (aiDecision != null && aiDecision.ActionType != CharacterActionType.Move && aiDecision.TargetMoveGrid != null && _map != null)
                     {
                         // 不是纯粹移动的情况，需要手动移动
                         moved = CharacterMove(character, dp, aiDecision.TargetMoveGrid, startGrid);
@@ -2140,7 +2186,7 @@ namespace FunGame.Core.Model.Queue
                 AfterTurn(character);
 
                 // 游戏结束时强制生成状态检查点（若该回合未按周期生成，用于输出最终角色状态）
-                if (LastRound.Checkpoint == null)
+                if (LastRound.Checkpoint is null)
                 {
                     LastRound.Checkpoint = CreateStateCheckpoint();
                 }
@@ -4162,14 +4208,14 @@ namespace FunGame.Core.Model.Queue
         /// <returns></returns>
         public static bool IsSameFactionAs(Character character, Character? target)
         {
-            if (target == null) return false;
+            if (target is null) return false;
 
             // 双方互相为上级
             if (character.Master == target || target.Master == character)
                 return true;
 
             // 双方都没有上级
-            if (character.Master == null && target.Master == null)
+            if (character.Master is null && target.Master is null)
                 return character == target;
 
             // 是否是同一上级
@@ -4833,7 +4879,7 @@ namespace FunGame.Core.Model.Queue
         /// <param name="damage"></param>
         private static void RecordDamageDetails(Dictionary<Character, Dictionary<DamageType, double>> details, Character characterTaken, DamageType damageType, double damage)
         {
-            if (!details.TryGetValue(characterTaken, out Dictionary<DamageType, double>? buckets) || buckets == null)
+            if (!details.TryGetValue(characterTaken, out Dictionary<DamageType, double>? buckets) || buckets is null)
             {
                 buckets = [];
                 details[characterTaken] = buckets;
@@ -4942,7 +4988,7 @@ namespace FunGame.Core.Model.Queue
         /// </summary>
         /// <param name="ctx"></param>
         /// <returns>非 null 的答复</returns>
-        private static InquiryResponse ResolveInquiryFallback(InquiryContext ctx)
+        private InquiryResponse ResolveInquiryFallback(InquiryContext ctx)
         {
             // 自定义决策器：模组或上层提供，可用于桥接外部 AI 逻辑
             if (ctx.Options.FallbackResolver?.Invoke(ctx) is InquiryResponse custom)
@@ -4951,8 +4997,12 @@ namespace FunGame.Core.Model.Queue
                 return custom;
             }
 
-            // AI 控制器接入点
-            // todo
+            // AI 控制器接入点：AI 托管角色在无外部答复时由 AI 给出答复。
+            // 来源由 AIController 自行标注（模组接管为 Custom，内置规则为 AI），此处不再覆盖
+            if (AI?.ResolveInquiry(ctx) is InquiryResponse aiResponse)
+            {
+                return aiResponse;
+            }
 
             return new InquiryResponse(ctx.Options, InquiryResponseSource.Default);
         }
