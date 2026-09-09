@@ -83,6 +83,21 @@ namespace FunGame.Core.Controller
             // 非战棋模式没有格子概念，退化为一个虚拟格，保证至少完成一次决策计算
             List<Grid> moveGrids = allPossibleMoveGrids.Count > 0 ? allPossibleMoveGrids : [startGrid ?? Grid.Empty];
 
+            // 评估范围上限：大范围移动无效格子可能较多
+            // 对每个可达格做「普攻+技能+物品」全量评估会让单次 AI 决策过重，而失败重试会反复触发整段评估
+            // 此处优先保留离敌人更近的候选格
+            // 并始终保留当前格作为「原地行动」的基准
+            int maxEvaluatedMoveGrids = 32;
+            if (_map != null && moveGrids.Count > maxEvaluatedMoveGrids)
+            {
+                Grid? currentGrid = _map.GetCharacterCurrentGrid(character);
+                List<Grid> enemyGrids = [.. allEnemysInGame.Select(_map.GetCharacterCurrentGrid).OfType<Grid>()];
+                moveGrids = [.. moveGrids
+                    .OrderBy(g => ReferenceEquals(g, currentGrid) ? -1 :
+                        (enemyGrids.Count == 0 ? 0 : enemyGrids.Min(eg => GameMap.CalculateManhattanDistance(g, eg))))
+                    .Take(maxEvaluatedMoveGrids)];
+            }
+
             // 控制最大并发数
             int maxConcurrency = Math.Max(1, Environment.ProcessorCount / 2);
             SemaphoreSlim semaphore = new(maxConcurrency);

@@ -1226,6 +1226,8 @@ namespace FunGame.Core.Model.Queue
                 int cancelTimes = 3;
                 // 此变量指示角色是否移动
                 bool moved = false;
+                // 连续纯移动且无操作的次数
+                int moveRoundsWithoutDecision = 0;
 
                 // 循环条件：
                 // AI 控制下：未决策、取消次数大于0
@@ -1289,8 +1291,20 @@ namespace FunGame.Core.Model.Queue
                     teammates = [.. teammates.Distinct()];
 
                     baseTime = 0;
-                    if (moved) moved = false;
-                    else cancelTimes--;
+                    if (moved)
+                    {
+                        moved = false;
+                        // AI 连续移动 3 次无操作即结束回合
+                        if (isAI && ++moveRoundsWithoutDecision >= 3)
+                        {
+                            cancelTimes = 0;
+                        }
+                    }
+                    else
+                    {
+                        cancelTimes--;
+                        moveRoundsWithoutDecision = 0;
+                    }
                     type = CharacterActionType.None;
 
                     // 是否能使用物品和释放技能
