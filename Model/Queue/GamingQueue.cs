@@ -61,8 +61,9 @@ namespace FunGame.Core.Model.Queue
 
         /// <summary>
         /// 硬直时间表
+        /// <para/>此属性为只读，如需修改角色的硬直时间，请调用：<see cref="AddCharacter"/> / <see cref="ChangeCharacterHardnessTime"/>
         /// </summary>
-        public Dictionary<Character, double> HardnessTime => _hardnessTimes;
+        public IReadOnlyDictionary<Character, double> HardnessTime => _hardnessTimes;
 
         /// <summary>
         /// 当前已死亡的角色顺序(第一个是最早死的)
@@ -874,15 +875,30 @@ namespace FunGame.Core.Model.Queue
             }
 
             Character[] characters = [.. _queue];
+
+            // 先统一进行时间流逝，减少硬直时间
             foreach (Character character in characters)
             {
-                // 减少所有角色的硬直时间
-                double past = _hardnessTimes[character];
-                _hardnessTimes[character] = Calculation.Round2Digits(_hardnessTimes[character] - timeToReduce);
-
-                if (_hardnessTimes[character] < 0)
+                if (_hardnessTimes.TryGetValue(character, out double current))
                 {
-                    WriteLine($"异常的硬直时间警告，原时间：{past}，现时间：{_hardnessTimes[character]}，时间流逝：{timeToReduce}。");
+                    double next = Calculation.Round2Digits(current - timeToReduce);
+                    if (next < 0)
+                    {
+                        WriteLine($"异常的硬直时间警告，原时间：{current}，现时间：{next}，时间流逝：{timeToReduce}。");
+                        next = 0;
+                    }
+                    _hardnessTimes[character] = next;
+                }
+            }
+            _queue.Sort((a, b) => _hardnessTimes[a].CompareTo(_hardnessTimes[b]));
+
+            // 继续处理时间流逝对其他事件的结算
+            foreach (Character character in characters)
+            {
+                // 事件结算前该角色可能已被移除（如驱散 / 退出战斗），跳过其结算
+                if (!_hardnessTimes.ContainsKey(character) || !_queue.Contains(character))
+                {
+                    continue;
                 }
 
                 // 统计
