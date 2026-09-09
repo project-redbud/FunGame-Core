@@ -41,6 +41,33 @@ namespace FunGame.Core.Entity
         public Skill? CombatTalent { get; set; } = null;
 
         /// <summary>
+        /// 职业升级路线图奖励账本，key = 职业 IdName，与 <see cref="Classes"/> 中的职业记录一一对应
+        /// <para/>由规划器在选职业 / 升级 / 学习技能 / 洗点时维护（见 <see cref="Model.ClassPlanner"/>）
+        /// </summary>
+        public Dictionary<string, ClassRewardLedger> RewardLedgers { get; set; } = [];
+
+        /// <summary>
+        /// 职业技能是否按路线图「已习得」挂载
+        /// <para/>false（默认）时保持职业池全量授予，选择权只记账不生效，便于旧内容与旧存档平滑过渡
+        /// <para/>置 true 后仅挂载账本中已习得的职业技能（固有被动与天赋不受影响）
+        /// </summary>
+        public bool SkillSelectionEnabled { get; set; } = false;
+
+        /// <summary>
+        /// 读取或创建某职业记录的奖励账本
+        /// </summary>
+        public ClassRewardLedger GetOrCreateLedger(Class classRecord)
+        {
+            string key = classRecord.GetIdName();
+            if (!RewardLedgers.TryGetValue(key, out ClassRewardLedger? ledger))
+            {
+                ledger = new ClassRewardLedger();
+                RewardLedgers[key] = ledger;
+            }
+            return ledger;
+        }
+
+        /// <summary>
         /// 1 级时选择的默认职业（洗点恢复用；满 20 级前不可修改，见平衡常数 <see cref="EquilibriumConstant.MinLevelCanModifyDefaultClass"></see>）
         /// </summary>
         public HashSet<Class> DefaultClasses { get; set; } = [];
@@ -148,8 +175,13 @@ namespace FunGame.Core.Entity
         {
             CharacterClass copy = new(owner)
             {
-                ClassPoints = ClassPoints
+                ClassPoints = ClassPoints,
+                SkillSelectionEnabled = SkillSelectionEnabled
             };
+            foreach (KeyValuePair<string, ClassRewardLedger> kv in RewardLedgers)
+            {
+                copy.RewardLedgers[kv.Key] = kv.Value.Copy();
+            }
             Dictionary<Class, Class> classMap = [];
             foreach (Class c in Classes)
             {
@@ -280,22 +312,7 @@ namespace FunGame.Core.Entity
         {
             foreach (Class c in Classes)
             {
-                foreach (Skill skill in c.PassiveSkills)
-                {
-                    skill.Source = SkillSource.Class;
-                    skill.AddSkillToCharacter(character);
-                }
-                foreach (Skill skill in c.Skills)
-                {
-                    skill.Source = SkillSource.Class;
-                    skill.AddSkillToCharacter(character);
-                }
-                foreach (Skill skill in c.Magics)
-                {
-                    skill.Source = SkillSource.Class;
-                    skill.AddSkillToCharacter(character);
-                }
-                foreach (Skill skill in c.SuperSkills)
+                foreach (Skill skill in SelectClassSkills(c))
                 {
                     skill.Source = SkillSource.Class;
                     skill.AddSkillToCharacter(character);
@@ -322,6 +339,24 @@ namespace FunGame.Core.Entity
                 talent.Source = SkillSource.CombatTalent;
                 talent.AddSkillToCharacter(character);
             }
+        }
+
+        /// <summary>
+        /// 取某职业本次要挂载到角色身上的职业技能
+        /// <para/><see cref="SkillSelectionEnabled"/> 为 true 时只挂载账本中已习得的技能，否则保持全量授予
+        /// </summary>
+        public IEnumerable<Skill> SelectClassSkills(Class classRecord)
+        {
+            IEnumerable<Skill> pool = [.. classRecord.PassiveSkills, .. classRecord.Skills, .. classRecord.Magics, .. classRecord.SuperSkills];
+            if (!SkillSelectionEnabled)
+            {
+                return pool;
+            }
+            if (!RewardLedgers.TryGetValue(classRecord.GetIdName(), out ClassRewardLedger? ledger))
+            {
+                return [];
+            }
+            return pool.Where(s => ledger.LearnedSkillIds.Contains(s.GetIdName()));
         }
 
         /// <summary>

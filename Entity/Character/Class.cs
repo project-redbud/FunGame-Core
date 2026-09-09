@@ -1,5 +1,6 @@
 ﻿using FunGame.Core.Interface.Entity;
 using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.Framework;
 
 namespace FunGame.Core.Entity
 {
@@ -55,6 +56,12 @@ namespace FunGame.Core.Entity
         public Dictionary<RoleType, HashSet<Skill>> CombatTalents { get; set; } = [];
 
         /// <summary>
+        /// 1 级选择该职业时额外获得的核心属性分配（初始核心属性 + 成长）
+        /// <para>旧版职业规划缺失的一块：不同职业在起手阶段就应有不同的属性与成长倾向</para>
+        /// </summary>
+        public ClassAttributeAllocation InitialAllocation { get; set; } = new();
+
+        /// <summary>
         /// 复制技能并保留等级状态
         /// <para>职业记录复制需要完整状态：基础等级写入副本基础，突破加成独立保留</para>
         /// </summary>
@@ -81,7 +88,8 @@ namespace FunGame.Core.Entity
                 Skills = [.. Skills.Select(CopySkillState)],
                 Magics = [.. Magics.Select(CopySkillState)],
                 PassiveSkills = [.. PassiveSkills.Select(CopySkillState)],
-                SuperSkills = [.. SuperSkills.Select(CopySkillState)]
+                SuperSkills = [.. SuperSkills.Select(CopySkillState)],
+                InitialAllocation = InitialAllocation.Copy()
             };
             foreach (KeyValuePair<RoleType, HashSet<Skill>> kv in CombatTalents)
             {

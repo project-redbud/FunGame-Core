@@ -682,6 +682,13 @@ namespace FunGame.Core.Model.Framework
         public Dictionary<int, ClassLevelUpReward> ClassLevelUpRewards { get; set; } = ClassLevelUpReward.BuildDefaultTable();
 
         /// <summary>
+        /// 数值提升（4 / 9 级）每次可分配的核心属性额度
+        /// <para/>单次提升可自由分配到力量 / 敏捷 / 智力及其成长上，这里只约束单项上限；
+        /// 单级奖励自带 <see cref="ClassLevelUpReward.NumericBoost"/> 时优先使用，null 表示不限制
+        /// </summary>
+        public ClassAttributeAllocation? DefaultNumericBoostAllocation { get; set; } = new(5, 5, 5, 0.5, 0.5, 0.5);
+
+        /// <summary>
         /// 应用此游戏平衡常数给实体
         /// </summary>
         /// <param name="entities"></param>
