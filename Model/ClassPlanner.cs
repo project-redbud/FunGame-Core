@@ -28,6 +28,21 @@ namespace FunGame.Core.Model
         public EquilibriumConstant Eq => _character.GameplayEquilibriumConstant;
 
         /// <summary>
+        /// 职业升级路线图的结算器（扩展点：替换实现即可整体改写选择权 / 数值提升 / 技能提级口径）
+        /// </summary>
+        public IClassRewardSettler Settler { get; set; } = DefaultClassRewardSettler.Instance;
+
+        /// <summary>
+        /// 是否启用「已习得才挂载」的职业技能选择制
+        /// <para/>false（默认）时职业池全量授予，选择权仅记账；置 true 后只挂载账本中已习得的职业技能
+        /// </summary>
+        public bool SkillSelectionEnabled
+        {
+            get => Plan.SkillSelectionEnabled;
+            set => Plan.SkillSelectionEnabled = value;
+        }
+
+        /// <summary>
         /// 每次成功动作后触发（把 Interface/Event/ClassPlanEvents.cs 中各事件接口实例的监听方法挂载到此处）
         /// </summary>
         public event Action<ClassPlanner, ClassPlanEventArgs>? Planned;
@@ -82,7 +97,9 @@ namespace FunGame.Core.Model
                 Plan.DefaultClasses.Add(classDef);
                 Plan.DefaultSubClasses.Add(subClassDef);
             }
-            Raise(ClassPlanPhase.SelectClass, true, $"已选择职业【{classDef.Name}】流派【{subClassDef.Name}】。");
+            // 新职业从 1 级起步：立即结算 1 级奖励（职业初始属性分配 + 流派固有被动）
+            ClassRewardSettlementResult settled = SettleRewards(record, 0, record.Level);
+            Raise(ClassPlanPhase.SelectClass, true, $"已选择职业【{classDef.Name}】流派【{subClassDef.Name}】。" + (settled.Success ? $"1 级奖励：{settled.Message}" : ""));
             return ClassPlanResult.Ok();
         }
 
@@ -105,8 +122,10 @@ namespace FunGame.Core.Model
                 return ClassPlanResult.Fail($"职业点数不足，职业升级需消耗 1 点（当前 {Plan.ClassPoints} 点）。");
             }
             Plan.ClassPoints--;
+            int fromLevel = record.Level;
             record.Level++;
-            Raise(ClassPlanPhase.UpgradeClass, true, $"职业【{record.Name}】升至 {record.Level} 级。");
+            ClassRewardSettlementResult settled = SettleRewards(record, fromLevel, record.Level);
+            Raise(ClassPlanPhase.UpgradeClass, true, $"职业【{record.Name}】升至 {record.Level} 级。" + (settled.Success ? $"奖励：{settled.Message}" : $"奖励结算失败：{settled.Message}"));
             return ClassPlanResult.Ok();
         }
 
@@ -210,6 +229,12 @@ namespace FunGame.Core.Model
         {
             // 整卸已物化的技能/特效并撤销加成，再清空计划状态
             Plan.UnapplyFromCharacter(Character);
+            // 路线图奖励一并撤销：属性扣回、账本清空
+            foreach (Class record in Plan.Classes)
+            {
+                Settler.Revoke(CreateRewardContext(record), Plan.GetOrCreateLedger(record));
+            }
+            Plan.RewardLedgers.Clear();
             Plan.CombatTalent = null;
             Plan.LearnedCombatTalents.Clear();
             Plan.Classes.Clear();
@@ -232,6 +257,8 @@ namespace FunGame.Core.Model
                     {
                         Plan.SubClasses.Add(sub.Copy(record));
                     }
+                    // 恢复的 1 级默认职业同样要拿到 1 级奖励（职业初始属性分配 + 固有被动）
+                    SettleRewards(record, 0, record.Level);
                 }
                 Plan.ClassPoints = 0;
                 Plan.OnLevelUp();
@@ -267,6 +294,108 @@ namespace FunGame.Core.Model
             return ClassPlanResult.Ok();
         }
 
+        // ==================== 路线图奖励 ====================
+
+        /// <summary>
+        /// 消耗选择权习得职业技能 / 被动（按技能类型自动判断使用哪种选择权）
+        /// <para>技能须来自该职业池副本并满足流派、属性前置；习得后立即物化到角色</para>
+        /// </summary>
+        /// <param name="record">职业记录</param>
+        /// <param name="skill">要习得的技能（需传入独立实例）</param>
+        public ClassPlanResult LearnClassSkill(Class record, Skill skill)
+        {
+            if (record is null || !Plan.Classes.Contains(record))
+            {
+                return ClassPlanResult.Fail("职业记录不存在于当前计划中。");
+            }
+            ClassRewardLedger ledger = Plan.GetOrCreateLedger(record);
+            ClassRewardSettlementResult result = Settler.SpendSkillChoice(CreateRewardContext(record), ledger, skill);
+            if (!result.Success)
+            {
+                return ClassPlanResult.Fail(result.Message);
+            }
+            Raise(ClassPlanPhase.LearnClassSkill, true, $"职业【{record.Name}】{result.Message}");
+            return ClassPlanResult.Ok(result.Message);
+        }
+
+        /// <summary>
+        /// 兑换一次数值提升（4 / 9 级提供，替代被动选择），按指定的核心属性分配落地
+        /// </summary>
+        /// <param name="record">职业记录</param>
+        /// <param name="allocation">本次分配到的初始核心属性与成长</param>
+        public ClassPlanResult TakeNumericBoost(Class record, ClassAttributeAllocation allocation)
+        {
+            if (record is null || !Plan.Classes.Contains(record))
+            {
+                return ClassPlanResult.Fail("职业记录不存在于当前计划中。");
+            }
+            ClassRewardLedger ledger = Plan.GetOrCreateLedger(record);
+            ClassRewardSettlementResult result = Settler.SpendNumericBoost(CreateRewardContext(record), ledger, allocation);
+            if (!result.Success)
+            {
+                return ClassPlanResult.Fail(result.Message);
+            }
+            Raise(ClassPlanPhase.LearnClassSkill, true, $"职业【{record.Name}】{result.Message}");
+            return ClassPlanResult.Ok(result.Message);
+        }
+
+        /// <summary>
+        /// 兑换一次数值提升并全部分配到角色核心属性（<see cref="Character.PrimaryAttribute"/>）上
+        /// </summary>
+        /// <param name="record">职业记录</param>
+        public ClassPlanResult TakeNumericBoost(Class record)
+        {
+            if (record is null || !Plan.Classes.Contains(record))
+            {
+                return ClassPlanResult.Fail("职业记录不存在于当前计划中。");
+            }
+            ClassRewardContext ctx = CreateRewardContext(record);
+            ClassRewardLedger ledger = Plan.GetOrCreateLedger(record);
+            ClassAttributeAllocation? allowance = Settler.NumericBoostAllowance(ctx, ledger);
+            if (allowance is null || allowance.IsEmpty)
+            {
+                return ClassPlanResult.Fail("未配置数值提升额度（DefaultNumericBoostAllocation），请显式指定分配。");
+            }
+            ClassAttributeAllocation allocation = Character.PrimaryAttribute switch
+            {
+                PrimaryAttribute.AGI => new(0, allowance.AGI, 0, 0, allowance.AGIGrowth, 0),
+                PrimaryAttribute.INT => new(0, 0, allowance.INT, 0, 0, allowance.INTGrowth),
+                _ => new(allowance.STR, 0, 0, allowance.STRGrowth, 0, 0)
+            };
+            return TakeNumericBoost(record, allocation);
+        }
+
+        /// <summary>
+        /// 按当前职业等级重放路线图奖励（存档恢复 / 外部直接改动职业等级后对齐账本）
+        /// <para>水位低于当前等级时补发；水位高于当前等级（等级被下调）时先撤销再重放</para>
+        /// </summary>
+        public ClassPlanResult SyncRewards()
+        {
+            foreach (Class record in Plan.Classes)
+            {
+                ClassRewardLedger ledger = Plan.GetOrCreateLedger(record);
+                if (ledger.SettledToLevel == record.Level)
+                {
+                    continue;
+                }
+                if (ledger.SettledToLevel > record.Level)
+                {
+                    Settler.Revoke(CreateRewardContext(record), ledger);
+                }
+                SettleRewards(record, ledger.SettledToLevel, record.Level);
+            }
+            Raise(ClassPlanPhase.SettleReward, true, "已按当前职业等级重放路线图奖励。");
+            return ClassPlanResult.Ok();
+        }
+
+        /// <summary>
+        /// 取某职业可选的职业技能池（供上层列候选；已习得的会一并给出）
+        /// </summary>
+        public IEnumerable<Skill> GetClassSkillPool(Class record)
+        {
+            return DefaultClassRewardSettler.AllPoolSkills(record);
+        }
+
         /// <summary>
         /// 校验当前计划整体一致性（供上层 / 测试在规划结束时断言）
         /// </summary>
@@ -284,6 +413,14 @@ namespace FunGame.Core.Model
             {
                 error = "职业等级超过上限。";
                 return false;
+            }
+            foreach (Class c in Plan.Classes)
+            {
+                if (Plan.RewardLedgers.TryGetValue(c.GetIdName(), out ClassRewardLedger? ledger) && ledger.SettledToLevel > c.Level)
+                {
+                    error = $"职业【{c.Name}】的奖励结算水位（{ledger.SettledToLevel}）高于当前职业等级（{c.Level}）。";
+                    return false;
+                }
             }
             foreach (SubClass sc in Plan.SubClasses)
             {
@@ -315,6 +452,26 @@ namespace FunGame.Core.Model
         }
 
         // ==================== 私有 ====================
+
+        /// <summary>
+        /// 构造结算上下文（自动绑定该职业记录对应的流派）
+        /// </summary>
+        private ClassRewardContext CreateRewardContext(Class record)
+        {
+            SubClass? subClass = Plan.SubClasses.FirstOrDefault(sc => ReferenceEquals(sc.Class, record));
+            return new ClassRewardContext(Character, record, subClass, Plan);
+        }
+
+        /// <summary>
+        /// 结算 (fromLevel, toLevel] 区间的路线图奖励并推送事件
+        /// </summary>
+        private ClassRewardSettlementResult SettleRewards(Class record, int fromLevel, int toLevel)
+        {
+            ClassRewardLedger ledger = Plan.GetOrCreateLedger(record);
+            ClassRewardSettlementResult result = Settler.Settle(CreateRewardContext(record), ledger, fromLevel, toLevel);
+            Raise(ClassPlanPhase.SettleReward, result.Success, $"职业【{record.Name}】{result.Message}");
+            return result;
+        }
 
         /// <summary>
         /// 撤销当前激活天赋（卸载特效并配对撤销核心天赋加成），不改计划引用

@@ -18,6 +18,16 @@ namespace FunGame.Core.Library.Common.Event
         UpgradeClass,
 
         /// <summary>
+        /// 结算职业升级路线图奖励（选择权 / 数值提升 / 技能等级提升）
+        /// </summary>
+        SettleReward,
+
+        /// <summary>
+        /// 消耗选择权习得职业技能或被动，或兑换数值提升
+        /// </summary>
+        LearnClassSkill,
+
+        /// <summary>
         /// 选择角色定位
         /// </summary>
         SelectRoleTypes,
