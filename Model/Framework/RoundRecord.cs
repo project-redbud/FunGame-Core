@@ -28,6 +28,10 @@ namespace FunGame.Core.Model.Framework
         public Dictionary<Character, bool> IsCritical { get; set; } = [];
         public Dictionary<Character, bool> IsEvaded { get; set; } = [];
         public Dictionary<Character, bool> IsImmune { get; set; } = [];
+        /// <summary>
+        /// 每个目标本回合检定使用的骰子值
+        /// </summary>
+        public Dictionary<Character, double> Dice { get; set; } = [];
         public Dictionary<Character, double> Heals { get; set; } = [];
         /// <summary>
         /// 角色 -> 技能。施放技能时由队列写入 [施法者 -> 技能]；
@@ -225,6 +229,7 @@ namespace FunGame.Core.Model.Framework
                 IsCritical = new(IsCritical),
                 IsEvaded = new(IsEvaded),
                 IsImmune = new(IsImmune),
+                Dice = new(Dice),
                 Heals = new(Heals),
                 Effects = new(Effects),
                 ApplyEffects = ApplyEffects.ToDictionary(kv => kv.Key, kv => (List<EffectType>)[.. kv.Value]),

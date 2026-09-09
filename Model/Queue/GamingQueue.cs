@@ -24,6 +24,17 @@ namespace FunGame.Core.Model.Queue
         public EquilibriumConstant GameplayEquilibriumConstant { get; set; } = General.GameplayEquilibriumConstant;
 
         /// <summary>
+        /// 随机数种子：初始化时可指定，未指定时自动随机生成并保留实际值
+        /// </summary>
+        public int Seed { get; }
+
+        /// <summary>
+        /// 本局游戏使用的随机数生成器（由 <see cref="Seed"/> 决定，同种子下对局可复现）
+        /// <para/>注意：单局内请勿在别处重复 new 随机源，统一使用此实例以保证可复现性
+        /// </summary>
+        public Random Random { get; }
+
+        /// <summary>
         /// 用于文本输出
         /// </summary>
         public Action<string> WriteLine { get; }
@@ -397,7 +408,8 @@ namespace FunGame.Core.Model.Queue
         /// <param name="writer">用于文本输出</param>
         /// <param name="map">游戏地图</param>
         /// <param name="enableAI">是否启用 AI 控制器</param>
-        public GamingQueue(Action<string>? writer = null, GameMap? map = null, bool enableAI = true)
+        /// <param name="seed">随机数种子</param>
+        public GamingQueue(Action<string>? writer = null, GameMap? map = null, bool enableAI = true, int? seed = null)
         {
             if (writer != null)
             {
@@ -405,6 +417,8 @@ namespace FunGame.Core.Model.Queue
             }
             WriteLine ??= new Action<string>(Console.WriteLine);
             _enableAI = enableAI;
+            Seed = seed ?? Random.Shared.Next();
+            Random = new(Seed);
             if (map != null)
             {
                 LoadGameMap(map);
@@ -418,7 +432,8 @@ namespace FunGame.Core.Model.Queue
         /// <param name="writer">用于文本输出</param>
         /// <param name="map">游戏地图</param>
         /// <param name="enableAI">是否启用 AI 控制器</param>
-        public GamingQueue(List<Character> characters, Action<string>? writer = null, GameMap? map = null, bool enableAI = true)
+        /// <param name="seed">随机数种子</param>
+        public GamingQueue(List<Character> characters, Action<string>? writer = null, GameMap? map = null, bool enableAI = true, int? seed = null)
         {
             if (writer != null)
             {
@@ -426,6 +441,8 @@ namespace FunGame.Core.Model.Queue
             }
             WriteLine ??= new Action<string>(Console.WriteLine);
             _enableAI = enableAI;
+            Seed = seed ?? Random.Shared.Next();
+            Random = new(Seed);
             if (map != null)
             {
                 LoadGameMap(map);
@@ -501,6 +518,8 @@ namespace FunGame.Core.Model.Queue
                 if (character.IsUnit) continue;
                 // 添加角色引用到所有角色列表
                 _allCharacters.Add(character);
+                // 绑定角色所属队列
+                character.GamingQueue = this;
                 // 复制原始角色对象
                 Character original = character.Copy();
                 original.Guid = Guid.NewGuid();
@@ -543,7 +562,7 @@ namespace FunGame.Core.Model.Queue
                 .GroupBy(c => c.SPD)
                 .OrderByDescending(g => g.Key)];
 
-            Random random = new();
+            Random random = Random;
 
             foreach (IGrouping<double, Character> group in groupedBySpeed)
             {
@@ -625,6 +644,8 @@ namespace FunGame.Core.Model.Queue
         /// <param name="isCheckProtected"></param>
         public void AddCharacter(Character character, double hardnessTime, bool isCheckProtected = true)
         {
+            // 角色入队时绑定所属队列
+            character.GamingQueue = this;
             // 确保角色不在队列中
             _queue.RemoveAll(c => c == character);
 
@@ -1589,7 +1610,7 @@ namespace FunGame.Core.Model.Queue
                             }
                             if (skill is null && IsCharacterInAIControlling(character) && skills.Count > 0)
                             {
-                                skill = skills[Random.Shared.Next(skills.Count)];
+                                skill = skills[Random.Next(skills.Count)];
                             }
                             if (skill != null)
                             {
@@ -1986,7 +2007,7 @@ namespace FunGame.Core.Model.Queue
                         if (item is null && IsCharacterInAIControlling(character) && items.Count > 0)
                         {
                             // AI 控制下随机选取一个物品
-                            item = items[Random.Shared.Next(items.Count)];
+                            item = items[Random.Next(items.Count)];
                         }
                         if (item != null && item.Skills.Active != null)
                         {
@@ -2903,6 +2924,10 @@ namespace FunGame.Core.Model.Queue
                 actualDamage = 0;
             }
 
+            // 记录本次伤害检定的骰子值
+            LastRound.Dice[enemy] = ctx.Dice;
+            _currentAction?.Dice[enemy] = ctx.Dice;
+
             OnDamageToEnemyEvent(new DamageContext(this, actor, enemy)
             {
                 Damage = damage,
@@ -3586,7 +3611,7 @@ namespace FunGame.Core.Model.Queue
         /// <param name="pCastSkill"></param>
         /// <param name="pNormalAttack"></param>
         /// <returns></returns>
-        public static CharacterActionType GetActionType(DecisionPoints dp, double pUseItem, double pCastSkill, double pNormalAttack)
+        public CharacterActionType GetActionType(DecisionPoints dp, double pUseItem, double pCastSkill, double pNormalAttack)
         {
             if (!dp.CheckActionTypeQuota(CharacterActionType.NormalAttack) || dp.CurrentDecisionPoints < dp.GameplayEquilibriumConstant.DecisionPointsCostNormalAttack)
             {
@@ -3620,7 +3645,7 @@ namespace FunGame.Core.Model.Queue
                 pNormalAttack /= total;
             }
 
-            double rand = Random.Shared.NextDouble();
+            double rand = Random.NextDouble();
 
             // 按概率进行检查
             if (rand < pUseItem)
@@ -3663,7 +3688,7 @@ namespace FunGame.Core.Model.Queue
             {
                 if (moveRange.Count > 0)
                 {
-                    return moveRange[Random.Shared.Next(moveRange.Count)];
+                    return moveRange[Random.Next(moveRange.Count)];
                 }
             }
             return Grid.Empty;
@@ -3716,7 +3741,7 @@ namespace FunGame.Core.Model.Queue
             List<Grid> targets = OnSelectNonDirectionalSkillTargetsEvent(new SelectionContext(this, caster) { Skill = skill, Enemys = enemys, Teammates = teammates, CastRange = castRange });
             if (targets.Count == 0 && IsCharacterInAIControlling(caster) && castRange.Count > 0)
             {
-                targets = skill.SelectNonDirectionalTargets(caster, castRange.OrderBy(r => Random.Shared.Next()).FirstOrDefault(r => r.Characters.Count > 0) ?? castRange.First(), skill.SelectIncludeCharacterGrid);
+                targets = skill.SelectNonDirectionalTargets(caster, castRange.OrderBy(r => Random.Next()).FirstOrDefault(r => r.Characters.Count > 0) ?? castRange.First(), skill.SelectIncludeCharacterGrid);
             }
             return targets;
         }
@@ -3879,7 +3904,7 @@ namespace FunGame.Core.Model.Queue
             }
             options.BeforeDamageBonus = totalDamageBonus;
 
-            double dice = Random.Shared.NextDouble();
+            double dice = Random.NextDouble();
             double throwingBonus = 0;
             bool checkEvade = true;
             bool checkCritical = true;
@@ -3928,7 +3953,7 @@ namespace FunGame.Core.Model.Queue
 
                 if (checkCritical)
                 {
-                    dice = Random.Shared.NextDouble();
+                    dice = Random.NextDouble();
                     ctx.Dice = dice;
                     if (dice < (actor.CritRate + throwingBonus))
                     {
@@ -3993,7 +4018,7 @@ namespace FunGame.Core.Model.Queue
             }
             options.BeforeDamageBonus = totalDamageBonus;
 
-            double dice = Random.Shared.NextDouble();
+            double dice = Random.NextDouble();
             double throwingBonus = 0;
             bool checkEvade = true;
             bool checkCritical = true;
@@ -4042,7 +4067,7 @@ namespace FunGame.Core.Model.Queue
 
                 if (checkCritical)
                 {
-                    dice = Random.Shared.NextDouble();
+                    dice = Random.NextDouble();
                     ctx.Dice = dice;
                     if (dice < (actor.CritRate + throwingBonus))
                     {
@@ -4066,9 +4091,9 @@ namespace FunGame.Core.Model.Queue
         /// <param name="a">参数1</param>
         /// <param name="b">参数2</param>
         /// <param name="max">最大获取量</param>
-        public static double GetEP(double a, double b, double max)
+        public double GetEP(double a, double b, double max)
         {
-            return Math.Min((a + Random.Shared.Next(30)) * b, max);
+            return Math.Min((a + Random.Next(30)) * b, max);
         }
 
         /// <summary>
@@ -4241,7 +4266,7 @@ namespace FunGame.Core.Model.Queue
             long[] effectIDs = [.. effects.Keys];
             while (currentRound <= maxRound)
             {
-                currentRound += Random.Shared.Next(1, 9);
+                currentRound += Random.Next(1, 9);
 
                 if (currentRound <= maxRound)
                 {
@@ -4250,7 +4275,7 @@ namespace FunGame.Core.Model.Queue
 
                     do
                     {
-                        long effectID = effectIDs[Random.Shared.Next(effects.Count)];
+                        long effectID = effectIDs[Random.Next(effects.Count)];
                         Dictionary<string, object> args = [];
                         if (effects[effectID])
                         {
@@ -4342,12 +4367,12 @@ namespace FunGame.Core.Model.Queue
                 }
 
                 // 有 65% 欲望插队
-                if (Random.Shared.NextDouble() < 0.65)
+                if (Random.NextDouble() < 0.65)
                 {
                     List<Skill> skills = [.. other.Skills.Where(s => s.Level > 0 && s.SkillType == SkillType.SuperSkill && s.Enable && !s.IsInEffect && s.CurrentCD == 0 && other.EP >= s.RealEPCost)];
                     if (skills.Count > 0)
                     {
-                        Skill skill = skills[Random.Shared.Next(skills.Count)];
+                        Skill skill = skills[Random.Next(skills.Count)];
                         SetCharacterPreCastSuperSkill(other, skill);
                     }
                 }
@@ -4746,7 +4771,7 @@ namespace FunGame.Core.Model.Queue
             throwingBonus = exemptionCtx.ThrowingBonus;
             if (checkExempted)
             {
-                double dice = Random.Shared.NextDouble();
+                double dice = Random.NextDouble();
                 if (dice < (exemption + throwingBonus))
                 {
                     exempted = true;
@@ -4765,7 +4790,7 @@ namespace FunGame.Core.Model.Queue
                     if (effect.Durative && effect.RemainDuration > 0)
                     {
                         // 随机减小 5% 至 20%
-                        double reduce = Random.Shared.Next(5, 20);
+                        double reduce = Random.Next(5, 20);
                         reduce = (effect.Duration > 0 ? effect.Duration : effect.RemainDuration) * (reduce / 100);
                         effect.RemainDuration -= reduce;
                         description = $"[ {effect.Name} ] 的持续时间减少了 {reduce:0.##} {GameplayEquilibriumConstant.InGameTime}！";

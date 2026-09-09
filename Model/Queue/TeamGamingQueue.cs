@@ -360,7 +360,8 @@ namespace FunGame.Core.Model.Queue
         /// <param name="writer"></param>
         /// <param name="map">游戏地图</param>
         /// <param name="enableAI">是否启用 AI 控制器</param>
-        public TeamGamingQueue(Action<string>? writer = null, GameMap? map = null, bool enableAI = true) : base(writer, map, enableAI)
+        /// <param name="seed">随机数种子</param>
+        public TeamGamingQueue(Action<string>? writer = null, GameMap? map = null, bool enableAI = true, int? seed = null) : base(writer, map, enableAI, seed)
         {
 
         }
@@ -372,7 +373,8 @@ namespace FunGame.Core.Model.Queue
         /// <param name="writer"></param>
         /// <param name="map">游戏地图</param>
         /// <param name="enableAI">是否启用 AI 控制器</param>
-        public TeamGamingQueue(List<Character> characters, Action<string>? writer = null, GameMap? map = null, bool enableAI = true) : base(characters, writer, map, enableAI)
+        /// <param name="seed">随机数种子</param>
+        public TeamGamingQueue(List<Character> characters, Action<string>? writer = null, GameMap? map = null, bool enableAI = true, int? seed = null) : base(characters, writer, map, enableAI, seed)
         {
 
         }

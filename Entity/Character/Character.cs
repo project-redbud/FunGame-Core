@@ -1,5 +1,6 @@
 using System.Text;
 using FunGame.Core.Api;
+using FunGame.Core.Interface.Base;
 using FunGame.Core.Interface.Entity;
 using FunGame.Core.Library.Constant;
 using FunGame.Core.Model.EffectContext;
@@ -17,6 +18,16 @@ namespace FunGame.Core.Entity
         /// 唯一标识符
         /// </summary>
         public override Guid Guid { get; set; } = Guid.NewGuid();
+
+        /// <summary>
+        /// 游戏中的行动顺序表实例，角色入队/初始化时由 GamingQueue 自动赋值，使用时需要判断其是否存在
+        /// </summary>
+        public IGamingQueue? GamingQueue { get; set; } = null;
+
+        /// <summary>
+        /// 随机数生成器
+        /// </summary>
+        public Random Random => GamingQueue?.Random ?? Random.Shared;
 
         /// <summary>
         /// 角色的姓

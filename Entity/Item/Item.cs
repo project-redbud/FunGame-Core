@@ -302,11 +302,22 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 游戏中的行动顺序表实例，通过 <see cref="SetGamingQueue"/> 赋值，使用时需要判断其是否存在
+        /// </summary>
+        public IGamingQueue? GamingQueue { get; set; } = null;
+
+        /// <summary>
+        /// 随机数生成器
+        /// </summary>
+        public Random Random => GamingQueue?.Random ?? Random.Shared;
+
+        /// <summary>
         /// 设置游戏内的行动顺序表实例
         /// </summary>
         /// <param name="queue"></param>
         public void SetGamingQueue(IGamingQueue queue)
         {
+            GamingQueue = queue;
             Skills.Active?.GamingQueue = queue;
             foreach (Skill skill in Skills.Passives)
             {

@@ -212,6 +212,11 @@ namespace FunGame.Core.Entity
         public IGamingQueue? GamingQueue { get; set; } = null;
 
         /// <summary>
+        /// 随机数生成器
+        /// </summary>
+        public Random Random => GamingQueue?.Random ?? Random.Shared;
+
+        /// <summary>
         /// 用于动态扩展特效的参数
         /// </summary>
         public Dictionary<string, object> Values { get; } = [];

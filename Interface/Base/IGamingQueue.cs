@@ -15,6 +15,16 @@ namespace FunGame.Core.Interface.Base
         public EquilibriumConstant GameplayEquilibriumConstant { get; }
 
         /// <summary>
+        /// 随机数种子：初始化时可指定，未指定时自动随机生成并保留实际值
+        /// </summary>
+        public int Seed { get; }
+
+        /// <summary>
+        /// 本局游戏使用的随机数生成器（由 <see cref="Seed"/> 决定，同种子下对局可复现）
+        /// </summary>
+        public Random Random { get; }
+
+        /// <summary>
         /// 用于文本输出
         /// </summary>
         public Action<string> WriteLine { get; }
@@ -101,6 +111,16 @@ namespace FunGame.Core.Interface.Base
         /// <param name="character"></param>
         /// <returns></returns>
         public bool ProcessTurn(Character character);
+
+        /// <summary>
+        /// 通过概率计算角色要干嘛
+        /// </summary>
+        /// <param name="dp"></param>
+        /// <param name="pUseItem"></param>
+        /// <param name="pCastSkill"></param>
+        /// <param name="pNormalAttack"></param>
+        /// <returns></returns>
+        public CharacterActionType GetActionType(DecisionPoints dp, double pUseItem, double pCastSkill, double pNormalAttack);
 
         /// <summary>
         /// 造成伤害
