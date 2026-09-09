@@ -391,6 +391,11 @@ namespace FunGame.Core.Entity
         public IGamingQueue? GamingQueue { get; set; } = null;
 
         /// <summary>
+        /// 随机数生成器
+        /// </summary>
+        public Random Random => GamingQueue?.Random ?? Random.Shared;
+
+        /// <summary>
         /// 技能是否属于某个物品
         /// </summary>
         public Item? Item { get; set; } = null;
@@ -621,7 +626,7 @@ namespace FunGame.Core.Entity
             }
             else
             {
-                targets.AddRange(tobeSelected.OrderBy(x => Random.Shared.Next()).Take(CanSelectTargetCount));
+                targets.AddRange(tobeSelected.OrderBy(x => Random.Next()).Take(CanSelectTargetCount));
             }
 
             return [.. targets.Distinct()];

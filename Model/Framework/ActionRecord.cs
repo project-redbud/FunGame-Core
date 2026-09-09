@@ -98,6 +98,11 @@ namespace FunGame.Core.Model.Framework
         public Dictionary<Character, bool> IsImmune { get; } = [];
 
         /// <summary>
+        /// 每个目标本次检定使用的骰子值
+        /// </summary>
+        public Dictionary<Character, double> Dice { get; } = [];
+
+        /// <summary>
         /// 每个目标受到的治疗量
         /// </summary>
         public Dictionary<Character, double> Heals { get; } = [];
@@ -272,6 +277,10 @@ namespace FunGame.Core.Model.Framework
             {
                 snapshot.IsImmune[kv.Key] = kv.Value;
             }
+            foreach (KeyValuePair<Character, double> kv in Dice)
+            {
+                snapshot.Dice[kv.Key] = kv.Value;
+            }
             foreach (KeyValuePair<Character, double> kv in Heals)
             {
                 snapshot.Heals[kv.Key] = kv.Value;
@@ -330,7 +339,12 @@ namespace FunGame.Core.Model.Framework
                 {
                     hasDamage = "免疫";
                 }
-                string[] strs = [hasDamage, hasHeal, hasEffect, hasEvaded];
+                string hasDice = "";
+                if (Dice.TryGetValue(target, out double dice) && dice > 0)
+                {
+                    hasDice = $"检定：{dice:0.####}";
+                }
+                string[] strs = [hasDamage, hasHeal, hasEffect, hasEvaded, hasDice];
                 strs = [.. strs.Where(s => s != "")];
                 if (strs.Length == 0) strings.Add($"[ {target} ]");
                 else strings.Add($"[ {target}（{string.Join(" / ", strs)}）]");

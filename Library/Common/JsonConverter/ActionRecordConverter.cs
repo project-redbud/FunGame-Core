@@ -77,6 +77,9 @@ namespace FunGame.Core.Library.Common.JsonConverter
                 case nameof(ActionRecord.IsImmune):
                     convertingContext[nameof(ActionRecord.IsImmune)] = JsonService.GetObject<Dictionary<Guid, bool>>(ref reader, options) ?? [];
                     break;
+                case nameof(ActionRecord.Dice):
+                    convertingContext[nameof(ActionRecord.Dice)] = JsonService.GetObject<Dictionary<Guid, double>>(ref reader, options) ?? [];
+                    break;
                 case nameof(ActionRecord.Heals):
                     convertingContext[nameof(ActionRecord.Heals)] = JsonService.GetObject<Dictionary<Guid, double>>(ref reader, options) ?? [];
                     break;
@@ -118,6 +121,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
             ResolveKeyed<bool>(record, convertingContext, nameof(ActionRecord.IsCritical), allCharacters, (c, v) => record.IsCritical[c] = v);
             ResolveKeyed<bool>(record, convertingContext, nameof(ActionRecord.IsEvaded), allCharacters, (c, v) => record.IsEvaded[c] = v);
             ResolveKeyed<bool>(record, convertingContext, nameof(ActionRecord.IsImmune), allCharacters, (c, v) => record.IsImmune[c] = v);
+            ResolveKeyed<double>(record, convertingContext, nameof(ActionRecord.Dice), allCharacters, (c, v) => record.Dice[c] = v);
             ResolveKeyed<double>(record, convertingContext, nameof(ActionRecord.Heals), allCharacters, (c, v) => record.Heals[c] = v);
             ResolveKeyed<List<EffectType>>(record, convertingContext, nameof(ActionRecord.ApplyEffects), allCharacters, (c, v) => record.ApplyEffects[c] = v);
         }
@@ -154,7 +158,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
             writer.WriteStartObject();
             writer.WriteNumber(nameof(ActionRecord.Round), value.Round);
             // 收集所有涉及的角色引用（含仅出现在结果字典 key 中的角色，如反弹/反击伤害目标）
-            List<Character> allCharacters = [value.Actor, .. value.Targets, .. value.Damages.Keys, .. value.Heals.Keys, .. value.IsCritical.Keys, .. value.IsEvaded.Keys, .. value.IsImmune.Keys, .. value.Inquiries.Select(i => i.Character)];
+            List<Character> allCharacters = [value.Actor, .. value.Targets, .. value.Damages.Keys, .. value.Heals.Keys, .. value.IsCritical.Keys, .. value.IsEvaded.Keys, .. value.IsImmune.Keys, .. value.Dice.Keys, .. value.Inquiries.Select(i => i.Character)];
             allCharacters.AddRange([.. value.ApplyEffects.Keys]);
             allCharacters = [.. allCharacters.Where(c => c != null && c.Guid != Guid.Empty).DistinctBy(c => c.Guid)];
             writer.WritePropertyName(AllCharactersProperty);
@@ -187,6 +191,8 @@ namespace FunGame.Core.Library.Common.JsonConverter
             JsonSerializer.Serialize(writer, value.IsEvaded.ToDictionary(kv => kv.Key.Guid, kv => kv.Value), options);
             writer.WritePropertyName(nameof(ActionRecord.IsImmune));
             JsonSerializer.Serialize(writer, value.IsImmune.ToDictionary(kv => kv.Key.Guid, kv => kv.Value), options);
+            writer.WritePropertyName(nameof(ActionRecord.Dice));
+            JsonSerializer.Serialize(writer, value.Dice.ToDictionary(kv => kv.Key.Guid, kv => kv.Value), options);
             writer.WritePropertyName(nameof(ActionRecord.Heals));
             JsonSerializer.Serialize(writer, value.Heals.ToDictionary(kv => kv.Key.Guid, kv => kv.Value), options);
             writer.WritePropertyName(nameof(ActionRecord.ApplyEffects));

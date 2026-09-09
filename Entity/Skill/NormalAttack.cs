@@ -250,6 +250,11 @@ namespace FunGame.Core.Entity
         public IGamingQueue? GamingQueue { get; set; } = null;
 
         /// <summary>
+        /// 随机数生成器
+        /// </summary>
+        public Random Random => GamingQueue?.Random ?? Random.Shared;
+
+        /// <summary>
         /// 绑定到特效的普通攻击扩展。键为特效，值为对应的普攻扩展对象。
         /// </summary>
         public Dictionary<Effect, NormalAttackOfEffect> NormalAttackOfEffects { get; } = [];
@@ -340,7 +345,7 @@ namespace FunGame.Core.Entity
             }
             else
             {
-                targets.AddRange(tobeSelected.OrderBy(x => Random.Shared.Next()).Take(CanSelectTargetCount));
+                targets.AddRange(tobeSelected.OrderBy(x => Random.Next()).Take(CanSelectTargetCount));
             }
 
             return [.. targets.Distinct()];
