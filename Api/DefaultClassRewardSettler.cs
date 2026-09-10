@@ -301,7 +301,13 @@ namespace FunGame.Core.Api
         {
             if (ledger.PendingNumericBoosts < 1)
             {
-                return ClassRewardSettlementResult.Fail("无可用数值提升（仅 4 / 9 级档位提供，且可被被动选择替代）。");
+                return ClassRewardSettlementResult.Fail("无可用数值提升份额（仅 4 / 9 级档位按 max(该档被动选择权, 1) 发放）。");
+            }
+            // 严格互斥：4 / 9 级发放的是同一份「被动或数值提升」份额，两者只能取其一
+            // 否则先学满被动仍可再兑换数值提升，等于用 3 份发 6 份
+            if (ledger.PendingPassiveChoices < 1)
+            {
+                return ClassRewardSettlementResult.Fail("被动选择权已用尽：数值提升与被动共用 4 / 9 级同一份份额（互斥，取其一），没有份额就不能再兑换数值提升。");
             }
             ClassAttributeBudget? budget = NumericBoostBudget(context, ledger);
             if (budget is null)
@@ -313,15 +319,12 @@ namespace FunGame.Core.Api
                 return ClassRewardSettlementResult.Fail(error ?? "数值提升分配不合法。");
             }
             ledger.PendingNumericBoosts--;
-            // 数值提升替代被动选择：同步抵扣一次被动选择权（若还有）
-            if (ledger.PendingPassiveChoices > 0)
-            {
-                ledger.PendingPassiveChoices--;
-            }
+            // 严格互斥：同步消耗同一份额的被动选择权
+            ledger.PendingPassiveChoices--;
             ClassAttributeAllocation grant = allocation.Copy();
             AttributeApplier.Apply(context.Character, grant);
             ledger.AppliedAttribute.Add(grant);
-            return ClassRewardSettlementResult.Ok($"已获得数值提升：{grant.Describe()}。");
+            return ClassRewardSettlementResult.Ok($"已获得数值提升：{grant.Describe()}（剩余份额 {ledger.PendingPassiveChoices}）。");
         }
 
         /// <inheritdoc/>

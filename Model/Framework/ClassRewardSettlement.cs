@@ -180,6 +180,8 @@ namespace FunGame.Core.Model.Framework
 
         /// <summary>
         /// 消耗一次数值提升（替代被动选择）：按额度分配核心属性，不受模板限值约束
+        /// <para/>与被动严格互斥：4 / 9 级发放的是同一份「被动或数值提升」份额
+        /// <para/>要求 <see cref="ClassRewardLedger.PendingPassiveChoices"/> ≥ 1 并同时消耗两者
         /// </summary>
         ClassRewardSettlementResult SpendNumericBoost(ClassRewardContext context, ClassRewardLedger ledger, ClassAttributeAllocation allocation);
 

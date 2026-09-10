@@ -11,6 +11,8 @@ namespace FunGame.Core.Model.Framework
     {
         private static readonly Dictionary<string, Func<Class>> _classFactories = [];
         private static readonly Dictionary<string, Func<Class, SubClass>> _subClassFactories = [];
+        /// <summary>流派 IdName -> 所属职业 IdName（注册时快照，用于反查归属）</summary>
+        private static readonly Dictionary<string, string> _subClassOwnerClasses = [];
         private static readonly Dictionary<string, Func<Skill>> _switchSkillFactories = [];
         private static readonly Lock _lock = new();
 
@@ -30,11 +32,27 @@ namespace FunGame.Core.Model.Framework
             }
             if (subClassFactory != null)
             {
+                // 流派工厂只是把 owner 塞进 SubClass，不会拒绝不匹配的职业，
+                // 因此必须在此记录「该流派注册时所属的职业」，供调用方按职业筛选
                 string subKey = subClassFactory(classFactory()).GetIdName();
                 using (_lock.EnterScope())
                 {
                     _subClassFactories[subKey] = subClassFactory;
+                    _subClassOwnerClasses[subKey] = classKey;
                 }
+            }
+        }
+
+        /// <summary>
+        /// 查询流派 IdName 所属职业的 IdName；未注册返回 null
+        /// <para/>用途：按职业筛选流派——直接用 <see cref="CreateSubClass(string, Class)"/> 得到的对象判断归属是无效的，
+        /// 因为流派工厂对任何 owner 都会构造成功
+        /// </summary>
+        public static string? GetOwnerClassIdName(string subClassIdName)
+        {
+            using (_lock.EnterScope())
+            {
+                return _subClassOwnerClasses.TryGetValue(subClassIdName, out string? owner) ? owner : null;
             }
         }
 
@@ -121,6 +139,7 @@ namespace FunGame.Core.Model.Framework
             {
                 _classFactories.Clear();
                 _subClassFactories.Clear();
+                _subClassOwnerClasses.Clear();
                 _switchSkillFactories.Clear();
             }
         }
