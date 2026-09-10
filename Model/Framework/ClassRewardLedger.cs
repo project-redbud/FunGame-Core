@@ -23,9 +23,14 @@ namespace FunGame.Core.Model.Framework
         public int PendingPassiveChoices { get; set; } = 0;
 
         /// <summary>
-        /// 剩余数值提升次数（4 / 9 级：可替代被动选择，兑换核心属性分配）
+        /// 剩余数值提升次数（4 / 9 级：可替代被动选择，兑换一次核心属性分配）
         /// </summary>
         public int PendingNumericBoosts { get; set; } = 0;
+
+        /// <summary>
+        /// 1 级初始分配权是否可领取（领取后置 false；额度见 <see cref="EquilibriumConstant.InitialAttributeBudget"/>）
+        /// </summary>
+        public bool InitialAllocationAvailable { get; set; } = false;
 
         /// <summary>
         /// 已习得的职业技能 IdName（来自职业池副本中的技能实例）
@@ -44,9 +49,9 @@ namespace FunGame.Core.Model.Framework
 
         /// <summary>
         /// 数值提升的额度覆盖（来自路线图单级自带的 <see cref="ClassLevelUpReward.NumericBoost"/>）
-        /// <para/>null 时回落到 <see cref="EquilibriumConstant.DefaultNumericBoostAllocation"/>
+        /// <para/>null 时回落到 <see cref="EquilibriumConstant.NumericBoostBudget"/>
         /// </summary>
-        public ClassAttributeAllocation? NumericBoostAllowance { get; set; } = null;
+        public ClassAttributeBudget? NumericBoostBudget { get; set; } = null;
 
         /// <summary>
         /// 清空账本（洗点用；属性撤销由结算器的 Revoke 负责）
@@ -57,10 +62,11 @@ namespace FunGame.Core.Model.Framework
             PendingActiveSkillChoices = 0;
             PendingPassiveChoices = 0;
             PendingNumericBoosts = 0;
+            InitialAllocationAvailable = false;
             LearnedSkillIds.Clear();
             AppliedAttribute = new();
             GrantedInherentPassiveCount = 0;
-            NumericBoostAllowance = null;
+            NumericBoostBudget = null;
         }
 
         /// <summary>
@@ -72,10 +78,11 @@ namespace FunGame.Core.Model.Framework
             PendingActiveSkillChoices = PendingActiveSkillChoices,
             PendingPassiveChoices = PendingPassiveChoices,
             PendingNumericBoosts = PendingNumericBoosts,
+            InitialAllocationAvailable = InitialAllocationAvailable,
             LearnedSkillIds = [.. LearnedSkillIds],
             AppliedAttribute = AppliedAttribute.Copy(),
             GrantedInherentPassiveCount = GrantedInherentPassiveCount,
-            NumericBoostAllowance = NumericBoostAllowance?.Copy()
+            NumericBoostBudget = NumericBoostBudget?.Copy()
         };
     }
 }

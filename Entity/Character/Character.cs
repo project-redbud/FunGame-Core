@@ -65,19 +65,15 @@ namespace FunGame.Core.Entity
         public MagicType MagicType { get; set; } = MagicType.None;
 
         /// <summary>
-        /// 角色定位1
+        /// 主要定位：等于当前生效战斗天赋所属的定位；未激活任何天赋时为 <see cref="RoleType.None"/>
+        /// <para>由职业规划系统自动同步，<see cref="MOV"/> 等属性依赖它</para>
         /// </summary>
-        public RoleType FirstRoleType { get; set; } = RoleType.None;
+        public RoleType PrimaryRoleType { get; set; } = RoleType.None;
 
         /// <summary>
-        /// 角色定位2
+        /// 次要定位：由已选流派自动推导
         /// </summary>
-        public RoleType SecondRoleType { get; set; } = RoleType.None;
-
-        /// <summary>
-        /// 角色定位3
-        /// </summary>
-        public RoleType ThirdRoleType { get; set; } = RoleType.None;
+        public List<RoleType> SecondaryRoleTypes { get; set; } = [];
 
         /// <summary>
         /// 角色评级
@@ -624,6 +620,12 @@ namespace FunGame.Core.Entity
         public double InitialINT { get; set; } = 0;
 
         /// <summary>
+        /// 角色模板的核心属性分配上下限（可空 = 不限）
+        /// <para>与职业模板 <see cref="Class.AttributeLimit"/> 取交集后约束 1 级初始分配；数值提升不受此限制</para>
+        /// </summary>
+        public ClassAttributeLimit? AttributeLimit { get; set; } = null;
+
+        /// <summary>
         /// 基础力量 [ 与初始设定和等级相关 ]
         /// </summary>
         public double BaseSTR => InitialSTR + STRGrowth * (Level - 1);
@@ -834,13 +836,13 @@ namespace FunGame.Core.Entity
         public int ExATR { get; set; } = 0;
 
         /// <summary>
-        /// 行动力/可移动距离 [ 与第一定位相关 ] [ 单位：格（半径） ]
+        /// 行动力/可移动距离 [ 与主要定位相关 ] [ 单位：格（半径） ]
         /// </summary>
         public int MOV
         {
             get
             {
-                int baseMOV = FirstRoleType switch
+                int baseMOV = PrimaryRoleType switch
                 {
                     RoleType.Core => GameplayEquilibriumConstant.RoleMOV_Core,
                     RoleType.Vanguard => GameplayEquilibriumConstant.RoleMOV_Vanguard,
@@ -2098,9 +2100,8 @@ namespace FunGame.Core.Entity
                 FirstName = FirstName,
                 NickName = NickName,
                 Profile = Profile.Copy(),
-                FirstRoleType = FirstRoleType,
-                SecondRoleType = SecondRoleType,
-                ThirdRoleType = ThirdRoleType,
+                PrimaryRoleType = PrimaryRoleType,
+                SecondaryRoleTypes = [.. SecondaryRoleTypes],
                 Promotion = Promotion,
                 PrimaryAttribute = PrimaryAttribute,
                 Level = Level,
@@ -2119,6 +2120,7 @@ namespace FunGame.Core.Entity
                 InitialSTR = InitialSTR,
                 InitialAGI = InitialAGI,
                 InitialINT = InitialINT,
+                AttributeLimit = AttributeLimit,
                 STRGrowth = STRGrowth,
                 AGIGrowth = AGIGrowth,
                 INTGrowth = INTGrowth,
@@ -2216,9 +2218,8 @@ namespace FunGame.Core.Entity
             NickName = c.NickName;
             Profile = c.Profile.Copy();
             MagicType = c.MagicType;
-            FirstRoleType = c.FirstRoleType;
-            SecondRoleType = c.SecondRoleType;
-            ThirdRoleType = c.ThirdRoleType;
+            PrimaryRoleType = c.PrimaryRoleType;
+            SecondaryRoleTypes = [.. c.SecondaryRoleTypes];
             Promotion = c.Promotion;
             PrimaryAttribute = c.PrimaryAttribute;
             Level = c.Level;
@@ -2255,6 +2256,7 @@ namespace FunGame.Core.Entity
             InitialSTR = c.InitialSTR;
             InitialAGI = c.InitialAGI;
             InitialINT = c.InitialINT;
+            AttributeLimit = c.AttributeLimit;
             ExSTR = c.ExSTR;
             ExSTRPercentage = c.ExSTRPercentage;
             ExAGI = c.ExAGI;

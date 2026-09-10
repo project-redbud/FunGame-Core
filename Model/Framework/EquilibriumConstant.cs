@@ -676,17 +676,38 @@ namespace FunGame.Core.Model.Framework
         public int MinLevelCanModifyDefaultClass { get; set; } = 20;
 
         /// <summary>
+        /// 兼职（多职业）最多可选择的职业数，0 表示不限
+        /// </summary>
+        public int MaxClassCount { get; set; } = 0;
+
+        /// <summary>
+        /// 兼职所需的最低角色等级，1 表示 1 级起即可选择第二个职业
+        /// </summary>
+        public int MinCharacterLevelForMulticlass { get; set; } = 1;
+
+        /// <summary>
+        /// 是否仅为首个职业发放 1 级初始分配权（true 时兼职职业不再重复发放，避免兼职叠加属性）
+        /// </summary>
+        public bool InitialAllocationOnlyForFirstClass { get; set; } = true;
+
+        /// <summary>
         /// 职业升级路线图（key = 职业等级 1–10）
         /// <para/>默认表随库附带做实验（见 <see cref="ClassLevelUpReward.BuildDefaultTable"/>）
         /// </summary>
         public Dictionary<int, ClassLevelUpReward> ClassLevelUpRewards { get; set; } = ClassLevelUpReward.BuildDefaultTable();
 
         /// <summary>
-        /// 数值提升（4 / 9 级）每次可分配的核心属性额度
-        /// <para/>单次提升可自由分配到力量 / 敏捷 / 智力及其成长上，这里只约束单项上限；
-        /// 单级奖励自带 <see cref="ClassLevelUpReward.NumericBoost"/> 时优先使用，null 表示不限制
+        /// 1 级初始分配额度：30 点初始核心属性 + 3.0 成长，可自由分配到力量 / 敏捷 / 智力及其成长上
+        /// <para/>受限分配：实际校验时与 <see cref="Class.AttributeLimit"/>、<see cref="Character.AttributeLimit"/> 的交集上下限一并生效
         /// </summary>
-        public ClassAttributeAllocation? DefaultNumericBoostAllocation { get; set; } = new(5, 5, 5, 0.5, 0.5, 0.5);
+        public ClassAttributeBudget InitialAttributeBudget { get; set; } = new(30, 3.0, limited: true);
+
+        /// <summary>
+        /// 数值提升（4 / 9 级）每次的分配额度：9 点属性 + 0.9 成长
+        /// <para/>不受限：可任意分配到三项属性与成长上，仅校验总额上限；
+        /// 单级奖励自带 <see cref="ClassLevelUpReward.NumericBoost"/> 时优先使用
+        /// </summary>
+        public ClassAttributeBudget NumericBoostBudget { get; set; } = new(9, 0.9, limited: false);
 
         /// <summary>
         /// 应用此游戏平衡常数给实体

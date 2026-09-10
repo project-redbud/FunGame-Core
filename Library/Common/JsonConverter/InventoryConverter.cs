@@ -42,18 +42,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
                     }
                     break;
                 case nameof(Inventory.MainCharacter):
-                    if (reader.TokenType == JsonTokenType.StartObject)
-                    {
-                        Character? legacyMainCharacter = JsonService.GetObject<Character>(ref reader, options);
-                        if (legacyMainCharacter != null)
-                        {
-                            result.MainCharacter = legacyMainCharacter;
-                        }
-                    }
-                    else if (reader.TokenType == JsonTokenType.Number)
-                    {
-                        convertingContext[MainCharacterIdKey] = reader.GetInt64();
-                    }
+                    convertingContext[MainCharacterIdKey] = reader.GetInt64();
                     break;
                 case nameof(Inventory.Squad):
                     HashSet<long> squad = JsonService.GetObject<HashSet<long>>(ref reader, options) ?? [];

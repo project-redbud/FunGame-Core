@@ -13,19 +13,34 @@ namespace FunGame.Core.Model.PrefabricatedEntity
         public override void OnSkillCasted(SkillCastContext ctx)
         {
             base.OnSkillCasted(ctx);
-            // 只有具备次要定位（已学天赋 ≥ 2）的角色才能转换
+            // 只有已学天赋 ≥ 2的角色才能转换
             if (ctx.Trigger?.Class is not CharacterClass plan || !plan.HasCombatTalentSwitch)
             {
                 return;
             }
-            // 目标定位：技能显式指定；未指定时自动选当前激活之外的第一个已学天赋
-            RoleType? specified = (ctx.Skill as SwitchCombatTalentSkill)?.TargetRoleType;
-            RoleType target = specified is { } role && role != RoleType.None ? role : plan.LearnedCombatTalents.FirstOrDefault(kv => !ReferenceEquals(kv.Value, plan.CombatTalent)).Key;
-            if (target == RoleType.None)
+            SwitchCombatTalentSkill? switchSkill = ctx.Skill as SwitchCombatTalentSkill;
+            // 1. 优先按天赋指定（同一定位掌握多个天赋时的唯一精确方式）
+            if (!string.IsNullOrEmpty(switchSkill?.TargetTalentId))
             {
-                return; // 无可切换的天赋
+                Skill? byTalent = plan.AllLearnedTalents.FirstOrDefault(t => t.GetIdName() == switchSkill.TargetTalentId);
+                if (byTalent is not null)
+                {
+                    plan.SwitchCombatTalent(byTalent, out _);
+                    return;
+                }
             }
-            plan.SwitchCombatTalent(target, out _);
+            // 2. 按定位指定：切到该定位尚未激活的第一个已学天赋
+            if (switchSkill?.TargetRoleType is { } role && role != RoleType.None)
+            {
+                plan.SwitchCombatTalent(role, out _);
+                return;
+            }
+            // 3. 未指定：切到已学序列中的下一个（循环，可能仍是同一定位）
+            Skill? next = plan.NextTalentAfter(plan.CombatTalent);
+            if (next is not null)
+            {
+                plan.SwitchCombatTalent(next, out _);
+            }
         }
     }
 }

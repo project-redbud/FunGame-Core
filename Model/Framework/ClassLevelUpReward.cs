@@ -13,8 +13,8 @@ namespace FunGame.Core.Model.Framework
     /// <param name="canNumericBoost">该级是否可用「数值提升」替代被动选择</param>
     /// <param name="skillLevelUp">该级已学职业技能（战技/爆发技）的等级增量</param>
     /// <param name="magicExtraLevel">该级魔法的额外等级增量（魔法成长快于战技）</param>
-    /// <param name="numericBoost">该级数值提升每次可分配的核心属性额度，null 时回落到 <see cref="EquilibriumConstant.DefaultNumericBoostAllocation"/></param>
-    public class ClassLevelUpReward(int level, int inherentPassive = 0, int activeSkillChoices = 0, int passiveChoices = 0, bool canNumericBoost = false, int skillLevelUp = 0, int magicExtraLevel = 0, ClassAttributeAllocation? numericBoost = null)
+    /// <param name="numericBoost">该级数值提升每次可分配的额度，null 时回落到 <see cref="EquilibriumConstant.NumericBoostBudget"/></param>
+    public class ClassLevelUpReward(int level, int inherentPassive = 0, int activeSkillChoices = 0, int passiveChoices = 0, bool canNumericBoost = false, int skillLevelUp = 0, int magicExtraLevel = 0, ClassAttributeBudget? numericBoost = null)
     {
         /// <summary>
         /// 职业等级
@@ -52,10 +52,10 @@ namespace FunGame.Core.Model.Framework
         public int MagicExtraLevel { get; } = magicExtraLevel;
 
         /// <summary>
-        /// 数值提升每次可分配的核心属性额度（初始核心属性 + 成长）
-        /// <para/>null 表示交由 <see cref="EquilibriumConstant.DefaultNumericBoostAllocation"/> 决定，便于整体调平衡
+        /// 数值提升每次可分配的额度（属性点总额 + 成长总额，不受模板上下限约束）
+        /// <para/>null 表示交由 <see cref="EquilibriumConstant.NumericBoostBudget"/> 决定，便于整体调平衡
         /// </summary>
-        public ClassAttributeAllocation? NumericBoost { get; } = numericBoost;
+        public ClassAttributeBudget? NumericBoost { get; } = numericBoost;
 
         /// <summary>
         /// 构建 1→10 级默认路线图（实验用；数值平衡可整体替换 <see cref="EquilibriumConstant.ClassLevelUpRewards"/>）

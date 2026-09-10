@@ -23,9 +23,14 @@ namespace FunGame.Core.Library.Common.Event
         SettleReward,
 
         /// <summary>
-        /// 消耗选择权习得职业技能或被动，或兑换数值提升
+        /// 消耗选择权习得职业技能或被动
         /// </summary>
         LearnClassSkill,
+
+        /// <summary>
+        /// 分配核心属性（1 级初始分配 / 4 与 9 级数值提升）
+        /// </summary>
+        AllocateAttribute,
 
         /// <summary>
         /// 选择角色定位
@@ -36,6 +41,11 @@ namespace FunGame.Core.Library.Common.Event
         /// 学习战斗天赋
         /// </summary>
         LearnTalent,
+
+        /// <summary>
+        /// 遗忘已学战斗天赋
+        /// </summary>
+        ForgetTalent,
 
         /// <summary>
         /// 激活 / 转换战斗天赋

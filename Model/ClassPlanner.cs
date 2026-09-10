@@ -81,6 +81,15 @@ namespace FunGame.Core.Model
             {
                 return ClassPlanResult.Fail($"已选择职业【{classDef.Name}】，不允许重复职业（含同职业的其他流派）。");
             }
+            // 兼职规则：职业数上限与角色等级门槛（默认不限制，可在平衡常数配置）
+            if (Eq.MaxClassCount > 0 && Plan.Classes.Count >= Eq.MaxClassCount)
+            {
+                return ClassPlanResult.Fail($"至多可拥有 {Eq.MaxClassCount} 个职业（兼职上限），无法再选择职业【{classDef.Name}】。");
+            }
+            if (Plan.Classes.Count >= 1 && Character.Level < Eq.MinCharacterLevelForMulticlass)
+            {
+                return ClassPlanResult.Fail($"角色需满 {Eq.MinCharacterLevelForMulticlass} 级才能选择兼职职业（当前 {Character.Level} 级）。");
+            }
             if (Plan.ClassPoints < 1)
             {
                 return ClassPlanResult.Fail($"职业点数不足，选择新职业需消耗 1 点（当前 {Plan.ClassPoints} 点）。");
@@ -90,7 +99,13 @@ namespace FunGame.Core.Model
             Class record = classDef.Copy();
             record.Level = 1;
             Plan.Classes.Add(record);
-            Plan.SubClasses.Add(subClassDef.Copy(record));
+            SubClass subRecord = subClassDef.Copy(record);
+            Plan.SubClasses.Add(subRecord);
+            // 记录流派选择顺序（次要定位的同级排序依据）
+            if (!Plan.SubClassOrder.Contains(subRecord.GetIdName()))
+            {
+                Plan.SubClassOrder.Add(subRecord.GetIdName());
+            }
             // 1 级首职业自动记为默认（洗点恢复用），此后角色满 20 级才允许修改默认
             if (Plan.DefaultClasses.Count == 0 && Character.Level <= 1)
             {
@@ -99,8 +114,12 @@ namespace FunGame.Core.Model
             }
             // 新职业从 1 级起步：立即结算 1 级奖励（职业初始属性分配 + 流派固有被动）
             ClassRewardSettlementResult settled = SettleRewards(record, 0, record.Level);
-            Raise(ClassPlanPhase.SelectClass, true, $"已选择职业【{classDef.Name}】流派【{subClassDef.Name}】。" + (settled.Success ? $"1 级奖励：{settled.Message}" : ""));
-            return ClassPlanResult.Ok();
+            // 新流派带来的候选定位立即可用于次要定位
+            Plan.SyncRoleTypes();
+            string message = $"已选择职业【{classDef.Name}】流派【{subClassDef.Name}】。" + (settled.Success ? $"1 级奖励：{settled.Message}" : "")
+                + $"当前定位：{DescribeRoles()}。";
+            Raise(ClassPlanPhase.SelectClass, true, message);
+            return ClassPlanResult.Ok(message);
         }
 
         /// <summary>
@@ -125,46 +144,23 @@ namespace FunGame.Core.Model
             int fromLevel = record.Level;
             record.Level++;
             ClassRewardSettlementResult settled = SettleRewards(record, fromLevel, record.Level);
-            Raise(ClassPlanPhase.UpgradeClass, true, $"职业【{record.Name}】升至 {record.Level} 级。" + (settled.Success ? $"奖励：{settled.Message}" : $"奖励结算失败：{settled.Message}"));
-            return ClassPlanResult.Ok();
+            // 职业等级变化会影响次要定位的展开顺序
+            Plan.SyncRoleTypes();
+            string message = $"职业【{record.Name}】升至 {record.Level} 级。" + (settled.Success ? $"奖励：{settled.Message}" : $"奖励结算失败：{settled.Message}");
+            Raise(ClassPlanPhase.UpgradeClass, true, message);
+            return ClassPlanResult.Ok(message);
         }
 
         /// <summary>
-        /// 选择角色定位（覆盖式写回三个定位；至多 3 个且必须来自已选流派的候选并集）
-        /// <para>定位变化会使已学天赋与已激活天赋失效，本操作会一并清除，需重新选择天赋</para>
+        /// 重新推导角色定位（主要 = 当前生效战斗天赋所属定位；次要 = 流派按职业等级降序展开）
+        /// <para>定位已不再由玩家手动选择：本方法只做刷新，供上层在外部改动流派 / 天赋后调用</para>
         /// </summary>
-        /// <param name="roleTypes">新定位，去重后按序写入 First/Second/Third</param>
-        public ClassPlanResult SelectRoleTypes(IEnumerable<RoleType> roleTypes)
+        public ClassPlanResult RefreshRoleTypes()
         {
-            if (roleTypes is null)
-            {
-                return ClassPlanResult.Fail("定位列表不能为空。");
-            }
-            RoleType[] selected = [.. roleTypes.Where(r => r != RoleType.None).Distinct()];
-            if (selected.Length == 0)
-            {
-                return ClassPlanResult.Fail("请至少选择一个定位。");
-            }
-            if (selected.Length > 3)
-            {
-                return ClassPlanResult.Fail("角色至多拥有 3 个定位。");
-            }
-            if (Plan.SubClasses.Count == 0)
-            {
-                return ClassPlanResult.Fail("尚未选择任何流派，定位候选为空。请先选择职业与流派。");
-            }
-            HashSet<RoleType> candidates = [.. Plan.SubClasses.SelectMany(sc => sc.RoleTypes)];
-            if (selected.Any(r => !candidates.Contains(r)))
-            {
-                return ClassPlanResult.Fail("所选定位必须来自已选流派提供的候选定位。");
-            }
-            // 定位变动 → 旧天赋作废（已物化的先卸载再清引用）
-            ClearTalents();
-            Character.FirstRoleType = selected.Length > 0 ? selected[0] : RoleType.None;
-            Character.SecondRoleType = selected.Length > 1 ? selected[1] : RoleType.None;
-            Character.ThirdRoleType = selected.Length > 2 ? selected[2] : RoleType.None;
-            Raise(ClassPlanPhase.SelectRoleTypes, true, $"已选择定位：{string.Join(" / ", selected.Select(CharacterSet.GetRoleTypeName))}。");
-            return ClassPlanResult.Ok();
+            Plan.SyncRoleTypes();
+            string message = $"已刷新角色定位：{DescribeRoles()}。";
+            Raise(ClassPlanPhase.SelectRoleTypes, true, message);
+            return ClassPlanResult.Ok(message);
         }
 
         /// <summary>
@@ -178,37 +174,47 @@ namespace FunGame.Core.Model
             {
                 return ClassPlanResult.Fail("天赋不能为空。");
             }
-            if (roleType != Character.FirstRoleType && roleType != Character.SecondRoleType && roleType != Character.ThirdRoleType)
+            HashSet<RoleType> candidates = [.. Plan.SubClasses.SelectMany(sc => sc.RoleTypes)];
+            if (candidates.Count == 0)
             {
-                return ClassPlanResult.Fail("天赋对应的定位不在角色已选定位中。");
+                return ClassPlanResult.Fail("尚未选择任何流派，定位候选为空。请先选择职业与流派。");
+            }
+            if (!candidates.Contains(roleType))
+            {
+                return ClassPlanResult.Fail($"定位【{CharacterSet.GetRoleTypeName(roleType)}】不在已选流派提供的候选定位中。");
             }
             bool inPool = Plan.Classes.Any(c => c.CombatTalents.TryGetValue(roleType, out HashSet<Skill>? pool) && pool.Any(t => t.GetIdName() == talent.GetIdName()));
             if (!inPool)
             {
                 return ClassPlanResult.Fail($"天赋【{talent.Name}】不属于已选职业的 {CharacterSet.GetRoleTypeName(roleType)} 天赋池。");
             }
-            int roleCount = new[] { Character.FirstRoleType, Character.SecondRoleType, Character.ThirdRoleType }.Where(r => r != RoleType.None).Distinct().Count();
-            if (!Plan.LearnedCombatTalents.ContainsKey(roleType) && Plan.LearnedCombatTalents.Count >= roleCount)
+            if (Plan.HasLearnedTalent(talent))
             {
-                return ClassPlanResult.Fail("已学天赋数量与定位数量一致，无法继续学习（先修改定位或替换同定位天赋）。");
+                return ClassPlanResult.Fail($"天赋【{talent.Name}】已学习，无需重复学习。");
             }
-            // 覆盖同定位旧天赋：若旧天赋正在生效，先失活
-            if (Plan.CombatTalent != null && Plan.LearnedCombatTalents.TryGetValue(roleType, out Skill? old) && ReferenceEquals(Plan.CombatTalent, old))
+            if (Plan.LearnedTalentCount >= CharacterClass.MaxLearnedTalentCount)
             {
-                DeactivateTalent();
+                return ClassPlanResult.Fail($"同时掌握的战斗天赋已达上限 {CharacterClass.MaxLearnedTalentCount} 个，请先遗忘一个再学习。");
             }
-            if (Plan.LearnedCombatTalents.TryGetValue(roleType, out Skill? existing))
+            // 追加进该定位的天赋列表（同一定位可掌握多个，学习本身不挂载；激活才挂载）
+            if (!Plan.LearnedCombatTalents.TryGetValue(roleType, out List<Skill>? learned))
             {
-                existing.RemoveSkillFromCharacter(Character);
+                learned = [];
+                Plan.LearnedCombatTalents[roleType] = learned;
             }
-            Plan.LearnedCombatTalents[roleType] = talent;
-            Raise(ClassPlanPhase.LearnTalent, true, $"已学习 {CharacterSet.GetRoleTypeName(roleType)} 天赋【{talent.Name}】。");
-            return ClassPlanResult.Ok();
+            learned.Add(talent);
+            // 学满 2 个天赋即具备【转换战斗天赋】的使用前提，此时按需授予战技
+            Plan.RefreshCombatTalentSwitchSkill(Character);
+            Plan.SyncRoleTypes();
+            string message = $"已学习 {CharacterSet.GetRoleTypeName(roleType)} 天赋【{talent.Name}】（已学 {Plan.LearnedTalentCount} / {CharacterClass.MaxLearnedTalentCount}，"
+                + $"{(Plan.CombatTalent is null ? "尚未激活任何天赋" : $"当前生效【{Plan.CombatTalent.Name}】")}）。";
+            Raise(ClassPlanPhase.LearnTalent, true, message);
+            return ClassPlanResult.Ok(message);
         }
 
         /// <summary>
         /// 激活 / 转换战斗天赋（始终至多 1 个生效；核心定位天赋的等级加成自动加减配对）
-        /// <para>委托 <see cref="CharacterClass.SwitchCombatTalent"/>，与【转换战斗天赋】战技共用同一路径</para>
+        /// <para>委托 <see cref="CharacterClass.SwitchCombatTalent(RoleType, out string?)"/>，与【转换战斗天赋】战技共用同一路径</para>
         /// </summary>
         /// <param name="roleType">要激活的已学天赋对应定位</param>
         public ClassPlanResult ActivateCombatTalent(RoleType roleType)
@@ -218,8 +224,67 @@ namespace FunGame.Core.Model
                 return ClassPlanResult.Fail(error ?? "天赋转换失败。");
             }
             Skill? talent = Plan.CombatTalent;
-            Raise(ClassPlanPhase.ActivateTalent, true, $"已激活 {CharacterSet.GetRoleTypeName(roleType)} 天赋【{talent?.Name}】。");
-            return ClassPlanResult.Ok();
+            string message = $"已激活 {CharacterSet.GetRoleTypeName(roleType)} 天赋【{talent?.Name}】。";
+            Raise(ClassPlanPhase.ActivateTalent, true, message);
+            return ClassPlanResult.Ok(message);
+        }
+
+        /// <summary>
+        /// 按天赋实例激活 / 转换
+        /// </summary>
+        /// <param name="talent">要激活的已学天赋</param>
+        public ClassPlanResult ActivateCombatTalent(Skill talent)
+        {
+            if (!Plan.SwitchCombatTalent(talent, out string? error))
+            {
+                return ClassPlanResult.Fail(error ?? "天赋转换失败。");
+            }
+            string message = $"已激活 {CharacterSet.GetRoleTypeName(Plan.RoleOf(talent))} 天赋【{talent.Name}】。";
+            Raise(ClassPlanPhase.ActivateTalent, true, message);
+            return ClassPlanResult.Ok(message);
+        }
+
+        /// <summary>
+        /// 遗忘一个已学战斗天赋：释放名额，可再学新天赋完成替换
+        /// <para/>已学天赋是战斗内【转换战斗天赋】的策略池，上限 <see cref="CharacterClass.MaxLearnedTalentCount"/>
+        /// <para/>只约束「同时掌握」的数量，遗忘不消耗也不退还资源
+        /// <para/>遗忘的是当前生效天赋时自动接续到剩余已学天赋的第一个；已学不足 2 个会收回【转换战斗天赋】战技
+        /// </summary>
+        /// <param name="talent">要遗忘的已学天赋</param>
+        public ClassPlanResult ForgetCombatTalent(Skill talent)
+        {
+            if (talent is null)
+            {
+                return ClassPlanResult.Fail("天赋不能为空。");
+            }
+            string name = talent.Name;
+            if (!Plan.ForgetCombatTalent(talent, out string? error))
+            {
+                return ClassPlanResult.Fail(error ?? "遗忘天赋失败。");
+            }
+            string active = Plan.CombatTalent is null ? "当前未激活任何天赋" : $"当前生效【{Plan.CombatTalent.Name}】";
+            string message = $"已遗忘天赋【{name}】（已学 {Plan.LearnedTalentCount} / {CharacterClass.MaxLearnedTalentCount}，{active}）。";
+            Raise(ClassPlanPhase.ForgetTalent, true, message);
+            return ClassPlanResult.Ok(message);
+        }
+
+        /// <summary>
+        /// 注入【转换战斗天赋】战技实例（由模组提供模板），并按当前是否具备次要定位即时授予 / 收回
+        /// <para>仅挂载 / 卸载实例，不改变该战技自身的类型与决策点行为</para>
+        /// </summary>
+        /// <param name="switchSkill">模组的战技实例（须为独立的职业战技实例）</param>
+        public ClassPlanResult SetCombatTalentSwitchSkill(Skill switchSkill)
+        {
+            if (switchSkill is null)
+            {
+                return ClassPlanResult.Fail("【转换战斗天赋】战技不能为空。");
+            }
+            Plan.CombatTalentSwitchSkill = switchSkill;
+            Plan.RefreshCombatTalentSwitchSkill(Character);
+            bool granted = Plan.HasCombatTalentSwitch;
+            string message = $"已配置【转换战斗天赋】战技【{switchSkill.Name}】{(granted ? "并已授予角色" : "（待学会第 2 个天赋后授予）")}。";
+            Raise(ClassPlanPhase.LearnTalent, true, message);
+            return ClassPlanResult.Ok(message);
         }
 
         /// <summary>
@@ -239,9 +304,9 @@ namespace FunGame.Core.Model
             Plan.LearnedCombatTalents.Clear();
             Plan.Classes.Clear();
             Plan.SubClasses.Clear();
-            Character.FirstRoleType = RoleType.None;
-            Character.SecondRoleType = RoleType.None;
-            Character.ThirdRoleType = RoleType.None;
+            Plan.SubClassOrder.Clear();
+            Character.PrimaryRoleType = RoleType.None;
+            Character.SecondaryRoleTypes.Clear();
             if (Character.Level < Eq.MinLevelCanModifyDefaultClass)
             {
                 if (Plan.DefaultClasses.Count == 0)
@@ -255,22 +320,32 @@ namespace FunGame.Core.Model
                     Plan.Classes.Add(record);
                     foreach (SubClass sub in Plan.DefaultSubClasses.Where(s => s.Class.GetIdName() == def.GetIdName()))
                     {
-                        Plan.SubClasses.Add(sub.Copy(record));
+                        SubClass subRecord = sub.Copy(record);
+                        Plan.SubClasses.Add(subRecord);
+                        if (!Plan.SubClassOrder.Contains(subRecord.GetIdName()))
+                        {
+                            Plan.SubClassOrder.Add(subRecord.GetIdName());
+                        }
                     }
                     // 恢复的 1 级默认职业同样要拿到 1 级奖励（职业初始属性分配 + 固有被动）
                     SettleRewards(record, 0, record.Level);
                 }
                 Plan.ClassPoints = 0;
                 Plan.OnLevelUp();
-                Raise(ClassPlanPhase.ResetPlan, true, $"已恢复 1 级默认职业（角色未满 {Eq.MinLevelCanModifyDefaultClass} 级）。");
+                Plan.SyncRoleTypes();
+                string restoreMessage = $"已恢复 1 级默认职业（角色未满 {Eq.MinLevelCanModifyDefaultClass} 级）。";
+                Raise(ClassPlanPhase.ResetPlan, true, restoreMessage);
+                return ClassPlanResult.Ok(restoreMessage);
             }
             else
             {
                 Plan.ClassPoints = 0;
                 Plan.OnLevelUp();
-                Raise(ClassPlanPhase.ResetPlan, true, $"已清空职业规划（角色已满 {Eq.MinLevelCanModifyDefaultClass} 级，可重新选择并更新默认）。");
+                Plan.SyncRoleTypes();
+                string clearMessage = $"已清空职业规划（角色已满 {Eq.MinLevelCanModifyDefaultClass} 级，可重新选择并更新默认）。";
+                Raise(ClassPlanPhase.ResetPlan, true, clearMessage);
+                return ClassPlanResult.Ok(clearMessage);
             }
-            return ClassPlanResult.Ok();
         }
 
         /// <summary>
@@ -290,8 +365,9 @@ namespace FunGame.Core.Model
             Plan.DefaultSubClasses.Clear();
             Plan.DefaultClasses.Add(classDef);
             Plan.DefaultSubClasses.Add(subClassDef);
-            Raise(ClassPlanPhase.ChangeDefault, true, $"默认职业已更新为【{classDef.Name}】/【{subClassDef.Name}】。");
-            return ClassPlanResult.Ok();
+            string message = $"默认职业已更新为【{classDef.Name}】/【{subClassDef.Name}】。";
+            Raise(ClassPlanPhase.ChangeDefault, true, message);
+            return ClassPlanResult.Ok(message);
         }
 
         // ==================== 路线图奖励 ====================
@@ -319,7 +395,30 @@ namespace FunGame.Core.Model
         }
 
         /// <summary>
+        /// 领取 1 级初始分配权：按 <see cref="EquilibriumConstant.InitialAttributeBudget"/> 分配核心属性
+        /// <para>受限分配：受职业模板与角色模板限值的交集约束；每个职业仅可领取一次</para>
+        /// </summary>
+        /// <param name="record">职业记录</param>
+        /// <param name="allocation">本次分配到的初始核心属性与成长</param>
+        public ClassPlanResult TakeInitialAllocation(Class record, ClassAttributeAllocation allocation)
+        {
+            if (record is null || !Plan.Classes.Contains(record))
+            {
+                return ClassPlanResult.Fail("职业记录不存在于当前计划中。");
+            }
+            ClassRewardLedger ledger = Plan.GetOrCreateLedger(record);
+            ClassRewardSettlementResult result = Settler.SpendInitialAllocation(CreateRewardContext(record), ledger, allocation);
+            if (!result.Success)
+            {
+                return ClassPlanResult.Fail(result.Message);
+            }
+            Raise(ClassPlanPhase.AllocateAttribute, true, $"职业【{record.Name}】{result.Message}");
+            return ClassPlanResult.Ok(result.Message);
+        }
+
+        /// <summary>
         /// 兑换一次数值提升（4 / 9 级提供，替代被动选择），按指定的核心属性分配落地
+        /// <para>不受模板上下限约束，仅校验 <see cref="EquilibriumConstant.NumericBoostBudget"/> 的总额度</para>
         /// </summary>
         /// <param name="record">职业记录</param>
         /// <param name="allocation">本次分配到的初始核心属性与成长</param>
@@ -335,12 +434,12 @@ namespace FunGame.Core.Model
             {
                 return ClassPlanResult.Fail(result.Message);
             }
-            Raise(ClassPlanPhase.LearnClassSkill, true, $"职业【{record.Name}】{result.Message}");
+            Raise(ClassPlanPhase.AllocateAttribute, true, $"职业【{record.Name}】{result.Message}");
             return ClassPlanResult.Ok(result.Message);
         }
 
         /// <summary>
-        /// 兑换一次数值提升并全部分配到角色核心属性（<see cref="Character.PrimaryAttribute"/>）上
+        /// 兑换一次数值提升并把额度全部分配到角色核心属性（<see cref="Character.PrimaryAttribute"/>）上
         /// </summary>
         /// <param name="record">职业记录</param>
         public ClassPlanResult TakeNumericBoost(Class record)
@@ -351,16 +450,16 @@ namespace FunGame.Core.Model
             }
             ClassRewardContext ctx = CreateRewardContext(record);
             ClassRewardLedger ledger = Plan.GetOrCreateLedger(record);
-            ClassAttributeAllocation? allowance = Settler.NumericBoostAllowance(ctx, ledger);
-            if (allowance is null || allowance.IsEmpty)
+            ClassAttributeBudget? budget = Settler.NumericBoostBudget(ctx, ledger);
+            if (budget is null)
             {
-                return ClassPlanResult.Fail("未配置数值提升额度（DefaultNumericBoostAllocation），请显式指定分配。");
+                return ClassPlanResult.Fail("未配置数值提升额度（EquilibriumConstant.NumericBoostBudget），请显式指定分配。");
             }
             ClassAttributeAllocation allocation = Character.PrimaryAttribute switch
             {
-                PrimaryAttribute.AGI => new(0, allowance.AGI, 0, 0, allowance.AGIGrowth, 0),
-                PrimaryAttribute.INT => new(0, 0, allowance.INT, 0, 0, allowance.INTGrowth),
-                _ => new(allowance.STR, 0, 0, allowance.STRGrowth, 0, 0)
+                PrimaryAttribute.AGI => new(0, budget.AttributePoints, 0, 0, budget.GrowthPoints, 0),
+                PrimaryAttribute.INT => new(0, 0, budget.AttributePoints, 0, 0, budget.GrowthPoints),
+                _ => new(budget.AttributePoints, 0, 0, budget.GrowthPoints, 0, 0)
             };
             return TakeNumericBoost(record, allocation);
         }
@@ -384,8 +483,9 @@ namespace FunGame.Core.Model
                 }
                 SettleRewards(record, ledger.SettledToLevel, record.Level);
             }
-            Raise(ClassPlanPhase.SettleReward, true, "已按当前职业等级重放路线图奖励。");
-            return ClassPlanResult.Ok();
+            const string message = "已按当前职业等级重放路线图奖励。";
+            Raise(ClassPlanPhase.SettleReward, true, message);
+            return ClassPlanResult.Ok(message);
         }
 
         /// <summary>
@@ -430,9 +530,14 @@ namespace FunGame.Core.Model
                     return false;
                 }
             }
+            if (Plan.LearnedTalentCount > CharacterClass.MaxLearnedTalentCount)
+            {
+                error = $"已学天赋数量 {Plan.LearnedTalentCount} 超过上限 {CharacterClass.MaxLearnedTalentCount}。";
+                return false;
+            }
             if (Plan.CombatTalent != null)
             {
-                if (!Plan.LearnedCombatTalents.Values.Any(t => ReferenceEquals(t, Plan.CombatTalent)))
+                if (!Plan.HasLearnedTalent(Plan.CombatTalent))
                 {
                     error = "激活的天赋不在已学列表中。";
                     return false;
@@ -454,12 +559,27 @@ namespace FunGame.Core.Model
         // ==================== 私有 ====================
 
         /// <summary>
-        /// 构造结算上下文（自动绑定该职业记录对应的流派）
+        /// 描述当前定位（主要 / 次要）用于提示文案
+        /// </summary>
+        private string DescribeRoles()
+        {
+            string primary = Character.PrimaryRoleType == RoleType.None
+                ? "无（未激活战斗天赋）"
+                : CharacterSet.GetRoleTypeName(Character.PrimaryRoleType);
+            string secondary = Character.SecondaryRoleTypes.Count == 0
+                ? "无"
+                : string.Join(" / ", Character.SecondaryRoleTypes.Select(CharacterSet.GetRoleTypeName));
+            return $"主要 {primary}；次要 {secondary}";
+        }
+
+        /// <summary>
+        /// 构造结算上下文（自动绑定该职业记录对应的流派，并判定其是否为首个职业）
         /// </summary>
         private ClassRewardContext CreateRewardContext(Class record)
         {
             SubClass? subClass = Plan.SubClasses.FirstOrDefault(sc => ReferenceEquals(sc.Class, record));
-            return new ClassRewardContext(Character, record, subClass, Plan);
+            bool isFirstClass = Plan.Classes.Count <= 1;
+            return new ClassRewardContext(Character, record, subClass, Plan, isFirstClass);
         }
 
         /// <summary>
@@ -474,29 +594,12 @@ namespace FunGame.Core.Model
         }
 
         /// <summary>
-        /// 撤销当前激活天赋（卸载特效并配对撤销核心天赋加成），不改计划引用
+        /// 撤销已学与已激活天赋（已物化的先卸载）
         /// </summary>
-        private void DeactivateTalent()
+        public void ClearTalents()
         {
-            if (Plan.CombatTalent is null)
-            {
-                return;
-            }
-            if (Plan.IsCoreTalentLevelBonusApplied)
-            {
-                Plan.SetCoreTalentLevelBonus(false);
-            }
-            Plan.CombatTalent.RemoveSkillFromCharacter(Character);
-            Plan.CombatTalent = null;
-        }
-
-        /// <summary>
-        /// 清空已学与已激活天赋（已物化的先卸载）
-        /// </summary>
-        private void ClearTalents()
-        {
-            DeactivateTalent();
-            foreach (Skill talent in Plan.LearnedCombatTalents.Values)
+            Plan.DeactivateCombatTalent();
+            foreach (Skill talent in Plan.AllLearnedTalents)
             {
                 talent.RemoveSkillFromCharacter(Character);
             }

@@ -20,6 +20,30 @@ namespace FunGame.Core.Interface
     }
 
     /// <summary>
+    /// 结算职业升级路线图奖励（选择权 / 数值提升 / 技能等级提升）
+    /// </summary>
+    public interface IClassPlanSettleRewardEvent
+    {
+        public void ClassPlanSettleRewardEvent(object sender, ClassPlanEventArgs e, Dictionary<string, object> data);
+    }
+
+    /// <summary>
+    /// 学习职业技能 / 被动（消耗选择权）
+    /// </summary>
+    public interface IClassPlanLearnClassSkillEvent
+    {
+        public void ClassPlanLearnClassSkillEvent(object sender, ClassPlanEventArgs e, Dictionary<string, object> data);
+    }
+
+    /// <summary>
+    /// 分配核心属性（1 级初始分配 / 4 与 9 级数值提升）
+    /// </summary>
+    public interface IClassPlanAllocateAttributeEvent
+    {
+        public void ClassPlanAllocateAttributeEvent(object sender, ClassPlanEventArgs e, Dictionary<string, object> data);
+    }
+
+    /// <summary>
     /// 选择角色定位
     /// </summary>
     public interface IClassPlanSelectRoleTypesEvent
@@ -33,6 +57,14 @@ namespace FunGame.Core.Interface
     public interface IClassPlanLearnTalentEvent
     {
         public void ClassPlanLearnTalentEvent(object sender, ClassPlanEventArgs e, Dictionary<string, object> data);
+    }
+
+    /// <summary>
+    /// 遗忘已学战斗天赋
+    /// </summary>
+    public interface IClassPlanForgetTalentEvent
+    {
+        public void ClassPlanForgetTalentEvent(object sender, ClassPlanEventArgs e, Dictionary<string, object> data);
     }
 
     /// <summary>
