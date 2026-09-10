@@ -1,3 +1,4 @@
+using FunGame.Core.Api;
 using FunGame.Core.Entity;
 using FunGame.Core.Library.Common.Event;
 using FunGame.Core.Library.Constant;
@@ -144,11 +145,130 @@ namespace FunGame.Core.Model
             int fromLevel = record.Level;
             record.Level++;
             ClassRewardSettlementResult settled = SettleRewards(record, fromLevel, record.Level);
+            // 升级即确认该等级：确认后不可下调（回退只能洗点），避免存档恢复时静默丢 build
+            Plan.GetOrCreateLedger(record).CommittedLevel = record.Level;
             // 职业等级变化会影响次要定位的展开顺序
             Plan.SyncRoleTypes();
             string message = $"职业【{record.Name}】升至 {record.Level} 级。" + (settled.Success ? $"奖励：{settled.Message}" : $"奖励结算失败：{settled.Message}");
             Raise(ClassPlanPhase.UpgradeClass, true, message);
             return ClassPlanResult.Ok(message);
+        }
+
+        // ==================== 草稿态（暂存调整）====================
+
+        /// <summary>
+        /// 草稿态设定职业等级：可升可降，不消耗职业点数
+        /// <para/>只做「绝对对齐」——按目标等级重算账本水位、职业池技能等级与可回收的待选配额
+        /// <para/>与中途升降过几次无关（幂等），因此暂存阶段可以自由来回调整
+        /// <para/>下调时若该区间发放的选择权 / 数值提升已被使用（已学技能、已分配属性无法自动追回），则整体失败并提示改用洗点
+        /// <para/>已确认（<see cref="ClassRewardLedger.CommittedLevel"/>）的职业不允许下调
+        /// <para/>调整满意后请调用 <see cref="CommitClassLevel"/> 提交
+        /// </summary>
+        /// <param name="record"><see cref="CharacterClass.Classes"/> 中的职业记录</param>
+        /// <param name="level">目标职业等级（1 – <see cref="EquilibriumConstant.MaxClassLevel"/>）</param>
+        public ClassPlanResult SetClassLevel(Class record, int level)
+        {
+            if (record is null || !Plan.Classes.Contains(record))
+            {
+                return ClassPlanResult.Fail("职业记录不存在于当前计划中。");
+            }
+            if (level < 1 || level > Eq.MaxClassLevel)
+            {
+                return ClassPlanResult.Fail($"职业等级必须在 1–{Eq.MaxClassLevel} 之间（当前 {level}）。");
+            }
+            ClassRewardLedger ledger = Plan.GetOrCreateLedger(record);
+            if (ledger.CommittedLevel >= 0 && level < ledger.CommittedLevel)
+            {
+                return ClassPlanResult.Fail($"职业【{record.Name}】已确认到 {ledger.CommittedLevel} 级，等级只升不降；如需重来请使用洗点。");
+            }
+            if (level == record.Level && ledger.SettledToLevel == level)
+            {
+                return ClassPlanResult.Ok($"职业【{record.Name}】等级未变化（{level} 级）。");
+            }
+            ClassRewardSettlementResult settled = Settler.Reconcile(CreateRewardContext(record), ledger, level);
+            if (!settled.Success)
+            {
+                return ClassPlanResult.Fail($"职业【{record.Name}】等级调整失败：{settled.Message}");
+            }
+            record.Level = level;
+            // 职业等级变化会影响次要定位的展开顺序
+            Plan.SyncRoleTypes();
+            string message = $"职业【{record.Name}】等级已调整为 {level} 级（草稿态，可继续调整）。{settled.Message}";
+            Raise(ClassPlanPhase.SetClassLevel, true, message);
+            return ClassPlanResult.Ok(message);
+        }
+
+        /// <summary>
+        /// 提交 / 确认职业等级：按相对上次确认的净增级数消耗职业点数，并把当前等级记为不可下调的下限
+        /// <para>从未确认过时以 1 级为基准（1 级由 <see cref="SelectClass"/> 的选职业消耗覆盖，不重复计费）</para>
+        /// </summary>
+        /// <param name="record"><see cref="CharacterClass.Classes"/> 中的职业记录</param>
+        public ClassPlanResult CommitClassLevel(Class record)
+        {
+            if (record is null || !Plan.Classes.Contains(record))
+            {
+                return ClassPlanResult.Fail("职业记录不存在于当前计划中。");
+            }
+            ClassRewardLedger ledger = Plan.GetOrCreateLedger(record);
+            int confirmed = ConfirmedBaseline(ledger);
+            int cost = Math.Max(0, record.Level - confirmed);
+            if (cost > 0 && Plan.ClassPoints < cost)
+            {
+                return ClassPlanResult.Fail($"职业点数不足：从 {confirmed} 级确认到 {record.Level} 级需消耗 {cost} 点（当前 {Plan.ClassPoints} 点）。");
+            }
+            if (cost > 0)
+            {
+                Plan.ClassPoints -= cost;
+            }
+            ledger.CommittedLevel = record.Level;
+            string message = $"已确认职业【{record.Name}】为 {record.Level} 级"
+                + (cost > 0 ? $"（消耗职业点数 {cost} 点）" : "（等级未变化）") + "，此后不可下调。";
+            Raise(ClassPlanPhase.CommitClass, true, message);
+            return ClassPlanResult.Ok(message);
+        }
+
+        /// <summary>
+        /// 确认全部职业等级（物化前会调用）：先整体校验职业点数再逐个确认，避免扣到一半失败
+        /// </summary>
+        public ClassPlanResult CommitAllClassLevels()
+        {
+            int total = Plan.Classes.Sum(record => Math.Max(0, record.Level - ConfirmedBaseline(Plan.GetOrCreateLedger(record))));
+            if (total > 0 && Plan.ClassPoints < total)
+            {
+                return ClassPlanResult.Fail($"职业点数不足：确认全部职业等级共需 {total} 点（当前 {Plan.ClassPoints} 点）。");
+            }
+            if (total > 0)
+            {
+                Plan.ClassPoints -= total;
+            }
+            List<string> names = [];
+            foreach (Class record in Plan.Classes)
+            {
+                Plan.GetOrCreateLedger(record).CommittedLevel = record.Level;
+                names.Add($"{record.Name} {record.Level} 级");
+            }
+            string message = names.Count == 0
+                ? "当前没有职业需要确认。"
+                : $"已确认职业等级：{string.Join("、", names)}" + (total > 0 ? $"（消耗职业点数 {total} 点）" : "") + "，此后不可下调。";
+            Raise(ClassPlanPhase.CommitClass, true, message);
+            return ClassPlanResult.Ok(message);
+        }
+
+        /// <summary>
+        /// 把当前计划物化到角色身上（物化即确认）
+        /// <para>先确认全部职业等级（按净增级数消耗职业点数，点数不足则整体失败且不物化），
+        /// 再按计划重挂职业技能 / 流派固有被动 / 战斗天赋</para>
+        /// </summary>
+        /// <param name="character">目标角色，null 时作用于规划器持有的角色</param>
+        public ClassPlanResult ApplyToCharacter(Character? character = null)
+        {
+            ClassPlanResult committed = CommitAllClassLevels();
+            if (!committed.Success)
+            {
+                return committed;
+            }
+            Plan.ApplyTo(character ?? Character);
+            return ClassPlanResult.Ok($"已物化职业计划（职业 {Plan.Classes.Count} 个，已学天赋 {Plan.LearnedTalentCount} 个）。{committed.Message}");
         }
 
         /// <summary>
@@ -465,11 +585,28 @@ namespace FunGame.Core.Model
         }
 
         /// <summary>
-        /// 按当前职业等级重放路线图奖励（存档恢复 / 外部直接改动职业等级后对齐账本）
-        /// <para>水位低于当前等级时补发；水位高于当前等级（等级被下调）时先撤销再重放</para>
+        /// 按当前职业等级补发路线图奖励（存档恢复 / 外部改动职业等级后对齐账本）
+        /// <para/>只补发水位低于当前等级的区间；职业等级只升不降，回退只能通过洗点（<see cref="ResetPlan"/>）
+        /// <para/>因此水位高于当前等级一律视为数据不一致并整体拒绝
+        /// <para/>先全量校验再动手：任何一个职业不一致都不会产生部分修改
         /// </summary>
         public ClassPlanResult SyncRewards()
         {
+            // 先校验：降级不是合法状态，显式拒绝而不是静默“洗点式”对齐——
+            // Revoke 会卸载全部已学技能、扣回全部属性分配并清空账本，
+            // 用它处理“等级小了 1 级”会让玩家静默丢失整个 build
+            foreach (Class record in Plan.Classes)
+            {
+                ClassRewardLedger ledger = Plan.GetOrCreateLedger(record);
+                if (ledger.SettledToLevel > record.Level || ledger.CommittedLevel > record.Level)
+                {
+                    string error = $"职业【{record.Name}】的奖励结算水位（{ledger.SettledToLevel}，已确认 {ledger.CommittedLevel} 级）"
+                        + $"高于当前职业等级（{record.Level}）：职业等级只升不降，本状态属于数据不一致，"
+                        + "已拒绝本次对账以避免丢失已学技能与属性分配（如需回退请使用洗点）。";
+                    Raise(ClassPlanPhase.SettleReward, false, error);
+                    return ClassPlanResult.Fail(error);
+                }
+            }
             foreach (Class record in Plan.Classes)
             {
                 ClassRewardLedger ledger = Plan.GetOrCreateLedger(record);
@@ -477,23 +614,12 @@ namespace FunGame.Core.Model
                 {
                     continue;
                 }
-                if (ledger.SettledToLevel > record.Level)
-                {
-                    Settler.Revoke(CreateRewardContext(record), ledger);
-                }
+                // 只补发：水位必然小于当前等级（上面已校验）
                 SettleRewards(record, ledger.SettledToLevel, record.Level);
             }
             const string message = "已按当前职业等级重放路线图奖励。";
             Raise(ClassPlanPhase.SettleReward, true, message);
             return ClassPlanResult.Ok(message);
-        }
-
-        /// <summary>
-        /// 取某职业可选的职业技能池（供上层列候选；已习得的会一并给出）
-        /// </summary>
-        public IEnumerable<Skill> GetClassSkillPool(Class record)
-        {
-            return DefaultClassRewardSettler.AllPoolSkills(record);
         }
 
         /// <summary>
@@ -519,6 +645,11 @@ namespace FunGame.Core.Model
                 if (Plan.RewardLedgers.TryGetValue(c.GetIdName(), out ClassRewardLedger? ledger) && ledger.SettledToLevel > c.Level)
                 {
                     error = $"职业【{c.Name}】的奖励结算水位（{ledger.SettledToLevel}）高于当前职业等级（{c.Level}）。";
+                    return false;
+                }
+                if (Plan.RewardLedgers.TryGetValue(c.GetIdName(), out ClassRewardLedger? committed) && committed.CommittedLevel > c.Level)
+                {
+                    error = $"职业【{c.Name}】已确认到 {committed.CommittedLevel} 级，但当前等级只有 {c.Level} 级（等级只升不降）。";
                     return false;
                 }
             }
@@ -570,6 +701,14 @@ namespace FunGame.Core.Model
                 ? "无"
                 : string.Join(" / ", Character.SecondaryRoleTypes.Select(CharacterSet.GetRoleTypeName));
             return $"主要 {primary}；次要 {secondary}";
+        }
+
+        /// <summary>
+        /// 已确认等级基准：从未确认过（−1）时取 1 —— 1 级由 <see cref="SelectClass"/> 的选职业消耗覆盖，不重复计费
+        /// </summary>
+        private static int ConfirmedBaseline(ClassRewardLedger ledger)
+        {
+            return ledger.CommittedLevel < 0 ? 1 : ledger.CommittedLevel;
         }
 
         /// <summary>

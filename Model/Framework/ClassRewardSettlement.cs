@@ -65,17 +65,17 @@ namespace FunGame.Core.Model.Framework
         public string Message { get; set; } = message;
 
         /// <summary>
-        /// 本次发放的职业技能选择权
+        /// 本次净发放的职业技能选择权（下调回收时为负数）
         /// </summary>
         public int GrantedActiveSkillChoices { get; set; } = 0;
 
         /// <summary>
-        /// 本次发放的被动选择权
+        /// 本次净发放的被动选择权（下调回收时为负数）
         /// </summary>
         public int GrantedPassiveChoices { get; set; } = 0;
 
         /// <summary>
-        /// 本次发放的数值提升次数
+        /// 本次净发放的数值提升次数（下调回收时为负数）
         /// </summary>
         public int GrantedNumericBoosts { get; set; } = 0;
 
@@ -161,7 +161,15 @@ namespace FunGame.Core.Model.Framework
         ClassRewardSettlementResult Settle(ClassRewardContext context, ClassRewardLedger ledger, int fromLevel, int toLevel);
 
         /// <summary>
+        /// 把该职业的路线图状态「绝对对齐」到 <paramref name="targetLevel"/>（可升可降）
+        /// <para/>与账本原水位无关，因此草稿态（暂存调整）可以反复来回调级而不会重复叠加
+        /// <para/>下调时若该区间发放的选择权 / 数值提升已被使用则整体失败，不做部分回退（请改用洗点）
+        /// </summary>
+        ClassRewardSettlementResult Reconcile(ClassRewardContext context, ClassRewardLedger ledger, int targetLevel);
+
+        /// <summary>
         /// 消耗一次选择权习得职业池中的技能（按技能类型自动判断使用主动 / 被动选择权）
+        /// <para/>习得后自动补到当前路线图水位：不区分是否曾随池提前提级，后学技能与先学技能同级
         /// </summary>
         ClassRewardSettlementResult SpendSkillChoice(ClassRewardContext context, ClassRewardLedger ledger, Skill skill);
 
@@ -189,306 +197,5 @@ namespace FunGame.Core.Model.Framework
         /// 数值提升单次额度，null 表示由上层自行决定
         /// </summary>
         ClassAttributeBudget? NumericBoostBudget(ClassRewardContext context, ClassRewardLedger ledger);
-    }
-
-    /// <summary>
-    /// 默认结算器：忠实于 <see cref="ClassLevelUpReward"/> 的字段语义
-    /// <para/>· 1 级发放初始分配权（额度见 <see cref="EquilibriumConstant.InitialAttributeBudget"/>，受职业与角色模板限值交集约束）
-    /// <para/>· 固有被动数量仅记账（实际授予由 <see cref="CharacterClass.ApplyTo"/> 按流派门槛完成）
-    /// <para/>· 选择权 / 数值提升发放为待选配额，由玩家通过规划器动作消耗
-    /// <para/>· 数值提升按 <see cref="EquilibriumConstant.NumericBoostBudget"/> 发放，不受模板上下限约束
-    /// <para/>· 已学职业技能按等级增量提升，魔法额外 +1，最终由技能类型上限钳制
-    /// </summary>
-    public class DefaultClassRewardSettler : IClassRewardSettler
-    {
-        /// <summary>
-        /// 共享实例
-        /// </summary>
-        public static DefaultClassRewardSettler Instance { get; } = new();
-
-        /// <summary>
-        /// 属性落地策略，可替换
-        /// </summary>
-        public IClassAttributeApplier AttributeApplier { get; set; } = DefaultClassAttributeApplier.Instance;
-
-        /// <inheritdoc/>
-        public virtual ClassRewardSettlementResult Settle(ClassRewardContext context, ClassRewardLedger ledger, int fromLevel, int toLevel)
-        {
-            if (toLevel <= fromLevel)
-            {
-                return ClassRewardSettlementResult.Ok("无需结算。");
-            }
-            if (toLevel > context.Eq.MaxClassLevel)
-            {
-                return ClassRewardSettlementResult.Fail($"职业等级 {toLevel} 超过上限 {context.Eq.MaxClassLevel}。");
-            }
-            ClassRewardSettlementResult result = ClassRewardSettlementResult.Ok();
-            List<string> summary = [];
-            for (int level = fromLevel + 1; level <= toLevel; level++)
-            {
-                if (!context.Eq.ClassLevelUpRewards.TryGetValue(level, out ClassLevelUpReward? reward))
-                {
-                    ledger.SettledToLevel = level;
-                    continue;
-                }
-                // 1 级：发放初始分配权（额度与模板限值在领取时校验，见 SpendInitialAllocation）
-                // 兼职职业默认不重复发放，避免属性叠加膨胀（可由 EquilibriumConstant.InitialAllocationOnlyForFirstClass 关闭）
-                bool canGrantInitial = level == 1 && (!context.Eq.InitialAllocationOnlyForFirstClass || context.IsFirstClass);
-                if (canGrantInitial && !ledger.InitialAllocationAvailable)
-                {
-                    ledger.InitialAllocationAvailable = true;
-                    result.InitialAllocationGranted = true;
-                    summary.Add($"获得初始分配权（{InitialAllocationBudget(context, ledger)?.Describe() ?? "未配置额度"}）");
-                }
-                if (reward.InherentPassive > 0)
-                {
-                    ledger.GrantedInherentPassiveCount += reward.InherentPassive;
-                    summary.Add($"获得流派固有被动 ×{reward.InherentPassive}");
-                }
-                if (reward.ActiveSkillChoices > 0)
-                {
-                    ledger.PendingActiveSkillChoices += reward.ActiveSkillChoices;
-                    result.GrantedActiveSkillChoices += reward.ActiveSkillChoices;
-                    summary.Add($"职业技能选择权 +{reward.ActiveSkillChoices}");
-                }
-                if (reward.PassiveChoices > 0)
-                {
-                    ledger.PendingPassiveChoices += reward.PassiveChoices;
-                    result.GrantedPassiveChoices += reward.PassiveChoices;
-                    summary.Add($"被动选择权 +{reward.PassiveChoices}");
-                }
-                if (reward.CanNumericBoost)
-                {
-                    // 数值提升替代被动选择：该档发放与被动选择权同数的次数（至少 1 次）
-                    int count = Math.Max(reward.PassiveChoices, 1);
-                    if (reward.NumericBoost != null)
-                    {
-                        // 路线图单级自带额度优先
-                        ledger.NumericBoostBudget ??= reward.NumericBoost.Copy();
-                    }
-                    ledger.PendingNumericBoosts += count;
-                    result.GrantedNumericBoosts += count;
-                    summary.Add($"可用数值提升 ×{count}（可替代被动选择）");
-                }
-                // 已学职业技能等级提升（魔法额外 +1）；未启用选择制时职业池全量授予
-                IEnumerable<Skill> learned = context.SkillSelectionEnabled
-                    ? GetLearnedSkills(context.ClassRecord, ledger)
-                    : AllPoolSkills(context.ClassRecord);
-                foreach (Skill skill in learned.Where(s => s.IsActive))
-                {
-                    int delta = reward.SkillLevelUp + (skill.IsMagic ? reward.MagicExtraLevel : 0);
-                    if (delta <= 0)
-                    {
-                        continue;
-                    }
-                    // Level 读写含 ExLevel，提级须先剥离额外等级，避免把突破加成折进基础等级
-                    skill.Level = Math.Max(0, skill.Level - skill.ExLevel) + delta;
-                    result.LeveledSkills.Add(skill);
-                }
-                if (reward.SkillLevelUp > 0)
-                {
-                    summary.Add($"已学职业技能等级 +{reward.SkillLevelUp}{(reward.MagicExtraLevel > 0 ? $"（魔法额外 +{reward.MagicExtraLevel}）" : "")}");
-                }
-                ledger.SettledToLevel = level;
-            }
-            result.Message = summary.Count == 0 ? "本档无奖励。" : string.Join("；", summary) + "。";
-            return result;
-        }
-
-        /// <inheritdoc/>
-        public virtual ClassRewardSettlementResult SpendSkillChoice(ClassRewardContext context, ClassRewardLedger ledger, Skill skill)
-        {
-            if (skill is null)
-            {
-                return ClassRewardSettlementResult.Fail("技能不能为空。");
-            }
-            Skill? target = FindInPool(context.ClassRecord, skill);
-            if (target is null)
-            {
-                return ClassRewardSettlementResult.Fail($"技能【{skill.Name}】不在职业【{context.ClassRecord.Name}】的技能池中。");
-            }
-            bool isPassive = !target.IsActive;
-            if (isPassive ? ledger.PendingPassiveChoices < 1 : ledger.PendingActiveSkillChoices < 1)
-            {
-                return ClassRewardSettlementResult.Fail($"剩余{(isPassive ? "被动" : "职业技能")}选择权不足。");
-            }
-            if (!CheckRequirement(context, target, out string? error))
-            {
-                return ClassRewardSettlementResult.Fail(error ?? "不满足技能前置条件。");
-            }
-            if (isPassive)
-            {
-                ledger.PendingPassiveChoices--;
-            }
-            else
-            {
-                ledger.PendingActiveSkillChoices--;
-            }
-            string idName = target.GetIdName();
-            bool firstTime = ledger.LearnedSkillIds.Add(idName);
-            if (firstTime && target.Level <= 0)
-            {
-                target.Level = Math.Max(1, target.Level - target.ExLevel); // 习得即 1 级
-            }
-            target.Source = SkillSource.Class;
-            target.AddSkillToCharacter(context.Character);
-            return ClassRewardSettlementResult.Ok($"已习得{(isPassive ? "被动" : "职业技能")}【{target.Name}】。");
-        }
-
-        /// <inheritdoc/>
-        public virtual ClassRewardSettlementResult SpendInitialAllocation(ClassRewardContext context, ClassRewardLedger ledger, ClassAttributeAllocation allocation)
-        {
-            if (!ledger.InitialAllocationAvailable)
-            {
-                return ClassRewardSettlementResult.Fail("当前没有可用的 1 级初始分配权（每个职业仅在 1 级发放一次）。");
-            }
-            ClassAttributeBudget? budget = InitialAllocationBudget(context, ledger);
-            if (budget is null)
-            {
-                return ClassRewardSettlementResult.Fail("未配置初始分配额度（EquilibriumConstant.InitialAttributeBudget）。");
-            }
-            ClassAttributeLimit? limit = ResolveInitialLimit(context);
-            if (!budget.Check(allocation, limit, out string? error))
-            {
-                return ClassRewardSettlementResult.Fail(error ?? "初始分配不合法。");
-            }
-            ledger.InitialAllocationAvailable = false;
-            ClassAttributeAllocation grant = allocation.Copy();
-            AttributeApplier.Apply(context.Character, grant);
-            ledger.AppliedAttribute.Add(grant);
-            return ClassRewardSettlementResult.Ok($"已完成初始分配：{grant.Describe()}。");
-        }
-
-        /// <inheritdoc/>
-        public virtual ClassRewardSettlementResult SpendNumericBoost(ClassRewardContext context, ClassRewardLedger ledger, ClassAttributeAllocation allocation)
-        {
-            if (ledger.PendingNumericBoosts < 1)
-            {
-                return ClassRewardSettlementResult.Fail("无可用数值提升（仅 4 / 9 级档位提供，且可被被动选择替代）。");
-            }
-            ClassAttributeBudget? budget = NumericBoostBudget(context, ledger);
-            if (budget is null)
-            {
-                return ClassRewardSettlementResult.Fail("未配置数值提升额度（EquilibriumConstant.NumericBoostBudget）。");
-            }
-            if (!budget.Check(allocation, null, out string? error))
-            {
-                return ClassRewardSettlementResult.Fail(error ?? "数值提升分配不合法。");
-            }
-            ledger.PendingNumericBoosts--;
-            // 数值提升替代被动选择：同步抵扣一次被动选择权（若还有）
-            if (ledger.PendingPassiveChoices > 0)
-            {
-                ledger.PendingPassiveChoices--;
-            }
-            ClassAttributeAllocation grant = allocation.Copy();
-            AttributeApplier.Apply(context.Character, grant);
-            ledger.AppliedAttribute.Add(grant);
-            return ClassRewardSettlementResult.Ok($"已获得数值提升：{grant.Describe()}。");
-        }
-
-        /// <inheritdoc/>
-        public virtual ClassRewardSettlementResult Revoke(ClassRewardContext context, ClassRewardLedger ledger)
-        {
-            if (!ledger.AppliedAttribute.IsEmpty)
-            {
-                AttributeApplier.Revoke(context.Character, ledger.AppliedAttribute.Copy());
-            }
-            foreach (Skill skill in GetLearnedSkills(context.ClassRecord, ledger))
-            {
-                skill.RemoveSkillFromCharacter(context.Character);
-            }
-            ledger.Reset();
-            return ClassRewardSettlementResult.Ok("已撤销该职业的全部路线图奖励。");
-        }
-
-        /// <inheritdoc/>
-        public virtual ClassAttributeBudget? InitialAllocationBudget(ClassRewardContext context, ClassRewardLedger ledger)
-        {
-            return context.Eq.InitialAttributeBudget?.Copy();
-        }
-
-        /// <inheritdoc/>
-        public virtual ClassAttributeBudget? NumericBoostBudget(ClassRewardContext context, ClassRewardLedger ledger)
-        {
-            // 路线图单级自带额度优先，其次平衡常数默认
-            return ledger.NumericBoostBudget?.Copy() ?? context.Eq.NumericBoostBudget?.Copy();
-        }
-
-        /// <summary>
-        /// 初始分配的模板限值：职业模板与角色模板的交集
-        /// </summary>
-        protected virtual ClassAttributeLimit? ResolveInitialLimit(ClassRewardContext context)
-        {
-            ClassAttributeLimit? classLimit = context.ClassRecord.AttributeLimit;
-            ClassAttributeLimit? characterLimit = context.Character.AttributeLimit;
-            if (classLimit != null && characterLimit != null)
-            {
-                return classLimit.Intersect(characterLimit);
-            }
-            return classLimit ?? characterLimit;
-        }
-
-        /// <summary>
-        /// 取职业记录中已习得的技能实例（按账本 IdName 匹配职业池副本）
-        /// </summary>
-        public static IEnumerable<Skill> GetLearnedSkills(Class classRecord, ClassRewardLedger ledger)
-        {
-            if (ledger.LearnedSkillIds.Count == 0)
-            {
-                return [];
-            }
-            return AllPoolSkills(classRecord).Where(s => ledger.LearnedSkillIds.Contains(s.GetIdName()));
-        }
-
-        /// <summary>
-        /// 职业池全量技能（被动 / 战技 / 魔法 / 爆发技）
-        /// </summary>
-        public static IEnumerable<Skill> AllPoolSkills(Class classRecord)
-        {
-            return classRecord.PassiveSkills.Concat(classRecord.Skills).Concat(classRecord.Magics).Concat(classRecord.SuperSkills);
-        }
-
-        /// <summary>
-        /// 在职业池中定位技能实例
-        /// </summary>
-        private static Skill? FindInPool(Class classRecord, Skill skill)
-        {
-            string idName = skill.GetIdName();
-            return AllPoolSkills(classRecord).FirstOrDefault(s => s.GetIdName() == idName);
-        }
-
-        /// <summary>
-        /// 校验技能前置：流派要求与属性要求
-        /// </summary>
-        private static bool CheckRequirement(ClassRewardContext context, Skill skill, out string? error)
-        {
-            error = null;
-            if (skill.RequiredSubClass != null)
-            {
-                if (context.SubClass is null || context.SubClass.GetIdName() != skill.RequiredSubClass.GetIdName())
-                {
-                    error = $"技能【{skill.Name}】需要流派【{skill.RequiredSubClass.Name}】。";
-                    return false;
-                }
-            }
-            if (skill.RequiredAttribute != null)
-            {
-                double value = skill.RequiredAttribute switch
-                {
-                    PrimaryAttribute.STR => context.Character.STR,
-                    PrimaryAttribute.AGI => context.Character.AGI,
-                    PrimaryAttribute.INT => context.Character.INT,
-                    _ => 0
-                };
-                if (value < skill.RequiredAttributeValue)
-                {
-                    error = $"技能【{skill.Name}】需要{CharacterSet.GetPrimaryAttributeName(skill.RequiredAttribute.Value)}达到 {skill.RequiredAttributeValue:0.##}（当前 {value:0.##}）。";
-                    return false;
-                }
-            }
-            return true;
-        }
-
     }
 }

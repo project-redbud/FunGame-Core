@@ -60,7 +60,17 @@ namespace FunGame.Core.Library.Common.Event
         /// <summary>
         /// 修改默认职业与流派（20 级后）
         /// </summary>
-        ChangeDefault
+        ChangeDefault,
+
+        /// <summary>
+        /// 草稿态设定职业等级（暂存调整，可升可降，不消耗职业点数）
+        /// </summary>
+        SetClassLevel,
+
+        /// <summary>
+        /// 提交 / 确认职业等级（此后不可下调）
+        /// </summary>
+        CommitClass
     }
 
     /// <summary>

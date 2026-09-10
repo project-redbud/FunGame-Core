@@ -9,8 +9,16 @@ namespace FunGame.Core.Model.Framework
     {
         /// <summary>
         /// 已结算到的职业等级（保证结算幂等：只补发 (SettledToLevel, 当前等级] 区间）
+        /// <para/>草稿态调整（<see cref="Model.ClassPlanner.SetClassLevel"/>）时会随之升降，始终等于职业记录当前等级
         /// </summary>
         public int SettledToLevel { get; set; } = 0;
+
+        /// <summary>
+        /// 已提交（确认）的职业等级下限，-1 表示尚未提交、仍处于草稿态
+        /// <para/>提交后该职业等级只升不降（<see cref="Model.ClassPlanner.CommitClassLevel"/>）；
+        /// 需要回退只能洗点，避免静默丢失已学技能与属性分配
+        /// </summary>
+        public int CommittedLevel { get; set; } = -1;
 
         /// <summary>
         /// 剩余职业技能选择权（战技 / 魔法 / 爆发技 通用）
@@ -48,8 +56,8 @@ namespace FunGame.Core.Model.Framework
         public int GrantedInherentPassiveCount { get; set; } = 0;
 
         /// <summary>
-        /// 数值提升的额度覆盖（来自路线图单级自带的 <see cref="ClassLevelUpReward.NumericBoost"/>）
-        /// <para/>null 时回落到 <see cref="EquilibriumConstant.NumericBoostBudget"/>
+        /// 数值提升的额度覆盖：取自已结算等级区间内**最高一档**的路线图自带 <see cref="ClassLevelUpReward.NumericBoost"/>
+        /// <para/>随等级升降一并重算（下调到不含该档的等级时会被回收）；null 时回落到 <see cref="EquilibriumConstant.NumericBoostBudget"/>
         /// </summary>
         public ClassAttributeBudget? NumericBoostBudget { get; set; } = null;
 
@@ -59,6 +67,7 @@ namespace FunGame.Core.Model.Framework
         public void Reset()
         {
             SettledToLevel = 0;
+            CommittedLevel = -1;
             PendingActiveSkillChoices = 0;
             PendingPassiveChoices = 0;
             PendingNumericBoosts = 0;
@@ -75,6 +84,7 @@ namespace FunGame.Core.Model.Framework
         public ClassRewardLedger Copy() => new()
         {
             SettledToLevel = SettledToLevel,
+            CommittedLevel = CommittedLevel,
             PendingActiveSkillChoices = PendingActiveSkillChoices,
             PendingPassiveChoices = PendingPassiveChoices,
             PendingNumericBoosts = PendingNumericBoosts,
