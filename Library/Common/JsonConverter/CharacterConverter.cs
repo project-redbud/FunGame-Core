@@ -41,14 +41,12 @@ namespace FunGame.Core.Library.Common.JsonConverter
                 case nameof(Character.MagicType):
                     result.MagicType = (MagicType)reader.GetInt32();
                     break;
-                case nameof(Character.FirstRoleType):
-                    result.FirstRoleType = (RoleType)reader.GetInt32();
+                case nameof(Character.PrimaryRoleType):
+                    result.PrimaryRoleType = (RoleType)reader.GetInt32();
                     break;
-                case nameof(Character.SecondRoleType):
-                    result.SecondRoleType = (RoleType)reader.GetInt32();
-                    break;
-                case nameof(Character.ThirdRoleType):
-                    result.ThirdRoleType = (RoleType)reader.GetInt32();
+                case nameof(Character.SecondaryRoleTypes):
+                    List<RoleType> secondary = JsonService.GetObject<List<RoleType>>(ref reader, options) ?? [];
+                    result.SecondaryRoleTypes = [.. secondary.Where(r => r != RoleType.None).Distinct()];
                     break;
                 case nameof(Character.Promotion):
                     result.Promotion = reader.GetInt32();
@@ -267,9 +265,9 @@ namespace FunGame.Core.Library.Common.JsonConverter
             writer.WritePropertyName(nameof(Character.EquipSlot));
             JsonSerializer.Serialize(writer, value.EquipSlot, options);
             writer.WriteNumber(nameof(Character.MagicType), (int)value.MagicType);
-            writer.WriteNumber(nameof(Character.FirstRoleType), (int)value.FirstRoleType);
-            writer.WriteNumber(nameof(Character.SecondRoleType), (int)value.SecondRoleType);
-            writer.WriteNumber(nameof(Character.ThirdRoleType), (int)value.ThirdRoleType);
+            writer.WriteNumber(nameof(Character.PrimaryRoleType), (int)value.PrimaryRoleType);
+            writer.WritePropertyName(nameof(Character.SecondaryRoleTypes));
+            JsonSerializer.Serialize(writer, value.SecondaryRoleTypes, options);
             writer.WriteNumber(nameof(Character.Promotion), value.Promotion);
             writer.WriteNumber(nameof(Character.PrimaryAttribute), (int)value.PrimaryAttribute);
             writer.WriteNumber(nameof(Character.Level), value.Level);

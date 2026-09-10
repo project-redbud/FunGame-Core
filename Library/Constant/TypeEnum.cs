@@ -91,7 +91,7 @@ namespace FunGame.Core.Library.Constant
     public enum SkillSource
     {
         /// <summary>
-        /// 未标注（角色自带或既有模组），纳入核心天赋加成以兼容未标注来源的旧内容
+        /// 未标注来源（角色自带或模组直接授予的技能）；核心天赋的等级加成同样作用于该来源
         /// </summary>
         None,
 

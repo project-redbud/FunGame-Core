@@ -373,39 +373,28 @@ namespace FunGame.Core.Library.Common.JsonConverter
             {
                 foreach (KeyValuePair<Guid, T> kvp in dict)
                 {
-                    Character? character = FindCharacterByGuid(kvp.Key, result, allCharacters);
+                    Character? character = FindCharacterByGuid(kvp.Key, allCharacters);
                     if (character != null) set(character, kvp.Value);
                 }
             }
         }
 
         /// <summary>
-        /// 解析字典键为 <see cref="CharacterActionType"/>，兼容数字枚举值与字符串枚举名两种写法
+        /// 解析字典键为 <see cref="CharacterActionType"/>
         /// </summary>
         private static CharacterActionType? ParseActionTypeKey(string key)
         {
-            if (int.TryParse(key, out int value)) return (CharacterActionType)value;
-            if (Enum.TryParse(key, out CharacterActionType type)) return type;
-            return null;
+            return int.TryParse(key, out int value) ? (CharacterActionType)value : null;
         }
 
-        private static Character? FindCharacterByGuid(Guid guid, RoundRecord record, List<Character>? allCharacters)
+        /// <summary>
+        /// 按 Guid 从本回合写入的角色引用清单中取回角色实例
+        /// </summary>
+        /// <param name="guid">角色 Guid</param>
+        /// <param name="allCharacters">序列化时写入的角色引用清单</param>
+        private static Character? FindCharacterByGuid(Guid guid, List<Character>? allCharacters)
         {
-            if (allCharacters != null)
-            {
-                Character? character = allCharacters.FirstOrDefault(c => c.Guid == guid);
-                if (character != null) return character;
-            }
-
-            // 兼容旧存档（无 AllCharacters 字段）：从既有字段中查找
-            Character? fallback = record.Targets.Values.SelectMany(c => c).FirstOrDefault(c => c.Guid == guid);
-            if (fallback != null) return fallback;
-            if (record.Actor != null && record.Actor.Guid == guid) return record.Actor;
-            fallback = record.Assists.FirstOrDefault(c => c.Guid == guid);
-            if (fallback != null) return fallback;
-            fallback = record.Respawns.FirstOrDefault(c => c.Guid == guid);
-            if (fallback != null) return fallback;
-            return null;
+            return allCharacters?.FirstOrDefault(c => c.Guid == guid);
         }
     }
 }

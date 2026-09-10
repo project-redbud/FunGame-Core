@@ -2,9 +2,9 @@ namespace FunGame.Core.Model.Framework
 {
     /// <summary>
     /// 职业相关的核心属性分配：初始核心属性（力量 / 敏捷 / 智力）与初始核心属性成长（Growth）
-    /// <para/>同一结构同时服务两处：1 级「职业初始分配」（挂在 <see cref="Entity.Class.InitialAllocation"/>）
-    /// 与 4 / 9 级「数值提升」（挂在 <see cref="ClassLevelUpReward.NumericBoost"/>，缺省回落到
-    /// <see cref="EquilibriumConstant.DefaultNumericBoostAllocation"/>）。
+    /// <para/>同一结构同时服务两处：1 级「初始分配」（额度见 <see cref="EquilibriumConstant.InitialAttributeBudget"/>，
+    /// 受 <see cref="Entity.Class.AttributeLimit"/> 与 <see cref="Entity.Character.AttributeLimit"/> 的交集约束）
+    /// 与 4 / 9 级「数值提升」（额度见 <see cref="EquilibriumConstant.NumericBoostBudget"/>，可任意分配，不受限）。
     /// <para/>不直接写死到角色字段：由 <see cref="IClassAttributeApplier"/> 决定如何落地，便于模组替换加成口径。
     /// </summary>
     /// <param name="str">初始力量</param>
@@ -15,6 +15,13 @@ namespace FunGame.Core.Model.Framework
     /// <param name="intGrowth">智力成长</param>
     public class ClassAttributeAllocation(double str = 0, double agi = 0, double int_ = 0, double strGrowth = 0, double agiGrowth = 0, double intGrowth = 0)
     {
+        /// <summary>
+        /// 无参构造（全 0；供 JSON 反序列化）
+        /// </summary>
+        public ClassAttributeAllocation() : this(0, 0, 0, 0, 0, 0)
+        {
+        }
+
         /// <summary>
         /// 初始力量
         /// </summary>
@@ -49,6 +56,21 @@ namespace FunGame.Core.Model.Framework
         /// 是否为空分配
         /// </summary>
         public bool IsEmpty => STR == 0 && AGI == 0 && INT == 0 && STRGrowth == 0 && AGIGrowth == 0 && INTGrowth == 0;
+
+        /// <summary>
+        /// 属性点合计（力量 + 敏捷 + 智力），用于按额度校验
+        /// </summary>
+        public double AttributePoints => STR + AGI + INT;
+
+        /// <summary>
+        /// 成长合计（三项成长之和），用于按额度校验
+        /// </summary>
+        public double GrowthPoints => STRGrowth + AGIGrowth + INTGrowth;
+
+        /// <summary>
+        /// 是否存在负分配（额度校验的硬性前提）
+        /// </summary>
+        public bool HasNegative => STR < 0 || AGI < 0 || INT < 0 || STRGrowth < 0 || AGIGrowth < 0 || INTGrowth < 0;
 
         /// <summary>
         /// 复制一份

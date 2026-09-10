@@ -132,25 +132,20 @@ namespace FunGame.Core.Library.Common.JsonConverter
             {
                 foreach (KeyValuePair<Guid, T> kvp in dict)
                 {
-                    Character? character = FindCharacterByGuid(kvp.Key, record, allCharacters);
+                    Character? character = FindCharacterByGuid(kvp.Key, allCharacters);
                     if (character != null) set(character, kvp.Value);
                 }
             }
         }
 
-        private static Character? FindCharacterByGuid(Guid guid, ActionRecord record, List<Character>? allCharacters)
+        /// <summary>
+        /// 按 Guid 从本动作写入的角色引用清单中取回角色实例
+        /// </summary>
+        /// <param name="guid">角色 Guid</param>
+        /// <param name="allCharacters">序列化时写入的角色引用清单</param>
+        private static Character? FindCharacterByGuid(Guid guid, List<Character>? allCharacters)
         {
-            if (allCharacters != null)
-            {
-                Character? character = allCharacters.FirstOrDefault(c => c.Guid == guid);
-                if (character != null) return character;
-            }
-
-            // 兼容旧数据（无 AllCharacters 字段）：从 Targets/Actor 中查找
-            Character? fallback = record.Targets.FirstOrDefault(c => c.Guid == guid);
-            if (fallback != null) return fallback;
-            if (record.Actor != null && record.Actor.Guid == guid) return record.Actor;
-            return null;
+            return allCharacters?.FirstOrDefault(c => c.Guid == guid);
         }
 
         public override void Write(Utf8JsonWriter writer, ActionRecord value, JsonSerializerOptions options)

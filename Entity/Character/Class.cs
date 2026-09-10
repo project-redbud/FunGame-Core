@@ -56,10 +56,10 @@ namespace FunGame.Core.Entity
         public Dictionary<RoleType, HashSet<Skill>> CombatTalents { get; set; } = [];
 
         /// <summary>
-        /// 1 级选择该职业时额外获得的核心属性分配（初始核心属性 + 成长）
-        /// <para>旧版职业规划缺失的一块：不同职业在起手阶段就应有不同的属性与成长倾向</para>
+        /// 职业模板的核心属性分配上下限（可空 = 不限）
+        /// <para>与角色模板 <see cref="Character.AttributeLimit"/> 取交集后约束 1 级初始分配；数值提升不受此限制</para>
         /// </summary>
-        public ClassAttributeAllocation InitialAllocation { get; set; } = new();
+        public ClassAttributeLimit? AttributeLimit { get; set; } = null;
 
         /// <summary>
         /// 复制技能并保留等级状态
@@ -89,7 +89,7 @@ namespace FunGame.Core.Entity
                 Magics = [.. Magics.Select(CopySkillState)],
                 PassiveSkills = [.. PassiveSkills.Select(CopySkillState)],
                 SuperSkills = [.. SuperSkills.Select(CopySkillState)],
-                InitialAllocation = InitialAllocation.Copy()
+                AttributeLimit = AttributeLimit
             };
             foreach (KeyValuePair<RoleType, HashSet<Skill>> kv in CombatTalents)
             {
