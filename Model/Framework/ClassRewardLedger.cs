@@ -56,7 +56,7 @@ namespace FunGame.Core.Model.Framework
         public int GrantedInherentPassiveCount { get; set; } = 0;
 
         /// <summary>
-        /// 数值提升的额度覆盖：取自已结算等级区间内**最高一档**的路线图自带 <see cref="ClassLevelUpReward.NumericBoost"/>
+        /// 数值提升的额度覆盖：取自已结算等级区间内最高一档的路线图自带 <see cref="ClassLevelUpReward.NumericBoost"/>
         /// <para/>随等级升降一并重算（下调到不含该档的等级时会被回收）；null 时回落到 <see cref="EquilibriumConstant.NumericBoostBudget"/>
         /// </summary>
         public ClassAttributeBudget? NumericBoostBudget { get; set; } = null;
