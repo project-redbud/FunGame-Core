@@ -816,7 +816,8 @@ namespace FunGame.Core.Model.Queue
                 LastRound = new(TotalRound)
                 {
                     Actor = character, // 每回合记录所有参与角色与队伍归属，供回放端任意回合自包含获取（团队模式 TeamMap 含队伍名，其他模式为空）
-                    AllCharacters = [.. _allCharacters.Union(_queue).Distinct()]
+                    AllCharacters = [.. _allCharacters.Union(_queue).Distinct()],
+                    Seed = this.Seed
                 };
                 foreach (Character c in LastRound.AllCharacters)
                 {

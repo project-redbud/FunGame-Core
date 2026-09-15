@@ -26,6 +26,9 @@ namespace FunGame.Core.Library.Common.JsonConverter
                 case nameof(RoundRecord.Round):
                     result.Round = reader.GetInt32();
                     break;
+                case nameof(RoundRecord.Seed):
+                    result.Seed = reader.GetInt32();
+                    break;
                 case AllCharactersProperty:
                     List<Character> allCharacters = CharacterRefHelper.ReadList(ref reader);
                     result.AllCharacters.AddRange(allCharacters);
@@ -225,6 +228,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
         {
             writer.WriteStartObject();
             writer.WriteNumber(nameof(RoundRecord.Round), value.Round);
+            writer.WriteNumber(nameof(RoundRecord.Seed), value.Seed);
             // 收集角色引用：优先使用显式设置的全角色清单（开局时写入），否则动态收集本回合出现的角色
             List<Character> allCharacters;
             if (value.AllCharacters.Count > 0)

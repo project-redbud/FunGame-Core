@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using FunGame.Core.Entity;
 using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.Queue;
 
 namespace FunGame.Core.Model.Framework
 {
@@ -63,6 +64,13 @@ namespace FunGame.Core.Model.Framework
         /// 角色队伍归属映射（角色 Guid -> 队伍名；团队模式开局时由队列写入，非团队模式为空）
         /// </summary>
         public Dictionary<Guid, string> TeamMap { get; set; } = [];
+
+        /// <summary>
+        /// 本局游戏使用的随机种子
+        /// <para>存档据此记录复现所需的种子：同一 <see cref="Seed"/> + 同一份输入数据可复现整局；
+        /// 种子由队列构造时决定，未被显式指定时是自动生成的随机值，见 <see cref="GamingQueue.Seed"/></para>
+        /// </summary>
+        public int Seed { get; set; } = 0;
 
         /// <summary>
         /// 所有角色的最终统计数据（游戏结束时由队列写入所有参与角色的 <see cref="CharacterStatistics"/>，其他回合为空）
@@ -273,6 +281,7 @@ namespace FunGame.Core.Model.Framework
             }
             snapshot.AllCharacters = [.. AllCharacters];
             snapshot.TeamMap = new(TeamMap);
+            snapshot.Seed = Seed;
             snapshot.GameResult = [.. GameResult];
             snapshot.CharacterStatistics = new(CharacterStatistics);
             snapshot.TotalTime = TotalTime;
