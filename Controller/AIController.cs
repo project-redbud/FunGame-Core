@@ -21,6 +21,12 @@ namespace FunGame.Core.Controller
         private readonly GameMap? _map = map;
 
         /// <summary>
+        /// 本控制器已发起的决策评估序号
+        /// <para>参与随机源派生：同种子下第 N 次决策必然使用同一组随机源，而重试、下一回合会得到新的噪声，保持与原「每次评估都换一批随机值」相近的行为</para>
+        /// </summary>
+        private int _decisionSerial = 0;
+
+        /// <summary>
         /// 控制器当前使用的地图，非地图模式为 null
         /// </summary>
         public GameMap? Map => _map;
@@ -123,12 +129,18 @@ namespace FunGame.Core.Controller
             // 候选决策
             ConcurrentBag<AIDecision> candidateDecisions = [];
 
+            // 本次评估的序号：与 GamingQueue.Seed 一起决定本次评估的随机源，同种子下每次调用都稳定可复现
+            int decisionSerial = Interlocked.Increment(ref _decisionSerial);
+
             // 封装单个移动格子的决策计算逻辑为异步任务
             List<Task> decisionTasks = [];
             foreach (Grid potentialMoveGrid in moveGrids)
             {
                 // 捕获循环变量（避免闭包陷阱）
                 Grid currentMoveGrid = potentialMoveGrid;
+                // 每个移动格持有独立的确定性随机源：既避免并行共享同一 Random 实例的线程安全问题，
+                // 也保证同一 Seed 下的评估序列与结果不依赖线程调度顺序
+                Random gridRandom = new(DeriveRandomSeed(_queue.Seed, decisionSerial, currentMoveGrid));
                 Task task = Task.Run(async () =>
                 {
                     await semaphore.WaitAsync();
@@ -139,7 +151,7 @@ namespace FunGame.Core.Controller
                             availableSkills, availableItems, allEnemysInGame, allTeammatesInGame,
                             selectableEnemys, selectableTeammates,
                             normalizedPUseItem, normalizedPCastSkill, normalizedPNormalAttack,
-                            preferredAction, candidateDecisions
+                            preferredAction, gridRandom, candidateDecisions
                         );
                     }
                     catch (Exception ex)
@@ -161,8 +173,16 @@ namespace FunGame.Core.Controller
             // 从所有候选决策中选出最高分的（保留原有评分权重逻辑）
             if (!candidateDecisions.IsEmpty)
             {
+                // ConcurrentBag 的枚举顺序不确定，同分时若无稳定的次级排序键，结果会随调度变化
+                // 因此按「行动类型 → 移动格 → 技能 → 物品 → 目标数」补齐确定性 tie-breaker，保证同种子同局面下选出同一决策
                 bestDecision = candidateDecisions
                     .OrderByDescending(d => d.Score * d.ProbabilityWeight)
+                    .ThenBy(d => (int)d.ActionType)
+                    .ThenBy(d => d.TargetMoveGrid?.Id ?? int.MinValue)
+                    .ThenBy(d => d.SkillToUse?.Id ?? long.MinValue)
+                    .ThenBy(d => d.ItemToUse?.Id ?? long.MinValue)
+                    .ThenBy(d => d.Targets.Count)
+                    .ThenBy(d => d.TargetGrids.Count)
                     .FirstOrDefault() ?? bestDecision;
                 bestDecision.HasCandidate = true;
             }
@@ -187,6 +207,7 @@ namespace FunGame.Core.Controller
         /// <param name="normalizedPCastSkill"></param>
         /// <param name="normalizedPNormalAttack"></param>
         /// <param name="preferredAction"></param>
+        /// <param name="random"></param>
         /// <param name="candidateDecisions"></param>
         private void CalculateDecisionForGrid(
             Character character, DecisionPoints dp, Grid? startGrid, Grid potentialMoveGrid,
@@ -194,6 +215,7 @@ namespace FunGame.Core.Controller
             List<Character> selectableEnemys, List<Character> selectableTeammates,
             double normalizedPUseItem, double normalizedPCastSkill, double normalizedPNormalAttack,
             CharacterActionType? preferredAction,
+            Random random,
             ConcurrentBag<AIDecision> candidateDecisions)
         {
             // 计算移动惩罚（非战棋模式使用虚拟格，距离为 0）
@@ -208,7 +230,7 @@ namespace FunGame.Core.Controller
 
                 if (normalAttackReachableEnemys.Count > 0)
                 {
-                    List<Character> targets = SelectTargets(character, character.NormalAttack, allEnemysInGame, allTeammatesInGame, normalAttackReachableEnemys, []);
+                    List<Character> targets = SelectTargets(character, character.NormalAttack, allEnemysInGame, allTeammatesInGame, normalAttackReachableEnemys, [], random);
                     if (targets.Count > 0)
                     {
                         double currentScore = EvaluateNormalAttack(character, targets) - movePenalty;
@@ -247,7 +269,7 @@ namespace FunGame.Core.Controller
                         {
                             AIDecision? nonDirDecision = EvaluateNonDirectionalSkill(
                                 character, skill, potentialMoveGrid, skillReachableGrids,
-                                allEnemysInGame, allTeammatesInGame, cost, normalizedPCastSkill);
+                                allEnemysInGame, allTeammatesInGame, cost, normalizedPCastSkill, random);
 
                             if (nonDirDecision != null)
                             {
@@ -266,10 +288,10 @@ namespace FunGame.Core.Controller
 
                             if (skillReachableEnemys.Count > 0 || skillReachableTeammates.Count > 0)
                             {
-                                List<Character> targets = SelectTargets(character, skill, allEnemysInGame, allTeammatesInGame, skillReachableEnemys, skillReachableTeammates);
+                                List<Character> targets = SelectTargets(character, skill, allEnemysInGame, allTeammatesInGame, skillReachableEnemys, skillReachableTeammates, random);
                                 if (targets.Count > 0)
                                 {
-                                    double currentScore = EvaluateSkill(character, skill, targets, cost) - movePenalty;
+                                    double currentScore = EvaluateSkill(character, skill, targets, cost, random) - movePenalty;
                                     // 概率权重直接采用归一化后的行动概率，使模组调整的概率真实影响排序
                                     double probabilityWeight = normalizedPCastSkill;
                                     AIDecision skillDecision = new()
@@ -309,7 +331,7 @@ namespace FunGame.Core.Controller
                         {
                             AIDecision? nonDirDecision = EvaluateNonDirectionalSkill(
                                 character, itemSkill, potentialMoveGrid, itemSkillReachableGrids,
-                                allEnemysInGame, allTeammatesInGame, cost, normalizedPUseItem);
+                                allEnemysInGame, allTeammatesInGame, cost, normalizedPUseItem, random);
 
                             if (nonDirDecision != null)
                             {
@@ -328,10 +350,10 @@ namespace FunGame.Core.Controller
 
                             if (itemSkillReachableEnemys.Count > 0 || itemSkillReachableTeammates.Count > 0)
                             {
-                                List<Character> targetsForItem = SelectTargets(character, itemSkill, allEnemysInGame, allTeammatesInGame, itemSkillReachableEnemys, itemSkillReachableTeammates);
+                                List<Character> targetsForItem = SelectTargets(character, itemSkill, allEnemysInGame, allTeammatesInGame, itemSkillReachableEnemys, itemSkillReachableTeammates, random);
                                 if (targetsForItem.Count > 0)
                                 {
-                                    double currentScore = EvaluateItem(character, item, targetsForItem, cost) - movePenalty;
+                                    double currentScore = EvaluateItem(character, item, targetsForItem, cost, random) - movePenalty;
                                     // 概率权重直接采用归一化后的行动概率，使模组调整的概率真实影响排序
                                     double probabilityWeight = normalizedPUseItem;
                                     AIDecision itemDecision = new()
@@ -526,11 +548,12 @@ namespace FunGame.Core.Controller
         }
 
         // 选择技能的最佳目标
-        private static List<Character> SelectTargets(Character character, ISkill skill, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates)
+        private static List<Character> SelectTargets(Character character, ISkill skill, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates, Random random)
         {
             List<Character> targets = skill.GetSelectableTargets(character, allEnemys, allTeammates, enemys, teammates);
             int count = skill.RealCanSelectTargetCount(enemys, teammates);
-            return [.. targets.OrderBy(o => Random.Shared.Next()).Take(count)];
+            // 随机值相同时以 Guid 兜底，保证排序结果确定
+            return [.. targets.OrderBy(o => random.Next()).ThenBy(o => o.Guid).Take(count)];
         }
 
         // 评估普通攻击的价值
@@ -548,16 +571,16 @@ namespace FunGame.Core.Controller
         }
 
         // 评估技能的价值
-        private static double EvaluateSkill(Character character, Skill skill, List<Character> targets, double cost)
+        private static double EvaluateSkill(Character character, Skill skill, List<Character> targets, double cost, Random random)
         {
             double score = 0;
-            score += targets.Sum(t => CalculateTargetValue(t, skill));
+            score += targets.Sum(t => CalculateTargetValue(t, skill, random));
             score += EvaluateSkillEvent?.Invoke(character, skill, targets, cost) ?? 0;
             return score;
         }
 
         // 非指向性技能的评估
-        private AIDecision? EvaluateNonDirectionalSkill(Character character, Skill skill, Grid moveGrid, List<Grid> castableGrids, List<Character> allEnemys, List<Character> allTeammates, double cost, double probabilityWeight)
+        private AIDecision? EvaluateNonDirectionalSkill(Character character, Skill skill, Grid moveGrid, List<Grid> castableGrids, List<Character> allEnemys, List<Character> allTeammates, double cost, double probabilityWeight, Random random)
         {
             double bestSkillScore = double.NegativeInfinity;
             List<Grid> bestTargetGrids = [];
@@ -575,7 +598,7 @@ namespace FunGame.Core.Controller
                     continue;
 
                 // 评估这些影响目标的价值
-                double skillScore = affected.Sum(t => CalculateTargetValue(t, skill));
+                double skillScore = affected.Sum(t => CalculateTargetValue(t, skill, random));
 
                 if (skillScore > bestSkillScore)
                 {
@@ -604,19 +627,46 @@ namespace FunGame.Core.Controller
         }
 
         // 评估物品的价值
-        private static double EvaluateItem(Character character, Item item, List<Character> targets, double cost)
+        private static double EvaluateItem(Character character, Item item, List<Character> targets, double cost, Random random)
         {
-            double score = Random.Shared.Next(1000);
+            double score = random.Next(1000);
             score += EvaluateItemEvent?.Invoke(character, item, targets, cost) ?? 0;
             return score;
         }
 
         // 辅助函数：计算单个目标在某个技能下的价值
-        private static double CalculateTargetValue(Character target, ISkill skill)
+        private static double CalculateTargetValue(Character target, ISkill skill, Random random)
         {
-            double value = Random.Shared.Next(1000);
+            double value = random.Next(1000);
             value += CalculateTargetValueEvent?.Invoke(target, skill) ?? 0;
             return value;
+        }
+
+        /// <summary>
+        /// 由本局的随机种子（<see cref="GamingQueue.Seed"/>）、评估序号与移动格坐标派生确定性随机种子
+        /// <para>并行评估各移动格时，每个格子使用自己派生的 <see cref="Random"/> 实例：既避免共享实例的线程安全问题，又使评估结果只取决于种子与局面，与线程调度顺序无关</para>
+        /// <para>此处使用自实现的 FNV-1a 混合而非 <see cref="HashCode"/> 字符串哈希，因为后两者在 .NET 中带进程级随机化，跨进程运行不可复现</para>
+        /// </summary>
+        /// <param name="baseSeed">本局游戏的随机种子</param>
+        /// <param name="serial">本控制器第几次发起决策评估</param>
+        /// <param name="grid">该次评估对应的移动格</param>
+        /// <returns>该移动格专属的随机种子</returns>
+        private static int DeriveRandomSeed(int baseSeed, int serial, Grid grid)
+        {
+            unchecked
+            {
+                const uint fnvOffsetBasis = 2166136261u;
+                const uint fnvPrime = 16777619u;
+                uint hash = fnvOffsetBasis;
+                hash = (hash ^ (uint)baseSeed) * fnvPrime;
+                hash = (hash ^ (uint)serial) * fnvPrime;
+                hash = (hash ^ (uint)grid.Id) * fnvPrime;
+                hash = (hash ^ (uint)grid.X) * fnvPrime;
+                hash = (hash ^ (uint)grid.Y) * fnvPrime;
+                hash = (hash ^ (uint)grid.Z) * fnvPrime;
+                // 高位回灌，改善种子低位分布，避免相近坐标产生相近序列
+                return (int)(hash ^ (hash >> 16));
+            }
         }
 
         /// <summary>
