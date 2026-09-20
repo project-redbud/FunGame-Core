@@ -150,6 +150,48 @@ namespace FunGame.Core.Interface
         public void OnGamingPunishEvent(object sender, GamingEventArgs e, Dictionary<string, object> data);
     }
 
+    public interface IGamingRoundRewardGainedBeforeEventHandler : IGamingEventHandler
+    {
+        public event GamingEventHandler? GamingRoundRewardGainedBefore;
+
+        public void OnGamingRoundRewardGainedBeforeEvent(object sender, GamingEventArgs e, Dictionary<string, object> data);
+    }
+
+    public interface IGamingRoundRewardGainedAfterEventHandler : IGamingEventHandler
+    {
+        public event GamingEventHandler? GamingRoundRewardGainedAfter;
+
+        public void OnGamingRoundRewardGainedAfterEvent(object sender, GamingEventArgs e, Dictionary<string, object> data);
+    }
+
+    public interface IGamingRoundRewardLostBeforeEventHandler : IGamingEventHandler
+    {
+        public event GamingEventHandler? GamingRoundRewardLostBefore;
+
+        public void OnGamingRoundRewardLostBeforeEvent(object sender, GamingEventArgs e, Dictionary<string, object> data);
+    }
+
+    public interface IGamingRoundRewardLostAfterEventHandler : IGamingEventHandler
+    {
+        public event GamingEventHandler? GamingRoundRewardLostAfter;
+
+        public void OnGamingRoundRewardLostAfterEvent(object sender, GamingEventArgs e, Dictionary<string, object> data);
+    }
+
+    public interface IGamingRoundRewardStolenBeforeEventHandler : IGamingEventHandler
+    {
+        public event GamingEventHandler? GamingRoundRewardStolenBefore;
+
+        public void OnGamingRoundRewardStolenBeforeEvent(object sender, GamingEventArgs e, Dictionary<string, object> data);
+    }
+
+    public interface IGamingRoundRewardStolenAfterEventHandler : IGamingEventHandler
+    {
+        public event GamingEventHandler? GamingRoundRewardStolenAfter;
+
+        public void OnGamingRoundRewardStolenAfterEvent(object sender, GamingEventArgs e, Dictionary<string, object> data);
+    }
+
     /// <summary>
     /// 局内事件处理器聚合接口<para/>
     /// 实现此接口即可接收所有局内事件(GamingHandler 的分发目标)<para/>
@@ -157,7 +199,9 @@ namespace FunGame.Core.Interface
     /// </summary>
     public interface IGameEventHandler : IGamingConnectEventHandler, IGamingDisconnectEventHandler, IGamingReconnectEventHandler, IGamingBanCharacterEventHandler, IGamingPickCharacterEventHandler,
         IGamingRandomEventHandler, IGamingRoundEventHandler, IGamingLevelUpEventHandler, IGamingMoveEventHandler, IGamingAttackEventHandler, IGamingSkillEventHandler, IGamingItemEventHandler, IGamingMagicEventHandler,
-        IGamingBuyEventHandler, IGamingSuperSkillEventHandler, IGamingPauseEventHandler, IGamingUnpauseEventHandler, IGamingSurrenderEventHandler, IGamingUpdateInfoEventHandler, IGamingPunishEventHandler
+        IGamingBuyEventHandler, IGamingSuperSkillEventHandler, IGamingPauseEventHandler, IGamingUnpauseEventHandler, IGamingSurrenderEventHandler, IGamingUpdateInfoEventHandler, IGamingPunishEventHandler,
+        IGamingRoundRewardGainedBeforeEventHandler, IGamingRoundRewardGainedAfterEventHandler, IGamingRoundRewardLostBeforeEventHandler, IGamingRoundRewardLostAfterEventHandler,
+        IGamingRoundRewardStolenBeforeEventHandler, IGamingRoundRewardStolenAfterEventHandler
     {
     }
 }

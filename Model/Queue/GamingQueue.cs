@@ -162,11 +162,6 @@ namespace FunGame.Core.Model.Queue
         public List<RoundRecord> Rounds { get; } = [];
 
         /// <summary>
-        /// 回合奖励
-        /// </summary>
-        public Dictionary<int, List<Skill>> RoundRewards => _roundRewards;
-
-        /// <summary>
         /// 是否使用插队保护机制
         /// </summary>
         public bool UseQueueProtected { get; set; }
@@ -343,11 +338,6 @@ namespace FunGame.Core.Model.Queue
         /// 当前回合死亡角色和参与击杀的人
         /// </summary>
         protected readonly List<DeathRelation> _roundDeaths = [];
-
-        /// <summary>
-        /// 回合奖励
-        /// </summary>
-        protected readonly Dictionary<int, List<Skill>> _roundRewards = [];
 
         /// <summary>
         /// 回合奖励的特效工厂
@@ -1138,8 +1128,11 @@ namespace FunGame.Core.Model.Queue
             // 决策点补充
             DecisionPoints dp = DecisionPointsRecovery(character);
 
-            // 获取回合奖励
-            List<Skill> rewards = GetRoundRewards(TotalRound, character);
+            // 角色行动回合计数（作为角色绑定奖励表的查询键与 offset 基准；召唤物不单独计数，统一折算到 Master）
+            CountCharacterActionTurn(character);
+
+            // 发放回合奖励
+            List<Skill> rewards = GrantRoundRewards(character);
 
             // 基础硬直时间
             double baseTime = 0;
@@ -1165,6 +1158,8 @@ namespace FunGame.Core.Model.Queue
             };
             if (!OnTurnStartEvent(turnStartCtx))
             {
+                // 事件接管整回合：回合即刻结束，已发放的奖励照常按回合结束规则回收
+                SettleRoundRewards(character, rewards);
                 _isInRound = false;
                 return _isGameEnd;
             }
@@ -2223,8 +2218,8 @@ namespace FunGame.Core.Model.Queue
                 LastRound.Checkpoint = CreateStateCheckpoint();
             }
 
-            // 移除回合奖励
-            RemoveRoundRewards(character, rewards);
+            // 回收回合奖励（被动奖励在吟唱回合顺延到结算回合）
+            SettleRoundRewards(character, rewards);
 
             // 本回合结束共用一份上下文，结束事件与特效钩子观察同一份快照
             TurnContext turnEndCtx = new(this, character, dp);
@@ -3489,6 +3484,8 @@ namespace FunGame.Core.Model.Queue
             // 移除死者的施法
             _castingSkills.Remove(death);
             _castingSuperSkills.Remove(death);
+            // 死者已无法再进入结算回合，顺延的被动奖励立即移除
+            ClearDeferredRoundRewards(death);
 
             // 因丢失目标而中断施法
             List<Character> castingSkills = [.. _castingSkills.Keys];
@@ -3502,6 +3499,8 @@ namespace FunGame.Core.Model.Queue
                     {
                         caster.CharacterState = CharacterState.Actionable;
                     }
+                    // 吟唱被打断：立即移除已顺延的被动奖励
+                    ClearDeferredRoundRewards(caster);
                     WriteLine($"[ {caster} ] 终止了 [ {st.Skill.Name} ] 的施法" + (_hardnessTimes[caster] > 3 && _isInRound ? $"，并获得了 3 {GameplayEquilibriumConstant.InGameTime}的硬直时间的补偿。" : "。"));
                     if (_hardnessTimes[caster] > 3 && _isInRound)
                     {
@@ -4280,107 +4279,6 @@ namespace FunGame.Core.Model.Queue
 
         #endregion
 
-        #region 回合奖励
-
-        /// <summary>
-        /// 初始化回合奖励
-        /// </summary>
-        /// <param name="maxRound">最大回合数</param>
-        /// <param name="maxRewardsInRound">每个奖励回合生成多少技能</param>
-        /// <param name="effects">key: 特效的数字标识符；value: 是否是主动技能的特效</param>
-        /// <param name="factoryEffects">通过数字标识符来获取构造特效的参数</param>
-        /// <returns></returns>
-        public void InitRoundRewards(int maxRound, int maxRewardsInRound, Dictionary<long, bool> effects, Func<long, Dictionary<string, object>>? factoryEffects = null)
-        {
-            _roundRewards.Clear();
-            int currentRound = 1;
-            long[] effectIDs = [.. effects.Keys];
-            while (currentRound <= maxRound)
-            {
-                currentRound += Random.Next(1, 9);
-
-                if (currentRound <= maxRound)
-                {
-                    List<Skill> skills = [];
-                    if (maxRewardsInRound <= 0) maxRewardsInRound = 1;
-
-                    do
-                    {
-                        long effectID = effectIDs[Random.Next(effects.Count)];
-                        Dictionary<string, object> args = [];
-                        if (effects[effectID])
-                        {
-                            args.Add("active", true);
-                            args.Add("self", true);
-                            args.Add("enemy", false);
-                        }
-                        Skill skill = Factory.OpenFactory.GetInstance<Skill>(effectID, "", args);
-                        Dictionary<string, object> effectArgs = factoryEffects != null ? factoryEffects(effectID) : [];
-                        Effect effect = Factory.OpenFactory.GetInstance(effectID, "", skill, effectArgs);
-                        skill.Effects.Add(effect);
-                        skill.Name = $"[R] {effect.Name}";
-                        skills.Add(skill);
-                    }
-                    while (skills.Count < maxRewardsInRound);
-
-                    _roundRewards[currentRound] = skills;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 获取回合奖励
-        /// </summary>
-        /// <param name="round"></param>
-        /// <param name="character"></param>
-        /// <returns></returns>
-        protected List<Skill> GetRoundRewards(int round, Character character)
-        {
-            if (_roundRewards.TryGetValue(round, out List<Skill>? value) && value is List<Skill> list && list.Count > 0)
-            {
-                foreach (Skill skill in list)
-                {
-                    skill.GamingQueue = this;
-                    skill.Character = character;
-                    skill.Level = 1;
-                    skill.Source = SkillSource.Reward;
-                    LastRound.RoundRewards.Add(skill);
-                    WriteLine($"[ {character} ] 获得了回合奖励！{skill.Description}".Trim());
-                    if (skill.IsActive)
-                    {
-                        skill.OnSkillCasted(this, character, [character], []);
-                    }
-                    else
-                    {
-                        character.Skills.Add(skill);
-                    }
-                }
-                return list;
-            }
-            return [];
-        }
-
-        /// <summary>
-        /// 移除回合奖励
-        /// </summary>
-        /// <param name="character"></param>
-        /// <param name="skills"></param>
-        protected static void RemoveRoundRewards(Character character, List<Skill> skills)
-        {
-            HookContext ctx = new(null, character);
-            foreach (Skill skill in skills)
-            {
-                foreach (Effect e in skill.Effects)
-                {
-                    FireEffectWithoutQueue(e, nameof(Effect.OnEffectLost), x => x.OnEffectLost(ctx), character);
-                    character.Effects.Remove(e);
-                }
-                character.Skills.Remove(skill);
-            }
-        }
-
-        #endregion
-
         #region 回合外
 
         /// <summary>
@@ -4438,6 +4336,8 @@ namespace FunGame.Core.Model.Queue
                 {
                     _castingSkills.Remove(caster);
                     WriteLine($"[ {caster} ] 的施法被 [ {interrupter} ] 打断了！！");
+                    // 吟唱被打断：立即移除已顺延的被动奖励
+                    ClearDeferredRoundRewards(caster);
                     TriggerOnSkillCastInterrupted(caster, interrupter, interruptCtx);
                     OnInterruptCastingEvent(interruptCtx);
                 }
@@ -5130,6 +5030,85 @@ namespace FunGame.Core.Model.Queue
         protected void OnTurnEndEvent(TurnContext ctx)
         {
             TurnEndEvent?.Invoke(ctx);
+        }
+
+        public delegate void RoundRewardEventHandler(RoundRewardContext ctx);
+        /// <summary>
+        /// 回合奖励获得（发放）前事件
+        /// </summary>
+        public event RoundRewardEventHandler? RoundRewardGainedBeforeEvent;
+        /// <summary>
+        /// 回合奖励获得（发放）前事件
+        /// </summary>
+        /// <param name="ctx"></param>
+        protected void OnRoundRewardGainedBeforeEvent(RoundRewardContext ctx)
+        {
+            RoundRewardGainedBeforeEvent?.Invoke(ctx);
+        }
+
+        /// <summary>
+        /// 回合奖励获得（发放）后事件
+        /// </summary>
+        public event RoundRewardEventHandler? RoundRewardGainedAfterEvent;
+        /// <summary>
+        /// 回合奖励获得（发放）后事件
+        /// </summary>
+        /// <param name="ctx"></param>
+        protected void OnRoundRewardGainedAfterEvent(RoundRewardContext ctx)
+        {
+            RoundRewardGainedAfterEvent?.Invoke(ctx);
+        }
+
+        /// <summary>
+        /// 回合奖励移除前事件
+        /// </summary>
+        public event RoundRewardEventHandler? RoundRewardLostBeforeEvent;
+        /// <summary>
+        /// 回合奖励移除前事件
+        /// </summary>
+        /// <param name="ctx"></param>
+        protected void OnRoundRewardLostBeforeEvent(RoundRewardContext ctx)
+        {
+            RoundRewardLostBeforeEvent?.Invoke(ctx);
+        }
+
+        /// <summary>
+        /// 回合奖励移除后事件
+        /// </summary>
+        public event RoundRewardEventHandler? RoundRewardLostAfterEvent;
+        /// <summary>
+        /// 回合奖励移除后事件
+        /// </summary>
+        /// <param name="ctx"></param>
+        protected void OnRoundRewardLostAfterEvent(RoundRewardContext ctx)
+        {
+            RoundRewardLostAfterEvent?.Invoke(ctx);
+        }
+
+        /// <summary>
+        /// 回合奖励被夺取前事件
+        /// </summary>
+        public event RoundRewardEventHandler? RoundRewardStolenBeforeEvent;
+        /// <summary>
+        /// 回合奖励被夺取前事件
+        /// </summary>
+        /// <param name="ctx"></param>
+        protected void OnRoundRewardStolenBeforeEvent(RoundRewardContext ctx)
+        {
+            RoundRewardStolenBeforeEvent?.Invoke(ctx);
+        }
+
+        /// <summary>
+        /// 回合奖励被夺取后事件
+        /// </summary>
+        public event RoundRewardEventHandler? RoundRewardStolenAfterEvent;
+        /// <summary>
+        /// 回合奖励被夺取后事件
+        /// </summary>
+        /// <param name="ctx"></param>
+        protected void OnRoundRewardStolenAfterEvent(RoundRewardContext ctx)
+        {
+            RoundRewardStolenAfterEvent?.Invoke(ctx);
         }
 
         public delegate CharacterActionType DecideActionEventHandler(TurnContext ctx);

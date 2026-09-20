@@ -6,10 +6,10 @@ using FunGame.Core.Model.Framework;
 
 namespace FunGame.Core.Model.Queue
 {
-    /// <summary>
+    /// <remark>
     /// <see cref="GamingQueue"/> 的特效钩子隐式遍历分发
     /// <para/>三层结构：FireEffect 核心不变式（赋队列 + 记录触发 + 调用钩子）、集合构建器（镜像各调用点现有的 LINQ 形状）、每钩子 Trigger 包装（含返回值聚合）
-    /// </summary>
+    /// </remark>
     public partial class GamingQueue
     {
         #region 特效触发核心
@@ -711,6 +711,43 @@ namespace FunGame.Core.Model.Queue
             foreach (Effect effect in EffectsOf(character))
             {
                 FireEffect(effect, nameof(Effect.OnCharacterInquiry), e => e.OnCharacterInquiry(ctx), character);
+            }
+        }
+
+        #endregion
+
+        #region 回合奖励钩子包装
+
+        /// <summary>
+        /// 触发 OnRoundRewardGained（奖励发放到角色）
+        /// </summary>
+        private void TriggerOnRoundRewardGained(Character character, RoundRewardContext ctx)
+        {
+            foreach (Effect effect in EffectsOf(character))
+            {
+                FireEffect(effect, nameof(Effect.OnRoundRewardGained), e => e.OnRoundRewardGained(ctx), character);
+            }
+        }
+
+        /// <summary>
+        /// 触发 OnRoundRewardLost（奖励从角色身上移除）
+        /// </summary>
+        private void TriggerOnRoundRewardLost(Character character, RoundRewardContext ctx)
+        {
+            foreach (Effect effect in EffectsOf(character))
+            {
+                FireEffect(effect, nameof(Effect.OnRoundRewardLost), e => e.OnRoundRewardLost(ctx), character);
+            }
+        }
+
+        /// <summary>
+        /// 触发 OnRoundRewardStolen（奖励被夺取；原持有者与夺取者的特效都能观察到）
+        /// </summary>
+        private void TriggerOnRoundRewardStolen(Character from, Character thief, RoundRewardContext ctx)
+        {
+            foreach (Effect effect in EffectsOf(from, thief))
+            {
+                FireEffect(effect, nameof(Effect.OnRoundRewardStolen), e => e.OnRoundRewardStolen(ctx), from, thief);
             }
         }
 
