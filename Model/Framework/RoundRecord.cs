@@ -35,10 +35,11 @@ namespace FunGame.Core.Model.Framework
         public Dictionary<Character, double> Dice { get; set; } = [];
         public Dictionary<Character, double> Heals { get; set; } = [];
         /// <summary>
-        /// 角色 -> 技能。施放技能时由队列写入 [施法者 -> 技能]；
-        /// 特效钩子被触发时由框架自动写入（仅当开发者重写了对应钩子方法），key 取特效所在状态栏的角色（<see cref="Character.Effects"/> 归属），施法者/技能持有者未知时回退。
+        /// 角色 -> 该角色在本回合触发过特效的技能列表（按首次触发顺序去重，同一技能一回合内只记一条）。<para/>
+        /// 施放技能时由队列写入 [施法者 -> 技能]；特效钩子被触发时由框架自动写入（仅当开发者重写了对应钩子方法），
+        /// key 取特效所在状态栏的角色（<see cref="Character.Effects"/> 归属），施法者/技能持有者未知时回退。
         /// </summary>
-        public Dictionary<Character, Skill> Effects { get; set; } = [];
+        public Dictionary<Character, List<Skill>> Effects { get; set; } = [];
         public Dictionary<Character, List<EffectType>> ApplyEffects { get; set; } = [];
         public List<string> ActorContinuousKilling { get; set; } = [];
         public List<string> DeathContinuousKilling { get; set; } = [];
@@ -101,6 +102,25 @@ namespace FunGame.Core.Model.Framework
             else
             {
                 ApplyEffects.TryAdd(character, [.. types]);
+            }
+        }
+
+        /// <summary>
+        /// 记录「<paramref name="owner"/> 在本回合触发了 <paramref name="skill"/> 的特效」（按技能 Guid 去重，保留首次触发顺序）
+        /// </summary>
+        /// <param name="owner">特效所在状态栏的角色（<see cref="Character.Effects"/> 归属）</param>
+        /// <param name="skill">触发特效所属的技能</param>
+        public void AddEffectTriggered(Character owner, Skill? skill)
+        {
+            if (owner is null || skill is null) return;
+            if (!Effects.TryGetValue(owner, out List<Skill>? list) || list is null)
+            {
+                list = [];
+                Effects[owner] = list;
+            }
+            if (!list.Contains(skill))
+            {
+                list.Add(skill);
             }
         }
 
@@ -239,7 +259,7 @@ namespace FunGame.Core.Model.Framework
                 IsImmune = new(IsImmune),
                 Dice = new(Dice),
                 Heals = new(Heals),
-                Effects = new(Effects),
+                Effects = Effects.ToDictionary(kv => kv.Key, kv => (List<Skill>)[.. kv.Value]),
                 ApplyEffects = ApplyEffects.ToDictionary(kv => kv.Key, kv => (List<EffectType>)[.. kv.Value]),
                 ActorContinuousKilling = [.. ActorContinuousKilling],
                 DeathContinuousKilling = [.. DeathContinuousKilling],
