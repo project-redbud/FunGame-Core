@@ -935,6 +935,36 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
+        /// 回合奖励被发放到角色（获得）时触发<para/>
+        /// <see cref="RoundRewardContext.Thief"/> 与 <see cref="RoundRewardContext.From"/> 此刻为 null
+        /// </summary>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（获得奖励的角色）、<see cref="RoundRewardContext.Binding"/>、<see cref="RoundRewardContext.TurnKey"/>、<see cref="RoundRewardContext.Skills"/>。</param>
+        public virtual void OnRoundRewardGained(RoundRewardContext ctx)
+        {
+
+        }
+
+        /// <summary>
+        /// 回合奖励从角色身上被移除时触发<para/>
+        /// 包含：回合结束回收、吟唱被打断/施法者死亡时立即清理顺延奖励、特效主动移除
+        /// </summary>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（失去奖励的角色）、<see cref="RoundRewardContext.Binding"/>、<see cref="RoundRewardContext.TurnKey"/>、<see cref="RoundRewardContext.Skills"/>、<see cref="RoundRewardContext.IsCarryOver"/>（是否为顺延奖励）。</param>
+        public virtual void OnRoundRewardLost(RoundRewardContext ctx)
+        {
+
+        }
+
+        /// <summary>
+        /// 回合奖励被夺取时触发<para/>
+        /// 原持有者与夺取者的特效都会被触发（见 <see cref="RoundRewardContext.Thief"/> / <see cref="RoundRewardContext.From"/> 判定归属）
+        /// </summary>
+        /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（原持有者）、<see cref="RoundRewardContext.Binding"/>、<see cref="RoundRewardContext.TurnKey"/>（原持有者侧的目标键）、<see cref="RoundRewardContext.Skills"/>（全部被夺取项）、<see cref="RoundRewardContext.Thief"/>（夺取者）、<see cref="RoundRewardContext.From"/>（原持有者）。</param>
+        public virtual void OnRoundRewardStolen(RoundRewardContext ctx)
+        {
+
+        }
+
+        /// <summary>
         /// 角色完成移动后
         /// </summary>
         /// <param name="ctx">此刻有值：<see cref="HookContext.Trigger"/>（移动角色）、<see cref="MoveContext.Target"/>（移动目标格）、<see cref="MoveContext.DP"/>。</param>
@@ -1041,6 +1071,65 @@ namespace FunGame.Core.Entity
         public void InterruptCasting(Character interrupter)
         {
             GamingQueue?.InterruptCasting(interrupter);
+        }
+
+        /// <summary>
+        /// 查询奖励归属角色未来第 <paramref name="actionTurnOffset"/> 个行动回合的回合奖励<para/>
+        /// 对外统一 offset：相对各自当前行动回合，最小为 1；召唤物折算到其 Master
+        /// </summary>
+        /// <param name="target">目标角色</param>
+        /// <param name="actionTurnOffset">相对其当前行动回合的偏移，最小为 1</param>
+        /// <returns>该行动回合的奖励；队列为空、未启用角色绑定或无奖励时返回空列表</returns>
+        protected IReadOnlyList<Skill> QueryRoundReward(Character target, int actionTurnOffset)
+        {
+            return GamingQueue?.QueryRoundRewards(target, actionTurnOffset) ?? [];
+        }
+
+        /// <summary>
+        /// 为奖励归属角色（召唤物折算到其 Master）追加一条未来行动回合的回合奖励
+        /// </summary>
+        /// <param name="owner">目标角色</param>
+        /// <param name="actionTurnOffset">相对其当前行动回合的偏移，最小为 1</param>
+        /// <param name="skill">奖励技能，不可为 null</param>
+        /// <returns>是否追加成功</returns>
+        protected bool AddRoundReward(Character owner, int actionTurnOffset, Skill skill)
+        {
+            ArgumentNullException.ThrowIfNull(skill);
+            return GamingQueue?.AddRoundReward(owner, actionTurnOffset, skill) ?? false;
+        }
+
+        /// <summary>
+        /// 移除奖励归属角色（召唤物折算到其 Master）未来第 <paramref name="actionTurnOffset"/> 个行动回合中的一条奖励
+        /// </summary>
+        /// <param name="target">目标角色</param>
+        /// <param name="actionTurnOffset">相对其当前行动回合的偏移，最小为 1</param>
+        /// <param name="skill">奖励技能，不可为 null</param>
+        /// <returns>是否移除成功</returns>
+        protected bool RemoveRoundReward(Character target, int actionTurnOffset, Skill skill)
+        {
+            ArgumentNullException.ThrowIfNull(skill);
+            return GamingQueue?.RemoveRoundReward(target, actionTurnOffset, skill, out _) ?? false;
+        }
+
+        /// <summary>
+        /// 夺取目标角色（召唤物折算到其 Master）未来第 <paramref name="fromOffset"/> 个行动回合的全部奖励<para/>
+        /// 并入夺取者（召唤物折算到其 Master）未来第 <paramref name="toOffset"/> 个行动回合的奖励<para/>
+        /// 目标键位多条奖励一次性全部夺取，并与夺取者目标键位的奖励合并
+        /// </summary>
+        /// <param name="target">被夺取者</param>
+        /// <param name="fromOffset">被夺取者侧的偏移，最小为 1</param>
+        /// <param name="thief">夺取者</param>
+        /// <param name="toOffset">夺取者侧的偏移，最小为 1</param>
+        /// <param name="stolen">全部被夺取的奖励</param>
+        /// <returns>是否夺取成功</returns>
+        protected bool StealRoundReward(Character target, int fromOffset, Character thief, int toOffset, out List<Skill> stolen)
+        {
+            stolen = [];
+            if (GamingQueue is null)
+            {
+                return false;
+            }
+            return GamingQueue.StealRoundReward(target, fromOffset, thief, toOffset, out stolen);
         }
 
         /// <summary>

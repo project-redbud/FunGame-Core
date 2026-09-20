@@ -988,4 +988,20 @@ namespace FunGame.Core.Library.Constant
         Top,
         Bottom
     }
+
+    /// <summary>
+    /// 回合奖励的绑定方式
+    /// </summary>
+    public enum RoundRewardBinding
+    {
+        /// <summary>
+        /// 回合绑定：以全局回合（<see cref="Model.Queue.GamingQueue.TotalRound"/>）为键，所有角色在该回合共享
+        /// </summary>
+        Round,
+
+        /// <summary>
+        /// 角色绑定：以「该角色的第 X 个行动回合」为键，仅该角色命中；默认不启用
+        /// </summary>
+        Character
+    }
 }

@@ -102,4 +102,34 @@ namespace FunGame.Core.Interface
     {
         public void GamingPunishEvent(object sender, GamingEventArgs e, Dictionary<string, object> data);
     }
+
+    public interface IGamingRoundRewardGainedBeforeEvent
+    {
+        public void GamingRoundRewardGainedBeforeEvent(object sender, GamingEventArgs e, Dictionary<string, object> data);
+    }
+
+    public interface IGamingRoundRewardGainedAfterEvent
+    {
+        public void GamingRoundRewardGainedAfterEvent(object sender, GamingEventArgs e, Dictionary<string, object> data);
+    }
+
+    public interface IGamingRoundRewardLostBeforeEvent
+    {
+        public void GamingRoundRewardLostBeforeEvent(object sender, GamingEventArgs e, Dictionary<string, object> data);
+    }
+
+    public interface IGamingRoundRewardLostAfterEvent
+    {
+        public void GamingRoundRewardLostAfterEvent(object sender, GamingEventArgs e, Dictionary<string, object> data);
+    }
+
+    public interface IGamingRoundRewardStolenBeforeEvent
+    {
+        public void GamingRoundRewardStolenBeforeEvent(object sender, GamingEventArgs e, Dictionary<string, object> data);
+    }
+
+    public interface IGamingRoundRewardStolenAfterEvent
+    {
+        public void GamingRoundRewardStolenAfterEvent(object sender, GamingEventArgs e, Dictionary<string, object> data);
+    }
 }

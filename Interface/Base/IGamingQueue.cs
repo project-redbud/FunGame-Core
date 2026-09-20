@@ -351,5 +351,55 @@ namespace FunGame.Core.Interface.Base
         /// <param name="character">被施加特效的角色</param>
         /// <param name="types">特效类型列表</param>
         public void AddApplyEffects(Character character, params EffectType[] types);
+
+        /// <summary>
+        /// 回合绑定的奖励表（只读投影；键 = 全局回合）
+        /// </summary>
+        public IReadOnlyDictionary<int, IReadOnlyList<Skill>> RoundRewards { get; }
+
+        /// <summary>
+        /// 角色绑定的奖励表（只读投影；键 = 角色 → 该角色的行动回合序号；未启用角色绑定时为空表）
+        /// </summary>
+        public IReadOnlyDictionary<Character, IReadOnlyDictionary<int, IReadOnlyList<Skill>>> CharacterRoundRewards { get; }
+
+        /// <summary>
+        /// 查询某角色（召唤物折算到其 Master）未来第 <paramref name="actionTurnOffset"/> 个行动回合的回合奖励
+        /// </summary>
+        /// <param name="character">目标角色</param>
+        /// <param name="actionTurnOffset">相对其当前行动回合的偏移，最小为 1</param>
+        /// <returns>该行动回合的奖励；未启用角色绑定或无奖励时返回空列表</returns>
+        public IReadOnlyList<Skill> QueryRoundRewards(Character character, int actionTurnOffset);
+
+        /// <summary>
+        /// 为某角色（召唤物折算到其 Master）追加一条未来行动回合的回合奖励
+        /// </summary>
+        /// <param name="character">目标角色</param>
+        /// <param name="actionTurnOffset">相对其当前行动回合的偏移，最小为 1</param>
+        /// <param name="skill">奖励技能，不可为 null</param>
+        /// <returns>是否追加成功</returns>
+        public bool AddRoundReward(Character character, int actionTurnOffset, Skill skill);
+
+        /// <summary>
+        /// 移除某角色（召唤物折算到其 Master）未来第 <paramref name="actionTurnOffset"/> 个行动回合中的一条奖励
+        /// </summary>
+        /// <param name="character">目标角色</param>
+        /// <param name="actionTurnOffset">相对其当前行动回合的偏移，最小为 1</param>
+        /// <param name="skill">奖励技能，不可为 null</param>
+        /// <param name="removed">被移除的奖励</param>
+        /// <returns>是否移除成功</returns>
+        public bool RemoveRoundReward(Character character, int actionTurnOffset, Skill skill, out Skill? removed);
+
+        /// <summary>
+        /// 夺取目标角色（召唤物折算到其 Master）未来第 <paramref name="fromOffset"/> 个行动回合的全部奖励，
+        /// 并入夺取者（召唤物折算到其 Master）未来第 <paramref name="toOffset"/> 个行动回合的奖励<para/>
+        /// 引用转移 + 字典移除；目标键位多条奖励时一次性全部夺取，并与夺取者目标键位的奖励合并
+        /// </summary>
+        /// <param name="target">被夺取者</param>
+        /// <param name="fromOffset">被夺取者侧的偏移，最小为 1</param>
+        /// <param name="thief">夺取者</param>
+        /// <param name="toOffset">夺取者侧的偏移，最小为 1</param>
+        /// <param name="stolen">全部被夺取的奖励</param>
+        /// <returns>是否夺取成功</returns>
+        public bool StealRoundReward(Character target, int fromOffset, Character thief, int toOffset, out List<Skill> stolen);
     }
 }
