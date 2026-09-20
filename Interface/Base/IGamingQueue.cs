@@ -380,7 +380,7 @@ namespace FunGame.Core.Interface.Base
         public bool AddRoundReward(Character character, int actionTurnOffset, Skill skill);
 
         /// <summary>
-        /// 移除某角色（召唤物折算到其 Master）未来第 <paramref name="actionTurnOffset"/> 个行动回合中的一条奖励
+        /// 移除奖励归属角色未来第 <paramref name="actionTurnOffset"/> 个行动回合中的一条奖励
         /// </summary>
         /// <param name="character">目标角色</param>
         /// <param name="actionTurnOffset">相对其当前行动回合的偏移，最小为 1</param>
@@ -388,6 +388,15 @@ namespace FunGame.Core.Interface.Base
         /// <param name="removed">被移除的奖励</param>
         /// <returns>是否移除成功</returns>
         public bool RemoveRoundReward(Character character, int actionTurnOffset, Skill skill, out Skill? removed);
+
+        /// <summary>
+        /// 一次性移除奖励归属角色未来第 <paramref name="actionTurnOffset"/> 个行动回合的<b>全部</b>回合奖励
+        /// </summary>
+        /// <param name="character">目标角色</param>
+        /// <param name="actionTurnOffset">相对其当前行动回合的偏移，最小为 1</param>
+        /// <param name="removed">被移除的全部奖励</param>
+        /// <returns>是否移除成功</returns>
+        public bool RemoveRoundRewards(Character character, int actionTurnOffset, out List<Skill> removed);
 
         /// <summary>
         /// 夺取目标角色（召唤物折算到其 Master）未来第 <paramref name="fromOffset"/> 个行动回合的全部奖励，

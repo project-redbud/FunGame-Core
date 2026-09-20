@@ -465,8 +465,8 @@ namespace FunGame.Core.Model.Queue
         #region 回合奖励：查询 / 增加 / 移除 / 夺取（对外统一 offset）
 
         /// <summary>
-        /// 奖励归属角色：召唤物（<see cref="Character.Master"/> 非空）统一折算到其 Master，
-        /// 即召唤物不享受角色绑定的回合奖励，任何追加/夺取都记在 Master 名下
+        /// 奖励归属角色：召唤物（<see cref="Character.Master"/> 非空）统一折算到其 Master<para/>
+        /// 即召唤物不享受角色绑定的回合奖励，任何追加/夺取都记在 Master 名下（但移除不会误伤 Master）
         /// </summary>
         private static Character ResolveRoundRewardOwner(Character character)
         {
@@ -556,7 +556,8 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 移除某角色（召唤物折算到 Master）未来第 <paramref name="actionTurnOffset"/> 个行动回合中的一条奖励
+        /// 移除奖励归属角色未来第 <paramref name="actionTurnOffset"/> 个行动回合中的一条奖励
+        /// 若目标是召唤物，不会影响其 Master
         /// </summary>
         /// <param name="character">目标角色</param>
         /// <param name="actionTurnOffset">相对其当前行动回合的偏移，最小为 1</param>
@@ -570,9 +571,8 @@ namespace FunGame.Core.Model.Queue
             {
                 return false;
             }
-            Character owner = ResolveRoundRewardOwner(character);
-            int key = CurrentActionTurnOf(owner) + ClampRoundRewardOffset(actionTurnOffset);
-            if (!_characterRoundRewards.TryGetValue(owner, out SortedDictionary<int, List<Skill>>? table)
+            int key = CurrentActionTurnOf(character) + ClampRoundRewardOffset(actionTurnOffset);
+            if (!_characterRoundRewards.TryGetValue(character, out SortedDictionary<int, List<Skill>>? table)
                 || table is null
                 || !table.TryGetValue(key, out List<Skill>? list)
                 || list is null
@@ -586,9 +586,42 @@ namespace FunGame.Core.Model.Queue
                 table.Remove(key);
             }
             InvalidateRoundRewardViews();
-            RoundRewardContext ctx = new(this, owner, RoundRewardBinding.Character, key) { Skills = [skill] };
+            RoundRewardContext ctx = new(this, character, RoundRewardBinding.Character, key) { Skills = [skill] };
             OnRoundRewardLostBeforeEvent(ctx);
-            TriggerOnRoundRewardLost(owner, ctx);
+            TriggerOnRoundRewardLost(character, ctx);
+            OnRoundRewardLostAfterEvent(ctx);
+            return true;
+        }
+
+        /// <summary>
+        /// 一次性移除奖励归属角色未来第 <paramref name="actionTurnOffset"/> 个行动回合的<b>全部</b>回合奖励<para/>
+        /// 若目标是召唤物，不会影响其 Master
+        /// </summary>
+        /// <param name="character">目标角色</param>
+        /// <param name="actionTurnOffset">相对其当前行动回合的偏移，最小为 1</param>
+        /// <param name="removed">被移除的全部奖励</param>
+        public bool RemoveRoundRewards(Character character, int actionTurnOffset, out List<Skill> removed)
+        {
+            removed = [];
+            if (!_bindRoundRewardsToCharacter)
+            {
+                return false;
+            }
+            int key = CurrentActionTurnOf(character) + ClampRoundRewardOffset(actionTurnOffset);
+            if (!_characterRoundRewards.TryGetValue(character, out SortedDictionary<int, List<Skill>>? table)
+                || table is null
+                || !table.TryGetValue(key, out List<Skill>? list)
+                || list is null
+                || list.Count == 0)
+            {
+                return false;
+            }
+            table.Remove(key);
+            removed = [.. list];
+            InvalidateRoundRewardViews();
+            RoundRewardContext ctx = new(this, character, RoundRewardBinding.Character, key) { Skills = removed };
+            OnRoundRewardLostBeforeEvent(ctx);
+            TriggerOnRoundRewardLost(character, ctx);
             OnRoundRewardLostAfterEvent(ctx);
             return true;
         }

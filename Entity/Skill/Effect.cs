@@ -1099,7 +1099,7 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 移除奖励归属角色（召唤物折算到其 Master）未来第 <paramref name="actionTurnOffset"/> 个行动回合中的一条奖励
+        /// 移除奖励归属角色未来第 <paramref name="actionTurnOffset"/> 个行动回合中的一条奖励
         /// </summary>
         /// <param name="target">目标角色</param>
         /// <param name="actionTurnOffset">相对其当前行动回合的偏移，最小为 1</param>
@@ -1109,6 +1109,23 @@ namespace FunGame.Core.Entity
         {
             ArgumentNullException.ThrowIfNull(skill);
             return GamingQueue?.RemoveRoundReward(target, actionTurnOffset, skill, out _) ?? false;
+        }
+
+        /// <summary>
+        /// 一次性移除奖励归属角色未来第 <paramref name="actionTurnOffset"/> 个行动回合的<b>全部</b>回合奖励
+        /// </summary>
+        /// <param name="target">目标角色</param>
+        /// <param name="actionTurnOffset">相对其当前行动回合的偏移，最小为 1</param>
+        /// <param name="removed">被移除的全部奖励</param>
+        /// <returns>是否移除成功</returns>
+        protected bool RemoveRoundRewards(Character target, int actionTurnOffset, out List<Skill> removed)
+        {
+            removed = [];
+            if (GamingQueue is null)
+            {
+                return false;
+            }
+            return GamingQueue.RemoveRoundRewards(target, actionTurnOffset, out removed);
         }
 
         /// <summary>
