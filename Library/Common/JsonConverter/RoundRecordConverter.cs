@@ -144,15 +144,23 @@ namespace FunGame.Core.Library.Common.JsonConverter
                     convertingContext[nameof(RoundRecord.Heals)] = JsonService.GetObject<Dictionary<Guid, double>>(ref reader, options) ?? [];
                     break;
                 case nameof(RoundRecord.Effects):
-                    Dictionary<Guid, Skill> effects = [];
+                    Dictionary<Guid, List<Skill>> effects = [];
                     using (JsonDocument effectDoc = JsonDocument.ParseValue(ref reader))
                     {
                         foreach (JsonProperty property in effectDoc.RootElement.EnumerateObject())
                         {
                             if (Guid.TryParse(property.Name, out Guid guid))
                             {
-                                Skill? skill = SkillRefHelper.ReadElement(property.Value);
-                                if (skill != null) effects[guid] = skill;
+                                List<Skill> triggered = [];
+                                if (property.Value.ValueKind == JsonValueKind.Array)
+                                {
+                                    foreach (JsonElement element in property.Value.EnumerateArray())
+                                    {
+                                        Skill? skill = SkillRefHelper.ReadElement(element);
+                                        if (skill != null) triggered.Add(skill);
+                                    }
+                                }
+                                if (triggered.Count > 0) effects[guid] = triggered;
                             }
                         }
                     }
@@ -297,10 +305,15 @@ namespace FunGame.Core.Library.Common.JsonConverter
             JsonSerializer.Serialize(writer, value.Heals.ToDictionary(kv => kv.Key.Guid, kv => kv.Value), options);
             writer.WritePropertyName(nameof(RoundRecord.Effects));
             writer.WriteStartObject();
-            foreach (KeyValuePair<Character, Skill> kv in value.Effects)
+            foreach (KeyValuePair<Character, List<Skill>> kv in value.Effects)
             {
                 writer.WritePropertyName(kv.Key.Guid.ToString());
-                SkillRefHelper.Write(writer, kv.Value);
+                writer.WriteStartArray();
+                foreach (Skill skill in kv.Value)
+                {
+                    SkillRefHelper.Write(writer, skill);
+                }
+                writer.WriteEndArray();
             }
             writer.WriteEndObject();
             writer.WritePropertyName(nameof(RoundRecord.ApplyEffects));
@@ -319,7 +332,8 @@ namespace FunGame.Core.Library.Common.JsonConverter
             writer.WriteStartArray();
             foreach (Skill skill in value.RoundRewards)
             {
-                SkillRefHelper.Write(writer, skill);
+                // 奖励技能只在本回合存在，回放端无法从检查点索引起描述 → 随数据一起写入
+                SkillRefHelper.Write(writer, skill, includeDescription: true);
             }
             writer.WriteEndArray();
             writer.WritePropertyName(nameof(RoundRecord.OtherMessages));
@@ -362,7 +376,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
             ResolveCharacterKeyed<bool>(record, convertingContext, nameof(RoundRecord.IsImmune), allCharacters, (c, v) => record.IsImmune[c] = v);
             ResolveCharacterKeyed<double>(record, convertingContext, nameof(RoundRecord.Dice), allCharacters, (c, v) => record.Dice[c] = v);
             ResolveCharacterKeyed<double>(record, convertingContext, nameof(RoundRecord.Heals), allCharacters, (c, v) => record.Heals[c] = v);
-            ResolveCharacterKeyed<Skill>(record, convertingContext, nameof(RoundRecord.Effects), allCharacters, (c, v) => record.Effects[c] = v);
+            ResolveCharacterKeyed<List<Skill>>(record, convertingContext, nameof(RoundRecord.Effects), allCharacters, (c, v) => record.Effects[c] = v);
             ResolveCharacterKeyed<List<EffectType>>(record, convertingContext, nameof(RoundRecord.ApplyEffects), allCharacters, (c, v) => record.ApplyEffects[c] = v);
             ResolveCharacterKeyed<double>(record, convertingContext, nameof(RoundRecord.RespawnCountdowns), allCharacters, (c, v) => record.RespawnCountdowns[c] = v);
             ResolveCharacterKeyed<CharacterStatistics>(record, convertingContext, nameof(RoundRecord.CharacterStatistics), allCharacters, (c, v) => record.CharacterStatistics[c] = v);

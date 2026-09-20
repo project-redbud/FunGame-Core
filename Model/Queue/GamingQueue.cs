@@ -1683,7 +1683,7 @@ namespace FunGame.Core.Model.Queue
                                             LastRound.Skills[CharacterActionType.PreCastSkill] = skill;
                                             LastRound.Targets[CharacterActionType.PreCastSkill] = [.. targets];
                                             LastRound.ActionTypes.Add(CharacterActionType.PreCastSkill);
-                                            LastRound.Effects[character] = skill;
+                                            LastRound.AddEffectTriggered(character, skill);
                                             if (_currentAction != null)
                                             {
                                                 _currentAction.Skill = skill;
@@ -1764,7 +1764,7 @@ namespace FunGame.Core.Model.Queue
                                             LastRound.Skills[skillType] = skill;
                                             LastRound.Targets[skillType] = [.. targets];
                                             LastRound.ActionTypes.Add(skillType);
-                                            LastRound.Effects[character] = skill;
+                                            LastRound.AddEffectTriggered(character, skill);
                                             if (_currentAction != null)
                                             {
                                                 _currentAction.ActionType = skillType;
@@ -1960,7 +1960,7 @@ namespace FunGame.Core.Model.Queue
                         character.UpdateCharacterState();
                         Skill skill = _castingSuperSkills[character];
                         LastRound.Skills[CharacterActionType.CastSuperSkill] = skill;
-                        LastRound.Effects[character] = skill;
+                        LastRound.AddEffectTriggered(character, skill);
                         _currentAction?.Skill = skill;
                         _castingSuperSkills.Remove(character);
 

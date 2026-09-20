@@ -126,11 +126,18 @@ namespace FunGame.Core.Library.Common.JsonConverter
     }
 
     /// <summary>
-    /// 技能引用（轻量快照）的读写辅助：保留 Guid、Id、名称与类型，供展示与消耗匹配
+    /// 技能引用（轻量快照）的读写辅助：保留 Guid、Id、名称与类型，供展示与消耗匹配<para/>
+    /// <see cref="Write"/> 可选附带描述：仅用于展示端无法从别处取到描述的场景
     /// </summary>
     internal static class SkillRefHelper
     {
-        public static void Write(Utf8JsonWriter writer, Skill? skill)
+        /// <summary>
+        /// 写入技能引用
+        /// </summary>
+        /// <param name="writer"></param>
+        /// <param name="skill">技能；为 null 时写 JSON null</param>
+        /// <param name="includeDescription">是否一并写入 <see cref="Skill.Description"/>（为空则不写该字段）</param>
+        public static void Write(Utf8JsonWriter writer, Skill? skill, bool includeDescription = false)
         {
             if (skill is null)
             {
@@ -143,6 +150,10 @@ namespace FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Skill.Id), skill.Id);
             writer.WriteString(nameof(Skill.Name), skill.Name);
             writer.WriteNumber(nameof(Skill.SkillType), (int)skill.SkillType);
+            if (includeDescription && !string.IsNullOrEmpty(skill.Description))
+            {
+                writer.WriteString(nameof(Skill.Description), skill.Description);
+            }
             writer.WriteEndObject();
         }
 
@@ -166,7 +177,15 @@ namespace FunGame.Core.Library.Common.JsonConverter
             long id = root.TryGetProperty(nameof(Skill.Id), out JsonElement idElement) && idElement.ValueKind == JsonValueKind.Number ? idElement.GetInt64() : 0;
             string name = root.TryGetProperty(nameof(Skill.Name), out JsonElement nameElement) && nameElement.ValueKind == JsonValueKind.String ? nameElement.GetString() ?? "" : "";
             SkillType skillType = root.TryGetProperty(nameof(Skill.SkillType), out JsonElement stElement) && stElement.ValueKind == JsonValueKind.Number ? (SkillType)stElement.GetInt32() : SkillType.Magic;
-            return id == 0 && name == "" ? null : new OpenSkill(id, name, []) { SkillType = skillType, Guid = guid };
+            // 描述为可选字段
+            string description = root.TryGetProperty(nameof(Skill.Description), out JsonElement descElement) && descElement.ValueKind == JsonValueKind.String ? descElement.GetString() ?? "" : "";
+            if (id == 0 && name == "") return null;
+            OpenSkill skill = new(id, name, []) { SkillType = skillType, Guid = guid };
+            if (description != "")
+            {
+                skill.Effects.Add(new Effect { Description = description });
+            }
+            return skill;
         }
     }
 

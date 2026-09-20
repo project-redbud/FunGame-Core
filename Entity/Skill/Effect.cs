@@ -1473,7 +1473,7 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 记录特效触发：若当前特效类型重写了 <paramref name="hookName"/> 对应的钩子方法，则把所属技能记录到本回合记录中（<see cref="RoundRecord.Effects"/>）。
+        /// 记录特效触发：若当前特效类型重写了 <paramref name="hookName"/> 对应的钩子方法，则把所属技能追加到本回合记录中（<see cref="RoundRecord.Effects"/>，按技能去重）。
         /// 框架会在调用开发者重写的钩子前自动调用此方法，开发者无需手动记录。
         /// </summary>
         /// <param name="hookName">被触发的钩子方法名</param>
@@ -1486,7 +1486,7 @@ namespace FunGame.Core.Entity
             Character? owner = owners.FirstOrDefault(c => c != null && c.Effects.Any(e => ReferenceEquals(e, this))) ?? Skill.Character ?? owners.FirstOrDefault(c => c != null);
             if (owner != null)
             {
-                round.Effects[owner] = Skill;
+                round.AddEffectTriggered(owner, Skill);
             }
         }
 

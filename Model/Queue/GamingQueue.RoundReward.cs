@@ -305,16 +305,15 @@ namespace FunGame.Core.Model.Queue
                 }
             }
 
-            // 角色绑定：按该角色的行动回合（召唤物折算到 Master）
-            if (_bindRoundRewardsToCharacter)
+            // 角色绑定：按该角色自身的行动回合
+            if (_bindRoundRewardsToCharacter && character.Master is null)
             {
-                Character owner = ResolveRoundRewardOwner(character);
-                int actionTurn = _characterActionTurns.TryGetValue(owner, out int turn) ? turn : 0;
+                int actionTurn = _characterActionTurns.TryGetValue(character, out int turn) ? turn : 0;
                 if (actionTurn > 0)
                 {
                     // 行动回合跨过窗口末尾时惰性物化下一窗口
-                    EnsureCharacterRoundRewardsMaterialized(owner, actionTurn);
-                    if (_characterRoundRewards.TryGetValue(owner, out SortedDictionary<int, List<Skill>>? table)
+                    EnsureCharacterRoundRewardsMaterialized(character, actionTurn);
+                    if (_characterRoundRewards.TryGetValue(character, out SortedDictionary<int, List<Skill>>? table)
                         && table.TryGetValue(actionTurn, out List<Skill>? charList)
                         && charList.Count > 0)
                     {
