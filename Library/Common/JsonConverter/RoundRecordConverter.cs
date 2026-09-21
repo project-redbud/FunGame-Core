@@ -207,6 +207,9 @@ namespace FunGame.Core.Library.Common.JsonConverter
                 case nameof(RoundRecord.Inquiries):
                     result.Inquiries.AddRange(InquiryRecordHelper.ReadList(ref reader, options));
                     break;
+                case nameof(RoundRecord.RoundRewardEvents):
+                    result.RoundRewardEvents.AddRange(RoundRewardRecordHelper.ReadList(ref reader));
+                    break;
                 case nameof(RoundRecord.Actions):
                     result.Actions.AddRange(JsonService.GetObject<List<ActionRecord>>(ref reader, options) ?? []);
                     break;
@@ -342,6 +345,11 @@ namespace FunGame.Core.Library.Common.JsonConverter
             {
                 writer.WritePropertyName(nameof(RoundRecord.Inquiries));
                 InquiryRecordHelper.WriteList(writer, value.Inquiries, options);
+            }
+            if (value.RoundRewardEvents.Count > 0)
+            {
+                writer.WritePropertyName(nameof(RoundRecord.RoundRewardEvents));
+                RoundRewardRecordHelper.WriteList(writer, value.RoundRewardEvents);
             }
             writer.WritePropertyName(nameof(RoundRecord.Actions));
             JsonSerializer.Serialize(writer, value.Actions, options);

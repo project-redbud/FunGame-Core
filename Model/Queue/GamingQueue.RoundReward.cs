@@ -2,6 +2,7 @@
 using FunGame.Core.Entity;
 using FunGame.Core.Library.Constant;
 using FunGame.Core.Model.EffectContext;
+using FunGame.Core.Model.Framework;
 
 namespace FunGame.Core.Model.Queue
 {
@@ -39,6 +40,12 @@ namespace FunGame.Core.Model.Queue
         /// 顺延表：本回合以吟唱结束的被动奖励，顺延到该吟唱的结算回合结束时移除
         /// </summary>
         protected readonly Dictionary<Character, List<Skill>> _deferredRoundRewards = [];
+
+        /// <summary>
+        /// 当前仍被角色持有的奖励 → 其发放来源（绑定方式 + 键位）。<para/>
+        /// 被动奖励可能顺延到下一回合才被移除，届时已无法从发放现场推断来源，故在发放时登记、移除时注销。
+        /// </summary>
+        protected readonly Dictionary<Skill, (RoundRewardBinding Binding, int TurnKey)> _heldRoundRewardOrigin = [];
 
         /// <summary>
         /// 本局奖励特效池：key = 特效数字标识符，value = 是否为主动技能特效
@@ -146,6 +153,7 @@ namespace FunGame.Core.Model.Queue
             _characterRoundRewards.Clear();
             _characterRoundRewardCursors.Clear();
             _deferredRoundRewards.Clear();
+            _heldRoundRewardOrigin.Clear();
             _characterActionTurns.Clear();
             _roundRewardCursor.MaterializedThrough = 0;
             _roundRewardCursor.LastKey = 0;
@@ -371,6 +379,29 @@ namespace FunGame.Core.Model.Queue
             OnRoundRewardGainedBeforeEvent(ctx);
             TriggerOnRoundRewardGained(character, ctx);
             OnRoundRewardGainedAfterEvent(ctx);
+            // 记事件流，并登记来源：被动奖励可能顺延到下一回合才被移除，届时已无法从发放现场推断
+            LastRound.RoundRewardEvents.Add(new RoundRewardRecord
+            {
+                Kind = RoundRewardEventKind.Gained,
+                Binding = binding,
+                TurnKey = turnKey,
+                Character = character,
+                Skills = [.. skills]
+            });
+            foreach (Skill skill in skills)
+            {
+                _heldRoundRewardOrigin[skill] = (binding, turnKey);
+            }
+        }
+
+        /// <summary>
+        /// 取某奖励的发放来源（发放时登记）；未登记时回退为「全局回合 · 当前回合」
+        /// </summary>
+        private (RoundRewardBinding Binding, int TurnKey) OriginOf(Skill skill)
+        {
+            return _heldRoundRewardOrigin.TryGetValue(skill, out (RoundRewardBinding Binding, int TurnKey) origin)
+                ? origin
+                : (RoundRewardBinding.Round, TotalRound);
         }
 
         /// <summary>
@@ -441,7 +472,10 @@ namespace FunGame.Core.Model.Queue
             {
                 return;
             }
-            RoundRewardContext ctx = new(this, character, RoundRewardBinding.Round, TotalRound)
+            // 同一批可能混着不同来源（全局回合奖励 + 角色绑定奖励），按来源分组后可还原每条的真实出处
+            List<IGrouping<(RoundRewardBinding Binding, int TurnKey), Skill>> groups = [.. list.GroupBy(OriginOf)];
+            (RoundRewardBinding Binding, int TurnKey) = groups.Count == 1 ? groups[0].Key : (RoundRewardBinding.Round, TotalRound);
+            RoundRewardContext ctx = new(this, character, Binding, TurnKey)
             {
                 Skills = list,
                 IsCarryOver = isCarryOver
@@ -454,9 +488,22 @@ namespace FunGame.Core.Model.Queue
                     effect.RemoveFromCharacter(character);
                 }
                 character.Skills.Remove(skill);
+                _heldRoundRewardOrigin.Remove(skill);
             }
             TriggerOnRoundRewardLost(character, ctx);
             OnRoundRewardLostAfterEvent(ctx);
+            foreach (IGrouping<(RoundRewardBinding Binding, int TurnKey), Skill> group in groups)
+            {
+                LastRound.RoundRewardEvents.Add(new RoundRewardRecord
+                {
+                    Kind = RoundRewardEventKind.Lost,
+                    Binding = group.Key.Binding,
+                    TurnKey = group.Key.TurnKey,
+                    Character = character,
+                    Skills = [.. group],
+                    IsCarryOver = isCarryOver
+                });
+            }
         }
 
         #endregion
@@ -550,7 +597,6 @@ namespace FunGame.Core.Model.Queue
             list.Add(skill);
             skill.GamingQueue = this;
             InvalidateRoundRewardViews();
-            FireRoundRewardGained(owner, RoundRewardBinding.Character, key, [skill]);
             return true;
         }
 
@@ -589,6 +635,15 @@ namespace FunGame.Core.Model.Queue
             OnRoundRewardLostBeforeEvent(ctx);
             TriggerOnRoundRewardLost(character, ctx);
             OnRoundRewardLostAfterEvent(ctx);
+            // 记事件流：这是对「未来奖励」的摧毁（区别于角色身上奖励的回收），同样是回放需要交代的事件
+            LastRound.RoundRewardEvents.Add(new RoundRewardRecord
+            {
+                Kind = RoundRewardEventKind.Lost,
+                Binding = RoundRewardBinding.Character,
+                TurnKey = key,
+                Character = character,
+                Skills = [skill]
+            });
             return true;
         }
 
@@ -622,6 +677,15 @@ namespace FunGame.Core.Model.Queue
             OnRoundRewardLostBeforeEvent(ctx);
             TriggerOnRoundRewardLost(character, ctx);
             OnRoundRewardLostAfterEvent(ctx);
+            // 记事件流：对「未来奖励」的整键位摧毁
+            LastRound.RoundRewardEvents.Add(new RoundRewardRecord
+            {
+                Kind = RoundRewardEventKind.Lost,
+                Binding = RoundRewardBinding.Character,
+                TurnKey = key,
+                Character = character,
+                Skills = removed
+            });
             return true;
         }
 
@@ -692,6 +756,20 @@ namespace FunGame.Core.Model.Queue
             OnRoundRewardStolenBeforeEvent(ctx);
             TriggerOnRoundRewardStolen(fromOwner, toOwner, ctx);
             OnRoundRewardStolenAfterEvent(ctx);
+            // 记事件流：归属已转移给夺取者，来源改记到夺取者目标键位
+            LastRound.RoundRewardEvents.Add(new RoundRewardRecord
+            {
+                Kind = RoundRewardEventKind.Stolen,
+                Binding = RoundRewardBinding.Character,
+                TurnKey = fromKey,
+                Character = fromOwner,
+                Counterpart = toOwner,
+                Skills = [.. moved]
+            });
+            foreach (Skill skill in moved)
+            {
+                _heldRoundRewardOrigin[skill] = (RoundRewardBinding.Character, toKey);
+            }
             return true;
         }
 
