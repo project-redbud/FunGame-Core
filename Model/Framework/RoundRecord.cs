@@ -48,6 +48,13 @@ namespace FunGame.Core.Model.Framework
         public Dictionary<Character, double> RespawnCountdowns { get; set; } = [];
         public List<Character> Respawns { get; set; } = [];
         public List<Skill> RoundRewards { get; set; } = [];
+
+        /// <summary>
+        /// 本回合发生的全部回合奖励事件（发放 / 移除 / 夺取，按发生顺序排列）<para/>
+        /// 由队列在奖励管线各节点写入，参见 <see cref="RoundRewardRecord"/>。相比 <see cref="RoundRewards"/>
+        /// 它额外带上了归属方、绑定方式与键位、顺延标记、夺取对手 —— 夺取与角色绑定引入后旧结构表达不出来的部分
+        /// </summary>
+        public List<RoundRewardRecord> RoundRewardEvents { get; } = [];
         public List<string> OtherMessages { get; set; } = [];
 
         /// <summary>
@@ -140,8 +147,17 @@ namespace FunGame.Core.Model.Framework
             StringBuilder builder = new();
 
             builder.AppendLine($"=== Round {Round} ===");
-            if (RoundRewards.Count > 0)
+            if (RoundRewardEvents.Count > 0)
             {
+                // 有事件流时按事件渲染（含归属、绑定方式、顺延、夺取），信息比旧的一行汇总完整
+                foreach (RoundRewardRecord rewardEvent in RoundRewardEvents)
+                {
+                    builder.AppendLine(rewardEvent.ToString());
+                }
+            }
+            else if (RoundRewards.Count > 0)
+            {
+                // 兼容：旧存档 / 未记录事件流的场景退化为原有的一行汇总
                 builder.AppendLine($"[ {Actor} ] 回合奖励 -> {string.Join(" / ", RoundRewards.Select(s => s.Name)).Trim()}");
             }
 
@@ -293,6 +309,11 @@ namespace FunGame.Core.Model.Framework
             foreach (InquiryRecord inquiry in Inquiries)
             {
                 snapshot.Inquiries.Add(inquiry);
+            }
+            // 奖励事件写入后不再修改，同样直接共享元素引用
+            foreach (RoundRewardRecord rewardEvent in RoundRewardEvents)
+            {
+                snapshot.RoundRewardEvents.Add(rewardEvent);
             }
             // 检查点列表拷贝（元素共享，防快照后对列表结构的修改）
             if (Checkpoint != null)

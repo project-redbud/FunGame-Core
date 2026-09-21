@@ -28,8 +28,17 @@ namespace FunGame.Core.Api
             }
 
             // 回合汇总
-            if (round.RoundRewards.Count > 0)
+            if (round.RoundRewardEvents.Count > 0)
             {
+                // 事件流：含归属、绑定方式、顺延、夺取
+                foreach (RoundRewardRecord rewardEvent in round.RoundRewardEvents)
+                {
+                    builder.AppendLine(rewardEvent.ToString());
+                }
+            }
+            else if (round.RoundRewards.Count > 0)
+            {
+                // 兼容：无事件流时退化为原有的一行汇总
                 builder.AppendLine($"[ {round.Actor} ] 回合奖励 -> {string.Join(" / ", round.RoundRewards.Select(s => s.Name)).Trim()}");
             }
             if (round.DeathContinuousKilling.Count > 0)
