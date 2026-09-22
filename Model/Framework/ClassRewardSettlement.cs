@@ -1,5 +1,4 @@
 using FunGame.Core.Entity;
-using FunGame.Core.Library.Constant;
 
 namespace FunGame.Core.Model.Framework
 {

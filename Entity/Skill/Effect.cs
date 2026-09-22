@@ -1159,9 +1159,11 @@ namespace FunGame.Core.Entity
         {
             if (target is null) return;
             if (GamingQueue is null && Skill?.GamingQueue is IGamingQueue gq) GamingQueue = gq;
-            target.Effects.Add(this);
-            RecordEffectTriggeredIfOverridden(nameof(OnEffectGained), target);
-            OnEffectGained(new HookContext(GamingQueue, target));
+            if (target.Effects.Add(this))
+            {
+                RecordEffectTriggeredIfOverridden(nameof(OnEffectGained), target);
+                OnEffectGained(new HookContext(GamingQueue, target));
+            }
         }
 
         /// <summary>
