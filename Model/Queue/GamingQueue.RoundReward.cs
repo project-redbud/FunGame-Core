@@ -358,11 +358,6 @@ namespace FunGame.Core.Model.Queue
                 }
                 else
                 {
-                    // 被动奖励必须把特效挂到角色状态栏，否则永远不可观测（挂载/移除必须对称）
-                    foreach (Effect effect in skill.Effects)
-                    {
-                        effect.AddToCharacter(character);
-                    }
                     character.Skills.Add(skill);
                 }
                 granted.Add(skill);
