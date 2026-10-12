@@ -1460,6 +1460,8 @@ namespace FunGame.Core.Model.Queue
                                 }
                             }
 
+                            WillSubmitChainActions(character);
+
                             // 模组可以通过此事件来决定角色的行动，模组事件优先于 AI
                             if (type == CharacterActionType.None)
                             {

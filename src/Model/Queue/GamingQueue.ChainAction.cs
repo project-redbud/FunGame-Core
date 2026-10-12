@@ -1,4 +1,5 @@
 using FunGame.Core.Api;
+using FunGame.Core.Controller;
 using FunGame.Core.Entity;
 using FunGame.Core.Interface.Entity;
 using FunGame.Core.Library.Constant;
@@ -46,6 +47,43 @@ namespace FunGame.Core.Model.Queue
                 if (actor.HP > 0 && actor.CharacterState == CharacterState.Actionable && !_chainCasts.ContainsKey(actor)) result.Add(actor);
             }
             return result.AsReadOnly();
+        }
+
+        /// <summary>
+        /// 在 AI 正常决策前，为连续同队区间内的队友代交原地协同申请，保留已有有效申请
+        /// </summary>
+        /// <param name="turnActor">当前正常回合的 AI 角色</param>
+        protected void WillSubmitChainActions(Character turnActor)
+        {
+            if (!IsChainTurn(turnActor) || !IsCharacterInAIControlling(turnActor) || AI is not AIController ai) return;
+            HashSet<Character> pendingActors = [.. GetPendingChainActions(turnActor).Select(r => r.Actor)];
+            foreach (Character actor in GetAvailableChainActors(turnActor))
+            {
+                if (pendingActors.Contains(actor) || !_decisionPoints.TryGetValue(actor, out DecisionPoints? dp) || dp.CurrentDecisionPoints <= 0) continue;
+                List<Character> teammates = [.. _allCharacters.Union(_queue).Where(c => c != actor && AreChainTeammates(actor, c)).Distinct()];
+                List<Character> enemies = [.. _allCharacters.Union(_queue).Where(c => c != actor && !teammates.Contains(c) && !_eliminated.Contains(c)).Distinct()];
+                (List<Character> selectableTeammates, List<Character> selectableEnemies, List<Skill> skills, List<Item> items) = GetTurnStartNeedyList(actor, teammates, enemies);
+                // 当前回合角色已出队，仍可作为协同治疗等辅助动作的目标。
+                if (!turnActor.IsUnselectable) selectableTeammates.Add(turnActor);
+                actor.NormalAttack.GamingQueue = this;
+                foreach (Skill availableSkill in skills.Concat(items.Select(i => i.Skills.Active!))) availableSkill.GamingQueue = this;
+                Grid? origin = _map?.GetCharacterCurrentGrid(actor);
+                // 协同不允许移动；仅评估协作方当前格，避免生成移动后才能执行的申请。
+                AIDecision decision = ai.DecideAIAction(actor, dp, origin, origin is null ? [] : [origin],
+                    skills, items, enemies, teammates, selectableEnemies, selectableTeammates, 0.33, 0.33, 0.34);
+                if (!decision.HasCandidate) continue;
+                Skill? skill = decision.SkillToUse as Skill;
+                Item? item = decision.ItemToUse ?? items.FirstOrDefault(i => i.Skills.Active == skill);
+                CharacterActionType type = item != null ? CharacterActionType.UseItem : skill?.SkillType switch
+                {
+                    SkillType.Skill => CharacterActionType.CastSkill,
+                    SkillType.Magic => CharacterActionType.PreCastSkill,
+                    SkillType.SuperSkill => CharacterActionType.CastSuperSkill,
+                    _ => decision.ActionType
+                };
+                if (type == CharacterActionType.NormalAttack) skill = null;
+                SubmitChainAction(turnActor, actor, type, decision.Targets, out _, skill, item, decision.TargetGrids);
+            }
         }
 
         private bool AreChainTeammates(Character a, Character b)
