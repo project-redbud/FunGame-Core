@@ -155,7 +155,7 @@ namespace FunGame.Core.Api
 
         [GeneratedRegex(@"^(?:(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)$")]
         private static partial Regex CheckIsIP();
-        [GeneratedRegex(@"^(\w)+(\.\w)*@(\w)+((\.\w+)+)$")]
+        [GeneratedRegex(@"^(\w)+(\.\w+)*@(\w)+((\.\w+)+)$")]
         private static partial Regex CheckIsEmail();
         [GeneratedRegex(@"^[\u4e00-\u9fffA-Za-z0-9]+$")]
         private static partial Regex CheckIsUserName();

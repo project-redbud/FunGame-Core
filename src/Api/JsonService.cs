@@ -2,12 +2,13 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using System.Text.Unicode;
 using FunGame.Core.Library.Common.JsonConverter;
 
 namespace FunGame.Core.Api
 {
-    public class JsonService
+    public partial class JsonService
     {
         /// <summary>
         /// 默认的序列化选项
@@ -245,8 +246,7 @@ namespace FunGame.Core.Api
         /// <returns></returns>
         public static List<T> GetObjects<T>(string json)
         {
-            json = "[" + json.Replace("}{", "},{") + "]"; // 将Json字符串转换为数组
-            return JsonSerializer.Deserialize<List<T>>(json, GeneralOptions) ?? [];
+            return JsonSerializer.Deserialize<List<T>>(ToJsonArray(json), GeneralOptions) ?? [];
         }
 
         /// <summary>
@@ -259,8 +259,20 @@ namespace FunGame.Core.Api
         /// <returns></returns>
         public static List<T> GetObjects<T>(string json, JsonSerializerOptions options)
         {
-            json = "[" + json.Replace("}{", "},{") + "]"; // 将Json字符串转换为数组
-            return JsonSerializer.Deserialize<List<T>>(json, options) ?? [];
+            return JsonSerializer.Deserialize<List<T>>(ToJsonArray(json), options) ?? [];
+        }
+
+        /// <summary>
+        /// 将Json字符串转换为Json数组字符串
+        /// </summary>
+        /// <param name="json"></param>
+        /// <returns></returns>
+        private static string ToJsonArray(string json)
+        {
+            json = json.Trim();
+            if (json.Length == 0) return "[]";
+            if (json[0] == '[') return json;
+            return "[" + AnyObjects().Replace(json, "},{") + "]";
         }
 
         /// <summary>
@@ -282,5 +294,8 @@ namespace FunGame.Core.Api
                 return false;
             }
         }
+
+        [GeneratedRegex(@"\}\s*\{")]
+        private static partial Regex AnyObjects();
     }
 }

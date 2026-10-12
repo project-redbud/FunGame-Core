@@ -1,3 +1,11 @@
 <Solution>
-  <Project Path="FunGame.Core.csproj" />
+  <Folder Name="/src/">
+    <Project Path="src/FunGame.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FunGame.Core.Tests.Combat/FunGame.Core.Tests.Combat.csproj" />
+    <Project Path="tests/FunGame.Core.Tests.Entities/FunGame.Core.Tests.Entities.csproj" />
+    <Project Path="tests/FunGame.Core.Tests.Infrastructure/FunGame.Core.Tests.Infrastructure.csproj" />
+    <Project Path="tests/FunGame.Core.Tests.Queue/FunGame.Core.Tests.Queue.csproj" />
+  </Folder>
 </Solution>

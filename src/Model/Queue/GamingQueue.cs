@@ -2626,7 +2626,7 @@ namespace FunGame.Core.Model.Queue
                 // 开始计算伤害免疫
                 bool isImmune = false;
                 // 真实伤害或者指定无视免疫则跳过免疫检定
-                if (damageType != DamageType.True || !options.IgnoreImmune)
+                if (damageType != DamageType.True && !options.IgnoreImmune)
                 {
                     // 此变量为是否无视免疫
                     bool ignore = false;
@@ -2676,7 +2676,7 @@ namespace FunGame.Core.Model.Queue
                     string shieldMsg = "";
 
                     // 真实伤害或指定跳过护盾结算则跳过护盾结算
-                    if (damageType != DamageType.True || !options.CalculateShield)
+                    if (damageType != DamageType.True && options.CalculateShield)
                     {
                         // 在护盾结算前，特效可以有自己的逻辑
                         bool change = false;
@@ -3508,7 +3508,7 @@ namespace FunGame.Core.Model.Queue
                         // 免疫检定
                         CheckSkilledImmune(character, targets, skill, item);
                     }
-                    if (targets.Count > 0 && CheckCanCast(character, skill, out double cost))
+                    if (targets.Count > 0)
                     {
                         LastRound.Targets[CharacterActionType.UseItem] = [.. targets];
                         if (_currentAction != null)

@@ -9,8 +9,8 @@
 </p>
 
 <p align="center">
-  <b>基于 C#.NET 设计的轻量、可扩展回合制战斗系统类库</b><br>
-  <i>行动顺序表 · 决策点 · 六乘区伤害 · 技能与特效系统，开箱即用</i>
+  <b>面向 .NET 的轻量、可扩展回合制战斗系统类库</b><br>
+  <i>行动顺序表 · 决策点 · 复杂伤害计算 · 技能与特效系统</i>
 </p>
 
 <p align="center">
@@ -103,7 +103,7 @@ while (queue.NextCharacter() is Character actor)
 
 更完整的示例（团队模式、自定义角色/技能/特效/物品、事件绑定、即时外发等）请参阅 [使用与文档](#usage) 章节。
 
-协同行动允许连续位置的队友或召唤物使用剩余预算提前出手，当前角色负责确认。规则、接入接口及验证方法见 [协同行动文档](docs/chain-action.md)。
+协同行动允许连续位置的队友或召唤物使用剩余预算提前出手，当前角色负责确认。规则、接入接口及验证方法见 [协同行动文档](docs/queue/chain-action.md)。
 
 ---
 
@@ -145,9 +145,11 @@ git clone -b latest https://github.com/project-redbud/FunGame-Core.git
 
 - 📖 **API 文档**：[FunGame 开发文档](https://project-redbud.github.io/)
   - 文档内容会随着本项目的更改而变化，但是我们不保证能够及时更新文档。
+- 🧩 **设计文档（仓库内）**：[docs/](docs/README.md) —— 分模块讲解关键代码、不变量与常见坑，面向要改引擎的开发者。
 - 🤖 **AI 生成文档**：[DeepWiki 文档](https://deepwiki.com/project-redbud/FunGame-Core)
   - 此 AI 工具从头到尾分析了整个项目的代码并组织为 Wiki 形式，方便开发者结合源代码来理解整个项目。
 - 🐛 **问题反馈**：在使用本项目的过程中遇到任何问题，欢迎提交 [issues](https://github.com/project-redbud/FunGame-Core/issues)，我们会积极解决你的问题。
+- 🤝 **贡献指南**：[CONTRIBUTING.md](CONTRIBUTING.md) —— 开发环境、代码与测试规范、提交与发布流程。
 
 ---
 

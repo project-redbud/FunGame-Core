@@ -5,12 +5,12 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <BaseOutputPath>bin\</BaseOutputPath>
+    <BaseOutputPath>..\bin\</BaseOutputPath>
     <Company>$(Author)</Company>
     <Authors>Project Redbud</Authors>
     <AssemblyVersion>3.0.0</AssemblyVersion>
     <FileVersion>3.0.0</FileVersion>
-    <PackageOutputPath>bin</PackageOutputPath>
+    <PackageOutputPath>..\bin</PackageOutputPath>
     <Title>FunGame Core</Title>
     <RootNamespace>$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -45,7 +45,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Update="README.md">
+    <None Include="..\README.md" Link="README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

@@ -23,11 +23,11 @@ jobs:
       with:
         dotnet-version: 10.0.x
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore FunGame.Core.slnx
     - name: Build
-      run: dotnet build --no-restore --configuration Release
-    - name: Test
-      run: dotnet test --no-build --configuration Release --verbosity normal
+      run: dotnet build FunGame.Core.slnx --no-restore --configuration Release
+    - name: Unit tests
+      run: dotnet test FunGame.Core.slnx --no-build --configuration Release --verbosity normal
     - name: Prepare files for latest branch
       run: |
         mkdir -p latest

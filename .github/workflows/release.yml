@@ -34,10 +34,13 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore src/FunGame.Core.csproj
 
       - name: Build
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build src/FunGame.Core.csproj --no-restore --configuration Release
+
+      - name: Unit tests
+        run: dotnet test FunGame.Core.slnx --configuration Release --verbosity normal
 
       - name: Resolve package version
         id: version
@@ -69,7 +72,7 @@ jobs:
 
       - name: Pack
         if: steps.version.outputs.skipped != 'true'
-        run: dotnet pack FunGame.Core.csproj --no-restore --no-build --configuration Release -o ./nupkg -p:PackageVersion=${{ steps.version.outputs.version }}
+        run: dotnet pack src/FunGame.Core.csproj --no-restore --no-build --configuration Release -o ./nupkg -p:PackageVersion=${{ steps.version.outputs.version }}
 
       - name: Push to NuGet (Trusted Publishing)
         if: steps.version.outputs.skipped != 'true'
