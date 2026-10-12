@@ -37,6 +37,19 @@ namespace FunGame.Core.Controller
         public bool IsMapMode => _map != null;
 
         /// <summary>
+        /// 第一版协同策略：选择第一份经队列重验的有效申请
+        /// </summary>
+        public Guid? SelectChainAction(Character actor)
+        {
+            IReadOnlyList<ChainActionRequest> list = _queue.GetPendingChainActions(actor);
+            if (list != null && list.Count > 0)
+            {
+                return list[0].Id;
+            }
+            return null;
+        }
+
+        /// <summary>
         /// 询问答复委托：模组可订阅 <see cref="ResolveInquiryEvent"/> 完全接管 AI 的询问答复
         /// </summary>
         /// <param name="ctx">询问上下文</param>
@@ -98,10 +111,7 @@ namespace FunGame.Core.Controller
             {
                 Grid? currentGrid = _map.GetCharacterCurrentGrid(character);
                 List<Grid> enemyGrids = [.. allEnemysInGame.Select(_map.GetCharacterCurrentGrid).OfType<Grid>()];
-                moveGrids = [.. moveGrids
-                    .OrderBy(g => ReferenceEquals(g, currentGrid) ? -1 :
-                        (enemyGrids.Count == 0 ? 0 : enemyGrids.Min(eg => GameMap.CalculateManhattanDistance(g, eg))))
-                    .Take(maxEvaluatedMoveGrids)];
+                moveGrids = [.. moveGrids.OrderBy(g => ReferenceEquals(g, currentGrid) ? -1 : (enemyGrids.Count == 0 ? 0 : enemyGrids.Min(eg => GameMap.CalculateManhattanDistance(g, eg)))).Take(maxEvaluatedMoveGrids)];
             }
 
             // 控制最大并发数

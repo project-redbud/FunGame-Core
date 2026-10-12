@@ -113,6 +113,40 @@ namespace FunGame.Core.Interface.Base
         public bool ProcessTurn(Character character);
 
         /// <summary>
+        /// 当前正常回合标识，吟唱结算回合不开放协同
+        /// </summary>
+        public Guid? ChainActionTurnId => null;
+
+        /// <summary>
+        /// 连续同队区间内可提交协同行动的角色
+        /// </summary>
+        public IReadOnlyList<Character> GetAvailableChainActors(Character turnActor) => [];
+
+        /// <summary>
+        /// 查询当前有效的协同行动申请
+        /// </summary>
+        public IReadOnlyList<ChainActionRequest> GetPendingChainActions(Character turnActor) => [];
+
+        /// <summary>
+        /// 提交或替换申请，失败时返回 null 及失败原因
+        /// </summary>
+        public ChainActionRequest? SubmitChainAction(Character turnActor, Character actor, CharacterActionType type, IEnumerable<Character> targets, out string failReason, Skill? skill = null, Item? item = null, IEnumerable<Grid>? targetGrids = null)
+        {
+            failReason = "此队列未实现协同行动。";
+            return null;
+        }
+
+        /// <summary>
+        /// 由协作方撤回申请
+        /// </summary>
+        public bool WithdrawChainAction(Character actor, Guid requestId) => false;
+
+        /// <summary>
+        /// 由当前回合角色确认申请；重复确认或校验失败不扣费
+        /// </summary>
+        public ChainActionResult ConfirmChainAction(Character turnActor, Guid requestId) => new(false, "此队列未实现协同行动。");
+
+        /// <summary>
         /// 通过概率计算角色要干嘛
         /// </summary>
         /// <param name="dp"></param>

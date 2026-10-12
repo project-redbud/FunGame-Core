@@ -661,6 +661,16 @@ namespace FunGame.Core.Model.Framework
         public int DecisionPointsCostOther { get; set; } = 1;
 
         /// <summary>
+        /// 协同行动确认的决策点消耗
+        /// </summary>
+        public int DecisionPointsCostChainAction { get; set; } = 1;
+
+        /// <summary>
+        /// 协同行动确认的动作硬直，参与回合最大动作硬直计算
+        /// </summary>
+        public double ChainActionHardnessTime { get; set; } = 3;
+
+        /// <summary>
         /// 角色升级时会获得职业点数，该属性设置可获得点数的等级
         /// </summary>
         public HashSet<int> ClassPointsGetterList { get; set; } = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];

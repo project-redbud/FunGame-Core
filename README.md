@@ -103,6 +103,8 @@ while (queue.NextCharacter() is Character actor)
 
 更完整的示例（团队模式、自定义角色/技能/特效/物品、事件绑定、即时外发等）请参阅 [使用与文档](#usage) 章节。
 
+协同行动允许连续位置的队友或召唤物使用剩余预算提前出手，当前角色负责确认。规则、接入接口及验证方法见 [协同行动文档](docs/chain-action.md)。
+
 ---
 
 <a id="installation"></a>

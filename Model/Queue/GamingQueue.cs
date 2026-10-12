@@ -635,6 +635,8 @@ namespace FunGame.Core.Model.Queue
         /// <param name="isCheckProtected"></param>
         public void AddCharacter(Character character, double hardnessTime, bool isCheckProtected = true)
         {
+            // 新角色及召唤物拥有明确的初始预算，提交申请时不会临时补点
+            if (!_decisionPoints.ContainsKey(character)) _decisionPoints[character] = CreateInitialDecisionPoints();
             // 角色入队时绑定所属队列
             character.GamingQueue = this;
             // 确保角色不在队列中
@@ -744,6 +746,10 @@ namespace FunGame.Core.Model.Queue
         /// </summary>
         public void ClearQueue()
         {
+            _chainRequests.Clear();
+            _chainCasts.Clear();
+            _chainTurnActor = null;
+            _decisionPoints.Clear();
             FirstKiller = null;
             CustomData.Clear();
             _allCharacters.Clear();
@@ -774,6 +780,17 @@ namespace FunGame.Core.Model.Queue
             {
                 _queue.Remove(character);
                 _hardnessTimes.Remove(character);
+                if (_chainCasts.Remove(character))
+                {
+                    _castingSkills.Remove(character);
+                    if (character.HP > 0)
+                    {
+                        character.CharacterState = CharacterState.Actionable;
+                        character.UpdateCharacterState();
+                    }
+                }
+                foreach (ChainActionRequest request in _chainRequests.Values.Where(r => r.Actor == character || r.TurnActor == character).ToArray())
+                    _chainRequests.Remove(request.Id);
             }
         }
 
@@ -1100,9 +1117,28 @@ namespace FunGame.Core.Model.Queue
         /// <returns>是否结束游戏</returns>
         public bool ProcessTurn(Character character)
         {
+            if (_isInRound || _executingChainAction) throw new InvalidOperationException("不能嵌套处理角色回合。");
+            _chainTurnId = Guid.NewGuid();
+            _chainTurnActor = _chainCasts.ContainsKey(character) || character.CharacterState is CharacterState.Casting or CharacterState.PreCastSuperSkill ? null : character;
+            try
+            {
+                return ProcessTurnCore(character);
+            }
+            finally
+            {
+                _chainRequests.Clear();
+                _chainTurnActor = null;
+                _isInRound = false;
+                if (_decisionPoints.TryGetValue(character, out DecisionPoints? dp)) dp.ClearTempActionQuota();
+            }
+        }
+
+        private bool ProcessTurnCore(Character character)
+        {
             _isInRound = true;
             LastRound.Actor = character;
             _roundDeaths.Clear();
+            if (_chainCasts.TryGetValue(character, out ChainCastContext? chainCast)) return ProcessChainCastTurn(character, chainCast);
             Character statsCharacter = character;
             if (character.Master != null)
             {
@@ -1427,7 +1463,11 @@ namespace FunGame.Core.Model.Queue
                             // 模组可以通过此事件来决定角色的行动，模组事件优先于 AI
                             if (type == CharacterActionType.None)
                             {
-                                type = OnDecideActionEvent(new TurnContext(this, character, dp) { Enemys = enemys, Teammates = teammates, Skills = skills, Items = items });
+                                type = OnDecideActionEvent(new TurnContext(this, character, dp) { Enemys = enemys, Teammates = teammates, Skills = skills, Items = items, ChainActions = GetPendingChainActions(character) });
+                            }
+                            if (type == CharacterActionType.None && isAI && AI is AIController chainAI && chainAI.SelectChainAction(character) != null)
+                            {
+                                type = CharacterActionType.ChainAction;
                             }
                             // 模组未决策时，由 AI 控制器评估行动，战棋与非战棋模式均适用
                             if (type == CharacterActionType.None && isAI && AI is AIController ai)
@@ -1595,18 +1635,7 @@ namespace FunGame.Core.Model.Queue
                                 dp.CurrentDecisionPoints -= costDP;
                                 decided = true;
 
-                                OnCharacterNormalAttackEvent(new NormalAttackContext(this, character, dp) { Targets = targets });
-
-                                character.NormalAttack.Attack(this, character, null, targets);
-
-                                NormalAttackContext normalAttackCtx = new(this, character, dp) { NormalAttack = character.NormalAttack, Targets = targets };
-                                TriggerAfterCharacterNormalAttack(character, normalAttackCtx);
-
-                                baseTime += character.NormalAttack.RealHardnessTime;
-                                HardnessContext hardnessCtx = new(this, character) { BaseHardnessTime = baseTime, IsCheckProtected = isCheckProtected };
-                                TriggerAlterHardnessTimeAfterNormalAttack(character, hardnessCtx);
-                                baseTime = hardnessCtx.BaseHardnessTime;
-                                isCheckProtected = hardnessCtx.IsCheckProtected;
+                                ExecuteNormalAttackEffects(character, dp, targets, ref baseTime, ref isCheckProtected);
                             }
                         }
                     }
@@ -1793,33 +1822,7 @@ namespace FunGame.Core.Model.Queue
 
                                             TriggerAfterCharacterStartCasting(character, skill, targets);
 
-                                            skill.BeforeSkillCasted(character, targets, grids);
-
-                                            character.EP -= cost;
-                                            baseTime += skill.RealHardnessTime;
-                                            skill.CurrentCD = skill.RealCD;
-                                            skill.Enable = false;
-                                            LastRound.SkillsCost[skill] = $"{-cost:0.##} EP";
-                                            if (_currentAction != null)
-                                            {
-                                                _currentAction.Cost = $"{-cost:0.##} EP";
-                                                _currentAction.EPCost = cost;
-                                                _currentAction.SkillCD = skill.RealCD;
-                                            }
-                                            WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点能量，释放了{(skill.IsSuperSkill ? "爆发技" : "战技")} [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
-
-                                            OnCharacterCastSkillEvent(new SkillCastContext(this, character) { DP = dp, SkillTarget = skillTarget, Skill = skill, Targets = targets, Grids = grids, Cost = cost });
-
-                                            skill.OnSkillCasted(this, character, targets, grids);
-
-                                            skill.AfterSkillCasted(character, targets, grids);
-
-                                            TriggerAfterCharacterCastSkill(character, skill, targets);
-
-                                            HardnessContext castHardnessCtx = new(this, character) { Skill = skill, BaseHardnessTime = baseTime, IsCheckProtected = isCheckProtected };
-                                            TriggerAlterHardnessTimeAfterCastSkill(character, castHardnessCtx);
-                                            baseTime = castHardnessCtx.BaseHardnessTime;
-                                            isCheckProtected = castHardnessCtx.IsCheckProtected;
+                                            ExecuteSkillEffects(character, dp, skillTarget, cost, ref baseTime, ref isCheckProtected);
                                         }
                                         else
                                         {
@@ -1881,33 +1884,7 @@ namespace FunGame.Core.Model.Queue
                                 }
                                 _castingSkills.Remove(character);
 
-                                skill.BeforeSkillCasted(character, targets, grids);
-
-                                character.MP -= cost;
-                                baseTime += skill.RealHardnessTime;
-                                skill.CurrentCD = skill.RealCD;
-                                skill.Enable = false;
-                                LastRound.SkillsCost[skill] = $"{-cost:0.##} MP";
-                                if (_currentAction != null)
-                                {
-                                    _currentAction.Cost = $"{-cost:0.##} MP";
-                                    _currentAction.MPCost = cost;
-                                    _currentAction.SkillCD = skill.RealCD;
-                                }
-                                WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点魔法值，释放了魔法 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
-
-                                OnCharacterCastSkillEvent(new SkillCastContext(this, character) { DP = dp, SkillTarget = skillTarget, Skill = skill, Targets = targets, Grids = grids, Cost = cost });
-
-                                skill.OnSkillCasted(this, character, targets, grids);
-
-                                skill.AfterSkillCasted(character, targets, grids);
-
-                                TriggerAfterCharacterCastSkill(character, skill, targets);
-
-                                HardnessContext castHardnessCtx = new(this, character) { Skill = skill, BaseHardnessTime = baseTime, IsCheckProtected = isCheckProtected };
-                                TriggerAlterHardnessTimeAfterCastSkill(character, castHardnessCtx);
-                                baseTime = castHardnessCtx.BaseHardnessTime;
-                                isCheckProtected = castHardnessCtx.IsCheckProtected;
+                                ExecuteSkillEffects(character, dp, skillTarget, cost, ref baseTime, ref isCheckProtected);
                             }
                             else
                             {
@@ -1975,34 +1952,7 @@ namespace FunGame.Core.Model.Queue
                             LastRound.Targets[CharacterActionType.CastSuperSkill] = [.. targets];
                             _currentAction?.Targets.AddRange(targets);
 
-                            skill.BeforeSkillCasted(character, targets, grids);
-
-                            character.EP -= cost;
-                            baseTime += skill.RealHardnessTime;
-                            skill.CurrentCD = skill.RealCD;
-                            skill.Enable = false;
-                            LastRound.SkillsCost[skill] = $"{-cost:0.##} EP";
-                            if (_currentAction != null)
-                            {
-                                _currentAction.Cost = $"{-cost:0.##} EP";
-                                _currentAction.EPCost = cost;
-                                _currentAction.SkillCD = skill.RealCD;
-                            }
-                            WriteLine($"[ {character} ] 消耗了 {cost:0.##} 点能量值，释放了爆发技 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}");
-
-                            SkillTarget skillTarget = new(skill, targets, grids);
-                            OnCharacterCastSkillEvent(new SkillCastContext(this, character) { DP = dp, SkillTarget = skillTarget, Skill = skill, Targets = targets, Grids = grids, Cost = cost });
-
-                            skill.OnSkillCasted(this, character, targets, grids);
-
-                            skill.AfterSkillCasted(character, targets, grids);
-
-                            TriggerAfterCharacterCastSkill(character, skill, targets);
-
-                            HardnessContext castHardnessCtx = new(this, character) { Skill = skill, BaseHardnessTime = baseTime, IsCheckProtected = isCheckProtected };
-                            TriggerAlterHardnessTimeAfterCastSkill(character, castHardnessCtx);
-                            baseTime = castHardnessCtx.BaseHardnessTime;
-                            isCheckProtected = castHardnessCtx.IsCheckProtected;
+                            ExecuteSkillEffects(character, dp, new(skill, targets, grids), cost, ref baseTime, ref isCheckProtected);
                         }
                         else
                         {
@@ -2105,6 +2055,22 @@ namespace FunGame.Core.Model.Queue
                                 RecordCurrentActionFailure(failMsg);
                                 if (IsDebug) WriteLine(failMsg);
                             }
+                        }
+                    }
+                    else if (type == CharacterActionType.ChainAction)
+                    {
+                        IReadOnlyList<ChainActionRequest> pending = GetPendingChainActions(character);
+                        Guid? requestId = SelectChainActionEvent?.Invoke(character, pending);
+                        if (requestId is null && isAI) requestId = AI?.SelectChainAction(character);
+                        ChainActionResult result = requestId is Guid id ? ConfirmChainAction(character, id) : new(false, "没有选择可执行的协同行动申请。");
+                        if (result.IsSuccess)
+                        {
+                            baseTime += GameplayEquilibriumConstant.ChainActionHardnessTime;
+                            decided = true;
+                        }
+                        else
+                        {
+                            RecordCurrentActionFailure(result.FailReason);
                         }
                     }
                     else if (type == CharacterActionType.EndTurn)
@@ -2989,6 +2955,7 @@ namespace FunGame.Core.Model.Queue
         /// <param name="death"></param>
         public void DeathCalculation(Character killer, Character death)
         {
+            RecordChainAssistBeforeKill(killer);
             DeathRelation dr = new(death, killer);
             _roundDeaths.Add(dr);
 
@@ -3483,6 +3450,7 @@ namespace FunGame.Core.Model.Queue
 
             // 移除死者的施法
             _castingSkills.Remove(death);
+            _chainCasts.Remove(death);
             _castingSuperSkills.Remove(death);
             // 死者已无法再进入结算回合，顺延的被动奖励立即移除
             ClearDeferredRoundRewards(death);
@@ -3494,6 +3462,8 @@ namespace FunGame.Core.Model.Queue
                 SkillTarget st = _castingSkills[caster];
                 if (st.Targets.Remove(death) && st.Targets.Count == 0)
                 {
+                    if (st.Skill.IsNonDirectional && st.TargetGrids.Count > 0 && st.Skill.AllowSelectNoCharacterGrid) continue;
+                    if (FinishInterruptedChainCast(caster)) continue;
                     _castingSkills.Remove(caster);
                     if (caster.CharacterState == CharacterState.Casting)
                     {
@@ -3547,62 +3517,7 @@ namespace FunGame.Core.Model.Queue
                             _currentAction.Targets.AddRange(targets);
                         }
 
-                        WriteLine($"[ {character} ] 使用了物品 [ {item.Name} ]！");
-                        item.ReduceTimesAndRemove();
-                        if (item.IsReduceTimesAfterUse && item.RemainUseTimes == 0)
-                        {
-                            character.Items.Remove(item);
-                        }
-                        OnCharacterUseItemEvent(new ItemUseContext(this, character, dp) { Item = item, Skill = skill, Targets = targets });
-
-                        skill.OnSkillCasting(this, character, targets, grids);
-
-                        TriggerAfterCharacterStartCasting(character, skill, targets);
-
-                        skill.BeforeSkillCasted(character, targets, grids);
-
-                        skill.CurrentCD = skill.RealCD;
-                        skill.Enable = false;
-
-                        string line = $"[ {character} ] ";
-                        if (costMP > 0)
-                        {
-                            character.MP -= costMP;
-                            LastRound.ItemsCost[item] = $"{-costMP:0.##} MP";
-                            if (_currentAction != null)
-                            {
-                                _currentAction.Cost = $"{-costMP:0.##} MP";
-                                _currentAction.MPCost = costMP;
-                            }
-                            line += $"消耗了 {costMP:0.##} 点魔法值，";
-                        }
-
-                        if (costEP > 0)
-                        {
-                            character.EP -= costEP;
-                            if (LastRound.ItemsCost[item] != "") LastRound.ItemsCost[item] += " / ";
-                            LastRound.ItemsCost[item] += $"{-costEP:0.##} EP";
-                            if (_currentAction != null)
-                            {
-                                _currentAction.Cost += (_currentAction.Cost != "" ? " / " : "") + $"{-costEP:0.##} EP";
-                                _currentAction.EPCost = costEP;
-                            }
-                            line += $"消耗了 {costEP:0.##} 点能量，";
-                        }
-
-                        line += $"释放了物品技能 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}";
-                        WriteLine(line);
-
-                        SkillTarget skillTarget = new(skill, targets, grids);
-                        OnCharacterCastItemSkillEvent(new SkillCastContext(this, character) { DP = dp, SkillTarget = skillTarget, Skill = skill, Item = item, Targets = targets, Grids = grids, MPCost = costMP, EPCost = costEP });
-
-                        skill.OnSkillCasted(this, character, targets, grids);
-
-                        skill.AfterSkillCasted(character, targets, grids);
-
-                        TriggerAfterCharacterCastSkill(character, skill, targets);
-
-                        TriggerAfterCharacterUseItem(character, dp, item, skill, targets);
+                        ExecuteItemEffects(item, character, dp, skill, targets, grids, costMP, costEP);
                         return true;
                     }
                 }
@@ -4144,7 +4059,7 @@ namespace FunGame.Core.Model.Queue
         /// <returns></returns>
         public virtual List<Character> GetTeammates(Character character)
         {
-            return [.. _queue.Where(c => c != character && (character.Master == c || c == character.Master || (c.Master != null && character.Master != null && c.Master == character.Master)))];
+            return [.. _queue.Where(c => c != character && (character.Master == c || c.Master == character || (c.Master != null && character.Master != null && c.Master == character.Master)))];
         }
 
         /// <summary>
@@ -4205,7 +4120,7 @@ namespace FunGame.Core.Model.Queue
             DecisionPoints dp;
             if (!_decisionPoints.TryGetValue(character, out DecisionPoints? value) || value is null)
             {
-                value = new();
+                value = CreateInitialDecisionPoints();
                 _decisionPoints[character] = value;
             }
             dp = value;
@@ -4335,6 +4250,7 @@ namespace FunGame.Core.Model.Queue
                 if (interruption)
                 {
                     _castingSkills.Remove(caster);
+                    FinishInterruptedChainCast(caster);
                     WriteLine($"[ {caster} ] 的施法被 [ {interrupter} ] 打断了！！");
                     // 吟唱被打断：立即移除已顺延的被动奖励
                     ClearDeferredRoundRewards(caster);
@@ -4351,11 +4267,17 @@ namespace FunGame.Core.Model.Queue
         public void InterruptCasting(Character interrupter)
         {
             WriteLine($"[ {interrupter} ] 人间蒸发了。");
-            foreach (Character caster in _castingSkills.Keys)
+            foreach (Character caster in _castingSkills.Keys.ToArray())
             {
                 SkillTarget skillTarget = _castingSkills[caster];
                 if (skillTarget.Targets.Contains(interrupter))
                 {
+                    if (_chainCasts.ContainsKey(caster))
+                    {
+                        skillTarget.Targets.Remove(interrupter);
+                        if (skillTarget.Targets.Count == 0 && !(skillTarget.Skill.IsNonDirectional && skillTarget.Skill.AllowSelectNoCharacterGrid))
+                            FinishInterruptedChainCast(caster);
+                    }
                     Skill skill = skillTarget.Skill;
                     WriteLine($"[ {caster} ] 丢失了施法目标！！");
                     SkillCastContext interruptCtx = new(this, caster) { Skill = skill, Interrupter = interrupter };
@@ -4419,6 +4341,7 @@ namespace FunGame.Core.Model.Queue
             }
             if (character.CharacterState == CharacterState.Casting)
             {
+                FinishInterruptedChainCast(character);
                 _castingSkills.Remove(character);
                 character.CharacterState = CharacterState.Actionable;
                 character.UpdateCharacterState();

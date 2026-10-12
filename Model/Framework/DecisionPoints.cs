@@ -107,6 +107,7 @@ namespace FunGame.Core.Model.Framework
             {
                 return type switch
                 {
+                    CharacterActionType.ChainAction => int.MaxValue,
                     CharacterActionType.NormalAttack => GameplayEquilibriumConstant.ActionQuotaNormalAttack + TempActionQuotaNormalAttack + TempActionQuotaAllRound,
                     CharacterActionType.CastSuperSkill => GameplayEquilibriumConstant.ActionQuotaSuperSkill + TempActionQuotaSuperSkill + TempActionQuotaAllRound,
                     CharacterActionType.CastSkill => GameplayEquilibriumConstant.ActionQuotaSkill + TempActionQuotaSkill + TempActionQuotaAllRound,
@@ -172,6 +173,7 @@ namespace FunGame.Core.Model.Framework
         /// <param name="type"></param>
         public bool CheckActionTypeQuota(CharacterActionType type)
         {
+            if (type == CharacterActionType.ChainAction) return true;
             if (ActionTypes.TryGetValue(type, out int times))
             {
                 return times < this[type];
@@ -185,10 +187,16 @@ namespace FunGame.Core.Model.Framework
         /// <param name="type"></param>
         /// <param name="skill"></param>
         /// <returns></returns>
-        public int GetActionPointCost(CharacterActionType type, Skill? skill = null)
+        /// <param name="chainAction">协同执行使用正常动作成本，预释放仍使用回合外成本</param>
+        public int GetActionPointCost(CharacterActionType type, Skill? skill = null, bool chainAction = false)
         {
             return type switch
             {
+                CharacterActionType.ChainAction => GameplayEquilibriumConstant.DecisionPointsCostChainAction,
+                CharacterActionType.CastSkill when chainAction => GameplayEquilibriumConstant.DecisionPointsCostSkill,
+                CharacterActionType.CastSuperSkill when chainAction => GameplayEquilibriumConstant.DecisionPointsCostSuperSkill,
+                CharacterActionType.CastSkill when skill?.SkillType == SkillType.Skill => GameplayEquilibriumConstant.DecisionPointsCostSkill,
+                CharacterActionType.CastSuperSkill when skill?.SkillType == SkillType.SuperSkill => GameplayEquilibriumConstant.DecisionPointsCostSuperSkill,
                 CharacterActionType.NormalAttack => GameplayEquilibriumConstant.DecisionPointsCostNormalAttack,
                 CharacterActionType.PreCastSkill when skill?.SkillType == SkillType.SuperSkill => GameplayEquilibriumConstant.DecisionPointsCostSuperSkill,
                 CharacterActionType.PreCastSkill when skill?.SkillType == SkillType.Skill => GameplayEquilibriumConstant.DecisionPointsCostSkill,
@@ -197,6 +205,15 @@ namespace FunGame.Core.Model.Framework
                 CharacterActionType.CastSuperSkill => GameplayEquilibriumConstant.DecisionPointsCostSuperSkillOutOfTurn, // 回合外使用爆发技
                 _ => GameplayEquilibriumConstant.DecisionPointsCostOther
             };
+        }
+
+        /// <summary>
+        /// 扣减回合外协作预算及配额，不改变上一正常回合的硬直统计
+        /// </summary>
+        public void ConsumeChainAction(CharacterActionType type, Skill? skill = null)
+        {
+            CurrentDecisionPoints -= GetActionPointCost(type, skill, chainAction: true);
+            ActionTypes[type] = ActionTypes.GetValueOrDefault(type) + 1;
         }
 
         /// <summary>

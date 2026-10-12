@@ -644,6 +644,7 @@ namespace FunGame.Core.Library.Constant
         CastSkill,
         CastSuperSkill,
         UseItem,
+        ChainAction,
         EndTurn
     }
 
