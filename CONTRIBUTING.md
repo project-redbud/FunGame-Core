@@ -37,6 +37,8 @@
 - **尊重每一位参与者**，只针对代码与结论，不针对人。
 - **技术分歧请摆证据**：给出文件路径、行号、复现命令或测试用例，而不是「我觉得」。
 - **不确定就先问**：在 issue 里描述你的场景与疑问，比直接提交一个方向不对的 PR 更高效。
+- **提交必须签名**：`master` 启用了 *Require signed commits*，未签名的提交会被直接拒绝。
+  动手写代码之前先按[提交签名](#signing)把本地配好，免得最后被拦在门外。
 
 ---
 
@@ -414,7 +416,7 @@ public void RegisterFactory_TakesPrecedenceOverFallback()
 
 | 分支 | 用途 |
 | :---: | --- |
-| `master` | 主分支，仅接受 PR 合并 |
+| `master` | 主分支，仅接受 PR 合并；**提交必须签名**（见[提交签名](#signing)） |
 | `latest` | **由 CI 自动推送编译产物，请勿手动提交** |
 | 其他 | 开发分支，命名建议 `feat/xxx`、`fix/xxx`、`refactor/xxx`、`docs/xxx` |
 
@@ -432,6 +434,41 @@ fix: MOV bound weapon bug
 常用前缀：`feat` / `fix` / `refactor` / `test` / `docs` / `chore`。
 一个提交只做一件事；**不要**把格式化、重命名与逻辑修改混在同一个提交里。
 
+<a id="signing"></a>
+### 提交签名
+
+**所有提交都必须经过加密签名并通过验证。** `master` 启用了 GitHub 的 *Require signed commits* 分支保护：
+未签名、签名损坏或无法验证的提交，推送与合并都会被**直接拒绝**。
+
+> 这里的「签名」指 **GPG / SSH / Sigstore 加密签名**，不是 `Signed-off-by:` 这种声明式的 DCO 签署——
+> 后者只是提交信息里的一行文本，不会让 GitHub 显示 Verified，也过不了这道门禁。
+
+GPG 与 SSH 任选一种，GitHub 都认：
+
+```powershell
+# 方式一：GPG
+gpg --full-generate-key                    # 生成密钥（RSA 4096 或 ed25519）
+gpg --armor --export <KEY_ID>              # 导出公钥，粘到 GitHub → Settings → SSH and GPG keys
+git config commit.gpgsign true
+git config user.signingkey <KEY_ID>
+
+# 方式二：SSH
+git config gpg.format ssh
+git config user.signingkey ~/.ssh/id_ed25519.pub   # 同一把公钥也要作为 Signing Key 加到 GitHub
+```
+
+容易踩的几点：
+
+- **rebase / amend 会重写提交，签名随之丢失**：打开 `git config --global rebase.gpgSign true`；
+  给已有的未签名提交补签用 `git rebase --exec 'git commit --amend --no-edit -S' <base>`。
+- **密钥邮箱必须与提交的 Author 邮箱一致**，否则 GitHub 标成 `Unverified`——有签名，但不算数。
+- 在 GitHub 网页上产生的提交与合并（在线改文件、解决冲突、Squash / Rebase merge）由 GitHub 用自己的
+  web-flow 密钥签名，无需本地配置。
+- 自检用 `git log --format='%h %G? %s'`：首列 `G` 才算通过（`N` 无签名、`E` 无法验证、`B` 签名损坏）；
+  看详情用 `git log --show-signature`。
+- 报 `gpg failed to sign the data` 时，先确认 `gpg --list-secret-keys` 能列出密钥、pinentry 能弹窗；
+  无头环境需要预置 `GPG_TTY`，或改用 SSH 签名。
+
 ### PR 检查清单
 
 - [ ] PR 描述写清**动机**（解决什么问题）与**做法**（关键取舍）
@@ -441,6 +478,7 @@ fix: MOV bound weapon bug
 - [ ] 新增公开 API 已带 XML 文档；破坏性变更在描述中显式标注
 - [ ] 文档与注释只描述当前状态——没有把旧逻辑留在原地再补一段新逻辑的写法，也没有「曾经 / 已修复」这类变更史叙述
 - [ ] 无第三方依赖、无产物文件、无换行符噪声
+- [ ] 所有提交都已签名并为 GitHub 验证通过；未签名的提交会被 `master` 的分支保护拒绝
 - [ ] 未新增 `NoWarn`；确需放行时，已在描述中说明并取得维护者同意
 
 > **关于 AI 辅助**

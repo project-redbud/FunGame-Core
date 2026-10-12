@@ -37,6 +37,7 @@
 - **Respect every participant.** Criticise the code and the conclusion, never the person.
 - **Back technical disagreements with evidence**: file paths, line numbers, a reproduction command, or a failing test case — not "I think".
 - **Ask when unsure.** Describing your scenario and question in an issue is far cheaper than a pull request heading in the wrong direction.
+- **Commits must be signed.** `master` enforces *Require signed commits*, so unsigned commits are rejected outright. Set up [commit signing](#signing) locally before you start writing code, rather than getting blocked at the end.
 
 ---
 
@@ -442,7 +443,7 @@ finish it without opening `src/`, it belongs on the documentation site.**
 
 | Branch | Purpose |
 | :---: | --- |
-| `master` | Main branch, accepts merges from pull requests only |
+| `master` | Main branch, accepts merges from pull requests only; **commits must be signed** (see [Commit signing](#signing)) |
 | `latest` | **Compiled artefacts pushed by CI — never commit to it manually** |
 | Others | Development branches; `feat/xxx`, `fix/xxx`, `refactor/xxx`, `docs/xxx` are good names |
 
@@ -461,6 +462,45 @@ fix: MOV bound weapon bug
 Common prefixes: `feat` / `fix` / `refactor` / `test` / `docs` / `chore`.
 One commit does one thing; **never** mix formatting or renames with a logic change.
 
+<a id="signing"></a>
+### Commit signing
+
+**Every commit must be cryptographically signed and verified.** `master` enforces GitHub's
+*Require signed commits* branch protection: commits that are unsigned, have a broken signature, or cannot be
+verified are **rejected outright** on push and on merge.
+
+> "Signed" here means **GPG / SSH / Sigstore** — not a declarative `Signed-off-by:` DCO sign-off, which is
+> merely a line of text in the commit message. It does not earn a *Verified* badge on GitHub and will not
+> pass this gate.
+
+GPG and SSH both work; pick one:
+
+```powershell
+# Option 1: GPG
+gpg --full-generate-key                    # generate a key (RSA 4096 or ed25519)
+gpg --armor --export <KEY_ID>              # export the public key to GitHub → Settings → SSH and GPG keys
+git config commit.gpgsign true
+git config user.signingkey <KEY_ID>
+
+# Option 2: SSH
+git config gpg.format ssh
+git config user.signingkey ~/.ssh/id_ed25519.pub   # the same key must also be registered as a Signing Key on GitHub
+```
+
+Things that trip people up:
+
+- **`rebase` / `amend` rewrite commits and lose the signature**: enable
+  `git config --global rebase.gpgSign true`; to re-sign existing unsigned commits, use
+  `git rebase --exec 'git commit --amend --no-edit -S' <base>`.
+- **The key's email must match the commit's author email**, otherwise GitHub labels the commit `Unverified` —
+  signed, but it does not count.
+- Commits and merges created on GitHub itself (editing a file in the browser, resolving conflicts,
+  squash / rebase merge) are signed by GitHub with its own web-flow key; no local setup needed.
+- Check with `git log --format='%h %G? %s'`: only `G` in the first column passes
+  (`N` unsigned, `E` cannot be verified, `B` broken signature); `git log --show-signature` shows the details.
+- If you hit `gpg failed to sign the data`, first confirm `gpg --list-secret-keys` lists your key and that
+  pinentry can prompt; headless environments need `GPG_TTY` preset, or switch to SSH signing.
+
 ### Pull request checklist
 
 - [ ] The description states the **motivation** (what problem) and the **approach** (key trade-offs)
@@ -472,6 +512,7 @@ One commit does one thing; **never** mix formatting or renames with a logic chan
 - [ ] Documentation and comments describe the current state only — no old logic left in place with a new
       explanation appended, and no "used to" / "has been fixed" change-history narrative
 - [ ] No third-party dependencies, no build artefacts, no line-ending noise
+- [ ] Every commit is signed and verified by GitHub; unsigned commits are rejected by `master`'s branch protection
 - [ ] No new `NoWarn` entries — if one is genuinely needed, it is explained in the description and approved by a maintainer
 
 > **On AI-assisted contributions**
