@@ -2,7 +2,7 @@
 
 > **面向**：要改伤害公式、技能施放、特效钩子的开发者。
 > **规则本身**见文档站：[伤害计算](https://project-redbud.github.io/guide/damage)、[技能系统](https://project-redbud.github.io/guide/skills)、[特效系统](https://project-redbud.github.io/guide/effects)。
-> **测试**：[`tests/FunGame.Core.Tests.Combat`](../../tests/FunGame.Core.Tests.Combat)（58 个用例）
+> **测试**：[`tests/FunGame.Core.Tests.Combat`](../../tests/FunGame.Core.Tests.Combat)（61 个用例）
 
 ## 本模块文档
 

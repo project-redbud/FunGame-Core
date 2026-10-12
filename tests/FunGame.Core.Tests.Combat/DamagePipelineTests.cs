@@ -49,6 +49,18 @@ public class DamagePipelineTests
     }
 
     [Fact]
+    public void ShieldCanBeSkippedByOption()
+    {
+        Duel duel = new();
+        duel.Enemy.Shield.Physical = 500;
+
+        double taken = duel.Deal(100, calculateShield: false);
+
+        Assert.Equal(100d, taken, 3);
+        Assert.Equal(500d, duel.Enemy.Shield.Physical, 3);
+    }
+
+    [Fact]
     public void PhysicalImmunity_BlocksPhysicalDamage()
     {
         Duel duel = new();
@@ -77,6 +89,31 @@ public class DamagePipelineTests
         duel.Enemy.ImmuneType = ImmuneType.Skilled;
 
         Assert.Equal(0d, duel.Deal(100, isNormalAttack: false), 3);
+    }
+
+    [Fact]
+    public void TrueDamage_IgnoresImmunity()
+    {
+        Duel duel = new();
+        duel.Enemy.ImmuneType = ImmuneType.All;
+        duel.Enemy.Shield.Physical = 500;
+
+        double taken = duel.Deal(100, damageType: DamageType.True);
+
+        Assert.Equal(100d, taken, 3);
+        Assert.Equal(500d, duel.Enemy.Shield.Physical, 3);
+    }
+
+    [Fact]
+    public void IgnoreImmuneOption_BypassesImmunity()
+    {
+        Duel duel = new();
+        duel.Enemy.ImmuneType = ImmuneType.Physical;
+
+        double taken = duel.Deal(100, ignoreImmune: true);
+
+        Assert.Equal(100d, taken, 3);
+        Assert.Equal(ImmuneType.Physical, duel.Enemy.ImmuneType);
     }
 
     [Fact]
