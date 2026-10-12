@@ -22,6 +22,18 @@ namespace FunGame.Core.Model.Framework
         /// </summary>
         public Character Actor { get; set; } = new();
 
+        /// <summary>协同动作所属回合的角色；普通动作为空。</summary>
+        public Character? TurnActor { get; set; }
+
+        /// <summary>关联的协同申请，确认记录和执行记录使用同一 ID。</summary>
+        public Guid? ChainActionRequestId { get; set; }
+
+        /// <summary>确认记录中的实际协作方。</summary>
+        public Character? ChainActor { get; set; }
+
+        /// <summary>协调产生的非伤害辅助关系，伤害仍归实际执行者。</summary>
+        public List<Character> NonDamageAssistTargets { get; } = [];
+
         /// <summary>
         /// 本回合内操作的次序（从 1 开始）
         /// </summary>
@@ -183,6 +195,8 @@ namespace FunGame.Core.Model.Framework
             }
 
             StringBuilder builder = new();
+            if (ChainActionRequestId != null && TurnActor != null && ActionType != CharacterActionType.ChainAction)
+                builder.Append($"协同行动（由 [ {TurnActor} ] 协调）：");
             if (ActionType == CharacterActionType.NormalAttack)
             {
                 builder.Append($"[ {Actor} ] {Actor.NormalAttack.Name} -> ");
@@ -198,6 +212,10 @@ namespace FunGame.Core.Model.Framework
                 string itemName = Item?.Name ?? "物品";
                 string itemCost = Cost != "" ? $"（{Cost}）" : "";
                 builder.Append($"[ {Actor} ] {itemName}{itemCost} -> ");
+            }
+            else if (ActionType == CharacterActionType.ChainAction)
+            {
+                builder.Append($"[ {Actor} ] 确认协同行动（{ChainActor}） -> ");
             }
             else if (ActionType == CharacterActionType.Move)
             {
@@ -242,6 +260,9 @@ namespace FunGame.Core.Model.Framework
             ActionRecord snapshot = new(Round)
             {
                 Actor = Actor,
+                TurnActor = TurnActor,
+                ChainActor = ChainActor,
+                ChainActionRequestId = ChainActionRequestId,
                 ActionIndex = ActionIndex,
                 ActionType = ActionType,
                 Skill = Skill,
@@ -257,6 +278,7 @@ namespace FunGame.Core.Model.Framework
                 HardnessTime = HardnessTime
             };
             snapshot.Targets.AddRange(Targets);
+            snapshot.NonDamageAssistTargets.AddRange(NonDamageAssistTargets);
             foreach (KeyValuePair<Character, double> kv in Damages)
             {
                 snapshot.Damages[kv.Key] = kv.Value;

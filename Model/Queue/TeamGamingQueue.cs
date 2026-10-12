@@ -48,6 +48,8 @@ namespace FunGame.Core.Model.Queue
         /// <param name="character"></param>
         public Team? GetTeam(Character character)
         {
+            HashSet<Character> visited = [];
+            while (character.Master is Character master && visited.Add(character)) character = master;
             foreach (Team team in _teams.Values)
             {
                 if (team.IsOnThisTeam(character))
@@ -85,16 +87,20 @@ namespace FunGame.Core.Model.Queue
         /// <param name="character"></param>
         public override List<Character> GetTeammates(Character character)
         {
+            Character principal = character;
+            HashSet<Character> visited = [];
+            while (principal.Master is Character master && visited.Add(principal)) principal = master;
             foreach (string team in _teams.Keys)
             {
-                if (_teams[team].IsOnThisTeam(character))
+                if (_teams[team].IsOnThisTeam(principal))
                 {
-                    List<Character> list = _teams[team].GetTeammates(character);
+                    List<Character> list = _teams[team].GetTeammates(principal);
+                    if (principal != character) list.Add(principal);
                     list.AddRange(_queue.Where(c => c.Master != null && _teams[team].IsOnThisTeam(c.Master)));
-                    return list;
+                    return [.. list.Where(c => c != character).Distinct()];
                 }
             }
-            return [];
+            return base.GetTeammates(character);
         }
 
         /// <summary>
@@ -109,7 +115,8 @@ namespace FunGame.Core.Model.Queue
             Team? team = GetTeam(character);
             if (team != null)
             {
-                SetNotDamageAssistTime(character, LastRound.Targets.Values.SelectMany(c => c).Where(team.IsOnThisTeam));
+                SetNotDamageAssistTime(character, LastRound.Actions.Where(a => a.Actor == character && a.ActionType != CharacterActionType.ChainAction)
+                    .SelectMany(a => a.Targets).Where(team.IsOnThisTeam).Distinct());
             }
         }
 

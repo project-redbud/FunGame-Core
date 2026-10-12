@@ -34,5 +34,10 @@ namespace FunGame.Core.Model.EffectContext
         /// 可选择的物品列表（可就地修改内容）
         /// </summary>
         public List<Item> Items { get; internal set; } = [];
+
+        /// <summary>
+        /// 当前回合可确认的协同行动列表
+        /// </summary>
+        public IReadOnlyList<ChainActionRequest> ChainActions { get; internal set; } = [];
     }
 }

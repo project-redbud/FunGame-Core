@@ -35,6 +35,18 @@ namespace FunGame.Core.Library.Common.JsonConverter
                 case nameof(ActionRecord.ActionIndex):
                     result.ActionIndex = reader.GetInt32();
                     break;
+                case nameof(ActionRecord.TurnActor):
+                    result.TurnActor = reader.TokenType == JsonTokenType.Null ? null : CharacterRefHelper.Read(ref reader);
+                    break;
+                case nameof(ActionRecord.ChainActor):
+                    result.ChainActor = reader.TokenType == JsonTokenType.Null ? null : CharacterRefHelper.Read(ref reader);
+                    break;
+                case nameof(ActionRecord.ChainActionRequestId):
+                    result.ChainActionRequestId = reader.TokenType == JsonTokenType.Null ? null : reader.GetGuid();
+                    break;
+                case nameof(ActionRecord.NonDamageAssistTargets):
+                    result.NonDamageAssistTargets.AddRange(CharacterRefHelper.ReadList(ref reader));
+                    break;
                 case nameof(ActionRecord.ActionType):
                     result.ActionType = (CharacterActionType)reader.GetInt32();
                     break;
@@ -160,6 +172,15 @@ namespace FunGame.Core.Library.Common.JsonConverter
             CharacterRefHelper.WriteList(writer, allCharacters);
             writer.WritePropertyName(nameof(ActionRecord.Actor));
             CharacterRefHelper.Write(writer, value.Actor);
+            writer.WritePropertyName(nameof(ActionRecord.TurnActor));
+            if (value.TurnActor is null) writer.WriteNullValue();
+            else CharacterRefHelper.Write(writer, value.TurnActor);
+            writer.WritePropertyName(nameof(ActionRecord.ChainActor));
+            if (value.ChainActor is null) writer.WriteNullValue();
+            else CharacterRefHelper.Write(writer, value.ChainActor);
+            if (value.ChainActionRequestId is Guid requestId) writer.WriteString(nameof(ActionRecord.ChainActionRequestId), requestId);
+            writer.WritePropertyName(nameof(ActionRecord.NonDamageAssistTargets));
+            CharacterRefHelper.WriteList(writer, value.NonDamageAssistTargets);
             writer.WriteNumber(nameof(ActionRecord.ActionIndex), value.ActionIndex);
             writer.WriteNumber(nameof(ActionRecord.ActionType), (int)value.ActionType);
             writer.WritePropertyName(nameof(ActionRecord.Skill));
