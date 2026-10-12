@@ -1,5 +1,8 @@
 # 协同行动
 
+> 上级：[队列与回合](README.md) ｜ 源码：`src/Model/Queue/GamingQueue.ChainAction.cs`、`GamingQueue.cs` 的回合循环挂钩
+> 相关测试：`ChainActionTests`、`ChainActionRegressionTests`
+
 协同行动将当前正常回合的角色 A 与实际动作执行者 B 分开。A 确认申请，B 使用自己延续的预算执行动作，随后继续由 A 决策。
 
 ## 规则
@@ -7,9 +10,9 @@
 | 项目 | 行为 |
 | --- | --- |
 | A 的确认动作 | `CharacterActionType.ChainAction`，消耗 1 决策点，配额无限 |
-| A 的动作硬直 | 3，参与原有最大动作硬直计算；普攻后确认为 `max(普攻硬直, 3) + 2` |
+| A 的动作硬直 | 3，参与最大动作硬直计算；普攻后确认为 `max(普攻硬直, 3) + 2` |
 | B 的可用动作 | 普攻、战技、魔法、爆发技、物品 |
-| B 的预算 | 上一次正常回合以来持续扣减的决策点及对应配额，不刷新旧硬直统计 |
+| B 的预算 | 上一次正常回合以来持续扣减的决策点及对应配额，不刷新硬直统计 |
 | 新角色和召唤物 | 入队时使用队列配置中的 `InitialDecisionPoints`，提交申请不补点 |
 | B 的即时硬直 | 通过队列更新入口，在当前硬直上加本次动作硬直 |
 | 协同魔法 | 当前队列时间替换为吟唱时间；释放后设置为原硬直加魔法动作硬直 |
@@ -65,24 +68,29 @@ queue.SelectChainActionEvent += (actor, pending) =>
 
 除上述回合内选择分支，接管回合的宿主也可以直接调用 `ConfirmChainAction(A, request.Id)`，读取 `ChainActionResult.IsSuccess`、`FailReason`、`IsCasting` 和执行记录。此入口同样记录 A 的确认成本与硬直。失败时可向玩家显示 `FailReason`。
 
-公开入口在 `IGamingQueue` 上提供兼容的默认实现，未实现协同机制的自定义队列会返回“不支持”，原有实现者不需要立即增加方法。队列和协同入口沿用框架的同步执行模型；网络或 UI 线程应将操作串行派发到本局游戏循环。
+公开入口在 `IGamingQueue` 上都有默认实现：未实现协同机制的自定义队列调用它们时得到「不支持」的结果。队列和协同入口沿用框架的同步执行模型；网络或 UI 线程应将操作串行派发到本局游戏循环。
 
 ## 记录、回放与 AI
 
 每次成功确认保存两条 `ActionRecord`：A 的 `ChainAction` 确认记录和 B 的实际动作记录。两条记录共享 `ChainActionRequestId`，实际动作记录的 `Actor` 为 B、`TurnActor` 为 A；确认记录还保存 `ChainActor`。
 
-即时动作在 A 的 `NonDamageAssistTargets` 中登记协作方 B。魔法在释放完成时才建立有效辅助，记录保留原 A 及申请 ID。实际致死效果在计算击杀贡献前登记协调关系，确保该次击杀就能识别 A 的助攻。旧团队回合辅助逻辑只读取当前角色实际执行的动作，避免把 B 的目标错误归给 A。
+即时动作在 A 的 `NonDamageAssistTargets` 中登记协作方 B。魔法在释放完成时才建立有效辅助，记录保留原 A 及申请 ID。实际致死效果在计算击杀贡献前登记协调关系，确保该次击杀就能识别 A 的助攻。正常回合的团队辅助逻辑只读取当前角色实际执行的动作，避免把 B 的目标错误归给 A。
 
-这些字段支持 `Snapshot()` 和 JSON 往返，并通过现有 `DefaultRoundRecordSink` 自动外发。`ActionRecord.ToString()` 显示确认者及实际执行者，现有 `RoundRecordRenderer` 直接使用该输出。回合级字典仍作为聚合数据；需要准确归属和双方成本的消费者应读取 `RoundRecord.Actions`。
+这些字段支持 `Snapshot()` 和 JSON 往返，并通过 `DefaultRoundRecordSink` 自动外发。`ActionRecord.ToString()` 显示确认者及实际执行者，`RoundRecordRenderer` 直接使用该输出。回合级字典作为聚合数据；需要准确归属和双方成本的消费者应读取 `RoundRecord.Actions`。
 
-AI 第一版会选择并确认第一份有效申请；预算保留策略及自动提交策略留给宿主或后续 AI 扩展。申请 ID 与回合 ID 用于生命周期校验，不参与战斗随机数源。
+AI 会选择并确认第一份有效申请。预算保留策略与自动提交策略由宿主或 AI 扩展自行实现。申请 ID 与回合 ID 只用于生命周期校验，不参与战斗随机数源。
 
-## 验证
+## 相关测试
 
-无需额外测试包，使用独立控制台场景测试；失败会返回非零退出码，CI 已接入同一命令：
+协同行动的场景都是 xUnit 用例，随解决方案一起跑：
 
 ```powershell
-dotnet run --project Tests/FunGame.Core.ChainAction.Tests --configuration Release
+dotnet test tests/FunGame.Core.Tests.Queue/FunGame.Core.Tests.Queue.csproj -c Release
 ```
 
-场景覆盖连续位置、控制态占位、申请替换撤回及到期、队列重验、预算隔离与跨回合扣减、双方硬直、配额及资源失败、重复确认与钩子重入、协同魔法成功/打断/目标失效/资源失败/死亡、预释放取消吟唱、召唤物、地图射程与空地魔法、物品消耗、击杀和辅助归属、记录快照及 JSON、AI 确认，以及普通技能/魔法回归。
+| 测试类 | 守什么 |
+| --- | --- |
+| `ChainActionTests`（14 条） | 申请提交与撤回、确认成本与硬直、预算隔离等精确数值 |
+| `ChainActionRegressionTests`（25 条） | 连续位置与控制态占位、申请替换/撤回/到期、队列重验、预算隔离与跨回合扣减、双方硬直、配额与资源失败、重复确认与钩子重入、协同魔法的成功/打断/目标失效/资源失败/死亡、预释放取消吟唱、召唤物、地图射程与空地魔法、物品消耗、击杀与辅助归属、记录快照与 JSON、AI 确认，以及普通技能与魔法的回归 |
+
+改协同行动相关代码前，先看这两处的期望值；决策点与配额的精确数值另见 `DecisionPointsTests`。

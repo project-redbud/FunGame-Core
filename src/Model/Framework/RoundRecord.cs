@@ -149,7 +149,7 @@ namespace FunGame.Core.Model.Framework
             builder.AppendLine($"=== Round {Round} ===");
             if (RoundRewardEvents.Count > 0)
             {
-                // 有事件流时按事件渲染（含归属、绑定方式、顺延、夺取），信息比旧的一行汇总完整
+                // 有事件流时按事件渲染（含归属、绑定方式、顺延、夺取），信息比单行汇总完整
                 foreach (RoundRewardRecord rewardEvent in RoundRewardEvents)
                 {
                     builder.AppendLine(rewardEvent.ToString());

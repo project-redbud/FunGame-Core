@@ -116,7 +116,7 @@ namespace FunGame.Core.Api
         /// <summary>
         /// 构造一个特效实例<para/>
         /// skill 与 args 是显式契约（对应 <see cref="Effect"/> 受保护构造函数的参数），
-        /// 旧的泛型路径 <see cref="GetInstance{T}(long, string, Dictionary{string, object})"/> 对 Effect 直接抛出异常，特效只能通过此方法构造
+        /// 泛型路径 <see cref="GetInstance{T}(long, string, Dictionary{string, object})"/> 对 Effect 直接抛出异常，特效只能通过此方法构造
         /// </summary>
         /// <param name="id"></param>
         /// <param name="name"></param>

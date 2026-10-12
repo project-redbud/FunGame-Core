@@ -9,8 +9,8 @@
 </p>
 
 <p align="center">
-  <b>A lightweight, extensible turn-based battle system library for C#.NET</b><br>
-  <i>Action queue · Decision points · Six-zone damage · Skills &amp; effects, out of the box</i>
+  <b>A lightweight, extensible turn-based battle library for .NET</b><br>
+  <i>Action queue · Decision points · Complex damage calculation · Skills &amp; effects</i>
 </p>
 
 <p align="center">
@@ -143,9 +143,11 @@ Reference `FunGame.Core.dll`, or include the whole `FunGame.Core` project in you
 
 - 📖 **API Documentation**: [FunGame Docs](https://project-redbud.github.io/)
   - The documentation changes along with the project, but we do not guarantee that it is always up to date.
+- 🧩 **In-repo design docs**: [docs/](docs/README.md) — key code, invariants and pitfalls, module by module, for people changing the engine.
 - 🤖 **AI-Generated Documentation**: [DeepWiki Docs](https://deepwiki.com/project-redbud/FunGame-Core)
   - An AI-generated wiki built from a full analysis of the codebase — great for understanding the project alongside the source code.
 - 🐛 **Issues**: Encountered a problem? Feel free to open an [issue](https://github.com/project-redbud/FunGame-Core/issues).
+- 🤝 **Contributing**: [CONTRIBUTING_EN.md](CONTRIBUTING_EN.md) — development setup, code &amp; test standards, submission and release workflow.
 
 ---
 

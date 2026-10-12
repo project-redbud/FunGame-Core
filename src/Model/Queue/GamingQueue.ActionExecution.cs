@@ -33,7 +33,10 @@ namespace FunGame.Core.Model.Queue
             else actor.EP -= cost;
             hardness += skill.RealHardnessTime;
             skill.CurrentCD = skill.RealCD;
-            skill.Enable = false;
+            if (skill.RealCD > 0)
+            {
+                skill.Enable = false;
+            }
             string costText = $"{-cost:0.##} {(magic ? "MP" : "EP")}";
             LastRound.SkillsCost[skill] = costText;
             if (_currentAction != null)
@@ -74,7 +77,10 @@ namespace FunGame.Core.Model.Queue
             skill.BeforeSkillCasted(character, targets, grids);
 
             skill.CurrentCD = skill.RealCD;
-            skill.Enable = false;
+            if (skill.RealCD > 0)
+            {
+                skill.Enable = false;
+            }
 
             string line = $"[ {character} ] ";
             if (costMP > 0)
