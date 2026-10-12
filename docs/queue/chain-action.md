@@ -1,7 +1,7 @@
 # 协同行动
 
 > 上级：[队列与回合](README.md) ｜ 源码：`src/Model/Queue/GamingQueue.ChainAction.cs`、`GamingQueue.cs` 的回合循环挂钩
-> 相关测试：`ChainActionTests`、`ChainActionRegressionTests`
+> 相关测试：`ChainActionTests`、`ChainActionRegressionTests`、`ChainActionAITests`
 
 协同行动将当前正常回合的角色 A 与实际动作执行者 B 分开。A 确认申请，B 使用自己延续的预算执行动作，随后继续由 A 决策。
 
@@ -78,7 +78,9 @@ queue.SelectChainActionEvent += (actor, pending) =>
 
 这些字段支持 `Snapshot()` 和 JSON 往返，并通过 `DefaultRoundRecordSink` 自动外发。`ActionRecord.ToString()` 显示确认者及实际执行者，`RoundRecordRenderer` 直接使用该输出。回合级字典作为聚合数据；需要准确归属和双方成本的消费者应读取 `RoundRecord.Actions`。
 
-AI 会选择并确认第一份有效申请。预算保留策略与自动提交策略由宿主或 AI 扩展自行实现。申请 ID 与回合 ID 只用于生命周期校验，不参与战斗随机数源。
+AI 在每次正常行动决策前调用 `WillSubmitChainActions`，为当前连续同队区间内的可行动队友（包括手动控制队友及召唤物）代交申请。已有有效申请保持不变；没有申请时复用 `AIController.DecideAIAction` 评估普攻、技能与物品，只评估协作方当前格，不移动。当前回合角色仍可作为协同辅助技能的目标。
+
+宿主行动决策事件优先；宿主未选择行动时，AI 优先确认第一份有效申请，再评估自己的普通行动。每次行动后重新检查连续位置、状态、预算、配额、资源和射程，因此同一队友可以在仍符合资格时再次提交。申请与确认均不补充预算；技能预算恰好等于成本时也参与评估，协同爆发技按正常爆发技成本执行。关闭 `EnableAI`、手动回合、整回合事件接管及吟唱结算均不自动提交。预算保留策略由宿主或 AI 扩展自行实现。申请 ID 与回合 ID 只用于生命周期校验，不参与战斗随机数源。
 
 ## 相关测试
 
@@ -92,5 +94,6 @@ dotnet test tests/FunGame.Core.Tests.Queue/FunGame.Core.Tests.Queue.csproj -c Re
 | --- | --- |
 | `ChainActionTests`（14 条） | 申请提交与撤回、确认成本与硬直、预算隔离等精确数值 |
 | `ChainActionRegressionTests`（25 条） | 连续位置与控制态占位、申请替换/撤回/到期、队列重验、预算隔离与跨回合扣减、双方硬直、配额与资源失败、重复确认与钩子重入、协同魔法的成功/打断/目标失效/资源失败/死亡、预释放取消吟唱、召唤物、地图射程与空地魔法、物品消耗、击杀与辅助归属、记录快照与 JSON、AI 确认，以及普通技能与魔法的回归 |
+| `ChainActionAITests`（10 条） | AI 自动代交与确认、多次协同、技能类型与精确预算、连续位置与预算过滤、原地射程、宿主优先级和手动回合 |
 
 改协同行动相关代码前，先看这两处的期望值；决策点与配额的精确数值另见 `DecisionPointsTests`。

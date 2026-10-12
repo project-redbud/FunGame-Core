@@ -37,8 +37,10 @@ namespace FunGame.Core.Controller
         public bool IsMapMode => _map != null;
 
         /// <summary>
-        /// 第一版协同策略：选择第一份经队列重验的有效申请
+        /// 协同确认策略：选择第一份经队列重验的有效申请
         /// </summary>
+        /// <param name="actor">当前正常回合的角色</param>
+        /// <returns>第一份有效申请的标识；没有有效申请时返回 null</returns>
         public Guid? SelectChainAction(Character actor)
         {
             IReadOnlyList<ChainActionRequest> list = _queue.GetPendingChainActions(actor);
@@ -525,7 +527,7 @@ namespace FunGame.Core.Controller
         private static bool CanCharacterNormalAttack(Character character, DecisionPoints dp)
         {
             return dp.CheckActionTypeQuota(CharacterActionType.NormalAttack)
-                && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostNormalAttack
+                && dp.CurrentDecisionPoints >= dp.GameplayEquilibriumConstant.DecisionPointsCostNormalAttack
                 && character.CharacterState != CharacterState.NotActionable
                 && character.CharacterState != CharacterState.ActionRestricted
                 && character.CharacterState != CharacterState.BattleRestricted
@@ -536,9 +538,9 @@ namespace FunGame.Core.Controller
         private static bool CanCharacterUseSkill(Character character, Skill skill, DecisionPoints dp)
         {
             return (
-                (skill.SkillType == SkillType.Magic && dp.CheckActionTypeQuota(CharacterActionType.PreCastSkill) && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostMagic)
-                || (skill.SkillType == SkillType.Skill && dp.CheckActionTypeQuota(CharacterActionType.CastSkill) && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostSkill)
-                || (skill.SkillType == SkillType.SuperSkill && dp.CheckActionTypeQuota(CharacterActionType.CastSuperSkill) && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostSuperSkill)
+                (skill.SkillType == SkillType.Magic && dp.CheckActionTypeQuota(CharacterActionType.PreCastSkill) && dp.CurrentDecisionPoints >= dp.GameplayEquilibriumConstant.DecisionPointsCostMagic)
+                || (skill.SkillType == SkillType.Skill && dp.CheckActionTypeQuota(CharacterActionType.CastSkill) && dp.CurrentDecisionPoints >= dp.GameplayEquilibriumConstant.DecisionPointsCostSkill)
+                || (skill.SkillType == SkillType.SuperSkill && dp.CheckActionTypeQuota(CharacterActionType.CastSuperSkill) && dp.CurrentDecisionPoints >= dp.GameplayEquilibriumConstant.DecisionPointsCostSuperSkill)
             )
             && character.CharacterState != CharacterState.NotActionable
             && character.CharacterState != CharacterState.ActionRestricted
@@ -551,7 +553,7 @@ namespace FunGame.Core.Controller
         private static bool CanCharacterUseItem(Character character, Item item, DecisionPoints dp)
         {
             return dp.CheckActionTypeQuota(CharacterActionType.UseItem)
-                && dp.CurrentDecisionPoints > dp.GameplayEquilibriumConstant.DecisionPointsCostItem
+                && dp.CurrentDecisionPoints >= dp.GameplayEquilibriumConstant.DecisionPointsCostItem
                 && character.CharacterState != CharacterState.NotActionable
                 && (character.CharacterState != CharacterState.ActionRestricted || item.ItemType == ItemType.Consumable)
                 && character.CharacterState != CharacterState.BattleRestricted;

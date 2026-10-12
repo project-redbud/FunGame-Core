@@ -101,7 +101,7 @@ while (queue.NextCharacter() is Character actor)
 }
 ```
 
-For more examples (team mode, custom characters/skills/effects/items, event binding, outbound records, etc.), see the [Usage &amp; Documentation](#usage) section.
+For more examples (team mode, custom characters/skills/effects/items, event binding, outbound records, chain actions, etc.), see the [Usage &amp; Documentation](#usage) section.
 
 ---
 
