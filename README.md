@@ -141,8 +141,6 @@ git clone -b latest https://github.com/project-redbud/FunGame-Core.git
 
 引用 `FunGame.Core.dll` 或者直接引用整个 `FunGame.Core` 项目到你的项目中。
 
-[协同行动](docs/queue/chain-action.md)的吟唱结算由正常回合主循环处理，触发回合事件、奖励与行动回合计数。动作记录保存单次操作的硬直和吟唱时间；接管回合后直接确认协同时，宿主负责协调方的确认硬直与回合收尾。
-
 - 📖 **API 文档**：[FunGame 开发文档](https://project-redbud.github.io/)
   - 文档内容会随着本项目的更改而变化，但是我们不保证能够及时更新文档。
 - 🧩 **设计文档（仓库内）**：[docs/](docs/README.md) —— 分模块讲解关键代码、不变量与常见坑，面向要改引擎的开发者。
