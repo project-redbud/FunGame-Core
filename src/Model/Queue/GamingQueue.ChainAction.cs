@@ -53,18 +53,20 @@ namespace FunGame.Core.Model.Queue
         /// 在 AI 正常决策前，为连续同队区间内的队友代交原地协同申请，保留已有有效申请
         /// </summary>
         /// <param name="turnActor">当前正常回合的 AI 角色</param>
-        protected void WillSubmitChainActions(Character turnActor)
+        /// <param name="allTeammates">回合角色的队友</param>
+        /// <param name="allEnemies">回合角色的敌人</param>
+        protected void WillSubmitChainActions(Character turnActor, List<Character> allTeammates, List<Character> allEnemies)
         {
             if (!IsChainTurn(turnActor) || !IsCharacterInAIControlling(turnActor) || AI is not AIController ai) return;
             HashSet<Character> pendingActors = [.. GetPendingChainActions(turnActor).Select(r => r.Actor)];
             foreach (Character actor in GetAvailableChainActors(turnActor))
             {
                 if (pendingActors.Contains(actor) || !_decisionPoints.TryGetValue(actor, out DecisionPoints? dp) || dp.CurrentDecisionPoints <= 0) continue;
-                List<Character> teammates = [.. _allCharacters.Union(_queue).Where(c => c != actor && AreChainTeammates(actor, c)).Distinct()];
-                List<Character> enemies = [.. _allCharacters.Union(_queue).Where(c => c != actor && !teammates.Contains(c) && !_eliminated.Contains(c)).Distinct()];
+                List<Character> teammates = [.. allTeammates.Where(c => c != actor), turnActor];
+                List<Character> enemies = [.. allEnemies.Where(c => c != actor)];
                 (List<Character> selectableTeammates, List<Character> selectableEnemies, List<Skill> skills, List<Item> items) = GetTurnStartNeedyList(actor, teammates, enemies);
                 // 当前回合角色已出队，仍可作为协同治疗等辅助动作的目标。
-                if (!turnActor.IsUnselectable) selectableTeammates.Add(turnActor);
+                if (!turnActor.IsUnselectable && !selectableTeammates.Contains(turnActor)) selectableTeammates.Add(turnActor);
                 actor.NormalAttack.GamingQueue = this;
                 foreach (Skill availableSkill in skills.Concat(items.Select(i => i.Skills.Active!))) availableSkill.GamingQueue = this;
                 Grid? origin = _map?.GetCharacterCurrentGrid(actor);
@@ -150,9 +152,11 @@ namespace FunGame.Core.Model.Queue
             if (!_decisionPoints.TryGetValue(request.TurnActor, out DecisionPoints? ownerDP) ||
                 ownerDP.CurrentDecisionPoints < ownerDP.GetActionPointCost(CharacterActionType.ChainAction)) return "回合角色决策点不足。";
             Character actor = request.Actor;
-            List<Character> teammates = [.. _allCharacters.Union(_queue).Where(c => c != actor && AreChainTeammates(actor, c)).Distinct()];
-            List<Character> enemies = [.. _allCharacters.Union(_queue).Where(c => c != actor && !teammates.Contains(c)).Distinct()];
-            var (_, _, availableSkills, availableItems) = GetTurnStartNeedyList(actor, teammates, enemies);
+            List<Character> teammates = GetTeammates(actor);
+            if (!teammates.Contains(request.TurnActor)) teammates.Add(request.TurnActor);
+            List<Character> enemies = GetEnemies(actor);
+            enemies.Remove(request.TurnActor);
+            (List<Character> _, List<Character> _, List<Skill> availableSkills, List<Item> availableItems) = GetTurnStartNeedyList(actor, teammates, enemies);
             ISkill action;
             if (request.ActionType == CharacterActionType.NormalAttack)
             {
@@ -216,9 +220,14 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 确认时重验并消耗双方预算。开始执行前移除申请，重复确认不会重复扣费
+        /// 在协调方回合内重验并消耗双方预算；接管回合的宿主负责确认硬直与回合收尾。
         /// </summary>
-        public ChainActionResult ConfirmChainAction(Character turnActor, Guid requestId)
+        /// <param name="turnActor">当前回合的协调方</param>
+        /// <param name="requestId">待确认的申请标识</param>
+        /// <returns>执行结果及协作方的动作记录</returns>
+        public ChainActionResult ConfirmChainAction(Character turnActor, Guid requestId) => ConfirmChainAction(turnActor, requestId, inActionLoop: false);
+
+        private ChainActionResult ConfirmChainAction(Character turnActor, Guid requestId, bool inActionLoop)
         {
             if (_executingChainAction) return new(false, "协同行动正在执行。");
             if (!_chainRequests.TryGetValue(requestId, out ChainActionRequest? request) || request.TurnActor != turnActor) return new(false, "申请不存在或不属于当前角色。");
@@ -231,7 +240,6 @@ namespace FunGame.Core.Model.Queue
             _chainRequests.Remove(requestId);
             _executingChainAction = true;
             ActionRecord? previous = _currentAction;
-            bool inActionLoop = previous?.ActionType == CharacterActionType.ChainAction && previous.Actor == turnActor;
             ActionRecord confirmation = inActionLoop ? previous! : new(TotalRound)
             {
                 Actor = turnActor, ActionType = CharacterActionType.ChainAction, ActionIndex = LastRound.Actions.Count + 1
@@ -245,28 +253,26 @@ namespace FunGame.Core.Model.Queue
             int actorCost = dp.GetActionPointCost(request.ActionType, request.Skill, chainAction: true);
             ownerDP.CurrentDecisionPoints -= ownerCost;
             ownerDP.AddActionType(CharacterActionType.ChainAction);
-            ownerDP.ActionsHardnessTime.Add(GameplayEquilibriumConstant.ChainActionHardnessTime);
             dp.ConsumeChainAction(request.ActionType, request.Skill);
             AddChainDecisionStatistics(turnActor, ownerCost);
             AddChainDecisionStatistics(request.Actor, actorCost);
             confirmation.DecisionPointsCost = ownerCost;
-            confirmation.HardnessTime = GameplayEquilibriumConstant.ChainActionHardnessTime;
             LastRound.ActionTypes.Add(CharacterActionType.ChainAction);
-            ActionRecord execution = new(TotalRound)
-            {
-                Actor = request.Actor, TurnActor = turnActor, ChainActionRequestId = requestId,
-                ActionType = request.ActionType, ActionIndex = LastRound.Actions.Count + 1,
-                Skill = request.Skill, Item = request.Item, DecisionPointsCost = actorCost
-            };
-            execution.Targets.AddRange(targets);
-            LastRound.Actions.Add(execution);
-            _currentAction = execution;
             try
             {
-                double original = _hardnessTimes[request.Actor], hardness = 0;
-                bool checkProtected = true;
                 Character actor = request.Actor;
+                double original = _hardnessTimes[actor], hardness = 0;
                 TriggerOnCharacterActionStart(actor, new ActionContext(this, actor, dp) { ActionType = request.ActionType });
+                ActionRecord execution = new(TotalRound)
+                {
+                    Actor = actor, TurnActor = turnActor, ChainActionRequestId = requestId,
+                    ActionType = request.ActionType, ActionIndex = LastRound.Actions.Count + 1,
+                    Skill = request.Skill, Item = request.Item, DecisionPointsCost = actorCost
+                };
+                execution.Targets.AddRange(targets);
+                LastRound.Actions.Add(execution);
+                _currentAction = execution;
+                bool checkProtected = true;
                 if (request.ActionType == CharacterActionType.NormalAttack)
                 {
                     ExecuteNormalAttackEffects(actor, dp, targets, ref hardness, ref checkProtected);
@@ -391,93 +397,5 @@ namespace FunGame.Core.Model.Queue
             return true;
         }
 
-        private bool ProcessChainCastTurn(Character actor, ChainCastContext context)
-        {
-            // 吟唱结算是独立收尾回合：不恢复预算、不发奖励、不开放正常决策。
-            DecisionPoints dp = _decisionPoints[actor];
-            ChainActionRequest request = context.Request;
-            Skill skill = request.Skill!;
-            ActionRecord action = new(TotalRound)
-            {
-                Actor = actor, TurnActor = request.TurnActor, ChainActionRequestId = request.Id,
-                ActionType = CharacterActionType.CastSkill, Skill = skill, ActionIndex = 1
-            };
-            LastRound.Actions.Add(action);
-            _currentAction = action;
-            double hardness = 3;
-            bool checkProtected = true;
-            try
-            {
-                actor.CharacterState = CharacterState.Actionable;
-                actor.UpdateCharacterState();
-                List<Character> targets = [];
-                List<Grid> grids = [];
-                if (_castingSkills.TryGetValue(actor, out SkillTarget cast))
-                {
-                    grids = cast.TargetGrids;
-                    targets = [.. cast.Targets.Where(t => t == actor || !t.IsUnselectable)];
-                    if (skill.IsNonDirectional && _map != null)
-                        targets = skill.SelectTargetsByRange(actor, GetEnemies(actor), GetTeammates(actor), [], grids);
-                    else if (skill.CanSelectTargetRange > 0)
-                        targets = skill.SelectTargetsByCanSelectTargetRange(actor, GetEnemies(actor), GetTeammates(actor), targets);
-                }
-                _castingSkills.Remove(actor);
-                _chainCasts.Remove(actor);
-                bool hasTarget = targets.Count > 0 || (skill.IsNonDirectional && grids.Count > 0 && skill.AllowSelectNoCharacterGrid);
-                if (actor.HP > 0 && actor.CharacterState == CharacterState.Actionable && hasTarget && skill.Enable &&
-                    skill.CurrentCD == 0 && !skill.IsInEffect && CheckCanCast(actor, skill, out double cost))
-                {
-                    action.Targets.AddRange(targets);
-                    LastRound.Targets[CharacterActionType.CastSkill] = [.. targets];
-                    LastRound.Skills[CharacterActionType.CastSkill] = skill;
-                    LastRound.ActionTypes.Add(CharacterActionType.CastSkill);
-                    CheckSkilledImmune(actor, targets, skill);
-                    hardness = 0;
-                    ExecuteSkillEffects(actor, dp, new(skill, targets, grids), cost, ref hardness, ref checkProtected);
-                    RecordChainAssist(request, action, actualTargets: targets);
-                }
-                else
-                {
-                    action.IsSuccess = false;
-                    action.FailReason = "协同吟唱结算失败：目标、状态或资源失效。";
-                    LastRound.OtherMessages.Add(action.FailReason);
-                }
-                hardness = Calculation.Round2Digits(context.OriginalHardnessTime + hardness);
-                action.HardnessTime = hardness;
-                LastRound.HardnessTime = hardness;
-                OnCharacterActionTakenEvent(new ActionContext(this, actor, dp) { ActionType = CharacterActionType.CastSkill, Record = LastRound.Snapshot() });
-                TriggerOnCharacterActionTaken(actor, new ActionContext(this, actor, dp) { ActionType = CharacterActionType.CastSkill });
-                AfterCharacterAction(actor, CharacterActionType.CastSkill);
-                OnCharacterDecisionCompletedEvent(new ActionContext(this, actor, dp) { Record = LastRound.Snapshot() });
-                TriggerOnCharacterDecisionCompleted(actor, dp);
-                ProcessCharacterDeath();
-                if (actor.HP > 0 && !_eliminated.Contains(actor))
-                {
-                    AddCharacter(actor, hardness, checkProtected);
-                    OnQueueUpdatedEvent(new QueueUpdatedContext(this, actor, dp)
-                    { Characters = [.. _queue], HardnessTime = _hardnessTimes[actor], Reason = QueueUpdatedReason.Action, Message = "协同吟唱结算恢复行动硬直。" });
-                }
-                LastRound.TotalTime = TotalTime;
-                if (CheckpointInterval > 0 && TotalRound % CheckpointInterval == 0) LastRound.Checkpoint = CreateStateCheckpoint();
-                RoundRecordSink?.SendAction(action.Snapshot());
-                OnTurnEndEvent(new TurnContext(this, actor, dp));
-                if (_isGameEnd)
-                {
-                    LastRound.CharacterStatistics = new(_stats);
-                    LastRound.Checkpoint = CreateStateCheckpoint();
-                    Rounds.Add(LastRound.Snapshot());
-                }
-                SendRoundEndData();
-                if (_isGameEnd) RoundRecordSink?.End();
-                return _isGameEnd;
-            }
-            finally
-            {
-                _chainCasts.Remove(actor);
-                _castingSkills.Remove(actor);
-                _currentAction = null;
-                _isInRound = false;
-            }
-        }
     }
 }

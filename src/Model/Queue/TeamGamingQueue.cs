@@ -115,7 +115,7 @@ namespace FunGame.Core.Model.Queue
             Team? team = GetTeam(character);
             if (team != null)
             {
-                SetNotDamageAssistTime(character, LastRound.Actions.Where(a => a.Actor == character && a.ActionType != CharacterActionType.ChainAction)
+                SetNotDamageAssistTime(character, LastRound.Actions.Where(a => a.Actor == character)
                     .SelectMany(a => a.Targets).Where(team.IsOnThisTeam).Distinct());
             }
         }

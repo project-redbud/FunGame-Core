@@ -54,8 +54,10 @@
 ## 临时配额
 
 `AddTempActionQuota(effect, type, add)` 以**特效为键**累加（同一特效重复加会叠加），
-`TempActionQuota*` 是各字典的和。回合结束时由 `ClearTempActionQuota()` 统一清空
+`TempActionQuota*` 是各字典的和。回合结束时由 `ClearTempActionQuota()` 只清空回合角色本人的临时配额
 （`ProcessTurn` 的 `finally` 里调用）——**别把跨回合配额塞进临时配额**。
+
+普通吟唱结算保留发起回合的计数器，不恢复决策点；协同吟唱结算清空该角色已消费的回合计数器，同样不恢复决策点。
 
 ## 相关测试
 

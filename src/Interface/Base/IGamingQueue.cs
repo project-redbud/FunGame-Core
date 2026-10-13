@@ -142,8 +142,11 @@ namespace FunGame.Core.Interface.Base
         public bool WithdrawChainAction(Character actor, Guid requestId) => false;
 
         /// <summary>
-        /// 由当前回合角色确认申请；重复确认或校验失败不扣费
+        /// 由当前回合角色确认申请；重复确认或校验失败不扣费，接管回合的宿主负责确认硬直与回合收尾。
         /// </summary>
+        /// <param name="turnActor">当前回合的协调方</param>
+        /// <param name="requestId">待确认的申请标识</param>
+        /// <returns>执行结果及协作方的动作记录</returns>
         public ChainActionResult ConfirmChainAction(Character turnActor, Guid requestId) => new(false, "此队列未实现协同行动。");
 
         /// <summary>

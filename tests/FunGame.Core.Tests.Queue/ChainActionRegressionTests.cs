@@ -2,6 +2,7 @@ using FunGame.Core.Api;
 using FunGame.Core.Entity;
 using FunGame.Core.Library.Constant;
 using FunGame.Core.Model.Framework;
+using FunGame.Core.Model.Queue;
 
 namespace FunGame.Core.Tests.Queue;
 
@@ -128,17 +129,23 @@ public class ChainActionRegressionTests
     public void MultipleChainConfirmsAreUnlimitedAndNotAccumulated()
     {
         BattleFixture f = new(continuous: true);
-
-        f.DuringTurn(() =>
+        f.Queue.TurnStartEvent += ctx =>
         {
-            ChainActionRequest b = f.Submit(f.B);
-            ChainActionRequest c = f.Submit(f.C);
-            Assert.True(f.Queue.ConfirmChainAction(f.A, b.Id).IsSuccess);
-            Assert.True(f.Queue.ConfirmChainAction(f.A, c.Id).IsSuccess);
+            f.Submit(f.B);
+            f.Submit(f.C);
+            return true;
+        };
+        f.Queue.DecideActionEvent += ctx =>
+        {
             Assert.True(f.Points(f.A).CheckActionTypeQuota(CharacterActionType.ChainAction));
-        });
+            return ctx.ChainActions.Count > 0 ? CharacterActionType.ChainAction : CharacterActionType.EndTurn;
+        };
+        f.Queue.SelectChainActionEvent += (actor, pending) => pending.FirstOrDefault()?.Id;
+
+        f.Run(f.A);
 
         Assert.Equal(5d, f.Queue.LastRound.HardnessTime, 3);
+        Assert.Equal(new[] { 3d, 3d, 0d }, f.Points(f.A).ActionsHardnessTime);
     }
 
     // 跨队友回合持续消耗同一预算
@@ -151,7 +158,14 @@ public class ChainActionRegressionTests
         points.GameplayEquilibriumConstant = f.Queue.GameplayEquilibriumConstant;
         points.CurrentDecisionPoints = 3;
 
-        f.DuringTurn(() => Assert.True(f.Queue.ConfirmChainAction(f.A, f.Submit(f.B).Id).IsSuccess));
+        GamingQueue.TurnStartEventHandler submit = ctx => { f.Submit(f.B); return true; };
+        GamingQueue.DecideActionEventHandler decide = ctx => ctx.ChainActions.Count > 0 ? CharacterActionType.ChainAction : CharacterActionType.EndTurn;
+        f.Queue.TurnStartEvent += submit;
+        f.Queue.DecideActionEvent += decide;
+        f.Queue.SelectChainActionEvent += (actor, pending) => pending.FirstOrDefault()?.Id;
+        f.Run(f.A);
+        f.Queue.TurnStartEvent -= submit;
+        f.Queue.DecideActionEvent -= decide;
 
         f.Queue.RemoveCharacterFromQueue(f.C);
         f.Queue.AddCharacter(f.C, 0, false);
@@ -242,10 +256,10 @@ public class ChainActionRegressionTests
 
         Assert.Equal(5.5, f.Queue.HardnessTime[f.B], 3);
         Assert.Equal(3, points.CurrentDecisionPoints);
-        Assert.Equal(1, points.ActionTypes[CharacterActionType.PreCastSkill]);
+        Assert.Empty(points.ActionTypes);
         Assert.Equal(mp - 10, f.B.MP, 3);
-        Assert.Equal(actionTurns, f.Queue.CharacterStatistics[f.B].ActionTurn);
-        Assert.Equal(0, turnStarts);
+        Assert.Equal(actionTurns + 1, f.Queue.CharacterStatistics[f.B].ActionTurn);
+        Assert.Equal(1, turnStarts);
         Assert.True(f.Queue.AssistDetails[f.A].NotDamageAssistLastTime.ContainsKey(f.B));
     }
 

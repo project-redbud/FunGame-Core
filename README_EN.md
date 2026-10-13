@@ -141,6 +141,8 @@ git clone -b latest https://github.com/project-redbud/FunGame-Core.git
 
 Reference `FunGame.Core.dll`, or include the whole `FunGame.Core` project in your solution.
 
+[Chain actions](docs/queue/chain-action.md) resolve chanted spells through the normal turn loop, including turn events, rewards and action-turn counts. Action records store each operation's own hardness and cast time. Hosts that take over a turn and confirm a chain action directly must handle the coordinator's confirmation hardness and turn completion.
+
 - 📖 **API Documentation**: [FunGame Docs](https://project-redbud.github.io/)
   - The documentation changes along with the project, but we do not guarantee that it is always up to date.
 - 🧩 **In-repo design docs**: [docs/](docs/README.md) — key code, invariants and pitfalls, module by module, for people changing the engine.
