@@ -749,6 +749,10 @@ namespace FunGame.Core.Model.Queue
             _chainRequests.Clear();
             _chainCasts.Clear();
             _chainTurnActor = null;
+            _castSettlementActor = null;
+            _pendingCastFailure = null;
+            _interruptingCasts.Clear();
+            _deferredCastHardness.Clear();
             _decisionPoints.Clear();
             FirstKiller = null;
             CustomData.Clear();
@@ -778,17 +782,9 @@ namespace FunGame.Core.Model.Queue
         {
             foreach (Character character in characters)
             {
+                TerminateCast(character, CastTerminationReason.Removed, $"[ {character} ] 移出行动顺序表，取消待释放的技能。");
                 _queue.Remove(character);
                 _hardnessTimes.Remove(character);
-                if (_chainCasts.Remove(character))
-                {
-                    _castingSkills.Remove(character);
-                    if (character.HP > 0)
-                    {
-                        character.CharacterState = CharacterState.Actionable;
-                        character.UpdateCharacterState();
-                    }
-                }
                 foreach (ChainActionRequest request in _chainRequests.Values.Where(r => r.Actor == character || r.TurnActor == character).ToArray())
                     _chainRequests.Remove(request.Id);
             }
@@ -1129,6 +1125,8 @@ namespace FunGame.Core.Model.Queue
                 _chainRequests.Clear();
                 _chainTurnActor = null;
                 _isInRound = false;
+                _castSettlementActor = null;
+                _pendingCastFailure = null;
                 if (_decisionPoints.TryGetValue(character, out DecisionPoints? dp)) dp.ClearTempActionQuota();
             }
         }
@@ -1139,6 +1137,9 @@ namespace FunGame.Core.Model.Queue
             LastRound.Actor = character;
             _roundDeaths.Clear();
             _chainCasts.TryGetValue(character, out ChainCastContext? chainCast);
+            double originalCastHardness = (chainCast?.OriginalHardnessTime ?? 0) + _deferredCastHardness.GetValueOrDefault(character);
+            bool isCastSettlement = character.CharacterState == CharacterState.Casting || _castingSkills.ContainsKey(character);
+            _castSettlementActor = isCastSettlement ? character : null;
             Character statsCharacter = character;
             if (character.Master != null)
             {
@@ -1174,7 +1175,7 @@ namespace FunGame.Core.Model.Queue
             }
             else
             {
-                dp = DecisionPointsRecovery(character);
+                dp = isCastSettlement ? _decisionPoints[character] : DecisionPointsRecovery(character);
             }
 
             // 角色行动回合计数（作为角色绑定奖励表的查询键与 offset 基准；召唤物不单独计数，统一折算到 Master）
@@ -1247,7 +1248,7 @@ namespace FunGame.Core.Model.Queue
             bool isAI = IsCharacterInAIControlling(character);
 
             // 循环条件：未结束回合、决策点大于0（AI控制下为0时自动结束）或角色处于吟唱态
-            while (!endTurn && (!isAI || dp.CurrentDecisionPoints > 0 || character.CharacterState == CharacterState.Casting || character.CharacterState == CharacterState.PreCastSuperSkill))
+            while (!endTurn && (!isAI || dp.CurrentDecisionPoints > 0 || character.CharacterState == CharacterState.Casting || character.CharacterState == CharacterState.PreCastSuperSkill || _pendingCastFailure != null))
             {
                 // 刷新可选列表
                 (selectableTeammates, selectableEnemys, skills, items) = GetTurnStartNeedyList(character, allTeammates, allEnemys);
@@ -1273,6 +1274,13 @@ namespace FunGame.Core.Model.Queue
                 bool moved = false;
                 // 连续纯移动且无操作的次数
                 int moveRoundsWithoutDecision = 0;
+
+                if (ConsumeCastFailure(character, out double failureHardness))
+                {
+                    type = CharacterActionType.CastSkill;
+                    baseTime = failureHardness;
+                    decided = true;
+                }
 
                 // 循环条件：
                 // AI 控制下：未决策、取消次数大于0
@@ -1529,6 +1537,13 @@ namespace FunGame.Core.Model.Queue
 
                     ActionContext actionStartCtx = new(this, character, dp) { ActionType = type };
                     TriggerOnCharacterActionStart(character, actionStartCtx);
+                    if (ConsumeCastFailure(character, out failureHardness))
+                    {
+                        type = CharacterActionType.CastSkill;
+                        baseTime = failureHardness;
+                        decided = true;
+                        continue;
+                    }
 
                     // 创建当前操作记录，每次行动对应一条操作记录
                     if (type != CharacterActionType.None && type != CharacterActionType.EndTurn)
@@ -1753,6 +1768,11 @@ namespace FunGame.Core.Model.Queue
                                             skill.OnSkillCasting(this, character, targets, grids);
 
                                             TriggerAfterCharacterStartCasting(character, skill, targets);
+                                            if (_currentAction is { IsSuccess: false } && character.CharacterState != CharacterState.Casting)
+                                            {
+                                                baseTime = GameplayEquilibriumConstant.CastFailureHardnessTime;
+                                                if (_castSettlementActor == character) endTurn = false;
+                                            }
                                         }
                                         else
                                         {
@@ -1887,7 +1907,12 @@ namespace FunGame.Core.Model.Queue
                             // 判断是否能够释放技能
                             bool hasTarget = targets.Count > 0 || (skill.IsNonDirectional && grids.Count > 0 && (skill.AllowSelectNoCharacterGrid || !skill.AllowSelectNoCharacterGrid && targets.Count > 0));
 
-                            if (hasTarget && CheckCanCast(character, skill, out double cost))
+                            if (_currentAction is { IsSuccess: false })
+                            {
+                                baseTime = GameplayEquilibriumConstant.CastFailureHardnessTime;
+                                decided = true;
+                            }
+                            else if (hasTarget && CheckCanCast(character, skill, out double cost))
                             {
                                 decided = true;
                                 endTurn = true;
@@ -1912,42 +1937,28 @@ namespace FunGame.Core.Model.Queue
                                 if (!hasTarget)
                                 {
                                     string failMsg = $"[ {character} ] 想要释放 [ {skill.Name} ]，但是没有目标！";
-                                    LastRound.OtherMessages.Add(failMsg);
-                                    _currentAction?.Skill = skill;
-                                    RecordCurrentActionFailure(failMsg);
-                                    WriteLine(failMsg);
+                                    TerminateCast(character, CastTerminationReason.TargetLost, failMsg);
                                 }
                                 else
                                 {
                                     string failMsg = $"[ {character} ] 想要释放 [ {skill.Name} ]，但魔法值不足，无法释放！";
-                                    LastRound.OtherMessages.Add(failMsg);
-                                    _currentAction?.Skill = skill;
-                                    RecordCurrentActionFailure(failMsg);
-                                    WriteLine(failMsg);
+                                    TerminateCast(character, CastTerminationReason.ResourceInsufficient, failMsg);
                                 }
                                 WriteLine($"[ {character} ] 放弃释放技能！");
-                                character.CharacterState = CharacterState.Actionable;
-                                character.UpdateCharacterState();
-                                // 放弃释放技能会获得3的硬直时间
-                                if (baseTime == 0) baseTime = 3;
+                                if (baseTime == 0) baseTime = GameplayEquilibriumConstant.CastFailureHardnessTime;
                                 decided = true;
-                                endTurn = true;
                             }
                         }
                         else
                         {
-                            // 原吟唱的技能丢失（被打断或者被取消），记录为明确失败并允许角色再次决策
-                            string failMsg = $"[ {character} ] 吟唱被打断，技能丢失！";
-                            LastRound.OtherMessages.Add(failMsg);
-                            RecordCurrentActionFailure(failMsg);
-                            if (IsDebug) WriteLine(failMsg);
-                            character.CharacterState = CharacterState.Actionable;
-                            character.UpdateCharacterState();
+                            string failMsg = $"[ {character} ] 吟唱上下文缺失，无法释放技能！";
+                            TerminateCast(character, CastTerminationReason.MissingContext, failMsg);
+                            baseTime = GameplayEquilibriumConstant.CastFailureHardnessTime;
+                            decided = true;
                         }
                         if (chainCast != null)
                         {
                             _chainCasts.Remove(character);
-                            _castingSkills.Remove(character);
                         }
                     }
                     else if (type == CharacterActionType.CastSuperSkill)
@@ -2180,10 +2191,15 @@ namespace FunGame.Core.Model.Queue
             {
                 baseTime = dp.ActionsTaken > 1 ? (dp.ActionsHardnessTime.Max() + dp.DecisionPointsCost) : dp.ActionsHardnessTime.Max();
             }
-            if (chainCast != null)
+            if (character.CharacterState == CharacterState.Casting)
             {
-                // 吟唱时间替换了协作方的队列位置；结算后还原确认时冻结的原硬直。
-                baseTime += chainCast.OriginalHardnessTime;
+                // 重决后的新吟唱保持自己的时长，冻结的原位置顺延到最终结算。
+                if (originalCastHardness != 0) _deferredCastHardness[character] = originalCastHardness;
+            }
+            else
+            {
+                _deferredCastHardness.Remove(character);
+                baseTime += originalCastHardness;
             }
 
             if (character.Master is null)
@@ -3484,36 +3500,8 @@ namespace FunGame.Core.Model.Queue
                 }
             }
 
-            // 移除死者的施法
-            _castingSkills.Remove(death);
-            _chainCasts.Remove(death);
-            _castingSuperSkills.Remove(death);
-            // 死者已无法再进入结算回合，顺延的被动奖励立即移除
-            ClearDeferredRoundRewards(death);
-
-            // 因丢失目标而中断施法
-            List<Character> castingSkills = [.. _castingSkills.Keys];
-            foreach (Character caster in castingSkills)
-            {
-                SkillTarget st = _castingSkills[caster];
-                if (st.Targets.Remove(death) && st.Targets.Count == 0)
-                {
-                    if (st.Skill.IsNonDirectional && st.TargetGrids.Count > 0 && st.Skill.AllowSelectNoCharacterGrid) continue;
-                    if (FinishInterruptedChainCast(caster)) continue;
-                    _castingSkills.Remove(caster);
-                    if (caster.CharacterState == CharacterState.Casting)
-                    {
-                        caster.CharacterState = CharacterState.Actionable;
-                    }
-                    // 吟唱被打断：立即移除已顺延的被动奖励
-                    ClearDeferredRoundRewards(caster);
-                    WriteLine($"[ {caster} ] 终止了 [ {st.Skill.Name} ] 的施法" + (_hardnessTimes[caster] > 3 && _isInRound ? $"，并获得了 3 {GameplayEquilibriumConstant.InGameTime}的硬直时间的补偿。" : "。"));
-                    if (_hardnessTimes[caster] > 3 && _isInRound)
-                    {
-                        AddCharacter(caster, 3, false);
-                    }
-                }
-            }
+            TerminateCast(death, CastTerminationReason.Death, $"[ {death} ] 死亡，取消待释放的技能。");
+            RemoveCastTarget(death);
         }
 
         /// <summary>
@@ -4270,29 +4258,28 @@ namespace FunGame.Core.Model.Queue
         /// <param name="interrupter"></param>
         public void InterruptCasting(Character caster, Character interrupter)
         {
-            Skill? skill = null;
-            if (_castingSkills.TryGetValue(caster, out SkillTarget target))
+            if (!_castingSkills.TryGetValue(caster, out SkillTarget target))
             {
-                skill = target.Skill;
+                if (caster.CharacterState == CharacterState.PreCastSuperSkill)
+                    WriteLine($"因 [ {caster} ] 的预释放爆发技状态不可驱散，[ {interrupter} ] 打断失败！！");
+                return;
             }
-            if (skill is null && caster.CharacterState == CharacterState.PreCastSuperSkill)
+            if (!_interruptingCasts.Add(caster)) return;
+            try
             {
-                WriteLine($"因 [ {caster} ] 的预释放爆发技状态不可驱散，[ {interrupter} ] 打断失败！！");
+                SkillCastContext interruptCtx = new(this, caster) { Skill = target.Skill, Interrupter = interrupter };
+                if (!TriggerBeforeSkillCastWillBeInterrupted(caster, interrupter, interruptCtx)) return;
+                double remaining = GetRemainingCastTime(caster, target.Skill);
+                CastTermination? termination = TerminateCast(caster, CastTerminationReason.Interrupted,
+                    $"[ {caster} ] 的 [ {target.Skill.Name} ] 施法被 [ {interrupter} ] 打断了！");
+                if (termination is null) return;
+                FinishExternalCastTermination(caster, termination, remaining);
+                TriggerOnSkillCastInterrupted(caster, interrupter, interruptCtx);
+                OnInterruptCastingEvent(interruptCtx);
             }
-            if (skill != null)
+            finally
             {
-                SkillCastContext interruptCtx = new(this, caster) { Skill = skill, Interrupter = interrupter };
-                bool interruption = TriggerBeforeSkillCastWillBeInterrupted(caster, interrupter, interruptCtx);
-                if (interruption)
-                {
-                    _castingSkills.Remove(caster);
-                    FinishInterruptedChainCast(caster);
-                    WriteLine($"[ {caster} ] 的施法被 [ {interrupter} ] 打断了！！");
-                    // 吟唱被打断：立即移除已顺延的被动奖励
-                    ClearDeferredRoundRewards(caster);
-                    TriggerOnSkillCastInterrupted(caster, interrupter, interruptCtx);
-                    OnInterruptCastingEvent(interruptCtx);
-                }
+                _interruptingCasts.Remove(caster);
             }
         }
 
@@ -4303,24 +4290,7 @@ namespace FunGame.Core.Model.Queue
         public void InterruptCasting(Character interrupter)
         {
             WriteLine($"[ {interrupter} ] 人间蒸发了。");
-            foreach (Character caster in _castingSkills.Keys.ToArray())
-            {
-                SkillTarget skillTarget = _castingSkills[caster];
-                if (skillTarget.Targets.Contains(interrupter))
-                {
-                    if (_chainCasts.ContainsKey(caster))
-                    {
-                        skillTarget.Targets.Remove(interrupter);
-                        if (skillTarget.Targets.Count == 0 && !(skillTarget.Skill.IsNonDirectional && skillTarget.Skill.AllowSelectNoCharacterGrid))
-                            FinishInterruptedChainCast(caster);
-                    }
-                    Skill skill = skillTarget.Skill;
-                    WriteLine($"[ {caster} ] 丢失了施法目标！！");
-                    SkillCastContext interruptCtx = new(this, caster) { Skill = skill, Interrupter = interrupter };
-                    TriggerOnSkillCastInterrupted(caster, interrupter, interruptCtx);
-                    OnInterruptCastingEvent(interruptCtx);
-                }
-            }
+            RemoveCastTarget(interrupter);
         }
 
         /// <summary>
@@ -4377,11 +4347,7 @@ namespace FunGame.Core.Model.Queue
             }
             if (character.CharacterState == CharacterState.Casting)
             {
-                FinishInterruptedChainCast(character);
-                _castingSkills.Remove(character);
-                character.CharacterState = CharacterState.Actionable;
-                character.UpdateCharacterState();
-                WriteLine("[ " + character + " ] 取消吟唱。");
+                TerminateCast(character, CastTerminationReason.PreCastOverride, $"[ {character} ] 为预释放爆发技取消吟唱。");
             }
             if (character.CharacterState == CharacterState.Actionable)
             {

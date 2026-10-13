@@ -446,7 +446,7 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 立即移除某角色已顺延的被动奖励（吟唱被打断、施法者死亡时调用，避免泄漏）
+        /// 立即移除终止施法或结束队列生命周期的角色已顺延的被动奖励
         /// </summary>
         private void ClearDeferredRoundRewards(Character character)
         {

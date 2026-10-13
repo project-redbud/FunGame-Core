@@ -671,6 +671,11 @@ namespace FunGame.Core.Model.Framework
         public double ChainActionHardnessTime { get; set; } = 3;
 
         /// <summary>
+        /// 吟唱失败尝试的硬直，以及回合内全部目标丢失时的剩余硬直补偿上限
+        /// </summary>
+        public double CastFailureHardnessTime { get; set; } = 3;
+
+        /// <summary>
         /// 角色升级时会获得职业点数，该属性设置可获得点数的等级
         /// </summary>
         public HashSet<int> ClassPointsGetterList { get; set; } = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
