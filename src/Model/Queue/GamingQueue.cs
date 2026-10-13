@@ -1138,7 +1138,7 @@ namespace FunGame.Core.Model.Queue
             _isInRound = true;
             LastRound.Actor = character;
             _roundDeaths.Clear();
-            if (_chainCasts.TryGetValue(character, out ChainCastContext? chainCast)) return ProcessChainCastTurn(character, chainCast);
+            _chainCasts.TryGetValue(character, out ChainCastContext? chainCast);
             Character statsCharacter = character;
             if (character.Master != null)
             {
@@ -1162,7 +1162,20 @@ namespace FunGame.Core.Model.Queue
             }
 
             // 决策点补充
-            DecisionPoints dp = DecisionPointsRecovery(character);
+            DecisionPoints dp;
+            if (chainCast != null)
+            {
+                dp = _decisionPoints[character];
+                // 上一正常回合的计数已结算；清零可避免重复聚合及旧配额占用，不恢复协作预算。
+                dp.ActionsHardnessTime.Clear();
+                dp.ActionTypes.Clear();
+                dp.ActionsTaken = 0;
+                dp.DecisionPointsCost = 0;
+            }
+            else
+            {
+                dp = DecisionPointsRecovery(character);
+            }
 
             // 角色行动回合计数（作为角色绑定奖励表的查询键与 offset 基准；召唤物不单独计数，统一折算到 Master）
             CountCharacterActionTurn(character);
@@ -1460,7 +1473,7 @@ namespace FunGame.Core.Model.Queue
                                 }
                             }
 
-                            WillSubmitChainActions(character);
+                            WillSubmitChainActions(character, allTeammates, allEnemys);
 
                             // 模组可以通过此事件来决定角色的行动，模组事件优先于 AI
                             if (type == CharacterActionType.None)
@@ -1528,6 +1541,8 @@ namespace FunGame.Core.Model.Queue
                         _currentAction = new(TotalRound)
                         {
                             Actor = character,
+                            TurnActor = type == CharacterActionType.CastSkill ? chainCast?.Request.TurnActor : null,
+                            ChainActionRequestId = type == CharacterActionType.CastSkill ? chainCast?.Request.Id : null,
                             ActionType = type,
                             ActionIndex = LastRound.Actions.Count + 1
                         };
@@ -1887,6 +1902,10 @@ namespace FunGame.Core.Model.Queue
                                 _castingSkills.Remove(character);
 
                                 ExecuteSkillEffects(character, dp, skillTarget, cost, ref baseTime, ref isCheckProtected);
+                                if (chainCast != null && _currentAction != null)
+                                {
+                                    RecordChainAssist(chainCast.Request, _currentAction, actualTargets: targets);
+                                }
                             }
                             else
                             {
@@ -1900,8 +1919,7 @@ namespace FunGame.Core.Model.Queue
                                 }
                                 else
                                 {
-                                    // 有目标但无法释放（魔法值不足/技能冷却等），记录为明确失败
-                                    string failMsg = $"[ {character} ] 想要释放 [ {skill.Name} ]，但无法释放（魔法值不足或技能冷却中）！";
+                                    string failMsg = $"[ {character} ] 想要释放 [ {skill.Name} ]，但魔法值不足，无法释放！";
                                     LastRound.OtherMessages.Add(failMsg);
                                     _currentAction?.Skill = skill;
                                     RecordCurrentActionFailure(failMsg);
@@ -1925,6 +1943,11 @@ namespace FunGame.Core.Model.Queue
                             if (IsDebug) WriteLine(failMsg);
                             character.CharacterState = CharacterState.Actionable;
                             character.UpdateCharacterState();
+                        }
+                        if (chainCast != null)
+                        {
+                            _chainCasts.Remove(character);
+                            _castingSkills.Remove(character);
                         }
                     }
                     else if (type == CharacterActionType.CastSuperSkill)
@@ -2064,7 +2087,7 @@ namespace FunGame.Core.Model.Queue
                         IReadOnlyList<ChainActionRequest> pending = GetPendingChainActions(character);
                         Guid? requestId = SelectChainActionEvent?.Invoke(character, pending);
                         if (requestId is null && isAI) requestId = AI?.SelectChainAction(character);
-                        ChainActionResult result = requestId is Guid id ? ConfirmChainAction(character, id) : new(false, "没有选择可执行的协同行动申请。");
+                        ChainActionResult result = requestId is Guid id ? ConfirmChainAction(character, id, inActionLoop: true) : new(false, "没有选择可执行的协同行动申请。");
                         if (result.IsSuccess)
                         {
                             baseTime += GameplayEquilibriumConstant.ChainActionHardnessTime;
@@ -2136,6 +2159,14 @@ namespace FunGame.Core.Model.Queue
                 // 操作结算完成，即时外发单次操作记录与当前回合数据
                 if (_currentAction != null)
                 {
+                    if (character.CharacterState == CharacterState.Casting)
+                    {
+                        _currentAction.CastTime = Calculation.Round2Digits(baseTime);
+                    }
+                    else
+                    {
+                        _currentAction.HardnessTime = Calculation.Round2Digits(baseTime);
+                    }
                     RoundRecordSink?.SendAction(_currentAction.Snapshot());
                     RoundRecordSink?.SendRound(LastRound.Snapshot());
                     RoundRecordSink?.SendQueueData(_hardnessTimes.ToDictionary(kv => kv.Key.Guid, kv => kv.Value));
@@ -2149,6 +2180,11 @@ namespace FunGame.Core.Model.Queue
             {
                 baseTime = dp.ActionsTaken > 1 ? (dp.ActionsHardnessTime.Max() + dp.DecisionPointsCost) : dp.ActionsHardnessTime.Max();
             }
+            if (chainCast != null)
+            {
+                // 吟唱时间替换了协作方的队列位置；结算后还原确认时冻结的原硬直。
+                baseTime += chainCast.OriginalHardnessTime;
+            }
 
             if (character.Master is null)
             {
@@ -2161,13 +2197,11 @@ namespace FunGame.Core.Model.Queue
             {
                 newHardnessTime = Calculation.Round2Digits(baseTime);
                 LastRound.HardnessTime = newHardnessTime;
-                _currentAction?.HardnessTime = newHardnessTime;
             }
             else
             {
                 newHardnessTime = Calculation.Round2Digits(baseTime);
                 LastRound.CastTime = newHardnessTime;
-                _currentAction?.CastTime = newHardnessTime;
             }
 
             AfterCharacterDecision(character, dp);

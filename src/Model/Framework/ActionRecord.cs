@@ -146,12 +146,12 @@ namespace FunGame.Core.Model.Framework
         public string FailReason { get; set; } = "";
 
         /// <summary>
-        /// 吟唱持续时间（吟唱操作为非 0）
+        /// 本次操作自身的吟唱持续时间
         /// </summary>
         public double CastTime { get; set; } = 0;
 
         /// <summary>
-        /// 本操作产生的硬直时间
+        /// 本次操作自身的硬直时间，不含回合聚合与协同原队列位置的还原
         /// </summary>
         public double HardnessTime { get; set; } = 0;
 

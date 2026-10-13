@@ -2,7 +2,7 @@
 
 > **面向**：要改 `src/Model/Queue/`、`Model/Framework/DecisionPoints.cs` 的开发者。
 > **规则本身**（怎么玩）见文档站：[回合制系统](https://project-redbud.github.io/guide/turn-based)、[行动顺序表](https://project-redbud.github.io/guide/action-queue)。
-> **测试**：[`tests/FunGame.Core.Tests.Queue`](../../tests/FunGame.Core.Tests.Queue)（70 个用例）
+> **测试**：[`tests/FunGame.Core.Tests.Queue`](../../tests/FunGame.Core.Tests.Queue)（94 个用例）
 
 ## 本模块文档
 
@@ -61,3 +61,4 @@ TimeLapse()                      以队首硬直为单位推进全场：回复�
 | `DecisionPointsTests` | 配额/成本/临时配额/协同扣点的精确数值 |
 | `TeamQueueTests` | 队伍注册、召唤物归属主人队伍、回合记录里的 `TeamMap` |
 | `ChainActionTests` + `ChainActionRegressionTests` | 协同行动全链路：前者做单点断言，后者走完整流程并断言硬直与预算的精确数值 |
+| `ChainActionSettlementTests` | 协同吟唱结算的正常回合语义、整回合接管、计数隔离与单次动作记录 |
