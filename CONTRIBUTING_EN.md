@@ -449,17 +449,22 @@ finish it without opening `src/`, it belongs on the documentation site.**
 
 ### Commit messages
 
-This project uses an English type prefix plus a short description, with the related issue/PR number at the end.
+This project uses an English type prefix plus a short description.
 **The description language is not restricted** — Chinese, English or a mix are all fine:
 
 ```
-feat: 协同行动 (#192)
+feat: 协同行动
 fix: 免疫/护盾检定条件写反了；邮件格式和 JSON 数组判定不够鲁棒
 refactor: organize repository into src and tests
 fix: MOV bound weapon bug
 ```
 
 Common prefixes: `feat` / `fix` / `refactor` / `test` / `docs` / `chore`.
+Commits on a PR branch do not need an issue or PR number. By convention, this repository uses
+**squash merge**, which automatically appends the PR number to the final commit title when the PR is
+merged, for example `feat: 协同行动 (#192)`. When fixing an existing issue, you may include its number
+in the commit message.
+
 One commit does one thing; **never** mix formatting or renames with a logic change.
 
 <a id="signing"></a>

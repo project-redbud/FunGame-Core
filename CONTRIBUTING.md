@@ -422,16 +422,18 @@ public void RegisterFactory_TakesPrecedenceOverFallback()
 
 ### 提交信息
 
-本项目采用「英文类型前缀 + 简要描述」的写法，并在末尾标注关联的 issue / PR 编号。**描述用什么语言不限**，中文、英文或混写均可：
+本项目采用「英文类型前缀 + 简要描述」的写法。**描述用什么语言不限**，中文、英文或混写均可：
 
 ```
-feat: 协同行动 (#192)
+feat: 协同行动
 fix: 免疫/护盾检定条件写反了；邮件格式和 JSON 数组判定不够鲁棒
 refactor: organize repository into src and tests
 fix: MOV bound weapon bug
 ```
 
 常用前缀：`feat` / `fix` / `refactor` / `test` / `docs` / `chore`。
+PR 分支上的提交无需附带 issue 或 PR 编号。仓库惯例采用**压缩合并（squash merge）**，合并时自动在最终提交标题后添加 PR 编号，例如 `feat: 协同行动 (#192)`。修复已有 issue 时，可以在提交信息中附带对应的 issue 编号。
+
 一个提交只做一件事；**不要**把格式化、重命名与逻辑修改混在同一个提交里。
 
 <a id="signing"></a>
