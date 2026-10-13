@@ -280,19 +280,19 @@ public class ChainActionRegressionTests
         });
     }
 
-    // 协同吟唱打断保留原硬直并加 3
+    // 协同吟唱打断还原原硬直并保留剩余时间
     [Fact]
-    public void ChainCastingInterruptKeepsOriginalHardnessPlusPenalty()
+    public void ChainCastingInterruptKeepsOriginalHardnessPlusRemaining()
     {
         BattleFixture f = new();
         Skill skill = f.NewSkill(SkillType.Magic, f.B);
-
+        skill.CastTime = 5;
         f.DuringTurn(() =>
         {
             f.Queue.ConfirmChainAction(f.A, f.Submit(f.B, CharacterActionType.PreCastSkill, skill).Id);
             f.Queue.InterruptCasting(f.B, f.D);
 
-            Assert.Equal(3.5, f.Queue.HardnessTime[f.B], 3);
+            Assert.Equal(5.5, f.Queue.HardnessTime[f.B], 3);
             Assert.Equal(CharacterState.Actionable, f.B.CharacterState);
             Assert.False(f.Queue.AssistDetails[f.A].NotDamageAssistLastTime.ContainsKey(f.B));
         });
@@ -309,6 +309,7 @@ public class ChainActionRegressionTests
 
         f.B.MP = 0;
         skill.MPCost = 10000;
+        f.Queue.DecideActionEvent += ctx => CharacterActionType.EndTurn;
         f.MakeNext(f.B);
         f.Run(f.B);
 

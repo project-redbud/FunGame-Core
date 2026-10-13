@@ -2,7 +2,7 @@
 
 > **面向**：要改 `src/Model/Queue/`、`Model/Framework/DecisionPoints.cs` 的开发者。
 > **规则本身**（怎么玩）见文档站：[回合制系统](https://project-redbud.github.io/guide/turn-based)、[行动顺序表](https://project-redbud.github.io/guide/action-queue)。
-> **测试**：[`tests/FunGame.Core.Tests.Queue`](../../tests/FunGame.Core.Tests.Queue)（94 个用例）
+> **测试**：[`tests/FunGame.Core.Tests.Queue`](../../tests/FunGame.Core.Tests.Queue)（127 个用例）
 
 ## 本模块文档
 
@@ -12,6 +12,7 @@
 | [决策点](decision-points.md) | 预算、配额、行动成本、临时配额、协同预算隔离 |
 | [回合记录](round-record.md) | `LastRound` / `Rounds`、快照语义、动作归属与辅助统计 |
 | [协同行动](chain-action.md) | 队友/召唤物用剩余预算提前出手的规则、接入接口与验证方法 |
+| [吟唱终止](cast-termination.md) | 打断、目标丢失、失败重决、奖励与状态清理 |
 
 ## 代码地图
 
@@ -21,6 +22,7 @@
 | --- | --- |
 | `GamingQueue.cs` | 回合循环（`NextCharacter` / `TimeLapse` / `ProcessTurn`）、行动顺序表、伤害与治疗的公开入口、事件声明 |
 | `GamingQueue.ChainAction.cs` | 协同行动：申请、撤回、确认、失效判定 |
+| `GamingQueue.Casting.cs` | 施法终止、目标丢失、失败记录与原硬直顺延 |
 | `GamingQueue.EffectDispatch.cs` | 特效钩子分发（每个钩子一份手写触发器）+ 集合构建 |
 | `GamingQueue.ActionExecution.cs` | 单个动作的执行与资源结算（技能/物品/普攻/移动/吟唱）、局内删物 |
 | `GamingQueue.RoundReward.cs` | 回合奖励的获取、丢失与夺取 |
@@ -62,3 +64,4 @@ TimeLapse()                      以队首硬直为单位推进全场：回复�
 | `TeamQueueTests` | 队伍注册、召唤物归属主人队伍、回合记录里的 `TeamMap` |
 | `ChainActionTests` + `ChainActionRegressionTests` | 协同行动全链路：前者做单点断言，后者走完整流程并断言硬直与预算的精确数值 |
 | `ChainActionSettlementTests` | 协同吟唱结算的正常回合语义、整回合接管、计数隔离与单次动作记录 |
+| `CastTerminationTests`（33 个用例） | 普通/协同终止、失败重决、状态/奖励清理、重入与再次吟唱的原硬直顺延 |

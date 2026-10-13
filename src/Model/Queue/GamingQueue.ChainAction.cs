@@ -386,16 +386,5 @@ namespace FunGame.Core.Model.Queue
             RoundRecordSink?.SendQueueData(_hardnessTimes.ToDictionary(kv => kv.Key.Guid, kv => kv.Value));
         }
 
-        private bool FinishInterruptedChainCast(Character actor)
-        {
-            if (!_chainCasts.Remove(actor, out ChainCastContext? context)) return false;
-            _castingSkills.Remove(actor);
-            actor.CharacterState = CharacterState.Actionable;
-            actor.UpdateCharacterState();
-            if (actor.HP > 0 && _queue.Contains(actor)) AddCharacter(actor, context.OriginalHardnessTime + 3, false);
-            SendChainQueueUpdate(actor, _decisionPoints[actor]);
-            return true;
-        }
-
     }
 }
