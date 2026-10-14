@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "id": "example:boss",
+  "fallback": "defaultAI",
+  "rules": [
+    {
+      "id": "emergency-recover",
+      "priority": 100,
+      "target": {
+        "relation": "self",
+        "selector": "self",
+        "bind": "boss"
+      },
+      "when": {
+        "type": "self.hpRatio",
+        "operator": "lessThan",
+        "value": 0.3
+      },
+      "action": {
+        "type": "castSkill",
+        "skillId": 9001,
+        "target": "boss",
+        "movement": "never"
+      }
+    },
+    {
+      "id": "pressure-cluster",
+      "priority": 90,
+      "when": {
+        "type": "plan.targetCount",
+        "operator": "atLeast",
+        "value": 2,
+        "target": "cluster"
+      },
+      "action": {
+        "type": "castSkill",
+        "skillId": 9002,
+        "bindPlan": "cluster",
+        "positionPreference": "coverage"
+      }
+    },
+    {
+      "id": "focus-wounded",
+      "priority": 80,
+      "target": {
+        "relation": "enemy",
+        "selector": "lowestHpRatio",
+        "bind": "victim"
+      },
+      "when": {
+        "type": "target.hpRatio",
+        "target": "victim",
+        "operator": "lessThan",
+        "value": 0.25
+      },
+      "action": {
+        "type": "castSkill",
+        "skillId": 9003,
+        "target": "victim"
+      }
+    },
+    {
+      "id": "safe-channel",
+      "priority": 70,
+      "when": {
+        "all": [
+          {
+            "type": "self.hpRatio",
+            "operator": "atLeast",
+            "value": 0.4
+          },
+          {
+            "type": "plan.targetCount",
+            "operator": "atLeast",
+            "value": 1,
+            "target": "channel"
+          },
+          {
+            "type": "plan.risk",
+            "operator": "atMost",
+            "value": 0,
+            "target": "channel"
+          }
+        ]
+      },
+      "action": {
+        "type": "castSkill",
+        "skillId": 9004,
+        "bindPlan": "channel",
+        "positionPreference": "safe",
+        "maxRisk": 0
+      }
+    },
+    {
+      "id": "basic-pressure",
+      "priority": 60,
+      "target": {
+        "relation": "enemy",
+        "selector": "lowestHpRatio",
+        "bind": "victim"
+      },
+      "action": {
+        "type": "normalAttack",
+        "target": "victim"
+      }
+    }
+  ]
+}

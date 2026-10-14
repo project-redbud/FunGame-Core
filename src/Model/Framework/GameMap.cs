@@ -213,6 +213,9 @@ namespace FunGame.Core.Model.Framework
         /// <returns></returns>
         public virtual List<Grid> GetGridsByRange(Grid grid, int range, bool includeCharacter = false)
         {
+            if (range >= Math.Max(Length, Width))
+                return [.. GridsByCoordinate.Values.Where(g => g.Z == grid.Z && CalculateManhattanDistance(grid, g) <= range &&
+                    (includeCharacter || g.Characters.Count == 0)).OrderBy(g => g.X).ThenBy(g => g.Y)];
             List<Grid> grids = [];
 
             for (int dx = -range; dx <= range; ++dx)
@@ -692,58 +695,11 @@ namespace FunGame.Core.Model.Framework
                 return 0;
             }
 
-            // 记录走到某个格子时的步数
-            Queue<(Grid grid, int steps)> queue = new();
-            // 记录已访问的格子
-            HashSet<long> visited = [];
-
-            // 将起始格子加入队列，步数为0，并标记为已访问
-            queue.Enqueue((startGrid, 0));
-            visited.Add(startGrid.Id);
-
-            while (queue.Count > 0)
-            {
-                var (currentGrid, currentSteps) = queue.Dequeue();
-
-                // 如果当前格子就是目标格子，则找到了最短路径
-                if (currentGrid.Id == target.Id)
-                {
-                    realGrid?.Characters.Remove(character);
-                    SetCharacterCurrentGrid(character, target);
-                    return currentSteps;
-                }
-
-                // 定义平面移动的方向
-                (int dx, int dy)[] directions = [
-                    (0, 1), // 上
-                    (0, -1), // 下
-                    (1, 0), // 右
-                    (-1, 0), // 左
-                    (1, 1), // 右上
-                    (1, -1), // 右下
-                    (-1, 1), // 左上
-                    (-1, -1) // 左下
-                ];
-
-                foreach (var (dx, dy) in directions)
-                {
-                    int nextX = currentGrid.X + dx;
-                    int nextY = currentGrid.Y + dy;
-                    int nextZ = currentGrid.Z;
-
-                    // 尝试获取相邻格子
-                    Grid? neighborGrid = this[nextX, nextY, nextZ];
-
-                    // 如果相邻格子存在且未被访问过
-                    if (neighborGrid != null && !visited.Contains(neighborGrid.Id))
-                    {
-                        visited.Add(neighborGrid.Id);
-                        queue.Enqueue((neighborGrid, currentSteps + 1));
-                    }
-                }
-            }
-
-            return -1;
+            int steps = GetMovementSteps(character, startGrid, target);
+            if (steps < 0) return -1;
+            realGrid?.Characters.Remove(character);
+            SetCharacterCurrentGrid(character, target);
+            return steps;
         }
 
         /// <summary>
@@ -843,6 +799,47 @@ namespace FunGame.Core.Model.Framework
             SetCharacterCurrentGrid(character, bestReachableGrid);
 
             return stepsToBestReachable;
+        }
+
+        /// <summary>只读查询八方向最短路径步数；不可达返回 -1。派生地图应与移动执行保持一致。</summary>
+        /// <param name="character">移动角色。</param>
+        /// <param name="origin">假设起点。</param>
+        /// <param name="target">目标格。</param>
+        /// <returns>最短路径步数。</returns>
+        public virtual int GetMovementSteps(Character character, Grid origin, Grid target)
+        {
+            return GetMovementCosts(character, origin).TryGetValue(target, out int steps) ? steps : -1;
+        }
+
+        /// <summary>一次查询起点到所有连通格的最短步数；派生地图可覆盖移动规则。</summary>
+        /// <param name="character">移动角色。</param>
+        /// <param name="origin">起点。</param>
+        /// <returns>只读路径成本表。</returns>
+        public virtual IReadOnlyDictionary<Grid, int> GetMovementCosts(Character character, Grid origin)
+        {
+            Dictionary<Grid, int> costs = [];
+            if (!Grids.ContainsValue(origin)) return costs;
+            Queue<(Grid Grid, int Steps)> pending = new();
+            HashSet<long> visited = [origin.Id];
+            costs[origin] = 0;
+            pending.Enqueue((origin, 0));
+            while (pending.TryDequeue(out (Grid Grid, int Steps) entry))
+            {
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    for (int dy = -1; dy <= 1; dy++)
+                    {
+                        if (dx == 0 && dy == 0) continue;
+                        Grid? next = this[entry.Grid.X + dx, entry.Grid.Y + dy, entry.Grid.Z];
+                        if (next != null && visited.Add(next.Id))
+                        {
+                            costs[next] = entry.Steps + 1;
+                            pending.Enqueue((next, entry.Steps + 1));
+                        }
+                    }
+                }
+            }
+            return new System.Collections.ObjectModel.ReadOnlyDictionary<Grid, int>(costs);
         }
 
         /// <summary>

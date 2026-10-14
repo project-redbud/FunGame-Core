@@ -72,7 +72,7 @@ namespace FunGame.Core.Model.Queue
                 Grid? origin = _map?.GetCharacterCurrentGrid(actor);
                 // 协同不允许移动；仅评估协作方当前格，避免生成移动后才能执行的申请。
                 AIDecision decision = ai.DecideAIAction(actor, dp, origin, origin is null ? [] : [origin],
-                    skills, items, enemies, teammates, selectableEnemies, selectableTeammates, 0.33, 0.33, 0.34);
+                    skills, items, enemies, teammates, selectableEnemies, selectableTeammates, 0.33, 0.33, 0.34, isChainAction: true);
                 if (!decision.HasCandidate) continue;
                 Skill? skill = decision.SkillToUse as Skill;
                 Item? item = decision.ItemToUse ?? items.FirstOrDefault(i => i.Skills.Active == skill);
@@ -84,7 +84,7 @@ namespace FunGame.Core.Model.Queue
                     _ => decision.ActionType
                 };
                 if (type == CharacterActionType.NormalAttack) skill = null;
-                SubmitChainAction(turnActor, actor, type, decision.Targets, out _, skill, item, decision.TargetGrids);
+                SubmitChainAction(turnActor, actor, type, decision.Targets, out _, skill, item, decision.TargetGrids, decision.CastCenter);
             }
         }
 
@@ -118,10 +118,10 @@ namespace FunGame.Core.Model.Queue
         /// </summary>
         public ChainActionRequest? SubmitChainAction(Character turnActor, Character actor, CharacterActionType type,
             IEnumerable<Character> targets, out string failReason, Skill? skill = null, Item? item = null,
-            IEnumerable<Grid>? targetGrids = null)
+            IEnumerable<Grid>? targetGrids = null, Grid? castCenter = null)
         {
             ChainActionRequest request = new(_chainTurnId, TotalRound, turnActor, actor, type,
-                skill ?? item?.Skills.Active, item, targets, targetGrids ?? []);
+                skill ?? item?.Skills.Active, item, targets, targetGrids ?? [], castCenter);
             failReason = _executingChainAction ? "协同行动正在执行。" : ValidateChainAction(request, out _, out _);
             if (failReason != "") return null;
             foreach (ChainActionRequest previous in _chainRequests.Values.Where(r => r.Actor == actor).ToArray()) _chainRequests.Remove(previous.Id);
@@ -202,7 +202,13 @@ namespace FunGame.Core.Model.Queue
             if (request.Skill is Skill area && area.IsNonDirectional && _map != null)
             {
                 grids = [.. request.TargetGrids];
-                if (grids.Count == 0 || grids.Count > area.RealCanSelectTargetCount(selectableEnemies, selectableTeammates) ||
+                if (request.CastCenter is Grid center)
+                {
+                    if (!range.Contains(center)) return "施法中心超出射程。";
+                    grids = area.SelectNonDirectionalTargets(actor, center, area.SelectIncludeCharacterGrid);
+                    if (!grids.ToHashSet().SetEquals(request.TargetGrids)) return "范围方案已失效。";
+                }
+                else if (grids.Count == 0 || grids.Count > area.RealCanSelectTargetCount(selectableEnemies, selectableTeammates) ||
                     grids.Any(g => !range.Contains(g) || (!area.SelectIncludeCharacterGrid && g.Characters.Count > 0))) return "目标格子不合法或超出射程。";
                 targets = area.SelectTargetsByRange(actor, enemies, teammates, [], grids);
                 if (targets.Count == 0 && !area.AllowSelectNoCharacterGrid) return "目标区域没有可作用角色。";

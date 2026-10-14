@@ -4,6 +4,7 @@ using FunGame.Core.Interface.Entity;
 using FunGame.Core.Library.Constant;
 using FunGame.Core.Model.EffectContext;
 using FunGame.Core.Model.Framework;
+using FunGame.Core.Model.DecisionTable;
 using FunGame.Core.Model.Queue;
 
 namespace FunGame.Core.Controller
@@ -15,7 +16,7 @@ namespace FunGame.Core.Controller
     /// </summary>
     /// <param name="queue">所属的游戏队列</param>
     /// <param name="map">战棋地图，非地图模式传 null</param>
-    public class AIController(GamingQueue queue, GameMap? map)
+    public partial class AIController(GamingQueue queue, GameMap? map)
     {
         private readonly GamingQueue _queue = queue;
         private readonly GameMap? _map = map;
@@ -35,6 +36,15 @@ namespace FunGame.Core.Controller
         /// 是否处于战棋地图模式
         /// </summary>
         public bool IsMapMode => _map != null;
+
+        /// <summary>最近一次角色规则匹配结果。</summary>
+        public DecisionEvaluationResult? LastPolicyResult { get; private set; }
+
+        /// <summary>最近一次规则规划统计。</summary>
+        public DecisionMetrics? LastMetrics { get; private set; }
+
+        /// <summary>每次角色策略评估后提供角色、匹配结果及计数。</summary>
+        public event Action<Character, DecisionEvaluationResult, DecisionMetrics>? PolicyEvaluatedEvent;
 
         /// <summary>
         /// 协同确认策略：选择第一份经队列重验的有效申请
@@ -90,11 +100,38 @@ namespace FunGame.Core.Controller
         /// <param name="pUseItem">使用物品的概率</param>
         /// <param name="pCastSkill">释放技能的概率</param>
         /// <param name="pNormalAttack">普通攻击的概率</param>
+        /// <param name="isChainAction">是否为原地协同申请</param>
+        /// <param name="rejectedRules">本次行动中已执行失败的规则</param>
         /// <returns>包含最佳行动的AIDecision对象</returns>
         public AIDecision DecideAIAction(Character character, DecisionPoints dp, Grid? startGrid, List<Grid> allPossibleMoveGrids,
             List<Skill> availableSkills, List<Item> availableItems, List<Character> allEnemysInGame, List<Character> allTeammatesInGame,
-            List<Character> selectableEnemys, List<Character> selectableTeammates, double pUseItem, double pCastSkill, double pNormalAttack)
+            List<Character> selectableEnemys, List<Character> selectableTeammates, double pUseItem, double pCastSkill, double pNormalAttack, bool isChainAction = false, IReadOnlySet<string>? rejectedRules = null)
         {
+            DecisionEvaluationContext context = new()
+            {
+                Queue = _queue, Actor = character, Points = dp, TurnOrigin = startGrid, MoveGrids = allPossibleMoveGrids,
+                Skills = availableSkills, Items = availableItems, Enemies = allEnemysInGame, Allies = allTeammatesInGame,
+                SelectableEnemies = selectableEnemys, SelectableAllies = selectableTeammates, IsChainAction = isChainAction,
+                AllowItem = pUseItem > 0, AllowSkill = pCastSkill > 0, AllowAttack = pNormalAttack > 0,
+                RejectedRules = rejectedRules ?? new HashSet<string>(), RecentPositions = GetRecentPositions(character, isChainAction)
+            };
+            long started = System.Diagnostics.Stopwatch.GetTimestamp();
+            LastPolicyResult = character.DecisionPolicy?.Evaluate(context);
+            LastMetrics = context.Metrics;
+            LastMetrics.Elapsed = System.Diagnostics.Stopwatch.GetElapsedTime(started);
+            if (LastPolicyResult != null) PolicyEvaluatedEvent?.Invoke(character, LastPolicyResult, LastMetrics);
+            if (LastPolicyResult?.Decision is AIDecision policyDecision)
+            {
+                policyDecision.HasCandidate = true;
+                policyDecision.RequiresValidation = true;
+                return policyDecision;
+            }
+            if (SelectionMode != AISelectionMode.Legacy)
+            {
+                AIDecision planned = DecidePlannedAction(context, pUseItem, pCastSkill, pNormalAttack);
+                LastMetrics.Elapsed = System.Diagnostics.Stopwatch.GetElapsedTime(started);
+                return planned;
+            }
             // 战棋模式下必须知道角色所在格子才能评估，角色不在地图上时不参与决策
             if (_map != null && startGrid is null)
             {
@@ -103,6 +140,8 @@ namespace FunGame.Core.Controller
 
             // 非战棋模式没有格子概念，退化为一个虚拟格，保证至少完成一次决策计算
             List<Grid> moveGrids = allPossibleMoveGrids.Count > 0 ? allPossibleMoveGrids : [startGrid ?? Grid.Empty];
+            if (_map?.GetCharacterCurrentGrid(character) is Grid actorGrid)
+                moveGrids = [actorGrid, .. moveGrids.Where(g => g.Id != actorGrid.Id)];
 
             // 评估范围上限：大范围移动无效格子可能较多
             // 对每个可达格做「普攻+技能+物品」全量评估会让单次 AI 决策过重，而失败重试会反复触发整段评估
@@ -115,6 +154,8 @@ namespace FunGame.Core.Controller
                 List<Grid> enemyGrids = [.. allEnemysInGame.Select(_map.GetCharacterCurrentGrid).OfType<Grid>()];
                 moveGrids = [.. moveGrids.OrderBy(g => ReferenceEquals(g, currentGrid) ? -1 : (enemyGrids.Count == 0 ? 0 : enemyGrids.Min(eg => GameMap.CalculateManhattanDistance(g, eg)))).Take(maxEvaluatedMoveGrids)];
             }
+            LastMetrics.PositionsGenerated = allPossibleMoveGrids.Count;
+            LastMetrics.PositionsEvaluated = moveGrids.Count;
 
             // 控制最大并发数
             int maxConcurrency = Math.Max(1, Environment.ProcessorCount / 2);
@@ -197,8 +238,11 @@ namespace FunGame.Core.Controller
                     .ThenBy(d => d.TargetGrids.Count)
                     .FirstOrDefault() ?? bestDecision;
                 bestDecision.HasCandidate = true;
+                bestDecision.RequiresValidation = true;
             }
 
+            LastMetrics.PlansEvaluated = candidateDecisions.Count;
+            LastMetrics.Elapsed = System.Diagnostics.Stopwatch.GetElapsedTime(started);
             return bestDecision;
         }
 
@@ -333,8 +377,9 @@ namespace FunGame.Core.Controller
             {
                 foreach (Item item in availableItems)
                 {
-                    if (item.Skills.Active != null && CanCharacterUseItem(character, item, dp) && _queue.CheckCanCast(character, item.Skills.Active, out double cost))
+                    if (item.Skills.Active != null && CanCharacterUseItem(character, item, dp) && _queue.CheckCanCast(character, item, out double costMP, out double costEP))
                     {
+                        double cost = costMP + costEP;
                         Skill itemSkill = item.Skills.Active;
                         List<Grid> itemSkillReachableGrids = GetReachableGrids(potentialMoveGrid, itemSkill.CastRange, true);
 
@@ -347,6 +392,8 @@ namespace FunGame.Core.Controller
 
                             if (nonDirDecision != null)
                             {
+                                nonDirDecision.ActionType = CharacterActionType.UseItem;
+                                nonDirDecision.ItemToUse = item;
                                 // 偏好类型加分
                                 if (preferredAction.HasValue && nonDirDecision.ActionType == preferredAction.Value)
                                 {
@@ -555,14 +602,14 @@ namespace FunGame.Core.Controller
             return dp.CheckActionTypeQuota(CharacterActionType.UseItem)
                 && dp.CurrentDecisionPoints >= dp.GameplayEquilibriumConstant.DecisionPointsCostItem
                 && character.CharacterState != CharacterState.NotActionable
-                && (character.CharacterState != CharacterState.ActionRestricted || item.ItemType == ItemType.Consumable)
-                && character.CharacterState != CharacterState.BattleRestricted;
+                && (character.CharacterState != CharacterState.ActionRestricted || item.ItemType == ItemType.Consumable);
         }
 
         // 选择技能的最佳目标
         private static List<Character> SelectTargets(Character character, ISkill skill, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates, Random random)
         {
             List<Character> targets = skill.GetSelectableTargets(character, allEnemys, allTeammates, enemys, teammates);
+            if (character.CharacterState == CharacterState.BattleRestricted) targets = [.. targets.Where(c => c == character)];
             int count = skill.RealCanSelectTargetCount(enemys, teammates);
             // 随机值相同时以 Guid 兜底，保证排序结果确定
             return [.. targets.OrderBy(o => random.Next()).ThenBy(o => o.Guid).Take(count)];
@@ -596,15 +643,19 @@ namespace FunGame.Core.Controller
         {
             double bestSkillScore = double.NegativeInfinity;
             List<Grid> bestTargetGrids = [];
+            List<Character> bestTargets = [];
+            Grid? bestCenter = null;
 
             // 枚举所有可施放的格子作为潜在中心
             foreach (Grid centerGrid in castableGrids)
             {
                 // 计算该中心格子下的实际影响范围格子
-                List<Grid> effectGrids = skill.SelectNonDirectionalTargets(character, centerGrid, skill.SelectIncludeCharacterGrid);
+                List<Grid> effectGrids = moveGrid.Id == _map?.GetCharacterCurrentGrid(character)?.Id
+                    ? skill.SelectNonDirectionalTargets(character, centerGrid, skill.SelectIncludeCharacterGrid)
+                    : skill.SelectNonDirectionalTargetsFrom(character, moveGrid, centerGrid, skill.SelectIncludeCharacterGrid);
 
                 // 计算实际影响的角色
-                List<Character> affected = skill.SelectTargetsByRange(character, allEnemys, allTeammates, [], effectGrids);
+                List<Character> affected = skill.SelectTargetsByRangeFrom(character, moveGrid, allEnemys, allTeammates, effectGrids);
 
                 if (affected.Count == 0)
                     continue;
@@ -616,6 +667,8 @@ namespace FunGame.Core.Controller
                 {
                     bestSkillScore = skillScore;
                     bestTargetGrids = effectGrids;
+                    bestTargets = affected;
+                    bestCenter = centerGrid;
                 }
             }
 
@@ -631,7 +684,8 @@ namespace FunGame.Core.Controller
                 ActionType = CharacterActionType.PreCastSkill,
                 TargetMoveGrid = moveGrid,
                 SkillToUse = skill,
-                Targets = [],
+                Targets = bestTargets,
+                CastCenter = bestCenter,
                 TargetGrids = bestTargetGrids,
                 Score = finalScore,
                 ProbabilityWeight = probabilityWeight // 与指向性技能一致，采用归一化后的行动概率

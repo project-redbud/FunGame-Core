@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "id": "example:empty",
+  "fallback": "defaultAI",
+  "rules": []
+}

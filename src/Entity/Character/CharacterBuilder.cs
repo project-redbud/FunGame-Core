@@ -5,6 +5,10 @@ namespace FunGame.Core.Entity
     public class CharacterBuilder
     {
         public long Id { get; set; }
+        /// <summary>构建角色时继承的策略标识。</summary>
+        public string? DecisionTableId { get; set; }
+        private Interface.IDecisionPolicy? _decisionPolicy;
+        private string? _boundPolicyId;
         public string Name { get; set; }
         public string FirstName { get; set; }
         public string NickName { get; set; }
@@ -73,6 +77,9 @@ namespace FunGame.Core.Entity
         public CharacterBuilder(Character character)
         {
             Id = character.Id;
+            DecisionTableId = character.DecisionTableId;
+            _decisionPolicy = character.DecisionPolicy;
+            _boundPolicyId = character.DecisionTableId;
             Name = character.Name;
             FirstName = character.FirstName;
             NickName = character.NickName;
@@ -109,6 +116,8 @@ namespace FunGame.Core.Entity
             Character character = new()
             {
                 Id = Id,
+                DecisionTableId = DecisionTableId,
+                DecisionPolicy = DecisionTableId == _boundPolicyId ? _decisionPolicy : null,
                 Name = Name,
                 FirstName = FirstName,
                 NickName = NickName,

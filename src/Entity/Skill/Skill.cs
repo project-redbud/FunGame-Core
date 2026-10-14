@@ -715,6 +715,23 @@ namespace FunGame.Core.Entity
             return [.. targets.Where(c => SelectTargetPredicates.All(f => f(c))).Distinct()];
         }
 
+        /// <summary>查询假设移动后的范围目标；施法者按假设位置参与范围判定。</summary>
+        /// <param name="caster">施法者。</param>
+        /// <param name="origin">假设位置。</param>
+        /// <param name="allEnemys">全部敌方。</param>
+        /// <param name="allTeammates">全部友方。</param>
+        /// <param name="range">影响格。</param>
+        /// <returns>实际作用目标。</returns>
+        public virtual List<Character> SelectTargetsByRangeFrom(Character caster, Grid origin, List<Character> allEnemys, List<Character> allTeammates, IEnumerable<Grid> range)
+        {
+            List<Grid> grids = [.. range];
+            List<Character> targets = SelectTargetsByRange(caster, allEnemys, allTeammates, [], grids);
+            if (GamingQueue?.Map?.GetCharacterCurrentGrid(caster)?.Id == origin.Id) return targets;
+            targets.RemoveAll(c => ReferenceEquals(c, caster));
+            if (CanSelectSelf && grids.Contains(origin) && SelectTargetPredicates.All(f => f(caster))) targets.Add(caster);
+            return targets;
+        }
+
         /// <summary>
         /// 选取非指向性目标
         /// </summary>
@@ -723,6 +740,18 @@ namespace FunGame.Core.Entity
         /// <param name="includeCharacter"></param>
         /// <returns></returns>
         public virtual List<Grid> SelectNonDirectionalTargets(Character caster, Grid targetGrid, bool includeCharacter = false)
+        {
+            Grid origin = GamingQueue?.Map?.GetCharacterCurrentGrid(caster) ?? Grid.Empty;
+            return SelectNonDirectionalTargetsFrom(caster, origin, targetGrid, includeCharacter);
+        }
+
+        /// <summary>从假设施法位置计算范围，不移动角色。</summary>
+        /// <param name="caster">施法者。</param>
+        /// <param name="origin">假设施法起点。</param>
+        /// <param name="targetGrid">中心或方向参考格。</param>
+        /// <param name="includeCharacter">是否包含有角色的格子。</param>
+        /// <returns>影响格集合。</returns>
+        public virtual List<Grid> SelectNonDirectionalTargetsFrom(Character caster, Grid origin, Grid targetGrid, bool includeCharacter = false)
         {
             int range = CanSelectTargetRange;
             List<Grid> targets = [];
@@ -733,7 +762,7 @@ namespace FunGame.Core.Entity
             }
 
             GameMap map = GamingQueue.Map;
-            Grid currentGrid = map.GetCharacterCurrentGrid(caster) ?? Grid.Empty;
+            Grid currentGrid = origin;
 
             // 范围等于 0 时只返回中心格子
             if (range == 0)

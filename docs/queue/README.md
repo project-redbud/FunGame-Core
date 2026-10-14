@@ -10,6 +10,7 @@
 | --- | --- |
 | [行动顺序表与时间流逝](action-queue.md) | 硬直排序、入队冲突、插队保护、`NextCharacter` / `TimeLapse` / `ProcessTurn` |
 | [决策点](decision-points.md) | 预算、配额、行动成本、临时配额、协同预算隔离 |
+| [决策表](decision-tables.md) | 配置、链式构建、角色绑定、行动规划与 AI 选择模式 |
 | [回合记录](round-record.md) | `LastRound` / `Rounds`、快照语义、动作归属与辅助统计 |
 | [协同行动](chain-action.md) | 队友/召唤物用剩余预算提前出手的规则、接入接口与验证方法 |
 | [吟唱终止](cast-termination.md) | 打断、目标丢失、失败重决、奖励与状态清理 |
