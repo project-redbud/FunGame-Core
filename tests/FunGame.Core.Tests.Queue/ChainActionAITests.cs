@@ -1,16 +1,120 @@
+using FunGame.Core.Api;
 using FunGame.Core.Entity;
 using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.DecisionTable;
 using FunGame.Core.Model.Framework;
 
 namespace FunGame.Core.Tests.Queue;
 
 public class ChainActionAITests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ManualTurn_ReceivesAIRequestWithoutExecuting(bool mapMode)
+    {
+        BattleFixture f = new(mapMode: mapMode);
+        if (f.Queue.Map != null)
+        {
+            f.Queue.Map.SetCharacterCurrentGrid(f.C, f.Queue.Map[5, 0]!);
+            f.Queue.Map.SetCharacterCurrentGrid(f.D, f.Queue.Map[2, 0]!);
+        }
+        f.Queue.SetCharactersToAIControl(false, false, [f.B]);
+        f.Queue.DecideActionEvent += ctx =>
+        {
+            ChainActionRequest request = Assert.Single(ctx.ChainActions);
+            Assert.Same(f.B, request.Actor);
+            Assert.Same(f.A, request.TurnActor);
+            Assert.Equal(5, f.Points(f.B).CurrentDecisionPoints);
+            return CharacterActionType.EndTurn;
+        };
+
+        f.Run(f.A);
+
+        Assert.Equal(5, f.Points(f.B).CurrentDecisionPoints);
+        Assert.DoesNotContain(f.Queue.LastRound.Actions, action => action.Actor == f.B);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ManualTurn_ConfirmsAIRequest(bool mapMode)
+    {
+        BattleFixture f = new(mapMode: mapMode);
+        if (f.Queue.Map != null)
+        {
+            f.Queue.Map.SetCharacterCurrentGrid(f.C, f.Queue.Map[5, 0]!);
+            f.Queue.Map.SetCharacterCurrentGrid(f.D, f.Queue.Map[2, 0]!);
+        }
+        f.Queue.SetCharactersToAIControl(false, false, [f.B]);
+        int decisions = 0;
+        f.Queue.DecideActionEvent += ctx => ++decisions == 1
+            ? CharacterActionType.ChainAction : CharacterActionType.EndTurn;
+        f.Queue.SelectChainActionEvent += (_, pending) => Assert.Single(pending).Id;
+
+        f.Run(f.A);
+
+        ActionRecord execution = Assert.Single(f.Queue.LastRound.Actions, action => action.Actor == f.B);
+        Assert.Same(f.A, execution.TurnActor);
+        Assert.Equal(1, execution.DecisionPointsCost);
+        Assert.Equal(4, f.Points(f.B).CurrentDecisionPoints);
+    }
+
+    [Fact]
+    public void AiTurn_DoesNotSubmitForManualTeammate()
+    {
+        BattleFixture f = new();
+        f.Queue.SetCharactersToAIControl(false, false, [f.A]);
+        f.Queue.DecideActionEvent += ctx =>
+        {
+            Assert.Empty(ctx.ChainActions);
+            return CharacterActionType.EndTurn;
+        };
+
+        f.Run(f.A);
+
+        Assert.Equal(5, f.Points(f.B).CurrentDecisionPoints);
+        Assert.DoesNotContain(f.Queue.LastRound.Actions, action => action.Actor == f.B);
+    }
+
+    [Fact]
+    public void ManualTurn_UsesApplicantPolicyToTargetTurnActor()
+    {
+        BattleFixture f = new(mapMode: true);
+        Skill skill = f.NewSkill(SkillType.Skill, f.B);
+        skill.Id = 1001;
+        skill.CanSelectEnemy = false;
+        skill.CanSelectSelf = false;
+        skill.CanSelectTeammate = true;
+        skill.CastRange = 3;
+        f.A.HP = f.A.MaxHP * 0.2;
+        DecisionTableConfig config = DecisionTableBuilder.Create("test:chain-healer")
+            .AddRule("heal", rule => rule.Target(Targets.Allies("patient"))
+                .When(Conditions.TargetHpRatio("patient", "lessThan", 0.3))
+                .Then(Actions.CastSkill(skill.Id, "patient", "never"))).Build();
+        DecisionTableLoader loader = new();
+        Assert.Empty(loader.Register(config));
+        f.B.DecisionTableId = config.Id;
+        Assert.Empty(loader.Bind(f.B));
+        f.Queue.SetCharactersToAIControl(false, false, [f.B]);
+        f.Queue.DecideActionEvent += ctx =>
+        {
+            ChainActionRequest request = Assert.Single(ctx.ChainActions);
+            Assert.Same(skill, request.Skill);
+            Assert.Same(f.A, Assert.Single(request.Targets));
+            return CharacterActionType.EndTurn;
+        };
+
+        f.Run(f.A);
+
+        Assert.Equal(5, f.Points(f.B).CurrentDecisionPoints);
+    }
+
     [Fact]
     public void AiTurn_SubmitsAndConfirmsForConsecutiveTeammates()
     {
         BattleFixture f = new(continuous: true);
-        f.Queue.SetCharactersToAIControl(false, false, [f.A]);
+        f.Queue.SetCharactersToAIControl(false, false, [f.A, f.B, f.C]);
 
         f.Run(f.A);
 
@@ -29,7 +133,7 @@ public class ChainActionAITests
         f.Points(f.A).MaxDecisionPoints = 5;
         f.Queue.AddCharacter(f.D, 100, false);
         f.Points(f.B).CurrentDecisionPoints = 3;
-        f.Queue.SetCharactersToAIControl(false, false, [f.A]);
+        f.Queue.SetCharactersToAIControl(false, false, [f.A, f.B]);
 
         f.Run(f.A);
 
@@ -47,7 +151,7 @@ public class ChainActionAITests
         Skill skill = f.NewSkill(skillType, f.B);
         f.Points(f.B).ActionTypes[CharacterActionType.NormalAttack] = f.Points(f.B)[CharacterActionType.NormalAttack];
         f.Points(f.B).CurrentDecisionPoints = f.Points(f.B).GetActionPointCost(actionType, skill, chainAction: true);
-        f.Queue.SetCharactersToAIControl(false, false, [f.A]);
+        f.Queue.SetCharactersToAIControl(false, false, [f.A, f.B]);
 
         f.Run(f.A);
 
@@ -63,7 +167,7 @@ public class ChainActionAITests
     {
         BattleFixture f = new();
         f.Points(f.B).CurrentDecisionPoints = 0;
-        f.Queue.SetCharactersToAIControl(false, false, [f.A]);
+        f.Queue.SetCharactersToAIControl(false, false, [f.A, f.B]);
 
         f.Run(f.A);
 
@@ -76,7 +180,7 @@ public class ChainActionAITests
     {
         BattleFixture f = new(mapMode: true);
 
-        f.Queue.SetCharactersToAIControl(false, false, [f.A]);
+        f.Queue.SetCharactersToAIControl(false, false, [f.A, f.B]);
 
         f.Run(f.A);
 
@@ -90,7 +194,7 @@ public class ChainActionAITests
     {
         BattleFixture f = new();
         Guid requestId = Guid.Empty;
-        f.Queue.SetCharactersToAIControl(false, false, [f.A]);
+        f.Queue.SetCharactersToAIControl(false, false, [f.A, f.B]);
         f.Queue.TurnStartEvent += ctx => { requestId = f.Submit(f.B).Id; return true; };
         f.Queue.DecideActionEvent += ctx =>
         {
@@ -109,7 +213,7 @@ public class ChainActionAITests
     {
         BattleFixture f = new();
         f.Points(f.B).CurrentDecisionPoints = 1;
-        f.Queue.SetCharactersToAIControl(false, false, [f.A]);
+        f.Queue.SetCharactersToAIControl(false, false, [f.A, f.B]);
 
         f.Run(f.A);
 
@@ -132,7 +236,7 @@ public class ChainActionAITests
         f.B.Items.Add(item);
         f.Points(f.B).ActionTypes[CharacterActionType.NormalAttack] = f.Points(f.B)[CharacterActionType.NormalAttack];
         f.Points(f.B).CurrentDecisionPoints = f.Points(f.B).GetActionPointCost(CharacterActionType.UseItem);
-        f.Queue.SetCharactersToAIControl(false, false, [f.A]);
+        f.Queue.SetCharactersToAIControl(false, false, [f.A, f.B]);
         double mp = f.B.MP;
 
         f.Run(f.A);
@@ -150,7 +254,7 @@ public class ChainActionAITests
     {
         BattleFixture f = new();
         f.Queue.EnableAI = false;
-        f.Queue.SetCharactersToAIControl(false, false, [f.A]);
+        f.Queue.SetCharactersToAIControl(false, false, [f.A, f.B]);
         f.Queue.DecideActionEvent += ctx =>
         {
             Assert.Empty(ctx.ChainActions);
@@ -162,7 +266,7 @@ public class ChainActionAITests
         Assert.Equal(5, f.Points(f.B).CurrentDecisionPoints);
     }
     [Fact]
-    public void ManualTurn_DoesNotAutomaticallySubmitRequests()
+    public void ManualTurn_DoesNotSubmitForManualTeammate()
     {
         BattleFixture f = new();
         f.Queue.DecideActionEvent += ctx =>

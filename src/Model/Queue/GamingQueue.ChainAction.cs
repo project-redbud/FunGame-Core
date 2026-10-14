@@ -50,20 +50,23 @@ namespace FunGame.Core.Model.Queue
         }
 
         /// <summary>
-        /// 在 AI 正常决策前，为连续同队区间内的队友代交原地协同申请，保留已有有效申请
+        /// 在正常决策前，由连续同队区间内的 AI 协作方提交原地申请，保留已有有效申请
         /// </summary>
-        /// <param name="turnActor">当前正常回合的 AI 角色</param>
+        /// <param name="turnActor">当前正常回合的角色</param>
         /// <param name="allTeammates">回合角色的队友</param>
         /// <param name="allEnemies">回合角色的敌人</param>
         protected void WillSubmitChainActions(Character turnActor, List<Character> allTeammates, List<Character> allEnemies)
         {
-            if (!IsChainTurn(turnActor) || !IsCharacterInAIControlling(turnActor) || AI is not AIController ai) return;
+            if (!IsChainTurn(turnActor) || AI is not AIController ai) return;
             HashSet<Character> pendingActors = [.. GetPendingChainActions(turnActor).Select(r => r.Actor)];
             foreach (Character actor in GetAvailableChainActors(turnActor))
             {
-                if (pendingActors.Contains(actor) || !_decisionPoints.TryGetValue(actor, out DecisionPoints? dp) || dp.CurrentDecisionPoints <= 0) continue;
-                List<Character> teammates = [.. allTeammates.Where(c => c != actor), turnActor];
-                List<Character> enemies = [.. allEnemies.Where(c => c != actor)];
+                if (!IsCharacterInAIControlling(actor) || pendingActors.Contains(actor) ||
+                    !_decisionPoints.TryGetValue(actor, out DecisionPoints? dp) || dp.CurrentDecisionPoints <= 0) continue;
+                List<Character> teammates = GetTeammates(actor);
+                if (!teammates.Contains(turnActor)) teammates.Add(turnActor);
+                List<Character> enemies = GetEnemies(actor);
+                enemies.Remove(turnActor);
                 (List<Character> selectableTeammates, List<Character> selectableEnemies, List<Skill> skills, List<Item> items) = GetTurnStartNeedyList(actor, teammates, enemies);
                 // 当前回合角色已出队，仍可作为协同治疗等辅助动作的目标。
                 if (!turnActor.IsUnselectable && !selectableTeammates.Contains(turnActor)) selectableTeammates.Add(turnActor);
