@@ -217,7 +217,7 @@ namespace FunGame.Core.Model.Queue
         /// <summary>
         /// AI 控制器入口，受 <see cref="EnableAI"/> 控制，地图发生变化时自动重建
         /// </summary>
-        protected AIController? AI
+        public AIController? AI
         {
             get
             {
@@ -501,7 +501,8 @@ namespace FunGame.Core.Model.Queue
         /// 初始化角色表
         /// </summary>
         /// <param name="characters"></param>
-        public void InitCharacters(List<Character> characters)
+        /// <param name="regenerateGuids">是否为本场战斗生成新的角色身份</param>
+        public void InitCharacters(List<Character> characters, bool regenerateGuids = true)
         {
             // 保存原始的角色信息。用于复活时还原状态
             foreach (Character character in characters)
@@ -513,7 +514,7 @@ namespace FunGame.Core.Model.Queue
                 character.GamingQueue = this;
                 // 复制原始角色对象
                 Character original = character.Copy();
-                original.Guid = Guid.NewGuid();
+                if (regenerateGuids) original.Guid = Guid.NewGuid();
                 character.Guid = original.Guid;
                 _original.Add(original.Guid, original);
             }
@@ -800,6 +801,26 @@ namespace FunGame.Core.Model.Queue
         /// <returns></returns>
         public Character? NextCharacter()
         {
+            while (_queue.Count > 0)
+            {
+                Character? character = TryNextCharacter();
+                if (character != null) return character;
+                double previousTime = TotalTime;
+                TimeLapse();
+                if (!double.IsFinite(TotalTime)) throw new InvalidOperationException("行动顺序表时间不是有限数。");
+                if (_queue.Count == 0) return null;
+                if (TotalTime <= previousTime)
+                {
+                    character = TryNextCharacter();
+                    if (character != null) return character;
+                    throw new InvalidOperationException("行动顺序表无法推进时间。");
+                }
+            }
+            return null;
+        }
+
+        private Character? TryNextCharacter()
+        {
             if (_queue.Count == 0) return null;
 
             // 硬直时间为 0 的角色
@@ -844,8 +865,7 @@ namespace FunGame.Core.Model.Queue
             }
             else
             {
-                TimeLapse();
-                return NextCharacter();
+                return null;
             }
         }
 
@@ -1274,6 +1294,7 @@ namespace FunGame.Core.Model.Queue
                 bool moved = false;
                 // 连续纯移动且无操作的次数
                 int moveRoundsWithoutDecision = 0;
+                HashSet<string> rejectedRules = [];
 
                 if (ConsumeCastFailure(character, out double failureHardness))
                 {
@@ -1322,6 +1343,13 @@ namespace FunGame.Core.Model.Queue
 
                     // AI 决策结果（战棋与非战棋模式均适用）
                     AIDecision? aiDecision = null;
+
+                    if (isAI && AI != null)
+                    {
+                        // 规划包含移动后的射程，模组筛选应作用于完整的可选目标。
+                        enemys = [.. selectableEnemys];
+                        teammates = [.. selectableTeammates];
+                    }
 
                     // 行动开始前，可以修改可选取的角色列表
                     Dictionary<Character, int> continuousKillingTemp = new(_continuousKilling);
@@ -1495,7 +1523,9 @@ namespace FunGame.Core.Model.Queue
                             // 模组未决策时，由 AI 控制器评估行动，战棋与非战棋模式均适用
                             if (type == CharacterActionType.None && isAI && AI is AIController ai)
                             {
-                                aiDecision = ai.DecideAIAction(character, dp, startGrid, canMoveGrids, skills, items, allEnemys, allTeammates, enemys, teammates, pUseItem, pCastSkill, pNormalAttack);
+                                character.NormalAttack.GamingQueue = this;
+                                foreach (Skill availableSkill in skills.Concat(items.Select(i => i.Skills.Active!))) availableSkill.GamingQueue = this;
+                                aiDecision = ai.DecideAIAction(character, dp, startGrid, canMoveGrids, skills, items, allEnemys, allTeammates, enemys, teammates, pUseItem, pCastSkill, pNormalAttack, rejectedRules: rejectedRules);
                                 if (aiDecision.HasCandidate)
                                 {
                                     type = aiDecision.ActionType;
@@ -1529,14 +1559,19 @@ namespace FunGame.Core.Model.Queue
                         }
                     }
 
-                    if (aiDecision != null && aiDecision.ActionType != CharacterActionType.Move && aiDecision.TargetMoveGrid != null && _map != null)
+                    if (RejectInvalidAIDecision(character, dp, aiDecision, rejectedRules, beforeMove: true, turnOrigin: startGrid)) continue;
+
+                    if (aiDecision != null && aiDecision.ActionType is not (CharacterActionType.Move or CharacterActionType.EndTurn) && aiDecision.TargetMoveGrid != null && _map != null)
                     {
                         // 不是纯粹移动的情况，需要手动移动
                         moved = CharacterMove(character, dp, aiDecision.TargetMoveGrid, startGrid);
                     }
 
+                    realGrid = _map?.GetCharacterCurrentGrid(character);
+
                     ActionContext actionStartCtx = new(this, character, dp) { ActionType = type };
                     TriggerOnCharacterActionStart(character, actionStartCtx);
+                    if (type != CharacterActionType.Move && RejectInvalidAIDecision(character, dp, aiDecision, rejectedRules)) { moved = false; continue; }
                     if (ConsumeCastFailure(character, out failureHardness))
                     {
                         type = CharacterActionType.CastSkill;
@@ -1609,6 +1644,8 @@ namespace FunGame.Core.Model.Queue
                             InquiryResponse response = Inquiry(character, inquiry);
                             character.NormalAttack.OnResolveInquiryBeforeTargetSelection(character, dp, inquiry, response);
                         }
+
+                        if (RejectInvalidAIDecision(character, dp, aiDecision, rejectedRules)) { moved = false; continue; }
 
                         int costDP = dp.GetActionPointCost(type);
                         if (!forceAction && (character.CharacterState == CharacterState.NotActionable ||
@@ -1714,6 +1751,7 @@ namespace FunGame.Core.Model.Queue
                                     }
 
                                     int costDP = dp.GetActionPointCost(type, skill);
+                                    if (RejectInvalidAIDecision(character, dp, aiDecision, rejectedRules)) { moved = false; continue; }
                                     if (dp.CurrentDecisionPoints < costDP)
                                     {
                                         string failMsg = $"[ {character} ] 想要释放 [ {skill.Name} ]，但决策点不足，无法释放技能！";
@@ -1794,6 +1832,7 @@ namespace FunGame.Core.Model.Queue
                                     }
 
                                     int costDP = dp.GetActionPointCost(type, skill);
+                                    if (RejectInvalidAIDecision(character, dp, aiDecision, rejectedRules)) { moved = false; continue; }
                                     if (skill is CourageCommandSkill && dp.CourageCommandSkill)
                                     {
                                         if (IsDebug) WriteLine($"[ {character} ] 想要释放 [ {skill.Name} ]，但该回合已经使用过勇气指令，无法再次使用勇气指令！");
@@ -2048,6 +2087,7 @@ namespace FunGame.Core.Model.Queue
                             }
 
                             int costDP = dp.GetActionPointCost(type);
+                            if (RejectInvalidAIDecision(character, dp, aiDecision, rejectedRules)) { moved = false; continue; }
                             if (dp.CurrentDecisionPoints < costDP)
                             {
                                 string failMsg = $"[ {character} ] 想要使用物品 [ {item.Name} ]，但决策点不足，无法使用物品！";

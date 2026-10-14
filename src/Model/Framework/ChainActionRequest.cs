@@ -17,8 +17,11 @@ namespace FunGame.Core.Model.Framework
         public IReadOnlyList<Character> Targets { get; }
         public IReadOnlyList<Grid> TargetGrids { get; }
 
+        /// <summary>范围方案的合法施法中心，空值表示直接提交影响格。</summary>
+        public Grid? CastCenter { get; }
+
         internal ChainActionRequest(Guid turnId, int round, Character turnActor, Character actor,
-            CharacterActionType actionType, Skill? skill, Item? item, IEnumerable<Character> targets, IEnumerable<Grid> grids)
+            CharacterActionType actionType, Skill? skill, Item? item, IEnumerable<Character> targets, IEnumerable<Grid> grids, Grid? castCenter = null)
         {
             TurnId = turnId;
             Round = round;
@@ -29,6 +32,7 @@ namespace FunGame.Core.Model.Framework
             Item = item;
             Targets = Array.AsReadOnly(targets.Distinct().ToArray());
             TargetGrids = Array.AsReadOnly(grids.Distinct().ToArray());
+            CastCenter = castCenter;
         }
     }
 

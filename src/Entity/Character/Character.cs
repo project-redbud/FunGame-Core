@@ -1,5 +1,6 @@
 using System.Text;
 using FunGame.Core.Api;
+using FunGame.Core.Interface;
 using FunGame.Core.Interface.Base;
 using FunGame.Core.Interface.Entity;
 using FunGame.Core.Library.Constant;
@@ -23,6 +24,17 @@ namespace FunGame.Core.Entity
         /// 游戏中的行动顺序表实例，角色入队/初始化时由 GamingQueue 自动赋值，使用时需要判断其是否存在
         /// </summary>
         public IGamingQueue? GamingQueue { get; set; } = null;
+
+        /// <summary>持久化的决策策略标识。</summary>
+        public string? DecisionTableId
+        {
+            get;
+            set { if (field != value) DecisionPolicy = null; field = value; }
+        }
+
+        /// <summary>由策略目录绑定的运行时策略。</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public IDecisionPolicy? DecisionPolicy { get; internal set; }
 
         /// <summary>
         /// 随机数生成器
@@ -2097,6 +2109,8 @@ namespace FunGame.Core.Entity
                 Id = Id,
                 Name = Name,
                 Guid = Guid,
+                DecisionTableId = DecisionTableId,
+                DecisionPolicy = DecisionPolicy,
                 FirstName = FirstName,
                 NickName = NickName,
                 Profile = Profile.Copy(),
@@ -2213,6 +2227,8 @@ namespace FunGame.Core.Entity
             Items.Clear();
             Id = c.Id;
             Guid = c.Guid;
+            DecisionTableId = c.DecisionTableId;
+            DecisionPolicy = c.DecisionPolicy;
             Name = c.Name;
             FirstName = c.FirstName;
             NickName = c.NickName;

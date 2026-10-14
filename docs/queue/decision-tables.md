@@ -1,0 +1,122 @@
+# 决策表
+
+Core 提供版本 1 的 beforeDecision 有序规则表。配置使用纯 BCL JSON，角色保存策略 ID，运行时通过 DecisionTableLoader 绑定不可变策略。模组明确选择的动作和已有协同确认优先于角色普通决策；EnableAI 关闭时不评估角色策略。
+
+## 构建、导出与加载
+
+```csharp
+DecisionTableConfig config = DecisionTableBuilder.Create("example:healer")
+    .AddRule("heal", rule => rule.Priority(100)
+        .Target(Targets.Allies("patient"))
+        .When(Conditions.All(
+            Conditions.TargetHpRatio("patient", "lessThan", 0.3),
+            Conditions.SkillAvailable(1001)))
+        .Then(Actions.CastSkill(1001, "patient")))
+    .Build();
+
+DecisionTableGenerator.Save(config, "healer.json");
+DecisionTableLoader loader = new(new(skills: [1001]));
+IReadOnlyList<DecisionDiagnostic> errors = loader.Load("healer.json");
+if (errors.Count > 0) throw new InvalidOperationException(string.Join("; ", errors));
+character.DecisionTableId = "example:healer";
+errors = loader.Bind(character);
+```
+
+Build 创建独立配置快照，不编译策略、不绑定角色、不读写文件。Generator.Save 默认拒绝覆盖；overwrite=true 才覆盖。Loader.Register 拒绝重复策略 ID。提供资源标识目录时，Compiler 会验证引用；省略目录时由运行时可用技能与物品列表解析。无法绑定时返回诊断并清除旧绑定。
+
+建议先给角色模板绑定策略，再创建战斗队列。Character.Copy、CharacterBuilder 和模板恢复继承 ID 与可共享策略；JSON 仅保存 ID，反序列化后需要重新 Bind。修改 DecisionTableId 会清除运行时绑定。策略不保存角色、技能实例或可变战斗状态。
+
+## 配置与规则语义
+
+| 字段 | 有效值或含义 |
+| --- | --- |
+| schemaVersion | 1 |
+| id | module:name |
+| fallback | defaultAI 或 endTurn |
+| rules[].priority | 越大越先执行，同级保持配置顺序 |
+| trigger | beforeDecision |
+| target.relation | self、ally（包含自身）、enemy |
+| target.selector | self、lowestHpRatio、highestHpRatio、nearest |
+| target.bind | 规则内的目标绑定名 |
+| action.type | normalAttack、castSkill、useItem、approach、retreat、endTurn |
+| action.skillId / itemId | 从当前角色可用实例解析，不捕获模板实例 |
+| action.target | 已定义的目标绑定 |
+| action.movement | never、ifNeeded、required |
+| action.positionPreference | current、coverage、safe |
+| action.bindPlan | 条件引用的范围方案名称 |
+| action.maxRisk | 位置近似威胁上限，非负有限数 |
+
+从动作合法目标中逐个尝试绑定目标，规划位置与范围后评估条件，返回满足条件的同一方案。无法执行的规则继续匹配后续规则；全部未命中按 fallback 处理。省略 when 表示无条件，但仍要形成合法行动。endTurn 是有效决策，空表 defaultAI 则是未命中，且不消费默认 AI 的随机序列。
+
+current 优先低移动成本；coverage 优先覆盖数，其次移动成本与风险；safe 优先低风险，其次覆盖数和移动成本。目标名称及方案名称的引用会在编译时校验。
+
+动作技能名 castSkill 映射到普通行动的 PreCastSkill 入口；队列根据技能类型执行战技、吟唱魔法或爆发技。协同使用对应的协同动作和预算，禁止移动；协同 endTurn 表示不提交申请。
+
+AI 模式下，行动前的模组选择列表包含可在移动后触及的完整可选角色；角色策略与默认规划按各候选位置检查具体射程。模组筛选及类别概率置零依然限制候选，规则不会绕过这些限制。
+
+## 条件
+
+条件组合是 all、any、not，每个节点只能使用一种形式。空 all 成立，空 any 不成立。叶节点支持：
+
+| type | value / 引用 |
+| --- | --- |
+| self.hpRatio / target.hpRatio | 0 至 1；目标条件引用 target.bind |
+| self.mp / self.ep | 资源值 |
+| self.state | CharacterState 的整数值 |
+| skill.available | skillId；包含资源、状态、DP 与配额检查 |
+| decisionPoints | 当前 DP |
+| target.exists | 已定义的目标绑定 |
+| distance | 已定义的目标绑定；从规划位置计算曼哈顿距离 |
+| plan.targetCount | action.bindPlan；当前方案覆盖的合法角色数量 |
+| plan.risk | action.bindPlan；当前方案位置的威胁值 |
+
+比较方式为 lessThan、atMost、equal、atLeast、greaterThan。distance 与 plan.risk 在无地图模式不匹配；required 移动、approach 和 retreat 在无地图模式不可执行，ifNeeded 技能可以原地规划。
+
+最多 256 条规则，条件树最多 16 层，每个组合最多 64 个子条件。非法数值、未知类型、未定义绑定和无效资源引用返回带配置路径的诊断。Parser 不接受未知 JSON 字段。
+
+## 默认 AI 与估值
+
+通过 queue.AI 配置 SelectionMode：
+
+- Legacy：分数乘类别权重，保留现有随机评分。
+- Deterministic：有界候选规划、稳定估值与排序，不加入随机评分。
+- WeightedNearBest：在 ScoreTolerance 的近似收益集合中，先按调整后的行动类别权重抽样，再按类别内候选收益抽样。技能数量不会直接放大类别权重。
+
+新模式普攻使用现有伤害估值；缺少技能语义时使用目标数量的保守基础值，并调用对应评估事件。EvaluatePlanEvent 可以返回实际伤害、有效治疗等估值，返回 null 使用内置值。回调必须只读；普通多播委托返回最后一个订阅者的值，不能把多次订阅当作自动求和。
+
+新模式对移动步数和威胁扣分；MovementBenefitThreshold 优先保留近似收益的原地行动，RepeatedPositionPenalty 降低返回近期实际位置的偏好。位置记录按控制器和角色对象隔离，不序列化。
+
+Legacy 的既有评估事件可以并行调用，订阅者还需保证线程安全。新模式与有序规则在单次决策内串行评估。
+
+默认预算为每动作 32 个位置、每位置 64 个施法中心、整次决策 4096 个方案。可在自建 DecisionEvaluationContext 中调整预算。当前位置占用位置预算，强制移动除外。单次上下文缓存射程、路径与威胁，不跨局面复用。
+
+规则表与 Deterministic、WeightedNearBest 使用目标驱动的施法规划：
+
+- 全图指向性技能复用合法目标与目标组合，安全站位独立评估；即时魔法默认使用 current，实际吟唱时间大于零的魔法默认使用 safe。
+- 基础圆形、菱形和正方形技能从敌方、友方或自身位置反推可覆盖它的落点，合并去重后按站位的施法射程过滤。敌人之间的空地也属于候选，有限射程允许效果覆盖施法距离之外的角色。
+- 若当前站位已能触及全部指向性目标或全部范围落点，且不要求安全位置、风险限制或强制移动，则只规划当前站位。规则包含 distance 或自定义条件时保留位置搜索。
+- 与施法者位置无关的基础范围投影按中心缓存。基础指向性技能复用目标筛选，再按有限射程筛选角色；基础地图用坐标距离校验射程，自定义地图仍调用自己的射程查询。
+
+直线、贯穿线、扇形、自定义范围/目标查询和允许空地施法的技能保留完整落点查询。预算截断仍属于近似搜索，不保证任意局面的最优覆盖。Legacy 保留既有候选与随机评分方式。
+
+## 地图扩展与执行
+
+GetMovementCosts 一次查询所有连通格的路径成本，GetMovementSteps 查询其中一个目标。基础实现沿用八方向搜索；候选 MOV 仍使用现有曼哈顿范围。派生地图应覆盖 GetMovementCosts，并让它与 CharacterMove 使用相同规则。一次决策中，同一角色和起点只计算一份路径成本表。
+
+技能通过 SelectNonDirectionalTargetsFrom 提供显式假设施法起点；SelectTargetsByRangeFrom 使施法者按假设位置参与覆盖判定。自定义线形或范围技能应同时实现假设位置查询。规划器不会临时移动角色来测量范围。
+
+AIDecision.CastCenter 表示选择中心/方向，TargetGrids 表示影响格。协同提交可传 castCenter，队列验证中心射程后重算影响格；直接提交格子的现有接口仍按直接格子契约验证。
+
+行动在移动前、动作开始后及询问后重验，失效规则在当前行动尝试中跳过，沿用队列的有限重试。已经成功的移动不回滚，后续规划从真实位置执行。
+
+风险是能在现有移动与射程内威胁该格的敌人数量。它不预测隐藏效果、敌方策略、控制成功率或队友保护，也不保证吟唱绝对安全。
+
+## 扩展与诊断
+
+DecisionTableRegistry.RegisterCondition 与 RegisterAction 接收只读求值器/规划器。扩展配置仅保存标识和 JSON 参数；AddRule 的 lambda 只在构建时执行，不导出任意 C# 委托。编译器会复制配置和注册表。
+
+宿主也可以实现 IDecisionPolicy，通过 Loader.Register(id, policy) 注册代码策略，再按 ID 绑定角色。代码策略不能导出为独立 JSON 规则；实现者负责隔离自身的角色与战斗状态。
+
+AIController.LastPolicyResult、LastMetrics 提供最近一次结果；PolicyEvaluatedEvent 提供每次策略评估，包括协同申请。LastMetrics 包含位置/方案次数、按位置累计的 CentersGenerated、实际完整范围计算次数 CentersEvaluated 与耗时；缓存命中不会增加 CentersEvaluated。采集者应即时保存所需值，不能只依赖战斗结束时的最后一次结果。
+
+完整五规则 BOSS 配置及空表位于 `tests/FunGame.Core.Tests.Queue/Fixtures/`，链式构建示例和固定技能效果位于 BossBattleFixture。测试覆盖规则专项实际执行、地图/非地图完整战斗、固定 20 种子对照、配置往返、预算与状态限制、目标绑定、概率类别分布和假设位置范围。

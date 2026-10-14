@@ -17,6 +17,9 @@ namespace FunGame.Core.Library.Common.JsonConverter
         {
             switch (propertyName)
             {
+                case nameof(Character.DecisionTableId):
+                    result.DecisionTableId = reader.GetString();
+                    break;
                 case nameof(Character.Id):
                     result.Id = reader.GetInt64();
                     break;
@@ -258,6 +261,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
             writer.WritePropertyName(nameof(Character.Guid));
             JsonSerializer.Serialize(writer, value.Guid, options);
             writer.WriteString(nameof(Character.Name), value.Name);
+            if (value.DecisionTableId != null) writer.WriteString(nameof(Character.DecisionTableId), value.DecisionTableId);
             writer.WriteString(nameof(Character.FirstName), value.FirstName);
             writer.WriteString(nameof(Character.NickName), value.NickName);
             writer.WritePropertyName(nameof(Character.Profile));
