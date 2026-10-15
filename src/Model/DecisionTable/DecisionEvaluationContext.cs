@@ -8,7 +8,7 @@ using FunGame.Core.Model.Queue;
 namespace FunGame.Core.Model.DecisionTable
 {
     /// <summary>一次决策使用的局面；评估期间不得修改战斗状态。</summary>
-    public sealed class DecisionEvaluationContext
+    public sealed partial class DecisionEvaluationContext
     {
         /// <summary>所属队列。</summary>
         public required GamingQueue Queue { get; init; }
@@ -44,18 +44,21 @@ namespace FunGame.Core.Model.DecisionTable
         public int PositionBudget { get; init; } = 32;
         /// <summary>每个位置的施法中心预算。</summary>
         public int CenterBudget { get; init; } = 64;
-        /// <summary>整次决策最多保留的行动方案数。</summary>
+        /// <summary>当前规划范围的方案上限；策略与默认 AI 分阶段独立使用。</summary>
         public int PlanBudget { get; init; } = 4096;
         /// <summary>当前行动尝试中已经执行失败的规则。</summary>
         public IReadOnlySet<string> RejectedRules { get; init; } = new HashSet<string>();
         /// <summary>当前角色近期实际离开的格子，用于降低往返移动偏好。</summary>
         public IReadOnlyList<int> RecentPositions { get; init; } = [];
         /// <summary>评估统计。</summary>
-        public DecisionMetrics Metrics { get; } = new();
-        internal Dictionary<(int Origin, int Range, bool Include), List<Grid>> RangeCache { get; } = [];
-        internal Dictionary<(Character Actor, int Origin), IReadOnlyDictionary<Grid, int>> MovementCache { get; } = [];
-        internal Dictionary<Character, HashSet<Grid>> ThreatCache { get; } = [];
-        internal Dictionary<(string? Relation, int Grid), int> TargetDistanceCache { get; } = [];
+        public DecisionMetrics Metrics { get; private init; } = new();
+        internal Dictionary<(int Origin, int Range, bool Include), List<Grid>> RangeCache { get; private init; } = [];
+        internal Dictionary<(Character Actor, int Origin), IReadOnlyDictionary<Grid, int>> MovementCache { get; private init; } = [];
+        internal Dictionary<Character, HashSet<Grid>> ThreatCache { get; private init; } = [];
+        internal Dictionary<(string? Relation, int Grid), int> TargetDistanceCache { get; private init; } = [];
+
+        internal List<DecisionDiagnostic> PlanningDiagnostics { get; private init; } = [];
+        internal Dictionary<Grid, double> RiskCache { get; private init; } = [];
 
         internal List<Grid> GetRange(Grid origin, int range, bool include)
         {
@@ -114,13 +117,27 @@ namespace FunGame.Core.Model.DecisionTable
         public int PositionsGenerated { get; internal set; }
         /// <summary>完整评估的位置次数。</summary>
         public int PositionsEvaluated { get; internal set; }
-        /// <summary>完整评估的行动方案数。</summary>
+        /// <summary>已生成并保留的候选方案数，不含常量结束回合。</summary>
         public int PlansEvaluated { get; internal set; }
+        /// <summary>策略阶段保留的方案数。</summary>
+        public int PolicyPlansEvaluated { get; internal set; }
+        /// <summary>默认 AI 阶段保留的方案数。</summary>
+        public int DefaultAIPlansEvaluated { get; internal set; }
+        /// <summary>因位置、中心或方案上限截断的预算范围数，每个范围至多计一次。</summary>
+        public int BudgetTruncations { get; internal set; }
+        /// <summary>因没有方案额度而跳过规划的次数。</summary>
+        public int BudgetExhaustions { get; internal set; }
+        /// <summary>实际计算位置风险的次数。</summary>
+        public int RiskEvaluations { get; internal set; }
+        /// <summary>命中位置风险缓存的次数。</summary>
+        public int RiskCacheHits { get; internal set; }
         /// <summary>生成的施法中心候选数量，按位置累计。</summary>
         public int CentersGenerated { get; internal set; }
         /// <summary>完整投影并检查覆盖的施法中心次数。</summary>
         public int CentersEvaluated { get; internal set; }
         /// <summary>决策耗时。</summary>
         public TimeSpan Elapsed { get; internal set; }
+
+        internal DecisionMetrics Snapshot() => (DecisionMetrics)MemberwiseClone();
     }
 }

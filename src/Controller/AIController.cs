@@ -40,10 +40,13 @@ namespace FunGame.Core.Controller
         /// <summary>最近一次角色规则匹配结果。</summary>
         public DecisionEvaluationResult? LastPolicyResult { get; private set; }
 
-        /// <summary>最近一次规则规划统计。</summary>
+        /// <summary>最近一次完整决策的汇总统计。</summary>
         public DecisionMetrics? LastMetrics { get; private set; }
 
-        /// <summary>每次角色策略评估后提供角色、匹配结果及计数。</summary>
+        /// <summary>最近一次完整决策的规则与默认规划诊断。</summary>
+        public IReadOnlyList<DecisionDiagnostic> LastPlanningDiagnostics { get; private set; } = [];
+
+        /// <summary>每次策略评估后提供结果及独立统计快照。</summary>
         public event Action<Character, DecisionEvaluationResult, DecisionMetrics>? PolicyEvaluatedEvent;
 
         /// <summary>
@@ -116,10 +119,13 @@ namespace FunGame.Core.Controller
                 RejectedRules = rejectedRules ?? new HashSet<string>(), RecentPositions = GetRecentPositions(character, isChainAction)
             };
             long started = System.Diagnostics.Stopwatch.GetTimestamp();
+            int policyStart = context.Metrics.PlansEvaluated;
             LastPolicyResult = character.DecisionPolicy?.Evaluate(context);
+            context.Metrics.PolicyPlansEvaluated = context.Metrics.PlansEvaluated - policyStart;
+            LastPlanningDiagnostics = LastPolicyResult?.Diagnostics.ToArray() ?? [];
             LastMetrics = context.Metrics;
             LastMetrics.Elapsed = System.Diagnostics.Stopwatch.GetElapsedTime(started);
-            if (LastPolicyResult != null) PolicyEvaluatedEvent?.Invoke(character, LastPolicyResult, LastMetrics);
+            if (LastPolicyResult != null) PolicyEvaluatedEvent?.Invoke(character, LastPolicyResult, LastMetrics.Snapshot());
             if (LastPolicyResult?.Decision is AIDecision policyDecision)
             {
                 policyDecision.HasCandidate = true;
@@ -128,7 +134,8 @@ namespace FunGame.Core.Controller
             }
             if (SelectionMode != AISelectionMode.Legacy)
             {
-                AIDecision planned = DecidePlannedAction(context, pUseItem, pCastSkill, pNormalAttack);
+                AIDecision planned = DecidePlannedAction(context.CreateScope(context.PlanBudget, DecisionPlanningStage.DefaultAI), pUseItem, pCastSkill, pNormalAttack);
+                LastPlanningDiagnostics = [.. LastPlanningDiagnostics, .. context.PlanningDiagnostics];
                 LastMetrics.Elapsed = System.Diagnostics.Stopwatch.GetElapsedTime(started);
                 return planned;
             }
@@ -154,8 +161,8 @@ namespace FunGame.Core.Controller
                 List<Grid> enemyGrids = [.. allEnemysInGame.Select(_map.GetCharacterCurrentGrid).OfType<Grid>()];
                 moveGrids = [.. moveGrids.OrderBy(g => ReferenceEquals(g, currentGrid) ? -1 : (enemyGrids.Count == 0 ? 0 : enemyGrids.Min(eg => GameMap.CalculateManhattanDistance(g, eg)))).Take(maxEvaluatedMoveGrids)];
             }
-            LastMetrics.PositionsGenerated = allPossibleMoveGrids.Count;
-            LastMetrics.PositionsEvaluated = moveGrids.Count;
+            LastMetrics.PositionsGenerated += allPossibleMoveGrids.Count;
+            LastMetrics.PositionsEvaluated += moveGrids.Count;
 
             // 控制最大并发数
             int maxConcurrency = Math.Max(1, Environment.ProcessorCount / 2);
@@ -241,7 +248,8 @@ namespace FunGame.Core.Controller
                 bestDecision.RequiresValidation = true;
             }
 
-            LastMetrics.PlansEvaluated = candidateDecisions.Count;
+            LastMetrics.PlansEvaluated += candidateDecisions.Count;
+            LastMetrics.DefaultAIPlansEvaluated += candidateDecisions.Count;
             LastMetrics.Elapsed = System.Diagnostics.Stopwatch.GetElapsedTime(started);
             return bestDecision;
         }

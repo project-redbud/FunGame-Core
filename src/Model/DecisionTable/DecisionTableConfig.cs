@@ -94,5 +94,9 @@ namespace FunGame.Core.Model.DecisionTable
     /// <summary>定位配置错误或规则执行结果。</summary>
     /// <param name="Path">配置路径或规则标识。</param>
     /// <param name="Message">简洁原因。</param>
-    public sealed record DecisionDiagnostic(string Path, string Message);
+    public sealed record DecisionDiagnostic(string Path, string Message)
+    {
+        /// <summary>机器可读的运行诊断代码；未分类的配置诊断为空。</summary>
+        public string Code { get; init; } = "";
+    }
 }

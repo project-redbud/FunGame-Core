@@ -86,11 +86,17 @@ AI 模式下，行动前的模组选择列表包含可在移动后触及的完�
 
 新模式普攻使用现有伤害估值；缺少技能语义时使用目标数量的保守基础值，并调用对应评估事件。EvaluatePlanEvent 可以返回实际伤害、有效治疗等估值，返回 null 使用内置值。回调必须只读；普通多播委托返回最后一个订阅者的值，不能把多次订阅当作自动求和。
 
-新模式对移动步数和威胁扣分；MovementBenefitThreshold 优先保留近似收益的原地行动，RepeatedPositionPenalty 降低返回近期实际位置的偏好。位置记录按控制器和角色对象隔离，不序列化。
+新模式的普攻、物品、即时技能及吟唱技能都使用实际位置风险扣分，保留移动步数成本；MovementBenefitThreshold 优先保留近似收益的原地行动，RepeatedPositionPenalty 降低返回近期实际位置的偏好。位置记录按控制器和角色对象隔离，不序列化。
 
 Legacy 的既有评估事件可以并行调用，订阅者还需保证线程安全。新模式与有序规则在单次决策内串行评估。
 
-默认预算为每动作 32 个位置、每位置 64 个施法中心、整次决策 4096 个方案。可在自建 DecisionEvaluationContext 中调整预算。当前位置占用位置预算，强制移动除外。单次上下文缓存射程、路径与威胁，不跨局面复用。
+默认预算为每动作 32 个位置、每位置 64 个施法中心；策略阶段和新模式默认 AI 阶段各有 4096 个方案额度。可在自建 DecisionEvaluationContext 中调整预算。当前位置占用位置预算，强制移动除外。单次决策缓存射程、路径、敌方威胁与位置风险，规则及回退共享只读查询缓存，预算分别结算；缓存不跨局面复用。
+
+规则先按优先级降序、同级配置顺序排好。禁用、执行重验失败或可由内置条件预判为 false 的规则不占额度；预判不会执行自定义条件，目标与方案条件留到规划后检查。记剩余方案额度为 R、待规划规则数为 N，本条最多使用 `ceil(R / N)` 个方案；未用额度留给后续规则，命中立即返回。若总额度少于待规划规则数，按原优先级截断，后序规则可能没有规划机会。endTurn 不消耗搜索额度，但仍判断其条件。
+
+策略未命中时，defaultAI 使用独立完整阶段额度。新模式的普攻、可用技能和物品同样分配本阶段额度；地图普通行动在总额至少为 2 时预留一个纯移动兜底方案。Legacy 保留既有候选和随机评分算法，不使用新模式的动作额度分配。策略与新模式回退合计至多使用两阶段额度，位置和中心预算分别约束各次动作规划。
+
+自定义动作通过传入上下文读取本条 PlanBudget；框架截断超额返回，内置规划器与外层包装按同一方案实例去重计费。扩展回调自身计算的耗时不受候选数量上限保证。预算与观测计数独立，PlansEvaluated 表示已生成并保留的方案数，不包含常量 endTurn。
 
 规则表与 Deterministic、WeightedNearBest 使用目标驱动的施法规划：
 
@@ -111,7 +117,7 @@ AIDecision.CastCenter 表示选择中心/方向，TargetGrids 表示影响格。
 
 行动在移动前、动作开始后及询问后重验，失效规则在当前行动尝试中跳过，沿用队列的有限重试。已经成功的移动不回滚，后续规划从真实位置执行。
 
-风险是能在现有移动与射程内威胁该格的敌人数量。它不预测隐藏效果、敌方策略、控制成功率或队友保护，也不保证吟唱绝对安全。
+内置方案在 current、coverage、safe 下均计算实际位置风险；求值风险本身不额外启动站位搜索。风险是能在现有移动与射程内威胁该格的敌人数量。它不预测隐藏效果、敌方策略、控制成功率或队友保护，也不保证吟唱绝对安全。
 
 ## 扩展与诊断
 
@@ -119,6 +125,10 @@ DecisionTableRegistry.RegisterCondition 与 RegisterAction 接收只读求值器
 
 宿主也可以实现 IDecisionPolicy，通过 Loader.Register(id, policy) 注册代码策略，再按 ID 绑定角色。代码策略不能导出为独立 JSON 规则；实现者负责隔离自身的角色与战斗状态。
 
-AIController.LastPolicyResult、LastMetrics 提供最近一次结果；PolicyEvaluatedEvent 提供每次策略评估，包括协同申请。LastMetrics 包含位置/方案次数、按位置累计的 CentersGenerated、实际完整范围计算次数 CentersEvaluated 与耗时；缓存命中不会增加 CentersEvaluated。采集者应即时保存所需值，不能只依赖战斗结束时的最后一次结果。
+AIController.LastPolicyResult 提供最近一次策略结果，LastPlanningDiagnostics 汇总策略与默认 AI 的规划诊断。DecisionDiagnostic.Code 区分 budget.exhausted（没有方案额度）、budget.truncated（搜索候选被截断）、plan.unavailable、condition.unmatched、execution.rejected 和 plan.invalid；未分类的配置诊断代码为空。条件未匹配且伴随截断诊断，只说明已检查候选未命中。
 
-完整五规则 BOSS 配置及空表位于 `tests/FunGame.Core.Tests.Queue/Fixtures/`，链式构建示例和固定技能效果位于 BossBattleFixture。测试覆盖规则专项实际执行、地图/非地图完整战斗、固定 20 种子对照、配置往返、预算与状态限制、目标绑定、概率类别分布和假设位置范围。
+PolicyEvaluatedEvent 在每次策略评估完成时提供该时刻的独立统计快照，包括协同申请；后续默认 AI 不改写此快照。LastMetrics 在完整决策结束后包含两阶段的汇总次数与耗时，PolicyPlansEvaluated / DefaultAIPlansEvaluated 分别计数。BudgetTruncations 按被截断的预算范围计数，BudgetExhaustions 记录因无额度跳过规划的次数。RiskEvaluations 记录实际风险计算，RiskCacheHits 记录位置风险缓存命中。
+
+CentersGenerated 按位置累计候选，CentersEvaluated 只统计实际完整范围计算；投影缓存命中不增加 CentersEvaluated。各次决策的计数不跨局面累积，采集者不能只依赖战斗结束时的最后一次结果。
+
+完整五规则 BOSS 配置及空表位于 `tests/FunGame.Core.Tests.Queue/Fixtures/`，链式构建示例和固定技能效果位于 BossBattleFixture。风险与预算专项回归见 DecisionRiskBudgetTests，覆盖嵌套条件、阶段隔离、扩展去重计费与移动预留。测试覆盖规则专项实际执行、地图/非地图完整战斗、固定 20 种子对照、配置往返、预算与状态限制、目标绑定、概率类别分布和假设位置范围。

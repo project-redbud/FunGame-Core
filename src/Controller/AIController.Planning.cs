@@ -43,16 +43,25 @@ namespace FunGame.Core.Controller
             if (!Enum.IsDefined(SelectionMode) || !double.IsFinite(ScoreTolerance) || ScoreTolerance < 0 || !double.IsFinite(MovementBenefitThreshold) || MovementBenefitThreshold < 0 ||
                 !double.IsFinite(RepeatedPositionPenalty) || RepeatedPositionPenalty < 0)
                 throw new InvalidOperationException("评分阈值必须是非负有限数。");
-            List<DecisionPlan> plans = [];
-            if (context.AllowAttack) plans.AddRange(DecisionActionPlanner.Plan(context, ActionsConfig("normalAttack"), null));
-            if (context.AllowSkill)
-                foreach (Skill skill in context.Skills) plans.AddRange(DecisionActionPlanner.Plan(context, new()
+            List<ActionConfig> actions = [];
+            if (DecisionActionPlanner.CanUse(context, "normalAttack")) actions.Add(ActionsConfig("normalAttack"));
+            foreach (Skill skill in context.Skills)
+                if (DecisionActionPlanner.CanUse(context, "castSkill", skill)) actions.Add(new()
                 {
                     Type = "castSkill", SkillId = skill.Id, PositionPreference = skill.IsMagic && skill.RealCastTime > 0 ? "safe" : "current",
                     Movement = !skill.IsMagic && skill.CanSelectSelf && !skill.CanSelectEnemy && !skill.CanSelectTeammate ? "never" : "ifNeeded"
-                }, null));
-            if (context.AllowItem)
-                foreach (Item item in context.Items) plans.AddRange(DecisionActionPlanner.Plan(context, new() { Type = "useItem", ItemId = item.Id }, null));
+                });
+            foreach (Item item in context.Items)
+                if (DecisionActionPlanner.CanUse(context, "useItem", item: item)) actions.Add(new() { Type = "useItem", ItemId = item.Id });
+            List<DecisionPlan> plans = [];
+            int reserve = context.RemainingPlans > 1 && !context.IsChainAction && _map != null ? 1 : 0;
+            int remainingActions = actions.Count;
+            foreach (ActionConfig action in actions)
+            {
+                int quota = DecisionEvaluationContext.AllocatePlans(context.RemainingPlans - reserve, remainingActions--);
+                plans.AddRange(PlanDefaultAction(context, action, quota));
+            }
+
             foreach (DecisionPlan plan in plans)
             {
                 AIDecision decision = plan.Decision;
@@ -68,7 +77,7 @@ namespace FunGame.Core.Controller
                 s.Decision.Score + MovementBenefitThreshold >= p.Decision.Score))];
             if (plans.Count == 0)
             {
-                IReadOnlyList<DecisionPlan> moves = DecisionActionPlanner.Plan(context, new() { Type = "approach", Movement = "required" }, TargetsConfig());
+                IReadOnlyList<DecisionPlan> moves = PlanDefaultAction(context, new() { Type = "approach", Movement = "required" }, context.RemainingPlans, TargetsConfig());
                 return moves.OrderBy(p => GameMap.CalculateManhattanDistance(p.Decision.TargetMoveGrid!, _map!.GetCharacterCurrentGrid(p.Target!)!))
                     .ThenBy(p => p.MoveSteps).ThenBy(p => p.Decision.TargetMoveGrid!.Id).FirstOrDefault()?.Decision ?? CreateDefaultDecision(context.TurnOrigin);
             }
@@ -100,6 +109,23 @@ namespace FunGame.Core.Controller
                 if (draw <= 0) return plan.Decision;
             }
             return chosen.Last().Decision;
+        }
+
+        private static IReadOnlyList<DecisionPlan> PlanDefaultAction(DecisionEvaluationContext context, ActionConfig action, int quota, TargetSelectorConfig? selector = null)
+        {
+            string path = $"defaultAI.{action.Type}";
+            if ((action.SkillId ?? action.ItemId) is long) path += $"[{action.SkillId ?? action.ItemId}]";
+            if (quota == 0)
+            {
+                context.MarkExhausted();
+                context.PlanningDiagnostics.Add(new(path, "默认 AI 方案预算已耗尽。") { Code = "budget.exhausted" });
+                return [];
+            }
+            DecisionEvaluationContext scope = context.CreateScope(quota, DecisionPlanningStage.DefaultAI);
+            IReadOnlyList<DecisionPlan> plans = DecisionActionPlanner.Plan(scope, action, selector);
+            context.ChargeScope(scope);
+            if (scope.IsTruncated) context.PlanningDiagnostics.Add(new(path, "默认 AI 搜索达到预算上限，仅评估部分候选。") { Code = "budget.truncated" });
+            return plans;
         }
 
         private static ActionConfig ActionsConfig(string type) => new() { Type = type };

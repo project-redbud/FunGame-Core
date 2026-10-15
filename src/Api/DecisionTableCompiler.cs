@@ -22,7 +22,7 @@ namespace FunGame.Core.Api
         }
         /// <summary>注册动作，不覆盖已有标识。</summary>
         /// <param name="id">动作标识。</param>
-        /// <param name="plan">只读规划器。</param>
+        /// <param name="plan">只读规划器；上下文携带本条方案额度，返回集合受该额度限制。</param>
         public void RegisterAction(string id, Func<DecisionEvaluationContext, ActionConfig, TargetSelectorConfig?, IReadOnlyList<DecisionPlan>> plan)
         {
             if (string.IsNullOrWhiteSpace(id) || !id.Contains(':')) throw new ArgumentException("扩展标识需要 module:name。", nameof(id));
@@ -32,7 +32,7 @@ namespace FunGame.Core.Api
     }
 
     /// <summary>配置校验与不可变策略编译。</summary>
-    public sealed class DecisionTableCompiler
+    public sealed partial class DecisionTableCompiler
     {
         private static readonly HashSet<string> ActionTypes = ["normalAttack", "castSkill", "useItem", "approach", "retreat", "endTurn"];
         private static readonly HashSet<string> ConditionTypes = ["self.hpRatio", "target.hpRatio", "self.mp", "self.ep", "self.state", "skill.available", "decisionPoints", "target.exists", "distance", "plan.targetCount", "plan.risk"];
@@ -133,7 +133,7 @@ namespace FunGame.Core.Api
             return new CompiledPolicy(DecisionTableParser.Parse(DecisionTableGenerator.GetJson(config)), _registry);
         }
 
-        private sealed class CompiledPolicy : IDecisionPolicy
+        private sealed partial class CompiledPolicy : IDecisionPolicy
         {
             private readonly DecisionTableConfig _config;
             private readonly Dictionary<string, Func<DecisionEvaluationContext, ConditionConfig, DecisionPlan, bool>> _conditions;
@@ -143,30 +143,6 @@ namespace FunGame.Core.Api
                 _config = config;
                 _conditions = new(registry.Conditions);
                 _actions = new(registry.Actions);
-            }
-
-            public DecisionEvaluationResult Evaluate(DecisionEvaluationContext context)
-            {
-                List<DecisionDiagnostic> diagnostics = [];
-                foreach (DecisionRuleConfig rule in _config.Rules.Where(r => r.Enabled).OrderByDescending(r => r.Priority))
-                {
-                    if (context.RejectedRules.Contains(rule.Id)) { diagnostics.Add(new(rule.Id, "当前尝试中执行重验失败。")); continue; }
-                    IReadOnlyList<DecisionPlan> plans = _actions.TryGetValue(rule.Action.Type, out Func<DecisionEvaluationContext, ActionConfig, TargetSelectorConfig?, IReadOnlyList<DecisionPlan>>? custom)
-                        ? custom(context, rule.Action, rule.Target) : DecisionActionPlanner.PlanForRule(context, rule.Action, rule.Target, RequiresPositions(rule.When));
-                    IEnumerable<DecisionPlan> eligible = plans.Where(p => EvaluateCondition(context, rule.When, p));
-                    IOrderedEnumerable<DecisionPlan> ordered = rule.Action.PositionPreference switch
-                    {
-                        "safe" => eligible.OrderBy(p => p.Risk).ThenByDescending(p => p.TargetCount).ThenBy(p => p.MoveSteps),
-                        "coverage" => eligible.OrderByDescending(p => p.TargetCount).ThenBy(p => p.MoveSteps).ThenBy(p => p.Risk),
-                        _ => eligible.OrderBy(p => p.MoveSteps).ThenBy(p => p.Risk)
-                    };
-                    DecisionPlan? selected = ordered.FirstOrDefault();
-                    if (selected == null) { diagnostics.Add(new(rule.Id, plans.Count == 0 ? "无法规划合法行动。" : "条件不匹配。")); continue; }
-                    if (selected.Decision.ActionType == Library.Constant.CharacterActionType.None) { diagnostics.Add(new(rule.Id, "规划器未提供有效动作。")); continue; }
-                    selected.Decision.RuleId = rule.Id;
-                    return new(selected.Decision, rule.Id, diagnostics);
-                }
-                return _config.Fallback == "endTurn" ? new(new() { ActionType = Library.Constant.CharacterActionType.EndTurn, HasCandidate = true }, null, diagnostics) : new(null, null, diagnostics);
             }
 
             private bool RequiresPositions(ConditionConfig? condition) => condition != null &&
