@@ -74,7 +74,7 @@ AI 模式下，行动前的模组选择列表包含可在移动后触及的完�
 
 比较方式为 lessThan、atMost、equal、atLeast、greaterThan。distance 与 plan.risk 在无地图模式不匹配；required 移动、approach 和 retreat 在无地图模式不可执行，ifNeeded 技能可以原地规划。
 
-最多 256 条规则，条件树最多 16 层，每个组合最多 64 个子条件。非法数值、未知类型、未定义绑定和无效资源引用返回带配置路径的诊断。Parser 不接受未知 JSON 字段。
+规则列表不可为 null，允许空表，最多 256 条规则。条件根节点深度为 0，最多嵌套 16 级，每个 all / any 组合最多 64 个直接子条件。非法数值、未知类型、未定义绑定和无效资源引用返回带配置路径的诊断。Parser 不接受未知 JSON 字段，JSON 最大深度为 64；它限制 JSON 对象与数组的嵌套，与条件树深度独立，扩展 parameters 中的 JSON 也受此限制。
 
 ## 默认 AI 与估值
 
@@ -126,6 +126,8 @@ AIDecision.CastCenter 表示选择中心/方向，TargetGrids 表示影响格。
 ## 扩展与诊断
 
 DecisionTableRegistry.RegisterCondition 与 RegisterAction 接收只读求值器/规划器。扩展配置仅保存标识和 JSON 参数；AddRule 的 lambda 只在构建时执行，不导出任意 C# 委托。编译器会复制配置和注册表。
+
+Registry 的重复扩展注册抛出 ArgumentException，已有扩展保持；Loader 的重复策略标识返回 id 诊断，保留已有策略。Loader.Load 将文件路径格式、读取权限、I/O 和 JSON 格式错误转换为诊断；文件读取之外的编程异常继续抛出。
 
 宿主也可以实现 IDecisionPolicy，通过 Loader.Register(id, policy) 注册代码策略，再按 ID 绑定角色。代码策略不能导出为独立 JSON 规则；实现者负责隔离自身的角色与战斗状态。
 

@@ -16,7 +16,7 @@ namespace FunGame.Core.Api
             MaxDepth = 64
         };
 
-        /// <summary>解析配置，格式错误抛出 JsonException。</summary>
+        /// <summary>解析配置，JSON 最大深度为 64；格式错误抛出 JsonException。</summary>
         /// <param name="json">配置 JSON。</param>
         /// <returns>配置对象。</returns>
         public static DecisionTableConfig Parse(string json) => JsonSerializer.Deserialize<DecisionTableConfig>(json, Options) ?? throw new JsonException("决策表不能为空。");

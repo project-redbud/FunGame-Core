@@ -11,7 +11,7 @@ namespace FunGame.Core.Model.DecisionTable
         public string Id { get; set; } = "";
         /// <summary>未命中时使用 defaultAI 或 endTurn。</summary>
         public string Fallback { get; set; } = "defaultAI";
-        /// <summary>同优先级按配置顺序匹配的规则。</summary>
+        /// <summary>同优先级按配置顺序匹配的规则；不可为 null，允许空表，最多 256 条。</summary>
         public List<DecisionRuleConfig> Rules { get; set; } = [];
     }
 
@@ -28,7 +28,7 @@ namespace FunGame.Core.Model.DecisionTable
         public string Trigger { get; set; } = "beforeDecision";
         /// <summary>目标筛选、排序与绑定。</summary>
         public TargetSelectorConfig? Target { get; set; }
-        /// <summary>省略时无条件匹配。</summary>
+        /// <summary>省略时无条件匹配；根节点深度为 0，最多嵌套 16 级。</summary>
         public ConditionConfig? When { get; set; }
         /// <summary>执行意图。</summary>
         public ActionConfig Action { get; set; } = new();
