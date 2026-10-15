@@ -281,12 +281,13 @@ namespace FunGame.Core.Controller
             // 计算普通攻击决策
             if (normalizedPNormalAttack > 0 && CanCharacterNormalAttack(character, dp))
             {
-                List<Grid> normalAttackReachableGrids = GetReachableGrids(potentialMoveGrid, character.ATR, true);
+                List<Grid> normalAttackReachableGrids = GetReachableGrids(potentialMoveGrid, character.NormalAttack.AttackRange, true);
                 List<Character> normalAttackReachableEnemys = FilterReachableEnemies(normalAttackReachableGrids, allEnemysInGame, selectableEnemys);
 
-                if (normalAttackReachableEnemys.Count > 0)
+                List<Character> normalAttackReachableTeammates = FilterReachableEnemies(normalAttackReachableGrids, allTeammatesInGame, selectableTeammates);
+                if (normalAttackReachableEnemys.Count > 0 || normalAttackReachableTeammates.Count > 0 || character.NormalAttack.CanSelectSelf)
                 {
-                    List<Character> targets = SelectTargets(character, character.NormalAttack, allEnemysInGame, allTeammatesInGame, normalAttackReachableEnemys, [], random);
+                    List<Character> targets = SelectTargets(character, character.NormalAttack, allEnemysInGame, allTeammatesInGame, normalAttackReachableEnemys, normalAttackReachableTeammates, random);
                     if (targets.Count > 0)
                     {
                         double currentScore = EvaluateNormalAttack(character, targets) - movePenalty;
@@ -443,7 +444,7 @@ namespace FunGame.Core.Controller
             {
                 double pureMoveScore = -movePenalty;
 
-                List<Grid> tempAttackGridsForPureMove = _map.GetGridsByRange(potentialMoveGrid, character.ATR, true);
+                List<Grid> tempAttackGridsForPureMove = _map.GetGridsByRange(potentialMoveGrid, character.NormalAttack.AttackRange, true);
                 List<Grid> tempCastGridsForPureMove = [];
                 foreach (Skill skill in availableSkills)
                 {
@@ -610,6 +611,7 @@ namespace FunGame.Core.Controller
         {
             List<Character> targets = skill.GetSelectableTargets(character, allEnemys, allTeammates, enemys, teammates);
             if (character.CharacterState == CharacterState.BattleRestricted) targets = [.. targets.Where(c => c == character)];
+            if (skill.SelectAllEnemies || skill.SelectAllTeammates) return [.. targets.OrderBy(c => c.Guid)];
             int count = skill.RealCanSelectTargetCount(enemys, teammates);
             // 随机值相同时以 Guid 兜底，保证排序结果确定
             return [.. targets.OrderBy(o => random.Next()).ThenBy(o => o.Guid).Take(count)];

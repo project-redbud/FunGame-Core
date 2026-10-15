@@ -198,7 +198,7 @@ namespace FunGame.Core.Model.Queue
             {
                 Grid? origin = _map.GetCharacterCurrentGrid(actor);
                 if (origin is null) return "协作方不在地图上。";
-                range = _map.GetGridsByRange(origin, request.ActionType == CharacterActionType.NormalAttack ? actor.ATR : request.Skill!.CastRange, true);
+                range = _map.GetGridsByRange(origin, request.ActionType == CharacterActionType.NormalAttack ? actor.NormalAttack.AttackRange : request.Skill!.CastRange, true);
                 selectableEnemies = [.. selectableEnemies.Where(range.SelectMany(g => g.Characters).Contains)];
                 selectableTeammates = [.. selectableTeammates.Where(range.SelectMany(g => g.Characters).Contains)];
             }
@@ -220,8 +220,10 @@ namespace FunGame.Core.Model.Queue
             {
                 List<Character> selectable = action.GetSelectableTargets(actor, enemies, teammates, selectableEnemies, selectableTeammates);
                 targets = [.. request.Targets];
+                if ((action.SelectAllEnemies || action.SelectAllTeammates) && (targets.Distinct().Count() != targets.Count || !selectable.ToHashSet().SetEquals(targets)))
+                    return "全选目标集合已失效。";
                 if (request.TargetGrids.Count > 0 || targets.Count == 0 || targets.Any(t => !selectable.Contains(t)) ||
-                    targets.Count > action.RealCanSelectTargetCount(selectableEnemies, selectableTeammates)) return "目标失效、数量不合法或超出射程。";
+                    !(action.SelectAllEnemies || action.SelectAllTeammates) && targets.Count > action.RealCanSelectTargetCount(selectableEnemies, selectableTeammates)) return "目标失效、数量不合法或超出射程。";
                 if (request.Skill is Skill directional && directional.CanSelectTargetRange > 0)
                     targets = directional.SelectTargetsByCanSelectTargetRange(actor, enemies, teammates, targets);
             }

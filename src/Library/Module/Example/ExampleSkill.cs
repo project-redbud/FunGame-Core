@@ -21,7 +21,6 @@ namespace FunGame.Core.Library.Module.Example
         public override double EPCost => 25;
         public override double CD => 35 - 1.5 * Level;
         public override double HardnessTime { get; set; } = 3;
-        public override bool IsNonDirectional => true;
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
         public override bool CanSelectTeammate => false;
@@ -31,6 +30,7 @@ namespace FunGame.Core.Library.Module.Example
 
         public ExampleNonDirectionalSkill1(Character? character = null) : base(SkillType.Skill, character)
         {
+            IsNonDirectional = true;
             CastRange = 9;
             // 所有的技能特效，如果能直接 new，建议就直接 new，提高性能和可读性（工厂效率低且不好调试，工厂更偏向于动态创建技能，而对于编码实现的技能来说，怎么简单怎么来）
             Effects.Add(new ExampleNonDirectionalSkill1Effect(this));
@@ -131,13 +131,13 @@ namespace FunGame.Core.Library.Module.Example
                 };
             }
         }
-        public override bool IsNonDirectional => true;
         public override SkillRangeType SkillRangeType => SkillRangeType.Circle;
         public override int CanSelectTargetRange => 2;
         public override double MagicBottleneck => 35 + 24 * (Level - 1);
 
         public ExampleNonDirectionalSkill2(Character? character = null) : base(SkillType.Magic, character)
         {
+            IsNonDirectional = true;
             Effects.Add(new ExampleDamageBasedOnATKWithBasicDamage(this, 20, 20, 0.03, 0.02, DamageType.Magical));
         }
     }

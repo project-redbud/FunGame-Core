@@ -138,9 +138,17 @@ namespace FunGame.Core.Entity
         public bool IsMagic => SkillType == SkillType.Magic;
 
         /// <summary>
-        /// 是否无视施法距离（全图施法），魔法默认为 true，战技默认为 false
+        /// 是否全图施法；魔法及全选敌友恒为 true，其余使用配置值
         /// </summary>
-        public virtual bool CastAnywhere { get; set; } = false;
+        public bool CastAnywhere
+        {
+            get => IsMagic || SelectAllEnemies || SelectAllTeammates || ConfiguredCastAnywhere;
+            set => ConfiguredCastAnywhere = value;
+        }
+
+        internal bool ConfiguredCastAnywhere { get; set; }
+        internal int ConfiguredCastRange { get; set; } = 3;
+        internal bool ConfiguredIsNonDirectional { get; set; }
 
         /// <summary>
         /// 施法距离 [ 单位：格 ]
@@ -148,9 +156,9 @@ namespace FunGame.Core.Entity
         [InitOptional]
         public int CastRange
         {
-            get => Math.Max(1, CastAnywhere ? (GamingQueue?.Map != null ? GamingQueue.Map.Grids.Count : 999) : field);
-            set => field = Math.Max(1, value);
-        } = 3;
+            get => Math.Max(1, CastAnywhere ? (GamingQueue?.Map != null ? GamingQueue.Map.Grids.Count : 999) : ConfiguredCastRange);
+            set => ConfiguredCastRange = Math.Max(1, value);
+        }
 
         /// <summary>
         /// 可选取自身
@@ -168,12 +176,12 @@ namespace FunGame.Core.Entity
         public virtual bool CanSelectTeammate { get; set; } = false;
 
         /// <summary>
-        /// 选取所有敌对角色，优先级大于 <see cref="CanSelectTargetCount"/>
+        /// 选取全部合法敌对角色，无视距离且优先于目标数量与范围
         /// </summary>
         public virtual bool SelectAllEnemies { get; set; } = false;
 
         /// <summary>
-        /// 选取所有友方角色，优先级大于 <see cref="CanSelectTargetCount"/>，默认包含自身
+        /// 选取所有友方角色，无视距离且优先于目标数量与范围；自身资格由 <see cref="CanSelectSelf"/> 决定
         /// </summary>
         public virtual bool SelectAllTeammates { get; set; } = false;
 
@@ -188,10 +196,15 @@ namespace FunGame.Core.Entity
         public virtual int CanSelectTargetRange { get; set; } = 0;
 
         /// <summary>
+        /// 全选敌友时恒为 false，忽略范围中心与扩散配置。<para/>
         /// 如果为 true，表示非指向性技能，可以任意选取一个范围（<see cref="CanSelectTargetRange"/> = 0 时为单个格子）。<para/>
         /// 如果为 false，表示必须选取一个角色作为目标，当 <see cref="CanSelectTargetRange"/> > 0 时，技能作用范围将根据目标位置覆盖 <see cref="SkillRangeType"/> 形状的区域；= 0 时正常选取目标。
         /// </summary>
-        public virtual bool IsNonDirectional { get; set; } = false;
+        public bool IsNonDirectional
+        {
+            get => !(SelectAllEnemies || SelectAllTeammates) && ConfiguredIsNonDirectional;
+            set => ConfiguredIsNonDirectional = value;
+        }
 
         /// <summary>
         /// 在非指向性技能选取目标格子时，包括有角色的格子，默认为 true。仅 <see cref="IsNonDirectional"/> = true 时有效。<para/>
@@ -413,7 +426,6 @@ namespace FunGame.Core.Entity
         protected Skill(SkillType type, Character? character = null)
         {
             SkillType = type;
-            CastAnywhere = SkillType == SkillType.Magic;
             Character = character;
             if (SkillType == SkillType.SuperSkill)
             {
@@ -574,7 +586,10 @@ namespace FunGame.Core.Entity
             // 其他条件
             selectable = [.. selectable.Where(c => SelectTargetPredicates.All(f => f(c)))];
 
-            return selectable;
+            if (SelectAllEnemies || SelectAllTeammates)
+                selectable = [.. selectable.Where(c => c == caster ? SelectAllTeammates && CanSelectSelf :
+                    SelectAllEnemies && allEnemys.Contains(c) || SelectAllTeammates && allTeammates.Contains(c))];
+            return [.. selectable.Distinct()];
         }
 
         /// <summary>
@@ -582,16 +597,10 @@ namespace FunGame.Core.Entity
         /// </summary>
         public int RealCanSelectTargetCount(List<Character> enemys, List<Character> teammates)
         {
-            int count = CanSelectTargetCount;
-            if (SelectAllTeammates)
-            {
-                return teammates.Count + 1;
-            }
-            if (SelectAllEnemies)
-            {
-                return enemys.Count;
-            }
-            return count;
+            if (!SelectAllEnemies && !SelectAllTeammates) return CanSelectTargetCount;
+            return (SelectAllEnemies && CanSelectEnemy ? enemys.Distinct().Count() : 0)
+                + (SelectAllTeammates && CanSelectTeammate ? teammates.Where(c => c != Character).Distinct().Count() : 0)
+                + (SelectAllTeammates && CanSelectSelf ? 1 : 0);
         }
 
         /// <summary>
@@ -611,14 +620,7 @@ namespace FunGame.Core.Entity
 
             if (SelectAllTeammates || SelectAllEnemies)
             {
-                if (SelectAllTeammates)
-                {
-                    targets.AddRange(tobeSelected.Where(c => c == caster || teammates.Contains(c)));
-                }
-                if (SelectAllEnemies)
-                {
-                    targets.AddRange(tobeSelected.Where(enemys.Contains));
-                }
+                targets.AddRange(tobeSelected);
             }
             else if (tobeSelected.Count <= CanSelectTargetCount)
             {
@@ -633,7 +635,7 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 默认行为：在指向性技能中，当 <see cref="CanSelectTargetRange"/> > 0 时，会额外选取一些被扩散的目标
+        /// 默认行为：非全选的指向性技能中，当 <see cref="CanSelectTargetRange"/> > 0 时，会额外选取一些被扩散的目标
         /// </summary>
         /// <param name="caster"></param>
         /// <param name="allEnemys"></param>
@@ -645,7 +647,7 @@ namespace FunGame.Core.Entity
         {
             List<Grid> grids = [];
 
-            if (IsNonDirectional || CanSelectTargetRange < 0 || GamingQueue?.Map is not GameMap map)
+            if (SelectAllEnemies || SelectAllTeammates || IsNonDirectional || CanSelectTargetRange < 0 || GamingQueue?.Map is not GameMap map)
             {
                 return [.. selected];
             }
@@ -1141,6 +1143,21 @@ namespace FunGame.Core.Entity
             skill.ExemptionDescription = skillDefined.ExemptionDescription;
             skill.SkillType = skillDefined.SkillType;
             skill.Source = skillDefined.Source;
+            skill.CanSelectSelf = skillDefined.CanSelectSelf;
+            skill.CanSelectEnemy = skillDefined.CanSelectEnemy;
+            skill.CanSelectTeammate = skillDefined.CanSelectTeammate;
+            skill.SelectAllEnemies = skillDefined.SelectAllEnemies;
+            skill.SelectAllTeammates = skillDefined.SelectAllTeammates;
+            skill.CanSelectTargetCount = skillDefined.CanSelectTargetCount;
+            skill.CanSelectTargetRange = skillDefined.CanSelectTargetRange;
+            skill.SelectIncludeCharacterGrid = skillDefined.SelectIncludeCharacterGrid;
+            skill.AllowSelectNoCharacterGrid = skillDefined.AllowSelectNoCharacterGrid;
+            skill.AllowSelectDead = skillDefined.AllowSelectDead;
+            skill.SkillRangeType = skillDefined.SkillRangeType;
+            skill.SectorAngle = skillDefined.SectorAngle;
+            skill.ConfiguredCastAnywhere = skillDefined.ConfiguredCastAnywhere;
+            skill.ConfiguredCastRange = skillDefined.ConfiguredCastRange;
+            skill.ConfiguredIsNonDirectional = skillDefined.ConfiguredIsNonDirectional;
             skill.RequiredSubClass = skillDefined.RequiredSubClass;
             skill.RequiredAttribute = skillDefined.RequiredAttribute;
             skill.RequiredAttributeValue = skillDefined.RequiredAttributeValue;

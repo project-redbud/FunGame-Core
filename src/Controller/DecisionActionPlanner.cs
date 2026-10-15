@@ -32,14 +32,14 @@ namespace FunGame.Core.Controller
             if (movementOnly && (actor.HP <= 0 || actor.CharacterState != CharacterState.Actionable)) return [];
             if (!movementOnly && (ability == null || !CanUse(context, action.Type, skill, item))) return [];
             Skill? castSkill = ability as Skill;
-            bool global = map != null && castSkill != null && DecisionGeometry.CoversPlane(map, castSkill);
+            bool global = map != null && (ability is NormalAttack attack ? attack.AttackAnywhere : castSkill != null && DecisionGeometry.CoversPlane(map, castSkill));
             bool anchored = map != null && castSkill is { IsNonDirectional: true } && DecisionGeometry.CanAnchorArea(map, castSkill);
             HashSet<Grid>? anchoredCenters = anchored ? BuildAnchoredCenters(context, castSkill!, current!, false) : null;
-            int castRange = action.Type == "normalAttack" ? actor.ATR : castSkill?.CastRange ?? 0;
+            int castRange = action.Type == "normalAttack" ? actor.NormalAttack.AttackRange : castSkill?.CastRange ?? 0;
             bool allReachable = map != null && current != null && ability != null && castSkill is not { IsNonDirectional: true } &&
                 (ability.CanSelectEnemy ? context.SelectableEnemies : []).Concat(ability.CanSelectTeammate ? context.SelectableAllies : [])
                     .Where(c => !c.IsUnselectable).All(c => map.GetCharacterCurrentGrid(c) is Grid target && context.IsInRange(current, target, castRange));
-            bool independent = global && (castSkill is { IsNonDirectional: false } || anchored && !castSkill!.CanSelectSelf);
+            bool independent = global && (ability is NormalAttack || castSkill is { IsNonDirectional: false } || anchored && !castSkill!.CanSelectSelf);
             independent |= allReachable || anchoredCenters != null && !castSkill!.CanSelectSelf && anchoredCenters.All(g => context.IsInRange(current!, g, castRange));
             bool considerMovement = evaluatePositions || !independent || action.PositionPreference == "safe" || action.MaxRisk != null || action.Movement == "required";
             List<Grid> positions = current == null ? [Grid.Empty] : [current];
@@ -56,7 +56,7 @@ namespace FunGame.Core.Controller
             int globalCount = 0;
             if (map != null && ability != null && ability is not Skill { IsNonDirectional: true })
             {
-                int reach = action.Type == "normalAttack" ? actor.ATR : castSkill!.CastRange;
+                int reach = action.Type == "normalAttack" ? actor.NormalAttack.AttackRange : castSkill!.CastRange;
                 List<Character> potential;
                 if (global || allReachable && !considerMovement)
                 {
@@ -73,7 +73,7 @@ namespace FunGame.Core.Controller
                     positions = [.. positions.Where(g => g.Id == current?.Id || potential.Any(c => map.GetCharacterCurrentGrid(c) is Grid target && context.IsInRange(g, target, reach)))];
             }
             List<(Character Target, List<Character> Targets)>? globalTargets = globalLegal == null ? null :
-                BuildDirectionalPlans(context, globalLegal, globalCount, selector);
+                BuildDirectionalPlans(context, ability!, globalLegal, globalCount, selector);
             Dictionary<Grid, (List<Grid> Grids, List<Character> Targets)> areaCache = [];
             bool reuseArea = anchored && !castSkill!.CanSelectSelf;
             context.Metrics.PositionsGenerated += positions.Count;
@@ -107,7 +107,7 @@ namespace FunGame.Core.Controller
                     plans.Add(new() { Decision = new() { ActionType = CharacterActionType.Move, TargetMoveGrid = position, IsPureMove = true, HasCandidate = true, RequiresValidation = true }, Target = target, Risk = risk, MoveSteps = steps });
                     continue;
                 }
-                int range = action.Type == "normalAttack" ? actor.ATR : castSkill!.CastRange;
+                int range = action.Type == "normalAttack" ? actor.NormalAttack.AttackRange : castSkill!.CastRange;
                 if (castSkill is { IsNonDirectional: true } && map != null)
                 {
                     IEnumerable<Grid> candidates = anchoredCenters == null ? context.GetRange(position, range, true) :
@@ -144,7 +144,7 @@ namespace FunGame.Core.Controller
                     else
                     {
                         (List<Character> legal, int count) = DirectionalTargets(context, ability!, position, range, directionalPool);
-                        targetsForPosition = BuildDirectionalPlans(context, legal, count, selector);
+                        targetsForPosition = BuildDirectionalPlans(context, ability!, legal, count, selector);
                     }
                     foreach ((Character target, List<Character> targets) in targetsForPosition)
                     {
@@ -171,12 +171,14 @@ namespace FunGame.Core.Controller
         }
 
         private static List<(Character Target, List<Character> Targets)> BuildDirectionalPlans(DecisionEvaluationContext context,
-            List<Character> legal, int count, TargetSelectorConfig? selector)
+            ISkill ability, List<Character> legal, int count, TargetSelectorConfig? selector)
         {
-            if (count <= 0) return [];
+            bool selectAll = ability.SelectAllEnemies || ability.SelectAllTeammates;
+            if (!selectAll && count <= 0) return [];
             List<(Character, List<Character>)> plans = [];
             foreach (Character target in OrderTargets(context, legal.Intersect(RelatedTargets(context, selector)), selector))
-                plans.Add((target, [target, .. legal.Where(c => c != target).OrderBy(c => c.Guid).Take(count - 1)]));
+                plans.Add((target, selectAll ? [.. legal.OrderBy(c => c.Guid)] :
+                    [target, .. legal.Where(c => c != target).OrderBy(c => c.Guid).Take(count - 1)]));
             return plans;
         }
 
@@ -286,7 +288,7 @@ namespace FunGame.Core.Controller
             {
                 Grid? origin = map.GetCharacterCurrentGrid(enemy);
                 if (origin == null) continue;
-                int range = Math.Max(enemy.ATR, enemy.Skills.Where(s => s.Enable && s.CurrentCD == 0 && s.CanSelectEnemy).Select(s => s.CastRange).DefaultIfEmpty(0).Max());
+                int range = Math.Max(enemy.NormalAttack.AttackRange, enemy.Skills.Where(s => s.Enable && s.CurrentCD == 0 && s.CanSelectEnemy).Select(s => s.CastRange).DefaultIfEmpty(0).Max());
                 if (context.IsInRange(origin, position, range))
                 {
                     risk++;

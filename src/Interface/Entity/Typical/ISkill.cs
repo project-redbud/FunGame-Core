@@ -59,12 +59,12 @@ namespace FunGame.Core.Interface.Entity
         public bool CanSelectTeammate { get; }
 
         /// <summary>
-        /// 选取所有敌对角色，优先级大于 <see cref="CanSelectTargetCount"/>
+        /// 选取全部合法敌对角色，无视距离且优先于目标数量与范围；同时全选敌友时取并集
         /// </summary>
         public bool SelectAllEnemies { get; }
 
         /// <summary>
-        /// 选取所有友方角色，优先级大于 <see cref="CanSelectTargetCount"/>，默认包含自身
+        /// 选取全部合法友方角色，无视距离且优先于目标数量与范围；自身资格由 <see cref="CanSelectSelf"/> 决定
         /// </summary>
         public bool SelectAllTeammates { get; }
 

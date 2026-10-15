@@ -231,6 +231,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
                 case nameof(Character.NormalAttack):
                     NormalAttack normalAttack = JsonService.GetObject<NormalAttack>(ref reader, options) ?? new NormalAttack(result);
                     result.NormalAttack.Level = normalAttack.Level;
+                    result.NormalAttack.CopyTargetingFrom(normalAttack);
                     result.NormalAttack.ExDamage = normalAttack.ExDamage;
                     result.NormalAttack.ExDamage2 = normalAttack.ExDamage2;
                     result.NormalAttack.ExHardnessTime = normalAttack.ExHardnessTime;

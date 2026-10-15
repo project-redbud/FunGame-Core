@@ -16,6 +16,36 @@ namespace FunGame.Core.Library.Common.JsonConverter
         {
             switch (propertyName)
             {
+                case nameof(NormalAttack.CanSelectSelf):
+                    result.CanSelectSelf = reader.GetBoolean();
+                    break;
+                case nameof(NormalAttack.CanSelectEnemy):
+                    result.CanSelectEnemy = reader.GetBoolean();
+                    break;
+                case nameof(NormalAttack.CanSelectTeammate):
+                    result.CanSelectTeammate = reader.GetBoolean();
+                    break;
+                case nameof(NormalAttack.SelectAllEnemies):
+                    result.SelectAllEnemies = reader.GetBoolean();
+                    break;
+                case nameof(NormalAttack.SelectAllTeammates):
+                    result.SelectAllTeammates = reader.GetBoolean();
+                    break;
+                case nameof(NormalAttack.CanSelectTargetCount):
+                    result.CanSelectTargetCount = reader.GetInt32();
+                    break;
+                case nameof(NormalAttack.CanSelectTargetRange):
+                    result.CanSelectTargetRange = reader.GetInt32();
+                    break;
+                case nameof(NormalAttack.AttackAnywhere):
+                    result.AttackAnywhere = reader.GetBoolean();
+                    break;
+                case nameof(NormalAttack.AttackRange):
+                    result.AttackRange = reader.GetInt32();
+                    break;
+                case nameof(NormalAttack.Enable):
+                    result.Enable = reader.GetBoolean();
+                    break;
                 case nameof(NormalAttack.Level):
                     result.Level = reader.GetInt32();
                     break;
@@ -50,6 +80,16 @@ namespace FunGame.Core.Library.Common.JsonConverter
         {
             writer.WriteStartObject();
 
+            writer.WriteBoolean(nameof(NormalAttack.CanSelectSelf), value.CanSelectSelf);
+            writer.WriteBoolean(nameof(NormalAttack.CanSelectEnemy), value.CanSelectEnemy);
+            writer.WriteBoolean(nameof(NormalAttack.CanSelectTeammate), value.CanSelectTeammate);
+            writer.WriteBoolean(nameof(NormalAttack.SelectAllEnemies), value.SelectAllEnemies);
+            writer.WriteBoolean(nameof(NormalAttack.SelectAllTeammates), value.SelectAllTeammates);
+            writer.WriteNumber(nameof(NormalAttack.CanSelectTargetCount), value.CanSelectTargetCount);
+            writer.WriteNumber(nameof(NormalAttack.CanSelectTargetRange), value.CanSelectTargetRange);
+            writer.WriteBoolean(nameof(NormalAttack.AttackAnywhere), value.ConfiguredAttackAnywhere);
+            if (value.ConfiguredAttackRange is int range) writer.WriteNumber(nameof(NormalAttack.AttackRange), range);
+            writer.WriteBoolean(nameof(NormalAttack.Enable), value.Enable);
             writer.WriteNumber(nameof(NormalAttack.Level), value.Level);
             if (value.ExLevel > 0) writer.WriteNumber(nameof(NormalAttack.ExLevel), value.ExLevel);
             writer.WriteNumber(nameof(NormalAttack.ExDamage), value.ExDamage);

@@ -41,7 +41,7 @@ namespace FunGame.Core.Model.Queue
             Skill? skill = decision.SkillToUse as Skill;
             if (!DecisionActionPlanner.CanUse(context, type, skill, decision.ItemToUse)) return false;
             ISkill ability = decision.ActionType == CharacterActionType.NormalAttack ? actor.NormalAttack : skill!;
-            int range = skill?.CastRange ?? actor.ATR;
+            int range = skill?.CastRange ?? actor.NormalAttack.AttackRange;
             bool Reachable(Character character) => _map == null || _map.GetCharacterCurrentGrid(character) is Grid target &&
                 target.Characters.Contains(character) && context.IsInRange(position!, target, range);
             List<Character> reachableEnemies = [.. selectableEnemies.Where(Reachable)];
@@ -58,6 +58,8 @@ namespace FunGame.Core.Model.Queue
             }
             List<Character> legal = ability.GetSelectableTargets(actor, enemies, allies, reachableEnemies, reachableAllies);
             if (actor.CharacterState == CharacterState.BattleRestricted) legal = [.. legal.Where(c => c == actor)];
+            if (ability.SelectAllEnemies || ability.SelectAllTeammates)
+                return legal.Count > 0 && decision.Targets.Distinct().Count() == decision.Targets.Count && legal.ToHashSet().SetEquals(decision.Targets);
             return decision.Targets.Count > 0 && decision.Targets.Count <= ability.RealCanSelectTargetCount(reachableEnemies, reachableAllies) && decision.Targets.All(legal.Contains);
         }
     }

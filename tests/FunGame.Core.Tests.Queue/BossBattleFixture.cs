@@ -82,7 +82,6 @@ internal sealed class BossBattleFixture
     {
         Skill skill = new TestSkill(type) { Id = id, Name = id.ToString(), Level = 1, Character = actor, GamingQueue = Queue,
             CastRange = 3, CanSelectTargetRange = area ? 1 : 0, IsNonDirectional = area, CastTime = type == SkillType.Magic ? 3 : 0,
-            CastAnywhere = false,
             CanSelectTargetCount = area ? 3 : 1,
             HardnessTime = 5, CD = 10, EPCost = 5, MPCost = 5,
             CanSelectSelf = recovery, CanSelectEnemy = !recovery, CanSelectTeammate = recovery && !self };

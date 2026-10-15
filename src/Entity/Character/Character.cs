@@ -2140,6 +2140,7 @@ namespace FunGame.Core.Entity
                 INTGrowth = INTGrowth,
                 InitialSPD = InitialSPD
             };
+            c.NormalAttack.CopyTargetingFrom(NormalAttack);
             c.Class = Class.Copy(c);
             if (copyEx)
             {
@@ -2243,6 +2244,7 @@ namespace FunGame.Core.Entity
             MaxLevel = c.MaxLevel;
             LevelBreak = c.LevelBreak;
             EXP = c.EXP;
+            NormalAttack.CopyTargetingFrom(c.NormalAttack);
             CharacterState = c.CharacterState;
             CharacterEffectStates.Clear();
             CharacterEffectTypes.Clear();
