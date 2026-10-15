@@ -1,5 +1,6 @@
 using FunGame.Core.Controller;
 using FunGame.Core.Entity;
+using FunGame.Core.Library.Constant;
 using FunGame.Core.Model.DecisionTable;
 using FunGame.Core.Model.Framework;
 using Xunit.Abstractions;
@@ -24,6 +25,7 @@ public class AIDecisionBaselineTests(ITestOutputHelper output)
         Character boss = fixture.Boss;
         boss.ExMOV = 8;
         Skill skill = boss.Skills.Single(s => s.Id == 9004);
+        skill.SkillType = global ? SkillType.Magic : SkillType.Skill;
         skill.CastAnywhere = global;
         skill.IsNonDirectional = area;
         skill.CastTime = 0;
@@ -55,6 +57,8 @@ public class AIDecisionBaselineTests(ITestOutputHelper output)
         BossBattleFixture fixture = new(mapMode: mapMode, usePolicy: false, mapSize: mapSize);
         Character boss = fixture.Boss;
         boss.ExMOV = extraMovement;
+        boss.Skills.Single(s => s.Id == 9004).SkillType = castAnywhere ? SkillType.Magic : SkillType.Skill;
+        fixture.Mage.Skills.Single().SkillType = castAnywhere ? SkillType.Magic : SkillType.Skill;
         if (castAnywhere)
         {
             boss.Skills.Single(s => s.Id == 9004).CastAnywhere = true;

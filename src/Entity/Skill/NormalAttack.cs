@@ -185,6 +185,42 @@ namespace FunGame.Core.Entity
         public double RealHardnessTime => Math.Max(0, HardnessTime * (1 - Calculation.PercentageCheck(Character?.ActionCoefficient ?? 0)));
 
         /// <summary>
+        /// 是否全图攻击；全选敌友时恒为 true
+        /// </summary>
+        public bool AttackAnywhere
+        {
+            get => SelectAllEnemies || SelectAllTeammates || ConfiguredAttackAnywhere;
+            set => ConfiguredAttackAnywhere = value;
+        }
+
+        /// <summary>
+        /// 攻击距离；未配置时随角色攻击距离变化，全图攻击时覆盖地图
+        /// </summary>
+        public int AttackRange
+        {
+            get => AttackAnywhere ? (GamingQueue ?? Character.GamingQueue)?.Map?.Grids.Count ?? 999 : ConfiguredAttackRange ?? Character.ATR;
+            set => ConfiguredAttackRange = Math.Max(1, value);
+        }
+
+        internal void CopyTargetingFrom(NormalAttack source)
+        {
+            CanSelectSelf = source.CanSelectSelf;
+            CanSelectEnemy = source.CanSelectEnemy;
+            CanSelectTeammate = source.CanSelectTeammate;
+            SelectAllEnemies = source.SelectAllEnemies;
+            SelectAllTeammates = source.SelectAllTeammates;
+            CanSelectTargetCount = source.CanSelectTargetCount;
+            CanSelectTargetRange = source.CanSelectTargetRange;
+            ConfiguredAttackAnywhere = source.ConfiguredAttackAnywhere;
+            ConfiguredAttackRange = source.ConfiguredAttackRange;
+            Enable = source.Enable;
+            IgnoreImmune = source.IgnoreImmune;
+        }
+
+        internal bool ConfiguredAttackAnywhere { get; set; }
+        internal int? ConfiguredAttackRange { get; set; }
+
+        /// <summary>
         /// 可选取自身
         /// </summary>
         public bool CanSelectSelf { get; set; } = false;
@@ -200,12 +236,12 @@ namespace FunGame.Core.Entity
         public bool CanSelectTeammate { get; set; } = false;
 
         /// <summary>
-        /// 选取所有敌对角色，优先级大于 <see cref="CanSelectTargetCount"/>
+        /// 选取全部合法敌对角色，无视距离且优先于目标数量与范围
         /// </summary>
         public bool SelectAllEnemies { get; set; } = false;
 
         /// <summary>
-        /// 选取所有友方角色，优先级大于 <see cref="CanSelectTargetCount"/>，默认包含自身
+        /// 选取所有友方角色，无视距离且优先于目标数量与范围；自身资格由 <see cref="CanSelectSelf"/> 决定
         /// </summary>
         public bool SelectAllTeammates { get; set; } = false;
 
@@ -293,7 +329,10 @@ namespace FunGame.Core.Entity
                 }
             }
 
-            return selectable;
+            if (SelectAllEnemies || SelectAllTeammates)
+                selectable = [.. selectable.Where(c => c == attacker ? SelectAllTeammates && CanSelectSelf :
+                    SelectAllEnemies && allEnemys.Contains(c) || SelectAllTeammates && allTeammates.Contains(c))];
+            return [.. selectable.Distinct()];
         }
 
         /// <summary>
@@ -301,16 +340,10 @@ namespace FunGame.Core.Entity
         /// </summary>
         public int RealCanSelectTargetCount(List<Character> enemys, List<Character> teammates)
         {
-            int count = CanSelectTargetCount;
-            if (SelectAllTeammates)
-            {
-                return teammates.Count + 1;
-            }
-            if (SelectAllEnemies)
-            {
-                return enemys.Count;
-            }
-            return count;
+            if (!SelectAllEnemies && !SelectAllTeammates) return CanSelectTargetCount;
+            return (SelectAllEnemies && CanSelectEnemy ? enemys.Distinct().Count() : 0)
+                + (SelectAllTeammates && CanSelectTeammate ? teammates.Where(c => c != Character).Distinct().Count() : 0)
+                + (SelectAllTeammates && CanSelectSelf ? 1 : 0);
         }
 
         /// <summary>
@@ -330,14 +363,7 @@ namespace FunGame.Core.Entity
 
             if (SelectAllTeammates || SelectAllEnemies)
             {
-                if (SelectAllTeammates)
-                {
-                    targets.AddRange(tobeSelected.Where(c => c == attacker || teammates.Contains(c)));
-                }
-                if (SelectAllEnemies)
-                {
-                    targets.AddRange(tobeSelected.Where(enemys.Contains));
-                }
+                targets.AddRange(tobeSelected);
             }
             else if (tobeSelected.Count <= CanSelectTargetCount)
             {
@@ -502,7 +528,7 @@ namespace FunGame.Core.Entity
 
             builder.AppendLine($"{Name} - 等级 {Level}");
             builder.AppendLine($"描述：{Description}");
-            if (GamingQueue?.Map != null) builder.AppendLine($"攻击距离：{Character.ATR}");
+            if (GamingQueue?.Map != null) builder.AppendLine($"攻击距离：{(AttackAnywhere ? "全图" : AttackRange.ToString())}");
             builder.AppendLine($"硬直时间：{RealHardnessTime:0.##}{(showOriginal && RealHardnessTime != HardnessTime ? $"（原始值：{HardnessTime}）" : "")}");
 
             return builder.ToString();

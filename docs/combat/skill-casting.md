@@ -73,6 +73,24 @@ s.Level > 0 && s.SkillType != SkillType.Passive && s.Enable && !s.IsInEffect && 
 非指向性技能还需要 `IsNonDirectional = true`；要允许点在**没有角色的格子**上，
 再打开 `AllowSelectNoCharacterGrid`。战棋模式下射程会在确认时**重验**。
 
+### 全选与射程契约
+
+`SelectAllEnemies` / `SelectAllTeammates` 表示全图选取相应阵营的全部合法目标；两者同时启用时取并集。
+`CanSelectEnemy`、`CanSelectTeammate`、免疫、可选状态和技能目标谓词仍然生效；自身只在全选友方且
+`CanSelectSelf` 为真时纳入。全选优先于目标数量、范围中心与目标周围扩散，不会因扩散带入其他阵营。
+
+`Skill.CastAnywhere` 在魔法或全选声明成立时恒为真，其他技能使用配置值；`IsNonDirectional` 在全选时恒为假。
+两个属性保留 setter，子类在构造函数中赋值；全选声明可以按等级或状态动态求值。
+`NormalAttack.AttackAnywhere` 也由全选声明推导；`AttackRange` 默认随 `Character.ATR` 变化，可以显式配置。
+规划、手动选择、普通行动和协同重验均读取这些有效射程。
+
+全选规划保持完整目标集合，目标绑定只指定规则条件的观察对象；普通与协同决策在执行前重验集合，
+遗漏、额外目标或资格变化都会使原方案失效。宿主手动选择返回非空列表表示确认全选，框架按当前合法集合执行；
+返回空列表表示取消。JSON、技能复制、角色复制与模板恢复保存目标声明和配置射程，避免把全图派生值固化为配置。
+
+默认位置偏好下，全图指向性技能可复用当前站位的目标方案；安全偏好、风险上限、距离条件或强制移动仍可触发站位评估。
+相关回归见 `AllTargetSelectionTests`。
+
 ## 吟唱被打断 / 失败
 
 - 中断（`InterruptCasting`）、目标失效、资源不足：**保留原硬直并加 3**（例：原硬直 0.5 → 3.5），

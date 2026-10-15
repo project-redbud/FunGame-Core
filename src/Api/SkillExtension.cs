@@ -27,9 +27,13 @@ namespace FunGame.Core.Api
 
             string str;
 
-            if (skill.SelectAllTeammates)
+            if (skill.SelectAllTeammates && skill.SelectAllEnemies)
             {
-                str = "友方全体角色";
+                str = $"全体敌方与友方角色{(!skill.CanSelectSelf ? "（不包括自身）" : "")}";
+            }
+            else if (skill.SelectAllTeammates)
+            {
+                str = $"友方全体角色{(!skill.CanSelectSelf ? "（不包括自身）" : "")}";
             }
             else if (skill.SelectAllEnemies)
             {
@@ -52,7 +56,7 @@ namespace FunGame.Core.Api
                 str = $"{(skill.CanSelectTargetCount > 1 ? $"至多 {skill.CanSelectTargetCount} 个" : "")}目标";
             }
 
-            if (skill.CanSelectTargetRange > 0 && skill.GamingQueue?.Map != null)
+            if (!skill.SelectAllEnemies && !skill.SelectAllTeammates && skill.CanSelectTargetRange > 0 && skill.GamingQueue?.Map != null)
             {
                 str += $"以及以{(skill.CanSelectTargetCount > 1 ? "这些" : "该")}目标为中心，半径为 {skill.CanSelectTargetRange} 格的菱形区域中的等同阵营角色";
             }

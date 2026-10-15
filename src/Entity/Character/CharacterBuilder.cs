@@ -263,6 +263,7 @@ namespace FunGame.Core.Entity
                 character.EXP = reference.EXP;
             }
             character.NormalAttack.Level = reference.NormalAttack.Level;
+            character.NormalAttack.CopyTargetingFrom(reference.NormalAttack);
             character.NormalAttack.ExDamage = reference.NormalAttack.ExDamage;
             character.NormalAttack.ExDamage2 = reference.NormalAttack.ExDamage2;
             character.NormalAttack.ExHardnessTime = reference.NormalAttack.ExHardnessTime;

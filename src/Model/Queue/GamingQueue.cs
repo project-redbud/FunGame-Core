@@ -1278,7 +1278,7 @@ namespace FunGame.Core.Model.Queue
                 List<Grid> canCastGridsByStartGrid = [];
                 if (_map != null && startGrid != null)
                 {
-                    canAttackGridsByStartGrid = _map.GetGridsByRange(startGrid, character.ATR, true);
+                    canAttackGridsByStartGrid = _map.GetGridsByRange(startGrid, character.NormalAttack.AttackRange, true);
                     Skill[] canCastSkills = [.. skills, .. items.Select(i => i.Skills.Active!)];
                     foreach (Skill skill in canCastSkills)
                     {
@@ -1323,7 +1323,7 @@ namespace FunGame.Core.Model.Queue
 
                         if (realGrid != null)
                         {
-                            canAttackGrids = _map.GetGridsByRange(realGrid, character.ATR, true);
+                            canAttackGrids = _map.GetGridsByRange(realGrid, character.NormalAttack.AttackRange, true);
                             Skill[] canCastSkills = [.. skills, .. items.Select(i => i.Skills.Active!)];
                             foreach (Skill skill in canCastSkills)
                             {
@@ -1682,7 +1682,7 @@ namespace FunGame.Core.Model.Queue
                                 List<Grid> attackRange = [];
                                 if (_map != null && realGrid != null)
                                 {
-                                    attackRange = _map.GetGridsByRange(realGrid, character.ATR, true);
+                                    attackRange = _map.GetGridsByRange(realGrid, character.NormalAttack.AttackRange, true);
                                     enemys = [.. enemys.Where(attackRange.SelectMany(g => g.Characters).Contains)];
                                     teammates = [.. teammates.Where(attackRange.SelectMany(g => g.Characters).Contains)];
                                 }
@@ -3733,6 +3733,8 @@ namespace FunGame.Core.Model.Queue
             {
                 targets = skill.SelectTargets(caster, allEnemys, allTeammates, enemys, teammates);
             }
+            if (targets.Count > 0 && (skill.SelectAllEnemies || skill.SelectAllTeammates))
+                targets = skill.SelectTargets(caster, allEnemys, allTeammates, enemys, teammates);
             return targets;
         }
 
@@ -3786,6 +3788,8 @@ namespace FunGame.Core.Model.Queue
             {
                 targets = character.NormalAttack.SelectTargets(character, allEnemys, allTeammates, enemys, teammates);
             }
+            if (targets.Count > 0 && (attack.SelectAllEnemies || attack.SelectAllTeammates))
+                targets = attack.SelectTargets(character, allEnemys, allTeammates, enemys, teammates);
             return targets;
         }
 

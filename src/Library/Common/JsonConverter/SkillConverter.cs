@@ -59,6 +59,30 @@ namespace FunGame.Core.Library.Common.JsonConverter
                 case nameof(Skill.CastRange):
                     result.CastRange = reader.GetInt32();
                     break;
+                case nameof(Skill.SelectAllEnemies):
+                    result.SelectAllEnemies = reader.GetBoolean();
+                    break;
+                case nameof(Skill.SelectAllTeammates):
+                    result.SelectAllTeammates = reader.GetBoolean();
+                    break;
+                case nameof(Skill.IsNonDirectional):
+                    result.IsNonDirectional = reader.GetBoolean();
+                    break;
+                case nameof(Skill.SelectIncludeCharacterGrid):
+                    result.SelectIncludeCharacterGrid = reader.GetBoolean();
+                    break;
+                case nameof(Skill.AllowSelectNoCharacterGrid):
+                    result.AllowSelectNoCharacterGrid = reader.GetBoolean();
+                    break;
+                case nameof(Skill.AllowSelectDead):
+                    result.AllowSelectDead = reader.GetBoolean();
+                    break;
+                case nameof(Skill.SectorAngle):
+                    result.SectorAngle = reader.GetDouble();
+                    break;
+                case nameof(Skill.SkillRangeType):
+                    result.SkillRangeType = (SkillRangeType)reader.GetInt32();
+                    break;
                 case nameof(Skill.CanSelectSelf):
                     result.CanSelectSelf = reader.GetBoolean();
                     break;
@@ -163,8 +187,16 @@ namespace FunGame.Core.Library.Common.JsonConverter
             if (value.Level > 0) writer.WriteNumber(nameof(Skill.Level), value.Level);
             if (value.ExLevel > 0) writer.WriteNumber(nameof(Skill.ExLevel), value.ExLevel);
             if (value.MaxLevel > 0) writer.WriteNumber(nameof(Skill.MaxLevel), value.MaxLevel);
-            writer.WriteBoolean(nameof(Skill.CastAnywhere), value.CastAnywhere);
-            writer.WriteNumber(nameof(Skill.CastRange), value.CastRange);
+            writer.WriteBoolean(nameof(Skill.SelectAllEnemies), value.SelectAllEnemies);
+            writer.WriteBoolean(nameof(Skill.SelectAllTeammates), value.SelectAllTeammates);
+            writer.WriteBoolean(nameof(Skill.IsNonDirectional), value.ConfiguredIsNonDirectional);
+            writer.WriteBoolean(nameof(Skill.SelectIncludeCharacterGrid), value.SelectIncludeCharacterGrid);
+            writer.WriteBoolean(nameof(Skill.AllowSelectNoCharacterGrid), value.AllowSelectNoCharacterGrid);
+            writer.WriteBoolean(nameof(Skill.AllowSelectDead), value.AllowSelectDead);
+            writer.WriteNumber(nameof(Skill.SectorAngle), value.SectorAngle);
+            writer.WriteNumber(nameof(Skill.SkillRangeType), (int)value.SkillRangeType);
+            writer.WriteBoolean(nameof(Skill.CastAnywhere), value.ConfiguredCastAnywhere);
+            writer.WriteNumber(nameof(Skill.CastRange), value.ConfiguredCastRange);
             if (value.CanSelectSelf) writer.WriteBoolean(nameof(Skill.CanSelectSelf), value.CanSelectSelf);
             if (!value.CanSelectEnemy) writer.WriteBoolean(nameof(Skill.CanSelectEnemy), value.CanSelectEnemy);
             if (value.CanSelectTeammate) writer.WriteBoolean(nameof(Skill.CanSelectTeammate), value.CanSelectTeammate);
