@@ -25,6 +25,7 @@ namespace FunGame.Core.Controller
             Grid? current = map?.GetCharacterCurrentGrid(actor);
             if (action.Type == "endTurn") return [new() { Decision = new() { ActionType = CharacterActionType.EndTurn, HasCandidate = true } }];
             if (map != null && current == null || map == null && (action.Movement == "required" || action.Type is "approach" or "retreat")) return [];
+            if (context.RemainingPlans == 0) { context.MarkExhausted(); return []; }
             Skill? skill = action.Type == "castSkill" ? context.Skills.FirstOrDefault(s => s.Id == action.SkillId) : null;
             Item? item = action.Type == "useItem" ? context.Items.FirstOrDefault(i => i.Id == action.ItemId) : null;
             ISkill? ability = action.Type == "normalAttack" ? actor.NormalAttack : skill ?? item?.Skills.Active;
@@ -77,24 +78,26 @@ namespace FunGame.Core.Controller
             Dictionary<Grid, (List<Grid> Grids, List<Character> Targets)> areaCache = [];
             bool reuseArea = anchored && !castSkill!.CanSelectSelf;
             context.Metrics.PositionsGenerated += positions.Count;
-            Dictionary<long, double> risks = [];
-            double Risk(Grid grid)
-            {
-                if (!risks.TryGetValue(grid.Id, out double risk)) risks[grid.Id] = risk = EstimateRisk(context, grid);
-                return risk;
-            }
+            double Risk(Grid grid) => EstimateRisk(context, grid);
             IEnumerable<Grid> ordered = action.PositionPreference == "safe" || action.Type == "retreat"
                 ? positions.OrderBy(Risk).ThenBy(g => g.Id == current?.Id ? 0 : 1).ThenBy(g => g.Id)
                 : positions.OrderBy(g => g.Id == current?.Id ? 0 : 1).ThenBy(g => NearestTargetDistance(context, g, selector)).ThenBy(g => g.Id);
             List<DecisionPlan> plans = [];
-            int remaining = Math.Max(0, context.PlanBudget - context.Metrics.PlansEvaluated);
+            int remaining = context.RemainingPlans;
+            bool HasRoom()
+            {
+                if (plans.Count < remaining) return true;
+                context.MarkTruncated();
+                return false;
+            }
             List<Grid> evaluatedPositions = [.. ordered.Take(Math.Max(1, context.PositionBudget))];
+            if (positions.Count > evaluatedPositions.Count) context.MarkTruncated();
             if (current != null && action.Movement != "required" && !evaluatedPositions.Contains(current)) evaluatedPositions[^1] = current;
             foreach (Grid position in evaluatedPositions)
             {
-                if (plans.Count >= remaining) break;
+                if (!HasRoom()) break;
                 if (action.Movement == "required" && position.Id == current?.Id) continue;
-                double risk = map == null || action.MaxRisk == null && action.PositionPreference != "safe" && action.Type != "retreat" ? 0 : Risk(position);
+                double risk = Risk(position);
                 if (action.MaxRisk is double limit && risk > limit) continue;
                 int steps = map == null || current == null ? 0 : context.GetMoveSteps(actor, current, position);
                 context.Metrics.PositionsEvaluated++;
@@ -115,9 +118,10 @@ namespace FunGame.Core.Controller
                             .Distinct().Where(g => context.IsInRange(position, g, range));
                     List<Grid> centers = [.. candidates];
                     context.Metrics.CentersGenerated += centers.Count;
+                    if (centers.Count > Math.Max(1, context.CenterBudget)) context.MarkTruncated();
                     foreach (Grid center in centers.OrderBy(g => NearestTargetDistance(context, g, selector)).ThenBy(g => g.Id).Take(Math.Max(1, context.CenterBudget)))
                     {
-                        if (plans.Count >= remaining) break;
+                        if (!HasRoom()) break;
                         if (!reuseArea || !areaCache.TryGetValue(center, out (List<Grid> Grids, List<Character> Targets) projection))
                         {
                             List<Grid> projected = position.Id == current?.Id
@@ -148,13 +152,12 @@ namespace FunGame.Core.Controller
                     }
                     foreach ((Character target, List<Character> targets) in targetsForPosition)
                     {
-                        if (plans.Count >= remaining) break;
+                        if (!HasRoom()) break;
                         plans.Add(CreatePlan(action, ability!, item, position, target, [.. targets], [], null, risk, steps));
                     }
                 }
             }
-            context.Metrics.PlansEvaluated += plans.Count;
-            return plans;
+            return context.RetainPlans(plans);
         }
 
         private static (List<Character> Legal, int Count) DirectionalTargets(DecisionEvaluationContext context, ISkill ability, Grid position, int range, List<Character>? pool = null)
@@ -283,6 +286,12 @@ namespace FunGame.Core.Controller
         {
             GameMap? map = context.Queue.Map;
             if (map == null) return 0;
+            if (context.RiskCache.TryGetValue(position, out double cached))
+            {
+                context.Metrics.RiskCacheHits++;
+                return cached;
+            }
+            context.Metrics.RiskEvaluations++;
             double risk = 0;
             foreach (Character enemy in context.Enemies.Where(c => c.HP > 0 && c.CharacterState != CharacterState.NotActionable))
             {
@@ -303,6 +312,7 @@ namespace FunGame.Core.Controller
                 }
                 if (threat.Contains(position)) risk++;
             }
+            context.RiskCache[position] = risk;
             return risk;
         }
     }
