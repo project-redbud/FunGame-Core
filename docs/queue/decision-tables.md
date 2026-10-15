@@ -84,6 +84,10 @@ AI 模式下，行动前的模组选择列表包含可在移动后触及的完�
 - Deterministic：有界候选规划、稳定估值与排序，不加入随机评分。
 - WeightedNearBest：在 ScoreTolerance 的近似收益集合中，先按调整后的行动类别权重抽样，再按类别内候选收益抽样。技能数量不会直接放大类别权重。
 
+队列持有的 AIController 在换图和关闭再启用时保持同一实例，保留模式、评分阈值、实例事件订阅及随机决策序号。LoadGameMap 会立即同步已有控制器的 Map，包括 AI 关闭期间；实际地图实例改变时清除位置历史、LastPolicyResult、LastMetrics 与 LastPlanningDiagnostics。同一地图实例不触发清理。EnableAI=false 时 queue.AI 返回 null，并清除这些短期状态；重新启用后继续使用保留实例。各队列的控制器与状态互相独立。
+
+直接构造的 AIController(queue, map) 保留显式地图绑定，队列换图不会更新该独立实例。宿主需同步换图与决策操作。同种子、同输入及同操作序列可重放随机决策，换图与开关不会重新使用开局序号。
+
 新模式普攻使用现有伤害估值；缺少技能语义时使用目标数量的保守基础值，并调用对应评估事件。EvaluatePlanEvent 可以返回实际伤害、有效治疗等估值，返回 null 使用内置值。回调必须只读；普通多播委托返回最后一个订阅者的值，不能把多次订阅当作自动求和。
 
 新模式的普攻、物品、即时技能及吟唱技能都使用实际位置风险扣分，保留移动步数成本；MovementBenefitThreshold 优先保留近似收益的原地行动，RepeatedPositionPenalty 降低返回近期实际位置的偏好。位置记录按控制器和角色对象隔离，不序列化。

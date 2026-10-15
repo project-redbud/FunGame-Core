@@ -19,11 +19,11 @@ namespace FunGame.Core.Controller
     public partial class AIController(GamingQueue queue, GameMap? map)
     {
         private readonly GamingQueue _queue = queue;
-        private readonly GameMap? _map = map;
+        private GameMap? _map = map;
 
         /// <summary>
         /// 本控制器已发起的决策评估序号
-        /// <para>参与随机源派生：同种子下第 N 次决策必然使用同一组随机源，而重试、下一回合会得到新的噪声，保持与原「每次评估都换一批随机值」相近的行为</para>
+        /// <para>参与随机源派生，在控制器生命周期内递增，换图与 AI 开关不重置序号</para>
         /// </summary>
         private int _decisionSerial = 0;
 
