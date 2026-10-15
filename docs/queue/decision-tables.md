@@ -74,7 +74,7 @@ AI 模式下，行动前的模组选择列表包含可在移动后触及的完�
 
 比较方式为 lessThan、atMost、equal、atLeast、greaterThan。distance 与 plan.risk 在无地图模式不匹配；required 移动、approach 和 retreat 在无地图模式不可执行，ifNeeded 技能可以原地规划。
 
-最多 256 条规则，条件树最多 16 层，每个组合最多 64 个子条件。非法数值、未知类型、未定义绑定和无效资源引用返回带配置路径的诊断。Parser 不接受未知 JSON 字段。
+规则列表不可为 null，允许空表，最多 256 条规则。条件根节点深度为 0，最多嵌套 16 级，每个 all / any 组合最多 64 个直接子条件。非法数值、未知类型、未定义绑定和无效资源引用返回带配置路径的诊断。Parser 不接受未知 JSON 字段，JSON 最大深度为 64；它限制 JSON 对象与数组的嵌套，与条件树深度独立，扩展 parameters 中的 JSON 也受此限制。
 
 ## 默认 AI 与估值
 
@@ -83,6 +83,10 @@ AI 模式下，行动前的模组选择列表包含可在移动后触及的完�
 - Legacy：分数乘类别权重，保留现有随机评分。
 - Deterministic：有界候选规划、稳定估值与排序，不加入随机评分。
 - WeightedNearBest：在 ScoreTolerance 的近似收益集合中，先按调整后的行动类别权重抽样，再按类别内候选收益抽样。技能数量不会直接放大类别权重。
+
+队列持有的 AIController 在换图和关闭再启用时保持同一实例，保留模式、评分阈值、实例事件订阅及随机决策序号。LoadGameMap 会立即同步已有控制器的 Map，包括 AI 关闭期间；实际地图实例改变时清除位置历史、LastPolicyResult、LastMetrics 与 LastPlanningDiagnostics。同一地图实例不触发清理。EnableAI=false 时 queue.AI 返回 null，并清除这些短期状态；重新启用后继续使用保留实例。各队列的控制器与状态互相独立。
+
+直接构造的 AIController(queue, map) 保留显式地图绑定，队列换图不会更新该独立实例。宿主需同步换图与决策操作。同种子、同输入及同操作序列可重放随机决策，换图与开关不会重新使用开局序号。
 
 新模式普攻使用现有伤害估值；缺少技能语义时使用目标数量的保守基础值，并调用对应评估事件。EvaluatePlanEvent 可以返回实际伤害、有效治疗等估值，返回 null 使用内置值。回调必须只读；普通多播委托返回最后一个订阅者的值，不能把多次订阅当作自动求和。
 
@@ -122,6 +126,8 @@ AIDecision.CastCenter 表示选择中心/方向，TargetGrids 表示影响格。
 ## 扩展与诊断
 
 DecisionTableRegistry.RegisterCondition 与 RegisterAction 接收只读求值器/规划器。扩展配置仅保存标识和 JSON 参数；AddRule 的 lambda 只在构建时执行，不导出任意 C# 委托。编译器会复制配置和注册表。
+
+Registry 的重复扩展注册抛出 ArgumentException，已有扩展保持；Loader 的重复策略标识返回 id 诊断，保留已有策略。Loader.Load 将文件路径格式、读取权限、I/O 和 JSON 格式错误转换为诊断；文件读取之外的编程异常继续抛出。
 
 宿主也可以实现 IDecisionPolicy，通过 Loader.Register(id, policy) 注册代码策略，再按 ID 绑定角色。代码策略不能导出为独立 JSON 规则；实现者负责隔离自身的角色与战斗状态。
 

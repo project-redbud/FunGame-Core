@@ -32,17 +32,21 @@ namespace FunGame.Core.Api
             _policies.Add(config.Id, _compiler.Compile(config));
             return [];
         }
-        /// <summary>从文件加载单个策略。</summary>
+        /// <summary>从文件加载单个策略，路径、读取及 JSON 格式错误返回诊断。</summary>
         /// <param name="path">JSON 路径。</param>
         /// <returns>加载错误。</returns>
         public IReadOnlyList<DecisionDiagnostic> Load(string path)
         {
+            string json;
             try
             {
-                return DecisionTableParser.TryParse(File.ReadAllText(path), out DecisionTableConfig? config, out IReadOnlyList<DecisionDiagnostic> diagnostics) ? Register(config!) : diagnostics;
+                json = File.ReadAllText(path);
             }
             catch (IOException error) { return [new(path, error.Message)]; }
             catch (UnauthorizedAccessException error) { return [new(path, error.Message)]; }
+            catch (ArgumentException error) { return [new(path ?? nameof(path), error.Message)]; }
+            catch (NotSupportedException error) { return [new(path, error.Message)]; }
+            return DecisionTableParser.TryParse(json, out DecisionTableConfig? config, out IReadOnlyList<DecisionDiagnostic> diagnostics) ? Register(config!) : diagnostics;
         }
         /// <summary>查询编译策略。</summary>
         /// <param name="id">策略标识。</param>

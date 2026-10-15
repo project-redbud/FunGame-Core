@@ -202,6 +202,7 @@ namespace FunGame.Core.Model.Queue
         /// <summary>
         /// 是否启用 AI 控制器
         /// <para>关闭后 AI 托管角色不再经由 AI 决策，回退到模组事件与概率决策</para>
+        /// <para>关闭时清理短期决策状态，保留控制器配置、订阅与随机决策序号</para>
         /// </summary>
         public bool EnableAI
         {
@@ -210,22 +211,21 @@ namespace FunGame.Core.Model.Queue
             {
                 if (_enableAI == value) return;
                 _enableAI = value;
-                if (!value) _ai = null;
+                if (!value) _ai?.ClearTransientState();
+                else _ai?.BindMap(_map);
             }
         }
 
         /// <summary>
-        /// AI 控制器入口，受 <see cref="EnableAI"/> 控制，地图发生变化时自动重建
+        /// AI 控制器入口，关闭时返回 null，换图与重新启用时复用同一实例
         /// </summary>
         public AIController? AI
         {
             get
             {
                 if (!_enableAI) return null;
-                if (_ai is null || !ReferenceEquals(_ai.Map, _map))
-                {
-                    _ai = new(this, _map);
-                }
+                _ai ??= new(this, _map);
+                _ai.BindMap(_map);
                 return _ai;
             }
         }
@@ -447,11 +447,13 @@ namespace FunGame.Core.Model.Queue
 
         /// <summary>
         /// 加载地图
+        /// <para>同步队列持有的 AI 控制器；地图实例改变时清理其短期决策状态</para>
         /// </summary>
-        /// <param name="map"></param>
+        /// <param name="map">用于初始化队列地图的模板</param>
         public void LoadGameMap(GameMap map)
         {
             _map = map.InitGamingQueue(this);
+            _ai?.BindMap(_map);
         }
 
         /// <summary>

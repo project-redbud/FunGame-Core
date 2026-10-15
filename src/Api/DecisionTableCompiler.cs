@@ -14,6 +14,7 @@ namespace FunGame.Core.Api
         /// <summary>注册条件，不覆盖已有标识。</summary>
         /// <param name="id">条件标识。</param>
         /// <param name="evaluate">只读条件求值。</param>
+        /// <exception cref="ArgumentException">扩展标识格式无效或已经注册。</exception>
         public void RegisterCondition(string id, Func<DecisionEvaluationContext, ConditionConfig, DecisionPlan, bool> evaluate)
         {
             if (string.IsNullOrWhiteSpace(id) || !id.Contains(':')) throw new ArgumentException("扩展标识需要 module:name。", nameof(id));
@@ -23,6 +24,7 @@ namespace FunGame.Core.Api
         /// <summary>注册动作，不覆盖已有标识。</summary>
         /// <param name="id">动作标识。</param>
         /// <param name="plan">只读规划器；上下文携带本条方案额度，返回集合受该额度限制。</param>
+        /// <exception cref="ArgumentException">扩展标识格式无效或已经注册。</exception>
         public void RegisterAction(string id, Func<DecisionEvaluationContext, ActionConfig, TargetSelectorConfig?, IReadOnlyList<DecisionPlan>> plan)
         {
             if (string.IsNullOrWhiteSpace(id) || !id.Contains(':')) throw new ArgumentException("扩展标识需要 module:name。", nameof(id));
@@ -61,7 +63,7 @@ namespace FunGame.Core.Api
             if (config.SchemaVersion != 1) errors.Add(new("schemaVersion", "仅支持版本 1。"));
             if (string.IsNullOrWhiteSpace(config.Id) || !config.Id.Contains(':')) errors.Add(new("id", "需要 module:name 标识。"));
             if (config.Fallback is not ("defaultAI" or "endTurn")) errors.Add(new("fallback", "未知回退方式。"));
-            if (config.Rules == null || config.Rules.Count > 256) { errors.Add(new("rules", "规则列表不能为空且最多 256 条。")); return errors; }
+            if (config.Rules == null || config.Rules.Count > 256) { errors.Add(new("rules", "规则列表不可为 null，允许空表，最多 256 条。")); return errors; }
             HashSet<string> ids = [];
             for (int index = 0; index < config.Rules.Count; index++)
             {
@@ -92,7 +94,7 @@ namespace FunGame.Core.Api
         private void ValidateCondition(ConditionConfig? condition, string? target, string? plan, string path, int depth, List<DecisionDiagnostic> errors)
         {
             if (condition == null) return;
-            if (depth > 16) { errors.Add(new(path, "条件树超过 16 层。")); return; }
+            if (depth > 16) { errors.Add(new(path, "条件根节点深度为 0，最多嵌套 16 级。")); return; }
             int forms = (condition.All != null ? 1 : 0) + (condition.Any != null ? 1 : 0) + (condition.Not != null ? 1 : 0) + (!string.IsNullOrEmpty(condition.Type) ? 1 : 0);
             if (forms != 1) { errors.Add(new(path, "条件只能包含一种形式。")); return; }
             List<ConditionConfig>? children = condition.All ?? condition.Any;
