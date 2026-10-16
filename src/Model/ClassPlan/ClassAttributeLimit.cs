@@ -1,4 +1,4 @@
-namespace FunGame.Core.Model.Framework
+namespace FunGame.Core.Model.ClassPlan
 {
     /// <summary>
     /// 核心属性分配的上下限（按项，可空表示不限）

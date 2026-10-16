@@ -100,7 +100,7 @@ public class DecisionTableTests
             .AddRule("first", r => r.Priority(10).Then(Actions.EndTurn()))
             .AddRule("second", r => r.Priority(10).Then(Actions.NormalAttack()));
         DecisionTableConfig config = builder.Build();
-        FunGame.Core.Interface.IDecisionPolicy policy = new DecisionTableCompiler().Compile(config);
+        FunGame.Core.Interface.Base.IDecisionPolicy policy = new DecisionTableCompiler().Compile(config);
         config.Rules.Clear();
         builder.AddRule("later", r => r.Priority(20).Then(Actions.NormalAttack()));
         Assert.Equal("first", policy.Evaluate(Context(fixture)).RuleId);
@@ -259,7 +259,7 @@ public class DecisionTableTests
         Assert.True(decision.HasCandidate);
     }
 
-    private sealed class EndPolicy : FunGame.Core.Interface.IDecisionPolicy
+    private sealed class EndPolicy : FunGame.Core.Interface.Base.IDecisionPolicy
     {
         public DecisionEvaluationResult Evaluate(DecisionEvaluationContext context) => new(new() { ActionType = CharacterActionType.EndTurn }, "code", []);
     }

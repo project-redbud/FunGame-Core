@@ -1,4 +1,4 @@
-﻿namespace FunGame.Core.Model.Framework
+﻿namespace FunGame.Core.Model.ClassPlan
 {
     /// <summary>
     /// 职业规划操作结果

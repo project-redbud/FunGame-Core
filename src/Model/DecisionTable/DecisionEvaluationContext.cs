@@ -1,4 +1,3 @@
-using FunGame.Core.Controller;
 using FunGame.Core.Entity;
 using FunGame.Core.Interface.Entity;
 using FunGame.Core.Library.Constant;

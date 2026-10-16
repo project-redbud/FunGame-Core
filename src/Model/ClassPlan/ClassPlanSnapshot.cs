@@ -1,7 +1,7 @@
 using FunGame.Core.Entity;
 using FunGame.Core.Library.Constant;
 
-namespace FunGame.Core.Model.Framework
+namespace FunGame.Core.Model.ClassPlan
 {
     /// <summary>
     /// 职业计划存档快照：只保存可序列化的 IdName 与状态，读档时经 <see cref="ClassDefinitionRegistry"/> 重建

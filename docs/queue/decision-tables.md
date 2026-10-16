@@ -4,9 +4,28 @@ Core 提供版本 1 的 beforeDecision 有序规则表。配置使用纯 BCL JSO
 
 协同申请按申请者的控制模式调度：AI 协作方使用自己的决策表向当前回合角色提交原地申请，当前角色可以是手动玩家。手动协作方由宿主显式提交，不被 AI 代选。申请本身不执行动作，手动确认者自行选择是否接受。
 
+## 代码地图与依赖
+
+| 文件 | 命名空间与职责 |
+| --- | --- |
+| [`src/Interface/Base/IDecisionPolicy.cs`](../../src/Interface/Base/IDecisionPolicy.cs) | `FunGame.Core.Interface.Base`；`IDecisionPolicy.Evaluate` 定义共享策略契约 |
+| [`src/Model/DecisionActionPlanner.cs`](../../src/Model/DecisionActionPlanner.cs) | `FunGame.Core.Model`；`Plan` 生成方案，`CanUse` 校验动作预算与资源，`EstimateRisk` 估计站位风险 |
+| [`src/Model/DecisionTable/DecisionGeometry.cs`](../../src/Model/DecisionTable/DecisionGeometry.cs) | `FunGame.Core.Model.DecisionTable`；内部范围与几何判定，供规划器和评估上下文复用 |
+| [`src/Model/DecisionTable/DecisionEvaluationContext.cs`](../../src/Model/DecisionTable/DecisionEvaluationContext.cs) 及 `.Planning` 分部 | `FunGame.Core.Model.DecisionTable`；局面、候选、阶段预算、缓存与统计 |
+| [`src/Model/DecisionTable/DecisionTableConfig.cs`](../../src/Model/DecisionTable/DecisionTableConfig.cs) | `FunGame.Core.Model.DecisionTable`；配置模型与诊断 |
+| [`src/Api/DecisionTableCompiler.cs`](../../src/Api/DecisionTableCompiler.cs) 及 `.Evaluation` 分部 | `FunGame.Core.Api`；校验、编译、规则匹配与扩展注册 |
+| [`src/Api/DecisionTableLoader.cs`](../../src/Api/DecisionTableLoader.cs)、`DecisionTableBuilder.cs`、`DecisionTableParser.cs` | `FunGame.Core.Api`；加载、绑定、构建与 JSON 解析生成 |
+| [`src/Controller/AIController.cs`](../../src/Controller/AIController.cs) 及 `.Planning` / `.Lifecycle` 分部 | `FunGame.Core.Controller`；调度策略与默认 AI、估值、控制器生命周期 |
+| [`src/Model/Queue/GamingQueue.Decision.cs`](../../src/Model/Queue/GamingQueue.Decision.cs) | `FunGame.Core.Model.Queue`；把规划结果接回队列的执行重验入口 |
+
+宿主调用规划器时使用 `FunGame.Core.Model`，实现代码策略时使用 `FunGame.Core.Interface.Base`，配置与评估模型使用 `FunGame.Core.Model.DecisionTable`。决策表模型不依赖 `Controller`；队列通过 `AIController` 调度普通行动和协同申请，保留对控制器的引用。规划器只读局面，不执行动作或扣费，实际执行与结算仍由队列负责。
+
 ## 构建、导出与加载
 
 ```csharp
+using FunGame.Core.Api;
+using FunGame.Core.Model.DecisionTable;
+
 DecisionTableConfig config = DecisionTableBuilder.Create("example:healer")
     .AddRule("heal", rule => rule.Priority(100)
         .Target(Targets.Allies("patient"))

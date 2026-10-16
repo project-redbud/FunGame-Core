@@ -1,4 +1,4 @@
-namespace FunGame.Core.Model.Framework
+namespace FunGame.Core.Model.ClassPlan
 {
     /// <summary>
     /// 核心属性分配的额度：属性点总额 + 成长总额，以及是否受模板上下限约束

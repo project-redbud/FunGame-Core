@@ -5,7 +5,7 @@ using FunGame.Core.Model.DecisionTable;
 using FunGame.Core.Model.Framework;
 using FunGame.Core.Model.PrefabricatedEntity;
 
-namespace FunGame.Core.Controller
+namespace FunGame.Core.Model
 {
     /// <summary>只读行动规划与执行前合法性检查。</summary>
     public static class DecisionActionPlanner

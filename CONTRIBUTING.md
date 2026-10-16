@@ -111,9 +111,13 @@ FunGame.Core/
 | `Api` | 对外工具与适配 | `Factory`、`JsonService`、`JsonTool`、`NetworkUtility` / `Calculation` 等工具箱、回放渲染与状态推算 |
 | `Controller` | AI 决策 | `AIController` |
 | `Entity` | 实体模型 | `Character`、`Skill`、`Effect`、`Item`、`User`、`Inventory`、交易与探索相关实体、统计 |
-| `Interface` | 契约 | `IGamingQueue`、`IFactory`、`IBaseEntity`、事件与事件处理器 |
+| `Interface` | 契约 | `Base`（`IGamingQueue`、`IFactory`、`IModule`、`IDecisionPolicy` 等框架级契约）、实体接口、事件与事件处理器 |
 | `Library` | 基础设施 | 常量与枚举、异常、`JsonConverter` 家族、模块加载、架构基类 |
-| `Model` | 引擎核心 | `Queue`（行动顺序表与结算）、`EffectContext` / `EffectResult`（钩子契约）、`Framework`（决策点、回合记录、平衡常数等数据模型） |
+| `Model` | 引擎核心 | `ClassPlanner` / `DecisionActionPlanner`（功能入口）、`ClassPlan` / `DecisionTable`（功能模型）、`Queue`（行动顺序表与结算）、`EffectContext` / `EffectResult`（钩子契约）、`Framework`（通用数据模型） |
+
+框架级契约放在 `Interface/Base/`，`Interface/` 根目录不放独立文件。`Controller/` 仅承载 `AIController` 及其分部文件；大型功能入口类放在 `Model/` 根目录，辅助模型放在对应功能子目录。
+
+职业规划的额度、奖励、注册表与快照位于 `Model/ClassPlan/`，命名空间为 `FunGame.Core.Model.ClassPlan`；通用属性加成 `AttributeBoost`、平衡常数、决策点、地图与回合记录保留在 `Model/Framework/`。平衡常数引用职业额度与奖励类型，职业奖励结算读取平衡常数，这两处跨命名空间引用属于实际业务依赖。
 
 > `Model/Queue/` 下的 `GamingQueue` 是 `partial class`，按职责拆为多个文件：
 > `GamingQueue.cs`（回合循环与主流程）、`ChainAction.cs`（协同行动）、`EffectDispatch.cs`（特效钩子分发）、

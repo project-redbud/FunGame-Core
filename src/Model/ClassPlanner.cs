@@ -2,6 +2,7 @@ using FunGame.Core.Api;
 using FunGame.Core.Entity;
 using FunGame.Core.Library.Common.Event;
 using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.ClassPlan;
 using FunGame.Core.Model.Framework;
 
 namespace FunGame.Core.Model

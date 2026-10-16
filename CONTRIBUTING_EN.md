@@ -113,9 +113,13 @@ FunGame.Core/
 | `Api` | Public utilities and adapters | `Factory`, `JsonService`, `JsonTool`, `NetworkUtility` / `Calculation` toolboxes, record renderer and state predictor |
 | `Controller` | AI decisions | `AIController` |
 | `Entity` | Entity models | `Character`, `Skill`, `Effect`, `Item`, `User`, `Inventory`, trade &amp; exploration entities, statistics |
-| `Interface` | Contracts | `IGamingQueue`, `IFactory`, `IBaseEntity`, events and event handlers |
+| `Interface` | Contracts | `Base` (framework contracts such as `IGamingQueue`, `IFactory`, `IModule`, and `IDecisionPolicy`), entity interfaces, events and event handlers |
 | `Library` | Infrastructure | Constants and enums, exceptions, the `JsonConverter` family, module loading, architectural base classes |
-| `Model` | Engine core | `Queue` (action queue and resolution), `EffectContext` / `EffectResult` (hook contracts), `Framework` (decision points, round records, equilibrium constants, …) |
+| `Model` | Engine core | `ClassPlanner` / `DecisionActionPlanner` (feature entry points), `ClassPlan` / `DecisionTable` (feature models), `Queue` (action queue and resolution), `EffectContext` / `EffectResult` (hook contracts), `Framework` (general-purpose data models) |
+
+Framework contracts belong in `Interface/Base/`; the `Interface/` root contains no standalone files. `Controller/` contains only `AIController` and its partial files. Large feature entry points belong at the `Model/` root, with supporting models in the corresponding feature subdirectory.
+
+Class-plan budgets, rewards, registries, and snapshots live in `Model/ClassPlan/`, under `FunGame.Core.Model.ClassPlan`. General attribute boosts (`AttributeBoost`), equilibrium constants, decision points, maps, and round records remain in `Model/Framework/`. Equilibrium constants reference class budgets and rewards, while class reward settlement reads equilibrium constants; both cross-namespace references represent actual business dependencies.
 
 > `GamingQueue` under `Model/Queue/` is a `partial class` split by responsibility:
 > `GamingQueue.cs` (turn loop and main flow), `ChainAction.cs` (chain actions), `EffectDispatch.cs` (effect hook dispatch),

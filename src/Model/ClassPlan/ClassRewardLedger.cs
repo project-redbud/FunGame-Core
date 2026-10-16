@@ -1,4 +1,6 @@
-namespace FunGame.Core.Model.Framework
+using FunGame.Core.Model.Framework;
+
+namespace FunGame.Core.Model.ClassPlan
 {
     /// <summary>
     /// 单个职业的路线图奖励账本：已结算到的职业等级、剩余选择权、已习得技能与已施加的属性

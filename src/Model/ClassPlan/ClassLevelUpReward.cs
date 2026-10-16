@@ -1,4 +1,6 @@
-namespace FunGame.Core.Model.Framework
+using FunGame.Core.Model.Framework;
+
+namespace FunGame.Core.Model.ClassPlan
 {
     /// <summary>
     /// 职业升级路线图：某一职业等级的升级奖励

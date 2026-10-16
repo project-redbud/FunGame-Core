@@ -1,9 +1,9 @@
 using System.Text;
 using FunGame.Core.Api;
-using FunGame.Core.Interface;
 using FunGame.Core.Interface.Base;
 using FunGame.Core.Interface.Entity;
 using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.ClassPlan;
 using FunGame.Core.Model.EffectContext;
 using FunGame.Core.Model.Framework;
 

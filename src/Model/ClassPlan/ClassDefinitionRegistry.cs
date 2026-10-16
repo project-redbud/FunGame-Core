@@ -1,6 +1,6 @@
 using FunGame.Core.Entity;
 
-namespace FunGame.Core.Model.Framework
+namespace FunGame.Core.Model.ClassPlan
 {
     /// <summary>
     /// 职业内容注册表：把「职业 / 流派 / 转换战斗天赋战技」的 IdName 映射到创建工厂
