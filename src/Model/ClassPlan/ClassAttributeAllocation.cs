@@ -1,4 +1,6 @@
-namespace FunGame.Core.Model.Framework
+using FunGame.Core.Model.Framework;
+
+namespace FunGame.Core.Model.ClassPlan
 {
     /// <summary>
     /// 职业相关的核心属性分配：初始核心属性（力量 / 敏捷 / 智力）与初始核心属性成长（Growth）

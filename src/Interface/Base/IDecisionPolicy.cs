@@ -1,6 +1,6 @@
 using FunGame.Core.Model.DecisionTable;
 
-namespace FunGame.Core.Interface
+namespace FunGame.Core.Interface.Base
 {
     /// <summary>角色策略；共享实现不得保存角色的可变战斗状态。</summary>
     public interface IDecisionPolicy

@@ -1,5 +1,5 @@
 using FunGame.Core.Entity;
-using FunGame.Core.Interface;
+using FunGame.Core.Interface.Base;
 using FunGame.Core.Model.DecisionTable;
 
 namespace FunGame.Core.Api

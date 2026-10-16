@@ -1,6 +1,6 @@
 ﻿using FunGame.Core.Interface.Entity;
 using FunGame.Core.Library.Constant;
-using FunGame.Core.Model.Framework;
+using FunGame.Core.Model.ClassPlan;
 
 namespace FunGame.Core.Entity
 {

@@ -1,6 +1,6 @@
 using System.Text.Json;
 using FunGame.Core.Api;
-using FunGame.Core.Interface;
+using FunGame.Core.Interface.Base;
 using FunGame.Core.Model.DecisionTable;
 
 namespace FunGame.Core.Tests.Queue;

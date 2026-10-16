@@ -113,7 +113,7 @@ FunGame.Core/
 | `Entity` | 实体模型 | `Character`、`Skill`、`Effect`、`Item`、`User`、`Inventory`、交易与探索相关实体、统计 |
 | `Interface` | 契约 | `IGamingQueue`、`IFactory`、`IBaseEntity`、事件与事件处理器 |
 | `Library` | 基础设施 | 常量与枚举、异常、`JsonConverter` 家族、模块加载、架构基类 |
-| `Model` | 引擎核心 | `Queue`（行动顺序表与结算）、`EffectContext` / `EffectResult`（钩子契约）、`Framework`（决策点、回合记录、平衡常数等数据模型） |
+| `Model` | 引擎核心 | `Queue`（行动顺序表与结算）、`ClassPlan`（职业规划模型）、`DecisionTable`（决策表配置与评估）、`EffectContext` / `EffectResult`（钩子契约）、`Framework`（决策点、回合记录、平衡常数等数据模型）；大型功能的入口类（`ClassPlanner`、`DecisionActionPlanner`）直接放在模块根目录 |
 
 > `Model/Queue/` 下的 `GamingQueue` 是 `partial class`，按职责拆为多个文件：
 > `GamingQueue.cs`（回合循环与主流程）、`ChainAction.cs`（协同行动）、`EffectDispatch.cs`（特效钩子分发）、

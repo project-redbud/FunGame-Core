@@ -1,6 +1,6 @@
 using FunGame.Core.Api;
-using FunGame.Core.Controller;
 using FunGame.Core.Entity;
+using FunGame.Core.Model;
 using FunGame.Core.Model.DecisionTable;
 using FunGame.Core.Model.Framework;
 
@@ -91,7 +91,7 @@ public class BossBattleDecisionTableTests
         DecisionEvaluationContext bounded = new() { Queue = full.Queue, Actor = full.Actor, Points = full.Points, Skills = full.Skills,
             Enemies = full.Enemies, Allies = full.Allies, SelectableEnemies = full.SelectableEnemies, SelectableAllies = full.SelectableAllies,
             TurnOrigin = full.TurnOrigin, MoveGrids = full.MoveGrids, PositionBudget = 8 };
-        FunGame.Core.Interface.IDecisionPolicy policy = new DecisionTableCompiler().Compile(fixture.Config);
+        FunGame.Core.Interface.Base.IDecisionPolicy policy = new DecisionTableCompiler().Compile(fixture.Config);
         DecisionEvaluationResult expected = policy.Evaluate(full);
         DecisionEvaluationResult actual = policy.Evaluate(bounded);
         Assert.True(expected.Matched);

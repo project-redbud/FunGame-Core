@@ -1,4 +1,5 @@
-﻿using FunGame.Core.Library.Constant;
+﻿using FunGame.Core.Interface.Base;
+using FunGame.Core.Library.Constant;
 
 namespace FunGame.Core.Entity
 {
@@ -7,7 +8,7 @@ namespace FunGame.Core.Entity
         public long Id { get; set; }
         /// <summary>构建角色时继承的策略标识。</summary>
         public string? DecisionTableId { get; set; }
-        private Interface.IDecisionPolicy? _decisionPolicy;
+        private IDecisionPolicy? _decisionPolicy;
         private string? _boundPolicyId;
         public string Name { get; set; }
         public string FirstName { get; set; }

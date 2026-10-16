@@ -1,5 +1,6 @@
 ﻿using FunGame.Core.Entity;
 using FunGame.Core.Library.Constant;
+using FunGame.Core.Model.ClassPlan;
 using FunGame.Core.Model.Framework;
 
 namespace FunGame.Core.Api

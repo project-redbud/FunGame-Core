@@ -1,6 +1,7 @@
 using FunGame.Core.Entity;
+using FunGame.Core.Model.Framework;
 
-namespace FunGame.Core.Model.Framework
+namespace FunGame.Core.Model.ClassPlan
 {
     /// <summary>
     /// 结算上下文：结算一次职业奖励所需的全部输入

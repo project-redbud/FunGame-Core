@@ -1,4 +1,4 @@
-using FunGame.Core.Controller;
+using FunGame.Core.Model;
 using FunGame.Core.Model.DecisionTable;
 
 namespace FunGame.Core.Api

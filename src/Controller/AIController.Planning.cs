@@ -1,5 +1,6 @@
 using FunGame.Core.Entity;
 using FunGame.Core.Library.Constant;
+using FunGame.Core.Model;
 using FunGame.Core.Model.DecisionTable;
 using FunGame.Core.Model.Framework;
 

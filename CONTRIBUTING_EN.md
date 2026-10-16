@@ -115,7 +115,7 @@ FunGame.Core/
 | `Entity` | Entity models | `Character`, `Skill`, `Effect`, `Item`, `User`, `Inventory`, trade &amp; exploration entities, statistics |
 | `Interface` | Contracts | `IGamingQueue`, `IFactory`, `IBaseEntity`, events and event handlers |
 | `Library` | Infrastructure | Constants and enums, exceptions, the `JsonConverter` family, module loading, architectural base classes |
-| `Model` | Engine core | `Queue` (action queue and resolution), `EffectContext` / `EffectResult` (hook contracts), `Framework` (decision points, round records, equilibrium constants, …) |
+| `Model` | Engine core | `Queue` (action queue and resolution), `ClassPlan` (class planning models), `DecisionTable` (decision table config and evaluation), `EffectContext` / `EffectResult` (hook contracts), `Framework` (decision points, round records, equilibrium constants, …); entry classes of large features (`ClassPlanner`, `DecisionActionPlanner`) live in the module root |
 
 > `GamingQueue` under `Model/Queue/` is a `partial class` split by responsibility:
 > `GamingQueue.cs` (turn loop and main flow), `ChainAction.cs` (chain actions), `EffectDispatch.cs` (effect hook dispatch),

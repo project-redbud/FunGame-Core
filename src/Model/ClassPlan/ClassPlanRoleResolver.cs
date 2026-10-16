@@ -1,7 +1,7 @@
 using FunGame.Core.Entity;
 using FunGame.Core.Library.Constant;
 
-namespace FunGame.Core.Model.Framework
+namespace FunGame.Core.Model.ClassPlan
 {
     /// <summary>
     /// 角色定位推导：不再由玩家手动选择，而是从「生效战斗天赋 + 已选流派」自动得出
