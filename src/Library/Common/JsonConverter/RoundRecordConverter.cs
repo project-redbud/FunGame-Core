@@ -3,6 +3,7 @@ using FunGame.Core.Api;
 using FunGame.Core.Entity;
 using FunGame.Core.Library.Architecture;
 using FunGame.Core.Library.Constant;
+using FunGame.Core.Interface.Entity;
 using FunGame.Core.Model.Framework;
 
 namespace FunGame.Core.Library.Common.JsonConverter
@@ -282,7 +283,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
             }
             writer.WriteEndObject();
             writer.WritePropertyName(nameof(RoundRecord.SkillsCost));
-            JsonSerializer.Serialize(writer, value.SkillsCost.ToDictionary(kv => kv.Key.GetIdName(), kv => kv.Value), options);
+            WriteCostMap(writer, value.SkillsCost, options);
             writer.WritePropertyName(nameof(RoundRecord.Items));
             writer.WriteStartObject();
             foreach (KeyValuePair<CharacterActionType, Item> kv in value.Items)
@@ -292,7 +293,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
             }
             writer.WriteEndObject();
             writer.WritePropertyName(nameof(RoundRecord.ItemsCost));
-            JsonSerializer.Serialize(writer, value.ItemsCost.ToDictionary(kv => kv.Key.GetIdName(), kv => kv.Value), options);
+            WriteCostMap(writer, value.ItemsCost, options);
             writer.WriteBoolean(nameof(RoundRecord.HasKill), value.HasKill);
             writer.WritePropertyName(nameof(RoundRecord.Assists));
             CharacterRefHelper.WriteList(writer, value.Assists);
@@ -403,6 +404,28 @@ namespace FunGame.Core.Library.Common.JsonConverter
                     if (character != null) set(character, kvp.Value);
                 }
             }
+        }
+
+        /// <summary>
+        /// 将“实体 → 消耗文本”字典写为平铺的 <c>Id.Name → 消耗文本</c> JSON 对象。
+        /// <para>
+        /// 注意：<see cref="RoundRecord.SkillsCost"/> / <see cref="RoundRecord.ItemsCost"/> 的 key 是实体实例，
+        /// 其实例相等性基于 <see cref="IBaseEntity.Guid"/>；而同一技能/物品会被不同角色各自复制成独立实例
+        /// （Guid 不同、Id 与 Name 相同）。因此同一回合内多名角色释放同名技能时，按 Id.Name 展开必然出现重复键，
+        /// 用 <c>ToDictionary</c> 会抛 <see cref="ArgumentException"/>。
+        /// 这里改为逐项赋值（后写覆盖先写）做安全合并——同名技能的单次消耗文本本就一致，
+        /// 展示层（WebUI 的 Record&lt;string, string&gt;）也不区分实例。
+        /// </para>
+        /// </summary>
+        private static void WriteCostMap<T>(Utf8JsonWriter writer, Dictionary<T, string> costs, JsonSerializerOptions options) where T : class, IBaseEntity
+        {
+            Dictionary<string, string> map = [];
+            foreach (KeyValuePair<T, string> kv in costs)
+            {
+                if (kv.Key == null) continue;
+                map[kv.Key.GetIdName()] = kv.Value;
+            }
+            JsonSerializer.Serialize(writer, map, options);
         }
 
         /// <summary>

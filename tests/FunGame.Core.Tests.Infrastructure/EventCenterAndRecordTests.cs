@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FunGame.Core.Api;
 using FunGame.Core.Entity;
 using FunGame.Core.Model;
@@ -131,6 +132,30 @@ public class RoundRecordTests
 
         Assert.Empty(BattleStatePredictor.PredictAll([round], 1));
         Assert.Null(BattleStatePredictor.Predict([round], 1, Guid.NewGuid()));
+    }
+
+    /// <summary>
+    /// 同一回合内两名角色各自释放同名技能时，SkillsCost 会持有两个 Id.Name 相同但 Guid 不同的实例，
+    /// 序列化必须合并成一条（历史实现用 ToDictionary 会抛“An item with the same key has already been added”）。
+    /// </summary>
+    [Fact]
+    public void Serialize_MergesCostEntriesWithSameIdName()
+    {
+        Skill first = new OpenSkill(6007, "应急装置", []) { Guid = Guid.NewGuid() };
+        Skill second = new OpenSkill(6007, "应急装置", []) { Guid = Guid.NewGuid() };
+        Character a = new() { Name = "甲" };
+        Character b = new() { Name = "乙" };
+        RoundRecord round = new(1) { Actor = a };
+        round.AllCharacters.AddRange([a, b]);
+        round.SkillsCost[first] = "-30 MP";
+        round.SkillsCost[second] = "-30 MP";
+
+        string json = JsonSerializer.Serialize(round, JsonTool.JsonSerializerOptions);
+
+        using JsonDocument doc = JsonDocument.Parse(json);
+        JsonElement costs = doc.RootElement.GetProperty(nameof(RoundRecord.SkillsCost));
+        Assert.Equal("-30 MP", costs.GetProperty("6007.应急装置").GetString());
+        Assert.Single(costs.EnumerateObject());
     }
 }
 
