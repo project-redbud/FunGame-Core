@@ -172,6 +172,17 @@ namespace FunGame.Core.Api
             {
                 copy.Equipments[kv.Key] = kv.Value;
             }
+            foreach (EquipmentStateSnapshot equipment in source.EquipmentsDetail)
+            {
+                copy.EquipmentsDetail.Add(new EquipmentStateSnapshot
+                {
+                    Slot = equipment.Slot, ItemId = equipment.ItemId, ItemName = equipment.ItemName, Description = equipment.Description
+                });
+            }
+            foreach (ItemStateSnapshot item in source.Items)
+            {
+                copy.Items.Add(new ItemStateSnapshot { ItemId = item.ItemId, ItemName = item.ItemName, Description = item.Description });
+            }
             foreach (SkillStateSnapshot skill in source.Skills)
             {
                 copy.Skills.Add(new SkillStateSnapshot { SkillId = skill.SkillId, SkillName = skill.SkillName, Level = skill.Level, CurrentCD = skill.CurrentCD, Description = skill.Description });

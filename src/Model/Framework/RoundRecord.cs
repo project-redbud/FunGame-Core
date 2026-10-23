@@ -16,8 +16,14 @@ namespace FunGame.Core.Model.Framework
         public HashSet<CharacterActionType> ActionTypes { get; } = [];
         public Dictionary<CharacterActionType, List<Character>> Targets { get; } = [];
         public Dictionary<CharacterActionType, Skill> Skills { get; } = [];
+        /// <summary>
+        /// 各技能实例最近一次释放的消耗文本；JSON 按 Id.Name 合并，逐次消耗与执行者以 <see cref="Actions"/> 为准。
+        /// </summary>
         public Dictionary<Skill, string> SkillsCost { get; set; } = [];
         public Dictionary<CharacterActionType, Item> Items { get; set; } = [];
+        /// <summary>
+        /// 各物品实例最近一次使用的消耗文本，免费使用为空字符串；JSON 按 Id.Name 合并，逐次消耗与执行者以 <see cref="Actions"/> 为准。
+        /// </summary>
         public Dictionary<Item, string> ItemsCost { get; set; } = [];
         public bool HasKill { get; set; } = false;
         public List<Character> Assists { get; set; } = [];

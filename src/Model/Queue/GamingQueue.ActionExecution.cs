@@ -83,30 +83,28 @@ namespace FunGame.Core.Model.Queue
             }
 
             string line = $"[ {character} ] ";
+            List<string> costParts = [];
             if (costMP > 0)
             {
                 character.MP -= costMP;
-                LastRound.ItemsCost[item] = $"{-costMP:0.##} MP";
-                if (_currentAction != null)
-                {
-                    _currentAction.Cost = $"{-costMP:0.##} MP";
-                    _currentAction.MPCost = costMP;
-                }
+                costParts.Add($"{-costMP:0.##} MP");
                 line += $"消耗了 {costMP:0.##} 点魔法值，";
             }
 
             if (costEP > 0)
             {
                 character.EP -= costEP;
-                if (LastRound.ItemsCost.GetValueOrDefault(item, "") != "") LastRound.ItemsCost[item] += " / ";
-                else LastRound.ItemsCost[item] = "";
-                LastRound.ItemsCost[item] += $"{-costEP:0.##} EP";
-                if (_currentAction != null)
-                {
-                    _currentAction.Cost += (_currentAction.Cost != "" ? " / " : "") + $"{-costEP:0.##} EP";
-                    _currentAction.EPCost = costEP;
-                }
+                costParts.Add($"{-costEP:0.##} EP");
                 line += $"消耗了 {costEP:0.##} 点能量，";
+            }
+
+            string costText = string.Join(" / ", costParts);
+            LastRound.ItemsCost[item] = costText;
+            if (_currentAction != null)
+            {
+                _currentAction.Cost = costText;
+                _currentAction.MPCost = costMP;
+                _currentAction.EPCost = costEP;
             }
 
             line += $"释放了物品技能 [ {skill.Name} ]！{(skill.Slogan != "" ? skill.Slogan : "")}";

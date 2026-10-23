@@ -85,16 +85,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
                     }
                     break;
                 case nameof(RoundRecord.SkillsCost):
-                    // SkillsCost 的 key 以 Id.Name 字符串写入，这里按 Id.Name 匹配回 Skills 中的技能实例
-                    using (JsonDocument costDoc = JsonDocument.ParseValue(ref reader))
-                    {
-                        foreach (JsonProperty property in costDoc.RootElement.EnumerateObject())
-                        {
-                            string cost = property.Value.GetString() ?? "";
-                            Skill? skill = result.Skills.Values.FirstOrDefault(s => s.GetIdName() == property.Name);
-                            if (skill != null) result.SkillsCost[skill] = cost;
-                        }
-                    }
+                    convertingContext[nameof(RoundRecord.SkillsCost)] = JsonService.GetObject<Dictionary<string, string>>(ref reader, options) ?? [];
                     break;
                 case nameof(RoundRecord.Items):
                     using (JsonDocument itemDoc = JsonDocument.ParseValue(ref reader))
@@ -111,16 +102,7 @@ namespace FunGame.Core.Library.Common.JsonConverter
                     }
                     break;
                 case nameof(RoundRecord.ItemsCost):
-                    // ItemsCost 的 key 以 Id.Name 字符串写入，这里按 Id.Name 匹配回 Items 中的物品实例
-                    using (JsonDocument itemCostDoc = JsonDocument.ParseValue(ref reader))
-                    {
-                        foreach (JsonProperty property in itemCostDoc.RootElement.EnumerateObject())
-                        {
-                            string cost = property.Value.GetString() ?? "";
-                            Item? item = result.Items.Values.FirstOrDefault(i => i.GetIdName() == property.Name);
-                            if (item != null) result.ItemsCost[item] = cost;
-                        }
-                    }
+                    convertingContext[nameof(RoundRecord.ItemsCost)] = JsonService.GetObject<Dictionary<string, string>>(ref reader, options) ?? [];
                     break;
                 case nameof(RoundRecord.HasKill):
                     result.HasKill = reader.GetBoolean();
@@ -378,6 +360,12 @@ namespace FunGame.Core.Library.Common.JsonConverter
             RoundRecord record = result;
             List<Character>? allCharacters = convertingContext.TryGetValue(AllCharactersProperty, out object? ac) ? ac as List<Character> : null;
 
+            // 协同引用可能只在逐次动作中出现；等整个对象读取完毕后再恢复兼容消耗映射。
+            ResolveCostMap(convertingContext, nameof(RoundRecord.SkillsCost),
+                record.Skills.Values.Concat(record.Actions.AsEnumerable().Reverse().Select(a => a.Skill).OfType<Skill>()), record.SkillsCost);
+            ResolveCostMap(convertingContext, nameof(RoundRecord.ItemsCost),
+                record.Items.Values.Concat(record.Actions.AsEnumerable().Reverse().Select(a => a.Item).OfType<Item>()), record.ItemsCost);
+
             ResolveCharacterKeyed<double>(record, convertingContext, nameof(RoundRecord.Damages), allCharacters, (c, v) => record.Damages[c] = v);
             ResolveCharacterKeyed<Dictionary<int, double>>(record, convertingContext, nameof(RoundRecord.DamageDetails), allCharacters, (c, v) => record.DamageDetails[c] = v.ToDictionary(kv => (DamageType)kv.Key, kv => kv.Value));
             ResolveCharacterKeyed<bool>(record, convertingContext, nameof(RoundRecord.IsCritical), allCharacters, (c, v) => record.IsCritical[c] = v);
@@ -407,14 +395,28 @@ namespace FunGame.Core.Library.Common.JsonConverter
         }
 
         /// <summary>
+        /// 按引用优先级恢复消耗映射；无法匹配的条目不绑定到其他实体。
+        /// </summary>
+        private static void ResolveCostMap<T>(Dictionary<string, object> convertingContext, string propertyName,
+            IEnumerable<T> references, Dictionary<T, string> result) where T : class, IBaseEntity
+        {
+            if (!convertingContext.TryGetValue(propertyName, out object? raw) || raw is not Dictionary<string, string> costs) return;
+            Dictionary<string, T> entities = [];
+            foreach (T entity in references)
+            {
+                entities.TryAdd(entity.GetIdName(), entity);
+            }
+            foreach (KeyValuePair<string, string> cost in costs)
+            {
+                if (entities.TryGetValue(cost.Key, out T? entity)) result[entity] = cost.Value ?? "";
+            }
+        }
+
+        /// <summary>
         /// 将“实体 → 消耗文本”字典写为平铺的 <c>Id.Name → 消耗文本</c> JSON 对象。
         /// <para>
-        /// 注意：<see cref="RoundRecord.SkillsCost"/> / <see cref="RoundRecord.ItemsCost"/> 的 key 是实体实例，
-        /// 其实例相等性基于 <see cref="IBaseEntity.Guid"/>；而同一技能/物品会被不同角色各自复制成独立实例
-        /// （Guid 不同、Id 与 Name 相同）。因此同一回合内多名角色释放同名技能时，按 Id.Name 展开必然出现重复键，
-        /// 用 <c>ToDictionary</c> 会抛 <see cref="ArgumentException"/>。
-        /// 这里改为逐项赋值（后写覆盖先写）做安全合并——同名技能的单次消耗文本本就一致，
-        /// 展示层（WebUI 的 Record&lt;string, string&gt;）也不区分实例。
+        /// 同名实例按字典枚举顺序覆盖，保留现有字符串映射协议；结果可能丢失实例间的消耗差异，
+        /// 也不保证代表最后一次行动。逐次消耗与执行者归属以 <see cref="RoundRecord.Actions"/> 为准。
         /// </para>
         /// </summary>
         private static void WriteCostMap<T>(Utf8JsonWriter writer, Dictionary<T, string> costs, JsonSerializerOptions options) where T : class, IBaseEntity

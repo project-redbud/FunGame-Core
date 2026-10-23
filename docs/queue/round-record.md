@@ -28,6 +28,19 @@
 > **后果**：往历史回合的**集合**里塞东西不会影响当前回合；但改这些实体自身的字段（`HP`、`CharacterState`、
 > `Skill.CurrentCD`）会同时改变历史记录看到的值。回放端要「冻结」实体状态，靠的是 `Checkpoint`。
 
+## 消耗记录
+
+`SkillsCost` / `ItemsCost` 在内存中按实体实例保存最近一次释放或使用的消耗文本。
+物品的 MP、EP 消耗合并为本次使用的完整文本；免费使用的文本为空字符串。
+
+JSON 保持 `Id.Name → string` 格式。同名不同实例按消耗字典枚举顺序覆盖，因此只保留一个展示值，
+不能用它恢复每名角色或每次行动的费用，也不能把它视为最后一次行动的消耗。
+精确消耗与执行者归属读取 `Actions` 的 `Actor`、`Cost`、`MPCost` 和 `EPCost`。
+
+反序列化在完整读取对象后匹配消耗引用，不依赖属性顺序。优先匹配 `Skills` / `Items` 中首个同名引用；
+缺失时匹配 `Actions` 中最后出现的同名技能或物品引用，支持仅在逐次动作中保存引用的协同记录。
+这种匹配只为兼容展示字段选取代表实例，不能推断原始费用归属；找不到引用的条目不绑定到其他实体。
+
 ## 动作归属（协同行动的关键）
 
 | 记录 | `Actor` | `TurnActor` | `ChainActor` | `ChainActionRequestId` |
@@ -61,4 +74,7 @@
 | `ChainActionRegressionTests.LethalChainActionCreditsActorAndAssist` | B 得击杀、A 得助攻 |
 | `ChainActionRegressionTests.ChainMagicCastingPaysMpOnReleaseWithoutRefreshingBudget` | `ActionTurn` 不因协同吟唱结算而累计 |
 | `RoundRecordTests.Snapshot_CopiesCollectionsButKeepsEntityReferences` | 集合独立、实体同引用 |
+| `RoundRecordCostTests` | 消耗字段顺序、引用优先级、同名冲突与逐次费用 |
+| `ChainActionCostRecordTests` | 真实协同技能／物品消耗往返、执行者与确认者归属 |
+| `ItemCastRecordTests` | 同回合重复使用物品、混合消耗及免费使用 |
 | `ActionQueueTests.NextCharacter_ArchivesPreviousRoundOnNewTurn` | 归档时机与 `Round`、`Seed` 字段 |
