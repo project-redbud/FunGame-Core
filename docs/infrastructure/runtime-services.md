@@ -62,6 +62,9 @@ public EquilibriumConstant GameplayEquilibriumConstant { get; set; } = General.G
 | `BattleStatePredictor` | `PredictAll(rounds, targetRound)` / `Predict(…)` | **依赖 `Checkpoint`**：目标回合之前没有检查点时返回空字典 / `null` |
 | `CharacterStateSnapshot` | 检查点载体（装备/物品/技能/状态栏） | 只在总第 1 回合建立，见[回合记录](../queue/round-record.md) |
 
+`BattleStatePredictor` 基于检查点副本推算。副本保留背包 `Items` 和装备明细 `EquipmentsDetail` 的全部字段，
+并逐项新建快照对象；修改预测结果中的物品或装备名称、描述及列表，不会回写检查点。
+
 ## 异常与工具
 
 - 框架异常都在 `FunGame.Core` 命名空间下，`Message` 里带错误码（`#10001` 起，按顺序递增，如
@@ -89,6 +92,7 @@ public EquilibriumConstant GameplayEquilibriumConstant { get; set; } = General.G
 | `AddOrUpdateAndRemoveEvent_ReplacesWholeCollection` | 整体替换语义 |
 | `Stores_AreRegisteredByName` | 商店注册与移除 |
 | `BattleStatePredictor_NeedsCheckpointToRestoreState` | 无检查点 → 空字典 / `null` |
+| `BattleStatePredictorTests.Predict_CopiesInventoryAndEquipmentDetailsWithoutMutatingCheckpoint` | 背包、装备明细完整保留且与检查点独立 |
 | `RenderRound_ProducesHeaderForEmptyRound` | 渲染非空；无动作角色渲染为空串 |
 | `FrameworkExceptions_CarryErrorCodes` / `ExceptionExtension_WrapsInnerException` | 错误码与 `InnerExceoption` 前缀 |
 | `CalculationTests` / `NetworkUtilityTests` / `EncryptionTests` | 工具方法的边界与已知向量 |

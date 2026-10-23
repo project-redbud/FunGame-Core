@@ -111,3 +111,4 @@ void AfterConvert(ref T result, Dictionary<string, object> context);   // 读完
 | `EffectConverter_StoresUnknownPropertiesInValues` | 未知属性进 `Values` |
 | `ItemConverter_ReadsDynamicItemFromJson` | 动态物品 JSON → 技能 → 特效 → `Values["exatk"]` |
 | `DateTimeConverter_RejectsInvalidPayload` | 非法日期抛 `JsonException` |
+| `RoundRecordCostTests` | 消耗引用延迟解析、动作引用回退、平铺格式与同名冲突 |
