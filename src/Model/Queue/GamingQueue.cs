@@ -4225,15 +4225,15 @@ namespace FunGame.Core.Model.Queue
             {
                 // 完全行动不能/行动受限：补充上限1/4
                 pointsToAdd = Math.Max(1, dp.MaxDecisionPoints / 4);
-                dp.CurrentDecisionPoints = Math.Min(dp.CurrentDecisionPoints + pointsToAdd, dp.MaxDecisionPoints);
             }
             else
             {
                 // 正常状态：补充上限一半
                 pointsToAdd = Math.Max(1, dp.MaxDecisionPoints / 2);
-                dp.CurrentDecisionPoints = Math.Min(dp.CurrentDecisionPoints + pointsToAdd, dp.MaxDecisionPoints);
             }
 
+            pointsToAdd = Math.Max(1, pointsToAdd + dp.RecoverDecisionPointsPerRound);
+            dp.CurrentDecisionPoints = Math.Min(dp.CurrentDecisionPoints + pointsToAdd, dp.MaxDecisionPoints);
             dp.DecisionPointsRecovery = pointsToAdd;
 
             if (IsDebug) WriteLine($"[ {character} ] 回合开始，补充 {pointsToAdd} 决策点，当前 {dp.CurrentDecisionPoints}/{dp.MaxDecisionPoints} 决策点。");

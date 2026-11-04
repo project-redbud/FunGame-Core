@@ -12,9 +12,23 @@
 
 | 概念 | 字段 | 默认值 | 说明 |
 | --- | --- | --- | --- |
-| 初始/上限/每回合补充 | `InitialDecisionPoints` / `MaxDecisionPoints` / `RecoverDecisionPointsPerRound` | 1 / 7 / 1 | 来自 `General.GameplayEquilibriumConstant` |
+| 初始/上限/每回合额外补充 | `InitialDecisionPoints` / `MaxDecisionPoints` / `RecoverDecisionPointsPerRound` | 1 / 7 / 0 | 来自 `General.GameplayEquilibriumConstant` |
 | 存量 | `CurrentDecisionPoints` | = `InitialDecisionPoints` | 动作发生时扣减 |
 | 配额 | `this[CharacterActionType]` | 见下表 | 与该类型**已用次数**比较 |
+
+## 回合回复
+
+正常回合开始时，决策点上限先增长 1，最多达到 `EquilibriumConstant.MaxDecisionPoints`。
+正常状态的基础回复量为 `max(1, floor(当前上限 / 2))`；完全行动不能或行动受限时为
+`max(1, floor(当前上限 / 4))`。
+
+`DecisionPoints.RecoverDecisionPointsPerRound` 是在基础回复量上相加的额外点数，默认 `0`；
+队列创建角色预算时从所用的 `EquilibriumConstant` 初始化，之后可按角色单独调整。
+总回复量为 `max(1, 基础回复量 + 额外点数)`，存量最多补到当前上限。例如上限为 7、加成为 2 时，
+正常状态补充 5 点，行动受限时补充 3 点。负值会减少回复量，但总回复量至少为 1。
+
+`DecisionPointsRecovery` 记录本回合计算出的总回复量（截断存量前），包含额外点数；
+达到上限时，实际增加的存量可能小于该值。吟唱和爆发技预释放状态跳过回复及上限增长。
 
 ## 配额（`this[type]`）
 
