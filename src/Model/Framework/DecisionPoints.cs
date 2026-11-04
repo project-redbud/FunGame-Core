@@ -24,7 +24,7 @@ namespace FunGame.Core.Model.Framework
         public int MaxDecisionPoints { get; set; } = General.GameplayEquilibriumConstant.InitialDecisionPoints;
 
         /// <summary>
-        /// 每回合决策点补充数量
+        /// 每回合额外补充的决策点，在按状态计算的基础回复量上叠加
         /// </summary>
         public int RecoverDecisionPointsPerRound { get; set; } = General.GameplayEquilibriumConstant.RecoverDecisionPointsPerRound;
 

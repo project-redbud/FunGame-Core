@@ -592,9 +592,9 @@ namespace FunGame.Core.Model.Framework
         public int MaxDecisionPoints { get; set; } = 7;
 
         /// <summary>
-        /// 每回合决策点补充数量
+        /// 每回合额外补充的决策点，默认无加成
         /// </summary>
-        public int RecoverDecisionPointsPerRound { get; set; } = 1;
+        public int RecoverDecisionPointsPerRound { get; set; } = 0;
 
         /// <summary>
         /// 每回合普通攻击决策配额
