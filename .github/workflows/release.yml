@@ -1,5 +1,5 @@
 # NuGet Trusted Publishing 发布工作流
-# 参考：https://www.nuget.org/publish/trusted-publishing
+# 参考：https://learn.microsoft.com/nuget/nuget-org/trusted-publishing
 
 name: Publish to NuGet
 
@@ -14,16 +14,19 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'NuGet 包版本号，如 3.0.0 或 3.0.0-rc.1，必填'
+        description: '与源码三段版本号一致的 NuGet 版本，如 3.0.0 或 3.0.0-rc.1'
         required: true
+        type: string
 
 jobs:
   publish:
     name: Pack & Publish to NuGet
     runs-on: ubuntu-latest
     permissions:
-      id-token: write # Trusted Publishing（OIDC）必需，用于向 NuGet 证明本次运行来自本项目
+      id-token: write
       contents: read
+    env:
+      NUGET_USER: ${{ vars.NUGET_USER }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,49 +36,54 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Restore dependencies
-        run: dotnet restore src/FunGame.Core.csproj
-
-      - name: Build
-        run: dotnet build src/FunGame.Core.csproj --no-restore --configuration Release
-
-      - name: Unit tests
-        run: dotnet test FunGame.Core.slnx --configuration Release --verbosity normal
-
       - name: Resolve package version
         id: version
         shell: bash
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          if [ "${{ github.event_name }}" = "push" ]; then
-            # tag 触发正式版本发布
-            VERSION="${GITHUB_REF_NAME#v}"
-            if [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-            else
-              # 开发/预发布 tag 静默跳过，不产生失败记录
-              echo "tag $GITHUB_REF_NAME 不是正式版本，本次跳过发布。"
-              echo "skipped=true" >> "$GITHUB_OUTPUT"
-            fi
-          else
-            # 手动触发：必须填写版本号，任意版本皆可
-            VERSION="${{ inputs.version }}"
-            if [ -z "$VERSION" ]; then
-              echo "手动触发时请填写 version 输入。" >&2
-              exit 1
-            fi
-            if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+ ]]; then
-              echo "无效的版本号：$VERSION" >&2
-              exit 1
-            fi
-            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          SOURCE_VERSION_PREFIX="$(dotnet msbuild src/FunGame.Core.csproj -getProperty:VersionPrefix -verbosity:quiet)"
+          export SOURCE_VERSION_PREFIX
+          bash .github/scripts/resolve-release-version.sh
+
+      - name: Check NuGet user
+        if: steps.version.outputs.skipped != 'true'
+        shell: bash
+        run: |
+          if [[ -z "$NUGET_USER" ]]; then
+            echo '请先设置仓库变量 NUGET_USER，值为 nuget.org 用户名（不是邮箱）。' >&2
+            exit 1
           fi
+
+      - name: Restore dependencies
+        if: steps.version.outputs.skipped != 'true'
+        run: dotnet restore FunGame.Core.slnx
+
+      - name: Build
+        if: steps.version.outputs.skipped != 'true'
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.version }}
+        run: dotnet build FunGame.Core.slnx --no-restore --configuration Release -p:Version="$PACKAGE_VERSION"
+
+      - name: Unit tests
+        if: steps.version.outputs.skipped != 'true'
+        run: dotnet test FunGame.Core.slnx --no-build --no-restore --configuration Release --verbosity normal
 
       - name: Pack
         if: steps.version.outputs.skipped != 'true'
-        run: dotnet pack src/FunGame.Core.csproj --no-restore --no-build --configuration Release -o ./nupkg -p:PackageVersion=${{ steps.version.outputs.version }}
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.version }}
+        run: dotnet pack src/FunGame.Core.csproj --no-restore --no-build --configuration Release -o ./nupkg -p:Version="$PACKAGE_VERSION"
 
-      - name: Push to NuGet (Trusted Publishing)
+      - name: NuGet login
         if: steps.version.outputs.skipped != 'true'
-        # --api-key 为占位符：Trusted Publishing 模式下 NuGet 通过 OIDC 完成认证，忽略该值
-        # --skip-duplicate：同版本已存在时跳过而非失败，便于重试
-        run: dotnet nuget push ./nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --api-key az --skip-duplicate
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ env.NUGET_USER }}
+
+      - name: Push to NuGet
+        if: steps.version.outputs.skipped != 'true'
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        run: dotnet nuget push ./nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --api-key "$NUGET_API_KEY" --skip-duplicate
