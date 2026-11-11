@@ -19,19 +19,24 @@ ExHPPercentage ───────┘        （ExHP 来自力量、ExHP3 = Ba
 
 | 形态 | 例子 | 可写 | 语义 |
 | --- | --- | :---: | --- |
-| 固定加值 | `ExATK2`、`ExDEF2`、`ExHP2`、`ExPDR`、`ExCritRate` | ✅ | 直接加到最终值上 |
-| 百分比联动 | `ExATKPercentage`、`ExHPPercentage`、`ExSTRPercentage` | ✅ | 经 `Ex*3` 实时反映 `Base*` 的变化 |
+| 固定加值 | `ExSTR`、`ExAGI`、`ExINT`、`ExATK2`、`ExDEF2`、`ExHP2`、`ExPDR`、`ExCritRate` | ✅ | 直接加到最终值上 |
+| 百分比联动 | `ExATKPercentage`、`ExHPPercentage`、`ExSTRPercentage` | ✅ | 核心属性经 `ExSTR2` / `ExAGI2` / `ExINT2`、战斗属性经 `Ex*3` 实时反映 `Base*` 的变化 |
 | 只读派生 | `ExATK`、`ExATK3`、`ExDEF`、`ExDEF3`、`ExHP`、`ExHP3`、`ExSTR2` | ❌ | 由核心属性或 `Base*` 算出，赋值会编译失败 |
 
-> 想让加成**随基础属性成长**，写 `Ex*Percentage`；想**在施加瞬间锁定**数值，写 `Ex*2`。
+> 想让加成**随基础属性成长**，写 `Ex*Percentage`；想**在施加瞬间锁定**数值，核心属性写 `ExSTR` / `ExAGI` / `ExINT`，战斗属性写 `ExATK2` / `ExDEF2` / `ExHP2` / `ExMP2`。
 > 这个取舍在 `ExampleSuperSkillEffect` 的注释里有完整说明（`src/Library/Module/Example/ExampleSkill.cs`）。
+
+核心属性的点数与百分比派生值共同传导到战斗属性：`ExHP = (ExSTR + ExSTR2) × STRtoHPFactor`、
+`ExDEF = (ExSTR + ExSTR2) × STRtoDEFFactor`、`ExMP = (ExINT + ExINT2) × INTtoMPFactor`。
+`ExATK` 与 `ExPrimaryAttributeValue` 均取当前主属性的两项之和；主属性为 `None` 时按力量计算。
+因此 `PrimaryAttributeValue = BasePrimaryAttributeValue + ExPrimaryAttributeValue`。这些 getter 不改变可写字段和 JSON 字段名。
 
 ## 常用派生属性速查
 
 | 属性 | 公式要点 |
 | --- | --- |
-| `MaxHP` | `Max(1, BaseHP + ExHP + ExHP2 + ExHP3)`；`BaseHP` 含 `(Level-1)` 成长与 `STR × STRtoHPFactor` |
-| `ATK` / `DEF` | `Base + Ex + Ex2 + Ex3`；`BaseDEF` 含 `STR × STRtoDEFFactor` |
+| `MaxHP` | `Max(1, BaseHP + ExHP + ExHP2 + ExHP3)`；`BaseHP` 含 `(Level-1)` 成长与 `BaseSTR × STRtoHPFactor` |
+| `ATK` / `DEF` | `Base + Ex + Ex2 + Ex3`；`BaseDEF` 含 `BaseSTR × STRtoDEFFactor` |
 | `PDR` | `Min(1, DEF / (DEF + DEFReductionFactor) + ExPDR)` |
 | `SPD` | `InitialSPD + AGI × AGItoSPDMultiplier + ExSPD` |
 | `ActionCoefficient` | `Clamp(SPD / SPDUpperLimit + ExActionCoefficient, 0, 0.9)` —— 直接缩小动作硬直 |
@@ -62,6 +67,8 @@ ExHPPercentage ───────┘        （ExHP 来自力量、ExHP3 = Ba
 | --- | --- |
 | `MaxHp_EqualsInitialHpAtLevelOne` / `MaxHp_GrowsWithLevel` | 1 级等于 `InitialHP`；升级按 `LevelToHPFactor + HPGrowthFactor × InitialHP` 增长 |
 | `Attack_IncludesExtraBonuses` | `ExATK2 + ExATKPercentage` 组合（100 → 180） |
+| `CharacterPrimaryAttributeTests` | 核心属性点数与正负百分比的传导、非主属性、升级成长、战斗属性加成叠加、资源边界与复制 |
+| `CharacterAttributeSerializationTests` | 旧 JSON 点数与百分比字段的读取、派生属性与序列化往返 |
 | `Defense_ProducesPhysicalDamageReduction` | `DEF = DEFReductionFactor` → `PDR = 0.5` |
 | `SpeedDerivedCoefficients_AreClamped` | `ActionCoefficient` 上限 0.9 |
 | `PenetrationRate_IsClampedIntoPercentageRange` | 穿透越界被钳到 `[0,1]` |
