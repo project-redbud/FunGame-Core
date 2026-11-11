@@ -4,6 +4,10 @@ VisualStudioVersion = 17.3.32804.467
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunGame.Core", "FunGame.Core.csproj", "{842BB22E-4309-4ADD-93CD-A981CE10C30E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunGame.Core.Tests.Entities", "tests\FunGame.Core.Tests.Entities\FunGame.Core.Tests.Entities.csproj", "{B1E7CE52-5479-4A65-91A0-71C08C380AEA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -14,9 +18,16 @@ Global
 		{842BB22E-4309-4ADD-93CD-A981CE10C30E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{842BB22E-4309-4ADD-93CD-A981CE10C30E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{842BB22E-4309-4ADD-93CD-A981CE10C30E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1E7CE52-5479-4A65-91A0-71C08C380AEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1E7CE52-5479-4A65-91A0-71C08C380AEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1E7CE52-5479-4A65-91A0-71C08C380AEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1E7CE52-5479-4A65-91A0-71C08C380AEA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B1E7CE52-5479-4A65-91A0-71C08C380AEA} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9AD4C55B-5C44-4486-8497-5C5A7A7B299B}

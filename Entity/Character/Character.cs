@@ -215,7 +215,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 额外生命值 [ 与额外力量相关 ]
         /// </summary>
-        public double ExHP => ExSTR * GameplayEquilibriumConstant.STRtoHPFactor;
+        public double ExHP => (ExSTR + ExSTR2) * GameplayEquilibriumConstant.STRtoHPFactor;
 
         /// <summary>
         /// 额外生命值2 [ 与技能和物品相关 ]
@@ -274,7 +274,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 额外魔法值 [ 与额外智力相关 ]
         /// </summary>
-        public double ExMP => ExINT * GameplayEquilibriumConstant.INTtoMPFactor;
+        public double ExMP => (ExINT + ExINT2) * GameplayEquilibriumConstant.INTtoMPFactor;
 
         /// <summary>
         /// 额外魔法值2 [ 与技能和物品相关 ]
@@ -368,15 +368,15 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 if (PrimaryAttribute == PrimaryAttribute.AGI)
                 {
-                    return ExAGI;
+                    return ExAGI + ExAGI2;
                 }
                 else if (PrimaryAttribute == PrimaryAttribute.INT)
                 {
-                    return ExINT;
+                    return ExINT + ExINT2;
                 }
                 else // 默认STR
                 {
-                    return ExSTR;
+                    return ExSTR + ExSTR2;
                 }
             }
         }
@@ -415,7 +415,7 @@ namespace Milimoe.FunGame.Core.Entity
         /// <summary>
         /// 额外物理护甲 [ 与额外力量相关 ]
         /// </summary>
-        public double ExDEF => ExSTR * GameplayEquilibriumConstant.STRtoDEFFactor;
+        public double ExDEF => (ExSTR + ExSTR2) * GameplayEquilibriumConstant.STRtoDEFFactor;
 
         /// <summary>
         /// 额外物理护甲2 [ 与技能和物品相关 ]
@@ -571,7 +571,7 @@ namespace Milimoe.FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 额外核心属性的值 [ 核心属性相关 ]
+        /// 额外核心属性的值 [ 点数加成与百分比派生值之和 ]
         /// </summary>
         public double ExPrimaryAttributeValue
         {
@@ -579,15 +579,15 @@ namespace Milimoe.FunGame.Core.Entity
             {
                 if (PrimaryAttribute == PrimaryAttribute.AGI)
                 {
-                    return ExAGI;
+                    return ExAGI + ExAGI2;
                 }
                 else if (PrimaryAttribute == PrimaryAttribute.INT)
                 {
-                    return ExINT;
+                    return ExINT + ExINT2;
                 }
                 else
                 {
-                    return ExSTR;
+                    return ExSTR + ExSTR2;
                 }
             }
         }
