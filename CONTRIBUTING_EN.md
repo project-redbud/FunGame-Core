@@ -540,6 +540,10 @@ Releases are performed by maintainers — contributors only need to be aware of 
 
 - The version comes from the tag; development builds use `VersionPrefix` plus a date suffix (`3.0.0-dev-<MMDD>`).
 - Non-release tags (pre-releases and the like) are skipped silently rather than reported as failures.
+- Manual publishing accepts complete SemVer versions, including prereleases; the major, minor and patch must match the source `VersionPrefix`.
+- Build and pack use the same release version. After all tests pass, `NuGet/login@v1` exchanges the OIDC token for a temporary API key used by the push step.
+- Set the repository variable `NUGET_USER` to the nuget.org username (not email) with permission to publish this package. The NuGet Trusted Publishing policy must match this repository and `release.yml`; this workflow does not use a GitHub Environment.
+- Run the release-version regression checks with `bash .github/scripts/test-release-version.sh`; `dotnet.yml` also runs them on push / PR.
 
 ---
 

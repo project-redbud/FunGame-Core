@@ -502,6 +502,10 @@ git config user.signingkey ~/.ssh/id_ed25519.pub   # 同一把公钥也要作为
 
 - 版本号取自 tag；开发版本由 `VersionPrefix` + 日期后缀（`3.0.0-dev-<MMDD>`）生成。
 - 非正式 tag（预发布等）会静默跳过发布，不产生失败记录。
+- 手动发布支持完整 SemVer，包括预发布版本；发布版本的三段版本号必须与源码 `VersionPrefix` 的三段版本号一致。
+- 构建与打包使用同一发布版本，全部测试通过后才执行 `NuGet/login@v1`，将 OIDC token 换取的临时 API key 用于推送。
+- 仓库变量 `NUGET_USER` 填写有权发布此包的 nuget.org 用户名（不是邮箱）；NuGet Trusted Publishing 策略须匹配本仓库与 `release.yml`，本工作流不使用 GitHub Environment。
+- 发布版本校验回归通过 `bash .github/scripts/test-release-version.sh` 运行，`dotnet.yml` 在 push / PR 时执行此检查。
 
 ---
 

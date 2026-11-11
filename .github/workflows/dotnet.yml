@@ -24,6 +24,8 @@ jobs:
         dotnet-version: 10.0.x
     - name: Restore dependencies
       run: dotnet restore FunGame.Core.slnx
+    - name: Release version regression tests
+      run: bash .github/scripts/test-release-version.sh
     - name: Build
       run: dotnet build FunGame.Core.slnx --no-restore --configuration Release
     - name: Unit tests
