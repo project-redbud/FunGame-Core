@@ -58,17 +58,17 @@ namespace FunGame.Core.Entity
 
             builder.AppendLine(showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser());
             builder.AppendLine($"等级：{Level} / {GameplayEquilibriumConstant.MaxLevel}");
-            double exHP = ExHP + ExHP2 + ExHP3;
+            double exHP = ExHP;
             List<string> shield = [];
             if (Shield.TotalPhysical > 0) shield.Add($"物理：{Shield.TotalPhysical:0.##}");
             if (Shield.TotalMagical > 0) shield.Add($"魔法：{Shield.TotalMagical:0.##}");
             if (Shield.Mix > 0) shield.Add($"混合：{Shield.Mix:0.##}");
             builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : "") + (shield.Count > 0 ? $"（{string.Join("，", shield)}）" : ""));
-            double exMP = ExMP + ExMP2 + ExMP3;
+            double exMP = ExMP;
             builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
-            double exATK = ExATK + ExATK2 + ExATK3;
+            double exATK = ExATK;
             builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
-            double exDEF = ExDEF + ExDEF2 + ExDEF3;
+            double exDEF = ExDEF;
             builder.AppendLine($"物理护甲：{DEF:0.##}" + (exDEF != 0 ? $" [{BaseDEF:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exDEF):0.##}]" : "") + $" ({PDR * 100:0.##}%)");
             builder.AppendLine($"魔法抗性：{MDF.Avg:0.##}%（平均）");
             double exSPD = AGI * GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
@@ -191,17 +191,17 @@ namespace FunGame.Core.Entity
 
             builder.AppendLine(showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser());
             builder.AppendLine($"等级：{Level} / {GameplayEquilibriumConstant.MaxLevel}");
-            double exHP = ExHP + ExHP2 + ExHP3;
+            double exHP = ExHP;
             List<string> shield = [];
             if (Shield.TotalPhysical > 0) shield.Add($"物理：{Shield.TotalPhysical:0.##}");
             if (Shield.TotalMagical > 0) shield.Add($"魔法：{Shield.TotalMagical:0.##}");
             if (Shield.Mix > 0) shield.Add($"混合：{Shield.Mix:0.##}");
             builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : "") + (shield.Count > 0 ? $"（{string.Join("，", shield)}）" : ""));
-            double exMP = ExMP + ExMP2 + ExMP3;
+            double exMP = ExMP;
             builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
-            double exATK = ExATK + ExATK2 + ExATK3;
+            double exATK = ExATK;
             builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
-            double exDEF = ExDEF + ExDEF2 + ExDEF3;
+            double exDEF = ExDEF;
             builder.AppendLine($"物理护甲：{DEF:0.##}" + (exDEF != 0 ? $" [{BaseDEF:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exDEF):0.##}]" : "") + $" ({PDR * 100:0.##}%)");
             builder.AppendLine($"魔法抗性：{MDF.Avg:0.##}%（平均）");
             double exSPD = AGI * GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
@@ -299,15 +299,15 @@ namespace FunGame.Core.Entity
             StringBuilder builder = new();
 
             builder.AppendLine(ToStringWithLevel());
-            double exHP = ExHP + ExHP2 + ExHP3;
+            double exHP = ExHP;
             List<string> shield = [];
             if (Shield.TotalPhysical > 0) shield.Add($"物理：{Shield.TotalPhysical:0.##}");
             if (Shield.TotalMagical > 0) shield.Add($"魔法：{Shield.TotalMagical:0.##}");
             if (Shield.Mix > 0) shield.Add($"混合：{Shield.Mix:0.##}");
             builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : "") + (shield.Count > 0 ? $"（{string.Join("，", shield)}）" : ""));
-            double exMP = ExMP + ExMP2 + ExMP3;
+            double exMP = ExMP;
             builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
-            double exATK = ExATK + ExATK2 + ExATK3;
+            double exATK = ExATK;
             builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
 
             if (CharacterState != CharacterState.Actionable)
@@ -400,17 +400,17 @@ namespace FunGame.Core.Entity
 
             builder.AppendLine(showUser ? ToStringWithLevel() : ToStringWithLevelWithOutUser());
             builder.AppendLine($"等级：{Level} / {GameplayEquilibriumConstant.MaxLevel}");
-            double exHP = ExHP + ExHP2 + ExHP3;
+            double exHP = ExHP;
             List<string> shield = [];
             if (Shield.TotalPhysical > 0) shield.Add($"物理：{Shield.TotalPhysical:0.##}");
             if (Shield.TotalMagical > 0) shield.Add($"魔法：{Shield.TotalMagical:0.##}");
             if (Shield.Mix > 0) shield.Add($"混合：{Shield.Mix:0.##}");
             builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : "") + (shield.Count > 0 ? $"（{string.Join("，", shield)}）" : ""));
-            double exMP = ExMP + ExMP2 + ExMP3;
+            double exMP = ExMP;
             builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
-            double exATK = ExATK + ExATK2 + ExATK3;
+            double exATK = ExATK;
             builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
-            double exDEF = ExDEF + ExDEF2 + ExDEF3;
+            double exDEF = ExDEF;
             builder.AppendLine($"物理护甲：{DEF:0.##}" + (exDEF != 0 ? $" [{BaseDEF:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exDEF):0.##}]" : "") + $" ({PDR * 100:0.##}%)");
             builder.AppendLine($"魔法抗性：{MDF.Avg:0.##}%（平均）");
             double exSPD = AGI * GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;

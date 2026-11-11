@@ -2,13 +2,13 @@
 
 > **面向**：要改 `src/Entity/` 的开发者。
 > **规则本身**见文档站：[角色系统](https://project-redbud.github.io/guide/characters)、[道具](https://project-redbud.github.io/guide/items)。
-> **测试**：[`tests/FunGame.Core.Tests.Entities`](../../tests/FunGame.Core.Tests.Entities)（49 个用例）
+> **测试**：[`tests/FunGame.Core.Tests.Entities`](../../tests/FunGame.Core.Tests.Entities)（81 个用例）
 
 ## 本模块文档
 
 | 文档 | 讲什么 |
 | --- | --- |
-| [属性系统](attributes.md) | 两段式属性（`Initial*` → `Base*` → 最终值）、`Ex*` 三种形态、哪些可写 |
+| [属性系统](attributes.md) | 两段式属性（`Initial*` → `Base*` → 最终值）、`Ex*` 聚合、固定点数、百分比与来源属性 |
 | [生命周期](lifecycle.md) | 构造、等级、三种 `Recovery`、复制与复活、装备写入路径 |
 | [相等性语义](equality.md) | 三类 `Equals`（Guid / Id / `GetIdName`）与由此产生的容器行为 |
 | [物品与用户](items-and-users.md) | `Item` 使用次数与删除语义、`SkillGroup`、`User` / `Inventory` |
@@ -47,6 +47,8 @@
 | 测试类 | 守什么 |
 | --- | --- |
 | `CharacterAttributeTests` | `MaxHP` / `ATK` / `DEF` / `PDR` / 暴击闪避 / 系数钳制 / HP·MP·EP 钳制 / 魔抗与护盾分桶 |
+| `CharacterAggregationTests` | 额外值聚合与来源、角色和单位面板、复制复活、魔法卡包 |
+| `CharacterPrimaryAttributeTests` | 核心属性正负百分比、成长、资源边界与主属性传导 |
 | `CharacterProgressionTests` | 等级钳制与回复、`Recovery` 三种语义、`Copy`、装备与卸下、普攻与武器联动 |
 | `EntityEqualityTests` | 三类 `Equals` 语义与 `GetIdName` |
 | `ItemAndInventoryTests` | 物品默认值、使用次数、`SkillGroup`、库存货币与主角色回退 |

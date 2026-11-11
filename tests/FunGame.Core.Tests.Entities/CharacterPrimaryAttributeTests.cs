@@ -22,7 +22,7 @@ public class CharacterPrimaryAttributeTests
     public void CoreAttributeBonuses_PropagateToCombatAttributes(PrimaryAttribute primary, double flat, double percentage)
     {
         Character character = NewCharacter(primary);
-        character.ExSTR = character.ExAGI = character.ExINT = flat;
+        character.ExSTR2 = character.ExAGI2 = character.ExINT2 = flat;
         character.ExSTRPercentage = character.ExAGIPercentage = character.ExINTPercentage = percentage;
         double primaryBase = primary switch
         {
@@ -36,12 +36,12 @@ public class CharacterPrimaryAttributeTests
 
         Assert.Equal(extraPrimary, character.ExPrimaryAttributeValue, 3);
         Assert.Equal(character.BasePrimaryAttributeValue + extraPrimary, character.PrimaryAttributeValue, 3);
-        Assert.Equal(extraPrimary, character.ExATK, 3);
+        Assert.Equal(extraPrimary, character.ExATKFromExPrimaryAttribute, 3);
         Assert.Equal(100 + primaryBase + extraPrimary, character.ATK, 3);
         Assert.Equal(character.ATK, character.NormalAttack.Damage, 3);
-        Assert.Equal(extraStrength * character.GameplayEquilibriumConstant.STRtoHPFactor, character.ExHP, 3);
-        Assert.Equal(extraStrength * character.GameplayEquilibriumConstant.STRtoDEFFactor, character.ExDEF, 3);
-        Assert.Equal(extraIntelligence * character.GameplayEquilibriumConstant.INTtoMPFactor, character.ExMP, 3);
+        Assert.Equal(extraStrength * character.GameplayEquilibriumConstant.STRtoHPFactor, character.ExHPFromExSTR, 3);
+        Assert.Equal(extraStrength * character.GameplayEquilibriumConstant.STRtoDEFFactor, character.ExDEFFromExSTR, 3);
+        Assert.Equal(extraIntelligence * character.GameplayEquilibriumConstant.INTtoMPFactor, character.ExMPFromExINT, 3);
         Assert.Equal(100 + (20 + extraStrength) * character.GameplayEquilibriumConstant.STRtoHPFactor, character.MaxHP, 3);
         Assert.Equal(10 + (20 + extraStrength) * character.GameplayEquilibriumConstant.STRtoDEFFactor, character.DEF, 3);
         Assert.Equal(80 + (5 + extraIntelligence) * character.GameplayEquilibriumConstant.INTtoMPFactor, character.MaxMP, 3);
@@ -81,10 +81,10 @@ public class CharacterPrimaryAttributeTests
         character.Level = 3;
 
         Assert.Equal(primaryBase * .3, character.ExPrimaryAttributeValue, 3);
-        Assert.Equal(primaryBase * .3, character.ExATK, 3);
-        Assert.Equal(24 * .3 * character.GameplayEquilibriumConstant.STRtoHPFactor, character.ExHP, 3);
-        Assert.Equal(24 * .3 * character.GameplayEquilibriumConstant.STRtoDEFFactor, character.ExDEF, 3);
-        Assert.Equal(13 * .3 * character.GameplayEquilibriumConstant.INTtoMPFactor, character.ExMP, 3);
+        Assert.Equal(primaryBase * .3, character.ExATKFromExPrimaryAttribute, 3);
+        Assert.Equal(24 * .3 * character.GameplayEquilibriumConstant.STRtoHPFactor, character.ExHPFromExSTR, 3);
+        Assert.Equal(24 * .3 * character.GameplayEquilibriumConstant.STRtoDEFFactor, character.ExDEFFromExSTR, 3);
+        Assert.Equal(13 * .3 * character.GameplayEquilibriumConstant.INTtoMPFactor, character.ExMPFromExINT, 3);
     }
 
     [Fact]
@@ -137,7 +137,7 @@ public class CharacterPrimaryAttributeTests
     public void CopyWithExtras_PreservesCoreAttributeBonuses(PrimaryAttribute primary)
     {
         Character character = NewCharacter(primary);
-        character.ExSTR = character.ExAGI = character.ExINT = 4;
+        character.ExSTR2 = character.ExAGI2 = character.ExINT2 = 4;
         character.ExSTRPercentage = character.ExAGIPercentage = character.ExINTPercentage = .3;
 
         Character copy = character.Copy(copyEx: true);
@@ -148,8 +148,8 @@ public class CharacterPrimaryAttributeTests
         Assert.Equal(character.DEF, copy.DEF, 3);
         Assert.Equal(character.MaxHP, copy.MaxHP, 3);
         Assert.Equal(character.MaxMP, copy.MaxMP, 3);
-        Assert.Equal(4d, copy.ExSTR, 3);
-        Assert.Equal(6d, copy.ExSTR2, 3);
+        Assert.Equal(4d, copy.ExSTR2, 3);
+        Assert.Equal(6d, copy.ExSTR3, 3);
     }
 
     private static Character NewCharacter(PrimaryAttribute primary)

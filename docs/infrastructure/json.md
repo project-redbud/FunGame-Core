@@ -71,6 +71,15 @@ void AfterConvert(ref T result, Dictionary<string, object> context);   // 读完
    `CharacterConverter` 的 `HP` / `MP` / `EP` 就是这么处理的（否则会被 `MaxHP` 的钳制吃掉）。
 2. `Write` 是**手写**的：新增可序列化字段时，`Read` 与 `Write` 两边都要改，漏一边不会报错。
 
+## 角色与单位属性
+
+`CharacterConverter` 与 `UnitConverter` 共用字段读写及资源回填逻辑，分别创建 Character 和 Unit。
+固定点数保存为 `ExSTR2` / `ExAGI2` / `ExINT2` / `ExATK2` / `ExDEF2` / `ExHP2` / `ExMP2`，比例保存为对应 `Ex*Percentage`。
+属性聚合 `Ex*`、基础值 `Base*`、百分比派生 `Ex*3` 与四个 `FromEx*` 来源属性不写入配置 JSON。
+当前 HP / MP / EP 在配置读取完成后回填，字段顺序不影响资源钳制。
+`JsonService`、`NetworkUtility` 与使用默认转换器的 `JsonTool` 都使用此口径。
+回合快照中的 MaxHP / MaxMP 和 Attributes 是测量结果与展示记录，按快照自身 schema 保存。
+
 ## 动态特效的数据通道：`Effect.Values`
 
 `EffectConverter` 的 `default` 分支会把**转换器不认识的属性**按 JSON token 类型塞进 `Effect.Values`

@@ -165,14 +165,14 @@ namespace FunGame.Core.Library.Common.JsonConverter
                 case nameof(Character.InitialINT):
                     result.InitialINT = reader.GetDouble();
                     break;
-                case nameof(Character.ExSTR):
-                    result.ExSTR = reader.GetDouble();
+                case nameof(Character.ExSTR2):
+                    result.ExSTR2 = reader.GetDouble();
                     break;
-                case nameof(Character.ExAGI):
-                    result.ExAGI = reader.GetDouble();
+                case nameof(Character.ExAGI2):
+                    result.ExAGI2 = reader.GetDouble();
                     break;
-                case nameof(Character.ExINT):
-                    result.ExINT = reader.GetDouble();
+                case nameof(Character.ExINT2):
+                    result.ExINT2 = reader.GetDouble();
                     break;
                 case nameof(Character.ExSTRPercentage):
                     result.ExSTRPercentage = reader.GetDouble();
@@ -312,9 +312,9 @@ namespace FunGame.Core.Library.Common.JsonConverter
             writer.WriteNumber(nameof(Character.InitialSTR), value.InitialSTR);
             writer.WriteNumber(nameof(Character.InitialAGI), value.InitialAGI);
             writer.WriteNumber(nameof(Character.InitialINT), value.InitialINT);
-            writer.WriteNumber(nameof(Character.ExSTR), value.ExSTR);
-            writer.WriteNumber(nameof(Character.ExAGI), value.ExAGI);
-            writer.WriteNumber(nameof(Character.ExINT), value.ExINT);
+            writer.WriteNumber(nameof(Character.ExSTR2), value.ExSTR2);
+            writer.WriteNumber(nameof(Character.ExAGI2), value.ExAGI2);
+            writer.WriteNumber(nameof(Character.ExINT2), value.ExINT2);
             writer.WriteNumber(nameof(Character.ExSTRPercentage), value.ExSTRPercentage);
             writer.WriteNumber(nameof(Character.ExAGIPercentage), value.ExAGIPercentage);
             writer.WriteNumber(nameof(Character.ExINTPercentage), value.ExINTPercentage);

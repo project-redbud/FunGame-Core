@@ -90,9 +90,9 @@ namespace FunGame.Core.Model.PrefabricatedEntity
 
         protected override void OnItemEquipped(Character character, EquipSlotType type)
         {
-            character.ExSTR += AttributeBoosts[PrimaryAttribute.STR];
-            character.ExAGI += AttributeBoosts[PrimaryAttribute.AGI];
-            character.ExINT += AttributeBoosts[PrimaryAttribute.INT];
+            character.ExSTR2 += AttributeBoosts[PrimaryAttribute.STR];
+            character.ExAGI2 += AttributeBoosts[PrimaryAttribute.AGI];
+            character.ExINT2 += AttributeBoosts[PrimaryAttribute.INT];
             if (Resonance != PrimaryAttribute.None)
             {
                 _originalAttribute = character.PrimaryAttribute;
@@ -118,9 +118,9 @@ namespace FunGame.Core.Model.PrefabricatedEntity
 
         protected override void OnItemUnEquipped(Character character, EquipSlotType type)
         {
-            character.ExSTR -= AttributeBoosts[PrimaryAttribute.STR];
-            character.ExAGI -= AttributeBoosts[PrimaryAttribute.AGI];
-            character.ExINT -= AttributeBoosts[PrimaryAttribute.INT];
+            character.ExSTR2 -= AttributeBoosts[PrimaryAttribute.STR];
+            character.ExAGI2 -= AttributeBoosts[PrimaryAttribute.AGI];
+            character.ExINT2 -= AttributeBoosts[PrimaryAttribute.INT];
             if (_originalAttribute != PrimaryAttribute.None)
             {
                 character.PrimaryAttribute = _originalAttribute;

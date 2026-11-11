@@ -234,17 +234,22 @@ namespace FunGame.Core.Entity
         public double BaseHP => InitialHP + (Level - 1) * (GameplayEquilibriumConstant.LevelToHPFactor + GameplayEquilibriumConstant.HPGrowthFactor * InitialHP) + BaseSTR * GameplayEquilibriumConstant.STRtoHPFactor;
 
         /// <summary>
-        /// 额外生命值 [ 与额外力量相关 ]
+        /// 额外生命值 [ 核心属性、固定点数与百分比派生之和 ]
         /// </summary>
-        public double ExHP => (ExSTR + ExSTR2) * GameplayEquilibriumConstant.STRtoHPFactor;
+        public double ExHP => ExHPFromExSTR + ExHP2 + ExHP3;
 
         /// <summary>
-        /// 额外生命值2 [ 与技能和物品相关 ]
+        /// 由额外力量提供的生命值
+        /// </summary>
+        public double ExHPFromExSTR => ExSTR * GameplayEquilibriumConstant.STRtoHPFactor;
+
+        /// <summary>
+        /// 额外生命值固定点数 [ 与技能和物品相关 ]
         /// </summary>
         public double ExHP2 { get; set; } = 0;
 
         /// <summary>
-        /// 额外生命值3 [ 额外生命值% ]
+        /// 额外生命值百分比派生值
         /// </summary>
         public double ExHP3 => BaseHP * ExHPPercentage;
 
@@ -254,9 +259,9 @@ namespace FunGame.Core.Entity
         public double ExHPPercentage { get; set; } = 0;
 
         /// <summary>
-        /// 最大生命值 = 基础生命值 + 额外生命值 + 额外生命值2 + 额外生命值3
+        /// 最大生命值 = 基础生命值 + 额外生命值，至少为 1
         /// </summary>
-        public double MaxHP => Math.Max(1, BaseHP + ExHP + ExHP2 + ExHP3);
+        public double MaxHP => Math.Max(1, BaseHP + ExHP);
 
         /// <summary>
         /// 当前生命值 [ 战斗相关 ]
@@ -293,17 +298,22 @@ namespace FunGame.Core.Entity
         public double BaseMP => InitialMP + (Level - 1) * (GameplayEquilibriumConstant.LevelToMPFactor + GameplayEquilibriumConstant.MPGrowthFactor * InitialMP) + BaseINT * GameplayEquilibriumConstant.INTtoMPFactor;
 
         /// <summary>
-        /// 额外魔法值 [ 与额外智力相关 ]
+        /// 额外魔法值 [ 核心属性、固定点数与百分比派生之和 ]
         /// </summary>
-        public double ExMP => (ExINT + ExINT2) * GameplayEquilibriumConstant.INTtoMPFactor;
+        public double ExMP => ExMPFromExINT + ExMP2 + ExMP3;
 
         /// <summary>
-        /// 额外魔法值2 [ 与技能和物品相关 ]
+        /// 由额外智力提供的魔法值
+        /// </summary>
+        public double ExMPFromExINT => ExINT * GameplayEquilibriumConstant.INTtoMPFactor;
+
+        /// <summary>
+        /// 额外魔法值固定点数 [ 与技能和物品相关 ]
         /// </summary>
         public double ExMP2 { get; set; } = 0;
 
         /// <summary>
-        /// 额外魔法值3 [ 额外魔法值% ]
+        /// 额外魔法值百分比派生值
         /// </summary>
         public double ExMP3 => BaseMP * ExMPPercentage;
 
@@ -313,9 +323,9 @@ namespace FunGame.Core.Entity
         public double ExMPPercentage { get; set; } = 0;
 
         /// <summary>
-        /// 最大魔法值 = 基础魔法值 + 额外魔法值 + 额外魔法值2 + 额外魔法值3
+        /// 最大魔法值 = 基础魔法值 + 额外魔法值，至少为 1
         /// </summary>
-        public double MaxMP => Math.Max(1, BaseMP + ExMP + ExMP2 + ExMP3);
+        public double MaxMP => Math.Max(1, BaseMP + ExMP);
 
         /// <summary>
         /// 当前魔法值 [ 战斗相关 ]
@@ -381,34 +391,22 @@ namespace FunGame.Core.Entity
         }
 
         /// <summary>
-        /// 额外攻击力 [ 与额外核心属性相关 ]
+        /// 额外攻击力 [ 核心属性、固定点数与百分比派生之和 ]
         /// </summary>
-        public double ExATK
-        {
-            get
-            {
-                if (PrimaryAttribute == PrimaryAttribute.AGI)
-                {
-                    return ExAGI + ExAGI2;
-                }
-                else if (PrimaryAttribute == PrimaryAttribute.INT)
-                {
-                    return ExINT + ExINT2;
-                }
-                else // 默认STR
-                {
-                    return ExSTR + ExSTR2;
-                }
-            }
-        }
+        public double ExATK => ExATKFromExPrimaryAttribute + ExATK2 + ExATK3;
 
         /// <summary>
-        /// 额外攻击力2 [ 与技能和物品相关 ]
+        /// 由额外核心属性提供的攻击力
+        /// </summary>
+        public double ExATKFromExPrimaryAttribute => ExPrimaryAttributeValue;
+
+        /// <summary>
+        /// 额外攻击力固定点数 [ 与技能和物品相关 ]
         /// </summary>
         public double ExATK2 { get; set; } = 0;
 
         /// <summary>
-        /// 额外攻击力3 [ 额外攻击力% ]
+        /// 额外攻击力百分比派生值
         /// </summary>
         public double ExATK3 => BaseATK * ExATKPercentage;
 
@@ -418,9 +416,9 @@ namespace FunGame.Core.Entity
         public double ExATKPercentage { get; set; } = 0;
 
         /// <summary>
-        /// 攻击力 = 基础攻击力 + 额外攻击力 + 额外攻击力2 + 额外攻击力3
+        /// 攻击力 = 基础攻击力 + 额外攻击力
         /// </summary>
-        public double ATK => BaseATK + ExATK + ExATK2 + ExATK3;
+        public double ATK => BaseATK + ExATK;
 
         /// <summary>
         /// 初始物理护甲 [ 初始设定 ]
@@ -434,17 +432,22 @@ namespace FunGame.Core.Entity
         public double BaseDEF => InitialDEF + BaseSTR * GameplayEquilibriumConstant.STRtoDEFFactor;
 
         /// <summary>
-        /// 额外物理护甲 [ 与额外力量相关 ]
+        /// 额外物理护甲 [ 核心属性、固定点数与百分比派生之和 ]
         /// </summary>
-        public double ExDEF => (ExSTR + ExSTR2) * GameplayEquilibriumConstant.STRtoDEFFactor;
+        public double ExDEF => ExDEFFromExSTR + ExDEF2 + ExDEF3;
 
         /// <summary>
-        /// 额外物理护甲2 [ 与技能和物品相关 ]
+        /// 由额外力量提供的物理护甲
+        /// </summary>
+        public double ExDEFFromExSTR => ExSTR * GameplayEquilibriumConstant.STRtoDEFFactor;
+
+        /// <summary>
+        /// 额外物理护甲固定点数 [ 与技能和物品相关 ]
         /// </summary>
         public double ExDEF2 { get; set; } = 0;
 
         /// <summary>
-        /// 额外物理护甲3 [ 额外物理护甲% ]
+        /// 额外物理护甲百分比派生值
         /// </summary>
         public double ExDEF3 => BaseDEF * ExDEFPercentage;
 
@@ -454,9 +457,9 @@ namespace FunGame.Core.Entity
         public double ExDEFPercentage { get; set; } = 0;
 
         /// <summary>
-        /// 物理护甲 = 基础物理护甲 + 额外物理护甲 + 额外物理护甲2 + 额外物理护甲3
+        /// 物理护甲 = 基础物理护甲 + 额外物理护甲
         /// </summary>
-        public double DEF => BaseDEF + ExDEF + ExDEF2 + ExDEF3;
+        public double DEF => BaseDEF + ExDEF;
 
         /// <summary>
         /// 物理伤害减免(%) = [ 与物理护甲相关 ] + 额外物理伤害减免(%)
@@ -600,15 +603,15 @@ namespace FunGame.Core.Entity
             {
                 if (PrimaryAttribute == PrimaryAttribute.AGI)
                 {
-                    return ExAGI + ExAGI2;
+                    return ExAGI;
                 }
                 else if (PrimaryAttribute == PrimaryAttribute.INT)
                 {
-                    return ExINT + ExINT2;
+                    return ExINT;
                 }
                 else
                 {
-                    return ExSTR + ExSTR2;
+                    return ExSTR;
                 }
             }
         }
@@ -653,34 +656,49 @@ namespace FunGame.Core.Entity
         public double BaseINT => InitialINT + INTGrowth * (Level - 1);
 
         /// <summary>
-        /// 额外力量 [ 与技能和物品相关 ]
+        /// 额外力量 [ 固定点数与百分比派生之和 ]
         /// </summary>
-        public double ExSTR { get; set; } = 0;
+        public double ExSTR => ExSTR2 + ExSTR3;
 
         /// <summary>
-        /// 额外敏捷 [ 与技能和物品相关 ]
+        /// 额外力量固定点数 [ 与技能和物品相关 ]
         /// </summary>
-        public double ExAGI { get; set; } = 0;
+        public double ExSTR2 { get; set; } = 0;
 
         /// <summary>
-        /// 额外智力 [ 与技能和物品相关 ]
+        /// 额外敏捷 [ 固定点数与百分比派生之和 ]
         /// </summary>
-        public double ExINT { get; set; } = 0;
+        public double ExAGI => ExAGI2 + ExAGI3;
 
         /// <summary>
-        /// 额外力量2 [ 额外力量% ]
+        /// 额外敏捷固定点数 [ 与技能和物品相关 ]
         /// </summary>
-        public double ExSTR2 => BaseSTR * ExSTRPercentage;
+        public double ExAGI2 { get; set; } = 0;
 
         /// <summary>
-        /// 额外敏捷2 [ 额外敏捷% ]
+        /// 额外智力 [ 固定点数与百分比派生之和 ]
         /// </summary>
-        public double ExAGI2 => BaseAGI * ExAGIPercentage;
+        public double ExINT => ExINT2 + ExINT3;
 
         /// <summary>
-        /// 额外智力2 [ 额外智力% ]
+        /// 额外智力固定点数 [ 与技能和物品相关 ]
         /// </summary>
-        public double ExINT2 => BaseINT * ExINTPercentage;
+        public double ExINT2 { get; set; } = 0;
+
+        /// <summary>
+        /// 额外力量百分比派生值
+        /// </summary>
+        public double ExSTR3 => BaseSTR * ExSTRPercentage;
+
+        /// <summary>
+        /// 额外敏捷百分比派生值
+        /// </summary>
+        public double ExAGI3 => BaseAGI * ExAGIPercentage;
+
+        /// <summary>
+        /// 额外智力百分比派生值
+        /// </summary>
+        public double ExINT3 => BaseINT * ExINTPercentage;
 
         /// <summary>
         /// 额外力量% [ 与技能和物品相关 ]
@@ -698,19 +716,19 @@ namespace FunGame.Core.Entity
         public double ExINTPercentage { get; set; } = 0;
 
         /// <summary>
-        /// 力量 = 基础力量 + 额外力量 + 额外力量2
+        /// 力量 = 基础力量 + 额外力量
         /// </summary>
-        public double STR => BaseSTR + ExSTR + ExSTR2;
+        public double STR => BaseSTR + ExSTR;
 
         /// <summary>
-        /// 敏捷 = 基础敏捷 + 额外敏捷 + 额外敏捷2
+        /// 敏捷 = 基础敏捷 + 额外敏捷
         /// </summary>
-        public double AGI => BaseAGI + ExAGI + ExAGI2;
+        public double AGI => BaseAGI + ExAGI;
 
         /// <summary>
-        /// 智力 = 基础智力 + 额外智力 + 额外智力2
+        /// 智力 = 基础智力 + 额外智力
         /// </summary>
-        public double INT => BaseINT + ExINT + ExINT2;
+        public double INT => BaseINT + ExINT;
 
         /// <summary>
         /// 力量成长值(+BaseSTR/Lv)
@@ -1771,28 +1789,28 @@ namespace FunGame.Core.Entity
         private List<KeyValuePair<string, string>> GetAttributeInfoPairs(bool showGrowth)
         {
             List<KeyValuePair<string, string>> pairs = [];
-            double exHP = ExHP + ExHP2 + ExHP3;
+            double exHP = ExHP;
             List<string> shield = [];
             if (Shield.TotalPhysical > 0) shield.Add($"物理：{Shield.TotalPhysical:0.##}");
             if (Shield.TotalMagical > 0) shield.Add($"魔法：{Shield.TotalMagical:0.##}");
             if (Shield.TotalMix > 0) shield.Add($"混合：{Shield.TotalMix:0.##}");
             pairs.Add(new("生命值", $"{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : "") + (shield.Count > 0 ? $"（{string.Join("，", shield)}）" : "")));
-            double exMP = ExMP + ExMP2 + ExMP3;
+            double exMP = ExMP;
             pairs.Add(new("魔法值", $"{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : "")));
             pairs.Add(new("能量值", $"{EP:0.##} / {GameplayEquilibriumConstant.MaxEP:0.##}"));
-            double exATK = ExATK + ExATK2 + ExATK3;
+            double exATK = ExATK;
             pairs.Add(new("攻击力", $"{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : "")));
-            double exDEF = ExDEF + ExDEF2 + ExDEF3;
+            double exDEF = ExDEF;
             pairs.Add(new("物理护甲", $"{DEF:0.##}" + (exDEF != 0 ? $" [{BaseDEF:0.##} {(exDEF >= 0 ? "+" : "-")} {Math.Abs(exDEF):0.##}]" : "") + $" ({PDR * 100:0.##}%)"));
             pairs.Add(new("魔法抗性", GetMagicResistanceInfo().Trim()));
             double exSPD = AGI * GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
             pairs.Add(new("行动速度", $"{SPD:0.##}" + (exSPD != 0 ? $" [{InitialSPD:0.##} {(exSPD >= 0 ? "+" : "-")} {Math.Abs(exSPD):0.##}]" : "") + $" ({ActionCoefficient * 100:0.##}%)"));
             pairs.Add(new("核心属性", CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)));
-            double exSTR = ExSTR + ExSTR2;
+            double exSTR = ExSTR;
             pairs.Add(new("力量", $"{STR:0.##}" + (exSTR != 0 ? $" [{BaseSTR:0.##} {(exSTR >= 0 ? "+" : "-")} {Math.Abs(exSTR):0.##}]" : "") + (showGrowth ? $"（{(STRGrowth >= 0 ? "+" : "-")}{Math.Abs(STRGrowth)}/Lv）" : "") + $"（{STRExemption * 100:0.##}%）"));
-            double exAGI = ExAGI + ExAGI2;
+            double exAGI = ExAGI;
             pairs.Add(new("敏捷", $"{AGI:0.##}" + (exAGI != 0 ? $" [{BaseAGI:0.##} {(exAGI >= 0 ? "+" : "-")} {Math.Abs(exAGI):0.##}]" : "") + (showGrowth ? $"（{(AGIGrowth >= 0 ? "+" : "-")}{Math.Abs(AGIGrowth)}/Lv）" : "") + $"（{AGIExemption * 100:0.##}%）"));
-            double exINT = ExINT + ExINT2;
+            double exINT = ExINT;
             pairs.Add(new("智力", $"{INT:0.##}" + (exINT != 0 ? $" [{BaseINT:0.##} {(exINT >= 0 ? "+" : "-")} {Math.Abs(exINT):0.##}]" : "") + (showGrowth ? $"（{(INTGrowth >= 0 ? "+" : "-")}{Math.Abs(INTGrowth)}/Lv）" : "") + $"（{INTExemption * 100:0.##}%）"));
             pairs.Add(new("生命回复", $"{HR:0.##}" + (ExHR != 0 ? $" [{InitialHR + STR * GameplayEquilibriumConstant.STRtoHRFactor:0.##} {(ExHR >= 0 ? "+" : "-")} {Math.Abs(ExHR):0.##}]" : "")));
             pairs.Add(new("魔法回复", $"{MR:0.##}" + (ExMR != 0 ? $" [{InitialMR + INT * GameplayEquilibriumConstant.INTtoMRFactor:0.##} {(ExMR >= 0 ? "+" : "-")} {Math.Abs(ExMR):0.##}]" : "")));
@@ -1846,18 +1864,18 @@ namespace FunGame.Core.Entity
         public string GetSimpleAttributeInfo(bool showGrowth = true, bool showBasicOnly = false)
         {
             StringBuilder builder = new();
-            double exHP = ExHP + ExHP2 + ExHP3;
+            double exHP = ExHP;
             List<string> shield = [];
             if (Shield.TotalPhysical > 0) shield.Add($"物理：{Shield.TotalPhysical:0.##}");
             if (Shield.TotalMagical > 0) shield.Add($"魔法：{Shield.TotalMagical:0.##}");
             if (Shield.TotalMix > 0) shield.Add($"混合：{Shield.TotalMix:0.##}");
             builder.AppendLine($"生命值：{HP:0.##} / {MaxHP:0.##}" + (exHP != 0 ? $" [{BaseHP:0.##} {(exHP >= 0 ? "+" : "-")} {Math.Abs(exHP):0.##}]" : "") + (shield.Count > 0 ? $"（{string.Join("，", shield)}）" : ""));
-            double exMP = ExMP + ExMP2 + ExMP3;
+            double exMP = ExMP;
             builder.AppendLine($"魔法值：{MP:0.##} / {MaxMP:0.##}" + (exMP != 0 ? $" [{BaseMP:0.##} {(exMP >= 0 ? "+" : "-")} {Math.Abs(exMP):0.##}]" : ""));
             builder.AppendLine($"能量值：{EP:0.##} / {GameplayEquilibriumConstant.MaxEP:0.##}");
-            double exATK = ExATK + ExATK2 + ExATK3;
+            double exATK = ExATK;
             builder.AppendLine($"攻击力：{ATK:0.##}" + (exATK != 0 ? $" [{BaseATK:0.##} {(exATK >= 0 ? "+" : "-")} {Math.Abs(exATK):0.##}]" : ""));
-            double exDEF = ExDEF + ExDEF2 + ExDEF3;
+            double exDEF = ExDEF;
             builder.AppendLine($"物理护甲：{DEF:0.##}" + (exDEF != 0 ? $" [{BaseDEF:0.##} {(exDEF >= 0 ? "+" : "-")} {Math.Abs(exDEF):0.##}]" : "") + $" ({PDR * 100:0.##}%)");
             builder.AppendLine(GetMagicResistanceInfo().Trim());
             if (showBasicOnly)
@@ -1869,11 +1887,11 @@ namespace FunGame.Core.Entity
                 double exSPD = AGI * GameplayEquilibriumConstant.AGItoSPDMultiplier + ExSPD;
                 builder.AppendLine($"行动速度：{SPD:0.##}" + (exSPD != 0 ? $" [{InitialSPD:0.##} {(exSPD >= 0 ? "+" : "-")} {Math.Abs(exSPD):0.##}]" : "") + $" ({ActionCoefficient * 100:0.##}%)");
                 builder.AppendLine($"核心属性：{CharacterSet.GetPrimaryAttributeName(PrimaryAttribute)}");
-                double exSTR = ExSTR + ExSTR2;
+                double exSTR = ExSTR;
                 builder.AppendLine($"力量：{STR:0.##}" + (exSTR != 0 ? $" [{BaseSTR:0.##} {(exSTR >= 0 ? "+" : "-")} {Math.Abs(exSTR):0.##}]" : "") + (showGrowth ? $"（{(STRGrowth >= 0 ? "+" : "-")}{Math.Abs(STRGrowth)}/Lv）" : "") + $"（{STRExemption * 100:0.##}%）");
-                double exAGI = ExAGI + ExAGI2;
+                double exAGI = ExAGI;
                 builder.AppendLine($"敏捷：{AGI:0.##}" + (exAGI != 0 ? $" [{BaseAGI:0.##} {(exAGI >= 0 ? "+" : "-")} {Math.Abs(exAGI):0.##}]" : "") + (showGrowth ? $"（{(AGIGrowth >= 0 ? "+" : "-")}{Math.Abs(AGIGrowth)}/Lv）" : "") + $"（{AGIExemption * 100:0.##}%）");
-                double exINT = ExINT + ExINT2;
+                double exINT = ExINT;
                 builder.AppendLine($"智力：{INT:0.##}" + (exINT != 0 ? $" [{BaseINT:0.##} {(exINT >= 0 ? "+" : "-")} {Math.Abs(exINT):0.##}]" : "") + (showGrowth ? $"（{(INTGrowth >= 0 ? "+" : "-")}{Math.Abs(INTGrowth)}/Lv）" : "") + $"（{INTExemption * 100:0.##}%）");
             }
             builder.AppendLine($"生命回复：{HR:0.##}" + (ExHR != 0 ? $" [{InitialHR + STR * GameplayEquilibriumConstant.STRtoHRFactor:0.##} {(ExHR >= 0 ? "+" : "-")} {Math.Abs(ExHR):0.##}]" : ""));
@@ -2157,9 +2175,9 @@ namespace FunGame.Core.Entity
                 c.ExSTRPercentage = ExSTRPercentage;
                 c.ExAGIPercentage = ExAGIPercentage;
                 c.ExINTPercentage = ExINTPercentage;
-                c.ExSTR = ExSTR;
-                c.ExAGI = ExAGI;
-                c.ExINT = ExINT;
+                c.ExSTR2 = ExSTR2;
+                c.ExAGI2 = ExAGI2;
+                c.ExINT2 = ExINT2;
                 c.ExSPD = ExSPD;
                 c.ExActionCoefficient = ExActionCoefficient;
                 c.ExAccelerationCoefficient = ExAccelerationCoefficient;
@@ -2275,11 +2293,11 @@ namespace FunGame.Core.Entity
             InitialAGI = c.InitialAGI;
             InitialINT = c.InitialINT;
             AttributeLimit = c.AttributeLimit;
-            ExSTR = c.ExSTR;
+            ExSTR2 = c.ExSTR2;
             ExSTRPercentage = c.ExSTRPercentage;
-            ExAGI = c.ExAGI;
+            ExAGI2 = c.ExAGI2;
             ExAGIPercentage = c.ExAGIPercentage;
-            ExINT = c.ExINT;
+            ExINT2 = c.ExINT2;
             ExINTPercentage = c.ExINTPercentage;
             STRGrowth = c.STRGrowth;
             AGIGrowth = c.AGIGrowth;
