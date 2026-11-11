@@ -20,7 +20,7 @@ namespace FunGame.Core.Api
             Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
             Converters = { new DateTimeConverter(), new UserConverter(), new RoomConverter(),
-                new CharacterConverter(), new MagicResistanceConverter(), new EquipSlotConverter(), new SkillConverter(), new EffectConverter(), new ItemConverter(),
+                new CharacterConverter(), new UnitConverter(), new MagicResistanceConverter(), new EquipSlotConverter(), new SkillConverter(), new EffectConverter(), new ItemConverter(),
                 new InventoryConverter(), new NormalAttackConverter(), new ClubConverter(), new GoodsConverter(), new StoreConverter(),
                 new NovelOptionConverter(), new NovelNodeConverter(), new NovelCharacterNodeConverter(), new ShieldConverter(), new RoundRecordConverter(), new ActivityConverter(),
                 new QuestConverter(), new MarketConverter(), new MarketItemConverter(), new ActionRecordConverter(), new CharacterStateSnapshotConverter(), new RankingEntryConverter()

@@ -1,7 +1,7 @@
 # 基础设施
 
 > **面向**：要改 `src/Api/`、`src/Library/` 的开发者。
-> **测试**：[`tests/FunGame.Core.Tests.Infrastructure`](../../tests/FunGame.Core.Tests.Infrastructure)（77 个用例）
+> **测试**：[`tests/FunGame.Core.Tests.Infrastructure`](../../tests/FunGame.Core.Tests.Infrastructure)（95 个用例）
 
 ## 本模块文档
 
