@@ -53,7 +53,7 @@ public int Level
 | `Recovery(int time, double EP = -1)` | `HP += HR × time`、`MP += MR × time`（`time > 0` 才生效） | 时间流逝按回复力回血 |
 | `Recovery(pastHP, pastMP, pastMaxHP, pastMaxMP)` | 对应旧资源与旧上限均大于 0 时，按**旧比例**回填；否则不改该资源 | 上限变化时保持正资源的百分比 |
 
-> `InitialHR` / `InitialMR` 默认都是 **0**，即默认角色**没有自然回复**。需要回复力必须显式设置。
+> `InitialHR` / `InitialMR` 默认都是 **0**，最终 `HR` / `MR` 还包含力量 / 智力与额外回复贡献。全为 0 时没有自然回复，不能只看初始项判断。
 
 ## 复制与复活
 

@@ -35,7 +35,7 @@
 | 症状 | 原因 | 处理 |
 | --- | --- | --- |
 | 新角色血量/攻击比预期低一大截 | `new Character()` 的 `Level` 是 **0**，派生属性按 0 级算 | 显式 `Level = 1`，见[生命周期](lifecycle.md) |
-| 角色不回血 | `InitialHR` / `InitialMR` 默认 **0** | 按需设置；0 表示无自然回复 |
+| 角色不回血 | 回复使用最终 `HR` / `MR`，其初始项默认 **0** | 核对初始项、力量 / 智力贡献和额外项；初始项为 0 不代表总回复必为 0 |
 | 赋 `ExATK` / `ExDEF` 编译不过 | 它们是**只读派生值** | 写 `ExATK2` / `ExATKPercentage` / `ExDEF2` 等 |
 | 改完等级血满了 | `Level` setter 会 `OnAttributeChanged()` + `Recovery()` | 正资源按比例回填可用 `SetLevel(level, recovery: false)`；精确保留数值应事后回填，见[生命周期](lifecycle.md) |
 | `Copy()` 出来血是满的 | `Copy()` 会回满 HP/MP | 要保留比例请自行回填 |
