@@ -53,7 +53,7 @@
 | `PreCastSkill` + skill 类型 | 按 `SkillType` 取 `Magic` / `Skill` / `SuperSkill` 成本 |
 | 其余 | 对应动作的 `DecisionPointsCost*` |
 
-默认成本：普攻 1、战技 2、爆发技 2、燃烧外 3、魔法 2、物品 1、其他 1、协同 1。
+默认成本：普攻 1、战技 2、爆发技 2、回合外预释放爆发技 3、魔法 2、物品 1、其他 1、协同 1。
 
 ## 记一笔：`AddActionType` vs `ConsumeChainAction`
 
@@ -85,4 +85,5 @@
 | `ConsumeChainAction_KeepsTurnLocalCountersUntouched` | `ActionsTaken` / `DecisionPointsCost` / `ActionsHardnessTime` 均不变 |
 | `CheckActionTypeQuota_StopsAtQuotaButChainActionIsUnlimited` | 配额耗尽后拒绝，协同恒可 |
 | `TempActionQuota_AddsToQuotaThenClears` | 累加与清空，清空后回到基线 |
+| `DecisionPointsRecoveryTests` | 正常与受限状态回复、额外加成、上下界及吟唱 / 预释放跳过回复 |
 | `ChainActionRegressionTests.ValidationOfResourcesQuotaOwnershipAndTargets` | 提交/确认两段都重验预算与配额 |

@@ -43,9 +43,9 @@
 
 - **Lightweight, zero dependencies**: Pure BCL implementation with no third-party dependencies — `dotnet add package FunGame.Core` is all you need to plug it into any .NET project.
 - **Strategic depth**: Action queue, decision points, six-zone damage, skills, effects, dispel and immunity mechanics — out of the box.
-- **Interface-driven, highly extensible**: All contracts are defined by `IGamingQueue`; inherit `GamingQueue` to customize the game mode. 31 events cover the whole game loop, letting UI, AI and network layers plug in independently.
+- **Interface-driven, highly extensible**: All contracts are defined by `IGamingQueue`; inherit `GamingQueue` to customize the game mode. 38 public events cover the whole game loop, letting UI, AI and network layers plug in independently.
 - **Dynamic entities**: The Factory plus JSON configuration files enable code-free creation of characters, skills, effects and items, and modular distribution of game content.
-- **Observable data**: Round records are persisted as immutable snapshots and can be instantly delivered to a dedicated server for spectating, replay and battle-state reconstruction.
+- **Observable data**: Round records are archived as snapshots and can be instantly delivered to a dedicated server for spectating, replay and battle-state reconstruction.
 
 ---
 
@@ -77,7 +77,8 @@ Character player = new()
     Name = "Player 1",
     InitialHP = 80,
     InitialATK = 20,
-    InitialSPD = 120
+    InitialSPD = 120,
+    Level = 1
 };
 
 Character enemy = new()
@@ -85,7 +86,8 @@ Character enemy = new()
     Name = "Player 2",
     InitialHP = 60,
     InitialATK = 25,
-    InitialSPD = 100
+    InitialSPD = 100,
+    Level = 1
 };
 
 // 2. Create a mix queue and initialize the action queue

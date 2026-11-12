@@ -12,7 +12,8 @@
 
 | 类型 | 决策动作 | 实际结算 | 关键行 |
 | --- | --- | --- | --- |
-| 战技 / 爆发技 / 物品 | `PreCastSkill` | **同回合**执行，记为 `CastSkill` / `CastSuperSkill` | `GamingQueue.cs` PreCastSkill 分支 → `ExecuteSkillEffects` |
+| 战技 / 爆发技 | `PreCastSkill` | **同回合**执行，记为 `CastSkill` / `CastSuperSkill` | `GamingQueue.cs` PreCastSkill 分支 → `ExecuteSkillEffects` |
+| 物品 | `UseItem` | 同回合执行并记录物品费用 | `GamingQueue.ActionExecution.cs` → `ExecuteItemEffects` |
 | 魔法 | `PreCastSkill` | 进入 `CharacterState.Casting`，硬直被替换为 `RealCastTime` | 同分支的吟唱子分支 |
 | 魔法（结算） | 自动 | 下一回合状态为 `Casting` → 强制 `CastSkill`，扣 MP、开始冷却 | `GamingQueue.cs:1492` 附近的状态判定 |
 
@@ -34,14 +35,16 @@
 
 | 机制 | 实现位置 | 行为 |
 | --- | --- | --- |
-| 🚫 冷却 / 资源不足 / 被动 / 已生效 / 本回合已用 | **候选技能列表过滤** | 组装 `TurnContext.Skills` 时就被排除，决策层看不到它 |
+| 🚫 冷却 / 资源不足 / 被动 / 已生效 / Enable 为 false | **候选技能列表过滤** | 组装 `TurnContext.Skills` 时就被排除，决策层看不到它 |
 | ✅ 资源是否够 | `CheckCanCast(caster, skill, out cost)` | **只**比较 MP/EP，**不校验冷却** |
 
-候选列表的完整过滤条件（`GamingQueue.cs:3337` 一带）：
+候选列表的过滤条件（`GamingQueue.cs` 的技能候选构建段；skills 已包含装备栏技能）：
 
 ```csharp
-s.Level > 0 && s.SkillType != SkillType.Passive && s.Enable && !s.IsInEffect && s.CurrentCD == 0
-  && ((s.SkillType is SuperSkill or Skill) ? s.RealEPCost <= EP : s.RealMPCost <= MP)
+skills = [.. skills.Where(s =>
+    s.Level > 0 && s.SkillType != SkillType.Passive && s.Enable && !s.IsInEffect && s.CurrentCD == 0 &&
+    ((s.SkillType is SkillType.SuperSkill or SkillType.Skill) && s.RealEPCost <= character.EP ||
+     s.SkillType == SkillType.Magic && s.RealMPCost <= character.MP))];
 ```
 
 注意其中两项：
@@ -49,14 +52,12 @@ s.Level > 0 && s.SkillType != SkillType.Passive && s.Enable && !s.IsInEffect && 
 - **`s.Enable`**：技能释放成功后会被置 `false`，**但只在 `RealCD > 0` 时**——
   `ExecuteSkillEffects` 写的是 `if (skill.RealCD > 0) skill.Enable = false;`。
   复位**只发生在该技能冷却归零的那一刻**——`TimeLapse` 里 `if (skill.CurrentCD > 0)` 递减到 `<= 0` 时才
-  `skill.Enable = true`（`GamingQueue.cs:970-981`）。所以 `Enable = false` 与「冷却没走完」是绑定的：
-  没有冷却的技能不会被置 `false`，也就不会被 `s.Enable` 拦下。
+  `skill.Enable = true`（`GamingQueue.cs` 的冷却递减段）。实际冷却为 0 时，框架不因本次释放将技能禁用。
 - **装备栏的主动技能会被合并进候选列表**（`AddCharacterEquipSlotSkills`），
   所以「技能列表」不只来自 `Character.Skills`。
 
-> 「本回合已用过」与「冷却还没走完」在候选层面是**同一件事**：两者都由 `Enable` 与 `CurrentCD` 共同拦截。
-> 想让一个技能可以连放，就把它的 `RealCD` 做成 0（`CD = 0` 或 `InstantReset = true`），
-> 而不是去动 `Enable`——`Enable` 是这套联合门禁的产物，不是可以单独拨的开关。
+> `Enable` 与冷却分别参与过滤。框架在有实际冷却时禁用技能，并在冷却归零时恢复；宿主也可以主动设置 `Enable = false`，此时若没有正在递减的冷却，框架不会自动复位。
+> `RealCD = 0` 只消除冷却限制，后续使用仍受状态、资源、决策点和动作配额约束。
 
 因此：如果某条链路把技能**直接塞进**施放流程（绕过候选列表），冷却与 `Enable` 都不会拦住它。
 写测试或写模组时，**要验证「冷却生效」应断言候选列表里没有该技能**，而不是断言释放失败。
@@ -93,8 +94,9 @@ s.Level > 0 && s.SkillType != SkillType.Passive && s.Enable && !s.IsInEffect && 
 
 ## 吟唱被打断 / 失败
 
-- 中断（`InterruptCasting`）、目标失效、资源不足：**保留原硬直并加 3**（例：原硬直 0.5 → 3.5），
-  状态回到 `Actionable`，已付的决策点不返还；协同吟唱另见[协同行动](../queue/chain-action.md)。
+- 技能打断、全部目标失效、资源不足走统一终止入口，并记录归属于施法者的失败动作；已付决策点不返还。
+- 自己的结算回合失败计入 `CastFailureHardnessTime`（默认 3），允许按剩余预算与配额重新决策。外部打断和目标丢失按发生阶段保留或补偿剩余吟唱时间；协同魔法另处理冻结的原硬直。完整规则见[吟唱终止](../queue/cast-termination.md)。
+- 终止后重新计算控制状态，不强制变为 `Actionable`；仍有合法目标，或满足允许空地施法条件时，魔法可以继续吟唱。
 - 施法者死亡或离队时会清理吟唱上下文，不会在复活后补放。
 
 ## 坑
@@ -102,18 +104,18 @@ s.Level > 0 && s.SkillType != SkillType.Passive && s.Enable && !s.IsInEffect && 
 1. **技能等级必须 > 0** 才会进入候选列表（过滤条件含 `s.Level > 0`）；`SkillType.Passive` 永远不进主动候选。
 2. `IsInEffect` 为真的技能不能再次使用（持续型技能靠这个自锁）。
 3. **判断「有没有冷却」一律用 `RealCD`，不用 `CD`**：`RealCD` 已经吃过 `InstantReset` 与 `CDR` 两个修正
-   （`RealCD => InstantReset ? 0 : Math.Max(0, CD * (1 - CDR))`），而 `Enable` 的复位分支又要求
+   （`RealCD => InstantReset ? 0 : Math.Max(0, CD * (1 - (Character?.CDR ?? 0)))`），而 `Enable` 的复位分支又要求
    `CurrentCD > 0`（`GamingQueue.cs:970-981`）——两者都活在 `RealCD` 的坐标系里。
    释放时的守卫因此写成 `if (skill.RealCD > 0) skill.Enable = false;`，语义是：
 
    - `RealCD > 0`：`Enable` 置 `false`，冷却归零那一刻复位；
-   - `RealCD == 0`：`Enable` 保持 `true`，技能**每回合都能连放**，代价只剩资源。
+   - `RealCD == 0`：框架不因释放而禁用技能；后续能否施放仍取决于状态、资源、DP 和配额。
 
    `RealCD == 0` 的三种来源是 `CD == 0`（`Skill.CD` 的默认值）、`InstantReset = true`、`CDR` 达到 100%。
    写模组时若既要「无冷却」又要「每回合至多一次」，靠 `CD = 0` 做不到（那是连放），
-   得靠 `IsInEffect` 或抬高资源成本。
+   可使用动作配额；需要技能自身约束时由模组管理 `IsInEffect` 或 Enable 的恢复。资源成本本身不等价于次数限制。
 4. 改 `GamingQueue.GameplayEquilibriumConstant` 会同时影响配额与成本——测试里换实例比改字段安全。
-5. 魔法吟唱期间角色的硬直**就是吟唱时间**，不是原硬直；释放后才变回「原硬直 + 动作硬直」。
+5. 魔法吟唱期间队列时间由吟唱时间替换。协同魔法额外冻结原队列硬直，并在最终释放或终止时按规则还原；普通魔法没有该协同原硬直项。
 6. 物品作为技能使用时（`SkillType.Item`）走的是另一条路径：要求 `item.IsActive`、`item.Enable`、`item.IsInGameItem`，
    且消耗的是 `item.Skills.Active` 的成本；使用次数与移除见[物品与用户](../entities/items-and-users.md)。
 
@@ -132,3 +134,4 @@ s.Level > 0 && s.SkillType != SkillType.Passive && s.Enable && !s.IsInEffect && 
 | `InstantResetSkill_IgnoresItsCooldownAndStaysCastable` | `CD = 100` + `InstantReset` → `RealCD = 0`，守卫必须看 `RealCD` |
 | `SuperSkill_IsReleasedImmediatelyAndPaysEP` | 爆发技走 `PreCastSkill` 直接结算 |
 | `ChainActionRegressionTests.ChainCastingKeepsTwoDecimalPrecision` | 吟唱时间保留两位小数（3.3333 → 3.33） |
+| `CastTerminationTests` | 各阶段硬直、失败重决、控制状态、目标有效性与清理 |

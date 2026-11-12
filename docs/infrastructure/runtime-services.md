@@ -14,7 +14,7 @@ public EquilibriumConstant GameplayEquilibriumConstant { get; set; } = General.G
 
 > **两种改法，后果不同**：
 > - 改**属性**（`character.GameplayEquilibriumConstant = new EquilibriumConstant { … }`）→ 只影响该实体；
-> - 改**单例的字段**（`General.GameplayEquilibriumConstant.InitialHP = 0`）→ 影响之后创建的所有实体。
+> - 改**单例的字段**（`General.GameplayEquilibriumConstant.InitialHP = 0`）→ 既有和之后创建的对象都能从共享实例读到新配置；构造时已复制到 `InitialHP` 等成员的数值不会自动重赋。
 >
 > 测试与模组请用第一种：换实例，别就地改字段。
 
@@ -28,8 +28,7 @@ public EquilibriumConstant GameplayEquilibriumConstant { get; set; } = General.G
 | `RoomSet` | 房间模式名称与 `RoomType` 互转 |
 | `CommonSet` / `UserSet` / `GamingSet` | 状态前缀、预留用户 Id 与名称、游戏类型 |
 
-约定：`GetXxxName(T)` 与 `GetXxxFromName(string)` **成对往返**（测试里对所有枚举取值做了闭环校验）。
-新增枚举成员时两边都要补，否则往返会拿到默认值。
+提供双向转换的映射应成对维护。测试对 SkillType、ItemType、WeaponType 与 EquipSlotType 的全部枚举值检查名称往返；Room 与 Character 映射只检查选定输入，不能据此推断全部枚举都已有闭环覆盖。
 
 ## 事件中心
 
@@ -72,7 +71,7 @@ public EquilibriumConstant GameplayEquilibriumConstant { get; set; } = General.G
 - `Library/Exception/ExceptionExtension.GetErrorInfo()` 在有内层异常时加上 `InnerExceoption: …` 前缀
   （原文拼写如此，别当自己是笔误）。
 - `Calculation.Round` 用 `MidpointRounding.AwayFromZero`，并把 `|x| < 1e-10` 归零；
-  `PercentageCheck` 把值钳到 `[0, 1]`——**公式里的百分比一律过它**。
+  `PercentageCheck` 把值钳到 `[0, 1]`；是否调用由具体公式决定。`Ex*Percentage` 可包含负值或大于 1 的加成比例，不统一钳制。
 - `NetworkUtility.IsEmail` 等正则通过 `[GeneratedRegex]` 编译；改正则等于改对外契约，记得同步测试。
 
 ## 坑
@@ -85,7 +84,7 @@ public EquilibriumConstant GameplayEquilibriumConstant { get; set; } = General.G
 
 | 用例 | 断言要点 |
 | --- | --- |
-| `SkillSet_ResolvesTypeNamesAndLevelCaps` / `ItemSet_RoundTripsItemWeaponAndSlotNames` | 全部枚举取值的名称往返 |
+| `SkillSet_ResolvesTypeNamesAndLevelCaps` / `ItemSet_RoundTripsItemWeaponAndSlotNames` | SkillType、ItemType、WeaponType、EquipSlotType 的名称往返与技能等级上限 |
 | `RoomAndCharacterSets_ExposeReadableNames` | 各映射函数不返回空串 |
 | `AddActivity_RegistersIntoNamedEventCollection` | 活动入表、可按名取回、可移除 |
 | `Indexer_ReturnsEmptySetForUnknownEvent` | 未知事件名返回空集合而非异常 |

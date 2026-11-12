@@ -43,9 +43,9 @@
 
 - **轻量零依赖**：纯 BCL 实现，不依赖任何第三方库，`dotnet add package FunGame.Core` 即可接入任何 .NET 项目。
 - **策略深度**：行动顺序表、决策点、六乘区伤害、技能/特效/驱散/免疫等机制开箱即用。
-- **接口驱动、极易扩展**：`IGamingQueue` 定义全部契约，继承 `GamingQueue` 即可定制游戏模式；31 个事件覆盖整个游戏循环，UI、AI、网络层可独立介入。
+- **接口驱动、极易扩展**：`IGamingQueue` 定义全部契约，继承 `GamingQueue` 即可定制游戏模式；38 个公开事件覆盖整个游戏循环，UI、AI、网络层可独立介入。
 - **实体可动态化**：Factory 工厂 + JSON 配置文件支持免编码动态创建角色、技能、特效与物品，模组化分发游戏内容。
-- **数据可观测**：回合记录以不可变快照沉淀，支持即时外发到专用服务器，用于观战、回放与战斗状态重建。
+- **数据可观测**：回合记录按快照归档，支持即时外发到专用服务器，用于观战、回放与战斗状态重建。
 
 ---
 
@@ -77,7 +77,8 @@ Character player = new()
     Name = "角色1",
     InitialHP = 80,
     InitialATK = 20,
-    InitialSPD = 120
+    InitialSPD = 120,
+    Level = 1
 };
 
 Character enemy = new()
@@ -85,7 +86,8 @@ Character enemy = new()
     Name = "角色2",
     InitialHP = 60,
     InitialATK = 25,
-    InitialSPD = 100
+    InitialSPD = 100,
+    Level = 1
 };
 
 // 2. 创建混战队列并初始化行动顺序表

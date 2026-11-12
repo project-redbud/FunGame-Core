@@ -1,7 +1,7 @@
 # 属性系统
 
 > 上级：[实体模型](README.md) ｜ 源码：`src/Entity/Character/Character.cs`
-> 相关测试：`CharacterAttributeTests`
+> 相关测试：`CharacterAttributeTests`、`CharacterAggregationTests`、`CharacterPrimaryAttributeTests`；JSON 见 `CharacterAttributeSerializationTests`、`UnitAttributeSerializationTests`
 
 ## 一句话结论
 
@@ -42,11 +42,11 @@ Character / Unit 的属性 JSON 保存初始配置、成长、固定点数与比
 | `MaxHP` | `Max(1, BaseHP + ExHP)`；`BaseHP` 含 `(Level-1)` 成长与 `BaseSTR × STRtoHPFactor` |
 | `ATK` / `DEF` | `Base + Ex`；`BaseDEF` 含 `BaseSTR × STRtoDEFFactor` |
 | `PDR` | `Min(1, DEF / (DEF + DEFReductionFactor) + ExPDR)` |
-| `SPD` | `InitialSPD + AGI × AGItoSPDMultiplier + ExSPD` |
+| `SPD` | `Max(0, InitialSPD + AGI × AGItoSPDMultiplier + ExSPD)` |
 | `ActionCoefficient` | `Clamp(SPD / SPDUpperLimit + ExActionCoefficient, 0, 0.9)` —— 直接缩小动作硬直 |
 | `AccelerationCoefficient` | `Min(1, INT × … + ExAccelerationCoefficient)` —— 缩短吟唱 |
-| `CDR` | 冷却缩减，`INT × INTtoCDRMultiplier + ExCDR` |
-| `CritRate` / `CritDMG` / `EvadeRate` | 基准值（0.05 / 1.25 / 0.05）+ 敏捷或力量贡献 + `Ex*`，前两者经 `PercentageCheck` 钳到 `[0,1]` |
+| `CDR` | `Min(1, INT × INTtoCDRMultiplier + ExCDR)`，只限制上界 |
+| `CritRate` / `CritDMG` / `EvadeRate` | 基准值（0.05 / 1.25 / 0.05）+ 敏捷或力量贡献 + `Ex*`；CritRate 与 EvadeRate 经 `PercentageCheck` 钳到 `[0,1]`，CritDMG 不钳制 |
 | `HR` / `MR` | `Max(0, InitialHR + STR × STRtoHRFactor + ExHR)`，同理 `MR` 用 `INT` |
 
 系数全在 `Model/Framework/EquilibriumConstant.cs`，**改系数就是改全局平衡**。
@@ -60,7 +60,7 @@ Character / Unit 的属性 JSON 保存初始配置、成长、固定点数与比
 | `PhysicalPenetration` / `MagicalPenetration` | `PercentageCheck` → `[0, 1]` |
 | `ActionCoefficient` | `[0, 0.9]` |
 | `MagicResistance` 分桶 | setter `Min(1, value)` |
-| `Level` | setter `[1, MaxLevel]`；**getter 只保证 `>= 0`**（见[生命周期](lifecycle.md)） |
+| `Level` | setter `[1, GameplayEquilibriumConstant.MaxLevel]`；getter 加上 `ExLevel`，若自定义 `MaxLevel > 0` 则再限制上界，最后保证 `>= 0`（见[生命周期](lifecycle.md)） |
 
 > 钳制发生在 **setter 与派生 getter** 两处：`HP` 由 setter 保证不越界，`MaxHP` 变化时不会自动同步——
 > 想让 HP 跟着新上限走，得显式 `Recovery()` 或回填。
@@ -69,11 +69,12 @@ Character / Unit 的属性 JSON 保存初始配置、成长、固定点数与比
 
 | 用例 | 断言要点 |
 | --- | --- |
-| `MaxHp_EqualsInitialHpAtLevelOne` / `MaxHp_GrowsWithLevel` | 1 级等于 `InitialHP`；升级按 `LevelToHPFactor + HPGrowthFactor × InitialHP` 增长 |
+| `MaxHp_EqualsInitialHpAtLevelOne` / `MaxHp_GrowsWithLevel` | 基础力量为 0 且无额外加成时，1 级等于 `InitialHP`；测试中的升级增长为 `LevelToHPFactor + HPGrowthFactor × InitialHP` |
 | `Attack_IncludesExtraBonuses` | `ExATK2 + ExATKPercentage` 组合（100 → 180） |
 | `CharacterAggregationTests` | 聚合、来源拆分、角色与单位面板、复制复活和魔法卡包 |
 | `CharacterPrimaryAttributeTests` | 核心属性点数与正负百分比的传导、非主属性、升级成长、战斗属性加成叠加、资源边界与复制 |
 | `CharacterAttributeSerializationTests` | 固定点数与比例字段的读取、派生属性与序列化往返 |
+| `UnitAttributeSerializationTests` | Unit 三种 JSON 入口、共享字段口径与嵌套角色往返 |
 | `Defense_ProducesPhysicalDamageReduction` | `DEF = DEFReductionFactor` → `PDR = 0.5` |
 | `SpeedDerivedCoefficients_AreClamped` | `ActionCoefficient` 上限 0.9 |
 | `PenetrationRate_IsClampedIntoPercentageRange` | 穿透越界被钳到 `[0,1]` |

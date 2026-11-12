@@ -2,7 +2,7 @@
 
 > **面向**：要改伤害公式、技能施放、特效钩子的开发者。
 > **规则本身**见文档站：[伤害计算](https://project-redbud.github.io/guide/damage)、[技能系统](https://project-redbud.github.io/guide/skills)、[特效系统](https://project-redbud.github.io/guide/effects)。
-> **测试**：[`tests/FunGame.Core.Tests.Combat`](../../tests/FunGame.Core.Tests.Combat)（61 个用例）
+> **测试**：[`tests/FunGame.Core.Tests.Combat`](../../tests/FunGame.Core.Tests.Combat)（65 个用例；[统计与文件索引](../testing.md)）
 
 ## 本模块文档
 
@@ -40,7 +40,7 @@
 | 钩子观察到的敌人是上一个目标 | `DamageCalculationOptions.Context` 被复用 | 见[特效钩子](effects.md)的复用约定 |
 | 真伤被免疫挡下 / 护盾没被跳过 | 跳过条件是 `damageType != True && !flag` | 语义见[免疫与护盾](immunity-and-shield.md) |
 | 魔法的 MP 扣费时机不对 | 开始吟唱不扣、释放时扣 | 见[技能施放](skill-casting.md) |
-| 给了 `CD = 0` 的技能每回合都能连放 | `Enable` 只在 `RealCD > 0` 时才置 `false` | 见[技能施放](skill-casting.md)：要「每回合至多一次」得靠 `IsInEffect` 或资源成本 |
+| 给了 `CD = 0` 的技能每回合都能连放 | `Enable` 只在 `RealCD > 0` 时才置 `false` | 见[技能施放](skill-casting.md)：次数还受动作配额约束，技能自身限制由模组状态管理 |
 
 ## 相关测试
 
@@ -51,3 +51,4 @@
 | `SkillCastTests` | 战技/爆发技/魔法的资源与冷却、候选列表过滤、回合归档与统计 |
 | `EffectTests` | 特效挂载去重、状态推导、驱散/豁免标志、`SkillSet` 映射 |
 | `NormalAttackTests` | 普攻伤害与硬直公式、等级钳制、伤害类型切换 |
+| `ItemCastRecordTests` | 同回合重复使用物品、MP / EP 混合费用、免费使用与逐次费用记录 |

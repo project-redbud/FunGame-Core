@@ -28,12 +28,12 @@ item.ReduceTimesAndRemove();
 if (item.IsReduceTimesAfterUse && item.RemainUseTimes == 0) character.Items.Remove(item);
 ```
 
-- `Item.ReduceTimesAndRemove(times = 1)`：扣次数（下限 0），并把 `EntityState` 置 `Deleted`，
-  **不动任何容器**。
+- `Item.ReduceTimesAndRemove(times = 1)`：仅在 `IsReduceTimesAfterUse` 为真时扣次数（下限 0）；
+  仅在 `IsRemoveAfterUse` 为真且剩余次数为 0 时将 `EntityState` 置 `Deleted`，**不动任何容器**。
 - **从 `Character.Items` 移除**是**队列**的职责（`GamingQueue.ActionExecution.cs:64-66`）。
   局外（不进战斗）不会遍历角色身上的 `Items`，所以不需要在物品侧做移除。
 
-> 写单元测试时若只调 `ReduceTimesAndRemove()`，看到的是 `EntityState.Deleted`，集合里还在——这是设计，不是 bug。
+> 仅调用 `ReduceTimesAndRemove()` 不会移除集合元素；标记删除也受 `IsRemoveAfterUse` 限制。队列按自身的次数耗尽条件移除物品，不以该删除标记作为移除条件。
 
 ### 动态物品与工厂
 
@@ -72,8 +72,8 @@ if (item.IsReduceTimesAfterUse && item.RemainUseTimes == 0) character.Items.Remo
 | `IsActive_FollowsActiveSkill` | `Skills.Active` 决定 `IsActive` |
 | `CharacterAssignment_PropagatesToActiveSkill` | `Character` 联动到主动技能 |
 | `ReduceTimesAndRemove_MarksItemDeletedWhenExhausted` | 扣减次数 + `EntityState.Deleted`（**集合里仍在**） |
-| `ReduceTimesAndRemove_KeepsItemWhenNotRemovable` | `IsRemoveAfterUse = false` 时只标记，不删除 |
+| `ReduceTimesAndRemove_KeepsItemWhenNotRemovable` | `IsRemoveAfterUse = false` 时扣次数，不设置 `Deleted` |
 | `Inventory_MainCharacterDefaultsToFirstCharacter` | 有角色时取第一个 |
-| `Inventory_Starts…FallsBackToEmptyCharacter` | 空库存返回非 null 空角色 |
+| `Inventory_StartsWithNoCreditsAndFallsBackToEmptyCharacter` | 空库存返回非 null 空角色 |
 | `User_GuestAndLocalFactories_UseReservedIds` | 保留 Id -5 / -6 |
 | `ChainActionRegressionTests.ChainItemConsumesTimesAndResources` | 局内真删：次数扣减、MP/EP 扣除、`Items` 里消失 |

@@ -90,10 +90,10 @@ if (damageType != DamageType.True && options.CalculateShield)   // 进入护盾�
 | 用例 | 断言要点 |
 | --- | --- |
 | `PhysicalImmunity_BlocksPhysicalDamage` | `ImmuneType.Physical` 挡住物理 |
-| `SkilledImmunity_DoesNotBlockNormalAttack` / `BlocksSkillDamage` | 技能免疫对普攻无效、对技能有效 |
+| `SkilledImmunity_DoesNotBlockNormalAttack` / `SkilledImmunity_BlocksSkillDamage` | 技能免疫对普攻无效、对技能有效 |
 | `TrueDamage_IgnoresImmunity` | 真伤 + `ImmuneType.All` + 500 护盾 → 全额 100 进 HP |
 | `IgnoreImmuneOption_BypassesImmunity` | `IgnoreImmune = true` 直接穿透物理免疫 |
-| `Shield_PartiallyAbsorbsDamage` / `FullyAbsorbsDamageBelowItsValue` | 吸收与溢出、护盾值递减 |
+| `Shield_PartiallyAbsorbsDamage` / `Shield_FullyAbsorbsDamageBelowItsValue` | 吸收与溢出、护盾值递减 |
 | `Shield_IsSeparatedByDamageAndMagicType` | 物理桶与魔法桶互不干扰 |
 | `ShieldCanBeSkippedByOption` | `CalculateShield = false` → 全额伤害、护盾不变 |
 | `ShieldOfEffect_IsConsumedAndRemovedWhenBroken`（实体侧） | 特效护盾扣到 0 时条目被移除 |

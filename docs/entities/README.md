@@ -2,7 +2,7 @@
 
 > **面向**：要改 `src/Entity/` 的开发者。
 > **规则本身**见文档站：[角色系统](https://project-redbud.github.io/guide/characters)、[道具](https://project-redbud.github.io/guide/items)。
-> **测试**：[`tests/FunGame.Core.Tests.Entities`](../../tests/FunGame.Core.Tests.Entities)（81 个用例）
+> **测试**：[`tests/FunGame.Core.Tests.Entities`](../../tests/FunGame.Core.Tests.Entities)（81 个用例；[统计与文件索引](../testing.md)）
 
 ## 本模块文档
 
@@ -35,9 +35,9 @@
 | 症状 | 原因 | 处理 |
 | --- | --- | --- |
 | 新角色血量/攻击比预期低一大截 | `new Character()` 的 `Level` 是 **0**，派生属性按 0 级算 | 显式 `Level = 1`，见[生命周期](lifecycle.md) |
-| 角色不回血 | `InitialHR` / `InitialMR` 默认 **0** | 按需设置；0 表示无自然回复 |
+| 角色不回血 | 回复使用最终 `HR` / `MR`，其初始项默认 **0** | 核对初始项、力量 / 智力贡献和额外项；初始项为 0 不代表总回复必为 0 |
 | 赋 `ExATK` / `ExDEF` 编译不过 | 它们是**只读派生值** | 写 `ExATK2` / `ExATKPercentage` / `ExDEF2` 等 |
-| 改完等级血满了 | `Level` setter 会 `OnAttributeChanged()` + `Recovery()` | 需要保留血量就用 `SetLevel(level, recovery: false)` 或事后回填 |
+| 改完等级血满了 | `Level` setter 会 `OnAttributeChanged()` + `Recovery()` | 正资源按比例回填可用 `SetLevel(level, recovery: false)`；精确保留数值应事后回填，见[生命周期](lifecycle.md) |
 | `Copy()` 出来血是满的 | `Copy()` 会回满 HP/MP | 要保留比例请自行回填 |
 | 直接给 `EquipSlot.Weapon` 赋值编译不过 | 槽位 setter 是 `internal` | 走 `Character.Equip(...)` |
 | 从工厂/JSON 造出来的技能，特效里 `GamingQueue` 是 `null` | `Character.GamingQueue` **不会**传播给技能与特效 | 见[生命周期](lifecycle.md)的传播一节 |

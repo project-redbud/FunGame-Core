@@ -146,6 +146,8 @@ dotnet build FunGame.Core.slnx -c Release
 dotnet test FunGame.Core.slnx -c Release
 ```
 
+测试文件、测试类与运行用例数见[测试索引](docs/testing.md)。新增或删除测试、修改 Theory 数据行时，同步维护该索引与模块统计。
+
 常用变体：
 
 ```powershell
@@ -241,15 +243,16 @@ public static bool ck(Character c, Skill s) {
 ```csharp
 // ✅ 推荐写法
 /// <summary>
-/// 判断角色能否释放指定技能（仅校验资源与冷却，不校验目标合法性）
+/// 判断角色的资源是否足以释放指定技能
 /// </summary>
 /// <param name="caster">施法者</param>
 /// <param name="skill">待释放的技能</param>
-public static bool CanCast(Character caster, Skill skill)
+/// <returns>资源足够且成本非负时返回 true</returns>
+public static bool HasCastResources(Character caster, Skill skill)
 {
-    if (skill.CurrentCD > 0) return false;
-    if (skill.RealMPCost > caster.MP) return false;
-    return true;
+    double cost = skill.SkillType == SkillType.Magic ? skill.RealMPCost : skill.RealEPCost;
+    double available = skill.SkillType == SkillType.Magic ? caster.MP : caster.EP;
+    return cost >= 0 && cost <= available;
 }
 ```
 

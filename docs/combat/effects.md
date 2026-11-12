@@ -40,9 +40,9 @@
 让计算阶段与应用阶段的钩子看到同一份持续更新的快照。复用有明确前提：
 
 > 仅当既有快照的 `Trigger` / `Enemy` 与本次**引用相同**时才复用，否则重建。
-> **嵌套伤害（钩子里再造伤害）由调用方把 `Context` 置回 `null`**，使两次结算互不干扰。
+> **嵌套伤害（钩子里再造伤害）使用独立的 `DamageCalculationOptions`**，使两次结算互不干扰；`Context` 是内部成员，模组不能直接重置。
 
-如果你在特效里对**另一个目标**发起伤害却复用同一个 options，钩子观察到的 `Enemy` 会是错的。
+同一 options 顺序处理不同施法者或目标时，框架会重建上下文。复用同一施法者和目标的 options 会共享上下文及调试记录，独立或嵌套结算应新建 options。
 
 ## 挂载与去重
 
@@ -81,7 +81,7 @@
 
 | 用例 | 断言要点 |
 | --- | --- |
-| `AddToCharacter_IgnoresDuplicatedInstance` / `KeepsDistinctInstancesApart` | 同实例幂等、不同实例叠加 |
+| `AddToCharacter_IgnoresDuplicatedInstance` / `AddToCharacter_KeepsDistinctInstancesApart` | 同实例幂等、不同实例叠加 |
 | `EffectType_DrivesCharacterState` / `CharacterStates_FromMultipleEffectsAreMerged` | 状态汇总与两个 `Remove*` 都要调 |
 | `ImmuneTypes_AreMergedIntoCharacterAndCleanedUp` | 免疫位汇总与清理后回到 `None` |
 | `DispelFlags_FollowDispelType` | 弱/强/临时驱散标志的派生规则 |
