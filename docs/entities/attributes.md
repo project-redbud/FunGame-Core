@@ -1,7 +1,7 @@
 # 属性系统
 
 > 上级：[实体模型](README.md) ｜ 源码：`src/Entity/Character/Character.cs`
-> 相关测试：`CharacterAttributeTests`
+> 相关测试：`CharacterAttributeTests`、`CharacterAggregationTests`、`CharacterPrimaryAttributeTests`；JSON 见 `CharacterAttributeSerializationTests`、`UnitAttributeSerializationTests`
 
 ## 一句话结论
 
@@ -60,7 +60,7 @@ Character / Unit 的属性 JSON 保存初始配置、成长、固定点数与比
 | `PhysicalPenetration` / `MagicalPenetration` | `PercentageCheck` → `[0, 1]` |
 | `ActionCoefficient` | `[0, 0.9]` |
 | `MagicResistance` 分桶 | setter `Min(1, value)` |
-| `Level` | setter `[1, MaxLevel]`；**getter 只保证 `>= 0`**（见[生命周期](lifecycle.md)） |
+| `Level` | setter `[1, GameplayEquilibriumConstant.MaxLevel]`；getter 加上 `ExLevel`，若自定义 `MaxLevel > 0` 则再限制上界，最后保证 `>= 0`（见[生命周期](lifecycle.md)） |
 
 > 钳制发生在 **setter 与派生 getter** 两处：`HP` 由 setter 保证不越界，`MaxHP` 变化时不会自动同步——
 > 想让 HP 跟着新上限走，得显式 `Recovery()` 或回填。
@@ -74,6 +74,7 @@ Character / Unit 的属性 JSON 保存初始配置、成长、固定点数与比
 | `CharacterAggregationTests` | 聚合、来源拆分、角色与单位面板、复制复活和魔法卡包 |
 | `CharacterPrimaryAttributeTests` | 核心属性点数与正负百分比的传导、非主属性、升级成长、战斗属性加成叠加、资源边界与复制 |
 | `CharacterAttributeSerializationTests` | 固定点数与比例字段的读取、派生属性与序列化往返 |
+| `UnitAttributeSerializationTests` | Unit 三种 JSON 入口、共享字段口径与嵌套角色往返 |
 | `Defense_ProducesPhysicalDamageReduction` | `DEF = DEFReductionFactor` → `PDR = 0.5` |
 | `SpeedDerivedCoefficients_AreClamped` | `ActionCoefficient` 上限 0.9 |
 | `PenetrationRate_IsClampedIntoPercentageRange` | 穿透越界被钳到 `[0,1]` |

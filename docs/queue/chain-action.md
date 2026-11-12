@@ -9,15 +9,15 @@
 
 | 项目 | 行为 |
 | --- | --- |
-| A 的确认动作 | `CharacterActionType.ChainAction`，消耗 1 决策点，配额无限 |
-| A 的动作硬直 | 主循环将确认动作的硬直 3 入账一次，按通用规则参与回合末聚合；普攻后确认为 `max(普攻硬直, 3) + 2` |
+| A 的确认动作 | `CharacterActionType.ChainAction`，消耗确认成本（默认 1 决策点），配额无限 |
+| A 的动作硬直 | 主循环将确认硬直（默认 3）入账一次，按通用规则参与回合末聚合；默认配置下普攻后确认为 `max(普攻硬直, 3) + 2` |
 | B 的可用动作 | 普攻、战技、魔法、爆发技、物品 |
 | B 的预算 | 上一次正常回合以来持续扣减的决策点及对应配额，不刷新硬直统计 |
 | 新角色和召唤物 | 入队时使用队列配置中的 `InitialDecisionPoints`，提交申请不补点 |
 | B 的即时硬直 | 通过队列更新入口，在当前硬直上加本次动作硬直 |
 | 协同魔法 | 当前队列时间替换为吟唱时间；结算是独立正常回合，触发回合开始、奖励、行动回合计数及特效钩子；回合末硬直为确认时原硬直加本次魔法动作硬直 |
 | 魔法 MP | 开始吟唱时检查，释放时重新检查并扣除，与普通魔法一致 |
-| 协同爆发技 | 2 决策点及爆发配额；回合外预释放仍消耗 3 点 |
+| 协同爆发技 | 按正常爆发技成本及配额执行，默认 2 决策点；回合外预释放成本默认 3 点 |
 | 外部技能打断 | 原硬直加剩余吟唱时间；已消耗的 DP 不返还，不产生有效协调辅助 |
 | 全部目标丢失 | 他人回合为原硬直加 `min(剩余吟唱时间, 吟唱失败补偿)`；回合外为原硬直加剩余吟唱时间 |
 | 结算失败 | 失败尝试计补偿硬直（默认 3），保留预算/配额允许正常重决；回合末聚合后还原原硬直 |
@@ -62,15 +62,14 @@ if (request is null)
 }
 
 // A 的动作选择界面展示 ctx.ChainActions，选中协同行动后返回 ChainAction。
-queue.DecideActionEvent += ctx =>
-    ctx.ChainActions.Count > 0
-        ? CharacterActionType.ChainAction
-        : CharacterActionType.EndTurn;
+queue.DecideActionEvent += ctx => chooseAction(ctx);
 
 // 将宿主中玩家选定的申请 ID 返回给框架。
 queue.SelectChainActionEvent += (actor, pending) =>
-    pending.FirstOrDefault()?.Id;
+    chooseRequest(actor, pending);
 ```
+
+`chooseAction` 是宿主提供的 `Func<TurnContext, CharacterActionType>`，由玩家选择动作类型；`chooseRequest` 是 `Func<Character, IReadOnlyList<ChainActionRequest>, Guid?>`，返回玩家选中的申请 ID，取消时返回 null。仅有申请不自动进入协同分支，也不默认确认第一条。
 
 魔法或技能申请传入 `skill`；物品申请传入 `item`；非指向性地图技能传入 `targetGrids`。`targets` 可在允许空地施法时使用空集合。
 

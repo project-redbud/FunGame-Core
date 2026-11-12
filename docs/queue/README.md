@@ -2,7 +2,7 @@
 
 > **面向**：要改 `src/Model/Queue/`、`Model/Framework/DecisionPoints.cs` 的开发者。
 > **规则本身**（怎么玩）见文档站：[回合制系统](https://project-redbud.github.io/guide/turn-based)、[行动顺序表](https://project-redbud.github.io/guide/action-queue)。
-> **测试**：[`tests/FunGame.Core.Tests.Queue`](../../tests/FunGame.Core.Tests.Queue)（127 个用例）
+> **测试**：[`tests/FunGame.Core.Tests.Queue`](../../tests/FunGame.Core.Tests.Queue)（312 个用例；[统计与文件索引](../testing.md)）
 
 ## 本模块文档
 
@@ -30,7 +30,7 @@
 | `MixGamingQueue.cs` / `TeamGamingQueue.cs` | 混战 / 团队模式：胜负判定、队伍归属 |
 | `../Framework/DecisionPoints.cs` | 决策点对象（预算、配额、成本） |
 | `../Framework/GameMap.cs`、`Grid.cs` | 战棋地图与格子 |
-| `../Framework/RoundRecord.cs`、`ActionRecord.cs` | 回合与动作记录（不可变快照的来源） |
+| `../Framework/RoundRecord.cs`、`ActionRecord.cs` | 回合与动作记录（归档快照的来源） |
 
 ## 坑速查
 
@@ -62,7 +62,16 @@ TimeLapse()                      以队首硬直为单位推进全场：回复�
 | --- | --- |
 | `ActionQueueTests` | 速度排序、硬直插入与冲突、`TimeLapse`、`ProcessTurn` 嵌套与返回值、事件接管 |
 | `DecisionPointsTests` | 配额/成本/临时配额/协同扣点的精确数值 |
+| `DecisionPointsRecoveryTests` | 上限增长、状态相关基础回复、额外回复及上下界、吟唱与预释放跳过回复 |
 | `TeamQueueTests` | 队伍注册、召唤物归属主人队伍、回合记录里的 `TeamMap` |
 | `ChainActionTests` + `ChainActionRegressionTests` | 协同行动全链路：前者做单点断言，后者走完整流程并断言硬直与预算的精确数值 |
 | `ChainActionSettlementTests` | 协同吟唱结算的正常回合语义、整回合接管、计数隔离与单次动作记录 |
+| `ChainActionAITests` | AI 协作方申请、手动回合确认、控制模式与申请者策略 |
+| `ChainActionCostRecordTests` | 协同技能与物品的逐次消耗、执行者和确认者归属及 JSON 往返 |
 | `CastTerminationTests`（33 个用例） | 普通/协同终止、失败重决、状态/奖励清理、重入与再次吟唱的原硬直顺延 |
+| `AIDecisionBaselineTests`、`AIPlanningTests` | 固定种子基线、无地图与地图规划、BOSS 与空表配置加载 |
+| `DecisionTableTests`、`DecisionTableBoundaryTests`、`DecisionTableRevalidationTests` | 策略构建、绑定、边界诊断与执行重验 |
+| `DecisionRiskBudgetTests` | 风险评分、规则预算分配、阶段隔离与截断诊断；分部测试分布在三个文件 |
+| `BossBattleDecisionTableTests` | 五规则 BOSS 的实际命中、结算与固定种子对照 |
+| `CastingPlanningOptimizationTests`、`AllTargetSelectionTests` | 范围规划、全图目标、假设位置投影及目标资格重验 |
+| `AIControllerLifecycleTests` | 换图、开关、控制器订阅保留、短期状态清理与队列隔离 |

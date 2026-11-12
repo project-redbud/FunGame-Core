@@ -150,6 +150,8 @@ dotnet build FunGame.Core.slnx -c Release
 dotnet test FunGame.Core.slnx -c Release
 ```
 
+See the [test index](docs/testing.md) for source files, classes and executed case counts. Keep the index and domain totals in sync when adding or removing tests or changing Theory data rows.
+
 Useful variants:
 
 ```powershell
@@ -250,15 +252,16 @@ public static bool ck(Character c, Skill s) {
 ```csharp
 // ✅ Preferred
 /// <summary>
-/// 判断角色能否释放指定技能（仅校验资源与冷却，不校验目标合法性）
+/// 判断角色的资源是否足以释放指定技能
 /// </summary>
 /// <param name="caster">施法者</param>
 /// <param name="skill">待释放的技能</param>
-public static bool CanCast(Character caster, Skill skill)
+/// <returns>资源足够且成本非负时返回 true</returns>
+public static bool HasCastResources(Character caster, Skill skill)
 {
-    if (skill.CurrentCD > 0) return false;
-    if (skill.RealMPCost > caster.MP) return false;
-    return true;
+    double cost = skill.SkillType == SkillType.Magic ? skill.RealMPCost : skill.RealEPCost;
+    double available = skill.SkillType == SkillType.Magic ? caster.MP : caster.EP;
+    return cost >= 0 && cost <= available;
 }
 ```
 

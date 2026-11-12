@@ -9,13 +9,15 @@
 并初始化 `MDF` / `Shield` / `NormalAttack` / `Class` / `Profile`。
 
 ```csharp
-Character character = new() { InitialHP = 100 };
-character.MaxHP;   // 15      ← 不是 100
-character.ATK;     // 94.55   ← 不是 100
-character.Level;   // 0
+using FunGame.Core.Entity;
+
+Character character = new() { InitialHP = 100, InitialATK = 100 };
+Console.WriteLine(character.MaxHP);   // 15
+Console.WriteLine(character.ATK);     // 94.55
+Console.WriteLine(character.Level);   // 0
 ```
 
-**原因**：`Level` 的 getter 只做 `Math.Max(0, field + ExLevel)`，**不会**把 0 抬到 1；
+**原因**：`Level` 的 getter 在加上 `ExLevel`、应用正的自定义 `MaxLevel` 上界后取 `Math.Max(0, level)`，**不会**把 0 抬到 1；
 而 `BaseHP = InitialHP + (Level-1) × (LevelToHPFactor + HPGrowthFactor × InitialHP) + …`，
 在 0 级时 `(Level-1)` 为负，于是 1 级时是 100、0 级时只有 15。
 `BaseATK` 同理（`(Level-1) × (LevelToATKFactor + ATKGrowthFactor × InitialATK)` → 减少 5.45）。
@@ -41,7 +43,7 @@ public int Level
 }
 ```
 
-所以**升级会回满血**。要保留当前血量：`SetLevel(level, recovery: false)`，或先记下比例、设置后回填。
+所以**升级会回满血**。`SetLevel(level, recovery: false)` 在等级变化时按旧 HP / MP 比例回填，并非保持绝对数值；回填要求对应旧资源与旧上限均大于 0。若要精确保留原数值，或保留零资源状态，应记录后显式回填。
 
 ## 三种 `Recovery`
 
@@ -49,14 +51,14 @@ public int Level
 | --- | --- | --- |
 | `Recovery(double EP = -1)` | `HP = MaxHP; MP = MaxMP`；传了 `EP` 才覆盖能量 | 出生、升级、复活 |
 | `Recovery(int time, double EP = -1)` | `HP += HR × time`、`MP += MR × time`（`time > 0` 才生效） | 时间流逝按回复力回血 |
-| `Recovery(pastHP, pastMP, pastMaxHP, pastMaxMP)` | 按**旧比例**回填到新上限 | 上限变化时保持血量百分比 |
+| `Recovery(pastHP, pastMP, pastMaxHP, pastMaxMP)` | 对应旧资源与旧上限均大于 0 时，按**旧比例**回填；否则不改该资源 | 上限变化时保持正资源的百分比 |
 
 > `InitialHR` / `InitialMR` 默认都是 **0**，即默认角色**没有自然回复**。需要回复力必须显式设置。
 
 ## 复制与复活
 
 - `Copy(bool copyEx = false, bool copyMagic = false, bool copyItem = false)`：**会回满 HP/MP**（末尾调用 `Recovery()`），
-  `Guid` 是否复制取决于参数；要「带着伤」的副本，复制后自行回填。
+  始终保留原 `Guid`，两个对象仍按相同身份判等。`copyEx` 控制额外属性、`copyMagic` 控制魔法技能、`copyItem` 控制背包物品；要「带着伤」的副本，复制后自行回填。需要独立身份时另行赋新的 Guid。
 - `Respawn(Character original)`：从原始角色还原，`Initial*` 与资源状态一并回来。
 
 ## `GamingQueue` 的传播（**写模组最容易踩**）

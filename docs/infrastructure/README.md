@@ -1,7 +1,7 @@
 # 基础设施
 
 > **面向**：要改 `src/Api/`、`src/Library/` 的开发者。
-> **测试**：[`tests/FunGame.Core.Tests.Infrastructure`](../../tests/FunGame.Core.Tests.Infrastructure)（95 个用例）
+> **测试**：[`tests/FunGame.Core.Tests.Infrastructure`](../../tests/FunGame.Core.Tests.Infrastructure)（95 个用例；[统计与文件索引](../testing.md)）
 
 ## 本模块文档
 
@@ -45,5 +45,10 @@
 | --- | --- |
 | `CalculationTests`、`NetworkUtilityTests`、`EncryptionTests`、`VerificationTests`、`DateTimeUtilityTests`、`LinqExtensionTests` | 工具箱的边界与已知向量（如 MD5/SHA256） |
 | `JsonServiceTests`、`JsonConverterTests` | 全局选项、往返、转换器回填与 `Values` 通道 |
+| `CharacterAttributeSerializationTests`、`UnitAttributeSerializationTests` | 点数与比例、派生字段排除、资源延迟回填及 User / Inventory 嵌套往返 |
+| `JsonToolRegistrationTests` | 每个 JsonTool 实例独立维护选项与转换器列表 |
 | `FactoryTests`、`ConstantSetTests` | 工厂注册与回退、常量名称映射往返 |
 | `EventCenterTests`、`RoundRecordTests`、`SkillExtensionTests` | 事件中心增删、快照、渲染与推算 |
+| `RoundRecordCostTests` | 费用字段顺序、引用回退、同名冲突与逐次消耗 |
+| `BattleStatePredictorTests` | 预测副本与检查点的背包、装备明细隔离 |
+| `ExceptionTests` | 框架错误码与内层异常文本 |

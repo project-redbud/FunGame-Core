@@ -10,17 +10,16 @@
 
 ## 全局选项里注册了什么
 
-`GeneralOptions` 一次性挂上 26 个实体转换器，并设定：
+`GeneralOptions` 注册 27 个转换器（含日期与实体转换器），并设定：
 
 | 设置 | 值 | 影响 |
 | --- | --- | --- |
 | `WriteIndented` | `true` | 产出可读的多行 JSON |
-| `PropertyNameCaseInsensitive` | `true` | 属性名大小写不敏感 |
+| `PropertyNameCaseInsensitive` | `true` | 默认对象映射时属性名大小写不敏感；手写转换器按自身规则匹配 |
 | `Encoder` | `JavaScriptEncoder.Create(UnicodeRanges.All)` | 中文**不**转义 |
 | `ReferenceHandler` | `ReferenceHandler.IgnoreCycles` | 循环引用被忽略而不是抛异常 |
 
-> 它是静态只读单例：**就地改 `GeneralOptions.Converters` 会全局生效**（包括测试之间互相干扰）。
-> 需要额外转换器时用 `JsonTool`。
+> 它是共享的静态单例选项。首次序列化或反序列化前修改配置会影响全局；被序列化器使用后选项变为只读，再改列表或配置会抛 `InvalidOperationException`。需要独立配置时，在使用前配置自己的 `JsonTool`。
 
 ## `JsonService` 的入口一览
 
@@ -28,7 +27,7 @@
 | --- | --- |
 | `GetString<T>(obj)` / `GetObject<T>(json)` | 常规往返 |
 | `GetObject<T>(ref Utf8JsonReader, options)` | **给转换器内部递归读取用**，不吞异常 |
-| `GetObject<T>(Hashtable/Dictionary/IEnumerable, …)` | 从容器里取出 `JsonElement` 再反序列化；缺失/类型不符返回 `default`，**不抛异常** |
+| `GetObject<T>(Hashtable/Dictionary/IEnumerable, …)` | 从容器里取出 `JsonElement` 再反序列化；缺失键或空值返回 `default`，非 JsonElement 值可能抛 `InvalidCastException`，目标 JSON 类型不符可能抛 `JsonException` |
 | `GetObjects<T>(json)` | 多个对象：自行补数组括号（见下） |
 | `IsCompleteJson<T>(json)` | 试解析判断完整性，失败返回 `false` |
 
@@ -48,11 +47,12 @@
 
 | | `JsonService`（静态） | `JsonTool`（实例） |
 | --- | --- | --- |
-| 选项 | `GeneralOptions` | 每个实例一份 `Options`（拷贝行为与转换器） |
-| 大小写敏感 | **不敏感** | **敏感**（构造函数没拷该标志） |
-| 加转换器 | 全局，影响所有人 | `AddConverter` / `AddConverters`，幂等且只影响自己 |
+| 选项 | `GeneralOptions` | 每个实例一份 `Options` 和转换器列表，默认列表中的转换器实例共享 |
+| 默认对象映射的大小写敏感性 | **不敏感** | **敏感**（构造函数没拷该标志） |
+| 加转换器 | 使用前的修改影响全局，使用后配置只读 | `AddConverter` / `AddConverters` 对同一转换器实例去重，只修改自己的列表，需在选项使用前配置 |
 
-> 需要「和静态入口行为一致」时，显式设置 `tool.Options.PropertyNameCaseInsensitive = true`。
+> 需要相同的默认对象映射行为时，在使用前设置 `tool.Options.PropertyNameCaseInsensitive = true`。
+> `CharacterConverter`、`UnitConverter` 等手写读取器按 `switch (propertyName)` 精确匹配；该开关不会替它们改写键名。实体字段应使用转换器规定的 PascalCase。
 
 ## 转换器：两段式读取
 
@@ -101,10 +101,9 @@ void AfterConvert(ref T result, Dictionary<string, object> context);   // 读完
 
 ## 坑
 
-1. 转换器里递归读对象统一用 `JsonService.GetObject<T>(ref reader, options)`；直接 `JsonSerializer.Deserialize`
-   会绕过当前选项与其它转换器。
+1. 转换器里递归读对象使用 `JsonService.GetObject<T>(ref reader, options)`，或等价地传入当前 options 的 `JsonSerializer.Deserialize<T>(ref reader, options)`；省略 options 才会丢失当前转换器配置。
 2. `IsCompleteJson<T>` 是「能解析且类型匹配」，不是「JSON 语法合法」——字段类型不符也会返回 `false`。
-3. 往 `GeneralOptions.Converters` 里加东西会**全局生效**，测试里尤其危险（并行时互相污染）。
+3. 在共享选项使用前修改转换器列表会影响其他调用者，使用后则会因只读而失败；测试和模组应在独立选项使用前完成配置。
 
 ## 相关测试
 
@@ -121,3 +120,5 @@ void AfterConvert(ref T result, Dictionary<string, object> context);   // 读完
 | `ItemConverter_ReadsDynamicItemFromJson` | 动态物品 JSON → 技能 → 特效 → `Values["exatk"]` |
 | `DateTimeConverter_RejectsInvalidPayload` | 非法日期抛 `JsonException` |
 | `RoundRecordCostTests` | 消耗引用延迟解析、动作引用回退、平铺格式与同名冲突 |
+| `CharacterAttributeSerializationTests` | 核心属性点数与比例、最终属性往返 |
+| `UnitAttributeSerializationTests` | Character / Unit 同一属性 schema、三个入口和 User / Inventory 嵌套往返 |
